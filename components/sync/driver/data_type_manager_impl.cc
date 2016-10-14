@@ -16,10 +16,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "components/sync/core/data_type_debug_info_listener.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
+#include "components/sync/engine/data_type_debug_info_listener.h"
 
 namespace syncer {
 

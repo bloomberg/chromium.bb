@@ -5,7 +5,6 @@ include_rules = [
   "+components/keyed_service/content",
   "+components/keyed_service/core",
   "+components/onc",
-  "+components/sync/core/attachments",
   "+components/sync/model",
   "+components/sync/protocol",
   "+content/public/browser",

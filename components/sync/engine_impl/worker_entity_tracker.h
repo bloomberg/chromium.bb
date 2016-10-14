@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {

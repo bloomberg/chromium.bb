@@ -4,8 +4,8 @@
 
 #include "components/sync/driver/glue/sync_backend_host_mock.h"
 
-#include "components/sync/core/activation_context.h"
 #include "components/sync/driver/sync_frontend.h"
+#include "components/sync/engine/activation_context.h"
 
 namespace syncer {
 

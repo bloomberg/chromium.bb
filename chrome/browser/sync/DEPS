@@ -1,6 +1,5 @@
 include_rules = [
   "+components/invalidation",
-  "+components/sync/core",
   "+components/sync/driver",
   "+components/sync_sessions",
   "+components/wifi_sync",

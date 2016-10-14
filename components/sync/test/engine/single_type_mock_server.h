@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 
 namespace syncer {
 

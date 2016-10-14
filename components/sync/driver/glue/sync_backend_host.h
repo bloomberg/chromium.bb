@@ -14,12 +14,12 @@
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/configure_reason.h"
-#include "components/sync/core/shutdown_reason.h"
-#include "components/sync/core/sync_manager.h"
-#include "components/sync/core/sync_manager_factory.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
+#include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/engine/shutdown_reason.h"
+#include "components/sync/engine/sync_manager.h"
+#include "components/sync/engine/sync_manager_factory.h"
 
 class GURL;
 

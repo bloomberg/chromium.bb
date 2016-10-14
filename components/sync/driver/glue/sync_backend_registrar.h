@@ -18,8 +18,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/sync_manager.h"
 #include "components/sync/engine/model_safe_worker.h"
+#include "components/sync/engine/sync_manager.h"
 
 class Profile;
 

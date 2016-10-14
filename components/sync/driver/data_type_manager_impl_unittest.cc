@@ -10,12 +10,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/activation_context.h"
-#include "components/sync/core/configure_reason.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/fake_data_type_controller.h"
+#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/configure_reason.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

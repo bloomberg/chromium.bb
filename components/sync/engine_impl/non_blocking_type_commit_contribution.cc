@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/values.h"
-#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 

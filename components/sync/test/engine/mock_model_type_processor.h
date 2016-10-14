@@ -15,8 +15,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/sync/core/model_type_processor.h"
-#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/engine/model_type_processor.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 
 namespace syncer {

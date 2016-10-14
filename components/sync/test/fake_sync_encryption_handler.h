@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
-#include "components/sync/core/sync_encryption_handler.h"
+#include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
 
 namespace syncer {

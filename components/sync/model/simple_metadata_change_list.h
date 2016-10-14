@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/core/non_blocking_sync_common.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/protocol/entity_metadata.pb.h"

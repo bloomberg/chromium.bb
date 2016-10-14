@@ -17,17 +17,17 @@
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/core/activation_context.h"
-#include "components/sync/core/internal_components_factory.h"
-#include "components/sync/core/internal_components_factory_impl.h"
-#include "components/sync/core/sync_manager_factory.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
 #include "components/sync/driver/glue/sync_backend_registrar.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_frontend.h"
+#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/engine_components_factory.h"
+#include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/net/http_bridge.h"
+#include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/syncable/base_transaction.h"
 
@@ -94,18 +94,18 @@ void SyncBackendHostImpl::Initialize(
   std::vector<scoped_refptr<ModelSafeWorker>> workers;
   registrar_->GetWorkers(&workers);
 
-  InternalComponentsFactory::Switches factory_switches = {
-      InternalComponentsFactory::ENCRYPTION_KEYSTORE,
-      InternalComponentsFactory::BACKOFF_NORMAL};
+  EngineComponentsFactory::Switches factory_switches = {
+      EngineComponentsFactory::ENCRYPTION_KEYSTORE,
+      EngineComponentsFactory::BACKOFF_NORMAL};
 
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
     factory_switches.backoff_override =
-        InternalComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
+        EngineComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
   if (cl->HasSwitch(switches::kSyncEnableGetUpdateAvoidance)) {
     factory_switches.pre_commit_updates_policy =
-        InternalComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
+        EngineComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
 
   std::map<ModelType, int64_t> invalidation_versions;
@@ -120,8 +120,8 @@ void SyncBackendHostImpl::Initialize(
       std::move(sync_manager_factory), delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
-      std::unique_ptr<InternalComponentsFactory>(
-          new InternalComponentsFactoryImpl(factory_switches)),
+      std::unique_ptr<EngineComponentsFactory>(
+          new EngineComponentsFactoryImpl(factory_switches)),
       unrecoverable_error_handler, report_unrecoverable_error_function,
       std::move(saved_nigori_state), invalidation_versions));
   InitCore(std::move(init_opts));

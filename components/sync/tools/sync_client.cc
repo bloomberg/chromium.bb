@@ -34,12 +34,12 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/internal_components_factory_impl.h"
-#include "components/sync/core/sync_manager.h"
-#include "components/sync/core/sync_manager_factory.h"
+#include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/passive_model_worker.h"
+#include "components/sync/engine/sync_manager.h"
+#include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_event_handler.h"
 #include "components/sync/syncable/base_node.h"
@@ -409,9 +409,9 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kRestoredKeyForBootstrapping[] = "";
   const char kRestoredKeystoreKeyForBootstrapping[] = "";
   NullEncryptor null_encryptor;
-  InternalComponentsFactoryImpl::Switches factory_switches = {
-      InternalComponentsFactory::ENCRYPTION_KEYSTORE,
-      InternalComponentsFactory::BACKOFF_NORMAL};
+  EngineComponentsFactoryImpl::Switches factory_switches = {
+      EngineComponentsFactory::ENCRYPTION_KEYSTORE,
+      EngineComponentsFactory::BACKOFF_NORMAL};
   CancelationSignal scm_cancelation_signal;
 
   SyncManager::InitArgs args;
@@ -427,8 +427,8 @@ int SyncClientMain(int argc, char* argv[]) {
   args.restored_key_for_bootstrapping = kRestoredKeyForBootstrapping;
   args.restored_keystore_key_for_bootstrapping =
       kRestoredKeystoreKeyForBootstrapping;
-  args.internal_components_factory.reset(
-      new InternalComponentsFactoryImpl(factory_switches));
+  args.engine_components_factory.reset(
+      new EngineComponentsFactoryImpl(factory_switches));
   args.encryptor = &null_encryptor;
   args.unrecoverable_error_handler = WeakHandle<UnrecoverableErrorHandler>();
   args.report_unrecoverable_error_function =

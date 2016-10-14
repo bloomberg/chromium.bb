@@ -16,7 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/model_type_processor.h"
+#include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 #include "components/sync/engine_impl/worker_entity_tracker.h"

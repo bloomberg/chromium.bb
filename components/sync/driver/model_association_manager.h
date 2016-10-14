@@ -12,8 +12,8 @@
 #include "base/timer/timer.h"
 
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/data_type_association_stats.h"
 #include "components/sync/driver/data_type_manager.h"
+#include "components/sync/engine/data_type_association_stats.h"
 
 namespace syncer {
 

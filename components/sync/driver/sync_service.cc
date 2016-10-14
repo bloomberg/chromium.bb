@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/sync_service.h"
 
-#include "components/sync/core/sync_manager.h"
+#include "components/sync/engine/sync_manager.h"
 
 namespace syncer {
 

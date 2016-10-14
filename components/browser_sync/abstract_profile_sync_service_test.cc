@@ -14,10 +14,10 @@
 #include "base/run_loop.h"
 #include "components/browser_sync/test_http_bridge_factory.h"
 #include "components/browser_sync/test_profile_sync_service.h"
-#include "components/sync/core/test/sync_manager_factory_for_profile_sync_test.h"
-#include "components/sync/core/test/test_internal_components_factory.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
+#include "components/sync/engine/sync_manager_factory_for_profile_sync_test.h"
+#include "components/sync/engine/test_engine_components_factory.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -96,15 +96,15 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   options->credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   options->restored_key_for_bootstrapping.clear();
 
-  // It'd be nice if we avoided creating the InternalComponentsFactory in the
+  // It'd be nice if we avoided creating the EngineComponentsFactory in the
   // first place, but SyncBackendHost will have created one by now so we must
   // free it. Grab the switches to pass on first.
-  syncer::InternalComponentsFactory::Switches factory_switches =
-      options->internal_components_factory->GetSwitches();
-  options->internal_components_factory.reset(
-      new syncer::TestInternalComponentsFactory(
-          factory_switches,
-          syncer::InternalComponentsFactory::STORAGE_IN_MEMORY, nullptr));
+  syncer::EngineComponentsFactory::Switches factory_switches =
+      options->engine_components_factory->GetSwitches();
+  options->engine_components_factory.reset(
+      new syncer::TestEngineComponentsFactory(
+          factory_switches, syncer::EngineComponentsFactory::STORAGE_IN_MEMORY,
+          nullptr));
 
   SyncBackendHostImpl::InitCore(std::move(options));
 }

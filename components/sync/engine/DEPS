@@ -1,8 +1,8 @@
 include_rules = [
   "+components/sync/base",
-  # TODO(crbug.com/631271): Core should be split into driver/engine/model.
-  "+components/sync/core",
   "+components/sync/engine_impl",
   "+components/sync/model",
   "+components/sync/protocol",
+  "+components/sync/syncable",
+  "+components/sync/test",
 ]

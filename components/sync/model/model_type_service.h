@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync/core/activation_context.h"
+#include "components/sync/engine/activation_context.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/entity_change.h"

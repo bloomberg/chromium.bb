@@ -9,8 +9,8 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/core/sync_encryption_handler.h"
-#include "components/sync/core/sync_manager.h"
+#include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/engine/sync_manager.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
 namespace sync_pb {

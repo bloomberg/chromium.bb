@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/connection_status.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/engine/connection_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class GoogleServiceAuthError;

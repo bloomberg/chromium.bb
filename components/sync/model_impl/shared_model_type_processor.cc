@@ -12,9 +12,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/core/activation_context.h"
-#include "components/sync/core/model_type_processor_proxy.h"
+#include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/syncable/syncable_util.h"
 

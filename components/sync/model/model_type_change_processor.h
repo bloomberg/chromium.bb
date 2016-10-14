@@ -9,7 +9,7 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/activation_context.h"
+#include "components/sync/engine/activation_context.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/sync_error_factory.h"

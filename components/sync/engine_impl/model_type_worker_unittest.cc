@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/fake_encryptor.h"
-#include "components/sync/core/model_type_processor.h"
+#include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/syncable/syncable_util.h"

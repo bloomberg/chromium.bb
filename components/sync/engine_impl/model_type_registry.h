@@ -14,11 +14,11 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/model_type_connector.h"
-#include "components/sync/core/non_blocking_sync_common.h"
-#include "components/sync/core/sync_encryption_handler.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/model_safe_worker.h"
+#include "components/sync/engine/model_type_connector.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine_impl/nudge_handler.h"
 
 namespace syncer {
