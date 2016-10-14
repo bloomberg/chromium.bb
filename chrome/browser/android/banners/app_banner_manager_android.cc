@@ -199,7 +199,6 @@ void AppBannerManagerAndroid::ShowBanner() {
             contents, GetWeakPtr(), app_title_,
             CreateShortcutInfo(manifest_url_, manifest_, icon_url_),
             std::move(icon_), event_request_id(),
-            ChromeWebApkHost::AreWebApkEnabled(),
             webapk::INSTALL_SOURCE_BANNER)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);

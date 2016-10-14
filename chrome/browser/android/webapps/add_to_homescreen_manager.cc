@@ -173,8 +173,7 @@ void AddToHomescreenManager::CreateInfoBarForWebApk(const ShortcutInfo& info,
   banners::AppBannerInfoBarDelegateAndroid::Create(
       data_fetcher_->web_contents(), nullptr, info.user_title,
       base::MakeUnique<ShortcutInfo>(info), base::MakeUnique<SkBitmap>(icon),
-      -1 /* event_request_id */, true /* is_webapk */,
-      webapk::INSTALL_SOURCE_MENU);
+      -1 /* event_request_id */, webapk::INSTALL_SOURCE_MENU);
 }
 
 SkBitmap AddToHomescreenManager::FinalizeLauncherIconInBackground(

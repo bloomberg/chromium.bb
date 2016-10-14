@@ -39,7 +39,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       std::unique_ptr<ShortcutInfo> info,
       std::unique_ptr<SkBitmap> icon,
       int event_request_id,
-      bool is_webapk,
       webapk::InstallSource webapk_install_source);
 
   // Creates an infobar and delegate for promoting the installation of an
@@ -73,6 +72,9 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   bool Accept() override;
 
+  // Update the AppBannerInfoBarAndroid with installed WebAPK's information.
+  void UpdateStateForInstalledWebAPK(const std::string& webapk_package_name);
+
  private:
   // The states of a WebAPK installation, where the infobar is displayed during
   // the entire installation process. This state is used to correctly record
@@ -91,6 +93,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       std::unique_ptr<SkBitmap> icon,
       int event_request_id,
       bool is_webapk,
+      bool is_webapk_already_installed,
       webapk::InstallSource webapk_install_source);
 
   // Delegate for promoting an Android app.
@@ -106,16 +109,15 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   bool AcceptNativeApp(content::WebContents* web_contents);
   bool AcceptWebApp(content::WebContents* web_contents);
 
-  // When user accepts to install a WebAPK, this function sends a request
-  // to the WebAPK Server to create a WebAPK and install it. It returns
-  // false to prevent infobar from disappearing when installation starts.
-  // When user clicks the Open button after the intallation is compelete, this
-  // function launches the installed WebAPK and returns true.
+  // Called when the OK button on a WebAPK infobar is pressed. If the WebAPK is
+  // already installed, opens it; otherwise, installs it. Returns whether the
+  // infobar should be closed as a result of the button press.
   bool AcceptWebApk(content::WebContents* web_contents);
 
   void SendBannerAccepted(content::WebContents* web_contents,
                           const std::string& platform);
-  void OnWebApkInstallFinished(bool success, const std::string& webapk_package);
+  void OnWebApkInstallFinished(bool success,
+                               const std::string& webapk_package_name);
   void TrackWebApkInstallationDismissEvents(InstallState install_state);
 
   // ConfirmInfoBarDelegate:
@@ -143,8 +145,8 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   int event_request_id_;
   bool has_user_interaction_;
 
-  std::string webapk_package_name_;
   bool is_webapk_;
+  bool is_webapk_already_installed_;
 
   // Indicates the current state of a WebAPK installation.
   InstallState install_state_;
