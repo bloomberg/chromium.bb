@@ -133,6 +133,10 @@ bool SecurityStateBubbleDecoration::AnimatingOut() const {
   return !animation_.IsShowing() && animation_.GetCurrentValue() != 0.0;
 }
 
+void SecurityStateBubbleDecoration::ResetAnimation() {
+  animation_.Reset();
+}
+
 //////////////////////////////////////////////////////////////////
 // SecurityStateBubbleDecoration::LocationBarDecoration:
 

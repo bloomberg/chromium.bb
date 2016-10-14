@@ -55,6 +55,9 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   // Returns true if the chip is in the process of animating out.
   bool AnimatingOut() const;
 
+  // Resets the animation.
+  void ResetAnimation();
+
   // LocationBarDecoration:
   CGFloat GetWidthForSpace(CGFloat width) override;
   void DrawInFrame(NSRect frame, NSView* control_view) override;

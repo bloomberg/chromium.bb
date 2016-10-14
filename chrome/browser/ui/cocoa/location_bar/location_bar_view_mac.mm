@@ -530,6 +530,9 @@ void LocationBarViewMac::Layout() {
     }
   }
 
+  if (!security_state_bubble_decoration_->IsVisible())
+    security_state_bubble_decoration_->ResetAnimation();
+
   // These need to change anytime the layout changes.
   // TODO(shess): Anytime the field editor might have changed, the
   // cursor rects almost certainly should have changed.  The tooltips
@@ -891,7 +894,7 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
         (is_new_level_secure && should_animate_secure_verbose_) ||
         (!is_new_level_secure && should_animate_nonsecure_verbose_);
 
-    if (security_state_bubble_decoration_->HasAnimatedOut())
+    if (!tab_changed && security_state_bubble_decoration_->HasAnimatedOut())
       security_state_bubble_decoration_->AnimateIn(false);
     else if (tab_changed || !is_animated)
       security_state_bubble_decoration_->ShowWithoutAnimation();
