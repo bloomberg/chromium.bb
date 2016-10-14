@@ -335,7 +335,8 @@ class EBuild(object):
   # A structure to hold computed values of CROS_WORKON_*.
   CrosWorkonVars = collections.namedtuple(
       'CrosWorkonVars',
-      ('localname', 'project', 'srcpath', 'subdir', 'always_live'))
+      ('localname', 'project', 'srcpath', 'subdir', 'always_live', 'commit',
+       'rev_subdirs'))
 
   @classmethod
   def _Print(cls, message):
@@ -467,6 +468,11 @@ class EBuild(object):
     self.is_blacklisted = False
     self.has_test = False
     self._ReadEBuild(path)
+    try:
+      self.cros_workon_vars = EBuild.GetCrosWorkonVars(
+          self.ebuild_path, self.pkgname)
+    except EbuildFormatIncorrectException:
+      self.cros_workon_vars = None
 
   @staticmethod
   def Classify(ebuild_path):
@@ -513,6 +519,8 @@ class EBuild(object):
       * CROS_WORKON_SUBDIR
       * CROS_WORKON_SRCPATH
       * CROS_WORKON_ALWAYS_LIVE
+      * CROS_WORKON_COMMIT
+      * CROS_WORKON_SUBDIRS_TO_REV
 
     Args:
       ebuild_path: Path to the ebuild file (e.g: platform2-9999.ebuild).
@@ -527,6 +535,8 @@ class EBuild(object):
         'CROS_WORKON_SRCPATH',
         'CROS_WORKON_SUBDIR',
         'CROS_WORKON_ALWAYS_LIVE',
+        'CROS_WORKON_COMMIT',
+        'CROS_WORKON_SUBDIRS_TO_REV',
     )
     env = {
         'CROS_WORKON_LOCALNAME': pkg_name,
@@ -557,8 +567,16 @@ class EBuild(object):
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
     live = settings['CROS_WORKON_ALWAYS_LIVE']
+    commit = settings.get('CROS_WORKON_COMMIT')
+    rev_subdirs = settings.get('CROS_WORKON_SUBDIRS_TO_REV')
+    if (len(projects) > 1 or len(srcpaths) > 1) and rev_subdirs:
+      raise EbuildFormatIncorrectException(
+          ebuild_path,
+          'Must not define CROS_WORKON_SUBDIRS_TO_REV if defining multiple '
+          'cros_workon projects or source paths.')
 
-    return EBuild.CrosWorkonVars(localnames, projects, srcpaths, subdirs, live)
+    return EBuild.CrosWorkonVars(localnames, projects, srcpaths, subdirs, live,
+                                 commit, rev_subdirs)
 
   def GetSourcePath(self, srcroot, manifest):
     """Get the project and path for this ebuild.
@@ -566,8 +584,9 @@ class EBuild(object):
     The path is guaranteed to exist, be a directory, and be absolute.
     """
 
-    localnames, projects, srcpaths, subdirs, always_live = (
-        EBuild.GetCrosWorkonVars(self._unstable_ebuild_path, self.pkgname))
+    # pylint: disable-msg=unpacking-non-sequence
+    localnames, projects, srcpaths, subdirs, always_live, _, _ = (
+        self.cros_workon_vars)
 
     if always_live:
       return [], []
@@ -738,7 +757,8 @@ class EBuild(object):
     else:
       return '"%s"' % unformatted_list[0]
 
-  def RevWorkOnEBuild(self, srcroot, manifest, redirect_file=None):
+  def RevWorkOnEBuild(self, srcroot, manifest, redirect_file=None,
+                      enforce_subdir_rev=False):
     """Revs a workon ebuild given the git commit hash.
 
     By default this class overwrites a new ebuild given the normal
@@ -752,6 +772,8 @@ class EBuild(object):
       redirect_file: Optional file to write the new ebuild.  By default
         it is written using the standard rev'ing logic.  This file must be
         opened and closed by the caller.
+      enforce_subdir_rev: Optional Boolean, determines whether we enforce the
+                          CROS_WORKON_SUBDIRS_TO_REV logic. Default: False.
 
     Returns:
       If the revved package is different than the old ebuild, return the full
@@ -774,16 +796,22 @@ class EBuild(object):
     new_stable_ebuild_path = '%s-%s.ebuild' % (
         self._ebuild_path_no_version, new_version)
 
-    self._Print('Creating new stable ebuild %s' % new_stable_ebuild_path)
-    if not os.path.exists(self._unstable_ebuild_path):
-      cros_build_lib.Die('Missing unstable ebuild: %s' %
-                         self._unstable_ebuild_path)
-
     _, srcdirs = self.GetSourcePath(srcroot, manifest)
     commit_ids = map(self.GetCommitId, srcdirs)
     tree_ids = map(self.GetTreeId, srcdirs)
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
+
+    if enforce_subdir_rev and not self._ShouldRevEBuild(commit_ids, srcdirs):
+      self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
+                  'been modified.')
+      return
+
+    self._Print('Creating new stable ebuild %s' % new_stable_ebuild_path)
+    if not os.path.exists(self._unstable_ebuild_path):
+      cros_build_lib.Die('Missing unstable ebuild: %s' %
+                         self._unstable_ebuild_path)
+
     self.MarkAsStable(self._unstable_ebuild_path, new_stable_ebuild_path,
                       variables, redirect_file)
 
@@ -800,6 +828,49 @@ class EBuild(object):
         self._RunGit(self.overlay, ['rm', '-f', old_ebuild_path])
 
       return '%s-%s' % (self.package, new_version)
+
+  def _ShouldRevEBuild(self, commit_ids, srcdirs):
+    """Determine whether we should attempt to rev |ebuild|.
+
+    If CROS_WORKON_SUBDIRS_TO_REV is not defined for |ebuild|, this function
+    trivially returns True.
+
+    If CROS_WORKON_SUBDIRS_TO_REV is defined, this function returns True if
+    there are commits ahead of CROS_WORKON_COMMIT that have affected one of
+    those directories.
+    """
+    if not self.cros_workon_vars:
+      return True
+    if not self.cros_workon_vars.rev_subdirs:
+      return True
+    if not self.cros_workon_vars.commit:
+      return True
+    if len(commit_ids) != 1:
+      return True
+    if len(srcdirs) != 1:
+      return True
+
+    current_commit_hash = commit_ids[0]
+    stable_commit_hash = self.cros_workon_vars.commit
+    srcdir = srcdirs[0]
+    logrange = '%s..%s' % (stable_commit_hash, current_commit_hash)
+    paths = self.cros_workon_vars.rev_subdirs
+
+    try:
+      output = EBuild._RunGit(
+          srcdir, ['log', '--oneline', logrange, '--', paths])
+    except cros_build_lib.RunCommandError as ex:
+      logging.warning(str(ex))
+      return True
+
+    if output:
+      logging.info('Determined that one of the rev_subdirs %s of ebuild %s was '
+                   'touched.', paths, self.pkgname)
+      return True
+    else:
+      logging.info('Determined that none of the rev_subdirs %s of ebuild %s '
+                   'was touched.', paths, self.pkgname)
+      return False
 
   @classmethod
   def GitRepoHasChanges(cls, directory):
@@ -1287,8 +1358,8 @@ def GetWorkonProjectMap(overlay, subdirectories):
     base_dir = os.path.join(overlay, subdir)
     for ebuild in WorkonEBuildGeneratorForDirectory(base_dir):
       full_path = ebuild.ebuild_path
-      _, projects, srcpaths, _, _ = EBuild.GetCrosWorkonVars(full_path,
-                                                             ebuild.pkgname)
+      _, projects, srcpaths, _, _, _, _ = EBuild.GetCrosWorkonVars(
+          full_path, ebuild.pkgname)
       relpath = os.path.relpath(full_path, start=overlay)
       yield relpath, projects, srcpaths
 

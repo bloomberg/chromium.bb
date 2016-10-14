@@ -242,6 +242,8 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     """
     self.PatchObject(cros_build_lib, 'RunCommand',
                      side_effect=Exception('should not be called'))
+    self.PatchObject(portage_util.EBuild, 'GetCrosWorkonVars',
+                     return_value=None)
     git_mock = self.PatchObject(git, 'RunGit')
     commit_mock = self.PatchObject(portage_util.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)

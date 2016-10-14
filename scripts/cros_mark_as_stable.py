@@ -305,7 +305,8 @@ def main(argv):
       messages = []
       for ebuild in ebuilds:
         if options.verbose:
-          logging.info('Working on %s', ebuild.package)
+          logging.info('Working on %s, info %s', ebuild.package,
+                       ebuild.cros_workon_vars)
         try:
           new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest)
           if new_package:
