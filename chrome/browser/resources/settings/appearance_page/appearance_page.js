@@ -101,6 +101,9 @@ Polymer({
     pageVisibility: Object,
   },
 
+  /** @private {string} */
+  themeUrl_: '',
+
   observers: [
     'themeChanged_(prefs.extensions.theme.id.value, useSystemTheme_)',
 
@@ -143,10 +146,8 @@ Polymer({
   },
 
   /** @private */
-  openThemesGallery_: function() {
-    // TODO(dbeam): open the theme detail page when a custom theme is installed
-    // (or otherwise handle the [//] open in new icon in a better way).
-    window.open(loadTimeData.getString('themesGalleryUrl'));
+  onThemesTap_: function() {
+    window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
   },
 
 <if expr="chromeos">
@@ -207,9 +208,12 @@ Polymer({
   themeChanged_: function(themeId, useSystemTheme) {
     if (themeId) {
       assert(!useSystemTheme);
+
       this.browserProxy_.getThemeInfo(themeId).then(function(info) {
         this.themeSublabel_ = info.name;
       }.bind(this));
+
+      this.themeUrl_ = `https://chrome.google.com/webstore/detail/${themeId}`;
       return;
     }
 
@@ -221,6 +225,7 @@ Polymer({
     i18nId = 'chooseFromWebStore';
 </if>
     this.themeSublabel_ = this.i18n(i18nId);
+    this.themeUrl_ = '';
   },
 
   /**

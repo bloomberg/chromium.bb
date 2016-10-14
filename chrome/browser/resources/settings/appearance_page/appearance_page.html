@@ -42,13 +42,13 @@
           <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
         <div class="settings-box two-line"
-            hidden="[[!pageVisibility.setTheme]]" actionable>
+            hidden="[[!pageVisibility.setTheme]]">
 </if>
 <if expr="not chromeos">
         <div class="settings-box two-line first"
-            hidden="[[!pageVisibility.setTheme]]" actionable>
+            hidden="[[!pageVisibility.setTheme]]">
 </if>
-          <div class="start two-line" on-tap="openThemesGallery_">
+          <div class="start two-line" on-tap="onThemesTap_" actionable>
             <div class="flex">
               <div>$i18n{themes}</div>
               <div class="secondary">[[themeSublabel_]]</div>
