@@ -820,6 +820,7 @@ source_set("views_unittests_sources") {
     "controls/button/image_button_unittest.cc",
     "controls/button/label_button_unittest.cc",
     "controls/button/menu_button_unittest.cc",
+    "controls/button/toggle_button_unittest.cc",
     "controls/combobox/combobox_unittest.cc",
     "controls/label_unittest.cc",
     "controls/menu/menu_controller_unittest.cc",

@@ -18,6 +18,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -54,6 +55,7 @@ CustomButton* CustomButton::AsCustomButton(views::View* view) {
         !strcmp(classname, ImageButton::kViewClassName) ||
         !strcmp(classname, LabelButton::kViewClassName) ||
         !strcmp(classname, RadioButton::kViewClassName) ||
+        !strcmp(classname, ToggleButton::kViewClassName) ||
         !strcmp(classname, MenuButton::kViewClassName)) {
       return static_cast<CustomButton*>(view);
     }

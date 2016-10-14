@@ -22,6 +22,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
@@ -136,7 +137,7 @@ class CustomButtonTest : public ViewsTestBase {
 
  private:
   std::unique_ptr<Widget> widget_;
-  TestCustomButton* button_;
+  TestCustomButton* button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButtonTest);
 };
@@ -334,6 +335,9 @@ TEST_F(CustomButtonTest, AsCustomButton) {
 
   MenuButton menu_button(text, NULL, false);
   EXPECT_TRUE(CustomButton::AsCustomButton(&menu_button));
+
+  ToggleButton toggle_button(NULL);
+  EXPECT_TRUE(CustomButton::AsCustomButton(&toggle_button));
 
   Label label;
   EXPECT_FALSE(CustomButton::AsCustomButton(&label));

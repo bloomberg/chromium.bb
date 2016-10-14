@@ -15,6 +15,8 @@ namespace views {
 // slider.
 class VIEWS_EXPORT ToggleButton : public CustomButton {
  public:
+  static const char kViewClassName[];
+
   explicit ToggleButton(ButtonListener* listener);
   ~ToggleButton() override;
 
@@ -22,11 +24,24 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   bool is_on() const { return is_on_; }
 
  private:
+  friend class TestToggleButton;
+  class ThumbView;
+
+  // Calculates the bounding box for the thumb (the circle).
+  gfx::Rect GetThumbBounds() const;
+
+  // Updates position and color of the thumb.
+  void UpdateThumb();
+
   // CustomButton:
   gfx::Size GetPreferredSize() const override;
+  const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void NotifyClick(const ui::Event& event) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropHighlight() const override;
@@ -34,11 +49,9 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // Calculates the bounding box for the thumb (the circle).
-  gfx::Rect GetThumbBounds() const;
-
   bool is_on_;
   gfx::SlideAnimation slide_animation_;
+  std::unique_ptr<ThumbView> thumb_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ToggleButton);
 };
