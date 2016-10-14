@@ -1279,6 +1279,3 @@ crbug.com/655458 imported/wpt/workers/semantics/xhr/004.html [ Failure Timeout ]
 
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Failure Timeout ]
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ Crash Failure Timeout ]
-
-crbug.com/650456 virtual/gpu-rasterization/fast/images/exif-orientation-height-image-document.html [ NeedsRebaseline ]
-crbug.com/650456 virtual/gpu-rasterization/fast/images/image-zoom-to-25.html [ NeedsRebaseline ]
