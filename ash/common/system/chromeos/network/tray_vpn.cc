@@ -43,14 +43,16 @@ class VpnDefaultView : public TrayItemMore,
   }
 
   static bool ShouldShow() {
+    VPNDelegate* vpn_delegate =
+        WmShell::Get()->system_tray_delegate()->GetVPNDelegate();
+    // Tests may not have a VPN delegate. They should not show the VPN entry.
+    if (!vpn_delegate)
+      return false;
+
     // Show the VPN entry in the ash tray bubble if at least one third-party VPN
     // provider is installed.
-    if (WmShell::Get()
-            ->system_tray_delegate()
-            ->GetVPNDelegate()
-            ->HaveThirdPartyVPNProviders()) {
+    if (vpn_delegate->HaveThirdPartyVPNProviders())
       return true;
-    }
 
     // Also show the VPN entry if at least one VPN network is configured.
     NetworkStateHandler* const handler =
