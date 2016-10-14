@@ -49,10 +49,11 @@ class StyleSheetContents;
 // features are used and thus when it's safe to remove or change them.
 //
 // The Chromium Content layer controls what is done with this data.
-// For instance, in Google Chrome, these counts are submitted
-// anonymously through the Histogram recording system in Chrome
-// for users who opt-in to "Usage Statistics" submission
-// during their install of Google Chrome:
+//
+// For instance, in Google Chrome, these counts are submitted anonymously
+// through the UMA histogram recording system in Chrome for users who have the
+// "Automatically send usage statistics and crash reports to Google" setting
+// enabled:
 // http://www.google.com/chrome/intl/en/privacy.html
 
 class CORE_EXPORT UseCounter {
