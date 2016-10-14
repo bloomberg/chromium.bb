@@ -110,22 +110,30 @@ class CleanUpStage(generic_stages.BuilderStage):
       buildbucket_client = buildbucket_lib.BuildbucketClient(
           service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
 
-      # Search for started slave builds in the chromiumos and chromeos.
-      builds = buildbucket_client.SearchAllBuilds(
-          self._run.options.test_tryjob,
-          self._run.options.debug,
-          buckets=[constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
-                   constants.CHROMEOS_BUILDBUCKET_BUCKET],
-          tags=['build_type:%s' % self._run.config.build_type,
-                'master:False',],
-          status=buildbucket_lib.STARTED_STATUS)
+      statuses = [buildbucket_lib.SCHEDULED_STATUS,
+                  buildbucket_lib.STARTED_STATUS]
+      buildbucket_ids = []
+      # Search for scheduled/started slave builds in chromiumos waterfall
+      # and chromeos waterfall.
+      for status in statuses:
+        builds = buildbucket_client.SearchAllBuilds(
+            self._run.options.test_tryjob,
+            self._run.options.debug,
+            buckets=[constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
+                     constants.CHROMEOS_BUILDBUCKET_BUCKET],
+            tags=['build_type:%s' % self._run.config.build_type,
+                  'master:False',],
+            status=status)
 
-      buildbucket_ids = buildbucket_lib.ExtractBuildIds(builds)
+        ids = buildbucket_lib.ExtractBuildIds(builds)
+        if ids:
+          logging.info('Found builds %s in status %s.', ids, status)
+          buildbucket_ids.extend(ids)
 
       if buildbucket_ids:
-        logging.info('Going to cancel buildbucket_ids: %s',
-                     str(buildbucket_ids))
-        # TODO: set dryrun to True to prevent it from cancelling builds.
+        logging.info('Going to cancel buildbucket_ids: %s', buildbucket_ids)
+        # TODO: set dryrun to True for now to prevent it from cancelling builds,
+        # should set it back to options.debug after confirming it works on prod.
         cancel_content = buildbucket_client.CancelBatchBuildsRequest(
             buildbucket_ids,
             self._run.options.test_tryjob,

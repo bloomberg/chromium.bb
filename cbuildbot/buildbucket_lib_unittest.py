@@ -159,7 +159,9 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         False,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
-        status=buildbucket_lib.COMPLETED_STATUS)
+        status=buildbucket_lib.COMPLETED_STATUS,
+        start_cursor='start_cursor',
+        max_builds=10)
 
     build_ids = buildbucket_lib.GetBuildIds(result_content)
     self.assertTrue(buildbucket_id_1 in build_ids and
@@ -171,83 +173,83 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         True,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,
                  constants.CHROMEOS_BUILDBUCKET_BUCKET,],
-        tags=['build_type:tryjob'])
+        tags=['build_type:tryjob'],
+        max_builds=100)
     self.assertEqual(result_content_2, None)
 
-  def testSearchAllBuilds(self):
-    """Test SearchAllBuilds."""
-    buildbucket_id_1 = 'test_buildbucket_id_1'
-    buildbucket_id_2 = 'test_buildbucket_id_2'
+  def _MockSearchContent(self, *args, **kwargs):
+    """Mock searched content."""
+    dryrun = args[1]
+    if dryrun:
+      return
 
-    # Test results with next_cursor.
-    content = json.dumps({
-        'next_cursor': 'next_cursor',
+    next_cursor = kwargs.get('next_cursor', 'next_cursor')
+    max_builds = kwargs.get('max_builds', 0)
+    builds = [{'status': 'COMPLETE', 'id': str(i)}
+              for i in range(max_builds)]
+    content_dict = {
         'kind': 'kind',
         'etag': 'etag',
-        'builds': [{
-            'status': 'COMPLETED',
-            'id': buildbucket_id_1,
-        }, {
-            'status': 'COMPLETED',
-            'id': buildbucket_id_2,
-        }],
-    })
-    self.mock_http.request.return_value = (self.success_response, content)
+        'builds': builds
+    }
 
-    all_builds = self.client.SearchAllBuilds(
+    if next_cursor:
+      content_dict.update({'next_cursor': next_cursor})
+
+    return content_dict
+
+  def _MockSearchContentWithCursor(self, *args, **kwargs):
+    """Mock searched content with next_cursor."""
+    kwargs.setdefault('next_cursor', 'next_cursor')
+    return self._MockSearchContent(*args, **kwargs)
+
+  def _SearchAllBuildsWithCursor(self, limit):
+    """Test for SearchAllBuildsWithCursor."""
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     'SearchBuildsRequest',
+                     side_effect=self._MockSearchContentWithCursor)
+
+    return self.client.SearchAllBuilds(
         False,
         False,
-        limit=1,
+        limit=limit,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
         status=buildbucket_lib.COMPLETED_STATUS)
-    self.assertEqual(len(all_builds), 1)
 
-    all_builds = self.client.SearchAllBuilds(
-        False,
-        False,
-        limit=3,
-        buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
-        tags=['build_type:tryjob', 'bot_id:build265-m2'])
-    self.assertEqual(len(all_builds), 3)
+  def testSearchAllBuildsWithCursor(self):
+    """Test SearchAllBuilds with next_cursor."""
 
-    all_builds = self.client.SearchAllBuilds(
-        False,
-        False,
-        limit=4,
-        buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
-        tags=['build_type:tryjob',],
-        status=buildbucket_lib.COMPLETED_STATUS)
-    self.assertEqual(len(all_builds), 4)
+    for limit in (1, 2, 5, 100, 101, 150, 200):
+      all_builds = self._SearchAllBuildsWithCursor(limit)
+      self.assertEqual(len(all_builds), limit)
 
-    # Test results without next_cursor.
-    content = json.dumps({
-        'kind': 'kind',
-        'etag': 'etag',
-        'builds': [{
-            'bucket': 'master.chromiumios.tryserver',
-            'status': 'COMPLETED',
-            'id': buildbucket_id_1,
-        }, {
-            'bucket': 'master.chromiumios.tryserver',
-            'status': 'COMPLETED',
-            'id': buildbucket_id_2,
-        }],
-    })
-    self.mock_http.request.return_value = (self.success_response, content)
+  def testSearchAllBuildsWithoutCursor(self):
+    """Test SearchAllBuilds without next_cursor."""
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     'SearchBuildsRequest',
+                     side_effect=self._MockSearchContent)
 
-    all_builds = self.client.SearchAllBuilds(False, False)
+    all_builds = self.client.SearchAllBuilds(False, False, limit=2)
     self.assertEqual(len(all_builds), 2)
 
-    content = json.dumps({
+    max_builds = 5
+    builds = [{'status': 'COMPLETE', 'id': str(i)}
+              for i in range(max_builds)]
+    content_dict = {
         'kind': 'kind',
         'etag': 'etag',
-    })
-    self.mock_http.request.return_value = (self.success_response, content)
+        'builds': builds
+    }
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     'SearchBuildsRequest', return_value=content_dict)
 
-    all_builds = self.client.SearchAllBuilds(
-        False, False)
-    self.assertEqual(len(all_builds), 0)
+    all_builds = self.client.SearchAllBuilds(False, False)
+    self.assertEqual(len(all_builds), max_builds)
+
+    all_builds = self.client.SearchAllBuilds(False, False, limit=50)
+    self.assertEqual(len(all_builds), max_builds)
+
 
 class GetAttributeTest(cros_test_lib.MockTestCase):
   """Test cases for getting attributes."""

@@ -37,7 +37,13 @@ COMPLETED_STATUS = 'COMPLETED'
 
 STATUS_LIST = (STARTED_STATUS, SCHEDULED_STATUS, COMPLETED_STATUS)
 
-SEARCH_LIMIT_COUNT = 50
+# Default limit for SearchAllBuilds.
+SEARCH_LIMIT_DEFAULT = 100
+# Default limit for max_builds in Buildbucket search requests,
+# max_builds cannot be larger than 100 in Buildbucket search requests
+MAX_BUILDS_LIMIT = 100
+# Default max_builds number
+MAX_BUILDS_DEFAULT = 10
 
 WATERFALL_BUCKET_MAP = {
     constants.WATERFALL_INTERNAL:
@@ -196,7 +202,8 @@ class BuildbucketClient(object):
     return self.SendBuildbucketRequest(url, POST_METHOD, body, dryrun)
 
   def SearchBuildsRequest(self, testjob, dryrun, buckets=None, tags=None,
-                          status=None):
+                          status=None, start_cursor=None,
+                          max_builds=MAX_BUILDS_DEFAULT):
     """Send Search requests to the Buildbucket server.
 
     Args:
@@ -205,6 +212,8 @@ class BuildbucketClient(object):
       buckets: Search for builds in the buckets (string list).
       tags: Search for builds containing all the tags (string list).
       status: Search for builds in this status (string).
+      start_cursor: Search for builds with this start cursor (string).
+      max_builds: Maximum number of builds to return in this request (int).
 
     Returns:
       See return type of SendBuildbucketRequest.
@@ -222,6 +231,13 @@ class BuildbucketClient(object):
       if status not in STATUS_LIST:
         raise ValueError('status must be one of %s' % str(STATUS_LIST))
       params.append(('status', status))
+    if start_cursor:
+      params.append(('start_cursor', start_cursor))
+    if max_builds is not None:
+      if max_builds <= 0 or max_builds > MAX_BUILDS_LIMIT:
+        raise ValueError('max_builds must be number in (0, %s]' %
+                         MAX_BUILDS_LIMIT)
+      params.append(('max_builds', max_builds))
 
     params_str = urllib.urlencode(params)
 
@@ -230,8 +246,8 @@ class BuildbucketClient(object):
 
     return self.SendBuildbucketRequest(url, GET_METHOD, None, dryrun)
 
-  def SearchAllBuilds(self, testjob, dryrun, limit=SEARCH_LIMIT_COUNT,
-                      buckets=None, tags=None, status=None,):
+  def SearchAllBuilds(self, testjob, dryrun, limit=SEARCH_LIMIT_DEFAULT,
+                      buckets=None, tags=None, status=None):
     """Search all qualified builds.
 
     Args:
@@ -249,24 +265,33 @@ class BuildbucketClient(object):
     if limit <= 0:
       raise ValueError('limit %s must be greater than 0.')
 
+    next_cursor = None
     all_builds = []
+
     while True:
+      current_limit = limit - len(all_builds)
+      # Do not search for more than MAX_BUILDS_LIMIT builds in one request.
+      max_builds = (MAX_BUILDS_LIMIT if current_limit > MAX_BUILDS_LIMIT
+                    else current_limit)
+
       content = self.SearchBuildsRequest(
-          testjob, dryrun, buckets=buckets, tags=tags, status=status)
+          testjob, dryrun, buckets=buckets, tags=tags, status=status,
+          start_cursor=next_cursor, max_builds=max_builds)
 
       builds = GetNestedAttr(content, ['builds'], default=[])
 
       if not builds:
         logging.debug('No build found.')
         break
-      if len(builds) + len(all_builds) >= limit:
-        all_builds.extend(builds[0:limit - len(all_builds)])
-        logging.info('Reached the search limit %s', limit)
-        break
 
       all_builds.extend(builds)
 
-      if GetNestedAttr(content, ['next_cursor']) is None:
+      if len(all_builds) >= limit:
+        logging.info('Reached the search limit %s', limit)
+        break
+
+      next_cursor = GetNestedAttr(content, ['next_cursor'])
+      if next_cursor is None:
         logging.debug('No next_cursor in the response.')
         break
 
