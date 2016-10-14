@@ -1530,8 +1530,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private void addDownloadItemToList(List<DownloadItem> list, String guid, String displayName,
             String filepath, String url, String mimeType, long startTimestamp, long totalBytes,
             boolean hasBeenExternallyRemoved) {
+        // Remap the MIME type first.
+        File file = new File(filepath);
+        String newMimeType =
+                ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, file.getName());
         list.add(createDownloadItem(
-                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes,
+                guid, displayName, filepath, url, newMimeType, startTimestamp, totalBytes,
                 hasBeenExternallyRemoved));
     }
 
