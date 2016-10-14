@@ -50,7 +50,8 @@ class {{union.name}}_Data;
 {%- from "enum_macros.tmpl" import enum_data_decl -%}
 {%- for enum in all_enums %}
 {%-   if enum|is_native_only_kind %}
-using {{enum.name}}_Data = mojo::internal::NativeEnum_Data;
+using {{enum|get_name_for_kind(flatten_nested_kind=True)}}_Data =
+    mojo::internal::NativeEnum_Data;
 {%-   else %}
 {{enum_data_decl(enum)}}
 {%-   endif %}
