@@ -6,6 +6,6 @@
     Constructor(DOMString type, optional BeforeInstallPromptEventInit eventInitDict)
 ] interface BeforeInstallPromptEvent : Event {
     readonly attribute sequence<DOMString> platforms;
-    [CallWith=ScriptState] readonly attribute Promise<DOMString> userChoice;
+    [CallWith=ScriptState] readonly attribute Promise<AppBannerPromptResult> userChoice;
     [CallWith=ScriptState] Promise<void> prompt();
 };
