@@ -188,7 +188,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
                                 bool can_activate_before_deadline) const;
   bool CanBeginMainFrameAndActivateBeforeDeadline(
       const BeginFrameArgs& args,
-      base::TimeDelta bmf_to_activate_estimate) const;
+      base::TimeDelta bmf_to_activate_estimate,
+      base::TimeTicks now) const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
   void BeginImplFrameWithDeadline(const BeginFrameArgs& args);

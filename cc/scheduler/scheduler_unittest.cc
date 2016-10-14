@@ -415,6 +415,7 @@ class SchedulerTest : public testing::Test {
     return fake_external_begin_frame_source_.get();
   }
 
+  void AdvanceAndMissOneFrame();
   void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
   void ImplFrameSkippedAfterLateAck(bool receive_ack_before_deadline);
   void ImplFrameNotSkippedAfterLateAck();
@@ -1282,8 +1283,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
-void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
-    bool expect_send_begin_main_frame) {
+void SchedulerTest::AdvanceAndMissOneFrame() {
   // Impl thread hits deadline before commit finishes.
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
@@ -1300,8 +1300,13 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
   EXPECT_ACTION("ScheduledActionCommit", client_, 3, 5);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 4, 5);
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
-
   client_->Reset();
+}
+
+void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
+    bool expect_send_begin_main_frame) {
+  AdvanceAndMissOneFrame();
+
   scheduler_->SetNeedsBeginMainFrame();
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_SCOPED(AdvanceFrame());
@@ -1312,6 +1317,33 @@ void SchedulerTest::CheckMainFrameSkippedAfterLateCommit(
   EXPECT_TRUE(client_->HasAction("WillBeginImplFrame"));
   EXPECT_EQ(expect_send_begin_main_frame,
             client_->HasAction("ScheduledActionSendBeginMainFrame"));
+}
+
+TEST_F(SchedulerTest, MainFrameNotSkippedAfterLateBeginFrame) {
+  // If a begin frame is delivered extremely late (because the browser has
+  // some contention), make sure that the main frame is not skipped even
+  // if it can activate before the deadline.
+  SetUpScheduler(EXTERNAL_BFS);
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+
+  AdvanceAndMissOneFrame();
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
+  scheduler_->SetNeedsBeginMainFrame();
+
+  // Advance frame and create a begin frame.
+  now_src_->Advance(BeginFrameArgs::DefaultInterval());
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
+
+  // Deliver this begin frame super late.
+  now_src_->Advance(BeginFrameArgs::DefaultInterval() * 100);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+
+  task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
+  EXPECT_EQ(true, scheduler_->MainThreadMissedLastDeadline());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 2, 3);
 }
 
 TEST_F(SchedulerTest, MainFrameSkippedAfterLateCommit) {

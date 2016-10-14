@@ -317,9 +317,11 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   // before the missed frame task runs.
   missed_begin_frame_task_.Cancel();
 
+  base::TimeTicks now = Now();
+
   // Discard missed begin frames if they are too late.
   if (adjusted_args.type == BeginFrameArgs::MISSED &&
-      Now() > adjusted_args.deadline) {
+      now > adjusted_args.deadline) {
     begin_frame_source_->DidFinishFrame(this, 0);
     return;
   }
@@ -379,7 +381,7 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
 
   bool can_activate_before_deadline =
       CanBeginMainFrameAndActivateBeforeDeadline(adjusted_args,
-                                                 bmf_to_activate_estimate);
+                                                 bmf_to_activate_estimate, now);
 
   if (ShouldRecoverMainLatency(adjusted_args, can_activate_before_deadline)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginMainFrameToReduceLatency",
@@ -739,11 +741,11 @@ bool Scheduler::ShouldRecoverImplLatency(
 
 bool Scheduler::CanBeginMainFrameAndActivateBeforeDeadline(
     const BeginFrameArgs& args,
-    base::TimeDelta bmf_to_activate_estimate) const {
+    base::TimeDelta bmf_to_activate_estimate,
+    base::TimeTicks now) const {
   // Check if the main thread computation and commit can be finished before the
   // impl thread's deadline.
-  base::TimeTicks estimated_draw_time =
-      args.frame_time + bmf_to_activate_estimate;
+  base::TimeTicks estimated_draw_time = now + bmf_to_activate_estimate;
 
   return estimated_draw_time < args.deadline;
 }
