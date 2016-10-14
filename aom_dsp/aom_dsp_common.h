@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_DSP_COMMON_H_
-#define AOM_DSP_COMMON_H_
+#ifndef AOM_DSP_AOM_DSP_COMMON_H_
+#define AOM_DSP_AOM_DSP_COMMON_H_
 
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
@@ -89,4 +89,4 @@ static INLINE uint16_t clip_pixel_highbd(int val, int bd) {
 }  // extern "C"
 #endif
 
-#endif  // AOM_DSP_COMMON_H_
+#endif  // AOM_DSP_AOM_DSP_COMMON_H_
