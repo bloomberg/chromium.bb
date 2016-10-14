@@ -313,6 +313,7 @@ class CORE_EXPORT ContentSecurityPolicy
                        const KURL& blockedURL,
                        const Vector<String>& reportEndpoints,
                        const String& header,
+                       ContentSecurityPolicyHeaderType,
                        ViolationType,
                        LocalFrame* = nullptr,
                        RedirectStatus = RedirectStatus::FollowedRedirect,

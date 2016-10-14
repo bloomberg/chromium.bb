@@ -4407,6 +4407,7 @@ interface ScriptProcessorNode : AudioNode
 interface SecurityPolicyViolationEvent : Event
     getter blockedURI
     getter columnNumber
+    getter disposition
     getter documentURI
     getter effectiveDirective
     getter lineNumber

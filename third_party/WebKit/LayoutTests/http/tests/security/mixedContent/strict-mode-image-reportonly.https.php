@@ -27,6 +27,7 @@
                     'violatedDirective': 'block-all-mixed-content',
                     'effectiveDirective': 'block-all-mixed-content',
                     'originalPolicy': 'block-all-mixed-content',
+                    'disposition': 'report',
                     'sourceFile': '',
                     'lineNumber': 0,
                     'columnNumber': 0,

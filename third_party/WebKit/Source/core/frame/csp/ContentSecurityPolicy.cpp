@@ -1055,6 +1055,7 @@ static void gatherSecurityPolicyViolationEventData(
     const KURL& blockedURL,
     const String& header,
     RedirectStatus redirectStatus,
+    ContentSecurityPolicyHeaderType headerType,
     ContentSecurityPolicy::ViolationType violationType,
     int contextLine) {
   if (equalIgnoringCase(effectiveDirective,
@@ -1083,6 +1084,9 @@ static void gatherSecurityPolicyViolationEventData(
   init.setViolatedDirective(directiveText);
   init.setEffectiveDirective(effectiveDirective);
   init.setOriginalPolicy(header);
+  init.setDisposition(headerType == ContentSecurityPolicyHeaderTypeEnforce
+                          ? "enforce"
+                          : "report");
   init.setSourceFile(String());
   init.setLineNumber(contextLine);
   init.setColumnNumber(0);
@@ -1108,6 +1112,7 @@ void ContentSecurityPolicy::reportViolation(
     const KURL& blockedURL,
     const Vector<String>& reportEndpoints,
     const String& header,
+    ContentSecurityPolicyHeaderType headerType,
     ViolationType violationType,
     LocalFrame* contextFrame,
     RedirectStatus redirectStatus,
@@ -1141,7 +1146,7 @@ void ContentSecurityPolicy::reportViolation(
   SecurityPolicyViolationEventInit violationData;
   gatherSecurityPolicyViolationEventData(
       violationData, document, directiveText, effectiveDirective, blockedURL,
-      header, redirectStatus, violationType, contextLine);
+      header, redirectStatus, headerType, violationType, contextLine);
 
   // TODO(mkwst): Obviously, we shouldn't hit this check, as extension-loaded
   // resources should be allowed regardless. We apparently do, however, so
@@ -1169,6 +1174,7 @@ void ContentSecurityPolicy::reportViolation(
   cspReport->setString("effective-directive",
                        violationData.effectiveDirective());
   cspReport->setString("original-policy", violationData.originalPolicy());
+  cspReport->setString("disposition", violationData.disposition());
   cspReport->setString("blocked-uri", violationData.blockedURI());
   if (violationData.lineNumber())
     cspReport->setInteger("line-number", violationData.lineNumber());

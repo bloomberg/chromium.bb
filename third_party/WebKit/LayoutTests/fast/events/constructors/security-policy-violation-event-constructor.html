@@ -21,6 +21,7 @@ shouldBeEmptyString("new SecurityPolicyViolationEvent('eventType').violatedDirec
 shouldBeEmptyString("new SecurityPolicyViolationEvent('eventType').effectiveDirective");
 shouldBeEmptyString("new SecurityPolicyViolationEvent('eventType').originalPolicy");
 shouldBeEmptyString("new SecurityPolicyViolationEvent('eventType').sourceFile");
+shouldBeEqualToString("new SecurityPolicyViolationEvent('eventType').disposition", "enforce");
 shouldBe("new SecurityPolicyViolationEvent('eventType').lineNumber", "0");
 shouldBe("new SecurityPolicyViolationEvent('eventType').columnNumber", "0");
 shouldBe("new SecurityPolicyViolationEvent('eventType').statusCode", "0");
@@ -37,6 +38,9 @@ shouldBeTrue("new SecurityPolicyViolationEvent('eventType', { cancelable: true }
 ["documentURI", "referrer", "blockedURI", "violatedDirective", "effectiveDirective", "originalPolicy", "sourceFile"].forEach(function(member) {
     shouldBeEqualToString("new SecurityPolicyViolationEvent('eventType', { " + member + ": 'foo' })." + member, "foo");
 });
+
+// Enum members throw on unknown initializer values.
+shouldThrow("new SecurityPolicyViolationEvent('eventType', { disposition: 'foo' }).disposition");
 
 // Number members are passed.
 ["lineNumber", "columnNumber", "statusCode"].forEach(function(member) {

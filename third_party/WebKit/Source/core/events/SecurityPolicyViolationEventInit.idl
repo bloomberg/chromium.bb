@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://w3c.github.io/webappsec/specs/content-security-policy/#securitypolicyviolationevent-interface
+// https://w3c.github.io/webappsec-csp/#idl-index
 
 dictionary SecurityPolicyViolationEventInit : EventInit {
     // TODO(foolip): The spec says "documentURL".
@@ -13,6 +13,7 @@ dictionary SecurityPolicyViolationEventInit : EventInit {
     DOMString violatedDirective;
     DOMString effectiveDirective;
     DOMString originalPolicy;
+    SecurityPolicyViolationEventDisposition disposition;
     DOMString sourceFile;
     unsigned short statusCode;
     long      lineNumber;

@@ -97,9 +97,10 @@ void CSPDirectiveList::reportViolation(
       isReportOnly() ? "[Report Only] " + consoleMessage : consoleMessage;
   m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource,
                                                 ErrorMessageLevel, message));
-  m_policy->reportViolation(
-      directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints,
-      m_header, ContentSecurityPolicy::URLViolation, nullptr, redirectStatus);
+  m_policy->reportViolation(directiveText, effectiveDirective, message,
+                            blockedURL, m_reportEndpoints, m_header,
+                            m_headerType, ContentSecurityPolicy::URLViolation,
+                            nullptr, redirectStatus);
 }
 
 void CSPDirectiveList::reportViolationWithFrame(
@@ -113,9 +114,9 @@ void CSPDirectiveList::reportViolationWithFrame(
   m_policy->logToConsole(
       ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message),
       frame);
-  m_policy->reportViolation(directiveText, effectiveDirective, message,
-                            blockedURL, m_reportEndpoints, m_header,
-                            ContentSecurityPolicy::URLViolation, frame);
+  m_policy->reportViolation(
+      directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints,
+      m_header, m_headerType, ContentSecurityPolicy::URLViolation, frame);
 }
 
 void CSPDirectiveList::reportViolationWithLocation(
@@ -132,7 +133,7 @@ void CSPDirectiveList::reportViolationWithLocation(
       SourceLocation::capture(contextURL, contextLine.oneBasedInt(), 0)));
   m_policy->reportViolation(
       directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints,
-      m_header, ContentSecurityPolicy::InlineViolation, nullptr,
+      m_header, m_headerType, ContentSecurityPolicy::InlineViolation, nullptr,
       RedirectStatus::NoRedirect, contextLine.oneBasedInt());
 }
 
@@ -156,7 +157,7 @@ void CSPDirectiveList::reportViolationWithState(
   }
   m_policy->reportViolation(directiveText, effectiveDirective, message,
                             blockedURL, m_reportEndpoints, m_header,
-                            ContentSecurityPolicy::EvalViolation);
+                            m_headerType, ContentSecurityPolicy::EvalViolation);
 }
 
 bool CSPDirectiveList::checkEval(SourceListDirective* directive) const {
@@ -190,12 +191,13 @@ bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const {
 void CSPDirectiveList::reportMixedContent(
     const KURL& mixedURL,
     ResourceRequest::RedirectStatus redirectStatus) const {
-  if (strictMixedContentChecking())
+  if (strictMixedContentChecking()) {
     m_policy->reportViolation(ContentSecurityPolicy::BlockAllMixedContent,
                               ContentSecurityPolicy::BlockAllMixedContent,
                               String(), mixedURL, m_reportEndpoints, m_header,
-                              ContentSecurityPolicy::URLViolation, nullptr,
-                              redirectStatus);
+                              m_headerType, ContentSecurityPolicy::URLViolation,
+                              nullptr, redirectStatus);
+  }
 }
 
 bool CSPDirectiveList::checkSource(

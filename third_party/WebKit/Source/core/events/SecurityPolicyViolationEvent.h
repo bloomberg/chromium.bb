@@ -28,6 +28,7 @@
 
 #include "core/events/Event.h"
 #include "core/events/SecurityPolicyViolationEventInit.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 
 namespace blink {
 
@@ -47,6 +48,7 @@ class SecurityPolicyViolationEvent final : public Event {
   const String& violatedDirective() const { return m_violatedDirective; }
   const String& effectiveDirective() const { return m_effectiveDirective; }
   const String& originalPolicy() const { return m_originalPolicy; }
+  const String& disposition() const;
   const String& sourceFile() const { return m_sourceFile; }
   int lineNumber() const { return m_lineNumber; }
   int columnNumber() const { return m_columnNumber; }
@@ -61,32 +63,7 @@ class SecurityPolicyViolationEvent final : public Event {
  private:
   SecurityPolicyViolationEvent(
       const AtomicString& type,
-      const SecurityPolicyViolationEventInit& initializer)
-      : Event(type, initializer),
-        m_lineNumber(0),
-        m_columnNumber(0),
-        m_statusCode(0) {
-    if (initializer.hasDocumentURI())
-      m_documentURI = initializer.documentURI();
-    if (initializer.hasReferrer())
-      m_referrer = initializer.referrer();
-    if (initializer.hasBlockedURI())
-      m_blockedURI = initializer.blockedURI();
-    if (initializer.hasViolatedDirective())
-      m_violatedDirective = initializer.violatedDirective();
-    if (initializer.hasEffectiveDirective())
-      m_effectiveDirective = initializer.effectiveDirective();
-    if (initializer.hasOriginalPolicy())
-      m_originalPolicy = initializer.originalPolicy();
-    if (initializer.hasSourceFile())
-      m_sourceFile = initializer.sourceFile();
-    if (initializer.hasLineNumber())
-      m_lineNumber = initializer.lineNumber();
-    if (initializer.hasColumnNumber())
-      m_columnNumber = initializer.columnNumber();
-    if (initializer.hasStatusCode())
-      m_statusCode = initializer.statusCode();
-  }
+      const SecurityPolicyViolationEventInit& initializer);
 
   String m_documentURI;
   String m_referrer;
@@ -94,6 +71,7 @@ class SecurityPolicyViolationEvent final : public Event {
   String m_violatedDirective;
   String m_effectiveDirective;
   String m_originalPolicy;
+  ContentSecurityPolicyHeaderType m_disposition;
   String m_sourceFile;
   int m_lineNumber;
   int m_columnNumber;
