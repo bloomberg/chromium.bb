@@ -181,6 +181,10 @@
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #endif
 
+#if !defined(OFFICIAL_BUILD)
+#include "chrome/browser/android/offline_pages/evaluation/offline_page_evaluation_bridge.h"
+#endif
+
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
@@ -312,6 +316,10 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"OfflinePageBridge", offline_pages::android::RegisterOfflinePageBridge},
     {"OfflinePageDownloadBridge",
      offline_pages::android::OfflinePageDownloadBridge::Register},
+#if !defined(OFFICIAL_BUILD)
+    {"OfflinePageEvaluationBridge",
+     offline_pages::android::OfflinePageEvaluationBridge::Register},
+#endif
     {"OmniboxPrerender", RegisterOmniboxPrerender},
     {"OmniboxUrlEmphasizer",
      OmniboxUrlEmphasizer::RegisterOmniboxUrlEmphasizer},

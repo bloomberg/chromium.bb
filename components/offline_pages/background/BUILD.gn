@@ -20,6 +20,7 @@ static_library("background_offliner") {
     "request_coordinator.h",
     "request_coordinator_event_logger.cc",
     "request_coordinator_event_logger.h",
+    "request_notifier.h",
     "request_picker.cc",
     "request_picker.h",
     "request_queue.cc",

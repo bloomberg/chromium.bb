@@ -3355,6 +3355,14 @@ split_static_library("browser") {
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
     }
+
+    # Used for testing only, should not be shipped to end users.
+    if (!is_official_build) {
+      sources += [
+        "android/offline_pages/evaluation/offline_page_evaluation_bridge.cc",
+        "android/offline_pages/evaluation/offline_page_evaluation_bridge.h",
+      ]
+    }
   }
 
   if (enable_vr_shell || enable_webvr) {
@@ -3910,6 +3918,11 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
     ]
+
+    # Used for testing only, should not be shipped to end users.
+    if (!is_official_build) {
+      sources += [ "../android/java/src/org/chromium/chrome/browser/offlinepages/evaluation/OfflinePageEvaluationBridge.java" ]
+    }
     jni_package = "chrome"
   }
 

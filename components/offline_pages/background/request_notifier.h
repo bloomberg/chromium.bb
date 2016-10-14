@@ -14,6 +14,7 @@ class RequestNotifier {
   // Status to return for failed notifications.
   // NOTE: for any changes to the enum, please also update related switch code
   // in RequestCoordinatorEventLogger.
+  // GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages
   enum class BackgroundSavePageResult {
     SUCCESS,
     PRERENDER_FAILURE,
