@@ -345,8 +345,8 @@ Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
 bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id) {
   CHECK(thread_checker_.CalledOnValidThread());
   bool changed = false;
-  FOR_EACH_OBSERVER(SurfaceObserver, observer_list_,
-                    OnSurfaceDamaged(surface_id, &changed));
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceDamaged(surface_id, &changed);
   return changed;
 }
 
@@ -354,9 +354,8 @@ void SurfaceManager::SurfaceCreated(const SurfaceId& surface_id,
                                     const gfx::Size& frame_size,
                                     float device_scale_factor) {
   CHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(
-      SurfaceObserver, observer_list_,
-      OnSurfaceCreated(surface_id, frame_size, device_scale_factor));
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceCreated(surface_id, frame_size, device_scale_factor);
 }
 
 }  // namespace cc
