@@ -83,14 +83,17 @@ class ElementRareData : public NodeRareData {
   void clearShadow() { m_shadow = nullptr; }
   ElementShadow* shadow() const { return m_shadow.get(); }
   ElementShadow& ensureShadow() {
-    if (!m_shadow)
+    if (!m_shadow) {
       m_shadow = ElementShadow::create();
+      ScriptWrappableVisitor::writeBarrier(this, m_shadow);
+    }
     return *m_shadow;
   }
 
   NamedNodeMap* attributeMap() const { return m_attributeMap.get(); }
   void setAttributeMap(NamedNodeMap* attributeMap) {
     m_attributeMap = attributeMap;
+    ScriptWrappableVisitor::writeBarrier(this, m_attributeMap);
   }
 
   ComputedStyle* computedStyle() const { return m_computedStyle.get(); }
@@ -100,7 +103,10 @@ class ElementRareData : public NodeRareData {
   void clearComputedStyle() { m_computedStyle = nullptr; }
 
   ClassList* classList() const { return m_classList.get(); }
-  void setClassList(ClassList* classList) { m_classList = classList; }
+  void setClassList(ClassList* classList) {
+    m_classList = classList;
+    ScriptWrappableVisitor::writeBarrier(this, m_classList);
+  }
   void clearClassListValueForQuirksMode() {
     if (!m_classList)
       return;
@@ -108,7 +114,10 @@ class ElementRareData : public NodeRareData {
   }
 
   DatasetDOMStringMap* dataset() const { return m_dataset.get(); }
-  void setDataset(DatasetDOMStringMap* dataset) { m_dataset = dataset; }
+  void setDataset(DatasetDOMStringMap* dataset) {
+    m_dataset = dataset;
+    ScriptWrappableVisitor::writeBarrier(this, m_dataset);
+  }
 
   LayoutSize minimumSizeForResizing() const { return m_minimumSizeForResizing; }
   void setMinimumSizeForResizing(LayoutSize size) {
