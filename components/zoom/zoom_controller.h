@@ -105,7 +105,8 @@ class ZoomController : public content::WebContentsObserver,
   }
 
   // Convenience method to quickly check if the tab's at default zoom.
-  bool IsAtDefaultZoom() const;
+  // Virtual for testing.
+  virtual bool IsAtDefaultZoom() const;
 
   // Returns which image should be loaded for the current zoom level.
   RelativeZoom GetZoomRelativeToDefault() const;

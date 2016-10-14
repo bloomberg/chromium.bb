@@ -42,15 +42,19 @@ bool ZoomDecoration::UpdateIfNecessary(zoom::ZoomController* zoom_controller,
 
   base::string16 zoom_percent =
       base::FormatPercent(zoom_controller->GetZoomPercent());
-  NSString* zoom_string =
-      l10n_util::GetNSStringF(IDS_TOOLTIP_ZOOM, zoom_percent);
+  // In Material Design there is no icon at the default zoom factor (100%), so
+  // don't display a tooltip either.
+  NSString* tooltip_string =
+      zoom_controller->IsAtDefaultZoom()
+          ? @""
+          : l10n_util::GetNSStringF(IDS_TOOLTIP_ZOOM, zoom_percent);
 
-  if (IsVisible() && [tooltip_ isEqualToString:zoom_string] &&
+  if (IsVisible() && [tooltip_ isEqualToString:tooltip_string] &&
       !default_zoom_changed) {
     return false;
   }
 
-  ShowAndUpdateUI(zoom_controller, zoom_string, location_bar_is_dark);
+  ShowAndUpdateUI(zoom_controller, tooltip_string, location_bar_is_dark);
   return true;
 }
 
@@ -96,6 +100,7 @@ void ZoomDecoration::ShowAndUpdateUI(zoom::ZoomController* zoom_controller,
   vector_icon_id_ = gfx::VectorIconId::VECTOR_ICON_NONE;
   zoom::ZoomController::RelativeZoom relative_zoom =
       zoom_controller->GetZoomRelativeToDefault();
+  // In Material Design there is no icon at the default zoom factor.
   if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
     vector_icon_id_ = gfx::VectorIconId::ZOOM_MINUS;
   } else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {

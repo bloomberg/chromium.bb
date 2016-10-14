@@ -36,6 +36,7 @@ class MockZoomController : public zoom::ZoomController {
   explicit MockZoomController(content::WebContents* web_contents)
       : zoom::ZoomController(web_contents) {}
   int GetZoomPercent() const override { return zoom_percent_; }
+  bool IsAtDefaultZoom() const override { return zoom_percent_ == 100; }
 
   int zoom_percent_;
 
