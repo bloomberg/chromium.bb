@@ -29,7 +29,7 @@ using proto::SocketEvent;
 
 namespace {
 
-const char* kInternalNamespacePrefix = "com.google.cast";
+const char kInternalNamespacePrefix[] = "com.google.cast";
 
 proto::ChallengeReplyErrorType ChallegeReplyErrorToProto(
     AuthResult::ErrorType error_type) {

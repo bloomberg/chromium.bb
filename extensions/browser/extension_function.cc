@@ -171,7 +171,7 @@ class UserGestureForTests {
   UserGestureForTests();
   friend struct base::DefaultSingletonTraits<UserGestureForTests>;
 
-  base::Lock lock_; // for protecting access to count_
+  base::Lock lock_;  // for protecting access to |count_|
   int count_;
 };
 
@@ -220,7 +220,7 @@ void ExtensionFunction::ResponseValueObject::SetFunctionError(
 bool ExtensionFunction::ignore_all_did_respond_for_testing_do_not_use = false;
 
 // static
-const char* ExtensionFunction::kUnknownErrorDoNotUse = "Unknown error.";
+const char ExtensionFunction::kUnknownErrorDoNotUse[] = "Unknown error.";
 
 // static
 void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {

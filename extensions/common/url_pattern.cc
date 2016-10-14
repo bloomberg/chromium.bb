@@ -27,13 +27,10 @@ namespace {
 
 // TODO(aa): What about more obscure schemes like data: and javascript: ?
 // Note: keep this array in sync with kValidSchemeMasks.
-const char* kValidSchemes[] = {
-    url::kHttpScheme,
-    url::kHttpsScheme,
-    url::kFileScheme,
-    url::kFtpScheme,
-    content::kChromeUIScheme,
-    extensions::kExtensionScheme,
+const char* const kValidSchemes[] = {
+    url::kHttpScheme,         url::kHttpsScheme,
+    url::kFileScheme,         url::kFtpScheme,
+    content::kChromeUIScheme, extensions::kExtensionScheme,
     url::kFileSystemScheme,
 };
 

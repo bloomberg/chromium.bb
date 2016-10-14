@@ -18,9 +18,9 @@
 
 namespace {
 
-const char* kProductIdKey = "productId";
-const char* kVendorIdKey = "vendorId";
-const char* kInterfaceIdKey = "interfaceId";
+const char kProductIdKey[] = "productId";
+const char kVendorIdKey[] = "vendorId";
+const char kInterfaceIdKey[] = "interfaceId";
 
 }  // namespace
 

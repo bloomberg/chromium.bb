@@ -33,10 +33,7 @@ namespace extensions {
 
 namespace {
 
-const char* kChildKinds[] = {
-  "functions",
-  "events"
-};
+const char* const kChildKinds[] = {"functions", "events"};
 
 std::unique_ptr<base::DictionaryValue> LoadSchemaDictionary(
     const std::string& name,

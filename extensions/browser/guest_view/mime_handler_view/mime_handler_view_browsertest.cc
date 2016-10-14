@@ -34,7 +34,7 @@ using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 
 // The test extension id is set by the key value in the manifest.
-const char* kExtensionId = "oickdpebdnfbgkcaoklfcdhjniefkcji";
+const char kExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
 // Counts the number of URL requests made for a given URL.
 class URLRequestCounter {

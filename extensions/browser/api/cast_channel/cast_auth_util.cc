@@ -21,7 +21,7 @@ namespace api {
 namespace cast_channel {
 namespace {
 
-const char* const kParseErrorPrefix = "Failed to parse auth message: ";
+const char kParseErrorPrefix[] = "Failed to parse auth message: ";
 
 // The maximum number of days a cert can live for.
 const int kMaxSelfSignedCertLifetimeInDays = 4;

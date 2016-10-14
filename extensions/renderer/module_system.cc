@@ -31,10 +31,10 @@ using namespace v8_helpers;
 
 namespace {
 
-const char* kModuleSystem = "module_system";
-const char* kModuleName = "module_name";
-const char* kModuleField = "module_field";
-const char* kModulesField = "modules";
+const char kModuleSystem[] = "module_system";
+const char kModuleName[] = "module_name";
+const char kModuleField[] = "module_field";
+const char kModulesField[] = "modules";
 
 // Logs an error for the calling context in preparation for potentially
 // crashing the renderer, with some added metadata about the context:

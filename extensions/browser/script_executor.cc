@@ -28,8 +28,8 @@ namespace extensions {
 
 namespace {
 
-const char* kRendererDestroyed = "The tab was closed.";
-const char* kFrameRemoved = "The frame was removed.";
+const char kRendererDestroyed[] = "The tab was closed.";
+const char kFrameRemoved[] = "The frame was removed.";
 
 // A handler for a single injection request. On creation this will send the
 // injection request to the renderer, and it will be destroyed after either the

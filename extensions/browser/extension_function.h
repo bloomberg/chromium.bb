@@ -179,7 +179,7 @@ class ExtensionFunction
   // aren't already set.
   // TODO(devlin): Remove this if/when all functions are updated to return real
   // errors.
-  static const char* kUnknownErrorDoNotUse;
+  static const char kUnknownErrorDoNotUse[];
 
   // Called before Run() in order to perform a common verification check so that
   // APIs subclassing this don't have to roll their own RunSafe() variants.

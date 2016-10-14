@@ -34,7 +34,7 @@ using testing::_;
 #if defined(OS_MACOSX)
 const uint64_t kTestDeviceIds[] = {1, 2, 3, 4, 5};
 #else
-const char* kTestDeviceIds[] = {"A", "B", "C", "D", "E"};
+const char* const kTestDeviceIds[] = {"A", "B", "C", "D", "E"};
 #endif
 
 // These report descriptors define two devices with 8-byte input, output and

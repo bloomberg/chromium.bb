@@ -21,8 +21,8 @@ namespace extensions {
 
 namespace {
 // Key for the base::Bound routed function.
-const char* kHandlerFunction = "handler_function";
-const char* kFeatureName = "feature_name";
+const char kHandlerFunction[] = "handler_function";
+const char kFeatureName[] = "feature_name";
 }  // namespace
 
 ObjectBackedNativeHandler::ObjectBackedNativeHandler(ScriptContext* context)

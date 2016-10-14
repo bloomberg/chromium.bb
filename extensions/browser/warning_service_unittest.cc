@@ -35,8 +35,8 @@ class MockObserver : public WarningService::Observer {
 
 typedef ExtensionsTest WarningServiceTest;
 
-const char* ext1_id = "extension1";
-const char* ext2_id = "extension2";
+const char ext1_id[] = "extension1";
+const char ext2_id[] = "extension2";
 const Warning::WarningType warning_1 = Warning::kNetworkDelay;
 const Warning::WarningType warning_2 = Warning::kNetworkConflict;
 
