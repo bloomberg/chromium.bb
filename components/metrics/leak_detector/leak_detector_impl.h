@@ -67,14 +67,6 @@ class LeakDetectorImpl {
       return alloc_breakdown_history_;
     }
 
-    size_t num_rising_intervals() const { return num_rising_intervals_; }
-
-    uint32_t num_allocs_increase() const { return num_allocs_increase_; }
-
-    void set_num_rising_intervals(size_t num_rising_intervals) {
-      num_rising_intervals_ = num_rising_intervals;
-    }
-
     // Used to compare the contents of two leak reports.
     bool operator<(const LeakReport& other) const;
 
@@ -85,12 +77,6 @@ class LeakDetectorImpl {
 
     // Number of bytes allocated by the leak site during each allocation.
     size_t alloc_size_bytes_;
-
-    // Number of intervals in the last uptrend.
-    size_t num_rising_intervals_;
-
-    // Net number of bytes allocated in the last uptrend.
-    uint32_t num_allocs_increase_;
 
     // Unlike the CallStack struct, which consists of addresses, this call stack
     // will contain offsets in the executable binary.
@@ -119,7 +105,7 @@ class LeakDetectorImpl {
   void RecordFree(const void* ptr);
 
   // Run check for possible leaks based on the current profiling data.
-  void TestForLeaks(InternalVector<LeakReport>* reports, size_t timestamp);
+  void TestForLeaks(InternalVector<LeakReport>* reports);
 
  private:
   // A record of allocations for a particular size.
@@ -174,21 +160,17 @@ class LeakDetectorImpl {
   // per size is recorded in |size_breakdown_history_|. The net number of allocs
   // per call site for each size is recorded in
   // |AllocSizeEntry::call_site_breakdown_history|.
-  // Argument |timestamp| is used to update information about drops in
-  // allocation number for each stored call stack.
   //
   // Not all the net alloc counts are recorded. And the number of historical
   // records kept is capped. If adding a new record exceeds that limit, the
   // oldest record is discarded. See the function definition for more details.
-  void RecordCurrentAllocationDataInHistory(size_t timestamp);
+  void RecordCurrentAllocationDataInHistory();
 
   // Store the data collected by RecordCurrentAllocationDataInHistory() in
   // |*report|. Not all net alloc counts per call site will be stored, only the
-  // count for size=|size| and made from |call_site|. Also information
-  // about the last uptrend in net allocations for |size| and |call_site|
-  // is recorded with help of |timestamp|.
+  // count for size=|size| and made from |call_site|.
   void StoreHistoricalDataInReport(size_t size, const CallStack* call_site,
-                                   LeakReport* report, size_t timestamp);
+                                   LeakReport* report);
 
   // Decrements the cooldown counter (value) for each entry in
   // |cooldowns_per_leak_|. If the cooldown counter reaches 0, the entry is

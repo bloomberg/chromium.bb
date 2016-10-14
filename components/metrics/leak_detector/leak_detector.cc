@@ -121,9 +121,6 @@ MemoryLeakReportProto ConvertLeakReportToProto(
     proto_entry->set_count_for_call_stack(entry.count_for_call_stack);
   }
 
-  proto.set_num_rising_intervals(report.num_rising_intervals());
-  proto.set_num_allocs_increase(report.num_allocs_increase());
-
   return proto;
 }
 
@@ -275,14 +272,8 @@ void LeakDetector::AllocHook(const void* ptr, size_t size) {
       detector->last_analysis_alloc_size_ =
           total_alloc_size - total_alloc_size % analysis_interval_bytes;
 
-      // Collect new leak reports. Use current |total_alloc_size| as
-      // a timestamp, then transform change in timestamp into the
-      // number of intervals passed.
       InternalVector<InternalLeakReport> leak_reports;
-      detector->impl_->TestForLeaks(&leak_reports, total_alloc_size);
-      for (auto &report : leak_reports)
-        report.set_num_rising_intervals(
-            report.num_rising_intervals() / analysis_interval_bytes);
+      detector->impl_->TestForLeaks(&leak_reports);
 
       // Pass leak reports to observers.
       std::vector<MemoryLeakReportProto> leak_report_protos;
