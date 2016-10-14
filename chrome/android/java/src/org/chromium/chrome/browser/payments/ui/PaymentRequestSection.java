@@ -456,44 +456,73 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     }
 
     /**
-     * Section with a secondary TextView beneath the summary to show additional details.
+     * Section with three extra TextViews beneath the summary to show additional details.
      *
      * ............................................................................
-     * . TITLE                                                          | CHEVRON .
+     * . TITLE                                                          |         .
+     * .................................................................|         .
+     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT | CHEVRON .
      * .................................................................|    or   .
-     * . LEFT SUMMARY TEXT                        |  RIGHT SUMMARY TEXT |   ADD   .
+     * . EXTRA TEXT ONE                                                 |   ADD   .
      * .................................................................|    or   .
-     * . EXTRA TEXT                                                     |  SELECT .
+     * . EXTRA TEXT TWO                                                 |  SELECT .
+     * .................................................................|         .
+     * . EXTRA TEXT THREE                                               |         .
      * ............................................................................
      */
-    public static class ExtraTextSection extends PaymentRequestSection {
-        private TextView mExtraTextView;
+    public static class ExtraTextsSection extends PaymentRequestSection {
+        private TextView[] mExtraTextViews;
         private int mEditButtonState = EDIT_BUTTON_GONE;
 
-        public ExtraTextSection(Context context, String sectionName, SectionDelegate delegate) {
+        public ExtraTextsSection(Context context, String sectionName, SectionDelegate delegate) {
             super(context, sectionName, delegate);
-            setExtraText(null);
+            setExtraTexts(new String[] {null, null, null});
         }
 
         @Override
         protected void createMainSectionContent(LinearLayout mainSectionLayout) {
             Context context = mainSectionLayout.getContext();
 
-            mExtraTextView = new TextView(context);
-            ApiCompatibilityUtils.setTextAppearance(
-                    mExtraTextView, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
-            mainSectionLayout.addView(mExtraTextView, new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mExtraTextViews = new TextView[3];
+            for (int i = 0; i < mExtraTextViews.length; i++) {
+                mExtraTextViews[i] = new TextView(context);
+                ApiCompatibilityUtils.setTextAppearance(
+                        mExtraTextViews[i], R.style.PaymentsUiSectionDefaultText);
+                mainSectionLayout.addView(
+                        mExtraTextViews[i], new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+                                                    LayoutParams.WRAP_CONTENT));
+            }
         }
 
         /**
-         * Sets the CharSequence that is displayed in the secondary TextView.
+         * Sets the CharSequences that are displayed in the extra TextViews.
          *
-         * @param text Text to display.
+         * @param extraTexts Texts to display in the extra TextViews.
          */
-        public void setExtraText(CharSequence text) {
-            mExtraTextView.setText(text);
-            mExtraTextView.setVisibility(TextUtils.isEmpty(text) ? GONE : VISIBLE);
+        public void setExtraTexts(CharSequence[] extraTexts) {
+            assert extraTexts.length == mExtraTextViews.length;
+
+            for (int i = 0; i < mExtraTextViews.length; i++) {
+                mExtraTextViews[i].setText(extraTexts[i]);
+                mExtraTextViews[i].setVisibility(TextUtils.isEmpty(extraTexts[i]) ? GONE : VISIBLE);
+            }
+        }
+
+        /**
+         * Sets how the extra texts should be displayed.
+         *
+         * @param textsTruncate How to truncate the extra texts. Set the element to null to clear.
+         * @param textsAreSingleLine Whether the extra texts should be displayed in a single line.
+         */
+        public void setExtraTextsProperties(
+                TruncateAt[] textsTruncate, boolean[] textsAreSingleLine) {
+            assert textsTruncate.length == mExtraTextViews.length;
+            assert textsAreSingleLine.length == mExtraTextViews.length;
+
+            for (int i = 0; i < mExtraTextViews.length; i++) {
+                mExtraTextViews[i].setEllipsize(textsTruncate[i]);
+                mExtraTextViews[i].setSingleLine(textsAreSingleLine[i]);
+            }
         }
 
         /** Sets the state of the edit button. */

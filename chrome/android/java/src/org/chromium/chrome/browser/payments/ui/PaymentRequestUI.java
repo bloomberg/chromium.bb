@@ -42,7 +42,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextSection;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.ExtraTextsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBreakdownSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
@@ -280,7 +280,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private View mSpinnyLayout;
 
     private LineItemBreakdownSection mOrderSummarySection;
-    private ExtraTextSection mShippingSummarySection;
+    private ExtraTextsSection mShippingSummarySection;
     private OptionSection mShippingAddressSection;
     private OptionSection mShippingOptionSection;
     private OptionSection mContactDetailsSection;
@@ -416,8 +416,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
                     updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
 
-                    String selectedShippingAddress = result.getSelectedShippingAddressLabel();
-                    String selectedShippingName = result.getSelectedShippingAddressSublabel();
+                    String selectedShippingName = result.getSelectedShippingAddressLabel();
+                    String selectedShippingAddress = result.getSelectedShippingAddressSublabel();
+                    String selectedShippingPhone = result.getSelectedShippingAddressTertiaryLabel();
                     String selectedShippingOptionLabel = result.getSelectedShippingOptionLabel();
 
                     if (selectedShippingAddress == null || selectedShippingOptionLabel == null) {
@@ -431,14 +432,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                                         ? mShippingOptionSection : mShippingAddressSection;
                         mShippingSummarySection.setEditButtonState(section.getEditButtonState());
                     } else {
-                        // Show the shipping address and the name in the summary section.
-                        mShippingSummarySection.setSummaryText(
-                                selectedShippingAddress, selectedShippingName);
+                        // Show the shipping name in the summary section.
+                        mShippingSummarySection.setSummaryText(selectedShippingName, null);
                         mShippingSummarySection.setSummaryProperties(
-                                TruncateAt.MIDDLE, true, null, true);
+                                TruncateAt.END, true, null, false);
 
-                        // Indicate the shipping option below the address.
-                        mShippingSummarySection.setExtraText(selectedShippingOptionLabel);
+                        // Show the shipping address, phone and option below the summary.
+                        mShippingSummarySection.setExtraTexts(new String[] {selectedShippingAddress,
+                                selectedShippingPhone, selectedShippingOptionLabel});
+                        mShippingSummarySection.setExtraTextsProperties(
+                                new TruncateAt[] {
+                                        TruncateAt.MIDDLE, TruncateAt.END, TruncateAt.END},
+                                new boolean[] {true, true, true});
                     }
                 }
 
@@ -501,7 +506,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
         mOrderSummarySection = new LineItemBreakdownSection(
                 activity, activity.getString(R.string.payments_order_summary_label), this);
-        mShippingSummarySection = new ExtraTextSection(
+        mShippingSummarySection = new ExtraTextsSection(
                 activity, activity.getString(R.string.payments_shipping_summary_label), this);
         mShippingAddressSection = new OptionSection(
                 activity, activity.getString(R.string.payments_shipping_address_label), this);
