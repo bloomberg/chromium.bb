@@ -93,8 +93,10 @@ bool LayoutTestNotificationManager::GetDisplayedPersistentNotifications(
   return false;
 }
 
-void LayoutTestNotificationManager::SimulateClick(const std::string& title,
-                                                  int action_index) {
+void LayoutTestNotificationManager::SimulateClick(
+    const std::string& title,
+    int action_index,
+    const base::NullableString16& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const auto notification_id_iter = notification_id_map_.find(title);
@@ -112,10 +114,9 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title,
 
     const PersistentNotification& notification = persistent_iter->second;
     content::NotificationEventDispatcher::GetInstance()
-        ->DispatchNotificationClickEvent(notification.browser_context,
-                                         notification_id, notification.origin,
-                                         action_index, base::NullableString16(),
-                                         base::Bind(&OnEventDispatchComplete));
+        ->DispatchNotificationClickEvent(
+            notification.browser_context, notification_id, notification.origin,
+            action_index, reply, base::Bind(&OnEventDispatchComplete));
   } else if (non_persistent_iter != non_persistent_notifications_.end()) {
     DCHECK_EQ(action_index, -1) << "Action buttons are only supported for "
                                    "persistent notifications";

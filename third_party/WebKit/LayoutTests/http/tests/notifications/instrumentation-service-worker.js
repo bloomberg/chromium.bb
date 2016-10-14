@@ -112,7 +112,8 @@ addEventListener('notificationclick', event => {
 
     messagePort.postMessage({ command: 'click',
                               notification: notificationCopy,
-                              action: event.action });
+                              action: event.action,
+                              reply: event.reply });
 });
 
 addEventListener('notificationclose', event => {

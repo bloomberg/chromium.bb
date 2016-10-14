@@ -31,8 +31,11 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
 
   // Simulates a click on the notification titled |title|. |action_index|
   // indicates which action was clicked, or -1 if the main notification body was
-  // clicked. Must be called on the UI thread.
-  void SimulateClick(const std::string& title, int action_index);
+  // clicked. |reply| indicates the user reply, if any.
+  // Must be called on the UI thread.
+  void SimulateClick(const std::string& title,
+                     int action_index,
+                     const base::NullableString16& reply);
 
   // Simulates the closing a notification titled |title|. Must be called on
   // the UI thread.

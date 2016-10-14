@@ -151,8 +151,10 @@ class WebTestDelegate {
   virtual void SetDatabaseQuota(int quota) = 0;
 
   // Controls Web Notifications.
-  virtual void SimulateWebNotificationClick(const std::string& title,
-                                            int action_index) = 0;
+  virtual void SimulateWebNotificationClick(
+      const std::string& title,
+      int action_index,
+      const base::NullableString16& reply) = 0;
   virtual void SimulateWebNotificationClose(const std::string& title,
                                             bool by_user) = 0;
 

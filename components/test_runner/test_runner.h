@@ -25,6 +25,10 @@
 class GURL;
 class SkBitmap;
 
+namespace base {
+class NullableString16;
+}
+
 namespace blink {
 class WebContentSettingsClient;
 class WebFrame;
@@ -529,7 +533,9 @@ class TestRunner : public WebTestRunner {
   void SetMIDIAccessorResult(bool result);
 
   // Simulates a click on a Web Notification.
-  void SimulateWebNotificationClick(const std::string& title, int action_index);
+  void SimulateWebNotificationClick(const std::string& title,
+                                    int action_index,
+                                    const base::NullableString16& reply);
 
   // Simulates closing a Web Notification.
   void SimulateWebNotificationClose(const std::string& title, bool by_user);

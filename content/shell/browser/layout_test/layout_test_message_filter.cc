@@ -125,11 +125,13 @@ void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
 }
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClick(
-    const std::string& title, int action_index) {
+    const std::string& title,
+    int action_index,
+    const base::NullableString16& reply) {
   LayoutTestNotificationManager* manager =
       LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
   if (manager)
-    manager->SimulateClick(title, action_index);
+    manager->SimulateClick(title, action_index, reply);
 }
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClose(

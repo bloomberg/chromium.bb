@@ -24,9 +24,10 @@ IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_RegisterIsolatedFileSystem,
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ClearAllDatabases)
 IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SetDatabaseQuota,
                     int /* quota */)
-IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClick,
+IPC_MESSAGE_ROUTED3(LayoutTestHostMsg_SimulateWebNotificationClick,
                     std::string /* title */,
-                    int /* action_index */)
+                    int /* action_index */,
+                    base::NullableString16 /* reply */)
 IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SimulateWebNotificationClose,
                     std::string /* title */,
                     bool /* by_user */)

@@ -7,5 +7,5 @@
 dictionary NotificationEventInit : ExtendableEventInit {
     required Notification notification;
     DOMString action = "";
-    DOMString reply = "";
+    [RuntimeEnabled=NotificationInlineReplies] DOMString? reply = "";
 };

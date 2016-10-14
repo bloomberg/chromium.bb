@@ -11,5 +11,5 @@
 ] interface NotificationEvent : ExtendableEvent {
     [ImplementedAs=getNotification] readonly attribute Notification notification;
     readonly attribute DOMString action;
-    [RuntimeEnabled=NotificationInlineReplies] readonly attribute DOMString reply;
+    [RuntimeEnabled=NotificationInlineReplies] readonly attribute DOMString? reply;
 };
