@@ -464,6 +464,24 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureSameOriginRepliesAllowed) {
                            true);
 }
 
+// Ensure that the PDF component extension cannot be loaded directly.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::unique_ptr<content::ConsoleObserverDelegate> console_delegate(
+      new content::ConsoleObserverDelegate(
+          web_contents,
+          "*Streams are only available from a mime handler view guest.*"));
+  web_contents->SetDelegate(console_delegate.get());
+  GURL forbiddenUrl(
+      "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?"
+      "https://example.com/notrequested.pdf");
+  ui_test_utils::NavigateToURL(browser(), forbiddenUrl);
+
+  console_delegate->Wait();
+}
+
 // This test ensures that PDF can be loaded from local file
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
   base::FilePath test_data_dir;

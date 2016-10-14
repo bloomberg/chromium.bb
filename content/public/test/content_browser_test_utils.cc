@@ -8,8 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/pattern.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
@@ -134,34 +132,6 @@ void ShellAddedObserver::ShellCreated(Shell* shell) {
   shell_ = shell;
   if (runner_.get())
     runner_->QuitClosure().Run();
-}
-
-ConsoleObserverDelegate::ConsoleObserverDelegate(WebContents* web_contents,
-                                                 const std::string& filter)
-    : web_contents_(web_contents),
-      filter_(filter),
-      message_loop_runner_(new MessageLoopRunner) {}
-
-ConsoleObserverDelegate::~ConsoleObserverDelegate() {}
-
-void ConsoleObserverDelegate::Wait() {
-  message_loop_runner_->Run();
-}
-
-bool ConsoleObserverDelegate::AddMessageToConsole(
-    WebContents* source,
-    int32_t level,
-    const base::string16& message,
-    int32_t line_no,
-    const base::string16& source_id) {
-  DCHECK(source == web_contents_);
-
-  std::string ascii_message = base::UTF16ToASCII(message);
-  if (base::MatchPattern(ascii_message, filter_)) {
-    message_ = ascii_message;
-    message_loop_runner_->Quit();
-  }
-  return false;
 }
 
 }  // namespace content

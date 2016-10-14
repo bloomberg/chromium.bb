@@ -178,7 +178,7 @@ function createBrowserApiForMimeHandlerView() {
  * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
  *     from the URL.
  */
-function createBrowserApiForStandaloneExtension() {
+function createBrowserApiForPrintPreview() {
   let url = window.location.search.substring(1);
   let streamInfo = {
     streamUrl: url,
@@ -206,8 +206,9 @@ function createBrowserApiForStandaloneExtension() {
  *     current environment.
  */
 function createBrowserApi() {
-  if (window.location.search)
-    return createBrowserApiForStandaloneExtension();
+  if (location.origin === 'chrome://print') {
+    return createBrowserApiForPrintPreview();
+  }
 
   return createBrowserApiForMimeHandlerView();
 }

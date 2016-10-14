@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1752,6 +1753,34 @@ bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
   if (current_state_ != NavigationState::INITIAL)
     return false;
   return true;
+}
+
+ConsoleObserverDelegate::ConsoleObserverDelegate(WebContents* web_contents,
+                                                 const std::string& filter)
+    : web_contents_(web_contents),
+      filter_(filter),
+      message_loop_runner_(new MessageLoopRunner) {}
+
+ConsoleObserverDelegate::~ConsoleObserverDelegate() {}
+
+void ConsoleObserverDelegate::Wait() {
+  message_loop_runner_->Run();
+}
+
+bool ConsoleObserverDelegate::AddMessageToConsole(
+    WebContents* source,
+    int32_t level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
+  DCHECK(source == web_contents_);
+
+  std::string ascii_message = base::UTF16ToASCII(message);
+  if (base::MatchPattern(ascii_message, filter_)) {
+    message_ = ascii_message;
+    message_loop_runner_->Quit();
+  }
+  return false;
 }
 
 }  // namespace content

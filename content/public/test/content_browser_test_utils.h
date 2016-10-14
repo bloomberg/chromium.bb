@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -32,8 +31,8 @@ namespace content {
 
 class MessageLoopRunner;
 class RenderFrameHost;
+class RenderWidgetHost;
 class Shell;
-class WebContents;
 
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in
@@ -110,37 +109,6 @@ class ShellAddedObserver {
   scoped_refptr<MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellAddedObserver);
-};
-
-// A WebContentsDelegate that catches messages sent to the console.
-class ConsoleObserverDelegate : public WebContentsDelegate {
- public:
-  ConsoleObserverDelegate(WebContents* web_contents, const std::string& filter);
-  ~ConsoleObserverDelegate() override;
-
-  // WebContentsDelegate method:
-  bool AddMessageToConsole(WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override;
-
-  // Returns the most recent message sent to the console.
-  std::string message() { return message_; }
-
-  // Waits for the next message captured by the filter to be sent to the
-  // console.
-  void Wait();
-
- private:
-  WebContents* web_contents_;
-  std::string filter_;
-  std::string message_;
-
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
 };
 
 #if defined OS_MACOSX

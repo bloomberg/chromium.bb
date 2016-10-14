@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
@@ -666,6 +667,37 @@ class TestNavigationManager : public WebContentsObserver {
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationManager);
+};
+
+// A WebContentsDelegate that catches messages sent to the console.
+class ConsoleObserverDelegate : public WebContentsDelegate {
+ public:
+  ConsoleObserverDelegate(WebContents* web_contents, const std::string& filter);
+  ~ConsoleObserverDelegate() override;
+
+  // WebContentsDelegate method:
+  bool AddMessageToConsole(WebContents* source,
+                           int32_t level,
+                           const base::string16& message,
+                           int32_t line_no,
+                           const base::string16& source_id) override;
+
+  // Returns the most recent message sent to the console.
+  std::string message() { return message_; }
+
+  // Waits for the next message captured by the filter to be sent to the
+  // console.
+  void Wait();
+
+ private:
+  WebContents* web_contents_;
+  std::string filter_;
+  std::string message_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
 };
 
 }  // namespace content
