@@ -39,6 +39,7 @@ struct Bitmap {
 
   uint32 width;
   uint32 height;
+  uint64 row_bytes;
 
   array<uint8> pixel_data;
 };

@@ -7,6 +7,7 @@
 #include "skia/public/interfaces/test/traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
@@ -78,6 +79,27 @@ TEST_F(StructTraitsTest, Bitmap) {
             colorspace_srgb_gamma(output.colorSpace()));
   EXPECT_EQ(input.width(), output.width());
   EXPECT_EQ(input.height(), output.height());
+  EXPECT_EQ(input.rowBytes(), output.rowBytes());
+  EXPECT_TRUE(gfx::BitmapsAreEqual(input, output));
+}
+
+TEST_F(StructTraitsTest, BitmapWithExtraRowBytes) {
+  SkBitmap input;
+  // Ensure traits work with bitmaps containing additional bytes between rows.
+  SkImageInfo info = SkImageInfo::MakeN32(8, 5, kPremul_SkAlphaType);
+  input.allocPixels(info, info.minRowBytes() + 2);
+  input.eraseColor(SK_ColorRED);
+  input.erase(SK_ColorTRANSPARENT, SkIRect::MakeXYWH(0, 1, 2, 3));
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SkBitmap output;
+  proxy->EchoBitmap(input, &output);
+  EXPECT_EQ(input.colorType(), output.colorType());
+  EXPECT_EQ(input.alphaType(), output.alphaType());
+  EXPECT_EQ(colorspace_srgb_gamma(input.colorSpace()),
+            colorspace_srgb_gamma(output.colorSpace()));
+  EXPECT_EQ(input.width(), output.width());
+  EXPECT_EQ(input.height(), output.height());
+  EXPECT_EQ(input.rowBytes(), output.rowBytes());
   EXPECT_TRUE(gfx::BitmapsAreEqual(input, output));
 }
 

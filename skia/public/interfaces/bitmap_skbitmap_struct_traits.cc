@@ -150,6 +150,12 @@ uint32_t StructTraits<skia::mojom::BitmapDataView, SkBitmap>::height(
 }
 
 // static
+uint64_t StructTraits<skia::mojom::BitmapDataView, SkBitmap>::row_bytes(
+    const SkBitmap& b) {
+  return b.rowBytes();
+}
+
+// static
 BitmapBuffer StructTraits<skia::mojom::BitmapDataView, SkBitmap>::pixel_data(
     const SkBitmap& b) {
   return {b.getSize(), b.getSize(), static_cast<uint8_t*>(b.getPixels())};
@@ -161,10 +167,12 @@ bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::Read(
     SkBitmap* b) {
   // TODO: Ensure width and height are reasonable, eg. <= kMaxBitmapSize?
   *b = SkBitmap();
-  if (!b->tryAllocPixels(SkImageInfo::Make(
-          data.width(), data.height(), MojoColorTypeToSk(data.color_type()),
-          MojoAlphaTypeToSk(data.alpha_type()),
-          MojoProfileTypeToSk(data.profile_type())))) {
+  if (!b->tryAllocPixels(
+          SkImageInfo::Make(data.width(), data.height(),
+                            MojoColorTypeToSk(data.color_type()),
+                            MojoAlphaTypeToSk(data.alpha_type()),
+                            MojoProfileTypeToSk(data.profile_type())),
+          data.row_bytes())) {
     return false;
   }
 
@@ -173,9 +181,12 @@ bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::Read(
     return true;
 
   SkAutoPixmapUnlock pixmap;
+  mojo::ArrayDataView<uint8_t> data_view;
+  data.GetPixelDataDataView(&data_view);
   if (static_cast<uint32_t>(b->width()) != data.width() ||
       static_cast<uint32_t>(b->height()) != data.height() ||
-      !b->requestLock(&pixmap) ||
+      static_cast<uint64_t>(b->rowBytes()) != data.row_bytes() ||
+      b->getSize() != data_view.size() || !b->requestLock(&pixmap) ||
       !b->readyToDraw()) {
     return false;
   }
