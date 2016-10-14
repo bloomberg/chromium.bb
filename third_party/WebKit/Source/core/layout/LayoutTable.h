@@ -480,7 +480,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void addOverflowFromChildren() override;
 
   void recalcSections() const;
-  void layoutCaption(LayoutTableCaption&);
+  void layoutCaption(LayoutTableCaption&, SubtreeLayoutScope&);
+  void layoutSection(LayoutTableSection&,
+                     SubtreeLayoutScope&,
+                     LayoutUnit logicalLeft);
 
   void distributeExtraLogicalHeight(int extraLogicalHeight);
 

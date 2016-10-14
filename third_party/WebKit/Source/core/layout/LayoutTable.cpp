@@ -412,7 +412,10 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(
   return computedLogicalHeight.clampNegativeToZero();
 }
 
-void LayoutTable::layoutCaption(LayoutTableCaption& caption) {
+void LayoutTable::layoutCaption(LayoutTableCaption& caption,
+                                SubtreeLayoutScope& layouter) {
+  if (!caption.needsLayout())
+    markChildForPaginationRelayoutIfNeeded(caption, layouter);
   if (caption.needsLayout()) {
     // The margins may not be available but ensure the caption is at least
     // located beneath any previous sibling caption so that it does not
@@ -436,6 +439,20 @@ void LayoutTable::layoutCaption(LayoutTableCaption& caption) {
   setLogicalHeight(logicalHeight() + caption.logicalHeight() +
                    collapsedMarginBeforeForChild(caption) +
                    collapsedMarginAfterForChild(caption));
+}
+
+void LayoutTable::layoutSection(LayoutTableSection& section,
+                                SubtreeLayoutScope& layouter,
+                                LayoutUnit logicalLeft) {
+  section.setLogicalLocation(LayoutPoint(logicalLeft, logicalHeight()));
+  if (m_columnLogicalWidthChanged)
+    layouter.setChildNeedsLayout(&section);
+  if (!section.needsLayout())
+    markChildForPaginationRelayoutIfNeeded(section, layouter);
+  section.layoutIfNeeded();
+  int sectionLogicalHeight = section.calcRowLogicalHeight();
+  section.setLogicalHeight(LayoutUnit(sectionLogicalHeight));
+  setLogicalHeight(logicalHeight() + sectionLogicalHeight);
 }
 
 void LayoutTable::distributeExtraLogicalHeight(int extraLogicalHeight) {
@@ -513,10 +530,6 @@ void LayoutTable::layout() {
 
   SubtreeLayoutScope layouter(*this);
 
-  // If any table section moved vertically, we will just issue paint
-  // invalidations for everything from that section down (it is quite unlikely
-  // that any of the following sections did not shift).
-  bool sectionMoved = false;
   {
     LayoutState state(*this, locationOffset());
     LayoutUnit oldLogicalWidth = logicalWidth();
@@ -537,48 +550,28 @@ void LayoutTable::layout() {
     // if ( oldWidth != width() || columns.size() + 1 != columnPos.size() )
     m_tableLayout->layout();
 
-    LayoutUnit totalSectionLogicalHeight;
-    LayoutUnit oldTableLogicalTop;
-    for (unsigned i = 0; i < m_captions.size(); i++)
-      oldTableLogicalTop += m_captions[i]->logicalHeight() +
-                            m_captions[i]->marginBefore() +
-                            m_captions[i]->marginAfter();
-
-    bool collapsing = collapseBorders();
-
-    for (LayoutObject* child = firstChild(); child;
-         child = child->nextSibling()) {
-      if (!child->needsLayout() && child->isBox())
-        markChildForPaginationRelayoutIfNeeded(*toLayoutBox(child), layouter);
-      if (child->isTableSection()) {
-        LayoutTableSection* section = toLayoutTableSection(child);
-        if (m_columnLogicalWidthChanged)
-          layouter.setChildNeedsLayout(section);
-        section->layoutIfNeeded();
-        totalSectionLogicalHeight += section->calcRowLogicalHeight();
-        if (collapsing)
-          section->recalcOuterBorder();
-        ASSERT(!section->needsLayout());
-      } else if (child->isLayoutTableCol()) {
-        child->layoutIfNeeded();
-        ASSERT(!child->needsLayout());
-      } else {
-        // FIXME: We should never have other type of children (they should be
-        // wrapped in an anonymous table section) but our code is too crazy and
-        // this can happen in practice. Until this is fixed, let's make sure we
-        // don't leave non laid out children in the tree.
-        child->layoutIfNeeded();
-      }
+    // Lay out top captions.
+    // FIXME: Collapse caption margin.
+    for (unsigned i = 0; i < m_captions.size(); i++) {
+      if (m_captions[i]->style()->captionSide() == ECaptionSide::Bottom)
+        continue;
+      layoutCaption(*m_captions[i], layouter);
     }
 
-    // FIXME: Collapse caption margin.
-    if (!m_captions.isEmpty()) {
-      for (unsigned i = 0; i < m_captions.size(); i++) {
-        if (m_captions[i]->style()->captionSide() == ECaptionSide::Bottom)
-          continue;
-        layoutCaption(*m_captions[i]);
-      }
-      sectionMoved = logicalHeight() != oldTableLogicalTop;
+    LayoutTableSection* topSection = this->topSection();
+    LayoutTableSection* bottomSection = this->bottomSection();
+
+    // This is the border-before edge of the "table box", relative to the "table
+    // wrapper box", i.e. right after all top captions.
+    // https://www.w3.org/TR/2011/REC-CSS2-20110607/tables.html#model
+    LayoutUnit tableBoxLogicalTop = logicalHeight();
+
+    bool collapsing = collapseBorders();
+    if (collapsing) {
+      // Need to set up the table borders before we can position the sections.
+      for (LayoutTableSection* section = topSection; section;
+           section = sectionBelow(section))
+        section->recalcOuterBorder();
     }
 
     LayoutUnit borderAndPaddingBefore =
@@ -586,7 +579,39 @@ void LayoutTable::layout() {
     LayoutUnit borderAndPaddingAfter =
         borderAfter() + (collapsing ? LayoutUnit() : paddingAfter());
 
-    setLogicalHeight(logicalHeight() + borderAndPaddingBefore);
+    setLogicalHeight(tableBoxLogicalTop + borderAndPaddingBefore);
+
+    LayoutUnit sectionLogicalLeft = LayoutUnit(
+        style()->isLeftToRightDirection() ? borderStart() : borderEnd());
+    if (!collapsing) {
+      sectionLogicalLeft +=
+          style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
+    }
+
+    // Lay out table header group.
+    if (LayoutTableSection* section = header())
+      layoutSection(*section, layouter, sectionLogicalLeft);
+
+    // Lay out table body groups, and column groups.
+    for (LayoutObject* child = firstChild(); child;
+         child = child->nextSibling()) {
+      if (child->isTableSection()) {
+        if (child != header() && child != footer()) {
+          LayoutTableSection& section = *toLayoutTableSection(child);
+          layoutSection(section, layouter, sectionLogicalLeft);
+        }
+      } else if (child->isLayoutTableCol()) {
+        child->layoutIfNeeded();
+      } else {
+        DCHECK(child->isTableCaption());
+      }
+    }
+
+    // Lay out table footer.
+    if (LayoutTableSection* section = footer())
+      layoutSection(*section, layouter, sectionLogicalLeft);
+
+    setLogicalHeight(tableBoxLogicalTop + borderAndPaddingBefore);
 
     LayoutUnit computedLogicalHeight;
 
@@ -616,11 +641,16 @@ void LayoutTable::layout() {
           std::max(computedLogicalHeight, computedMinLogicalHeight);
     }
 
+    LayoutUnit totalSectionLogicalHeight;
+    if (topSection) {
+      totalSectionLogicalHeight =
+          bottomSection->logicalBottom() - topSection->logicalTop();
+    }
+
     distributeExtraLogicalHeight(
         floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
 
     bool isPaginated = view()->layoutState()->isPaginated();
-    LayoutTableSection* topSection = this->topSection();
     LayoutUnit logicalOffset =
         topSection ? topSection->logicalTop() : LayoutUnit();
     for (LayoutTableSection* section = topSection; section;
@@ -652,24 +682,11 @@ void LayoutTable::layout() {
       setLogicalHeight(logicalHeight() + computedLogicalHeight);
     }
 
-    LayoutUnit sectionLogicalLeft = LayoutUnit(
-        style()->isLeftToRightDirection() ? borderStart() : borderEnd());
-    if (!collapsing)
-      sectionLogicalLeft +=
-          style()->isLeftToRightDirection() ? paddingStart() : paddingEnd();
-
     // position the table sections
     LayoutTableSection* section = topSection;
     while (section) {
-      if (!sectionMoved && section->logicalTop() != logicalHeight())
-        sectionMoved = true;
       section->setLogicalLocation(
           LayoutPoint(sectionLogicalLeft, logicalHeight()));
-
-      // As we may skip invalidation on the table, we need to ensure that
-      // sections are invalidated when they moved.
-      if (sectionMoved && !section->selfNeedsLayout())
-        section->setMayNeedPaintInvalidation();
 
       setLogicalHeight(logicalHeight() + section->logicalHeight());
 
@@ -681,10 +698,11 @@ void LayoutTable::layout() {
 
     setLogicalHeight(logicalHeight() + borderAndPaddingAfter);
 
+    // Lay out bottom captions.
     for (unsigned i = 0; i < m_captions.size(); i++) {
       if (m_captions[i]->style()->captionSide() != ECaptionSide::Bottom)
         continue;
-      layoutCaption(*m_captions[i]);
+      layoutCaption(*m_captions[i], layouter);
     }
 
     updateLogicalHeight();
