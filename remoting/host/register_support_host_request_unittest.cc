@@ -153,11 +153,8 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   result->AddElement(support_id_lifetime);
 
   int consumed = 0;
-  base::ObserverListBase<SignalStrategy::Listener>::Iterator it(
-      &signal_strategy_listeners_);
-  SignalStrategy::Listener* listener;
-  while ((listener = it.GetNext()) != nullptr) {
-    if (listener->OnSignalStrategyIncomingStanza(response.get()))
+  for (auto& listener : signal_strategy_listeners_) {
+    if (listener.OnSignalStrategyIncomingStanza(response.get()))
       consumed++;
   }
   EXPECT_EQ(1, consumed);

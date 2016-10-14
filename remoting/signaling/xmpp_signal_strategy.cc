@@ -366,9 +366,8 @@ void XmppSignalStrategy::Core::OnStanza(
             << stanza->Str()
             << "\n=========================================================";
 
-  base::ObserverListBase<Listener>::Iterator it(&listeners_);
-  for (Listener* listener = it.GetNext(); listener; listener = it.GetNext()) {
-    if (listener->OnSignalStrategyIncomingStanza(stanza.get()))
+  for (auto& listener : listeners_) {
+    if (listener.OnSignalStrategyIncomingStanza(stanza.get()))
       return;
   }
 }
