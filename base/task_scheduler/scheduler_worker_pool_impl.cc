@@ -34,6 +34,8 @@ namespace {
 constexpr char kPoolNameSuffix[] = "Pool";
 constexpr char kDetachDurationHistogramPrefix[] =
     "TaskScheduler.DetachDuration.";
+constexpr char kNumTasksBeforeDetachHistogramPrefix[] =
+    "TaskScheduler.NumTasksBeforeDetach.";
 constexpr char kNumTasksBetweenWaitsHistogramPrefix[] =
     "TaskScheduler.NumTasksBetweenWaits.";
 constexpr char kTaskLatencyHistogramPrefix[] = "TaskScheduler.TaskLatency.";
@@ -280,6 +282,10 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // TaskScheduler.NumTasksBetweenWaits histogram was recorded.
   size_t num_tasks_since_last_wait_ = 0;
 
+  // Number of tasks executed since the last time the
+  // TaskScheduler.NumTasksBeforeDetach histogram was recorded.
+  size_t num_tasks_since_last_detach_ = 0;
+
   subtle::Atomic32 num_single_threaded_runners_ = 0;
 
   const int index_;
@@ -486,8 +492,12 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
 
   DCHECK_EQ(num_tasks_since_last_wait_, 0U);
 
+  // Record histograms if the worker detached in the past.
   if (!detach_duration.is_max()) {
     outer_->detach_duration_histogram_->AddTime(detach_duration);
+    outer_->num_tasks_before_detach_histogram_->Add(
+        num_tasks_since_last_detach_);
+    num_tasks_since_last_detach_ = 0;
     did_detach_since_last_get_work_ = true;
   }
 
@@ -593,6 +603,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     DidRunTaskWithPriority(TaskPriority task_priority,
                            const TimeDelta& task_latency) {
   ++num_tasks_since_last_wait_;
+  ++num_tasks_since_last_detach_;
 
   const int priority_index = static_cast<int>(task_priority);
 
@@ -671,6 +682,16 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
           kDetachDurationHistogramPrefix + name_ + kPoolNameSuffix,
           TimeDelta::FromMilliseconds(1),
           TimeDelta::FromHours(1),
+          50,
+          HistogramBase::kUmaTargetedHistogramFlag)),
+      // Mimics the UMA_HISTOGRAM_COUNTS_1000 macro. A SchedulerWorker is
+      // expected to run between zero and a few hundreds of tasks before
+      // detaching. When it runs more than 1000 tasks, there is no need to know
+      // the exact number of tasks that ran.
+      num_tasks_before_detach_histogram_(Histogram::FactoryGet(
+          kNumTasksBeforeDetachHistogramPrefix + name_ + kPoolNameSuffix,
+          1,
+          1000,
           50,
           HistogramBase::kUmaTargetedHistogramFlag)),
       // Mimics the UMA_HISTOGRAM_COUNTS_100 macro. A SchedulerWorker is

@@ -94,7 +94,11 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                                scoped_refptr<Sequence> sequence,
                                SchedulerWorker* worker) override;
 
-  const HistogramBase* num_tasks_between_waits_histogram_for_testing() const {
+  const HistogramBase* num_tasks_before_detach_histogram() const {
+    return num_tasks_before_detach_histogram_;
+  }
+
+  const HistogramBase* num_tasks_between_waits_histogram() const {
     return num_tasks_between_waits_histogram_;
   }
 
@@ -187,6 +191,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TaskScheduler.DetachDuration.[worker pool name] histogram. Intentionally
   // leaked.
   HistogramBase* const detach_duration_histogram_;
+
+  // TaskScheduler.NumTasksBeforeDetach.[worker pool name] histogram.
+  // Intentionally leaked.
+  HistogramBase* const num_tasks_before_detach_histogram_;
 
   // TaskScheduler.NumTasksBetweenWaits.[worker pool name] histogram.
   // Intentionally leaked.

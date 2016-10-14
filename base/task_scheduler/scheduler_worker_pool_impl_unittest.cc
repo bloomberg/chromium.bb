@@ -593,7 +593,11 @@ class TaskSchedulerWorkerPoolHistogramTest
  protected:
   void SetUp() override {}
 
-  void TearDown() override { worker_pool_->JoinForTesting(); }
+  void TearDown() override {
+    // |worker_pool_| initialization is done in test body.
+    if (worker_pool_)
+      worker_pool_->JoinForTesting();
+  }
 
  private:
   std::unique_ptr<StatisticsRecorder> statistics_recorder_ =
@@ -633,15 +637,10 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
   worker_pool_->WaitForAllWorkersIdleForTesting();
 
   // Verify that counts were recorded to the histogram as expected.
-  EXPECT_EQ(0, worker_pool_->num_tasks_between_waits_histogram_for_testing()
-                   ->SnapshotSamples()
-                   ->GetCount(0));
-  EXPECT_EQ(1, worker_pool_->num_tasks_between_waits_histogram_for_testing()
-                   ->SnapshotSamples()
-                   ->GetCount(3));
-  EXPECT_EQ(0, worker_pool_->num_tasks_between_waits_histogram_for_testing()
-                   ->SnapshotSamples()
-                   ->GetCount(10));
+  const auto* histogram = worker_pool_->num_tasks_between_waits_histogram();
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
+  EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(3));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 }
 
 namespace {
@@ -697,30 +696,63 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
   for (const auto& task_started_event : task_started_events)
     task_started_event->Wait();
 
+  const auto* histogram = worker_pool_->num_tasks_between_waits_histogram();
+
   // Verify that counts were recorded to the histogram as expected.
   // - The "0" bucket has a count of at least 1 because the SchedulerWorker on
   //   top of the idle stack isn't allowed to detach when its sleep timeout
   //   expires. Instead, it waits on its WaitableEvent again without running a
   //   task. The count may be higher than 1 because of spurious wake ups before
   //   the sleep timeout expires.
-  EXPECT_GE(worker_pool_->num_tasks_between_waits_histogram_for_testing()
-                ->SnapshotSamples()
-                ->GetCount(0),
-            1);
+  EXPECT_GE(histogram->SnapshotSamples()->GetCount(0), 1);
   // - The "1" bucket has a count of |kNumWorkersInWorkerPool| because each
   //   SchedulerWorker ran a task before waiting on its WaitableEvent at the
   //   beginning of the test.
   EXPECT_EQ(static_cast<int>(kNumWorkersInWorkerPool),
-            worker_pool_->num_tasks_between_waits_histogram_for_testing()
-                ->SnapshotSamples()
-                ->GetCount(1));
-  EXPECT_EQ(0, worker_pool_->num_tasks_between_waits_histogram_for_testing()
-                   ->SnapshotSamples()
-                   ->GetCount(10));
+            histogram->SnapshotSamples()->GetCount(1));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 
   tasks_can_exit_event.Signal();
   worker_pool_->WaitForAllWorkersIdleForTesting();
   worker_pool_->DisallowWorkerDetachmentForTesting();
+}
+
+TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
+  InitializeWorkerPool(kReclaimTimeForDetachTests, kNumWorkersInWorkerPool);
+  auto task_runner = worker_pool_->CreateTaskRunnerWithTraits(
+      TaskTraits(), ExecutionMode::SINGLE_THREADED);
+  auto other_task_runner = worker_pool_->CreateTaskRunnerWithTraits(
+      TaskTraits(), ExecutionMode::SINGLE_THREADED);
+
+  // Post 3 tasks and wait until they run.
+  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  worker_pool_->WaitForAllWorkersIdleForTesting();
+
+  // To allow the SchedulerWorker associated with |task_runner| to detach:
+  // - Make sure it isn't on top of the idle stack by waking up another
+  //   SchedulerWorker.
+  // - Release |task_runner|.
+  other_task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  task_runner = nullptr;
+
+  // Allow the SchedulerWorker to detach.
+  PlatformThread::Sleep(kReclaimTimeForDetachTests + kExtraTimeToWaitForDetach);
+
+  // Join the SchedulerWorkerPool. This forces SchedulerWorkers that detached
+  // during the test to record to the histogram.
+  worker_pool_->WaitForAllWorkersIdleForTesting();
+  worker_pool_->DisallowWorkerDetachmentForTesting();
+  worker_pool_->JoinForTesting();
+  const auto* histogram = worker_pool_->num_tasks_before_detach_histogram();
+  other_task_runner = nullptr;
+  worker_pool_.reset();
+
+  // Verify that counts were recorded to the histogram as expected.
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
+  EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(3));
+  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
 }
 
 }  // namespace internal
