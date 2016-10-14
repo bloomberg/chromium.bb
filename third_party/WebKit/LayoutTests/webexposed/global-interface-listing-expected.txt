@@ -3882,6 +3882,7 @@ interface MediaSettingsRange
     getter current
     getter max
     getter min
+    getter step
     method constructor
 interface MediaSource : EventTarget
     static method isTypeSupported

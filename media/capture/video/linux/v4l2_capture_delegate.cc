@@ -110,6 +110,7 @@ static mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id) {
     return mojom::Range::New();
   capability->max = range.maximum;
   capability->min = range.minimum;
+  capability->step = range.step;
 
   v4l2_control current = {};
   current.id = control_id;

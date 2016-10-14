@@ -342,7 +342,7 @@ public abstract class VideoCaptureCamera
         // Before the Camera2 API there was no official way to retrieve the supported, if any, ISO
         // values from |parameters|; some platforms had "iso-values", others "iso-mode-values" etc.
         // Ignore them.
-        builder.setMinIso(0).setMaxIso(0).setCurrentIso(0);
+        builder.setMinIso(0).setMaxIso(0).setCurrentIso(0).setStepIso(0);
 
         List<android.hardware.Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
         int minWidth = Integer.MAX_VALUE;
@@ -355,22 +355,26 @@ public abstract class VideoCaptureCamera
             if (size.width > maxWidth) maxWidth = size.width;
             if (size.height > maxHeight) maxHeight = size.height;
         }
-        builder.setMinHeight(minHeight).setMaxHeight(maxHeight);
-        builder.setMinWidth(minWidth).setMaxWidth(maxWidth);
+        builder.setMinHeight(minHeight).setMaxHeight(maxHeight).setStepHeight(1);
+        builder.setMinWidth(minWidth).setMaxWidth(maxWidth).setStepWidth(1);
         final android.hardware.Camera.Size currentSize = parameters.getPreviewSize();
-        builder.setCurrentHeight(currentSize.height);
-        builder.setCurrentWidth(currentSize.width);
+        builder.setCurrentHeight(currentSize.height).setCurrentWidth(currentSize.width);
 
         int maxZoom = 0;
         int currentZoom = 0;
         int minZoom = 0;
+        int stepZoom = 0;
         if (parameters.isZoomSupported()) {
             // The Max zoom is returned as x100 by the API to avoid using floating point.
             maxZoom = parameters.getZoomRatios().get(parameters.getMaxZoom());
             currentZoom = 100 + 100 * parameters.getZoom();
             minZoom = parameters.getZoomRatios().get(0);
+            if (parameters.getZoomRatios().size() > 1) {
+                stepZoom = parameters.getZoomRatios().get(1) - parameters.getZoomRatios().get(0);
+            }
         }
-        builder.setMinZoom(minZoom).setMaxZoom(maxZoom).setCurrentZoom(currentZoom);
+        builder.setMinZoom(minZoom).setMaxZoom(maxZoom);
+        builder.setCurrentZoom(currentZoom).setStepZoom(stepZoom);
 
         Log.d(TAG, "parameters.getFocusMode(): %s", parameters.getFocusMode());
         final String focusMode = parameters.getFocusMode();
@@ -409,6 +413,7 @@ public abstract class VideoCaptureCamera
                 Math.round(parameters.getMaxExposureCompensation() * step * 100));
         builder.setCurrentExposureCompensation(
                 Math.round(parameters.getExposureCompensation() * step * 100));
+        builder.setStepExposureCompensation(Math.round(step * 100));
 
         int jniWhiteBalanceMode = AndroidMeteringMode.NONE;
         if (parameters.isAutoWhiteBalanceLockSupported()

@@ -508,18 +508,22 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->iso->current = caps.getCurrentIso();
   photo_capabilities->iso->max = caps.getMaxIso();
   photo_capabilities->iso->min = caps.getMinIso();
+  photo_capabilities->iso->step = caps.getStepIso();
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->height->current = caps.getCurrentHeight();
   photo_capabilities->height->max = caps.getMaxHeight();
   photo_capabilities->height->min = caps.getMinHeight();
+  photo_capabilities->height->step = caps.getStepHeight();
   photo_capabilities->width = mojom::Range::New();
   photo_capabilities->width->current = caps.getCurrentWidth();
   photo_capabilities->width->max = caps.getMaxWidth();
   photo_capabilities->width->min = caps.getMinWidth();
+  photo_capabilities->width->step = caps.getStepWidth();
   photo_capabilities->zoom = mojom::Range::New();
   photo_capabilities->zoom->current = caps.getCurrentZoom();
   photo_capabilities->zoom->max = caps.getMaxZoom();
   photo_capabilities->zoom->min = caps.getMinZoom();
+  photo_capabilities->zoom->step = caps.getStepZoom();
   photo_capabilities->focus_mode = ToMojomMeteringMode(caps.getFocusMode());
   photo_capabilities->exposure_mode =
       ToMojomMeteringMode(caps.getExposureMode());
@@ -530,6 +534,8 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       caps.getMaxExposureCompensation();
   photo_capabilities->exposure_compensation->min =
       caps.getMinExposureCompensation();
+  photo_capabilities->exposure_compensation->step =
+      caps.getStepExposureCompensation();
   photo_capabilities->white_balance_mode =
       ToMojomMeteringMode(caps.getWhiteBalanceMode());
   photo_capabilities->fill_light_mode =
@@ -540,6 +546,7 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       caps.getCurrentColorTemperature();
   photo_capabilities->color_temperature->max = caps.getMaxColorTemperature();
   photo_capabilities->color_temperature->min = caps.getMinColorTemperature();
+  photo_capabilities->color_temperature->step = caps.getStepColorTemperature();
   photo_capabilities->brightness = media::mojom::Range::New();
   photo_capabilities->contrast = media::mojom::Range::New();
   photo_capabilities->saturation = media::mojom::Range::New();

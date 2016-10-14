@@ -321,16 +321,20 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(100, capabilities->iso->min);
   EXPECT_EQ(100, capabilities->iso->max);
   EXPECT_EQ(100, capabilities->iso->current);
+  EXPECT_EQ(0, capabilities->iso->step);
   EXPECT_EQ(capture_params.requested_format.frame_size.height(),
             capabilities->height->current);
   EXPECT_EQ(240, capabilities->height->min);
   EXPECT_EQ(1080, capabilities->height->max);
+  EXPECT_EQ(1, capabilities->height->step);
   EXPECT_EQ(capture_params.requested_format.frame_size.width(),
             capabilities->width->current);
   EXPECT_EQ(320, capabilities->width->min);
   EXPECT_EQ(1920, capabilities->width->max);
+  EXPECT_EQ(1, capabilities->width->step);
   EXPECT_EQ(100, capabilities->zoom->min);
   EXPECT_EQ(400, capabilities->zoom->max);
+  EXPECT_EQ(1, capabilities->zoom->step);
   EXPECT_GE(capabilities->zoom->current, capabilities->zoom->min);
   EXPECT_GE(capabilities->zoom->max, capabilities->zoom->current);
   EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->focus_mode);
@@ -338,24 +342,30 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(0, capabilities->exposure_compensation->min);
   EXPECT_EQ(0, capabilities->exposure_compensation->max);
   EXPECT_EQ(0, capabilities->exposure_compensation->current);
+  EXPECT_EQ(0, capabilities->exposure_compensation->step);
   EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->white_balance_mode);
   EXPECT_EQ(mojom::FillLightMode::NONE, capabilities->fill_light_mode);
   EXPECT_FALSE(capabilities->red_eye_reduction);
   EXPECT_EQ(0, capabilities->color_temperature->min);
   EXPECT_EQ(0, capabilities->color_temperature->max);
   EXPECT_EQ(0, capabilities->color_temperature->current);
+  EXPECT_EQ(0, capabilities->color_temperature->step);
   EXPECT_EQ(0, capabilities->brightness->min);
   EXPECT_EQ(0, capabilities->brightness->max);
   EXPECT_EQ(0, capabilities->brightness->current);
+  EXPECT_EQ(0, capabilities->brightness->step);
   EXPECT_EQ(0, capabilities->contrast->min);
   EXPECT_EQ(0, capabilities->contrast->max);
   EXPECT_EQ(0, capabilities->contrast->current);
+  EXPECT_EQ(0, capabilities->contrast->step);
   EXPECT_EQ(0, capabilities->saturation->min);
   EXPECT_EQ(0, capabilities->saturation->max);
   EXPECT_EQ(0, capabilities->saturation->current);
+  EXPECT_EQ(0, capabilities->saturation->step);
   EXPECT_EQ(0, capabilities->sharpness->min);
   EXPECT_EQ(0, capabilities->sharpness->max);
   EXPECT_EQ(0, capabilities->sharpness->current);
+  EXPECT_EQ(0, capabilities->sharpness->step);
 
   // Set options: zoom to the maximum value.
   const int max_zoom_value = capabilities->zoom->max;

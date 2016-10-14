@@ -31,6 +31,7 @@ static const int kBeepInterval = 500;
 
 static const uint32_t kMinZoom = 100;
 static const uint32_t kMaxZoom = 400;
+static const uint32_t kZoomStep = 1;
 
 void DrawPacman(bool use_argb,
                 uint8_t* const data,
@@ -186,18 +187,22 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   photo_capabilities->iso->current = 100;
   photo_capabilities->iso->max = 100;
   photo_capabilities->iso->min = 100;
+  photo_capabilities->iso->step = 0;
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->height->current = capture_format_.frame_size.height();
   photo_capabilities->height->max = 1080;
   photo_capabilities->height->min = 240;
+  photo_capabilities->height->step = 1;
   photo_capabilities->width = mojom::Range::New();
   photo_capabilities->width->current = capture_format_.frame_size.width();
   photo_capabilities->width->max = 1920;
   photo_capabilities->width->min = 320;
+  photo_capabilities->width->step = 1;
   photo_capabilities->zoom = mojom::Range::New();
   photo_capabilities->zoom->current = current_zoom_;
   photo_capabilities->zoom->max = kMaxZoom;
   photo_capabilities->zoom->min = kMinZoom;
+  photo_capabilities->zoom->step = kZoomStep;
   photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
   photo_capabilities->exposure_mode = mojom::MeteringMode::NONE;
   photo_capabilities->exposure_compensation = mojom::Range::New();

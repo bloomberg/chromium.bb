@@ -34,6 +34,11 @@ int PhotoCapabilities::getCurrentIso() const {
   return Java_PhotoCapabilities_getCurrentIso(AttachCurrentThread(), object_);
 }
 
+int PhotoCapabilities::getStepIso() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepIso(AttachCurrentThread(), object_);
+}
+
 int PhotoCapabilities::getMinHeight() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMinHeight(AttachCurrentThread(), object_);
@@ -48,6 +53,11 @@ int PhotoCapabilities::getCurrentHeight() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getCurrentHeight(AttachCurrentThread(),
                                                  object_);
+}
+
+int PhotoCapabilities::getStepHeight() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepHeight(AttachCurrentThread(), object_);
 }
 
 int PhotoCapabilities::getMinWidth() const {
@@ -65,6 +75,11 @@ int PhotoCapabilities::getCurrentWidth() const {
   return Java_PhotoCapabilities_getCurrentWidth(AttachCurrentThread(), object_);
 }
 
+int PhotoCapabilities::getStepWidth() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepWidth(AttachCurrentThread(), object_);
+}
+
 int PhotoCapabilities::getMinZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMinZoom(AttachCurrentThread(), object_);
@@ -78,6 +93,11 @@ int PhotoCapabilities::getMaxZoom() const {
 int PhotoCapabilities::getCurrentZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getCurrentZoom(AttachCurrentThread(), object_);
+}
+
+int PhotoCapabilities::getStepZoom() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepZoom(AttachCurrentThread(), object_);
 }
 
 PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getFocusMode() const {
@@ -108,6 +128,12 @@ int PhotoCapabilities::getMaxExposureCompensation() const {
 int PhotoCapabilities::getCurrentExposureCompensation() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getCurrentExposureCompensation(
+      AttachCurrentThread(), object_);
+}
+
+int PhotoCapabilities::getStepExposureCompensation() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepExposureCompensation(
       AttachCurrentThread(), object_);
 }
 
@@ -148,6 +174,12 @@ int PhotoCapabilities::getCurrentColorTemperature() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getCurrentColorTemperature(
       AttachCurrentThread(), object_);
+}
+
+int PhotoCapabilities::getStepColorTemperature() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepColorTemperature(AttachCurrentThread(),
+                                                        object_);
 }
 
 }  // namespace media

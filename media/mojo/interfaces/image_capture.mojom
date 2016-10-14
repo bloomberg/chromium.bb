@@ -11,6 +11,7 @@ struct Range {
   int32 max;
   int32 min;
   int32 current;
+  int32 step;
 };
 
 // https://www.w3.org/TR/image-capture/#MeteringMode

@@ -10,4 +10,5 @@
     readonly attribute long max;
     readonly attribute long min;
     readonly attribute long current;
+    readonly attribute long step;
 };

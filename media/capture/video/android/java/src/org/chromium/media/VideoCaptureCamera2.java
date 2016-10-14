@@ -688,7 +688,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             minIso = iso_range.getLower();
             maxIso = iso_range.getUpper();
         }
-        builder.setMinIso(minIso).setMaxIso(maxIso);
+        builder.setMinIso(minIso).setMaxIso(maxIso).setStepIso(1);
         builder.setCurrentIso(mPreviewRequest.get(CaptureRequest.SENSOR_SENSITIVITY));
 
         final StreamConfigurationMap streamMap =
@@ -704,8 +704,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             if (size.getWidth() > maxWidth) maxWidth = size.getWidth();
             if (size.getHeight() > maxHeight) maxHeight = size.getHeight();
         }
-        builder.setMinHeight(minHeight).setMaxHeight(maxHeight);
-        builder.setMinWidth(minWidth).setMaxWidth(maxWidth);
+        builder.setMinHeight(minHeight).setMaxHeight(maxHeight).setStepHeight(1);
+        builder.setMinWidth(minWidth).setMaxWidth(maxWidth).setStepWidth(1);
         builder.setCurrentHeight((mPhotoHeight > 0) ? mPhotoHeight : mCaptureFormat.getHeight());
         builder.setCurrentWidth((mPhotoWidth > 0) ? mPhotoWidth : mCaptureFormat.getWidth());
 
@@ -718,7 +718,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 * cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
                           .width()
                 / mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width();
-        builder.setMinZoom(minZoom).setMaxZoom(maxZoom).setCurrentZoom(currentZoom);
+        builder.setMinZoom(minZoom).setMaxZoom(maxZoom);
+        builder.setCurrentZoom(currentZoom).setStepZoom(100);
 
         final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
         // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
@@ -758,6 +759,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 Math.round(exposureCompensationRange.getUpper() * step * 100));
         builder.setCurrentExposureCompensation(Math.round(
                 mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) * step * 100));
+        builder.setStepExposureCompensation(Math.round(step * 100));
 
         final int whiteBalanceMode = mPreviewRequest.get(CaptureRequest.CONTROL_AWB_MODE);
         if (whiteBalanceMode == CameraMetadata.CONTROL_AWB_MODE_OFF) {
@@ -774,6 +776,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         if (index >= 0) {
             builder.setCurrentColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(index));
         }
+        builder.setStepColorTemperature(1);
 
         if (!cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
             builder.setFillLightMode(AndroidFillLightMode.NONE);
