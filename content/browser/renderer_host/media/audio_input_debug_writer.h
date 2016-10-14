@@ -11,59 +11,40 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_writer.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
 
 class AudioBus;
-class AudioBusRefCounted;
 
 }  // namespace media
 
 namespace content {
 
-// Writes audio input data used for debugging purposes. Can be created on any
-// thread. Must be destroyed on the FILE thread. Write call can be made on any
-// thread. This object must be unregistered in Write caller before destroyed.
-// When created, it takes ownership of |file|.
+// Writes audio input data used for debugging purposes. All operations are
+// non-blocking.
 class CONTENT_EXPORT AudioInputDebugWriter
     : public NON_EXPORTED_BASE(media::AudioInputWriter) {
  public:
-  AudioInputDebugWriter(base::File file, const media::AudioParameters& params);
-
+  explicit AudioInputDebugWriter(const media::AudioParameters& params);
   ~AudioInputDebugWriter() override;
 
-  // Write data from |data| to file.
+  void Start(const base::FilePath& file) override;
+  void Stop() override;
   void Write(std::unique_ptr<media::AudioBus> data) override;
+  bool WillWrite() override;
 
  private:
-  // Write data from |data| to file. Called on the FILE thread.
-  void DoWrite(std::unique_ptr<media::AudioBus> data);
-
-  // Write wave header to file. Called on the FILE thread twice: on construction
-  // of AudioInputDebugWriter size of the wave data is unknown, so the header is
-  // written with zero sizes; then on destruction it is re-written with the
-  // actual size info accumulated throughout the object lifetime.
-  void WriteHeader();
-
-  // The file to write to.
-  base::File file_;
-
-  // Number of written samples.
-  uint64_t samples_;
-
-  // Input audio parameters required to build wave header.
-  media::AudioParameters params_;
-
-  // Intermediate buffer to be written to file. Interleaved 16 bit audio data.
-  std::unique_ptr<int16_t[]> interleaved_data_;
-  int interleaved_data_size_;
-
-  base::WeakPtrFactory<AudioInputDebugWriter> weak_factory_;
+  class AudioFileWriter;
+  using AudioFileWriterUniquePtr =
+      std::unique_ptr<AudioFileWriter, BrowserThread::DeleteOnFileThread>;
+  AudioFileWriterUniquePtr file_writer_;
+  const media::AudioParameters params_;
+  base::SequenceChecker client_sequence_checker_;
 };
 
 }  // namspace content

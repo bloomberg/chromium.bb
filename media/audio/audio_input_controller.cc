@@ -85,10 +85,12 @@ namespace media {
 // static
 AudioInputController::Factory* AudioInputController::factory_ = nullptr;
 
-AudioInputController::AudioInputController(EventHandler* handler,
-                                           SyncWriter* sync_writer,
-                                           UserInputMonitor* user_input_monitor,
-                                           const bool agc_is_enabled)
+AudioInputController::AudioInputController(
+    EventHandler* handler,
+    SyncWriter* sync_writer,
+    std::unique_ptr<AudioInputWriter> debug_writer,
+    UserInputMonitor* user_input_monitor,
+    const bool agc_is_enabled)
     : creator_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       handler_(handler),
       stream_(nullptr),
@@ -104,7 +106,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
       silence_state_(SILENCE_STATE_NO_MEASUREMENT),
 #endif
       prev_key_down_count_(0),
-      input_writer_(nullptr) {
+      debug_writer_(std::move(debug_writer)) {
   DCHECK(creator_task_runner_.get());
 }
 
@@ -129,7 +131,7 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
         audio_manager, event_handler, params, user_input_monitor);
   }
   scoped_refptr<AudioInputController> controller(new AudioInputController(
-      event_handler, nullptr, user_input_monitor, false));
+      event_handler, nullptr, nullptr, user_input_monitor, false));
 
   controller->task_runner_ = audio_manager->GetTaskRunner();
 
@@ -155,6 +157,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
     const AudioParameters& params,
     const std::string& device_id,
     SyncWriter* sync_writer,
+    std::unique_ptr<AudioInputWriter> debug_writer,
     UserInputMonitor* user_input_monitor,
     const bool agc_is_enabled) {
   DCHECK(audio_manager);
@@ -166,7 +169,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
-      event_handler, sync_writer, user_input_monitor, agc_is_enabled));
+      event_handler, sync_writer, std::move(debug_writer), user_input_monitor,
+      agc_is_enabled));
   controller->task_runner_ = audio_manager->GetTaskRunner();
 
   // Create and open a new audio input stream from the existing
@@ -190,6 +194,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
     EventHandler* event_handler,
     AudioInputStream* stream,
     SyncWriter* sync_writer,
+    std::unique_ptr<AudioInputWriter> debug_writer,
     UserInputMonitor* user_input_monitor) {
   DCHECK(sync_writer);
   DCHECK(stream);
@@ -197,7 +202,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
-      event_handler, sync_writer, user_input_monitor, false));
+      event_handler, sync_writer, std::move(debug_writer), user_input_monitor,
+      false));
   controller->task_runner_ = task_runner;
 
   if (!controller->task_runner_->PostTask(
@@ -374,7 +380,8 @@ void AudioInputController::DoClose() {
   log_silence_state_ = false;
 #endif
 
-  input_writer_ = nullptr;
+  if (debug_writer_)
+    debug_writer_->Stop();
 
   state_ = CLOSED;
 }
@@ -412,10 +419,7 @@ void AudioInputController::OnData(AudioInputStream* stream,
                                   const AudioBus* source,
                                   uint32_t hardware_delay_bytes,
                                   double volume) {
-  // |input_writer_| should only be accessed on the audio thread, but as a means
-  // to avoid copying data and posting on the audio thread, we just check for
-  // non-null here.
-  if (input_writer_) {
+  if (debug_writer_ && debug_writer_->WillWrite()) {
     std::unique_ptr<AudioBus> source_copy =
         AudioBus::Create(source->channels(), source->frames());
     source->CopyTo(source_copy.get());
@@ -544,23 +548,17 @@ void AudioInputController::OnError(AudioInputStream* stream) {
 }
 
 void AudioInputController::EnableDebugRecording(
-    AudioInputWriter* input_writer) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &AudioInputController::DoEnableDebugRecording,
-      this,
-      input_writer));
+    const base::FilePath& file_name) {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AudioInputController::DoEnableDebugRecording, this,
+                            file_name));
 }
 
-void AudioInputController::DisableDebugRecording(
-    const base::Closure& callback) {
+void AudioInputController::DisableDebugRecording() {
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
-  DCHECK(!callback.is_null());
-
-  task_runner_->PostTaskAndReply(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AudioInputController::DoDisableDebugRecording,
-                 this),
-      callback);
+      base::Bind(&AudioInputController::DoDisableDebugRecording, this));
 }
 
 void AudioInputController::DoStopCloseAndClearStream() {
@@ -621,22 +619,23 @@ void AudioInputController::LogCaptureStartupResult(
 }
 
 void AudioInputController::DoEnableDebugRecording(
-    AudioInputWriter* input_writer) {
+    const base::FilePath& file_name) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!input_writer_);
-  input_writer_ = input_writer;
+  if (debug_writer_)
+    debug_writer_->Start(file_name);
 }
 
 void AudioInputController::DoDisableDebugRecording() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  input_writer_ = nullptr;
+  if (debug_writer_)
+    debug_writer_->Stop();
 }
 
 void AudioInputController::WriteInputDataForDebugging(
     std::unique_ptr<AudioBus> data) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (input_writer_)
-    input_writer_->Write(std::move(data));
+  if (debug_writer_)
+    debug_writer_->Write(std::move(data));
 }
 
 void AudioInputController::LogMessage(const std::string& message) {

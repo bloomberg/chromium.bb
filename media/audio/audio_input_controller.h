@@ -185,6 +185,7 @@ class MEDIA_EXPORT AudioInputController
       const std::string& device_id,
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer,
+      std::unique_ptr<AudioInputWriter> debug_writer,
       UserInputMonitor* user_input_monitor,
       const bool agc_is_enabled);
 
@@ -199,6 +200,7 @@ class MEDIA_EXPORT AudioInputController
       AudioInputStream* stream,
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer,
+      std::unique_ptr<AudioInputWriter> debug_writer,
       UserInputMonitor* user_input_monitor);
 
   // Starts recording using the created audio input stream.
@@ -230,11 +232,10 @@ class MEDIA_EXPORT AudioInputController
   bool SharedMemoryAndSyncSocketMode() const { return sync_writer_ != NULL; }
 
   // Enable debug recording of audio input.
-  void EnableDebugRecording(AudioInputWriter* input_writer);
+  void EnableDebugRecording(const base::FilePath& file_name);
 
-  // Disbale debug recording of audio input. Must be called before owner of
-  // |input_writer| deletes it.
-  void DisableDebugRecording(const base::Closure& callback);
+  // Disable debug recording of audio input.
+  void DisableDebugRecording();
 
  protected:
   friend class base::RefCountedThreadSafe<AudioInputController>;
@@ -288,6 +289,7 @@ class MEDIA_EXPORT AudioInputController
 
   AudioInputController(EventHandler* handler,
                        SyncWriter* sync_writer,
+                       std::unique_ptr<AudioInputWriter> debug_writer,
                        UserInputMonitor* user_input_monitor,
                        const bool agc_is_enabled);
   ~AudioInputController() override;
@@ -325,7 +327,7 @@ class MEDIA_EXPORT AudioInputController
 
   // Enable and disable debug recording of audio input. Called on the audio
   // thread.
-  void DoEnableDebugRecording(AudioInputWriter* input_writer);
+  void DoEnableDebugRecording(const base::FilePath& file_name);
   void DoDisableDebugRecording();
 
   // Called on the audio thread.
@@ -390,7 +392,7 @@ class MEDIA_EXPORT AudioInputController
   base::TimeTicks low_latency_create_time_;
 
   // Used for audio debug recordings. Accessed on audio thread.
-  AudioInputWriter* input_writer_;
+  const std::unique_ptr<AudioInputWriter> debug_writer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioInputController);

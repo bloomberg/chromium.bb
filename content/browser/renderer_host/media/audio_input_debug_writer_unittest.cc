@@ -5,6 +5,8 @@
 #include <stdint.h>
 
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/media/audio_input_debug_writer.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,7 +43,8 @@ class AudioInputDebugWriterTest
     : public testing::TestWithParam<AudioInputDebugWriterTestData> {
  public:
   AudioInputDebugWriterTest()
-      : params_(media::AudioParameters::Format::AUDIO_PCM_LINEAR,
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD),
+        params_(media::AudioParameters::Format::AUDIO_PCM_LINEAR,
                 std::tr1::get<0>(GetParam()),
                 std::tr1::get<1>(GetParam()),
                 kBytesPerSample * 8,
@@ -152,17 +155,10 @@ class AudioInputDebugWriterTest
   void TestDoneOnFileThread(const base::Closure& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-    // |writer| must be destroyed on FILE thread.
-    input_debug_writer_.reset(nullptr);
     callback.Run();
   }
 
-  void DoDebugRecording(base::File file) {
-    if (!file.IsValid())
-      return;
-
-    input_debug_writer_.reset(
-        new AudioInputDebugWriter(std::move(file), params_));
+  void DoDebugRecording() {
     // Write tasks are posted to BrowserThread::FILE.
     for (int i = 0; i < writes_; ++i) {
       std::unique_ptr<media::AudioBus> bus = media::AudioBus::Create(
@@ -175,7 +171,9 @@ class AudioInputDebugWriterTest
 
       input_debug_writer_->Write(std::move(bus));
     }
+  }
 
+  void WaitForRecordingCompletion() {
     media::WaitableMessageLoopEvent event;
 
     // Post a task to BrowserThread::FILE indicating that all the writes are
@@ -187,6 +185,28 @@ class AudioInputDebugWriterTest
 
     // Wait for TestDoneOnFileThread() to call event's closure.
     event.RunAndWait();
+  }
+
+  void RecordAndVerifyOnce() {
+    base::FilePath file_path;
+    EXPECT_TRUE(base::CreateTemporaryFile(&file_path));
+
+    input_debug_writer_->Start(file_path);
+
+    DoDebugRecording();
+
+    input_debug_writer_->Stop();
+
+    WaitForRecordingCompletion();
+
+    VerifyRecording(file_path);
+
+    if (::testing::Test::HasFailure()) {
+      LOG(ERROR) << "Test failed; keeping recording(s) at ["
+                 << file_path.value().c_str() << "].";
+    } else {
+      EXPECT_TRUE(base::DeleteFile(file_path, false));
+    }
   }
 
  protected:
@@ -211,15 +231,37 @@ class AudioInputDebugWriterTest
   DISALLOW_COPY_AND_ASSIGN(AudioInputDebugWriterTest);
 };
 
+class AudioInputDebugWriterBehavioralTest : public AudioInputDebugWriterTest {};
+
 TEST_P(AudioInputDebugWriterTest, WaveRecordingTest) {
+  input_debug_writer_.reset(new AudioInputDebugWriter(params_));
+
+  RecordAndVerifyOnce();
+}
+
+TEST_P(AudioInputDebugWriterBehavioralTest,
+       DeletedBeforeRecordingFinishedOnFileThread) {
+  input_debug_writer_.reset(new AudioInputDebugWriter(params_));
+
   base::FilePath file_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&file_path));
 
-  base::File file(file_path,
-                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  EXPECT_TRUE(file.IsValid());
+  base::WaitableEvent* wait_for_deletion =
+      new base::WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  DoDebugRecording(std::move(file));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&base::WaitableEvent::Wait, base::Owned(wait_for_deletion)));
+
+  input_debug_writer_->Start(file_path);
+
+  DoDebugRecording();
+
+  input_debug_writer_.reset();
+  wait_for_deletion->Signal();
+
+  WaitForRecordingCompletion();
 
   VerifyRecording(file_path);
 
@@ -231,10 +273,36 @@ TEST_P(AudioInputDebugWriterTest, WaveRecordingTest) {
   }
 }
 
+TEST_P(AudioInputDebugWriterBehavioralTest, FileCreationError) {
+  input_debug_writer_.reset(new AudioInputDebugWriter(params_));
+  base::FilePath file_path;  // Empty file name.
+  input_debug_writer_->Start(file_path);
+  DoDebugRecording();
+}
+
+TEST_P(AudioInputDebugWriterBehavioralTest, StartStopStartStop) {
+  input_debug_writer_.reset(new AudioInputDebugWriter(params_));
+  RecordAndVerifyOnce();
+  RecordAndVerifyOnce();
+}
+
+TEST_P(AudioInputDebugWriterBehavioralTest, DestroyNotStarted) {
+  input_debug_writer_.reset(new AudioInputDebugWriter(params_));
+  input_debug_writer_.reset();
+}
+
+TEST_P(AudioInputDebugWriterBehavioralTest, DestroyStarted) {
+  input_debug_writer_.reset(new AudioInputDebugWriter(params_));
+  base::FilePath file_path;
+  EXPECT_TRUE(base::CreateTemporaryFile(&file_path));
+  input_debug_writer_->Start(file_path);
+  input_debug_writer_.reset();
+}
+
 INSTANTIATE_TEST_CASE_P(
     AudioInputDebugWriterTest,
     AudioInputDebugWriterTest,
-    // Using 10ms sframes per buffer everywhere.
+    // Using 10ms frames per buffer everywhere.
     testing::Values(
         // No writes.
         std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
@@ -266,5 +334,16 @@ INSTANTIATE_TEST_CASE_P(
                              48000,
                              48000 / 100,
                              1500)));
+
+INSTANTIATE_TEST_CASE_P(
+    AudioInputDebugWriterBehavioralTest,
+    AudioInputDebugWriterBehavioralTest,
+    // Using 10ms frames per buffer everywhere.
+    testing::Values(
+        // No writes.
+        std::tr1::make_tuple(media::ChannelLayout::CHANNEL_LAYOUT_MONO,
+                             44100,
+                             44100 / 100,
+                             100)));
 
 }  // namespace content
