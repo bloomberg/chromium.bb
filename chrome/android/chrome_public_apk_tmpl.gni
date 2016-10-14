@@ -13,9 +13,7 @@ declare_args() {
   chrome_public_apk_use_chromium_linker = chromium_linker_supported
 
   # Whether chrome_public_apk should use the relocation packer.
-  # TODO: Enable packed relocations for x64. See: b/20532404
-  chrome_public_apk_use_relocation_packer =
-      chromium_linker_supported && current_cpu != "x64"
+  chrome_public_apk_use_relocation_packer = chromium_linker_supported
 
   # Whether native libraries should be loaded from within the apk.
   # Only attempt loading the library from the APK for 64 bit devices
