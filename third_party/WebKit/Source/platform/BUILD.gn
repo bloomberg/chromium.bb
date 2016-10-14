@@ -1637,6 +1637,7 @@ test("blink_platform_unittests") {
     "fonts/FontCacheTest.cpp",
     "fonts/FontDescriptionTest.cpp",
     "fonts/FontPlatformDataTest.cpp",
+    "fonts/FontTest.cpp",
     "fonts/GlyphBufferTest.cpp",
     "fonts/GlyphPageTreeNodeTest.cpp",
     "fonts/OrientationIteratorTest.cpp",

@@ -407,6 +407,76 @@ void Font::drawGlyphBuffer(SkCanvas* canvas,
   }
 }
 
+static int getInterceptsFromBloberizer(const GlyphBuffer& glyphBuffer,
+                                       const Font* font,
+                                       const SkPaint& paint,
+                                       float deviceScaleFactor,
+                                       const std::tuple<float, float>& bounds,
+                                       SkScalar* interceptsBuffer) {
+  SkScalar boundsArray[2] = {std::get<0>(bounds), std::get<1>(bounds)};
+  GlyphBufferBloberizer bloberizer(glyphBuffer, font, deviceScaleFactor);
+  std::pair<sk_sp<SkTextBlob>, BlobRotation> blob;
+
+  int numIntervals = 0;
+  while (!bloberizer.done()) {
+    blob = bloberizer.next();
+    DCHECK(blob.first);
+
+    // GlyphBufferBloberizer splits for a new blob rotation, but does not split
+    // for a change in font. A TextBlob can contain runs with differing fonts
+    // and the getTextBlobIntercepts method handles multiple fonts for us. For
+    // upright in vertical blobs we currently have to bail, see crbug.com/655154
+    if (blob.second == BlobRotation::CCWRotation)
+      continue;
+
+    SkScalar* offsetInterceptsBuffer = nullptr;
+    if (interceptsBuffer)
+      offsetInterceptsBuffer = &interceptsBuffer[numIntervals];
+    numIntervals += paint.getTextBlobIntercepts(blob.first.get(), boundsArray,
+                                                offsetInterceptsBuffer);
+  }
+  return numIntervals;
+}
+
+void Font::getTextIntercepts(const TextRunPaintInfo& runInfo,
+                             float deviceScaleFactor,
+                             const SkPaint& paint,
+                             const std::tuple<float, float>& bounds,
+                             Vector<TextIntercept>& intercepts) const {
+  if (shouldSkipDrawing())
+    return;
+
+  if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
+    SkScalar boundsArray[2] = {std::get<0>(bounds), std::get<1>(bounds)};
+    int numIntervals = paint.getTextBlobIntercepts(
+        runInfo.cachedTextBlob->get(), boundsArray, nullptr);
+    if (!numIntervals)
+      return;
+    DCHECK_EQ(numIntervals % 2, 0);
+    intercepts.resize(numIntervals / 2);
+    paint.getTextBlobIntercepts(runInfo.cachedTextBlob->get(), boundsArray,
+                                reinterpret_cast<SkScalar*>(intercepts.data()));
+    return;
+  }
+
+  GlyphBuffer glyphBuffer;
+  buildGlyphBuffer(runInfo, glyphBuffer);
+
+  // Get the number of intervals, without copying the actual values by
+  // specifying nullptr for the buffer, following the Skia allocation model for
+  // retrieving text intercepts.
+  int numIntervals = getInterceptsFromBloberizer(
+      glyphBuffer, this, paint, deviceScaleFactor, bounds, nullptr);
+  if (!numIntervals)
+    return;
+  DCHECK_EQ(numIntervals % 2, 0);
+  intercepts.resize(numIntervals / 2);
+
+  getInterceptsFromBloberizer(glyphBuffer, this, paint, deviceScaleFactor,
+                              bounds,
+                              reinterpret_cast<SkScalar*>(intercepts.data()));
+}
+
 static inline FloatRect pixelSnappedSelectionRect(FloatRect rect) {
   // Using roundf() rather than ceilf() for the right edge as a compromise to
   // ensure correct caret positioning.

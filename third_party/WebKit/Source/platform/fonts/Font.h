@@ -101,6 +101,23 @@ class PLATFORM_EXPORT Font {
                          float deviceScaleFactor,
                          const SkPaint&) const;
 
+  struct TextIntercept {
+    float m_begin, m_end;
+  };
+
+  // Compute the text intercepts along the axis of the advance and write them
+  // into the specified Vector of TextIntercepts. The number of those is zero or
+  // a multiple of two, and is at most the number of glyphs * 2 in the TextRun
+  // part of TextRunPaintInfo. Specify bounds for the upper and lower extend of
+  // a line crossing through the text, parallel to the baseline.
+  // TODO(drott): crbug.com/655154 Fix this for
+  // upright in vertical.
+  void getTextIntercepts(const TextRunPaintInfo&,
+                         float deviceScaleFactor,
+                         const SkPaint&,
+                         const std::tuple<float, float>& bounds,
+                         Vector<TextIntercept>&) const;
+
   // Glyph bounds will be the minimum rect containing all glyph strokes, in
   // coordinates using (<text run x position>, <baseline position>) as the
   // origin.
