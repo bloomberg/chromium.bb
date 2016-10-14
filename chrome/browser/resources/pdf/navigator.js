@@ -8,12 +8,9 @@
  * Creates a new NavigatorDelegate for calling browser-specific functions to
  * do the actual navigating.
  * @param {boolean} isInTab Indicates if the PDF viewer is displayed in a tab.
- * @param {boolean} isSourceFileUrl Indicates if the navigation source is a
- *     file:// URL.
  */
-function NavigatorDelegate(isInTab, isSourceFileUrl) {
+function NavigatorDelegate(isInTab) {
   this.isInTab_ = isInTab;
-  this.isSourceFileUrl_ = isSourceFileUrl;
 }
 
 /**
@@ -41,7 +38,7 @@ NavigatorDelegate.prototype = {
   navigateInCurrentTab: function(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
-    if (chrome.tabs && this.isInTab_ && this.isSourceFileUrl_)
+    if (chrome.tabs && this.isInTab_)
       chrome.tabs.update({url: url});
     else
       window.location.href = url;
@@ -174,7 +171,7 @@ Navigator.prototype = {
 
   /**
    * @private
-   * Checks if the URL starts with a scheme and s not just a scheme.
+   * Checks if the URL starts with a scheme and is not just a scheme.
    * @param {string} The input URL
    * @return {boolean} Whether the url is valid.
    */
@@ -187,6 +184,11 @@ Navigator.prototype = {
         !url.startsWith('mailto:')) {
       return false;
     }
+
+    // Navigations to file:-URLs are only allowed from file:-URLs.
+    if (url.startsWith('file:') && !this.originalUrl_.startsWith('file:'))
+      return false;
+
 
     // Make sure |url| is not only a scheme.
     if (url == 'http://' ||

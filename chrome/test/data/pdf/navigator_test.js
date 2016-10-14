@@ -12,16 +12,16 @@ function MockNavigatorDelegate() {
 MockNavigatorDelegate.prototype = {
   navigateInCurrentTab: function(url) {
     this.navigateInCurrentTabCalled = true;
-    this.url = url;
+    this.url = url || '<called, but no url set>';
   },
   navigateInNewTab: function(url) {
     this.navigateInNewTabCalled = true;
-    this.url = url;
+    this.url = url || '<called, but no url set>';
 
   },
   navigateInNewWindow: function(url) {
     this.navigateInNewWindowCalled = true;
-    this.url = url;
+    this.url = url || '<called, but no url set>';
   },
   reset: function() {
     this.navigateInCurrentTabCalled = false;
@@ -48,6 +48,10 @@ function doNavigationUrlTest(
   navigatorDelegate.reset();
   navigator.navigate(url, disposition);
   chrome.test.assertFalse(viewportChangedCallback.wasCalled);
+  chrome.test.assertEq(expectedResultUrl, navigatorDelegate.url);
+  if (expectedResultUrl === undefined) {
+    return;
+  }
   switch (disposition) {
     case Navigator.WindowOpenDisposition.CURRENT_TAB:
       chrome.test.assertTrue(navigatorDelegate.navigateInCurrentTabCalled);
@@ -61,7 +65,6 @@ function doNavigationUrlTest(
     default:
       break;
   }
-  chrome.test.assertEq(expectedResultUrl, navigatorDelegate.url);
 }
 
 /**
@@ -251,6 +254,38 @@ var tests = [
         url,
         '/foodotcom/bar.pdf',
         'file:///foodotcom/bar.pdf');
+
+    chrome.test.succeed();
+  },
+
+  function testNavigateInvalidUrls() {
+    var url = 'https://example.com/some-web-document.pdf';
+
+    // From non-file: to file:
+    doNavigationUrlTests(
+        url,
+        'file:///bar.pdf',
+        undefined);
+
+    doNavigationUrlTests(
+        url,
+        'chrome://version',
+        undefined);
+
+    doNavigationUrlTests(
+        url,
+        'javascript:// this is not a document.pdf',
+        undefined);
+
+    doNavigationUrlTests(
+        url,
+        'this-is-not-a-valid-scheme://path.pdf',
+        undefined);
+
+    doNavigationUrlTests(
+        url,
+        '',
+        undefined);
 
     chrome.test.succeed();
   }
