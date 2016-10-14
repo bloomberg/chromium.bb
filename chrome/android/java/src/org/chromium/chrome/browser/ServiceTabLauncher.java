@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
-import org.chromium.chrome.browser.webapps.WebappRegistry.FetchWebappDataStorageCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -74,49 +73,46 @@ public class ServiceTabLauncher {
 
         // 2. Launch WebappActivity if one matches the target URL and was opened recently.
         // Otherwise, open the URL in a tab.
-        FetchWebappDataStorageCallback callback = new FetchWebappDataStorageCallback() {
-            @Override
-            public void onWebappDataStorageRetrieved(final WebappDataStorage storage) {
-                // If we do not find a WebappDataStorage corresponding to this URL, or if it hasn't
-                // been opened recently enough, open the URL in a tab.
-                if (storage == null || !storage.wasLaunchedRecently()) {
-                    LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
-                    loadUrlParams.setPostData(postData);
-                    loadUrlParams.setVerbatimHeaders(extraHeaders);
-                    loadUrlParams.setReferrer(new Referrer(referrerUrl, referrerPolicy));
+        final WebappDataStorage storage =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(url);
 
-                    AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(loadUrlParams,
-                            requestId);
-                    tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI,
-                            Tab.INVALID_TAB_ID);
-                } else {
-                    // The URL is within the scope of a recently launched standalone-capable web app
-                    // on the home screen, so open it a standalone web app frame. An AsyncTask is
-                    // used because WebappDataStorage.createWebappLaunchIntent contains a Bitmap
-                    // decode operation and should not be run on the UI thread.
-                    //
-                    // This currently assumes that the only source is notifications; any future use
-                    // which adds a different source will need to change this.
-                    new AsyncTask<Void, Void, Intent>() {
-                        @Override
-                        protected final Intent doInBackground(Void... nothing) {
-                            return storage.createWebappLaunchIntent();
-                        }
+        // If we do not find a WebappDataStorage corresponding to this URL, or if it hasn't
+        // been opened recently enough, open the URL in a tab.
+        if (storage == null || !storage.wasLaunchedRecently()) {
+            LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
+            loadUrlParams.setPostData(postData);
+            loadUrlParams.setVerbatimHeaders(extraHeaders);
+            loadUrlParams.setReferrer(new Referrer(referrerUrl, referrerPolicy));
 
-                        @Override
-                        protected final void onPostExecute(Intent intent) {
-                            // Replace the web app URL with the URL from the notification. This is
-                            // within the webapp's scope, so it is valid.
-                            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
-                            intent.putExtra(ShortcutHelper.EXTRA_SOURCE,
-                                    ShortcutSource.NOTIFICATION);
-                            tabDelegate.createNewStandaloneFrame(intent);
-                        }
-                    }.execute();
+            AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(loadUrlParams,
+                    requestId);
+            tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI,
+                    Tab.INVALID_TAB_ID);
+        } else {
+            // The URL is within the scope of a recently launched standalone-capable web app
+            // on the home screen, so open it a standalone web app frame. An AsyncTask is
+            // used because WebappDataStorage.createWebappLaunchIntent contains a Bitmap
+            // decode operation and should not be run on the UI thread.
+            //
+            // This currently assumes that the only source is notifications; any future use
+            // which adds a different source will need to change this.
+            new AsyncTask<Void, Void, Intent>() {
+                @Override
+                protected final Intent doInBackground(Void... nothing) {
+                    return storage.createWebappLaunchIntent();
                 }
-            }
-        };
-        WebappRegistry.getWebappDataStorageForUrl(url, callback);
+
+                @Override
+                protected final void onPostExecute(Intent intent) {
+                    // Replace the web app URL with the URL from the notification. This is
+                    // within the webapp's scope, so it is valid.
+                    intent.putExtra(ShortcutHelper.EXTRA_URL, url);
+                    intent.putExtra(ShortcutHelper.EXTRA_SOURCE,
+                            ShortcutSource.NOTIFICATION);
+                    tabDelegate.createNewStandaloneFrame(intent);
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     /**

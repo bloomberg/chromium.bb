@@ -13,19 +13,21 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browsing_data.UrlFilters;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,27 +54,6 @@ public class WebappRegistryTest {
     private SharedPreferences mSharedPreferences;
     private boolean mCallbackCalled;
 
-    private static class FetchCallback implements WebappRegistry.FetchCallback {
-        boolean mCallbackCalled;
-
-        Set<String> mExpected;
-
-        FetchCallback(Set<String> expected) {
-            mCallbackCalled = false;
-            mExpected = expected;
-        }
-
-        @Override
-        public void onWebappIdsRetrieved(Set<String> actual) {
-            mCallbackCalled = true;
-            assertEquals(mExpected, actual);
-        }
-
-        boolean getCallbackCalled() {
-            return mCallbackCalled;
-        }
-    }
-
     private static class FetchStorageCallback
             implements WebappRegistry.FetchWebappDataStorageCallback {
         Intent mShortcutIntent;
@@ -87,48 +68,6 @@ public class WebappRegistryTest {
         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
             mCallbackCalled = true;
             storage.updateFromShortcutIntent(mShortcutIntent);
-            storage.updateLastUsedTime();
-        }
-
-        boolean getCallbackCalled() {
-            return mCallbackCalled;
-        }
-    }
-
-    private static class FetchStorageByUrlCallback
-            implements WebappRegistry.FetchWebappDataStorageCallback {
-        String mUrl;
-        String mScope;
-        boolean mCallbackCalled;
-
-        FetchStorageByUrlCallback(String url, String scope) {
-            mCallbackCalled = false;
-            mUrl = url;
-            mScope = scope;
-        }
-
-        @Override
-        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-            mCallbackCalled = true;
-            assertEquals(mUrl, storage.getUrl());
-            assertEquals(mScope, storage.getScope());
-        }
-
-        boolean getCallbackCalled() {
-            return mCallbackCalled;
-        }
-    }
-
-    private static class CallbackRunner implements Runnable {
-        boolean mCallbackCalled;
-
-        public CallbackRunner() {
-            mCallbackCalled = false;
-        }
-
-        @Override
-        public void run() {
-            mCallbackCalled = true;
         }
 
         boolean getCallbackCalled() {
@@ -139,6 +78,7 @@ public class WebappRegistryTest {
     @Before
     public void setUp() throws Exception {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        WebappRegistry.refreshSharedPrefsForTesting();
         mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
                 REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
         mSharedPreferences.edit().putLong(KEY_LAST_CLEANUP, INITIAL_TIME).commit();
@@ -149,6 +89,16 @@ public class WebappRegistryTest {
     @After
     public void tearDown() {
         mSharedPreferences.edit().clear().apply();
+    }
+
+    private void registerWebapp(String webappId,
+            WebappRegistry.FetchWebappDataStorageCallback callback) throws Exception {
+        WebappRegistry.getInstance().register(webappId, callback);
+
+        // Run background tasks to make sure the data is committed. Run UI thread tasks to make sure
+        // the last used time is updated.
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
     }
 
     @Test
@@ -162,12 +112,8 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappRegistrationAddsToSharedPrefs() throws Exception {
-        WebappRegistry.registerWebapp("test", null);
-
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        registerWebapp("test", null);
+        Set<String> actual = getRegisteredWebapps();
         assertEquals(1, actual.size());
         assertTrue(actual.contains("test"));
     }
@@ -175,11 +121,9 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testWebappRegistrationUpdatesLastUsed() throws Exception {
-        WebappRegistry.registerWebapp("test", null);
+        registerWebapp("test", null);
 
-        BackgroundShadowAsyncTask.runBackgroundTasks();
         long after = System.currentTimeMillis();
-
         SharedPreferences webAppPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
         long actual = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
@@ -191,56 +135,24 @@ public class WebappRegistryTest {
     @Feature({"Webapp"})
     public void testWebappIdsRetrieval() throws Exception {
         final Set<String> expected = addWebappsToRegistry("first", "second");
-
-        FetchCallback callback = new FetchCallback(expected);
-        WebappRegistry.getRegisteredWebappIds(callback);
-
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        assertTrue(callback.getCallbackCalled());
+        assertEquals(expected, WebappRegistry.getRegisteredWebappIdsForTesting());
     }
 
     @Test
     @Feature({"Webapp"})
     public void testWebappIdsRetrievalRegisterRetrival() throws Exception {
         final Set<String> expected = addWebappsToRegistry("first");
+        assertEquals(expected, WebappRegistry.getRegisteredWebappIdsForTesting());
 
-        FetchCallback callback = new FetchCallback(expected);
-        WebappRegistry.getRegisteredWebappIds(callback);
-
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        assertTrue(callback.getCallbackCalled());
-
-        WebappRegistry.registerWebapp("second", null);
-
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        // Force a re-read of the preferences from disk. Add a new web app via the registry.
+        WebappRegistry.refreshSharedPrefsForTesting();
+        registerWebapp("second", null);
 
         // A copy of the expected set needs to be made as the SharedPreferences is using the copy
-        // that was paassed to it.
+        // that was passed to it.
         final Set<String> secondExpected = new HashSet<>(expected);
         secondExpected.add("second");
-
-        callback = new FetchCallback(secondExpected);
-        WebappRegistry.getRegisteredWebappIds(callback);
-
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        assertTrue(callback.getCallbackCalled());
-    }
-
-    @Test
-    @Feature({"Webapp"})
-    public void testUnregisterRunsCallback() throws Exception {
-        CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.unregisterWebappsForUrls(new UrlFilters.AllUrls(), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        assertTrue(callback.getCallbackCalled());
+        assertEquals(secondExpected, WebappRegistry.getRegisteredWebappIdsForTesting());
     }
 
     @Test
@@ -252,20 +164,14 @@ public class WebappRegistryTest {
         apps.put("webapp3", "https://www.chrome.com");
 
         for (Map.Entry<String, String> app : apps.entrySet()) {
-            WebappRegistry.registerWebapp(
+            registerWebapp(
                     app.getKey(), new FetchStorageCallback(createShortcutIntent(app.getValue())));
         }
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
 
         // Partial deletion.
-        CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.unregisterWebappsForUrls(
-                new UrlFilters.OneUrl("http://example.com/index.html"), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        WebappRegistry.getInstance().unregisterWebappsForUrlsImpl(
+                new UrlFilters.OneUrl("http://example.com/index.html"));
 
-        assertTrue(callback.getCallbackCalled());
         Set<String> registeredWebapps = getRegisteredWebapps();
         assertEquals(2, registeredWebapps.size());
         for (String appName : apps.keySet()) {
@@ -274,12 +180,7 @@ public class WebappRegistryTest {
         }
 
         // Full deletion.
-        callback = new CallbackRunner();
-        WebappRegistry.unregisterWebappsForUrls(new UrlFilters.AllUrls(), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        assertTrue(callback.getCallbackCalled());
+        WebappRegistry.getInstance().unregisterWebappsForUrlsImpl(new UrlFilters.AllUrls());
         assertTrue(getRegisteredWebapps().isEmpty());
     }
 
@@ -292,11 +193,9 @@ public class WebappRegistryTest {
         apps.put("webapp3", "https://www.chrome.com");
 
         for (Map.Entry<String, String> app : apps.entrySet()) {
-            WebappRegistry.registerWebapp(
+            registerWebapp(
                     app.getKey(), new FetchStorageCallback(createShortcutIntent(app.getValue())));
         }
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
 
         for (String appName : apps.keySet()) {
             SharedPreferences webAppPrefs =
@@ -307,10 +206,9 @@ public class WebappRegistryTest {
         }
 
         // Partial deletion.
-        WebappRegistry.unregisterWebappsForUrls(
-                new UrlFilters.OneUrl("http://example.com/index.html"), null);
+        WebappRegistry.getInstance().unregisterWebappsForUrlsImpl(
+                new UrlFilters.OneUrl("http://example.com/index.html"));
 
-        BackgroundShadowAsyncTask.runBackgroundTasks();
         for (String appName : apps.keySet()) {
             SharedPreferences webAppPrefs =
                     ContextUtils.getApplicationContext().getSharedPreferences(
@@ -320,8 +218,7 @@ public class WebappRegistryTest {
         }
 
         // Full deletion.
-        WebappRegistry.unregisterWebappsForUrls(new UrlFilters.AllUrls(), null);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        WebappRegistry.getInstance().unregisterWebappsForUrlsImpl(new UrlFilters.AllUrls());
         for (String appName : apps.keySet()) {
             SharedPreferences webAppPrefs =
                     ContextUtils.getApplicationContext().getSharedPreferences(
@@ -342,11 +239,11 @@ public class WebappRegistryTest {
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "oldWebapp", Context.MODE_PRIVATE);
         webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, Long.MIN_VALUE).apply();
 
-        WebappRegistry.unregisterOldWebapps(currentTime);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        // Force a re-read of the preferences from disk.
+        WebappRegistry.refreshSharedPrefsForTesting();
+        WebappRegistry.getInstance().unregisterOldWebapps(currentTime);
 
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> actual = getRegisteredWebapps();
         assertEquals(new HashSet<>(Arrays.asList("oldWebapp")), actual);
 
         long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
@@ -371,14 +268,15 @@ public class WebappRegistryTest {
         long lastUsed = currentTime - WebappRegistry.WEBAPP_UNOPENED_CLEANUP_DURATION + 1;
         webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
 
+        // Force a re-read of the preferences from disk.
+        WebappRegistry.refreshSharedPrefsForTesting();
+
         // Because the time is just inside the window, there should be a cleanup but the web app
         // should not be deleted as it was used recently. The last cleanup time should also be
         // set to the current time.
-        WebappRegistry.unregisterOldWebapps(currentTime);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        WebappRegistry.getInstance().unregisterOldWebapps(currentTime);
 
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> actual = getRegisteredWebapps();
         assertEquals(new HashSet<>(Arrays.asList("recentWebapp")), actual);
 
         long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
@@ -402,13 +300,14 @@ public class WebappRegistryTest {
         long lastUsed = currentTime - WebappRegistry.WEBAPP_UNOPENED_CLEANUP_DURATION;
         webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
 
+        // Force a re-read of the preferences from disk.
+        WebappRegistry.refreshSharedPrefsForTesting();
+
         // Because the time is just inside the window, there should be a cleanup of old web apps and
         // the last cleaned up time should be set to the current time.
-        WebappRegistry.unregisterOldWebapps(currentTime);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        WebappRegistry.getInstance().unregisterOldWebapps(currentTime);
 
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> actual = getRegisteredWebapps();
         assertTrue(actual.isEmpty());
 
         long actualLastUsed = webAppPrefs.getLong(WebappDataStorage.KEY_LAST_USED,
@@ -429,21 +328,16 @@ public class WebappRegistryTest {
 
         FetchStorageCallback storageCallback1 = new FetchStorageCallback(
                 createWebApkIntent(webappId1, webApkPackage1));
-        WebappRegistry.registerWebapp(webappId1, storageCallback1);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp(webappId1, storageCallback1);
         assertTrue(storageCallback1.getCallbackCalled());
 
         FetchStorageCallback storageCallback2 = new FetchStorageCallback(
                 createWebApkIntent(webappId1, webApkPackage2));
-        WebappRegistry.registerWebapp(webappId2, storageCallback2);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp(webappId2, storageCallback2);
         assertTrue(storageCallback2.getCallbackCalled());
 
         // Verify that both WebAPKs are registered.
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> actual = getRegisteredWebapps();
         assertEquals(2, actual.size());
         assertTrue(actual.contains(webappId1));
         assertTrue(actual.contains(webappId2));
@@ -453,13 +347,9 @@ public class WebappRegistryTest {
         // Because the time is just inside the window, there should be a cleanup of
         // uninstalled WebAPKs and the last cleaned up time should be set to the
         // current time.
-        WebappRegistry.unregisterOldWebapps(currentTime);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        WebappRegistry.getInstance().unregisterOldWebapps(currentTime);
 
-        actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
-        assertTrue(actual.isEmpty());
+        assertTrue(getRegisteredWebapps().isEmpty());
 
         long lastCleanup = mSharedPreferences.getLong(
                 WebappRegistry.KEY_LAST_CLEANUP, -1);
@@ -476,21 +366,16 @@ public class WebappRegistryTest {
 
         FetchStorageCallback storageCallback = new FetchStorageCallback(
                 createWebApkIntent(webappId, webApkPackage));
-        WebappRegistry.registerWebapp(webappId, storageCallback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp(webappId, storageCallback);
         assertTrue(storageCallback.getCallbackCalled());
 
         FetchStorageCallback storageCallback2 = new FetchStorageCallback(
                 createWebApkIntent(uninstalledWebappId, uninstalledWebApkPackage));
-        WebappRegistry.registerWebapp(uninstalledWebappId, storageCallback2);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp(uninstalledWebappId, storageCallback2);
         assertTrue(storageCallback2.getCallbackCalled());
 
         // Verify that both WebAPKs are registered.
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> actual = getRegisteredWebapps();
         assertEquals(2, actual.size());
         assertTrue(actual.contains(webappId));
         assertTrue(actual.contains(uninstalledWebappId));
@@ -502,29 +387,15 @@ public class WebappRegistryTest {
         // Because the time is just inside the window, there should be a cleanup of
         // uninstalled WebAPKs and the last cleaned up time should be set to the
         // current time.
-        WebappRegistry.unregisterOldWebapps(currentTime);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        WebappRegistry.getInstance().unregisterOldWebapps(currentTime);
 
-        actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        actual = getRegisteredWebapps();
         assertEquals(1, actual.size());
         assertTrue(actual.contains(webappId));
 
         long lastCleanup = mSharedPreferences.getLong(
                 WebappRegistry.KEY_LAST_CLEANUP, -1);
         assertEquals(currentTime, lastCleanup);
-    }
-
-    @Test
-    @Feature({"Webapp"})
-    public void testClearWebappHistoryRunsCallback() throws Exception {
-        CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistoryForUrls(new UrlFilters.AllUrls(), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        assertTrue(callback.getCallbackCalled());
     }
 
     @Test
@@ -536,15 +407,11 @@ public class WebappRegistryTest {
         Intent shortcutIntent2 = createShortcutIntent(webapp2Url);
 
         FetchStorageCallback storageCallback1 = new FetchStorageCallback(shortcutIntent1);
-        WebappRegistry.registerWebapp("webapp1", storageCallback1);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp("webapp1", storageCallback1);
         assertTrue(storageCallback1.getCallbackCalled());
 
         FetchStorageCallback storageCallback2 = new FetchStorageCallback(shortcutIntent2);
-        WebappRegistry.registerWebapp("webapp2", storageCallback2);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp("webapp2", storageCallback2);
         assertTrue(storageCallback2.getCallbackCalled());
 
         SharedPreferences webapp1Prefs = ContextUtils.getApplicationContext().getSharedPreferences(
@@ -560,14 +427,10 @@ public class WebappRegistryTest {
         assertTrue(webapp2OriginalLastUsed != WebappDataStorage.LAST_USED_UNSET);
 
         // Clear data for |webapp1Url|.
-        CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistoryForUrls(new UrlFilters.OneUrl(webapp1Url), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappRegistry.getInstance().clearWebappHistoryForUrlsImpl(
+                new UrlFilters.OneUrl(webapp1Url));
 
-        Set<String> actual = mSharedPreferences.getStringSet(
-                WebappRegistry.KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> actual = getRegisteredWebapps();
         assertEquals(2, actual.size());
         assertTrue(actual.contains("webapp1"));
         assertTrue(actual.contains("webapp2"));
@@ -597,11 +460,7 @@ public class WebappRegistryTest {
         assertEquals(webapp2Url, actualUrl);
 
         // Clear data for all urls.
-        callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistoryForUrls(new UrlFilters.AllUrls(), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappRegistry.getInstance().clearWebappHistoryForUrlsImpl(new UrlFilters.AllUrls());
 
         // Verify that the last used time for both web apps is WebappDataStorage.LAST_USED_UNSET.
         actualLastUsed = webapp1Prefs.getLong(
@@ -629,23 +488,14 @@ public class WebappRegistryTest {
     @Test
     @Feature({"Webapp"})
     public void testGetAfterClearWebappHistory() throws Exception {
-        WebappRegistry.registerWebapp("webapp", null);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
+        registerWebapp("webapp", null);
 
         SharedPreferences webappPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
-        CallbackRunner callback = new CallbackRunner();
-        WebappRegistry.clearWebappHistoryForUrls(new UrlFilters.AllUrls(), callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappRegistry.getInstance().clearWebappHistoryForUrlsImpl(new UrlFilters.AllUrls());
 
-        // Open the webapp up to set the last used time.
-        FetchStorageCallback storageCallback = new FetchStorageCallback(null);
-        WebappRegistry.getWebappDataStorage("webapp", storageCallback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(storageCallback.getCallbackCalled());
+        // Open the webapp up and set the last used time.
+        WebappRegistry.getInstance().getWebappDataStorage("webapp").updateLastUsedTime();
 
         // Verify that the last used time is valid.
         long actualLastUsed = webappPrefs.getLong(
@@ -660,9 +510,7 @@ public class WebappRegistryTest {
         final String webappUrl = "http://www.google.com";
         final String webappScope = "http://www.google.com/";
         final Intent shortcutIntent = createShortcutIntent(webappUrl);
-        WebappRegistry.registerWebapp("webapp", new FetchStorageCallback(shortcutIntent));
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp("webapp", new FetchStorageCallback(shortcutIntent));
 
         SharedPreferences webappPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "webapp", Context.MODE_PRIVATE);
@@ -675,14 +523,11 @@ public class WebappRegistryTest {
                 WebappDataStorage.KEY_SCOPE, WebappDataStorage.URL_INVALID);
         assertEquals(webappScope, actualScope);
 
-        WebappRegistry.clearWebappHistoryForUrls(new UrlFilters.AllUrls(), new CallbackRunner());
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        WebappRegistry.getInstance().clearWebappHistoryForUrlsImpl(new UrlFilters.AllUrls());
 
         // Update the webapp from the intent again.
-        WebappRegistry.getWebappDataStorage("webapp", new FetchStorageCallback(shortcutIntent));
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage("webapp");
+        storage.updateFromShortcutIntent(shortcutIntent);
 
         // Verify that the URL and scope match the original in the intent.
         actualUrl = webappPrefs.getString(WebappDataStorage.KEY_URL, WebappDataStorage.URL_INVALID);
@@ -718,72 +563,45 @@ public class WebappRegistryTest {
         Intent shortcutIntent4 = createShortcutIntent(webapp4Url);
 
         // Register the four web apps.
-        WebappRegistry.registerWebapp("webapp1", new FetchStorageCallback(shortcutIntent1));
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        WebappRegistry.registerWebapp("webapp2", new FetchStorageCallback(shortcutIntent2));
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        WebappRegistry.registerWebapp("webapp3", new FetchStorageCallback(shortcutIntent3));
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-
-        WebappRegistry.registerWebapp("webapp4", new FetchStorageCallback(shortcutIntent4));
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
+        registerWebapp("webapp1", new FetchStorageCallback(shortcutIntent1));
+        registerWebapp("webapp2", new FetchStorageCallback(shortcutIntent2));
+        registerWebapp("webapp3", new FetchStorageCallback(shortcutIntent3));
+        registerWebapp("webapp4", new FetchStorageCallback(shortcutIntent4));
 
         // test1Url should return webapp1.
-        FetchStorageByUrlCallback callback = new FetchStorageByUrlCallback(webapp1Url, webapp1Url);
-        WebappRegistry.getWebappDataStorageForUrl(test1Url, callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappDataStorage storage1 =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(test1Url);
+        assertEquals(webapp1Url, storage1.getUrl());
+        assertEquals(webapp1Url, storage1.getScope());
 
         // test2Url should return webapp3.
-        callback = new FetchStorageByUrlCallback(webapp3Url, webapp3Scope);
-        WebappRegistry.getWebappDataStorageForUrl(test2Url, callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappDataStorage storage2 =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(test2Url);
+        assertEquals(webapp3Url, storage2.getUrl());
+        assertEquals(webapp3Scope, storage2.getScope());
 
         // test3Url should return webapp4.
-        callback = new FetchStorageByUrlCallback(webapp4Url, webapp4Scope);
-        WebappRegistry.getWebappDataStorageForUrl(test3Url, callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappDataStorage storage3 =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(test3Url);
+        assertEquals(webapp4Url, storage3.getUrl());
+        assertEquals(webapp4Scope, storage3.getScope());
 
         // test4Url should return webapp4.
-        callback = new FetchStorageByUrlCallback(webapp4Url, webapp4Scope);
-        WebappRegistry.getWebappDataStorageForUrl(test4Url, callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappDataStorage storage4 =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(test4Url);
+        assertEquals(webapp4Url, storage4.getUrl());
+        assertEquals(webapp4Scope, storage4.getScope());
 
         // test5Url should return webapp2.
-        callback = new FetchStorageByUrlCallback(webapp2Url, webapp2Url);
-        WebappRegistry.getWebappDataStorageForUrl(test5Url, callback);
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(callback.getCallbackCalled());
+        WebappDataStorage storage5 =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(test5Url);
+        assertEquals(webapp2Url, storage5.getUrl());
+        assertEquals(webapp2Url, storage5.getScope());
 
         // test6Url doesn't correspond to a web app, so the storage returned is null.
-        // This must use a member variable; local variables must be final or effectively final to be
-        // accessible inside an inner class.
-        mCallbackCalled = false;
-        WebappRegistry.getWebappDataStorageForUrl(
-                test6Url, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        assertEquals(null, storage);
-                        mCallbackCalled = true;
-                    }
-                });
-        BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
-        assertTrue(mCallbackCalled);
+        WebappDataStorage storage6 =
+                WebappRegistry.getInstance().getWebappDataStorageForUrl(test6Url);
+        assertEquals(null, storage6);
     }
 
     private Set<String> addWebappsToRegistry(String... webapps) {

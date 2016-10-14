@@ -128,7 +128,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     }
 
     private static class TestDataStorageFactory extends WebappDataStorage.Factory {
-        public Bitmap mSplashImage;
+        public String mSplashImage;
 
         @Override
         public WebappDataStorage create(final String webappId) {
@@ -142,7 +142,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             }
 
             @Override
-            public void updateSplashScreenImage(Bitmap splashScreenImage) {
+            public void updateSplashScreenImage(String splashScreenImage) {
                 assertNull(mSplashImage);
                 mSplashImage = splashScreenImage;
             }
@@ -539,7 +539,8 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         // Test that bitmap sizes match expectations.
         int idealSize = getActivity().getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_ideal);
-        assertEquals(idealSize, dataStorageFactory.mSplashImage.getWidth());
-        assertEquals(idealSize, dataStorageFactory.mSplashImage.getHeight());
+        Bitmap splashImage = ShortcutHelper.decodeBitmapFromString(dataStorageFactory.mSplashImage);
+        assertEquals(idealSize, splashImage.getWidth());
+        assertEquals(idealSize, splashImage.getHeight());
     }
 }

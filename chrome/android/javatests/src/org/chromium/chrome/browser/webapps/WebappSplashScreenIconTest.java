@@ -34,7 +34,8 @@ public class WebappSplashScreenIconTest extends WebappActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImageForTests(TEST_SPLASH_ICON);
+        WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_ID).updateSplashScreenImage(
+                TEST_SPLASH_ICON);
         startWebappActivity();
     }
 

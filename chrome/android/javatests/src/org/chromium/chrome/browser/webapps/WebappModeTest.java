@@ -93,11 +93,12 @@ public class WebappModeTest extends MultiActivityTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        WebappRegistry.refreshSharedPrefsForTesting();
 
         // Register the webapps so when the data storage is opened, the test doesn't crash. There is
         // no race condition with the retrieval as AsyncTasks are run sequentially on the background
         // thread.
-        WebappRegistry.registerWebapp(
+        WebappRegistry.getInstance().register(
                 WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
@@ -105,7 +106,7 @@ public class WebappModeTest extends MultiActivityTestBase {
                                 WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
                     }
                 });
-        WebappRegistry.registerWebapp(
+        WebappRegistry.getInstance().register(
                 WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {

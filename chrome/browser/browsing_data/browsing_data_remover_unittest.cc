@@ -318,19 +318,13 @@ class TestWebappRegistry : public WebappRegistry {
   TestWebappRegistry() : WebappRegistry() { }
 
   void UnregisterWebappsForUrls(
-      const base::Callback<bool(const GURL&)>& url_filter,
-      const base::Closure& callback) override {
-    // Mocks out a JNI call and runs the callback as a delayed task.
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
-                                   base::TimeDelta::FromMilliseconds(10));
+      const base::Callback<bool(const GURL&)>& url_filter) override {
+    // Mocks out a JNI call.
   }
 
   void ClearWebappHistoryForUrls(
-      const base::Callback<bool(const GURL&)>& url_filter,
-      const base::Closure& callback) override {
-    // Mocks out a JNI call and runs the callback as a delayed task.
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
-                                   base::TimeDelta::FromMilliseconds(10));
+      const base::Callback<bool(const GURL&)>& url_filter) override {
+    // Mocks out a JNI call.
   }
 };
 #endif

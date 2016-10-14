@@ -463,12 +463,6 @@ class BrowsingDataRemover : public KeyedService
   // Callback on UI thread when the precache history has been cleared.
   void OnClearedPrecacheHistory();
 
-  // Callback on UI thread when the webapp data has been cleared.
-  void OnClearedWebappData();
-
-  // Callback on UI thread when the webapp history has been cleared.
-  void OnClearedWebappHistory();
-
   // Callback on UI thread when the offline page data has been cleared.
   void OnClearedOfflinePageData(
       offline_pages::OfflinePageModel::DeletePageResult result);
@@ -545,8 +539,6 @@ class BrowsingDataRemover : public KeyedService
   bool waiting_for_clear_pnacl_cache_ = false;
 #if BUILDFLAG(ANDROID_JAVA_UI)
   bool waiting_for_clear_precache_history_ = false;
-  bool waiting_for_clear_webapp_data_ = false;
-  bool waiting_for_clear_webapp_history_ = false;
   bool waiting_for_clear_offline_page_data_ = false;
 #endif
   bool waiting_for_clear_storage_partition_data_ = false;
