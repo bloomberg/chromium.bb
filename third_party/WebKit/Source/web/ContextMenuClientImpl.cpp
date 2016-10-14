@@ -304,8 +304,14 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
 
   if (r.isSelected()) {
     if (!isHTMLInputElement(*r.innerNode()) ||
-        toHTMLInputElement(r.innerNode())->type() != InputTypeNames::password)
+        toHTMLInputElement(r.innerNode())->type() != InputTypeNames::password) {
+      // TODO(xiaochengh): Use of updateStyleAndLayoutIgnorePendingStylesheets
+      // needs to be audited.  See http://crbug.com/590369 for more details.
+      // Plain text extraction requires clean layout.
+      selectedFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
       data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
+    }
   }
 
   if (r.isContentEditable()) {

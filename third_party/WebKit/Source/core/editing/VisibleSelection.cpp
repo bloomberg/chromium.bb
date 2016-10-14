@@ -316,13 +316,9 @@ VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const {
 
   // Make sure we have an updated layout since this function is called
   // in the course of running edit commands which modify the DOM.
-  // Failing to call this can result in equivalentXXXPosition calls returning
+  // Failing to ensure this can result in equivalentXXXPosition calls returning
   // incorrect results.
-  m_start.document()->updateStyleAndLayout();
-
-  // Check again, because updating layout can clear the selection.
-  if (isNone())
-    return EphemeralRangeTemplate<Strategy>();
+  DCHECK(!m_start.document()->needsLayoutTreeUpdate());
 
   if (isCaret()) {
     // If the selection is a caret, move the range start upstream. This

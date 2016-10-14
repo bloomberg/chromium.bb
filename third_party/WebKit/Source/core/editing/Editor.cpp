@@ -447,6 +447,13 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard) {
     String text = pasteboard->plainText();
     if (!text.isEmpty()) {
       chosePlainText = true;
+
+      // TODO(xiaochengh): Use of updateStyleAndLayoutIgnorePendingStylesheets
+      // needs to be audited.  See http://crbug.com/590369 for more details.
+      // |selectedRange| requires clean layout for visible selection
+      // normalization.
+      frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
       fragment = createFragmentFromText(selectedRange(), text);
     }
   }
@@ -1002,6 +1009,13 @@ void Editor::cut(EditorCommandSource source) {
     return;  // DHTML did the whole operation
   if (!canCut())
     return;
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // |tryDHTMLCut| dispatches cut event, which may make layout dirty, but we
+  // need clean layout to obtain the selected content.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // TODO(yosin) We should use early return style here.
   if (canDeleteRange(selectedRange())) {
     spellChecker().updateMarkersForWordsAffectedByEditing(true);
@@ -1035,6 +1049,13 @@ void Editor::copy() {
     return;  // DHTML did the whole operation
   if (!canCopy())
     return;
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // |tryDHTMLCopy| dispatches copy event, which may make layout dirty, but
+  // we need clean layout to obtain the selected content.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   if (enclosingTextFormControl(frame().selection().start())) {
     Pasteboard::generalPasteboard()->writePlainText(
         frame().selectedTextForClipboard(),
@@ -1098,6 +1119,12 @@ void Editor::pasteAsPlainText(EditorCommandSource source) {
 void Editor::performDelete() {
   if (!canDelete())
     return;
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // |selectedRange| requires clean layout for visible selection normalization.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   addToKillRing(selectedRange());
   // TODO(chongz): |Editor::performDelete()| has no direction.
   // https://github.com/w3c/editing/issues/130

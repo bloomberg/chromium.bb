@@ -1100,6 +1100,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
     return;
   }
 
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   handleGeneralDelete(editingState);
   if (editingState->isAborted())
     return;

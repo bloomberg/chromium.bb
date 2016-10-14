@@ -2819,6 +2819,11 @@ bool WebViewImpl::selectionTextDirection(WebTextDirection& start,
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return false;
   }
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   if (selection.selection().toNormalizedEphemeralRange().isNull())
     return false;
   start =

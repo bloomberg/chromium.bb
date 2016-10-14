@@ -973,13 +973,13 @@ bool SpellChecker::selectionStartHasSpellingMarkerFor(int from,
 
 void SpellChecker::removeMarkers(const VisibleSelection& selection,
                                  DocumentMarker::MarkerTypes markerTypes) {
-  const EphemeralRange range = selection.toNormalizedEphemeralRange();
-  if (range.isNull())
-    return;
-
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  const EphemeralRange& range = selection.toNormalizedEphemeralRange();
+  if (range.isNull())
+    return;
 
   frame().document()->markers().removeMarkers(range, markerTypes);
 }

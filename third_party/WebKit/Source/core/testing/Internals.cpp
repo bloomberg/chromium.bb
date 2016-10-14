@@ -2875,6 +2875,9 @@ String Internals::selectedHTMLForClipboard() {
   if (!frame())
     return String();
 
+  // Selection normalization and markup generation require clean layout.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   return frame()->selection().selectedHTMLForClipboard();
 }
 

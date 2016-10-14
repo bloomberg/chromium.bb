@@ -525,6 +525,11 @@ void DOMSelection::deleteFromDocument() {
   if (selection.isNone())
     return;
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   Range* selectedRange =
       createRange(selection.selection().toNormalizedEphemeralRange());
   if (!selectedRange)
@@ -550,6 +555,12 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const {
     return false;
 
   unsigned nodeIndex = n->nodeIndex();
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   const EphemeralRange selectedRange =
       selection.selection().toNormalizedEphemeralRange();
 

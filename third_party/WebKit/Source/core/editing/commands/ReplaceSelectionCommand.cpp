@@ -179,6 +179,8 @@ ReplacementFragment::ReplacementFragment(Document* document,
   if (!editableRoot)
     return;
 
+  m_document->updateStyleAndLayoutIgnorePendingStylesheets();
+
   Element* shadowAncestorElement;
   if (editableRoot->isInShadowTree())
     shadowAncestorElement = editableRoot->ownerShadowHost();

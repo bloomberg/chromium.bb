@@ -1111,6 +1111,11 @@ void WebLocalFrameImpl::replaceMisspelledRange(const WebString& text) {
   // does.
   if (pluginContainerFromFrame(frame()))
     return;
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   frame()->spellChecker().replaceMisspelledRange(text);
 }
 
@@ -1128,6 +1133,10 @@ bool WebLocalFrameImpl::hasSelection() const {
 }
 
 WebRange WebLocalFrameImpl::selectionRange() const {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   return frame()->selection().selection().toNormalizedEphemeralRange();
 }
 
@@ -1153,6 +1162,11 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const {
   WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame());
   if (pluginContainer)
     return pluginContainer->plugin()->selectionAsMarkup();
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // Selection normalization and markup generation require clean layout.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   return frame()->selection().selectedHTMLForClipboard();
 }
