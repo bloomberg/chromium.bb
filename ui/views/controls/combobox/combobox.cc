@@ -506,6 +506,11 @@ void Combobox::SetInvalid(bool invalid) {
 
   invalid_ = invalid;
 
+  if (HasFocus() && UseMd()) {
+    FocusRing::Install(this, invalid_
+                                 ? ui::NativeTheme::kColorId_AlertSeverityHigh
+                                 : ui::NativeTheme::kColorId_NumColors);
+  }
   UpdateBorder();
   SchedulePaint();
 }
@@ -709,8 +714,11 @@ void Combobox::OnFocus() {
   View::OnFocus();
   // Border renders differently when focused.
   SchedulePaint();
-  if (UseMd())
-    FocusRing::Install(this);
+  if (UseMd()) {
+    FocusRing::Install(this, invalid_
+                                 ? ui::NativeTheme::kColorId_AlertSeverityHigh
+                                 : ui::NativeTheme::kColorId_NumColors);
+  }
 }
 
 void Combobox::OnBlur() {
@@ -764,7 +772,7 @@ void Combobox::UpdateBorder() {
   if (style_ == STYLE_ACTION)
     border->SetInsets(5, 10, 5, 10);
   if (invalid_)
-    border->SetColor(gfx::kGoogleRed700);
+    border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
   SetBorder(std::move(border));
 }
 

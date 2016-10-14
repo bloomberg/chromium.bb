@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_FOCUS_RING_H_
 #define UI_VIEWS_CONTROLS_FOCUS_RING_H_
 
+#include "base/optional.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -14,8 +16,14 @@ namespace views {
 // the bounds of its parent view.
 class FocusRing : public View {
  public:
-  // Create a FocusRing and adds it to |parent|.
-  static void Install(views::View* parent);
+  static const char kViewClassName[];
+
+  // Create a FocusRing and adds it to |parent|, or updates the one that already
+  // exists. |override_color_id| will be used in place of the default coloration
+  // when provided.
+  static void Install(views::View* parent,
+                      ui::NativeTheme::ColorId override_color_id =
+                          ui::NativeTheme::kColorId_NumColors);
 
   // Removes the FocusRing from |parent|.
   static void Uninstall(views::View* parent);
@@ -27,10 +35,10 @@ class FocusRing : public View {
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  static const char kViewClassName[];
-
   FocusRing();
   ~FocusRing() override;
+
+  ui::NativeTheme::ColorId override_color_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
 };

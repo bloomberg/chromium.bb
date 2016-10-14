@@ -21,27 +21,35 @@ constexpr float kFocusHaloThicknessDp = 2.f;
 constexpr float kFocusHaloCornerRadiusDp =
     FocusableBorder::kCornerRadiusDp + kFocusHaloThicknessDp / 2.f;
 
+FocusRing* GetFocusRing(views::View* parent) {
+  for (int i = 0; i < parent->child_count(); ++i) {
+    if (parent->child_at(i)->GetClassName() == FocusRing::kViewClassName)
+      return static_cast<FocusRing*>(parent->child_at(i));
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 const char FocusRing::kViewClassName[] = "FocusRing";
 
 // static
-void FocusRing::Install(views::View* parent) {
+void FocusRing::Install(views::View* parent,
+                        ui::NativeTheme::ColorId override_color_id) {
   DCHECK(parent->HasFocus());
-  View* ring = new FocusRing();
-  parent->AddChildView(ring);
+  FocusRing* ring = GetFocusRing(parent);
+  if (!ring) {
+    ring = new FocusRing();
+    parent->AddChildView(ring);
+  }
+  ring->override_color_id_ = override_color_id;
   ring->Layout();
+  ring->SchedulePaint();
 }
 
 // static
 void FocusRing::Uninstall(views::View* parent) {
-  for (int i = 0; i < parent->child_count(); ++i) {
-    if (parent->child_at(i)->GetClassName() == kViewClassName) {
-      delete parent->child_at(i);
-      return;
-    }
-  }
-  NOTREACHED();
+  delete GetFocusRing(parent);
 }
 
 const char* FocusRing::GetClassName() const {
@@ -63,9 +71,12 @@ void FocusRing::Layout() {
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setColor(SkColorSetA(GetNativeTheme()->GetSystemColor(
-                                 ui::NativeTheme::kColorId_FocusedBorderColor),
-                             0x66));
+  paint.setColor(
+      SkColorSetA(GetNativeTheme()->GetSystemColor(
+                      override_color_id_ != ui::NativeTheme::kColorId_NumColors
+                          ? override_color_id_
+                          : ui::NativeTheme::kColorId_FocusedBorderColor),
+                  0x66));
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(kFocusHaloThicknessDp);
   gfx::RectF rect(GetLocalBounds());
@@ -73,7 +84,8 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawRoundRect(rect, kFocusHaloCornerRadiusDp, paint);
 }
 
-FocusRing::FocusRing() {
+FocusRing::FocusRing()
+    : override_color_id_(ui::NativeTheme::kColorId_NumColors) {
   // A layer is necessary to paint beyond the parent's bounds.
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);

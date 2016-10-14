@@ -1437,8 +1437,6 @@ split_static_library("ui") {
       "views/apps/native_app_window_frame_view_mac.mm",
       "views/autofill/card_unmask_prompt_views.cc",
       "views/autofill/card_unmask_prompt_views.h",
-      "views/autofill/decorated_textfield.cc",
-      "views/autofill/decorated_textfield.h",
       "views/autofill/info_bubble.cc",
       "views/autofill/info_bubble.h",
       "views/autofill/tooltip_icon.cc",

@@ -24,22 +24,14 @@ const int kInsetSize = 1;
 
 namespace views {
 
-FocusableBorder::FocusableBorder()
-    : insets_(kInsetSize, kInsetSize, kInsetSize, kInsetSize),
-      override_color_(gfx::kPlaceholderColor),
-      use_default_color_(true) {
-}
+FocusableBorder::FocusableBorder() : insets_(kInsetSize) {}
 
 FocusableBorder::~FocusableBorder() {
 }
 
-void FocusableBorder::SetColor(SkColor color) {
-  override_color_ = color;
-  use_default_color_ = false;
-}
-
-void FocusableBorder::UseDefaultColor() {
-  use_default_color_ = true;
+void FocusableBorder::SetColorId(
+    const base::Optional<ui::NativeTheme::ColorId>& color_id) {
+  override_color_id_ = color_id;
 }
 
 void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
@@ -87,18 +79,19 @@ void FocusableBorder::SetInsets(int top, int left, int bottom, int right) {
 }
 
 SkColor FocusableBorder::GetCurrentColor(const View& view) const {
-  if (!use_default_color_)
-    return override_color_;
+  ui::NativeTheme::ColorId color_id =
+      ui::NativeTheme::kColorId_UnfocusedBorderColor;
+  if (override_color_id_)
+    color_id = *override_color_id_;
+  else if (view.HasFocus())
+    color_id = ui::NativeTheme::kColorId_FocusedBorderColor;
 
-  SkColor color = view.GetNativeTheme()->GetSystemColor(
-      view.HasFocus() ? ui::NativeTheme::kColorId_FocusedBorderColor :
-                        ui::NativeTheme::kColorId_UnfocusedBorderColor);
+  SkColor color = view.GetNativeTheme()->GetSystemColor(color_id);
   if (ui::MaterialDesignController::IsSecondaryUiMaterial() &&
       !view.enabled()) {
     return color_utils::BlendTowardOppositeLuma(color,
                                                 gfx::kDisabledControlAlpha);
   }
-
   return color;
 }
 

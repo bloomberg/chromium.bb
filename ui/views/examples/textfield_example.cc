@@ -24,20 +24,19 @@ namespace views {
 namespace examples {
 
 TextfieldExample::TextfieldExample()
-   : ExampleBase("Textfield"),
-     name_(nullptr),
-     password_(nullptr),
-     disabled_(nullptr),
-     read_only_(nullptr),
-     show_password_(nullptr),
-     clear_all_(nullptr),
-     append_(nullptr),
-     set_(nullptr),
-     set_style_(nullptr) {
-}
+    : ExampleBase("Textfield"),
+      name_(nullptr),
+      password_(nullptr),
+      disabled_(nullptr),
+      read_only_(nullptr),
+      invalid_(nullptr),
+      show_password_(nullptr),
+      clear_all_(nullptr),
+      append_(nullptr),
+      set_(nullptr),
+      set_style_(nullptr) {}
 
-TextfieldExample::~TextfieldExample() {
-}
+TextfieldExample::~TextfieldExample() {}
 
 void TextfieldExample::CreateExampleView(View* container) {
   name_ = new Textfield();
@@ -50,6 +49,8 @@ void TextfieldExample::CreateExampleView(View* container) {
   read_only_ = new Textfield();
   read_only_->SetReadOnly(true);
   read_only_->SetText(ASCIIToUTF16("read only"));
+  invalid_ = new Textfield();
+  invalid_->SetInvalid(true);
   show_password_ = new LabelButton(this, ASCIIToUTF16("Show password"));
   set_background_ =
       new LabelButton(this, ASCIIToUTF16("Set non-default background"));
@@ -79,6 +80,7 @@ void TextfieldExample::CreateExampleView(View* container) {
   MakeRow(new Label(ASCIIToUTF16("Password:")), password_);
   MakeRow(new Label(ASCIIToUTF16("Disabled:")), disabled_);
   MakeRow(new Label(ASCIIToUTF16("Read Only:")), read_only_);
+  MakeRow(new Label(ASCIIToUTF16("Invalid:")), invalid_);
   MakeRow(new Label(ASCIIToUTF16("Name:")), nullptr);
   MakeRow(show_password_, nullptr);
   MakeRow(set_background_, nullptr);
@@ -121,16 +123,19 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
     password_->SetText(empty);
     disabled_->SetText(empty);
     read_only_->SetText(empty);
+    invalid_->SetText(empty);
   } else if (sender == append_) {
     name_->AppendText(ASCIIToUTF16("[append]"));
     password_->AppendText(ASCIIToUTF16("[append]"));
     disabled_->SetText(ASCIIToUTF16("[append]"));
     read_only_->AppendText(ASCIIToUTF16("[append]"));
+    invalid_->AppendText(ASCIIToUTF16("[append]"));
   } else if (sender == set_) {
     name_->SetText(ASCIIToUTF16("[set]"));
     password_->SetText(ASCIIToUTF16("[set]"));
     disabled_->SetText(ASCIIToUTF16("[set]"));
     read_only_->SetText(ASCIIToUTF16("[set]"));
+    invalid_->SetText(ASCIIToUTF16("[set]"));
   } else if (sender == set_style_) {
     if (!name_->text().empty()) {
       name_->SetColor(SK_ColorGREEN);

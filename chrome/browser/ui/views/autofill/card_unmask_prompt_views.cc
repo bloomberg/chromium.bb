@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
-#include "chrome/browser/ui/views/autofill/decorated_textfield.h"
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -34,6 +33,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -432,9 +432,10 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       input_row_->child_at(i)->SetVisible(false);
   }
 
-  cvc_input_ = new DecoratedTextfield(
-      base::string16(),
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC), this);
+  cvc_input_ = new views::Textfield();
+  cvc_input_->set_placeholder_text(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
+  cvc_input_->set_controller(this);
   cvc_input_->set_default_width_in_chars(8);
   input_row_->AddChildView(cvc_input_);
 

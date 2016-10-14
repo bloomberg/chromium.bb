@@ -163,6 +163,10 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_color_ = color;
   }
 
+  // Sets whether to indicate the textfield has invalid content.
+  void SetInvalid(bool invalid);
+  bool invalid() const { return invalid_; }
+
   // Get or set the horizontal alignment used for the button from the underlying
   // RenderText object.
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
@@ -349,6 +353,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Updates the painted background color.
   void UpdateBackgroundColor();
 
+  // Updates the border per the state of |invalid_|.
+  void UpdateBorder();
+
   // Does necessary updates when the text and/or cursor position changes.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);
 
@@ -463,6 +470,10 @@ class VIEWS_EXPORT Textfield : public View,
   // Placeholder text color.
   // TODO(estade): remove this when Harmony/MD is default.
   SkColor placeholder_text_color_;
+
+  // True when the contents are deemed unacceptable and should be indicated as
+  // such.
+  bool invalid_;
 
   // The accessible name of the text field.
   base::string16 accessible_name_;

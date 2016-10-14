@@ -7,6 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/view.h"
 
@@ -28,10 +30,9 @@ class VIEWS_EXPORT FocusableBorder : public Border {
   // Sets the insets of the border.
   void SetInsets(int top, int left, int bottom, int right);
 
-  // Sets the color of this border.
-  void SetColor(SkColor color);
-  // Reverts the color of this border to the system default.
-  void UseDefaultColor();
+  // Sets the color id to use for this border. When unsupplied, the color will
+  // depend on the focus state.
+  void SetColorId(const base::Optional<ui::NativeTheme::ColorId>& color_id);
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
@@ -44,12 +45,7 @@ class VIEWS_EXPORT FocusableBorder : public Border {
  private:
   gfx::Insets insets_;
 
-  // The color to paint the border when |use_default_color_| is false.
-  SkColor override_color_;
-
-  // Whether the system border color should be used. True unless SetColor has
-  // been called.
-  bool use_default_color_;
+  base::Optional<ui::NativeTheme::ColorId> override_color_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusableBorder);
 };

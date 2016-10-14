@@ -26,6 +26,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -436,7 +437,9 @@ GURL BookmarkEditorView::GetInputURL() const {
 void BookmarkEditorView::UserInputChanged() {
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     const GURL url(GetInputURL());
-    if (!url.is_valid())
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+      url_tf_->SetInvalid(!url.is_valid());
+    else if (!url.is_valid())
       url_tf_->SetBackgroundColor(kErrorColor);
     else
       url_tf_->UseDefaultBackgroundColor();

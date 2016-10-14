@@ -252,6 +252,7 @@ Textfield::Textfield()
       selection_text_color_(SK_ColorWHITE),
       selection_background_color_(SK_ColorBLUE),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
+      invalid_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       text_input_flags_(0),
       performing_user_action_(false),
@@ -521,6 +522,19 @@ void Textfield::ApplyStyle(gfx::TextStyle style,
                            const gfx::Range& range) {
   GetRenderText()->ApplyStyle(style, value, range);
   SchedulePaint();
+}
+
+void Textfield::SetInvalid(bool invalid) {
+  if (invalid == invalid_)
+    return;
+  invalid_ = invalid;
+  UpdateBorder();
+
+  if (HasFocus() && use_focus_ring_) {
+    FocusRing::Install(this, invalid_
+                                 ? ui::NativeTheme::kColorId_AlertSeverityHigh
+                                 : ui::NativeTheme::kColorId_NumColors);
+  }
 }
 
 void Textfield::ClearEditHistory() {
@@ -996,8 +1010,11 @@ void Textfield::OnFocus() {
   OnCaretBoundsChanged();
   if (ShouldBlinkCursor())
     StartBlinkingCursor();
-  if (use_focus_ring_)
-    FocusRing::Install(this);
+  if (use_focus_ring_) {
+    FocusRing::Install(this, invalid_
+                                 ? ui::NativeTheme::kColorId_AlertSeverityHigh
+                                 : ui::NativeTheme::kColorId_NumColors);
+  }
   SchedulePaint();
   View::OnFocus();
 }
@@ -1813,6 +1830,13 @@ void Textfield::UpdateBackgroundColor() {
   GetRenderText()->set_subpixel_rendering_suppressed(
       SkColorGetA(color) != SK_AlphaOPAQUE);
   SchedulePaint();
+}
+
+void Textfield::UpdateBorder() {
+  auto border = base::MakeUnique<views::FocusableBorder>();
+  if (invalid_)
+    border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
+  View::SetBorder(std::move(border));
 }
 
 void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
