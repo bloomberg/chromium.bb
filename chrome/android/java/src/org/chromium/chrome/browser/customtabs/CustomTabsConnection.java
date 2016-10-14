@@ -77,6 +77,7 @@ public class CustomTabsConnection {
     @VisibleForTesting
     static final String DEBUG_OVERRIDE_KEY =
             "android.support.customtabs.maylaunchurl.DEBUG_OVERRIDE";
+    private static final int NO_OVERRIDE = 0;
     @VisibleForTesting
     static final int NO_PRERENDERING = 1;
     @VisibleForTesting
@@ -276,7 +277,8 @@ public class CustomTabsConnection {
         Profile profile = Profile.getLastUsedProfile();
 
         url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
-        int debugOverrideValue = extras != null ? extras.getInt(DEBUG_OVERRIDE_KEY, -1) : -1;
+        int debugOverrideValue = NO_OVERRIDE;
+        if (extras != null) debugOverrideValue = extras.getInt(DEBUG_OVERRIDE_KEY, NO_OVERRIDE);
 
         boolean didStartPrerender = false, didStartPrefetch = false;
         boolean mayPrerender = mayPrerender(session);
