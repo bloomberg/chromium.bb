@@ -31,14 +31,16 @@ import java.net.URISyntaxException;
  * A tab helper responsible for enabling/disabling media controls and passing
  * media actions from the controls to the {@link org.chromium.content.browser.MediaSession}
  */
-public class MediaSessionTabHelper {
+public class MediaSessionTabHelper implements MediaImageCallback {
     private static final String TAG = "MediaSession";
 
     private static final String UNICODE_PLAY_CHARACTER = "\u25B6";
     private static final int MINIMAL_FAVICON_SIZE = 114;
 
     private Tab mTab;
+    private Bitmap mPageMediaImage = null;
     private Bitmap mFavicon = null;
+    private Bitmap mCurrentMediaImage = null;
     private String mOrigin = null;
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
@@ -50,6 +52,7 @@ public class MediaSessionTabHelper {
     private MediaMetadata mPageMetadata = null;
     // The currently showing metadata.
     private MediaMetadata mCurrentMetadata = null;
+    private MediaImageManager mMediaImageManager = null;
 
     private MediaNotificationListener mControlsListener = new MediaNotificationListener() {
         @Override
@@ -111,6 +114,7 @@ public class MediaSessionTabHelper {
                 }
 
                 mCurrentMetadata = getMetadata();
+                mCurrentMediaImage = getNotificationImage();
                 mNotificationInfoBuilder =
                         new MediaNotificationInfo.Builder()
                                 .setMetadata(mCurrentMetadata)
@@ -119,7 +123,7 @@ public class MediaSessionTabHelper {
                                 .setTabId(mTab.getId())
                                 .setPrivate(mTab.isIncognito())
                                 .setIcon(R.drawable.audio_playing)
-                                .setLargeIcon(mFavicon)
+                                .setLargeIcon(mCurrentMediaImage)
                                 .setDefaultLargeIcon(R.drawable.audio_playing_square)
                                 .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
@@ -139,6 +143,10 @@ public class MediaSessionTabHelper {
             @Override
             public void mediaSessionMetadataChanged(MediaMetadata metadata) {
                 mPageMetadata = metadata;
+                if (mPageMetadata != null) {
+                    mMediaImageManager.downloadImage(mPageMetadata.getArtwork(),
+                            MediaSessionTabHelper.this);
+                }
                 updateNotificationMetadata();
             }
         };
@@ -150,6 +158,7 @@ public class MediaSessionTabHelper {
         cleanupWebContents();
         mWebContents = webContents;
         if (mWebContents != null) mWebContentsObserver = createWebContentsObserver(mWebContents);
+        mMediaImageManager.setWebContents(mWebContents);
     }
 
     private void cleanupWebContents() {
@@ -171,11 +180,7 @@ public class MediaSessionTabHelper {
 
             if (!updateFavicon(icon)) return;
 
-            if (mNotificationInfoBuilder == null) return;
-
-            mNotificationInfoBuilder.setLargeIcon(mFavicon);
-            MediaNotificationManager.show(
-                    ContextUtils.getApplicationContext(), mNotificationInfoBuilder.build());
+            updateNotificationImage();
         }
 
         @Override
@@ -193,6 +198,7 @@ public class MediaSessionTabHelper {
             if (mOrigin != null && mOrigin.equals(origin)) return;
             mOrigin = origin;
             mFavicon = null;
+            mPageMediaImage = null;
 
             if (mNotificationInfoBuilder == null) return;
 
@@ -227,6 +233,8 @@ public class MediaSessionTabHelper {
     private MediaSessionTabHelper(Tab tab) {
         mTab = tab;
         mTab.addObserver(mTabObserver);
+        mMediaImageManager = new MediaImageManager(
+            MINIMAL_FAVICON_SIZE, MediaNotificationManager.getMaximumLargeIconSize());
         if (mTab.getWebContents() != null) setWebContents(tab.getWebContents());
 
         Activity activity = getActivityFromTab(mTab);
@@ -339,5 +347,27 @@ public class MediaSessionTabHelper {
         }
 
         return new MediaMetadata(title, artist, album);
+    }
+
+    @Override
+    public void onImageDownloaded(Bitmap image) {
+        mPageMediaImage = image;
+        updateNotificationImage();
+    }
+
+    private void updateNotificationImage() {
+        Bitmap newMediaImage = getNotificationImage();
+        if (mCurrentMediaImage == newMediaImage) return;
+
+        mCurrentMediaImage = newMediaImage;
+
+        if (mNotificationInfoBuilder == null) return;
+        mNotificationInfoBuilder.setLargeIcon(mCurrentMediaImage);
+        MediaNotificationManager.show(
+                ContextUtils.getApplicationContext(), mNotificationInfoBuilder.build());
+    }
+
+    private Bitmap getNotificationImage() {
+        return (mPageMediaImage != null) ? mPageMediaImage : mFavicon;
     }
 }

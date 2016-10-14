@@ -367,16 +367,7 @@ public class MediaNotificationManager {
     public static Bitmap scaleIconForDisplay(Bitmap icon) {
         if (icon == null) return null;
 
-        int largeIconSizePx;
-        if (isRunningN()) {
-            largeIconSizePx = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, N_LARGE_ICON_SIZE_DP,
-                    ContextUtils.getApplicationContext().getResources().getDisplayMetrics());
-        } else {
-            largeIconSizePx = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, PRE_N_LARGE_ICON_SIZE_DP,
-                    ContextUtils.getApplicationContext().getResources().getDisplayMetrics());
-        }
+        int largeIconSizePx = getMaximumLargeIconSize();
 
         if (icon.getWidth() > largeIconSizePx || icon.getHeight() > largeIconSizePx) {
             return icon.createScaledBitmap(
@@ -384,6 +375,24 @@ public class MediaNotificationManager {
         }
 
         return icon;
+    }
+
+    /**
+     * @return Prefered maximum large icon size. If the large icon is larger than this size, then it
+     * needs to be scaled.
+     */
+    public static int getMaximumLargeIconSize() {
+        int maxLargeIconSizePx;
+        if (isRunningN()) {
+            maxLargeIconSizePx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, N_LARGE_ICON_SIZE_DP,
+                ContextUtils.getApplicationContext().getResources().getDisplayMetrics());
+        } else {
+            maxLargeIconSizePx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, PRE_N_LARGE_ICON_SIZE_DP,
+                ContextUtils.getApplicationContext().getResources().getDisplayMetrics());
+        }
+        return maxLargeIconSizePx;
     }
 
     private static MediaNotificationManager getManager(int notificationId) {

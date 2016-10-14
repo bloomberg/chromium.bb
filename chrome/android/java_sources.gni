@@ -494,6 +494,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/cast/MediaSink.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/MediaSource.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaButtonReceiver.java",
+  "java/src/org/chromium/chrome/browser/media/ui/MediaImageCallback.java",
+  "java/src/org/chromium/chrome/browser/media/ui/MediaImageManager.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaNotificationInfo.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaNotificationListener.java",
   "java/src/org/chromium/chrome/browser/media/ui/MediaNotificationManager.java",
