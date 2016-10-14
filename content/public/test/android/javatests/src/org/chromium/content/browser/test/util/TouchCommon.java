@@ -108,11 +108,11 @@ public class TouchCommon {
      * @param x X coordinate, relative to v.
      * @param y Y coordinate, relative to v.
      */
-    public static void singleClickView(View v, int x, int y) {
+    public static boolean singleClickView(View v, int x, int y) {
         int windowXY[] = viewToWindowCoordinates(v, x, y);
         int windowX = windowXY[0];
         int windowY = windowXY[1];
-        singleClickInternal(v.getRootView(), windowX, windowY);
+        return singleClickInternal(v.getRootView(), windowX, windowY);
     }
 
     /**
@@ -122,18 +122,18 @@ public class TouchCommon {
         singleClickView(v, v.getWidth() / 2, v.getHeight() / 2);
     }
 
-    private static void singleClickInternal(View view, float windowX, float windowY) {
+    private static boolean singleClickInternal(View view, float windowX, float windowY) {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
 
         MotionEvent event = MotionEvent.obtain(
                 downTime, eventTime, MotionEvent.ACTION_DOWN, windowX, windowY, 0);
-        dispatchTouchEvent(view, event);
+        if (!dispatchTouchEvent(view, event)) return false;
 
         eventTime = SystemClock.uptimeMillis();
         event = MotionEvent.obtain(
                 downTime, eventTime, MotionEvent.ACTION_UP, windowX, windowY, 0);
-        dispatchTouchEvent(view, event);
+        return dispatchTouchEvent(view, event);
     }
 
     /**
@@ -200,12 +200,12 @@ public class TouchCommon {
      * @param view The view that should receive the event.
      * @param event The view to be dispatched.
      */
-    private static void dispatchTouchEvent(final View view, final MotionEvent event) {
+    private static boolean dispatchTouchEvent(final View view, final MotionEvent event) {
         try {
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                 @Override
-                public void run() {
-                    view.dispatchTouchEvent(event);
+                public Boolean call() {
+                    return view.dispatchTouchEvent(event);
                 }
             });
         } catch (Throwable e) {

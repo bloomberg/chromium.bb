@@ -96,7 +96,8 @@ public class ImeTest extends ContentShellTestBase {
 
         mCallbackContainer = new TestCallbackHelperContainer(mContentViewCore);
         DOMUtils.waitForNonZeroNodeBounds(mWebContents, "input_text");
-        DOMUtils.clickNode(this, mContentViewCore, "input_text");
+        boolean result = DOMUtils.clickNode(this, mContentViewCore, "input_text");
+        assertEquals("Failed to dispatch touch event.", true, result);
         assertWaitForKeyboardStatus(true);
 
         mConnection = getInputConnection();
