@@ -19,12 +19,12 @@ import java.util.List;
  * the Java counterpart of content::MediaMetadata.
  */
 @JNINamespace("content")
-public class MediaMetadata {
+public final class MediaMetadata {
     /**
      * The MediaImage class carries the artwork information in MediaMetadata. It is the Java
      * counterpart of content::MediaMetadata::MediaImage.
      */
-    public static class MediaImage {
+    public static final class MediaImage {
         @NonNull
         private String mSrc;
 
@@ -36,7 +36,7 @@ public class MediaMetadata {
         /**
          * Creates a new MediaImage.
          */
-        public MediaImage(@NonNull String src, String type, List<Rect> sizes) {
+        public MediaImage(@NonNull String src, @NonNull String type, @NonNull List<Rect> sizes) {
             mSrc = src;
             mType = type;
             mSizes = sizes;
@@ -67,22 +67,45 @@ public class MediaMetadata {
         /**
          * Sets the URL of this MediaImage.
          */
-        public void setSrc(String src) {
+        public void setSrc(@NonNull String src) {
             mSrc = src;
         }
 
         /**
          * Sets the MIME type of this MediaImage.
          */
-        public void setType(String type) {
+        public void setType(@NonNull String type) {
             mType = type;
         }
 
         /**
          * Sets the sizes of this MediaImage.
          */
-        public void setSizes(List<Rect> sizes) {
+        public void setSizes(@NonNull List<Rect> sizes) {
             mSizes = sizes;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (!(obj instanceof MediaImage)) return false;
+
+            MediaImage other = (MediaImage) obj;
+            return TextUtils.equals(mSrc, other.mSrc)
+                    && TextUtils.equals(mType, other.mType)
+                    && mSizes.equals(other.mSizes);
+        }
+
+        /**
+         * @return The hash code of this {@link MediaImage}. The method uses the same algorithm in
+         * {@link java.util.List} for combinine hash values.
+         */
+        @Override
+        public int hashCode() {
+            int result = mSrc.hashCode();
+            result = 31 * result + mType.hashCode();
+            result = 31 * result + mSizes.hashCode();
+            return result;
         }
     }
 
@@ -127,7 +150,7 @@ public class MediaMetadata {
      * Sets the title associated with the media session.
      * @param title The title to use for the media session.
      */
-    public void setTitle(String title) {
+    public void setTitle(@NonNull String title) {
         mTitle = title;
     }
 
@@ -135,7 +158,7 @@ public class MediaMetadata {
      * Sets the arstist name associated with the media session.
      * @param arstist The artist name to use for the media session.
      */
-    public void setArtist(String artist) {
+    public void setArtist(@NonNull String artist) {
         mArtist = artist;
     }
 
@@ -143,7 +166,7 @@ public class MediaMetadata {
      * Sets the album name associated with the media session.
      * @param album The album name to use for the media session.
      */
-    public void setAlbum(String album) {
+    public void setAlbum(@NonNull String album) {
         mAlbum = album;
     }
 
@@ -184,12 +207,8 @@ public class MediaMetadata {
     }
 
     /**
-     * Copy constructor.
+     * Comparing MediaMetadata is expensive and should be used sparingly
      */
-    public MediaMetadata(MediaMetadata other) {
-        this(other.mTitle, other.mArtist, other.mAlbum);
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
@@ -198,14 +217,20 @@ public class MediaMetadata {
         MediaMetadata other = (MediaMetadata) obj;
         return TextUtils.equals(mTitle, other.mTitle)
                 && TextUtils.equals(mArtist, other.mArtist)
-                && TextUtils.equals(mAlbum, other.mAlbum);
+                && TextUtils.equals(mAlbum, other.mAlbum)
+                && mArtwork.equals(other.mArtwork);
     }
 
+    /**
+     * @return The hash code of this {@link MediaMetadata}. The method uses the same algorithm in
+     * {@link java.util.List} for combinine hash values.
+     */
     @Override
     public int hashCode() {
         int result = mTitle.hashCode();
         result = 31 * result + mArtist.hashCode();
         result = 31 * result + mAlbum.hashCode();
+        result = 31 * result + mArtwork.hashCode();
         return result;
     }
 }
