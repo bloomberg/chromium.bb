@@ -80,8 +80,8 @@ CONSOLE MESSAGE: line 12: function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 CONSOLE MESSAGE: line 13: function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-CONSOLE MESSAGE: line 12: 42
-CONSOLE MESSAGE: line 13: 42
+CONSOLE MESSAGE: line 12: 42.000000
+CONSOLE MESSAGE: line 13: 42.000000
 CONSOLE MESSAGE: line 12: abc
 CONSOLE MESSAGE: line 13: abc
 CONSOLE MESSAGE: line 12: [object Uint16Array]
