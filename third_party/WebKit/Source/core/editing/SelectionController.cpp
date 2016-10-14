@@ -159,9 +159,14 @@ bool SelectionController::handleMousePressEventSingleClick(
   TextGranularity granularity = CharacterGranularity;
 
   if (extendSelection && !newSelection.isNone()) {
-    const VisibleSelectionInFlatTree selectionInUserSelectAll(
-        expandSelectionToRespectUserSelectAll(innerNode,
-                                              createVisibleSelection(pos)));
+    // Note: "fast/events/shift-click-user-select-none.html" makes
+    // |pos.isNull()| true.
+    SelectionInFlatTree::Builder builder;
+    if (pos.isNotNull())
+      builder.collapse(pos);
+    const VisibleSelectionInFlatTree& selectionInUserSelectAll =
+        expandSelectionToRespectUserSelectAll(
+            innerNode, createVisibleSelection(builder.build()));
     if (selectionInUserSelectAll.isRange()) {
       if (selectionInUserSelectAll.start().compareTo(newSelection.start()) < 0)
         pos = selectionInUserSelectAll.start();

@@ -255,9 +255,6 @@ CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const VisiblePositionInFlatTree&,
                        const VisiblePositionInFlatTree&,
                        bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelection(const PositionInFlatTreeWithAffinity&,
-                       bool isDirectional = false);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.

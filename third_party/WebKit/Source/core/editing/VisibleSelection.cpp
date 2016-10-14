@@ -162,12 +162,6 @@ VisibleSelectionInFlatTree createVisibleSelection(
 }
 
 VisibleSelectionInFlatTree createVisibleSelection(
-    const PositionInFlatTreeWithAffinity& pos,
-    bool isDirectional) {
-  return createVisibleSelection(pos.position(), pos.affinity(), isDirectional);
-}
-
-VisibleSelectionInFlatTree createVisibleSelection(
     const VisiblePositionInFlatTree& pos,
     bool isDirectional) {
   DCHECK(pos.isValid());
