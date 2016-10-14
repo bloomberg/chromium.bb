@@ -339,6 +339,13 @@ void PrintDialogGtk2::ShowDialog(
   g_signal_connect(dialog_, "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
+  // Handle the case when the existing |gtk_settings_| has "selection" selected
+  // as the page range, but |has_selection| is false.
+  if (!has_selection) {
+    GtkPrintPages range = gtk_print_settings_get_print_pages(gtk_settings_);
+    if (range == GTK_PRINT_PAGES_SELECTION)
+      gtk_print_settings_set_print_pages(gtk_settings_, GTK_PRINT_PAGES_ALL);
+  }
 
   // Set modal so user cannot focus the same tab and press print again.
   gtk_window_set_modal(GTK_WINDOW(dialog_), TRUE);
