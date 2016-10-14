@@ -1076,7 +1076,7 @@ bool IsInternalURL(const GURL& url) {
 }
 
 - (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList
-         andChosenObjects:(const ChosenObjectInfoList&)chosenObjectInfoList {
+         andChosenObjects:(ChosenObjectInfoList)chosenObjectInfoList {
   [permissionsView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kSectionHorizontalPadding, 0);
 
@@ -1094,9 +1094,9 @@ bool IsInternalURL(const GURL& url) {
       controlOrigin.y = rowBottomRight.y;
     }
 
-    for (auto* object : chosenObjectInfoList) {
+    for (auto& object : chosenObjectInfoList) {
       controlOrigin.y += kPermissionsVerticalSpacing;
-      NSPoint rowBottomRight = [self addChosenObject:base::WrapUnique(object)
+      NSPoint rowBottomRight = [self addChosenObject:std::move(object)
                                               toView:permissionsView_
                                              atPoint:controlOrigin];
       controlOrigin.y = rowBottomRight.y;
@@ -1198,9 +1198,9 @@ void WebsiteSettingsUIBridge::SetCookieInfo(
 
 void WebsiteSettingsUIBridge::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
-    const ChosenObjectInfoList& chosen_object_info_list) {
+    ChosenObjectInfoList chosen_object_info_list) {
   [bubble_controller_ setPermissionInfo:permission_info_list
-                       andChosenObjects:chosen_object_info_list];
+                       andChosenObjects:std::move(chosen_object_info_list)];
 }
 
 void WebsiteSettingsUIBridge::SetSelectedTab(TabId tab_id) {

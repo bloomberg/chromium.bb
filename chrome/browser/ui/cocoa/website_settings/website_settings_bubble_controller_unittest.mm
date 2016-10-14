@@ -203,7 +203,8 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
       permission_info_list.push_back(info);
     }
     ChosenObjectInfoList chosen_object_info_list;
-    bridge_->SetPermissionInfo(permission_info_list, chosen_object_info_list);
+    bridge_->SetPermissionInfo(permission_info_list,
+                               std::move(chosen_object_info_list));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

@@ -128,9 +128,8 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // WebsiteSettingsUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
-  void SetPermissionInfo(
-      const PermissionInfoList& permission_info_list,
-      const ChosenObjectInfoList& chosen_object_info_list) override;
+  void SetPermissionInfo(const PermissionInfoList& permission_info_list,
+                         ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
   // TODO(lgarron): Remove SetSelectedTab() with https://crbug.com/571533
   void SetSelectedTab(TabId tab_id) override;

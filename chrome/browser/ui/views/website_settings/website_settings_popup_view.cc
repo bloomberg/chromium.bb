@@ -648,17 +648,14 @@ void WebsiteSettingsPopupView::SetCookieInfo(
 
 void WebsiteSettingsPopupView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
-    const ChosenObjectInfoList& chosen_object_info_list) {
+    ChosenObjectInfoList chosen_object_info_list) {
   // When a permission is changed, WebsiteSettings::OnSitePermissionChanged()
   // calls this method with updated permissions. However, PermissionSelectorRow
   // will have already updated its state, so it's already reflected in the UI.
   // In addition, if a permission is set to the default setting, WebsiteSettings
   // removes it from |permission_info_list|, but the button should remain.
-  if (permissions_view_) {
-    base::STLDeleteContainerPointers(chosen_object_info_list.begin(),
-                                     chosen_object_info_list.end());
+  if (permissions_view_)
     return;
-  }
 
   permissions_view_ = new views::View();
   views::GridLayout* layout = new views::GridLayout(permissions_view_);
@@ -686,10 +683,10 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
     layout->AddPaddingRow(1, kPermissionsVerticalSpacing);
   }
 
-  for (auto* object : chosen_object_info_list) {
+  for (auto& object : chosen_object_info_list) {
     layout->StartRow(1, content_column);
     // The view takes ownership of the object info.
-    auto* object_view = new ChosenObjectRow(base::WrapUnique(object));
+    auto* object_view = new ChosenObjectRow(std::move(object));
     object_view->AddObserver(this);
     layout->AddView(object_view, 1, 1, views::GridLayout::LEADING,
                     views::GridLayout::CENTER);

@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/stl_util.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -185,10 +184,7 @@ void ConnectionInfoPopupAndroid::SetCookieInfo(
 
 void ConnectionInfoPopupAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
-    const ChosenObjectInfoList& chosen_object_info_list) {
-  base::STLDeleteContainerPointers(chosen_object_info_list.begin(),
-                                   chosen_object_info_list.end());
-
+    ChosenObjectInfoList chosen_object_info_list) {
   NOTIMPLEMENTED();
 }
 

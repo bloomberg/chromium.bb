@@ -43,7 +43,7 @@ class PermissionRequest;
 // Returns true if |browser| has a visible location bar.
 + (bool)hasVisibleLocationBarForBrowser:(Browser*)browser;
 
-// Makes the bubble visible. The bubble will be popuplated with text retrieved
+// Makes the bubble visible. The bubble will be populated with text retrieved
 // from |requests|. |delegate| will receive callbacks for user actions.
 - (void)showWithDelegate:(PermissionPrompt::Delegate*)delegate
              forRequests:(const std::vector<PermissionRequest*>&)requests

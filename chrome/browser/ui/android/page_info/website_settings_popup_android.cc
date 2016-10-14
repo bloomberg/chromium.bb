@@ -91,7 +91,7 @@ void WebsiteSettingsPopupAndroid::SetCookieInfo(
 
 void WebsiteSettingsPopupAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
-    const ChosenObjectInfoList& chosen_object_info_list) {
+    ChosenObjectInfoList chosen_object_info_list) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // On Android, we only want to display a subset of the available options in a
@@ -129,7 +129,7 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
     }
   }
 
-  for (auto* chosen_object : chosen_object_info_list) {
+  for (const auto& chosen_object : chosen_object_info_list) {
     base::string16 object_title =
         WebsiteSettingsUI::ChosenObjectToUIString(*chosen_object);
 
@@ -137,7 +137,6 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
         env, popup_jobject_, ConvertUTF16ToJavaString(env, object_title),
         static_cast<jint>(chosen_object->ui_info.content_settings_type),
         static_cast<jint>(CONTENT_SETTING_ALLOW));
-    delete chosen_object;
   }
 
   Java_WebsiteSettingsPopup_updatePermissionDisplay(env, popup_jobject_);

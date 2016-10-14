@@ -36,16 +36,15 @@ class ConnectionInfoPopupAndroid : public WebsiteSettingsUI {
 
   // WebsiteSettingsUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
-  void SetPermissionInfo(
-      const PermissionInfoList& permission_info_list,
-      const ChosenObjectInfoList& chosen_object_info_list) override;
+  void SetPermissionInfo(const PermissionInfoList& permission_info_list,
+                         ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
   void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
 
   static bool RegisterConnectionInfoPopupAndroid(JNIEnv* env);
 
  private:
-  // The presenter that controlls the Website Settings UI.
+  // The presenter that controls the Website Settings UI.
   std::unique_ptr<WebsiteSettings> presenter_;
 
   // The java prompt implementation.

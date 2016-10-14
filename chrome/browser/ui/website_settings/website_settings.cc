@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -773,11 +774,13 @@ void WebsiteSettings::PresentSitePermissions() {
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (std::unique_ptr<base::DictionaryValue>& object : chosen_objects) {
       chosen_object_info_list.push_back(
-          new WebsiteSettingsUI::ChosenObjectInfo(ui_info, std::move(object)));
+          base::MakeUnique<WebsiteSettingsUI::ChosenObjectInfo>(
+              ui_info, std::move(object)));
     }
   }
 
-  ui_->SetPermissionInfo(permission_info_list, chosen_object_info_list);
+  ui_->SetPermissionInfo(permission_info_list,
+                         std::move(chosen_object_info_list));
 }
 
 void WebsiteSettings::PresentSiteData() {
