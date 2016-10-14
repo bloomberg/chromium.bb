@@ -114,7 +114,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   ~RenderProcessHostImpl() override;
 
   // RenderProcessHost implementation (public portion).
-  void EnableSendQueue() override;
   bool Init() override;
   int GetNextRoutingID() override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
@@ -307,7 +306,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return service_worker_ref_count_ + shared_worker_ref_count_;
   }
 
-  std::unique_ptr<IPC::ChannelProxy> CreateChannelProxy();
+  // Initializes a new IPC::ChannelProxy in |channel_|, which will be connected
+  // to the next child process launched for this host, if any.
+  void InitializeChannelProxy();
 
   // Creates and adds the IO thread message filters.
   void CreateMessageFilters();
@@ -458,9 +459,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Used in single-process mode.
   std::unique_ptr<base::Thread> in_process_renderer_;
 
-  // True after Init() has been called. We can't just check channel_ because we
-  // also reset that in the case of process termination.
-  bool is_initialized_;
+  // True after Init() has been called.
+  bool is_initialized_ = false;
+
+  // True after ProcessDied(), until the next call to Init().
+  bool is_dead_ = false;
 
   // PlzNavigate
   // Stores the time at which the first call to Init happened.
@@ -468,10 +471,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Used to launch and terminate the process without blocking the UI thread.
   std::unique_ptr<ChildProcessLauncher> child_process_launcher_;
-
-  // Messages we queue before the ChannelProxy is created.
-  using MessageQueue = std::queue<std::unique_ptr<IPC::Message>>;
-  MessageQueue queued_messages_;
 
   // The globally-unique identifier for this RPH.
   const int id_;

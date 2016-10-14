@@ -181,10 +181,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // checking if there is connection or not. Virtual for mocking out for tests.
   virtual bool HasConnection() const = 0;
 
-  // Call this to allow queueing of IPC messages that are sent before the
-  // process is launched.
-  virtual void EnableSendQueue() = 0;
-
   // Returns the renderer channel.
   virtual IPC::ChannelProxy* GetChannel() = 0;
 

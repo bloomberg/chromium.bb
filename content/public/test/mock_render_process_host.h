@@ -43,7 +43,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SimulateCrash();
 
   // RenderProcessHost implementation (public portion).
-  void EnableSendQueue() override;
   bool Init() override;
   int GetNextRoutingID() override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;

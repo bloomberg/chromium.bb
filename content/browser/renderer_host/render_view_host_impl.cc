@@ -271,7 +271,6 @@ RenderViewHostImpl::RenderViewHostImpl(
   GetWidget()->set_owner_delegate(this);
 
   GetProcess()->AddObserver(this);
-  GetProcess()->EnableSendQueue();
 
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(

@@ -95,9 +95,6 @@ void MockRenderProcessHost::SimulateCrash() {
   }
 }
 
-void MockRenderProcessHost::EnableSendQueue() {
-}
-
 bool MockRenderProcessHost::Init() {
   has_connection_ = true;
   remote_interfaces_.reset(new shell::InterfaceProvider);
