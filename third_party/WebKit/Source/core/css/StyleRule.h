@@ -176,7 +176,7 @@ class StyleRulePage : public StyleRuleBase {
   CSSSelectorList m_selectorList;
 };
 
-class StyleRuleGroup : public StyleRuleBase {
+class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
  public:
   const HeapVector<Member<StyleRuleBase>>& childRules() const {
     return m_childRules;
@@ -195,7 +195,7 @@ class StyleRuleGroup : public StyleRuleBase {
   HeapVector<Member<StyleRuleBase>> m_childRules;
 };
 
-class StyleRuleMedia : public StyleRuleGroup {
+class CORE_EXPORT StyleRuleMedia : public StyleRuleGroup {
  public:
   static StyleRuleMedia* create(MediaQuerySet* media,
                                 HeapVector<Member<StyleRuleBase>>& adoptRules) {

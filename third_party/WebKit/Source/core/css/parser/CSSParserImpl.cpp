@@ -614,6 +614,9 @@ StyleRuleViewport* CSSParserImpl::consumeViewportRule(
     m_observerWrapper->observer().endRuleBody(endOffset);
   }
 
+  if (m_styleSheet)
+    m_styleSheet->setHasViewportRule();
+
   consumeDeclarationList(block, StyleRule::Viewport);
   return StyleRuleViewport::create(
       createStylePropertySet(m_parsedProperties, CSSViewportRuleMode));

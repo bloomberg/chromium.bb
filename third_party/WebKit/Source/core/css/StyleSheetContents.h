@@ -101,6 +101,9 @@ class CORE_EXPORT StyleSheetContents
   void findFontFaceRules(
       HeapVector<Member<const StyleRuleFontFace>>& fontFaceRules);
 
+  void setHasViewportRule() { m_hasViewportRule = true; }
+  bool hasViewportRule() const { return m_hasViewportRule; }
+
   void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
   void parserAppendRule(StyleRuleBase*);
 
@@ -201,6 +204,7 @@ class CORE_EXPORT StyleSheetContents
   bool m_didLoadErrorOccur : 1;
   bool m_isMutable : 1;
   bool m_hasFontFaceRule : 1;
+  bool m_hasViewportRule : 1;
   bool m_hasMediaQueries : 1;
   bool m_hasSingleOwnerDocument : 1;
   bool m_isUsedFromTextCache : 1;
