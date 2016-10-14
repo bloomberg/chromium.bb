@@ -118,10 +118,9 @@ class CC_EXPORT OutputSurface {
   // when the framebuffer is bound via BindFramebuffer().
   virtual uint32_t GetFramebufferCopyTextureFormat() = 0;
 
-  // The implementation may destroy or steal the contents of the CompositorFrame
-  // passed in (though it will not take ownership of the CompositorFrame
-  // itself). For successful swaps, the implementation must call
-  // OutputSurfaceClient::DidSwapBuffersComplete() eventually.
+  // Swaps the current backbuffer to the screen. For successful swaps, the
+  // implementation must call OutputSurfaceClient::DidReceiveSwapBuffersAck()
+  // after returning from this method in order to unblock the next frame.
   virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
 
  protected:

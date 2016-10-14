@@ -88,7 +88,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void ApplyExternalStencil() override {}
 
  private:
-  void SwapBuffersCallback() { client_->DidSwapBuffersComplete(); }
+  void SwapBuffersCallback() { client_->DidReceiveSwapBuffersAck(); }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<DisplayOutputSurface> weak_ptr_factory_;

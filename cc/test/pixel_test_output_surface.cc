@@ -62,7 +62,7 @@ void PixelTestOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 }
 
 void PixelTestOutputSurface::SwapBuffersCallback() {
-  client_->DidSwapBuffersComplete();
+  client_->DidReceiveSwapBuffersAck();
 }
 
 OverlayCandidateValidator*

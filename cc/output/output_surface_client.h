@@ -25,50 +25,21 @@ struct ManagedMemoryPolicy;
 
 class CC_EXPORT OutputSurfaceClient {
  public:
-  // ============== DISPLAY COMPOSITOR ONLY =======================
+  // A notification that the swap of the backbuffer to the hardware is complete
+  // and is now visible to the user.
+  virtual void DidReceiveSwapBuffersAck() = 0;
 
-  // From surfaceless/ozone browser compositor output surface.
+  // The OutputSurface is lost when the ContextProviders held by it
+  // encounter an error. In this case the OutputSurface (and the
+  // ContextProviders) must be recreated.
+  virtual void DidLoseOutputSurface() = 0;
+
+  // For surfaceless/ozone implementations to create damage for the next frame.
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
+
   // For overlays.
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) = 0;
-
-  // ============== LAYER TREE COMPOSITOR ONLY ====================
-
-  // Pass the begin frame source for the client to observe.  Client does not own
-  // the BeginFrameSource.  OutputSurface should call this once after binding to
-  // the client and then call again with a null while detaching.
-  virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
-  virtual void ReclaimResources(const ReturnedResourceArray& resources) = 0;
-  // For WebView.
-  virtual void SetExternalTilePriorityConstraints(
-      const gfx::Rect& viewport_rect,
-      const gfx::Transform& transform) = 0;
-  // If set, |callback| will be called subsequent to each new tree activation,
-  // regardless of the compositor visibility or damage. |callback| must remain
-  // valid for the lifetime of the OutputSurfaceClient or until unregisted --
-  // use SetTreeActivationCallback(base::Closure()) to unregister it.
-  virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
-  // This allows the output surface to ask its client for a draw.
-  virtual void OnDraw(const gfx::Transform& transform,
-                      const gfx::Rect& viewport,
-                      bool resourceless_software_draw) = 0;
-  // For SynchronousCompositor (WebView) to set how much memory the compositor
-  // can use without changing visibility.
-  virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
-
-  // ============== BOTH TYPES OF COMPOSITOR ======================
-
-  // For LayerTreeHostImpl, this is more of a OnSwapBuffersAck from the display
-  // compositor that it received and will use the frame, unblocking it from
-  // producing more frames.
-  // For the display compositor this is literally a notification that the swap
-  // to the hardware is complete.
-  virtual void DidSwapBuffersComplete() = 0;
-
-  // Needs thought, if LTHI has only context providers, it needs to register a
-  // lost callback, so we need to support multiple callbacks.
-  virtual void DidLoseOutputSurface() = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

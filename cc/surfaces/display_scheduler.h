@@ -45,7 +45,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   virtual void SurfaceDamaged(const SurfaceId& surface_id);
 
   virtual void DidSwapBuffers();
-  void DidSwapBuffersComplete();
+  void DidReceiveSwapBuffersAck();
 
   void OutputSurfaceLost();
 

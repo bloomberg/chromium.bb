@@ -125,7 +125,7 @@ class FakeOutputSurface : public OutputSurface {
   gfx::Rect last_swap_rect_;
 
  private:
-  void SwapBuffersCallback();
+  void SwapBuffersAck();
 
   base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };

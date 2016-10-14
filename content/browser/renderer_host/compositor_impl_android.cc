@@ -302,7 +302,7 @@ class AndroidOutputSurface : public cc::OutputSurface {
       gfx::SwapResult result,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
     RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-    client_->DidSwapBuffersComplete();
+    client_->DidReceiveSwapBuffersAck();
   }
 
  private:
@@ -349,7 +349,7 @@ class VulkanOutputSurface : public cc::OutputSurface {
   void SwapBuffers(cc::CompositorFrame frame) override {
     surface_->SwapBuffers();
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&VulkanOutputSurface::SwapBuffersCallback,
+                           base::Bind(&VulkanOutputSurface::SwapBuffersAck,
                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -361,9 +361,7 @@ class VulkanOutputSurface : public cc::OutputSurface {
   }
 
  private:
-  void OutputSurface::SwapBuffersCallback() {
-    client_->DidSwapBuffersComplete();
-  }
+  void SwapBuffersAck() { client_->DidReceiveSwapBuffersAck(); }
 
   std::unique_ptr<gpu::VulkanSurface> surface_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

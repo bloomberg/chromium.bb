@@ -53,12 +53,12 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeOutputSurface::SwapBuffersCallback,
+      FROM_HERE, base::Bind(&FakeOutputSurface::SwapBuffersAck,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakeOutputSurface::SwapBuffersCallback() {
-  client_->DidSwapBuffersComplete();
+void FakeOutputSurface::SwapBuffersAck() {
+  client_->DidReceiveSwapBuffersAck();
 }
 
 void FakeOutputSurface::BindFramebuffer() {

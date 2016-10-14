@@ -172,7 +172,7 @@ void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
   }
 
   buffer_queue_->PageFlipComplete();
-  client_->DidSwapBuffersComplete();
+  client_->DidReceiveSwapBuffersAck();
 
   if (force_swap)
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));

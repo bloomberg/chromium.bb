@@ -181,7 +181,7 @@ class OverlayOutputSurface : public OutputSurface {
   unsigned GetOverlayTextureId() const override { return 10000; }
   bool SurfaceIsSuspendForRecycle() const override { return false; }
 
-  void OnSwapBuffersComplete() { client_->DidSwapBuffersComplete(); }
+  void OnSwapBuffersComplete() { client_->DidReceiveSwapBuffersAck(); }
 
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;

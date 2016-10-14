@@ -104,7 +104,7 @@ class DirectOutputSurface : public cc::OutputSurface {
   void ApplyExternalStencil() override {}
 
  private:
-  void OnSwapBuffersComplete() { client_->DidSwapBuffersComplete(); }
+  void OnSwapBuffersComplete() { client_->DidReceiveSwapBuffersAck(); }
 
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 

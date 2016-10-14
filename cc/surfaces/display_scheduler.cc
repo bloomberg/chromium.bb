@@ -360,7 +360,7 @@ void DisplayScheduler::DidSwapBuffers() {
                            "pending_frames", pending_swaps_);
 }
 
-void DisplayScheduler::DidSwapBuffersComplete() {
+void DisplayScheduler::DidReceiveSwapBuffersAck() {
   pending_swaps_--;
   TRACE_EVENT_ASYNC_END1("cc", "DisplayScheduler:pending_swaps", this,
                          "pending_frames", pending_swaps_);

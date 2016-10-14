@@ -85,7 +85,7 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback() {
-  client_->DidSwapBuffersComplete();
+  client_->DidReceiveSwapBuffersAck();
 }
 
 bool SoftwareBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane() const {

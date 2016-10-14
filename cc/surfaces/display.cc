@@ -330,7 +330,7 @@ bool Display::DrawAndSwap() {
                                 frame.metadata.latency_info.end());
     if (scheduler_) {
       scheduler_->DidSwapBuffers();
-      scheduler_->DidSwapBuffersComplete();
+      scheduler_->DidReceiveSwapBuffersAck();
     }
   }
 
@@ -338,9 +338,9 @@ bool Display::DrawAndSwap() {
   return true;
 }
 
-void Display::DidSwapBuffersComplete() {
+void Display::DidReceiveSwapBuffersAck() {
   if (scheduler_)
-    scheduler_->DidSwapBuffersComplete();
+    scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
     renderer_->SwapBuffersComplete();
 }
@@ -351,41 +351,10 @@ void Display::DidReceiveTextureInUseResponses(
     renderer_->DidReceiveTextureInUseResponses(responses);
 }
 
-void Display::SetBeginFrameSource(BeginFrameSource* source) {
-  // The BeginFrameSource is set from the constructor, it doesn't come
-  // from the OutputSurface for the Display.
-  NOTREACHED();
-}
-
-void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
-  // This is only for LayerTreeHostImpl.
-  NOTREACHED();
-}
-
-void Display::OnDraw(const gfx::Transform& transform,
-                     const gfx::Rect& viewport,
-                     bool resourceless_software_draw) {
-  NOTREACHED();
-}
-
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
   if (scheduler_)
     scheduler_->SurfaceDamaged(current_surface_id_);
-}
-
-void Display::ReclaimResources(const ReturnedResourceArray& resources) {
-  NOTREACHED();
-}
-
-void Display::SetExternalTilePriorityConstraints(
-    const gfx::Rect& viewport_rect,
-    const gfx::Transform& transform) {
-  NOTREACHED();
-}
-
-void Display::SetTreeActivationCallback(const base::Closure& callback) {
-  NOTREACHED();
 }
 
 void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {

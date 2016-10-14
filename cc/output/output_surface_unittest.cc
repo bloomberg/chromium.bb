@@ -36,7 +36,7 @@ class TestOutputSurface : public OutputSurface {
                const gfx::ColorSpace& color_space,
                bool has_alpha) override {}
   void SwapBuffers(OutputSurfaceFrame frame) override {
-    client_->DidSwapBuffersComplete();
+    client_->DidReceiveSwapBuffersAck();
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     // TestContextProvider has no real framebuffer, just use RGB.
@@ -51,7 +51,9 @@ class TestOutputSurface : public OutputSurface {
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
 
-  void OnSwapBuffersCompleteForTesting() { client_->DidSwapBuffersComplete(); }
+  void OnSwapBuffersCompleteForTesting() {
+    client_->DidReceiveSwapBuffersAck();
+  }
 
  protected:
 };

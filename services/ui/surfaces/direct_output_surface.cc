@@ -117,7 +117,7 @@ void DirectOutputSurface::OnVSyncParametersUpdated(
 }
 
 void DirectOutputSurface::OnSwapBuffersComplete() {
-  client_->DidSwapBuffersComplete();
+  client_->DidReceiveSwapBuffersAck();
 }
 
 }  // namespace ui

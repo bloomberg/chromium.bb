@@ -478,7 +478,7 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   base::TimeTicks expected_deadline =
       scheduler_.LastUsedBeginFrameArgs().deadline -
       BeginFrameArgs::DefaultEstimatedParentDrawTime();
-  scheduler_.DidSwapBuffersComplete();
+  scheduler_.DidReceiveSwapBuffersAck();
   BeginFrameForTest();
   EXPECT_EQ(expected_deadline,
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
@@ -529,7 +529,7 @@ TEST_F(DisplaySchedulerTest, ScheduleBeginFrameDeadline) {
   BeginFrameForTest();
   EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
-  scheduler_.DidSwapBuffersComplete();
+  scheduler_.DidReceiveSwapBuffersAck();
   EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 
   scheduler_.DisplayResized();

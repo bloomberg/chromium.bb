@@ -5,7 +5,6 @@
 #ifndef CC_TEST_FAKE_OUTPUT_SURFACE_CLIENT_H_
 #define CC_TEST_FAKE_OUTPUT_SURFACE_CLIENT_H_
 
-#include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 
 namespace cc {
@@ -14,26 +13,13 @@ class OutputSurface;
 
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
-  FakeOutputSurfaceClient()
-      : swap_count_(0),
-        did_lose_output_surface_called_(false),
-        memory_policy_(0) {}
+  FakeOutputSurfaceClient() = default;
 
-  void SetBeginFrameSource(BeginFrameSource* source) override {}
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
-  void DidSwapBuffersComplete() override;
+  void DidReceiveSwapBuffersAck() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override {}
-  void ReclaimResources(const ReturnedResourceArray& resources) override {}
   void DidLoseOutputSurface() override;
-  void SetExternalTilePriorityConstraints(
-      const gfx::Rect& viewport_rect_for_tile_priority,
-      const gfx::Transform& transform_for_tile_priority) override {}
-  void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
-  void SetTreeActivationCallback(const base::Closure&) override {}
-  void OnDraw(const gfx::Transform& transform,
-              const gfx::Rect& viewport,
-              bool resourceless_software_draw) override {}
 
   int swap_count() { return swap_count_; }
 
@@ -41,12 +27,9 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
     return did_lose_output_surface_called_;
   }
 
-  const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
-
  private:
-  int swap_count_;
-  bool did_lose_output_surface_called_;
-  ManagedMemoryPolicy memory_policy_;
+  int swap_count_ = 0;
+  bool did_lose_output_surface_called_ = false;
 };
 
 }  // namespace cc
