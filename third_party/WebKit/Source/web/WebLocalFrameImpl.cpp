@@ -1304,6 +1304,15 @@ void WebLocalFrameImpl::extendSelectionAndDelete(int before, int after) {
   frame()->inputMethodController().extendSelectionAndDelete(before, after);
 }
 
+void WebLocalFrameImpl::deleteSurroundingText(int before, int after) {
+  TRACE_EVENT0("blink", "WebLocalFrameImpl::deleteSurroundingText");
+  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
+    plugin->deleteSurroundingText(before, after);
+    return;
+  }
+  frame()->inputMethodController().deleteSurroundingText(before, after);
+}
+
 void WebLocalFrameImpl::setCaretVisible(bool visible) {
   frame()->selection().setCaretVisible(visible);
 }

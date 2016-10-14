@@ -161,19 +161,50 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     @RetryOnFailure
-    public void testDeleteSurroundingTextWithZeroValue() throws Throwable {
+    public void testDeleteSurroundingTextWithRangeSelection() throws Throwable {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
-        deleteSurroundingText(0, 0);
 
-        setSelection(0, 0);
-        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+        setSelection(1, 4);
+        waitAndVerifyUpdateSelection(1, 1, 4, -1, -1);
+
         deleteSurroundingText(0, 0);
+        assertTextsAroundCursor("h", "ell", "o");
+
+        deleteSurroundingText(1, 1);
+        assertTextsAroundCursor("", "ell", "");
+
+        deleteSurroundingText(1, 0);
+        assertTextsAroundCursor("", "ell", "");
+
+        deleteSurroundingText(0, 1);
+        assertTextsAroundCursor("", "ell", "");
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    @RetryOnFailure
+    public void testDeleteSurroundingTextWithCursorSelection() throws Throwable {
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
 
         setSelection(2, 2);
-        waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+
         deleteSurroundingText(0, 0);
         assertTextsAroundCursor("he", null, "llo");
+
+        deleteSurroundingText(1, 1);
+        assertTextsAroundCursor("h", null, "lo");
+
+        deleteSurroundingText(1, 0);
+        assertTextsAroundCursor("", null, "lo");
+
+        deleteSurroundingText(0, 10);
+        assertTextsAroundCursor("", null, "");
+
+        deleteSurroundingText(10, 10);
+        assertTextsAroundCursor("", null, "");
     }
 
     @SmallTest
@@ -1371,30 +1402,42 @@ public class ImeTest extends ContentShellTestBase {
         waitForEventLogs("selectionchange,selectionchange");
         clearEventLogs();
 
-        commitText("a", 1);
-        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
         waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
         clearEventLogs();
 
-        deleteSurroundingText(1, 0);
-        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+        setSelection(2, 2);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+        waitForEventLogs("selectionchange");
+        clearEventLogs();
 
-        waitForEventLogs("keydown(229),input,keyup(229),selectionchange,selectionchange");
+        deleteSurroundingText(1, 1);
+        waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
+        // TODO(yabinh): It should only fire 1 input and 1 selectionchange events.
+        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange,"
+                + "selectionchange,selectionchange");
     }
 
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
     public void testInputTextEvents_DeleteSurroundingText() throws Throwable {
-        commitText("a", 1);
-        waitAndVerifyUpdateSelection(0, 1, 1, -1, -1);
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
         waitForEventLogs("keydown(229),input,keyup(229),selectionchange");
         clearEventLogs();
 
-        deleteSurroundingText(1, 0);
-        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+        setSelection(2, 2);
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+        waitForEventLogs("selectionchange");
+        clearEventLogs();
 
-        waitForEventLogs("keydown(229),input,keyup(229),selectionchange,selectionchange");
+        deleteSurroundingText(1, 1);
+        waitAndVerifyUpdateSelection(2, 1, 1, -1, -1);
+        // TODO(yabinh): It should only fire 1 input and 1 selectionchange events.
+        waitForEventLogs("keydown(229),input,input,keyup(229),selectionchange,selectionchange,"
+                + "selectionchange,selectionchange");
     }
 
     @MediumTest

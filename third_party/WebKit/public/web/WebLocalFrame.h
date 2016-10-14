@@ -295,6 +295,9 @@ class WebLocalFrame : public WebFrame {
   virtual void moveRangeSelectionExtent(const WebPoint&) = 0;
   // Replaces the selection with the input string.
   virtual void replaceSelection(const WebString&) = 0;
+  // Deletes text before and after the current cursor position, excluding the
+  // selection.
+  virtual void deleteSurroundingText(int before, int after) = 0;
 
   // Spell-checking support -------------------------------------------------
   virtual void replaceMisspelledRange(const WebString&) = 0;

@@ -145,6 +145,12 @@ IPC_MESSAGE_ROUTED2(InputMsg_ExtendSelectionAndDelete,
                     int /* before */,
                     int /* after */)
 
+// Deletes text before and after the current cursor position, excluding the
+// selection.
+IPC_MESSAGE_ROUTED2(InputMsg_DeleteSurroundingText,
+                    int /* before */,
+                    int /* after */)
+
 // Selects between the given start and end offsets in the currently focused
 // editable field.
 IPC_MESSAGE_ROUTED2(InputMsg_SetEditableSelectionOffsets,

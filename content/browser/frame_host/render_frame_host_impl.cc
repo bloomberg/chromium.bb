@@ -2499,6 +2499,10 @@ void RenderFrameHostImpl::ExtendSelectionAndDelete(size_t before,
   Send(new InputMsg_ExtendSelectionAndDelete(routing_id_, before, after));
 }
 
+void RenderFrameHostImpl::DeleteSurroundingText(size_t before, size_t after) {
+  Send(new InputMsg_DeleteSurroundingText(routing_id_, before, after));
+}
+
 void RenderFrameHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,

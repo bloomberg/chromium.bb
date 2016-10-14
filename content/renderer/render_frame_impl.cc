@@ -1547,6 +1547,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(InputMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
+    IPC_MESSAGE_HANDLER(InputMsg_DeleteSurroundingText, OnDeleteSurroundingText)
     IPC_MESSAGE_HANDLER(InputMsg_SetCompositionFromExistingText,
                         OnSetCompositionFromExistingText)
     IPC_MESSAGE_HANDLER(InputMsg_SetEditableSelectionOffsets,
@@ -2111,6 +2112,14 @@ void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
 
   ImeEventGuard guard(GetRenderWidget());
   frame_->extendSelectionAndDelete(before, after);
+}
+
+void RenderFrameImpl::OnDeleteSurroundingText(int before, int after) {
+  if (!GetRenderWidget()->ShouldHandleImeEvent())
+    return;
+
+  ImeEventGuard guard(GetRenderWidget());
+  frame_->deleteSurroundingText(before, after);
 }
 
 void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {

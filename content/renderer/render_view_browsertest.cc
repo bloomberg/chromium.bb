@@ -1647,7 +1647,6 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   EXPECT_EQ(0, info.selectionEnd);
 }
 
-
 TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   // Load an HTML page consisting of an input field.
   LoadHTML("<html>"
@@ -1670,6 +1669,53 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   EXPECT_EQ("abuvwxyz", info.value);
   EXPECT_EQ(2, info.selectionStart);
   EXPECT_EQ(2, info.selectionEnd);
+}
+
+TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
+  // Load an HTML page consisting of an input field.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test1\" value=\"abcdefghijklmnopqrstuvwxyz\"></input>"
+      "</body>"
+      "</html>");
+  ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
+
+  frame()->SetEditableSelectionOffsets(10, 10);
+  frame()->DeleteSurroundingText(3, 4);
+  blink::WebTextInputInfo info = view()->webview()->textInputInfo();
+  EXPECT_EQ("abcdefgopqrstuvwxyz", info.value);
+  EXPECT_EQ(7, info.selectionStart);
+  EXPECT_EQ(7, info.selectionEnd);
+
+  frame()->SetEditableSelectionOffsets(4, 8);
+  frame()->DeleteSurroundingText(2, 5);
+  info = view()->webview()->textInputInfo();
+  EXPECT_EQ("abefgouvwxyz", info.value);
+  EXPECT_EQ(2, info.selectionStart);
+  EXPECT_EQ(6, info.selectionEnd);
+
+  frame()->SetEditableSelectionOffsets(5, 5);
+  frame()->DeleteSurroundingText(10, 0);
+  info = view()->webview()->textInputInfo();
+  EXPECT_EQ("ouvwxyz", info.value);
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
+
+  frame()->DeleteSurroundingText(0, 10);
+  info = view()->webview()->textInputInfo();
+  EXPECT_EQ("", info.value);
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
+
+  frame()->DeleteSurroundingText(10, 10);
+  info = view()->webview()->textInputInfo();
+  EXPECT_EQ("", info.value);
+
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
 }
 
 // Test that the navigating specific frames works correctly.

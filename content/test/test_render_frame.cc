@@ -51,6 +51,10 @@ void TestRenderFrame::ExtendSelectionAndDelete(int before, int after) {
   OnExtendSelectionAndDelete(before, after);
 }
 
+void TestRenderFrame::DeleteSurroundingText(int before, int after) {
+  OnDeleteSurroundingText(before, after);
+}
+
 void TestRenderFrame::Unselect() {
   OnUnselect();
 }

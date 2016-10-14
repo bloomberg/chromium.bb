@@ -1262,6 +1262,49 @@ TEST_F(WebViewTest, ExtendSelectionAndDelete) {
   EXPECT_EQ("ijklmnopqrstuvwxyz", std::string(info.value.utf8().data()));
 }
 
+TEST_F(WebViewTest, DeleteSurroundingText) {
+  URLTestHelpers::registerMockedURLFromBaseURL(
+      WebString::fromUTF8(m_baseURL.c_str()),
+      WebString::fromUTF8("input_field_populated.html"));
+  WebView* webView = m_webViewHelper.initializeAndLoad(
+      m_baseURL + "input_field_populated.html");
+  WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+  webView->setInitialFocus(false);
+
+  frame->setEditableSelectionOffsets(10, 10);
+  frame->deleteSurroundingText(5, 8);
+  WebTextInputInfo info = webView->textInputInfo();
+  EXPECT_EQ("01234ijklmnopqrstuvwxyz", std::string(info.value.utf8().data()));
+  EXPECT_EQ(5, info.selectionStart);
+  EXPECT_EQ(5, info.selectionEnd);
+
+  frame->setEditableSelectionOffsets(5, 10);
+  frame->deleteSurroundingText(3, 5);
+  info = webView->textInputInfo();
+  EXPECT_EQ("01ijklmstuvwxyz", std::string(info.value.utf8().data()));
+  EXPECT_EQ(2, info.selectionStart);
+  EXPECT_EQ(7, info.selectionEnd);
+
+  frame->setEditableSelectionOffsets(5, 5);
+  frame->deleteSurroundingText(10, 0);
+  info = webView->textInputInfo();
+  EXPECT_EQ("lmstuvwxyz", std::string(info.value.utf8().data()));
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
+
+  frame->deleteSurroundingText(0, 20);
+  info = webView->textInputInfo();
+  EXPECT_EQ("", std::string(info.value.utf8().data()));
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
+
+  frame->deleteSurroundingText(10, 10);
+  info = webView->textInputInfo();
+  EXPECT_EQ("", std::string(info.value.utf8().data()));
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
+}
+
 TEST_F(WebViewTest, SetCompositionFromExistingText) {
   URLTestHelpers::registerMockedURLFromBaseURL(
       WebString::fromUTF8(m_baseURL.c_str()),

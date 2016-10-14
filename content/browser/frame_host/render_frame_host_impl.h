@@ -456,6 +456,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // before and after the selection or caret.
   void ExtendSelectionAndDelete(size_t before, size_t after);
 
+  // Deletes text before and after the current cursor position, excluding the
+  // selection.
+  void DeleteSurroundingText(size_t before, size_t after);
+
   // Notifies the RenderFrame that the JavaScript message that was shown was
   // closed by the user.
   void JavaScriptDialogClosed(IPC::Message* reply_msg,

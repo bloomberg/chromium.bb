@@ -94,6 +94,7 @@ class CORE_EXPORT InputMethodController final
   PlainTextRange createRangeForSelection(int start,
                                          int end,
                                          size_t textLength) const;
+  void deleteSurroundingText(int before, int after);
 
  private:
   Member<LocalFrame> m_frame;

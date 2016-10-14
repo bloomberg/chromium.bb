@@ -285,7 +285,7 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(GetFocusedFrame());
   if (rfh)
-    rfh->ExtendSelectionAndDelete(before, after);
+    rfh->DeleteSurroundingText(before, after);
 }
 
 bool ImeAdapterAndroid::RequestTextInputStateUpdate(

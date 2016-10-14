@@ -868,6 +868,69 @@ void InputMethodController::extendSelectionAndDelete(int before, int after) {
   TypingCommand::deleteSelection(*frame().document());
 }
 
+// TODO(yabinh): We should reduce the number of selectionchange events.
+void InputMethodController::deleteSurroundingText(int before, int after) {
+  if (!editor().canEdit())
+    return;
+  const PlainTextRange selectionOffsets(getSelectionOffsets());
+  if (selectionOffsets.isNull())
+    return;
+  Element* const rootEditableElement =
+      frame().selection().rootEditableElement();
+  if (!rootEditableElement)
+    return;
+  int selectionStart = static_cast<int>(selectionOffsets.start());
+  int selectionEnd = static_cast<int>(selectionOffsets.end());
+
+  // Select the text to be deleted before selectionStart.
+  if (before > 0 && selectionStart > 0) {
+    // In case of exceeding the left boundary.
+    const int start = std::max(selectionStart - before, 0);
+
+    const EphemeralRange& range =
+        PlainTextRange(0, start).createRange(*rootEditableElement);
+    if (range.isNull())
+      return;
+    const Position& position = range.endPosition();
+
+    // Adjust the start of selection for multi-code text(a grapheme cluster
+    // contains more than one code point). TODO(yabinh): Adjustment should be
+    // based on code point instead of grapheme cluster.
+    const size_t diff = computeDistanceToLeftGraphemeBoundary(position);
+    const int adjustedStart = start - static_cast<int>(diff);
+    if (!setSelectionOffsets(PlainTextRange(adjustedStart, selectionStart)))
+      return;
+    TypingCommand::deleteSelection(*frame().document());
+
+    selectionEnd = selectionEnd - (selectionStart - adjustedStart);
+    selectionStart = adjustedStart;
+  }
+
+  // Select the text to be deleted after selectionEnd.
+  if (after > 0) {
+    // Adjust the deleted range in case of exceeding the right boundary.
+    const PlainTextRange range(0, selectionEnd + after);
+    if (range.isNull())
+      return;
+    const EphemeralRange& validRange = range.createRange(*rootEditableElement);
+    if (validRange.isNull())
+      return;
+    const int end =
+        PlainTextRange::create(*rootEditableElement, validRange).end();
+    const Position& position = validRange.endPosition();
+
+    // Adjust the end of selection for multi-code text. TODO(yabinh): Adjustment
+    // should be based on code point instead of grapheme cluster.
+    const size_t diff = computeDistanceToRightGraphemeBoundary(position);
+    const int adjustedEnd = end + static_cast<int>(diff);
+    if (!setSelectionOffsets(PlainTextRange(selectionEnd, adjustedEnd)))
+      return;
+    TypingCommand::deleteSelection(*frame().document());
+  }
+
+  setSelectionOffsets(PlainTextRange(selectionStart, selectionEnd));
+}
+
 DEFINE_TRACE(InputMethodController) {
   visitor->trace(m_frame);
   visitor->trace(m_compositionRange);
