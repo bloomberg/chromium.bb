@@ -476,7 +476,9 @@ LONG ExceptionHandler::HandleException(EXCEPTION_POINTERS* exinfo) {
   DWORD code = exinfo->ExceptionRecord->ExceptionCode;
   LONG action;
   bool is_debug_exception = (code == EXCEPTION_BREAKPOINT) ||
-                            (code == EXCEPTION_SINGLE_STEP);
+                            (code == EXCEPTION_SINGLE_STEP) ||
+                            (code == DBG_PRINTEXCEPTION_C) ||
+                            (code == DBG_PRINTEXCEPTION_WIDE_C);
 
   if (code == EXCEPTION_INVALID_HANDLE &&
       current_handler->consume_invalid_handle_exceptions_) {
