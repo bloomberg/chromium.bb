@@ -103,8 +103,7 @@ TEST_F(FramedBrowserWindowTest, DISABLED_DoesHideTitle) {
 }
 
 // Test to make sure that our window widgets are in the right place.
-// TODO(crbug.com/655112): Fails on Mac 10.11 Tests.
-TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
+TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   BOOL yes = YES;
   BOOL no = NO;
 
@@ -113,6 +112,8 @@ TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
   window_ = [[FramedBrowserWindow alloc]
              initWithContentRect:NSMakeRect(0, 0, 800, 600)
                      hasTabStrip:NO];
+  // Update window layout according to existing layout constraints.
+  [window_ layoutIfNeeded];
   id controller = [OCMockObject mockForClass:[BrowserWindowController class]];
   [[[controller stub] andReturnValue:OCMOCK_VALUE(yes)]
       isKindOfClass:[BrowserWindowController class]];
@@ -123,7 +124,8 @@ TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
 
   NSView* closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
-  NSRect closeBoxFrame = [closeBoxControl frame];
+  NSRect closeBoxFrame = [closeBoxControl convertRect:[closeBoxControl bounds]
+                                               toView:nil];
   NSRect windowBounds = [window_ frame];
   windowBounds = [[window_ contentView] convertRect:windowBounds fromView:nil];
   windowBounds.origin = NSZeroPoint;
@@ -136,7 +138,9 @@ TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
   NSView* miniaturizeControl =
       [window_ standardWindowButton:NSWindowMiniaturizeButton];
   EXPECT_TRUE(miniaturizeControl);
-  NSRect miniaturizeFrame = [miniaturizeControl frame];
+  NSRect miniaturizeFrame =
+      [miniaturizeControl convertRect:[miniaturizeControl bounds]
+                               toView:nil];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
             NSMaxY(windowBounds) -
                 kFramedWindowButtonsWithoutTabStripOffsetFromTop);
@@ -149,6 +153,8 @@ TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
   window_ = [[FramedBrowserWindow alloc]
              initWithContentRect:NSMakeRect(0, 0, 800, 600)
                      hasTabStrip:YES];
+  // Update window layout according to existing layout constraints.
+  [window_ layoutIfNeeded];
   controller = [OCMockObject mockForClass:[BrowserWindowController class]];
   [[[controller stub] andReturnValue:OCMOCK_VALUE(yes)]
       isKindOfClass:[BrowserWindowController class]];
@@ -159,7 +165,8 @@ TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
 
   closeBoxControl = [window_ standardWindowButton:NSWindowCloseButton];
   EXPECT_TRUE(closeBoxControl);
-  closeBoxFrame = [closeBoxControl frame];
+  closeBoxFrame = [closeBoxControl convertRect:[closeBoxControl bounds]
+                                        toView:nil];
   windowBounds = [window_ frame];
   windowBounds = [[window_ contentView] convertRect:windowBounds fromView:nil];
   windowBounds.origin = NSZeroPoint;
@@ -171,7 +178,8 @@ TEST_F(FramedBrowserWindowTest, DISABLED_WindowWidgetLocation) {
 
   miniaturizeControl = [window_ standardWindowButton:NSWindowMiniaturizeButton];
   EXPECT_TRUE(miniaturizeControl);
-  miniaturizeFrame = [miniaturizeControl frame];
+  miniaturizeFrame = [miniaturizeControl convertRect:[miniaturizeControl bounds]
+                                              toView:nil];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
             NSMaxY(windowBounds) -
                 kFramedWindowButtonsWithTabStripOffsetFromTop);
