@@ -44,7 +44,7 @@ class StyleRuleViewport;
 class CORE_EXPORT ViewportStyleResolver
     : public GarbageCollected<ViewportStyleResolver> {
  public:
-  static ViewportStyleResolver* create(Document* document) {
+  static ViewportStyleResolver* create(Document& document) {
     return new ViewportStyleResolver(document);
   }
 
@@ -57,15 +57,19 @@ class CORE_EXPORT ViewportStyleResolver
   DECLARE_TRACE();
 
  private:
-  explicit ViewportStyleResolver(Document*);
+  explicit ViewportStyleResolver(Document&);
 
-  void addViewportRule(StyleRuleViewport*, Origin);
+  void collectViewportRulesFromUASheets();
+  void collectViewportChildRules(const HeapVector<Member<StyleRuleBase>>&,
+                                 Origin);
+  void addViewportRule(StyleRuleViewport&, Origin);
 
   float viewportArgumentValue(CSSPropertyID) const;
   Length viewportLengthValue(CSSPropertyID) const;
 
   Member<Document> m_document;
   Member<MutableStylePropertySet> m_propertySet;
+  Member<MediaQueryEvaluator> m_initialViewportMedium;
   bool m_hasAuthorStyle;
 };
 

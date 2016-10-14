@@ -182,7 +182,7 @@ static void collectScopedResolversForHostedShadowTrees(
 
 StyleResolver::StyleResolver(Document& document)
     : m_document(document),
-      m_viewportStyleResolver(ViewportStyleResolver::create(&document)),
+      m_viewportStyleResolver(ViewportStyleResolver::create(document)),
       m_needCollectFeatures(false),
       m_printMediaType(false),
       m_styleSharingDepth(0) {

@@ -33,8 +33,10 @@
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/MediaValuesDynamic.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -44,40 +46,68 @@
 
 namespace blink {
 
-ViewportStyleResolver::ViewportStyleResolver(Document* document)
+ViewportStyleResolver::ViewportStyleResolver(Document& document)
     : m_document(document), m_hasAuthorStyle(false) {
-  ASSERT(m_document);
+  DCHECK(document.frame());
+  // TODO(rune@opera.com): The MediaValues object passed here should reflect the
+  // initial viewport, not the actual viewport. See https://crbug.com/332763
+  m_initialViewportMedium =
+      new MediaQueryEvaluator(MediaValuesDynamic::create(document.frame()));
 }
 
-void ViewportStyleResolver::collectViewportRules() {
+void ViewportStyleResolver::collectViewportRulesFromUASheets() {
   CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
-  collectViewportRules(defaultStyleSheets.defaultStyle(), UserAgentOrigin);
-
   WebViewportStyle viewportStyle = m_document->settings()
                                        ? m_document->settings()->viewportStyle()
                                        : WebViewportStyle::Default;
-  RuleSet* viewportRules = nullptr;
+  StyleSheetContents* viewportContents = nullptr;
   switch (viewportStyle) {
     case WebViewportStyle::Default:
       break;
     case WebViewportStyle::Mobile:
-      viewportRules = defaultStyleSheets.defaultMobileViewportStyle();
+      viewportContents = defaultStyleSheets.ensureMobileViewportStyleSheet();
       break;
     case WebViewportStyle::Television:
-      viewportRules = defaultStyleSheets.defaultTelevisionViewportStyle();
+      viewportContents =
+          defaultStyleSheets.ensureTelevisionViewportStyleSheet();
       break;
   }
-  if (viewportRules)
-    collectViewportRules(viewportRules, UserAgentOrigin);
+  if (viewportContents)
+    collectViewportChildRules(viewportContents->childRules(), UserAgentOrigin);
 
-  if (m_document->isMobileDocument())
-    collectViewportRules(defaultStyleSheets.defaultXHTMLMobileProfileStyle(),
-                         UserAgentOrigin);
+  if (m_document->isMobileDocument()) {
+    collectViewportChildRules(
+        defaultStyleSheets.ensureXHTMLMobileProfileStyleSheet()->childRules(),
+        UserAgentOrigin);
+  }
+  DCHECK(!defaultStyleSheets.defaultStyleSheet()->hasViewportRule());
+}
 
+void ViewportStyleResolver::collectViewportRules() {
+  collectViewportRulesFromUASheets();
   if (ScopedStyleResolver* scopedResolver = m_document->scopedStyleResolver())
     scopedResolver->collectViewportRulesTo(this);
 
   resolve();
+}
+
+void ViewportStyleResolver::collectViewportChildRules(
+    const HeapVector<Member<StyleRuleBase>>& rules,
+    Origin origin) {
+  for (auto& rule : rules) {
+    if (rule->isViewportRule()) {
+      addViewportRule(*toStyleRuleViewport(rule), origin);
+    } else if (rule->isMediaRule()) {
+      StyleRuleMedia* mediaRule = toStyleRuleMedia(rule);
+      if (!mediaRule->mediaQueries() ||
+          m_initialViewportMedium->eval(mediaRule->mediaQueries()))
+        collectViewportChildRules(mediaRule->childRules(), origin);
+    } else if (rule->isSupportsRule()) {
+      StyleRuleSupports* supportsRule = toStyleRuleSupports(rule);
+      if (supportsRule->conditionIsSupported())
+        collectViewportChildRules(supportsRule->childRules(), origin);
+    }
+  }
 }
 
 void ViewportStyleResolver::collectViewportRules(RuleSet* rules,
@@ -87,12 +117,12 @@ void ViewportStyleResolver::collectViewportRules(RuleSet* rules,
   const HeapVector<Member<StyleRuleViewport>>& viewportRules =
       rules->viewportRules();
   for (size_t i = 0; i < viewportRules.size(); ++i)
-    addViewportRule(viewportRules[i], origin);
+    addViewportRule(*viewportRules[i], origin);
 }
 
-void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule,
+void ViewportStyleResolver::addViewportRule(StyleRuleViewport& viewportRule,
                                             Origin origin) {
-  StylePropertySet& propertySet = viewportRule->mutableProperties();
+  StylePropertySet& propertySet = viewportRule.mutableProperties();
 
   unsigned propertyCount = propertySet.propertyCount();
   if (!propertyCount)
@@ -236,8 +266,9 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
 }
 
 DEFINE_TRACE(ViewportStyleResolver) {
-  visitor->trace(m_propertySet);
   visitor->trace(m_document);
+  visitor->trace(m_propertySet);
+  visitor->trace(m_initialViewportMedium);
 }
 
 }  // namespace blink
