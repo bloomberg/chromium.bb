@@ -293,7 +293,7 @@ class TraceWrapperMember : public Member<T> {
 
   template <typename U>
   TraceWrapperMember& operator=(const Member<U>& other) {
-    DCHECK(m_parent);
+    DCHECK(!traceWrapperMemberIsNotInitialized());
     Member<T>::operator=(other);
     ScriptWrappableVisitor::writeBarrier(m_parent, other);
     return *this;
@@ -301,7 +301,7 @@ class TraceWrapperMember : public Member<T> {
 
   template <typename U>
   TraceWrapperMember& operator=(U* other) {
-    DCHECK(m_parent);
+    DCHECK(!traceWrapperMemberIsNotInitialized());
     Member<T>::operator=(other);
     ScriptWrappableVisitor::writeBarrier(m_parent, other);
     return *this;
@@ -313,7 +313,11 @@ class TraceWrapperMember : public Member<T> {
     return *this;
   }
 
+  void* parent() { return m_parent; }
+
  private:
+  bool traceWrapperMemberIsNotInitialized() { return !m_parent; }
+
   /**
    * The parent object holding strongly onto the actual Member.
    */

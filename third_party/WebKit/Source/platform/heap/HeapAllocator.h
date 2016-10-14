@@ -470,6 +470,7 @@ struct VectorTraits<blink::TraceWrapperMember<T>>
   static const bool canInitializeWithMemset = true;
   static const bool canClearUnusedSlotsWithMemset = true;
   static const bool canMoveWithMemcpy = true;
+  static const bool canSwapUsingCopyOrMove = false;
 };
 
 template <typename T>

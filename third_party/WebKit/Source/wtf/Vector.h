@@ -469,6 +469,9 @@ class VectorBuffer<T, 0, Allocator>
   void swapVectorBuffer(VectorBuffer<T, 0, Allocator>& other,
                         OffsetRange thisHole,
                         OffsetRange otherHole) {
+    static_assert(VectorTraits<T>::canSwapUsingCopyOrMove,
+                  "Cannot swap HeapVectors of TraceWrapperMembers.");
+
     std::swap(m_buffer, other.m_buffer);
     std::swap(m_capacity, other.m_capacity);
     std::swap(m_size, other.m_size);
@@ -602,6 +605,9 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
                         OffsetRange thisHole,
                         OffsetRange otherHole) {
     using TypeOperations = VectorTypeOperations<T>;
+
+    static_assert(VectorTraits<T>::canSwapUsingCopyOrMove,
+                  "Cannot swap HeapVectors of TraceWrapperMembers.");
 
     if (buffer() != inlineBuffer() && other.buffer() != other.inlineBuffer()) {
       // The easiest case: both buffers are non-inline. We just need to swap the

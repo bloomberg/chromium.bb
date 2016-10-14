@@ -287,4 +287,41 @@ TEST(ScriptWrappableVisitorTest,
   visitor->getVerifierDeque()->clear();
 }
 
+template <typename T>
+static void swap(HeapVector<TraceWrapperMember<T>>& a,
+                 HeapVector<TraceWrapperMember<T>>& b,
+                 void* parentForA,
+                 void* parentForB) {
+  HeapVector<TraceWrapperMember<T>> temp(a.size());
+  for (size_t i = 0; i < a.size(); ++i) {
+    temp[i] = TraceWrapperMember<T>(parentForB, a[i].get());
+  }
+  a.resize(b.size());
+  for (size_t i = 0; i < b.size(); ++i) {
+    a[i] = TraceWrapperMember<T>(parentForA, b[i].get());
+  }
+  b.resize(temp.size());
+  for (size_t i = 0; i < temp.size(); ++i) {
+    b[i] = TraceWrapperMember<T>(parentForB, temp[i].get());
+  }
+}
+
+TEST(ScriptWrappableVisitorTest, HeapVectorSwap) {
+  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
+
+  HeapVector<Wrapper> vector1;
+  DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::create();
+  DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::create();
+  vector1.append(Wrapper(parent1, child1));
+
+  HeapVector<Wrapper> vector2;
+  DeathAwareScriptWrappable* parent2 = DeathAwareScriptWrappable::create();
+  DeathAwareScriptWrappable* child2 = DeathAwareScriptWrappable::create();
+  vector2.append(Wrapper(parent2, child2));
+
+  swap(vector1, vector2, parent1, parent2);
+  EXPECT_EQ(parent1, vector1.first().parent());
+  EXPECT_EQ(parent2, vector2.first().parent());
+}
+
 }  // namespace blink

@@ -51,6 +51,10 @@ struct VectorTraitsBase {
       IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
   static const bool canCompareWithMemcmp =
       std::is_scalar<T>::value;  // Types without padding.
+
+  // Supports swapping elements using regular std::swap semantics.
+  static const bool canSwapUsingCopyOrMove = true;
+
   template <typename U = void>
   struct IsTraceableInCollection {
     static const bool value = IsTraceable<T>::value;
@@ -120,6 +124,8 @@ struct VectorTraits<std::pair<First, Second>> {
   static const bool canClearUnusedSlotsWithMemset =
       FirstTraits::canClearUnusedSlotsWithMemset &&
       SecondTraits::canClearUnusedSlotsWithMemset;
+  // Supports swapping elements using regular std::swap semantics.
+  static const bool canSwapUsingCopyOrMove = true;
   template <typename U = void>
   struct IsTraceableInCollection {
     static const bool value =
