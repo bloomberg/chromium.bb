@@ -271,13 +271,13 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   var categoryToMenu = {
     'navigation': jumpMenu,
     'jump_commands': jumpMenu,
+    'overview': jumpMenu,
+    'tables': jumpMenu,
     'controlling_speech': speechMenu,
+    'information': speechMenu,
     'modifier_keys': chromevoxMenu,
     'help_commands': chromevoxMenu,
 
-    'information': null,  // Get link URL, get page title, etc.
-    'overview': null,     // Headings list, etc.
-    'tables': null,       // Table navigation.
     'braille': null,
     'developer': null};
 
@@ -310,7 +310,12 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   });
 
   // Insert items from the bindings into the menus.
+  var sawBindingSet = {};
   sortedBindings.forEach(goog.bind(function(binding) {
+    var command = binding.command;
+    if (sawBindingSet[command])
+      return;
+    sawBindingSet[command] = true;
     var category = cvox.CommandStore.categoryForCommand(binding.command);
     var menu = category ? categoryToMenu[category] : null;
     if (binding.title && menu) {
