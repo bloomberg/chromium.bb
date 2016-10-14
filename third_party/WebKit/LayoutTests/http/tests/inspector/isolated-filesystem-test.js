@@ -109,6 +109,7 @@ InspectorTest.TestFileSystem.Entry.prototype = {
     setContent: function(content)
     {
         this.content = new Blob([content], {type: 'text/plain'});
+        this._timestamp += 1000;
         var fullPath = this._fileSystem.fileSystemPath + this.fullPath;
         InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChanged, [fullPath]);
     },

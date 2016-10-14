@@ -221,6 +221,42 @@ function test()
                 next();
             }
         },
+
+        function testUISourceCodeMetadata(next)
+        {
+            var fs = new InspectorTest.TestFileSystem("file:///var/www3");
+            var file = fs.root.mkdir("test").addFile("hello.js", "123456");
+            fs.reportCreated(function() { });
+            InspectorTest.waitForScriptSource("hello.js", onUISourceCode);
+            var uiSourceCode;
+
+            function onUISourceCode(sourceCode)
+            {
+                uiSourceCode = sourceCode;
+                uiSourceCode.requestMetadata().then(onInitialMetadata);
+            }
+
+            function onInitialMetadata(metadata)
+            {
+                dumpMetadata("Initial metadata", metadata);
+                file.setContent("changed content");
+                uiSourceCode.requestMetadata().then(onChangedMetadata);
+            }
+
+            function onChangedMetadata(metadata)
+            {
+                dumpMetadata("Changed metadata", metadata);
+                fs.reportRemoved();
+                next();
+            }
+
+            function dumpMetadata(label, metadata)
+            {
+                InspectorTest.addResult(label);
+                InspectorTest.addResult("    content size: " + metadata.contentSize);
+                InspectorTest.addResult("    modification time: " + metadata.modificationTime.toISOString());
+            }
+        },
     ]);
 };
 </script>
