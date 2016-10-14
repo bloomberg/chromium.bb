@@ -111,9 +111,9 @@ Icon=@@PACKAGE@@
 Type=Application
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml_xml;image/webp;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
-X-Ayatana-Desktop-Shortcuts=NewWindow;NewIncognito
+Actions=NewWindow;NewPrivateWindow;
 
-[NewWindow Shortcut Group]
+[Desktop Action NewWindow]
 Name=New Window
 Name[am]=አዲስ መስኮት
 Name[ar]=نافذة جديدة
@@ -166,9 +166,8 @@ Name[vi]=Cửa sổ Mới
 Name[zh_CN]=新建窗口
 Name[zh_TW]=開新視窗
 Exec=/usr/bin/@@USR_BIN_SYMLINK_NAME@@
-TargetEnvironment=Unity
 
-[NewIncognito Shortcut Group]
+[Desktop Action NewPrivateWindow]
 Name=New Incognito Window
 Name[ar]=نافذة جديدة للتصفح المتخفي
 Name[bg]=Нов прозорец „инкогнито“
@@ -219,4 +218,3 @@ Name[vi]=Cửa sổ ẩn danh mới
 Name[zh_CN]=新建隐身窗口
 Name[zh_TW]=新增無痕式視窗
 Exec=/usr/bin/@@USR_BIN_SYMLINK_NAME@@ --incognito
-TargetEnvironment=Unity
