@@ -675,6 +675,22 @@ if (enable_remoting_host) {
     ]
   }
 
+  if (is_mac) {
+    foreach(locale, remoting_locales_with_underscores) {
+      bundle_data("remoting_host_locale_${locale}_bundle_data") {
+        sources = [
+          "$root_build_dir/remoting/resources/$locale.lproj/locale.pak",
+        ]
+        outputs = [
+          "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+        ]
+        deps = [
+          "//remoting/resources:copy_locales",
+        ]
+      }
+    }
+  }
+
   action_foreach("remoting_infoplist_strings") {
     sources = [
       "installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2",
@@ -775,33 +791,97 @@ if (enable_me2me_host) {
       ]
     }
   } else {
-    source_set("main") {
+    if (is_mac) {
+      app_target_type = "mac_app_bundle"
+    } else {
+      app_target_type = "executable"
+    }
+
+    if (is_mac) {
+      # remoting_me2me_host-InfoPlist.strings
+      foreach(locale, remoting_locales_with_underscores) {
+        bundle_data("remoting_me2me_host_strings_${locale}_bundle_data") {
+          sources = [
+            "$root_gen_dir/remoting/host/remoting_me2me_host-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+          ]
+          outputs = [
+            "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+          ]
+          deps = [
+            ":remoting_infoplist_strings",
+          ]
+        }
+      }
+
+      mac_xib_bundle_data("remoting_host_xibs") {
+        sources = [
+          "disconnect_window.xib",
+        ]
+      }
+
+      bundle_data("remoting_host_resources") {
+        sources = [
+          "$root_gen_dir/remoting/CREDITS.txt",
+          "remoting_me2me_host.icns",
+        ]
+
+        outputs = [
+          "{{bundle_resources_dir}}/{{source_file_part}}",
+        ]
+
+        public_deps = [
+          "//remoting/host/installer:credits",
+        ]
+
+        if (icu_use_data_file) {
+          sources += [ "$root_out_dir/icudtl.dat" ]
+          public_deps += [ "//third_party/icu:icudata" ]
+        }
+      }
+    }
+
+    target(app_target_type, "remoting_me2me_host") {
+      if (is_mac) {
+        extra_configs = [ "//remoting/build/config:version" ]
+        info_plist = "remoting_me2me_host-Info.plist"
+        extra_substitutions = [
+          "BUNDLE_ID=$host_bundle_id",
+          "VERSION_FULL=$remoting_version_full",
+          "VERSION_SHORT=$remoting_version_short",
+          "MACOSX_DEPLOYMENT_TARGET=10.7",
+        ]
+      } else {
+        configs += [ "//remoting/build/config:version" ]
+      }
+
       sources = [
         "host_main.cc",
         "host_main.h",
       ]
-    }
-    if (is_mac) {
-      group("remoting_me2me_host") {
-        deps = [
-          "//remoting/host/mac:remoting_me2me_host",
-        ]
+
+      if (is_mac && is_chrome_branded && is_official_build) {
+        defines = [ "REMOTING_ENABLE_BREAKPAD" ]
       }
-    } else {
-      target("executable", "remoting_me2me_host") {
-        configs += [ "//remoting/build/config:version" ]
 
-        sources = [
-          "host_main.cc",
-          "host_main.h",
-        ]
-
-        deps = [
-          ":remoting_me2me_host_static",
-          "//build/config/sanitizers:deps",
-          "//remoting/base:breakpad",
-          "//remoting/host/installer:credits",
-          "//remoting/resources",
+      deps = [
+        ":remoting_me2me_host_static",
+        "//build/config/sanitizers:deps",
+        "//remoting/base:breakpad",
+        "//remoting/host/installer:credits",
+        "//remoting/resources",
+      ]
+      if (is_mac) {
+        foreach(locale, remoting_locales_with_underscores) {
+          deps += [
+            ":remoting_host_locale_${locale}_bundle_data",
+            ":remoting_me2me_host_strings_${locale}_bundle_data",
+          ]
+        }
+        deps += [
+          ":remoting_host_resources",
+          ":remoting_host_xibs",
+          ":remoting_infoplist_strings",
+          "//remoting/resources:copy_locales",
         ]
       }
     }
@@ -836,39 +916,70 @@ if (enable_me2me_host) {
     }
 
     if (is_mac) {
-      group("remoting_native_messaging_host") {
-        deps = [
-          "//remoting/host/mac:remoting_native_messaging_host",
-        ]
-      }
-    } else {
-      target("executable", "remoting_native_messaging_host") {
-        configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-        sources = [
-          "setup/me2me_native_messaging_host_entry_point.cc",
-          "setup/me2me_native_messaging_host_main.cc",
-          "setup/me2me_native_messaging_host_main.h",
-        ]
-
-        deps = [
-          ":remoting_infoplist_strings",
-          "//base",
-          "//remoting/base:breakpad",
-          "//remoting/host",
-          "//remoting/host/native_messaging",
-          "//remoting/host/setup",
-        ]
-
-        # The |major|, |build| and |patch| versions are inherited from Chrome.
-        # Since Chrome's |minor| version is always '0', we replace it with a
-        # Chromoting-specific patch version.
-        defines = [ "VERSION=" + "$chrome_version_major" + "." +
-                    "$remoting_version_patch" + "." + "$chrome_version_build" +
-                    "." + "$chrome_version_patch" ]
+      # native_messaging_host-InfoPlist.strings
+      foreach(locale, remoting_locales_with_underscores) {
+        bundle_data("native_messaging_host_strings_${locale}_bundle_data") {
+          sources = [
+            "$root_gen_dir/remoting/host/native_messaging_host-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+          ]
+          outputs = [
+            "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+          ]
+          deps = [
+            ":remoting_infoplist_strings",
+          ]
+        }
       }
     }
+
+    target(app_target_type, "remoting_native_messaging_host") {
+      if (is_mac) {
+        info_plist = "setup/native_messaging_host-Info.plist"
+        extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
+        extra_substitutions = [
+          "BUNDLE_ID=$native_messaging_host_bundle_id",
+          "VERSION_FULL=$remoting_version_full",
+          "VERSION_SHORT=$remoting_version_short",
+          "MACOSX_DEPLOYMENT_TARGET=10.7",
+        ]
+      } else {
+        configs += [ "//build/config/compiler:wexit_time_destructors" ]
+      }
+
+      sources = [
+        "setup/me2me_native_messaging_host_entry_point.cc",
+        "setup/me2me_native_messaging_host_main.cc",
+        "setup/me2me_native_messaging_host_main.h",
+      ]
+
+      deps = [
+        ":remoting_infoplist_strings",
+        "//base",
+        "//remoting/base:breakpad",
+        "//remoting/host",
+        "//remoting/host/native_messaging",
+        "//remoting/host/setup",
+      ]
+
+      if (is_mac) {
+        foreach(locale, remoting_locales_with_underscores) {
+          deps += [
+            ":native_messaging_host_strings_${locale}_bundle_data",
+            ":remoting_host_locale_${locale}_bundle_data",
+          ]
+        }
+        deps += [ "//remoting/resources:copy_locales" ]
+      }
+
+      # The |major|, |build| and |patch| versions are inherited from Chrome.
+      # Since Chrome's |minor| version is always '0', we replace it with a
+      # Chromoting-specific patch version.
+      defines = [ "VERSION=" + "$chrome_version_major" + "." +
+                  "$remoting_version_patch" + "." + "$chrome_version_build" +
+                  "." + "$chrome_version_patch" ]
+    }
   }
+
   if (is_chrome_branded && enable_me2me_host && is_linux && !is_chromeos) {
     # TODO(GYP): add support for archive_chromoting_tests variable?
 
@@ -966,9 +1077,305 @@ if (enable_me2me_host) {
       ]
     }
   } else if (is_mac) {
-    group("remoting_me2me_host_archive") {
+    import("//build/config/zip.gni")
+
+    copy("remoting_native_messaging_host_rename") {
+      sources = [
+        "$root_build_dir/remoting_native_messaging_host.app",
+      ]
+
+      outputs = [
+        "$target_gen_dir/native_messaging_host.app",
+      ]
+
       deps = [
-        "//remoting/host/installer/mac:remoting_me2me_host_archive",
+        ":remoting_native_messaging_host",
+      ]
+    }
+
+    action("remoting_me2me_host_archive") {
+      # TODO(GYP) TODO(crbug.com/622415) This needs work and testing.
+
+      # TODO(GYP) At the very least, we need to add in the localized strings.
+
+      _installer_mac_files = [
+        "installer/mac/do_signing.sh",
+        "installer/mac/do_signing.props",
+        "installer/mac/ChromotingHost.pkgproj",
+        "installer/mac/ChromotingHostService.pkgproj",
+        "installer/mac/ChromotingHostUninstaller.pkgproj",
+        "installer/mac/LaunchAgents/org.chromium.chromoting.plist",
+        "installer/mac/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh",
+        "installer/mac/Scripts/keystone_install.sh",
+        "installer/mac/Scripts/remoting_postflight.sh",
+        "installer/mac/Scripts/remoting_preflight.sh",
+        "installer/mac/Keystone/GoogleSoftwareUpdate.pkg",
+        "//chrome/installer/mac/pkg-dmg",
+      ]
+
+      inputs = _installer_mac_files
+
+      zip_path = "$root_build_dir/remoting-me2me-host-mac.zip"
+
+      outputs = [
+        "$root_build_dir/remoting-me2me-host-mac.zip",
+      ]
+
+      script = "installer/build-installer-archive.py"
+
+      # TODO(GYP) TODO(crbug.com/622415): Fill these in.
+      host_name_nospace = host_name
+      host_service_name_nospace = host_service_name
+      host_uninstaller_name_nospace = host_uninstaller_name
+
+      args = [
+               rebase_path("$target_gen_dir/remoting_installation",
+                           root_build_dir),
+               rebase_path(zip_path, root_build_dir),
+               "--source-file-roots",
+               rebase_path("installer/mac/", root_build_dir),
+               rebase_path("//chrome/installer/mac", root_build_dir),
+               "--source-files",
+             ] + rebase_path(_installer_mac_files, root_build_dir) + [
+               "--generated-files",
+               "remoting_host_prefpane.prefPane",
+               "remoting_me2me_host.app",
+               rebase_path("$target_gen_dir/native_messaging_host.app",
+                           root_build_dir),
+               "remote_assistance_host.app",
+               "remoting_host_uninstaller.app",
+               "remoting/com.google.chrome.remote_desktop.json",
+               "remoting/com.google.chrome.remote_assistance.json",
+               "--generated-files-dst",
+               "PreferencePanes/$prefpane_bundle_name",
+               "PrivilegedHelperTools/$host_bundle_name",
+               "PrivilegedHelperTools/$host_bundle_name/Contents/MacOS/$native_messaging_host_bundle_name",
+               "PrivilegedHelperTools/$host_bundle_name/Contents/MacOS/$remote_assistance_host_bundle_name",
+               "Applications/$host_uninstaller_name.app",
+               "Config/com.google.chrome.remote_desktop.json",
+               "Config/com.google.chrome.remote_assistance.json",
+               "--defs",
+               "VERSION=$chrome_version_full",
+               "VERSION_SHORT=$chrome_version_major.$chrome_version_minor.$chrome_version_build",
+               "VERSION_MAJOR=$chrome_version_major",
+               "VERSION_MINOR=$chrome_version_minor",
+               "HOST_NAME=$host_name",
+               "HOST_BUNDLE_NAME=$me2me_host_bundle_name",
+               "HOST_SERVICE_NAME=$host_service_name",
+               "HOST_UNINSTALLER_NAME=$host_uninstaller_name",
+               "HOST_PKG=$host_name",
+               "HOST_SERVICE_PKG=$host_service_name_nospace",
+               "HOST_UNINSTALLER_PKG=$host_uninstaller_name_nospace",
+               "BUNDLE_ID_HOST=$bundle_prefix.$host_name_nospace",
+               "BUNDLE_ID_HOST_SERVICE=$bundle_prefix.$host_service_name_nospace",
+               "BUNDLE_ID_HOST_UNINSTALLER=$bundle_prefix.$host_uninstaller_name_nospace",
+               "DMG_VOLUME_NAME=$host_name $chrome_version_full",
+               "DMG_FILE_NAME=$host_name_nospace-$chrome_version_full",
+               "NATIVE_MESSAGING_HOST_BUNDLE_NAME=$native_messaging_host_bundle_name",
+               "REMOTE_ASSISTANCE_HOST_BUNDLE_NAME=$remote_assistance_host_bundle_name",
+               "PREFPANE_BUNDLE_NAME=$prefpane_bundle_name",
+             ]
+
+      deps = [
+        ":remoting_host_prefpane.prefPane",
+        ":remoting_host_uninstaller",
+        ":remoting_me2me_host",
+        ":remoting_native_messaging_host",
+        ":remoting_native_messaging_host_rename",
+        ":remoting_native_messaging_manifests",
+        "//remoting/host/it2me:remote_assistance_host",
+      ]
+    }
+
+    _uninstaller_plist =
+        "installer/mac/uninstaller/remoting_uninstaller-Info.plist"
+
+    # remoting_uninstaller-InfoPlist.strings
+    foreach(locale, remoting_locales_with_underscores) {
+      bundle_data("remoting_uninstaller_strings_${locale}_bundle_data") {
+        sources = [
+          "$root_gen_dir/remoting/host/remoting_uninstaller-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+        ]
+        outputs = [
+          "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+        ]
+        deps = [
+          ":remoting_infoplist_strings",
+        ]
+      }
+    }
+
+    mac_app_bundle("remoting_host_uninstaller") {
+      info_plist = _uninstaller_plist
+      extra_substitutions = [
+        "BUNDLE_ID=$uninstaller_bundle_id",
+        "VERSION_FULL=$remoting_version_full",
+        "VERSION_SHORT=$remoting_version_short",
+        "MACOSX_DEPLOYMENT_TARGET=10.7",
+      ]
+
+      defines = [
+        "HOST_BUNDLE_NAME=\"" + host_bundle_name + "\"",
+        "PREFPANE_BUNDLE_NAME=\"" + prefpane_bundle_name + "\"",
+      ]
+
+      sources = [
+        "constants_mac.cc",
+        "constants_mac.h",
+        "installer/mac/uninstaller/remoting_uninstaller.h",
+        "installer/mac/uninstaller/remoting_uninstaller.mm",
+        "installer/mac/uninstaller/remoting_uninstaller_app.h",
+        "installer/mac/uninstaller/remoting_uninstaller_app.mm",
+      ]
+
+      libs = [
+        "Cocoa.framework",
+        "CoreFoundation.framework",
+        "Security.framework",
+      ]
+
+      deps = [
+        ":remoting_host_uninstaller_resources",
+        ":remoting_host_uninstaller_xibs",
+        ":remoting_infoplist_strings",
+        "//base",
+      ]
+      foreach(locale, remoting_locales_with_underscores) {
+        deps += [ ":remoting_uninstaller_strings_${locale}_bundle_data" ]
+      }
+    }
+
+    mac_xib_bundle_data("remoting_host_uninstaller_xibs") {
+      sources = [
+        "installer/mac/uninstaller/remoting_uninstaller.xib",
+      ]
+    }
+
+    bundle_data("remoting_host_uninstaller_resources") {
+      sources = [
+        "installer/mac/uninstaller/remoting_uninstaller.icns",
+      ]
+
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+    }
+
+    create_bundle("remoting_host_prefpane.prefPane") {
+      bundle_root_dir = "$root_build_dir/$target_name/Contents"
+      bundle_resources_dir = bundle_root_dir + "/Resources"
+      bundle_executable_dir = bundle_root_dir + "/MacOS"
+
+      deps = [
+        ":remoting_host_prefpane",
+        ":remoting_host_prefpane_bundle_data",
+        ":remoting_host_prefpane_plist_bundle_data",
+        ":remoting_host_prefpane_resources",
+        ":remoting_host_prefpane_xibs",
+        ":remoting_infoplist_strings",
+      ]
+
+      foreach(locale, remoting_locales_with_underscores) {
+        deps += [ ":remoting_host_prefpane_strings_${locale}_bundle_data" ]
+      }
+    }
+
+    bundle_data("remoting_host_prefpane_bundle_data") {
+      deps = [
+        ":remoting_host_prefpane",
+      ]
+      sources = [
+        "$root_build_dir/gen/remoting/host/remoting_host_prefpane",
+      ]
+      outputs = [
+        "{{bundle_executable_dir}}/{{source_file_part}}",
+      ]
+    }
+
+    bundle_data("remoting_host_prefpane_resources") {
+      sources = [
+        "//remoting/resources/chromoting128.png",
+      ]
+
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+    }
+
+    loadable_module("remoting_host_prefpane") {
+      output_dir = "$root_out_dir/gen/remoting/host"
+      output_extension = ""
+
+      sources = [
+        "mac/me2me_preference_pane.h",
+        "mac/me2me_preference_pane.mm",
+        "mac/me2me_preference_pane_confirm_pin.h",
+        "mac/me2me_preference_pane_confirm_pin.mm",
+        "mac/me2me_preference_pane_disable.h",
+        "mac/me2me_preference_pane_disable.mm",
+      ]
+
+      libs = [
+        "Cocoa.framework",
+        "CoreFoundation.framework",
+        "PreferencePanes.framework",
+        "Security.framework",
+      ]
+
+      deps = [
+        ":host",
+        ":remoting_infoplist_strings",
+        "//remoting/base",
+        "//remoting/resources:copy_locales",
+        "//third_party/jsoncpp",
+      ]
+      foreach(locale, remoting_locales_with_underscores) {
+        deps += [ ":remoting_host_prefpane_strings_${locale}_bundle_data" ]
+      }
+    }
+
+    mac_info_plist("remoting_host_prefpane_plist") {
+      info_plist = "mac/me2me_preference_pane-Info.plist"
+      extra_substitutions = [
+        "BUNDLE_ID=$prefpane_bundle_id",
+        "VERSION_FULL=$remoting_version_full",
+        "VERSION_SHORT=$remoting_version_short",
+        "MACOSX_DEPLOYMENT_TARGET=10.7",
+      ]
+      executable_name = "remoting_host_prefpane"
+    }
+
+    bundle_data("remoting_host_prefpane_plist_bundle_data") {
+      sources = get_target_outputs(":remoting_host_prefpane_plist")
+      outputs = [
+        "{{bundle_root_dir}}/Info.plist",
+      ]
+      public_deps = [
+        ":remoting_host_prefpane_plist",
+      ]
+    }
+
+    foreach(locale, remoting_locales_with_underscores) {
+      bundle_data("remoting_host_prefpane_strings_${locale}_bundle_data") {
+        sources = [
+          "$root_gen_dir/remoting/host/me2me_preference_pane-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
+        ]
+        outputs = [
+          "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
+        ]
+        deps = [
+          ":remoting_infoplist_strings",
+        ]
+      }
+    }
+
+    mac_xib_bundle_data("remoting_host_prefpane_xibs") {
+      sources = [
+        "mac/me2me_preference_pane.xib",
+        "mac/me2me_preference_pane_confirm_pin.xib",
+        "mac/me2me_preference_pane_disable.xib",
+
+        #"mac/me2me_preference_pane-Info.plist",
       ]
     }
   } else {
