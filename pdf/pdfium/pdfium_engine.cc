@@ -2341,17 +2341,17 @@ void PDFiumEngine::OnCallback(int id) {
 }
 
 int PDFiumEngine::GetCharCount(int page_index) {
-  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->GetCharCount();
 }
 
 pp::FloatRect PDFiumEngine::GetCharBounds(int page_index, int char_index) {
-  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->GetCharBounds(char_index);
 }
 
 uint32_t PDFiumEngine::GetCharUnicode(int page_index, int char_index) {
-  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->GetCharUnicode(char_index);
 }
 
@@ -2360,7 +2360,7 @@ void PDFiumEngine::GetTextRunInfo(int page_index,
                                   uint32_t* out_len,
                                   double* out_font_size,
                                   pp::FloatRect* out_bounds) {
-  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->GetTextRunInfo(start_char_index, out_len,
                                             out_font_size, out_bounds);
 }
@@ -2701,6 +2701,9 @@ bool PDFiumEngine::IsPageVisible(int index) const {
 }
 
 void PDFiumEngine::ScrollToPage(int page) {
+  if (!PageIndexInBounds(page))
+    return;
+
   in_flight_visible_page_ = page;
   client_->ScrollToPage(page);
 }
@@ -2771,8 +2774,7 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
   int rv;
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap;
   int page_index = progressive_paints_[progressive_index].page_index;
-  DCHECK_GE(page_index, 0);
-  DCHECK_LT(static_cast<size_t>(page_index), pages_.size());
+  DCHECK(PageIndexInBounds(page_index));
   FPDF_PAGE page = pages_[page_index]->GetPage();
 
   last_progressive_start_time_ = base::Time::Now();
@@ -3424,6 +3426,10 @@ void PDFiumEngine::SetSelecting(bool selecting) {
     client_->IsSelectingChanged(selecting);
 }
 
+bool PDFiumEngine::PageIndexInBounds(int index) const {
+  return index >= 0 && index < static_cast<int>(pages_.size());
+}
+
 void PDFiumEngine::Form_Invalidate(FPDF_FORMFILLINFO* param,
                                    FPDF_PAGE page,
                                    double left,
@@ -3507,14 +3513,13 @@ FPDF_PAGE PDFiumEngine::Form_GetPage(FPDF_FORMFILLINFO* param,
                                      FPDF_DOCUMENT document,
                                      int page_index) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  if (page_index < 0 || page_index >= static_cast<int>(engine->pages_.size()))
+  if (!engine->PageIndexInBounds(page_index))
     return nullptr;
   return engine->pages_[page_index]->GetPage();
 }
 
 FPDF_PAGE PDFiumEngine::Form_GetCurrentPage(FPDF_FORMFILLINFO* param,
                                             FPDF_DOCUMENT document) {
-  // TODO(jam): find out what this is used for.
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   int index = engine->last_page_mouse_down_;
   if (index == -1) {
