@@ -77,6 +77,7 @@ include_rules = [
   "+third_party/leveldatabase",
   "+third_party/libxml",
   "+third_party/mozilla",     # Mozilla interface headers.
+  "+third_party/ocmock/gtest_support.h",
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/re2",
   "+third_party/smhasher",
