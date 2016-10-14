@@ -374,6 +374,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return getGroupPositionOffset(mBottomSpacer);
     }
 
+    public int getLastContentItemPosition() {
+        return getGroupPositionOffset(hasAllBeenDismissed() ? mAllDismissed : mFooter);
+    }
+
     public int getSuggestionPosition(SnippetArticle article) {
         List<NewTabPageItem> items = getItems();
         for (int i = 0; i < items.size(); i++) {

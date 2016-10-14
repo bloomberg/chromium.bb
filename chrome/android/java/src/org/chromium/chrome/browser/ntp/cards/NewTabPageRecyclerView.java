@@ -195,11 +195,11 @@ public class NewTabPageRecyclerView extends RecyclerView {
             return 0;
         }
 
-        ViewHolder spacer = findBottomSpacer();
+        ViewHolder lastContentItem = findLastContentItem();
         ViewHolder aboveTheFold = findViewHolderForAdapterPosition(aboveTheFoldPosition);
 
         int bottomSpacing = getHeight() - mToolbarHeight;
-        if (spacer == null || aboveTheFold == null) {
+        if (lastContentItem == null || aboveTheFold == null) {
             // This can happen in several cases, where some elements are not visible and the
             // RecyclerView didn't already attach them. We handle it by just adding space to make
             // sure that we never run out and force the UI to jump around and get stuck in a
@@ -214,9 +214,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
             Log.w(TAG, "The RecyclerView items are not attached, can't determine the content "
                             + "height: snap=%s, spacer=%s. Using full height: %d ",
-                    aboveTheFold, spacer, bottomSpacing);
+                    aboveTheFold, lastContentItem, bottomSpacing);
         } else {
-            int contentHeight = spacer.itemView.getTop() - aboveTheFold.itemView.getBottom();
+            int contentHeight =
+                    lastContentItem.itemView.getBottom() - aboveTheFold.itemView.getBottom();
             bottomSpacing -= contentHeight - mCompensationHeight;
         }
 
@@ -318,6 +319,13 @@ public class NewTabPageRecyclerView extends RecyclerView {
      */
     private ViewHolder findBottomSpacer() {
         int position = getNewTabPageAdapter().getBottomSpacerPosition();
+        if (position == RecyclerView.NO_POSITION) return null;
+
+        return findViewHolderForAdapterPosition(position);
+    }
+
+    private ViewHolder findLastContentItem() {
+        int position = getNewTabPageAdapter().getLastContentItemPosition();
         if (position == RecyclerView.NO_POSITION) return null;
 
         return findViewHolderForAdapterPosition(position);
