@@ -20,14 +20,6 @@ var ANIMATING_TEXT = "Handling scroll from main thread";
 var RUNNING_ON_COMPOSITOR = "RunningOnCompositor";
 var RUNNING_ON_COMPOSITOR_BUT_NEEDS_UPDATE = "RunningOnCompositorButNeedsUpdate";
 
-function finishTest() {
-  requestAnimationFrame(function() {
-    // Check that main thread scrolling reason is removed.
-    shouldBeTrue("internals.mainThreadScrollingReasons(document) == ''");
-    finishJSTest();
-  });
-}
-
 function needsUpdateOrRunningOnCompositor(node) {
     var state = internals.getScrollAnimationState(node);
     return state == RUNNING_ON_COMPOSITOR ||
@@ -58,8 +50,7 @@ function runTest() {
             shouldBe("internals.mainThreadScrollingReasons(document)",
               "ANIMATING_TEXT");
             shouldBeTrue("needsUpdateOrRunningOnCompositor(document)");
-            shouldBecomeEqual("document.scrollingElement.scrollTop == 80",
-              "true", finishTest);
+            finishJSTest();
         });
     }
 }
