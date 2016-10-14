@@ -1027,6 +1027,37 @@
         "test": "sql_unittests"
       },
       {
+        "override_isolate_target": "storage_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "storage_unittests"
+      },
+      {
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2240,6 +2271,36 @@
         "test": "sql_unittests"
       },
       {
+        "override_isolate_target": "storage_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "storage_unittests"
+      },
+      {
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2457,6 +2518,9 @@
         "test": "sql_unittests"
       },
       {
+        "test": "storage_unittests"
+      },
+      {
         "test": "ui_android_unittests"
       },
       {
@@ -2559,6 +2623,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "storage_unittests"
       },
       {
         "test": "ui_android_unittests"
@@ -2666,6 +2733,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "storage_unittests"
       },
       {
         "test": "ui_android_unittests"
@@ -2781,6 +2851,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "storage_unittests"
       },
       {
         "test": "ui_android_unittests"
@@ -3523,6 +3596,39 @@
         "test": "sql_unittests"
       },
       {
+        "override_isolate_target": "storage_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_os": "LMY48I",
+              "device_type": "hammerhead"
+            }
+          ],
+          "expiration": 10800,
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "storage_unittests"
+      },
+      {
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3906,6 +4012,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "storage_unittests"
       },
       {
         "test": "ui_android_unittests"
@@ -4835,6 +4944,37 @@
         "test": "sql_unittests"
       },
       {
+        "override_isolate_target": "storage_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "storage_unittests"
+      },
+      {
         "override_isolate_target": "ui_android_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5030,6 +5170,9 @@
       },
       {
         "test": "sql_unittests"
+      },
+      {
+        "test": "storage_unittests"
       },
       {
         "test": "ui_android_unittests"

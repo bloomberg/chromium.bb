@@ -789,6 +789,10 @@
     "label": "//sql:sql_unittests",
     "type": "console_test_launcher",
   },
+  "storage_unittests": {
+    "label": "//storage/browser:storage_unittests",
+    "type": "console_test_launcher",
+  },
   "sync_integration_tests": {
     "label": "//chrome/test:sync_integration_tests",
     "type": "windowed_test_launcher",

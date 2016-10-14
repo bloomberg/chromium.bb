@@ -424,6 +424,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_integration_tests"
       },
       {
@@ -882,6 +888,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sql_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "storage_unittests"
       },
       {
         "swarming": {
@@ -1381,6 +1393,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_integration_tests"
       },
       {
@@ -1783,6 +1801,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sql_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "storage_unittests"
       },
       {
         "swarming": {
