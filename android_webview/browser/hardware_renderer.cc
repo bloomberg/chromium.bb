@@ -156,6 +156,14 @@ void HardwareRenderer::AllocateSurface() {
 void HardwareRenderer::DestroySurface() {
   DCHECK(!child_id_.is_null());
   DCHECK(surface_factory_);
+
+  // Submit an empty frame to force any existing resources to be returned.
+  cc::CompositorFrame empty_frame;
+  empty_frame.delegated_frame_data =
+      base::WrapUnique(new cc::DelegatedFrameData);
+  surface_factory_->SubmitCompositorFrame(child_id_, std::move(empty_frame),
+                                          cc::SurfaceFactory::DrawCallback());
+
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
   surface_factory_->Destroy(child_id_);
   child_id_ = cc::LocalFrameId();
