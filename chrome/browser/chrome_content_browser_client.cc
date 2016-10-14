@@ -196,7 +196,6 @@
 
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)

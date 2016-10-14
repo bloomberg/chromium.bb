@@ -42,6 +42,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/process_mitigations.h"
@@ -97,7 +98,9 @@ class PpapiPluginSandboxedProcessLauncherDelegate
         GetContentClient()->browser();
 
 #if !defined(NACL_WIN64)
-    if (IsWin32kLockdownEnabled()) {
+    // We don't support PPAPI win32k lockdown prior to Windows 10.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN10 &&
+        IsWin32kLockdownEnabled()) {
       result = AddWin32kLockdownPolicy(policy, true);
       if (result != sandbox::SBOX_ALL_OK)
         return false;
