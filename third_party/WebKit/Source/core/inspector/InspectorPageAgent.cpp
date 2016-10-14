@@ -781,6 +781,8 @@ InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame) {
             .setUrl(urlWithoutFragment(cachedResource->url()).getString())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType())
+            .setLastModified(cachedResource->response().lastModified())
+            .setContentSize(cachedResource->response().decodedBodyLength())
             .build();
     if (cachedResource->wasCanceled())
       resourceObject->setCanceled(true);

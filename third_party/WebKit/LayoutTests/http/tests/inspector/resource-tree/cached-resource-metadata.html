@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function addScript()
+{
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "resources/script-with-constant-last-modified.php";
+    script.onload = fulfill;
+    document.body.appendChild(script);
+    return promise;
+}
+
+function addScriptAndRunTest()
+{
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    addScript().then(() => runTest());
+}
+
+function test()
+{
+    var resource = InspectorTest.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resources/script-with-constant-last-modified.php");
+    if (!resource) {
+        InspectorTest.addResult("ERROR: Failed to find resource.");
+        InspectorTest.completeTest();
+        return;
+    }
+    InspectorTest.addResult("Last modified: " + (resource.lastModified() ? resource.lastModified().toISOString() : null));
+    InspectorTest.addResult("Content size: " + resource.contentSize());
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="addScriptAndRunTest()">
+<p>Verify that cached resource has metadata.</p>
+</body>
+</html>

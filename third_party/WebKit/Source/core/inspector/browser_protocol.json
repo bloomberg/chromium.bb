@@ -108,6 +108,8 @@
                     { "name": "url", "type": "string", "description": "Resource URL." },
                     { "name": "type", "$ref": "ResourceType", "description": "Type of this resource." },
                     { "name": "mimeType", "type": "string", "description": "Resource mimeType as determined by the browser." },
+                    { "name": "lastModified", "$ref": "Network.Timestamp", "description": "last-modified timestamp as reported by server.", "optional": true },
+                    { "name": "contentSize", "type": "number", "description": "Resource content size.", "optional": true },
                     { "name": "failed", "type": "boolean", "optional": true, "description": "True if the resource failed to load." },
                     { "name": "canceled", "type": "boolean", "optional": true, "description": "True if the resource was canceled during loading." }
                 ],
