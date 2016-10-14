@@ -63,13 +63,13 @@ class TestCompositorFrameSink : public CompositorFrameSink,
 
   Display* display() const { return display_.get(); }
 
-  // Will be submitted with the next SwapBuffers.
+  // Will be included with the next SubmitCompositorFrame.
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
 
   // CompositorFrameSink implementation.
   bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SwapBuffers(CompositorFrame frame) override;
+  void SubmitCompositorFrame(CompositorFrame frame) override;
   void ForceReclaimResources() override;
 
   // SurfaceFactoryClient implementation.

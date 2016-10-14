@@ -35,7 +35,7 @@ class BrowserCompositor : public BlimpEmbedderCompositor {
 
  protected:
   // BlimpEmbedderCompositor implementation.
-  void DidCompleteSwapBuffers() override;
+  void DidReceiveCompositorFrameAck() override;
 
   base::Closure did_complete_swap_buffers_;
 

@@ -87,7 +87,7 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
   bool ShouldRetainClientPageScale(float new_page_scale) override;
 
   // LayerTreeHostRemote interface.
-  void DispatchDrawAndSwapCallbacks() override;
+  void DispatchDrawAndSubmitCallbacks() override;
 
   void LayerDidScroll(int engine_layer_id);
   void ApplyUpdatesFromInProcessHost();

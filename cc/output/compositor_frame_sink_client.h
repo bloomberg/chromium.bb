@@ -27,40 +27,45 @@ class CC_EXPORT CompositorFrameSinkClient {
  public:
   // Pass the begin frame source for the client to observe.  Client does not own
   // the BeginFrameSource.  CompositorFrameSink should call this once after
-  // binding to
-  // the client and then call again with a null while detaching.
+  // binding to the client and then call again with a null while detaching.
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
+
+  // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   virtual void ReclaimResources(const ReturnedResourceArray& resources) = 0;
-  // For WebView.
-  virtual void SetExternalTilePriorityConstraints(
-      const gfx::Rect& viewport_rect,
-      const gfx::Transform& transform) = 0;
+
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
-  // valid for the lifetime of the CompositorFrameSinkClient or until unregisted
-  // --
-  // use SetTreeActivationCallback(base::Closure()) to unregister it.
+  // valid for the lifetime of the CompositorFrameSinkClient or until
+  // unregistered by giving a null base::Closure.
   virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
-  // This allows the output surface to ask its client for a draw.
+
+  // Notification that the previous CompositorFrame given to
+  // SubmitCompositorFrame() has been processed and that another frame
+  // can be submitted. This provides backpressure from the display compositor
+  // so that frames are submitted only at the rate it can handle them.
+  virtual void DidReceiveCompositorFrameAck() = 0;
+
+  // The CompositorFrameSink is lost when the ContextProviders held by it
+  // encounter an error. In this case the CompositorFrameSink (and the
+  // ContextProviders) must be recreated.
+  virtual void DidLoseCompositorFrameSink() = 0;
+
+  // For SynchronousCompositor (WebView) to ask the layer compositor to submit
+  // a new CompositorFrame synchronously.
   virtual void OnDraw(const gfx::Transform& transform,
                       const gfx::Rect& viewport,
                       bool resourceless_software_draw) = 0;
+
   // For SynchronousCompositor (WebView) to set how much memory the compositor
   // can use without changing visibility.
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
 
-  // ============== BOTH TYPES OF COMPOSITOR ======================
-
-  // For LayerTreeHostImpl, this is more of a OnSwapBuffersAck from the display
-  // compositor that it received and will use the frame, unblocking it from
-  // producing more frames.
-  // For the display compositor this is literally a notification that the swap
-  // to the hardware is complete.
-  virtual void DidSwapBuffersComplete() = 0;
-
-  // Needs thought, if LTHI has only context providers, it needs to register a
-  // lost callback, so we need to support multiple callbacks.
-  virtual void DidLoseCompositorFrameSink() = 0;
+  // For SynchronousCompositor (WebView) to change which tiles should be
+  // included in submitted CompositorFrames independently of what the viewport
+  // is.
+  virtual void SetExternalTilePriorityConstraints(
+      const gfx::Rect& viewport_rect,
+      const gfx::Transform& transform) = 0;
 
  protected:
   virtual ~CompositorFrameSinkClient() {}

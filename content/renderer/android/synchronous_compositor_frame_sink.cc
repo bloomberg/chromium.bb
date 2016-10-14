@@ -211,7 +211,8 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
 
 static void NoOpDrawCallback() {}
 
-void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
+void SynchronousCompositorFrameSink::SubmitCompositorFrame(
+    cc::CompositorFrame frame) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
 
@@ -219,16 +220,16 @@ void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
     DCHECK(frame.delegated_frame_data->resource_list.empty());
     cc::ReturnedResourceArray return_resources;
     ReturnResources(return_resources);
-    did_swap_ = true;
+    did_submit_frame_ = true;
     return;
   }
 
-  cc::CompositorFrame swap_frame;
+  cc::CompositorFrame submit_frame;
 
   if (in_software_draw_) {
     // The frame we send to the client is actually just the metadata. Preserve
     // the |frame| for the software path below.
-    swap_frame.metadata = frame.metadata.Clone();
+    submit_frame.metadata = frame.metadata.Clone();
 
     if (root_local_frame_id_.is_null()) {
       root_local_frame_id_ = surface_id_allocator_->GenerateId();
@@ -297,12 +298,13 @@ void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
   } else {
     // For hardware draws we send the whole frame to the client so it can draw
     // the content in it.
-    swap_frame = std::move(frame);
+    submit_frame = std::move(frame);
   }
 
-  sync_client_->SwapBuffers(compositor_frame_sink_id_, std::move(swap_frame));
+  sync_client_->SubmitCompositorFrame(compositor_frame_sink_id_,
+                                      std::move(submit_frame));
   DeliverMessages();
-  did_swap_ = true;
+  did_submit_frame_ = true;
 }
 
 void SynchronousCompositorFrameSink::CancelFallbackTick() {
@@ -378,7 +380,7 @@ void SynchronousCompositorFrameSink::DemandDrawSw(SkCanvas* canvas) {
 void SynchronousCompositorFrameSink::InvokeComposite(
     const gfx::Transform& transform,
     const gfx::Rect& viewport) {
-  did_swap_ = false;
+  did_submit_frame_ = false;
   // Adjust transform so that the layer compositor draws the |viewport| rect
   // at its origin. The offset of the |viewport| we pass to the layer compositor
   // is ignored for drawing, so its okay to not match the transform.
@@ -389,11 +391,11 @@ void SynchronousCompositorFrameSink::InvokeComposite(
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
   client_->OnDraw(adjusted_transform, viewport, in_software_draw_);
 
-  if (did_swap_) {
+  if (did_submit_frame_) {
     // This must happen after unwinding the stack and leaving the compositor.
     // Usually it is a separate task but we just defer it until OnDraw completes
     // instead.
-    client_->DidSwapBuffersComplete();
+    client_->DidReceiveCompositorFrameAck();
   }
 }
 

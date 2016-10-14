@@ -106,7 +106,7 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
     return remote_compositor_bridge_.get();
   }
 
-  virtual void DispatchDrawAndSwapCallbacks();
+  virtual void DispatchDrawAndSubmitCallbacks();
   void SetTaskRunnerProviderForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider);
 

@@ -196,7 +196,7 @@ void SynchronousCompositorProxy::DoDemandDrawHw(
   }
 }
 
-void SynchronousCompositorProxy::SwapBuffersHwAsync(
+void SynchronousCompositorProxy::SubmitCompositorFrameHwAsync(
     uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   DCHECK(inside_receive_);
@@ -205,7 +205,7 @@ void SynchronousCompositorProxy::SwapBuffersHwAsync(
   inside_receive_ = false;
 }
 
-void SynchronousCompositorProxy::SwapBuffersHw(
+void SynchronousCompositorProxy::SubmitCompositorFrameHw(
     uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   DCHECK(inside_receive_);
@@ -319,7 +319,8 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
   compositor_frame_sink_->DemandDrawSw(&canvas);
 }
 
-void SynchronousCompositorProxy::SwapBuffersSw(cc::CompositorFrame frame) {
+void SynchronousCompositorProxy::SubmitCompositorFrameSw(
+    cc::CompositorFrame frame) {
   DCHECK(inside_receive_);
   DCHECK(software_draw_reply_);
   SendDemandDrawSwReply(true, std::move(frame), software_draw_reply_);
@@ -337,8 +338,9 @@ void SynchronousCompositorProxy::SendDemandDrawSwReply(
   Send(reply_message);
 }
 
-void SynchronousCompositorProxy::SwapBuffers(uint32_t compositor_frame_sink_id,
-                                             cc::CompositorFrame frame) {
+void SynchronousCompositorProxy::SubmitCompositorFrame(
+    uint32_t compositor_frame_sink_id,
+    cc::CompositorFrame frame) {
   // Verify that exactly one of these is true.
   DCHECK(hardware_draw_reply_async_ || hardware_draw_reply_ ||
          software_draw_reply_);
@@ -346,11 +348,11 @@ void SynchronousCompositorProxy::SwapBuffers(uint32_t compositor_frame_sink_id,
            (hardware_draw_reply_ && hardware_draw_reply_async_) ||
            (software_draw_reply_ && hardware_draw_reply_async_)));
   if (hardware_draw_reply_async_) {
-    SwapBuffersHwAsync(compositor_frame_sink_id, std::move(frame));
+    SubmitCompositorFrameHwAsync(compositor_frame_sink_id, std::move(frame));
   } else if (hardware_draw_reply_) {
-    SwapBuffersHw(compositor_frame_sink_id, std::move(frame));
+    SubmitCompositorFrameHw(compositor_frame_sink_id, std::move(frame));
   } else if (software_draw_reply_) {
-    SwapBuffersSw(std::move(frame));
+    SubmitCompositorFrameSw(std::move(frame));
   }
 }
 

@@ -15,7 +15,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   // LayerTreeHostImplClient implementation.
   void DidLoseCompositorFrameSinkOnImplThread() override {}
   void SetBeginFrameSource(BeginFrameSource* source) override {}
-  void DidSwapBuffersCompleteOnImplThread() override {}
+  void DidReceiveCompositorFrameAckOnImplThread() override {}
   void OnCanDrawStateChanged(bool can_draw) override {}
   void NotifyReadyToActivate() override {}
   void NotifyReadyToDraw() override {}

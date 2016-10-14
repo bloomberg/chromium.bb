@@ -7,8 +7,8 @@
 
 namespace cc {
 
-void FakeCompositorFrameSinkClient::DidSwapBuffersComplete() {
-  swap_count_++;
+void FakeCompositorFrameSinkClient::DidReceiveCompositorFrameAck() {
+  ack_count_++;
 }
 
 void FakeCompositorFrameSinkClient::DidLoseCompositorFrameSink() {

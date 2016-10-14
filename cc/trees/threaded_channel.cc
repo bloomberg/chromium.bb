@@ -191,10 +191,10 @@ void ThreadedChannel::SynchronouslyCloseImpl() {
   main().initialized = false;
 }
 
-void ThreadedChannel::DidCompleteSwapBuffers() {
+void ThreadedChannel::DidReceiveCompositorFrameAck() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::DidCompleteSwapBuffers,
+      FROM_HERE, base::Bind(&ProxyMain::DidReceiveCompositorFrameAck,
                             impl().proxy_main_weak_ptr));
 }
 

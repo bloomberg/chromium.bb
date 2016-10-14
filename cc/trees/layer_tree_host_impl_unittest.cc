@@ -133,7 +133,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
   void DidLoseCompositorFrameSinkOnImplThread() override {}
   void SetBeginFrameSource(BeginFrameSource* source) override {}
-  void DidSwapBuffersCompleteOnImplThread() override {}
+  void DidReceiveCompositorFrameAckOnImplThread() override {}
   void OnCanDrawStateChanged(bool can_draw) override {
     on_can_draw_state_changed_called_ = true;
   }
@@ -7918,14 +7918,11 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
 class CompositorFrameMetadataTest : public LayerTreeHostImplTest {
  public:
-  CompositorFrameMetadataTest()
-      : swap_buffers_complete_(0) {}
+  CompositorFrameMetadataTest() = default;
 
-  void DidSwapBuffersCompleteOnImplThread() override {
-    swap_buffers_complete_++;
-  }
+  void DidReceiveCompositorFrameAckOnImplThread() override { acks_received_++; }
 
-  int swap_buffers_complete_;
+  int acks_received_ = 0;
 };
 
 TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
@@ -7938,8 +7935,8 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
     host_impl_->DidDrawAllLayers(frame);
   }
   host_impl_->ReclaimResources(ReturnedResourceArray());
-  host_impl_->DidSwapBuffersComplete();
-  EXPECT_EQ(swap_buffers_complete_, 1);
+  host_impl_->DidReceiveCompositorFrameAck();
+  EXPECT_EQ(acks_received_, 1);
 }
 
 class CountingSoftwareDevice : public SoftwareOutputDevice {

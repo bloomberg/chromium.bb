@@ -44,7 +44,7 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   // CompositorFrameSink implementation.
   bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SwapBuffers(CompositorFrame frame) override;
+  void SubmitCompositorFrame(CompositorFrame frame) override;
   void ForceReclaimResources() override;
 
   // SurfaceFactoryClient implementation.

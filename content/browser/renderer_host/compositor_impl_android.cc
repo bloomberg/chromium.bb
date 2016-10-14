@@ -781,8 +781,8 @@ void CompositorImpl::DidPostSwapBuffers() {
   pending_swapbuffers_++;
 }
 
-void CompositorImpl::DidCompleteSwapBuffers() {
-  TRACE_EVENT0("compositor", "CompositorImpl::DidCompleteSwapBuffers");
+void CompositorImpl::DidReceiveCompositorFrameAck() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidReceiveCompositorFrameAck");
   DCHECK_GT(pending_swapbuffers_, 0U);
   pending_swapbuffers_--;
   client_->OnSwapBuffersCompleted(pending_swapbuffers_);

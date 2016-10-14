@@ -93,7 +93,7 @@ class TestHooks : public AnimationDelegate {
   virtual void WillCommit() {}
   virtual void DidCommit() {}
   virtual void DidCommitAndDrawFrame() {}
-  virtual void DidCompleteSwapBuffers() {}
+  virtual void DidReceiveCompositorFrameAck() {}
   virtual void ScheduleComposite() {}
   virtual void DidActivateSyncTree() {}
 

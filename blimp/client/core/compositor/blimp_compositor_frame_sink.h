@@ -40,12 +40,12 @@ class BlimpCompositorFrameSink : public cc::CompositorFrameSink,
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
   // BlimpCompositorFrameSinkProxyClient implementation.
   void ReclaimCompositorResources(
       const cc::ReturnedResourceArray& resources) override;
-  void SwapCompositorFrameAck() override;
+  void SubmitCompositorFrameAck() override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

@@ -189,7 +189,9 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
       LayerTreeHostImplClient* client);
   void DidLoseCompositorFrameSink();
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
-  void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
+  void DidReceiveCompositorFrameAck() {
+    client_->DidReceiveCompositorFrameAck();
+  }
   bool UpdateLayers();
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();

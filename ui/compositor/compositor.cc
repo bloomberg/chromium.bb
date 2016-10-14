@@ -489,7 +489,7 @@ void Compositor::DidCommit() {
 void Compositor::DidCommitAndDrawFrame() {
 }
 
-void Compositor::DidCompleteSwapBuffers() {
+void Compositor::DidReceiveCompositorFrameAck() {
   for (auto& observer : observer_list_)
     observer.OnCompositingEnded(this);
 }

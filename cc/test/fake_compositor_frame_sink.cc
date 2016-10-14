@@ -27,7 +27,7 @@ void FakeCompositorFrameSink::DetachFromClient() {
   CompositorFrameSink::DetachFromClient();
 }
 
-void FakeCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
+void FakeCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   ReturnResourcesHeldByParent();
 
   last_sent_frame_.reset(new CompositorFrame(std::move(frame)));
@@ -52,12 +52,13 @@ void FakeCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeCompositorFrameSink::SwapBuffersAck,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::Bind(&FakeCompositorFrameSink::DidReceiveCompositorFrameAck,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakeCompositorFrameSink::SwapBuffersAck() {
-  client_->DidSwapBuffersComplete();
+void FakeCompositorFrameSink::DidReceiveCompositorFrameAck() {
+  client_->DidReceiveCompositorFrameAck();
 }
 
 void FakeCompositorFrameSink::ReturnResourcesHeldByParent() {

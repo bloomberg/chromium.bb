@@ -414,8 +414,9 @@ void LayerTreeHostRemote::BeginMainFrame() {
   // being used for. Consider migrating clients to understand/cope with the fact
   // that there is no actual compositing happening here.
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&LayerTreeHostRemote::DispatchDrawAndSwapCallbacks,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::Bind(&LayerTreeHostRemote::DispatchDrawAndSubmitCallbacks,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool LayerTreeHostRemote::ApplyScrollAndScaleUpdateFromClient(
@@ -471,9 +472,9 @@ void LayerTreeHostRemote::MainFrameComplete() {
   client_->DidBeginMainFrame();
 }
 
-void LayerTreeHostRemote::DispatchDrawAndSwapCallbacks() {
+void LayerTreeHostRemote::DispatchDrawAndSubmitCallbacks() {
   client_->DidCommitAndDrawFrame();
-  client_->DidCompleteSwapBuffers();
+  client_->DidReceiveCompositorFrameAck();
 }
 
 void LayerTreeHostRemote::SetTaskRunnerProviderForTesting(

@@ -99,7 +99,8 @@ void RendererCompositorFrameSink::DetachFromClient() {
   cc::CompositorFrameSink::DetachFromClient();
 }
 
-void RendererCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
+void RendererCompositorFrameSink::SubmitCompositorFrame(
+    cc::CompositorFrame frame) {
   {
     std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
         send_message_scope =
@@ -135,7 +136,7 @@ void RendererCompositorFrameSink::OnReclaimCompositorResources(
     return;
   client_->ReclaimResources(resources);
   if (is_swap_ack)
-    client_->DidSwapBuffersComplete();
+    client_->DidReceiveCompositorFrameAck();
 }
 
 bool RendererCompositorFrameSink::Send(IPC::Message* message) {

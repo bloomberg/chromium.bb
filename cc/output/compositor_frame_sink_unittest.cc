@@ -23,13 +23,9 @@ class TestCompositorFrameSink : public CompositorFrameSink {
       : CompositorFrameSink(std::move(context_provider),
                             std::move(worker_context_provider)) {}
 
-  void SwapBuffers(CompositorFrame frame) override {
-    client_->DidSwapBuffersComplete();
+  void SubmitCompositorFrame(CompositorFrame frame) override {
+    client_->DidReceiveCompositorFrameAck();
   }
-
-  void OnSwapBuffersCompleteForTesting() { client_->DidSwapBuffersComplete(); }
-
- protected:
 };
 
 TEST(CompositorFrameSinkTest, ContextLossInformsClient) {

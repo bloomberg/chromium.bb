@@ -28,7 +28,7 @@ void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
   SetContextProvider(std::move(provider));
 }
 
-void BrowserCompositor::DidCompleteSwapBuffers() {
+void BrowserCompositor::DidReceiveCompositorFrameAck() {
   if (!did_complete_swap_buffers_.is_null()) {
     did_complete_swap_buffers_.Run();
   }

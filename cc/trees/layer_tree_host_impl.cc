@@ -1449,8 +1449,8 @@ void LayerTreeHostImpl::SetExternalTilePriorityConstraints(
   }
 }
 
-void LayerTreeHostImpl::DidSwapBuffersComplete() {
-  client_->DidSwapBuffersCompleteOnImplThread();
+void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
+  client_->DidReceiveCompositorFrameAckOnImplThread();
 }
 
 void LayerTreeHostImpl::ReclaimResources(
@@ -1674,7 +1674,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
   compositor_frame.delegated_frame_data = std::move(data);
-  compositor_frame_sink_->SwapBuffers(std::move(compositor_frame));
+  compositor_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
 
   // The next frame should start by assuming nothing has changed, and changes
   // are noted as they occur.

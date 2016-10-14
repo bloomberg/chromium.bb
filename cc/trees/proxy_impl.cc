@@ -268,11 +268,12 @@ void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
   }
 }
 
-void ProxyImpl::DidSwapBuffersCompleteOnImplThread() {
-  TRACE_EVENT0("cc,benchmark", "ProxyImpl::DidSwapBuffersCompleteOnImplThread");
+void ProxyImpl::DidReceiveCompositorFrameAckOnImplThread() {
+  TRACE_EVENT0("cc,benchmark",
+               "ProxyImpl::DidReceiveCompositorFrameAckOnImplThread");
   DCHECK(IsImplThread());
-  scheduler_->DidSwapBuffersComplete();
-  channel_impl_->DidCompleteSwapBuffers();
+  scheduler_->DidReceiveCompositorFrameAck();
+  channel_impl_->DidReceiveCompositorFrameAck();
 }
 
 void ProxyImpl::OnCanDrawStateChanged(bool can_draw) {
@@ -448,24 +449,22 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
 
-DrawResult ProxyImpl::ScheduledActionDrawAndSwapIfPossible() {
-  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionDrawAndSwap");
+DrawResult ProxyImpl::ScheduledActionDrawIfPossible() {
+  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionDraw");
   DCHECK(IsImplThread());
 
-  // SchedulerStateMachine::DidDrawIfPossibleCompleted isn't set up to
-  // handle DRAW_ABORTED_CANT_DRAW.  Moreover, the scheduler should
-  // never generate this call when it can't draw.
+  // The scheduler should never generate this call when it can't draw.
   DCHECK(layer_tree_host_impl_->CanDraw());
 
   bool forced_draw = false;
-  return DrawAndSwapInternal(forced_draw);
+  return DrawInternal(forced_draw);
 }
 
-DrawResult ProxyImpl::ScheduledActionDrawAndSwapForced() {
-  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionDrawAndSwapForced");
+DrawResult ProxyImpl::ScheduledActionDrawForced() {
+  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionDrawForced");
   DCHECK(IsImplThread());
   bool forced_draw = true;
-  return DrawAndSwapInternal(forced_draw);
+  return DrawInternal(forced_draw);
 }
 
 void ProxyImpl::ScheduledActionCommit() {
@@ -538,8 +537,8 @@ void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {
   channel_impl_->BeginMainFrameNotExpectedSoon();
 }
 
-DrawResult ProxyImpl::DrawAndSwapInternal(bool forced_draw) {
-  TRACE_EVENT_SYNTHETIC_DELAY("cc.DrawAndSwap");
+DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
+  TRACE_EVENT_SYNTHETIC_DELAY("cc.Draw");
 
   DCHECK(IsImplThread());
   DCHECK(layer_tree_host_impl_.get());
@@ -576,7 +575,8 @@ DrawResult ProxyImpl::DrawAndSwapInternal(bool forced_draw) {
 
   if (draw_frame) {
     if (layer_tree_host_impl_->DrawLayers(&frame))
-      scheduler_->DidSwapBuffers();
+      // Drawing implies we submitted a frame to the CompositorFrameSink.
+      scheduler_->DidSubmitCompositorFrame();
     result = DRAW_SUCCESS;
   } else {
     DCHECK_NE(DRAW_SUCCESS, result);

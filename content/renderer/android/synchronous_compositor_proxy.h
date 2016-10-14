@@ -59,8 +59,8 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   // SynchronousCompositorFrameSinkClient overrides.
   void DidActivatePendingTree() override;
   void Invalidate() override;
-  void SwapBuffers(uint32_t compositor_frame_sink_id,
-                   cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(uint32_t compositor_frame_sink_id,
+                             cc::CompositorFrame frame) override;
 
   void SetCompositorFrameSink(
       SynchronousCompositorFrameSink* compositor_frame_sink);
@@ -89,17 +89,17 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       SyncCompositorCommonRendererParams* common_renderer_params);
   void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
 
-  void SwapBuffersHwAsync(uint32_t compositor_frame_sink_id,
-                          cc::CompositorFrame frame);
-  void SwapBuffersHw(uint32_t compositor_frame_sink_id,
-                     cc::CompositorFrame frame);
+  void SubmitCompositorFrameHwAsync(uint32_t compositor_frame_sink_id,
+                                    cc::CompositorFrame frame);
+  void SubmitCompositorFrameHw(uint32_t compositor_frame_sink_id,
+                               cc::CompositorFrame frame);
   void SendDemandDrawHwReply(cc::CompositorFrame frame,
                              uint32_t compositor_frame_sink_id,
                              IPC::Message* reply_message);
   void SendDemandDrawHwReplyAsync(cc::CompositorFrame frame,
                                   uint32_t compositor_frame_sink_id);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
-  void SwapBuffersSw(cc::CompositorFrame frame);
+  void SubmitCompositorFrameSw(cc::CompositorFrame frame);
   void SendDemandDrawSwReply(bool success,
                              cc::CompositorFrame frame,
                              IPC::Message* reply_message);

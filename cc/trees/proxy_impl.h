@@ -68,7 +68,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   // LayerTreeHostImplClient implementation
   void DidLoseCompositorFrameSinkOnImplThread() override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
-  void DidSwapBuffersCompleteOnImplThread() override;
+  void DidReceiveCompositorFrameAckOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
@@ -95,8 +95,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
   void DidFinishImplFrame() override;
   void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override;
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override;
-  DrawResult ScheduledActionDrawAndSwapForced() override;
+  DrawResult ScheduledActionDrawIfPossible() override;
+  DrawResult ScheduledActionDrawForced() override;
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginCompositorFrameSinkCreation() override;
@@ -104,7 +104,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void ScheduledActionInvalidateCompositorFrameSink() override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
-  DrawResult DrawAndSwapInternal(bool forced_draw);
+  DrawResult DrawInternal(bool forced_draw);
 
   bool IsImplThread() const;
   bool IsMainThreadBlocked() const;

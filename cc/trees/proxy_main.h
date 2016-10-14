@@ -48,7 +48,7 @@ class CC_EXPORT ProxyMain : public Proxy {
     COMMIT_PIPELINE_STAGE,
   };
 
-  void DidCompleteSwapBuffers();
+  void DidReceiveCompositorFrameAck();
   void BeginMainFrameNotExpectedSoon();
   void DidCommitAndDrawFrame();
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);

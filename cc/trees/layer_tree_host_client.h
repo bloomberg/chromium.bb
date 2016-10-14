@@ -56,7 +56,7 @@ class LayerTreeHostClient {
   virtual void WillCommit() = 0;
   virtual void DidCommit() = 0;
   virtual void DidCommitAndDrawFrame() = 0;
-  virtual void DidCompleteSwapBuffers() = 0;
+  virtual void DidReceiveCompositorFrameAck() = 0;
   virtual void DidCompletePageScaleAnimation() = 0;
 
  protected:

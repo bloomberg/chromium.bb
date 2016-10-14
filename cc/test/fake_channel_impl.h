@@ -16,7 +16,7 @@ class FakeChannelImpl : public ChannelImpl {
 
   ~FakeChannelImpl() override {}
 
-  void DidCompleteSwapBuffers() override {}
+  void DidReceiveCompositorFrameAck() override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void DidCommitAndDrawFrame() override {}
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;

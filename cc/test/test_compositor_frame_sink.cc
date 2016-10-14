@@ -117,7 +117,7 @@ void TestCompositorFrameSink::DetachFromClient() {
   CompositorFrameSink::DetachFromClient();
 }
 
-void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
+void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   if (test_client_)
     test_client_->DisplayReceivedCompositorFrame(frame);
 
@@ -164,9 +164,9 @@ void TestCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
 }
 
 void TestCompositorFrameSink::DidDrawCallback() {
-  // This is the frame ack to unthrottle the next frame, not actually a notice
-  // that drawing is done.
-  client_->DidSwapBuffersComplete();
+  // This is to unthrottle the next frame, not actually a notice that drawing is
+  // done.
+  client_->DidReceiveCompositorFrameAck();
 }
 
 void TestCompositorFrameSink::ForceReclaimResources() {

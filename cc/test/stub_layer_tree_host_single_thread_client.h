@@ -18,7 +18,7 @@ class StubLayerTreeHostSingleThreadClient
   void RequestScheduleComposite() override {}
   void RequestScheduleAnimation() override {}
   void DidPostSwapBuffers() override {}
-  void DidCompleteSwapBuffers() override {}
+  void DidReceiveCompositorFrameAck() override {}
   void DidAbortSwapBuffers() override {}
 };
 

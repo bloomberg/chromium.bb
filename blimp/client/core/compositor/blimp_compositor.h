@@ -124,7 +124,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override;
-  void DidCompleteSwapBuffers() override {}
+  void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation() override {}
 
   // RemoteProtoChannel implementation.
@@ -134,7 +134,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // BlimpCompositorFrameSinkProxy implementation.
   void BindToProxyClient(
       base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client) override;
-  void SwapCompositorFrame(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
   void UnbindProxyClient() override;
 
   // SurfaceFactoryClient implementation.

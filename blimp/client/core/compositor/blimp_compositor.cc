@@ -205,7 +205,7 @@ void BlimpCompositor::BindToProxyClient(
       frame_sink_id_, GetEmbedderDeps()->GetSurfaceManager(), this);
 }
 
-void BlimpCompositor::SwapCompositorFrame(cc::CompositorFrame frame) {
+void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface_factory_);
 
@@ -247,7 +247,7 @@ void BlimpCompositor::SubmitCompositorFrameAck() {
   DCHECK(surface_factory_);
   compositor_dependencies_->GetCompositorTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&BlimpCompositorFrameSinkProxyClient::SwapCompositorFrameAck,
+      base::Bind(&BlimpCompositorFrameSinkProxyClient::SubmitCompositorFrameAck,
                  proxy_client_));
 }
 

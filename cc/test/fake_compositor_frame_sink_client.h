@@ -14,13 +14,10 @@ class CompositorFrameSink;
 
 class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
  public:
-  FakeCompositorFrameSinkClient()
-      : swap_count_(0),
-        did_lose_compositor_frame_sink_called_(false),
-        memory_policy_(0) {}
+  FakeCompositorFrameSinkClient() : memory_policy_(0) {}
 
   void SetBeginFrameSource(BeginFrameSource* source) override {}
-  void DidSwapBuffersComplete() override;
+  void DidReceiveCompositorFrameAck() override;
   void ReclaimResources(const ReturnedResourceArray& resources) override {}
   void DidLoseCompositorFrameSink() override;
   void SetExternalTilePriorityConstraints(
@@ -32,7 +29,7 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
               const gfx::Rect& viewport,
               bool resourceless_software_draw) override {}
 
-  int swap_count() { return swap_count_; }
+  int ack_count() { return ack_count_; }
 
   bool did_lose_compositor_frame_sink_called() {
     return did_lose_compositor_frame_sink_called_;
@@ -41,8 +38,8 @@ class FakeCompositorFrameSinkClient : public CompositorFrameSinkClient {
   const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
 
  private:
-  int swap_count_;
-  bool did_lose_compositor_frame_sink_called_;
+  int ack_count_ = 0;
+  bool did_lose_compositor_frame_sink_called_ = false;
   ManagedMemoryPolicy memory_policy_;
 };
 

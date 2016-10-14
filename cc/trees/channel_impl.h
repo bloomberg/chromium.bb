@@ -19,7 +19,7 @@ class AnimationEvents;
 class CC_EXPORT ChannelImpl {
  public:
   // Interface for commands sent to ProxyMain
-  virtual void DidCompleteSwapBuffers() = 0;
+  virtual void DidReceiveCompositorFrameAck() = 0;
   virtual void BeginMainFrameNotExpectedSoon() = 0;
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) = 0;

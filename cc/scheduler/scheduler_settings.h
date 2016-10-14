@@ -27,7 +27,7 @@ class CC_EXPORT SchedulerSettings {
   ~SchedulerSettings();
 
   bool use_external_begin_frame_source = false;
-  bool main_frame_while_swap_throttled_enabled = false;
+  bool main_frame_while_submit_frame_throttled_enabled = false;
   bool main_frame_before_activation_enabled = false;
   bool commit_to_active_tree = false;
   bool timeout_and_draw_when_animation_checkerboards = true;

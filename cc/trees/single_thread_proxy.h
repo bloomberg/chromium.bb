@@ -65,8 +65,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
   void DidFinishImplFrame() override;
   void ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) override;
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override;
-  DrawResult ScheduledActionDrawAndSwapForced() override;
+  DrawResult ScheduledActionDrawIfPossible() override;
+  DrawResult ScheduledActionDrawForced() override;
   void ScheduledActionCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginCompositorFrameSinkCreation() override;
@@ -77,7 +77,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // LayerTreeHostImplClient implementation
   void DidLoseCompositorFrameSinkOnImplThread() override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
-  void DidSwapBuffersCompleteOnImplThread() override;
+  void DidReceiveCompositorFrameAckOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;

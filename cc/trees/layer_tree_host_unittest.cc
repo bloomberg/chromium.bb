@@ -3009,7 +3009,7 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
     }
   }
 
-  void DidCompleteSwapBuffers() override {
+  void DidReceiveCompositorFrameAck() override {
     int commit = layer_tree_host()->SourceFrameNumber();
     ++frame_;
     switch (frame_) {

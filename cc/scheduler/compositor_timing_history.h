@@ -71,8 +71,8 @@ class CC_EXPORT CompositorTimingHistory {
   void DidDraw(bool used_new_active_tree,
                bool main_thread_missed_last_deadline,
                base::TimeTicks impl_frame_time);
-  void DidSwapBuffers();
-  void DidSwapBuffersComplete();
+  void DidSubmitCompositorFrame();
+  void DidReceiveCompositorFrameAck();
 
  protected:
   void DidBeginMainFrame();
@@ -115,10 +115,10 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks activate_start_time_;
   base::TimeTicks active_tree_main_frame_time_;
   base::TimeTicks draw_start_time_;
-  base::TimeTicks swap_start_time_;
+  base::TimeTicks submit_start_time_;
 
   // Watchdog timers.
-  bool swap_ack_watchdog_enabled_;
+  bool submit_ack_watchdog_enabled_;
 
   std::unique_ptr<UMAReporter> uma_reporter_;
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;

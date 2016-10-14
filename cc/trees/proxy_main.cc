@@ -72,9 +72,9 @@ void ProxyMain::SetChannel(std::unique_ptr<ChannelMain> channel_main) {
   channel_main_ = std::move(channel_main);
 }
 
-void ProxyMain::DidCompleteSwapBuffers() {
+void ProxyMain::DidReceiveCompositorFrameAck() {
   DCHECK(IsMainThread());
-  layer_tree_host_->DidCompleteSwapBuffers();
+  layer_tree_host_->DidReceiveCompositorFrameAck();
 }
 
 void ProxyMain::BeginMainFrameNotExpectedSoon() {

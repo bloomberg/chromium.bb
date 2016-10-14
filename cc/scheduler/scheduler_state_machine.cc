@@ -15,7 +15,7 @@ namespace cc {
 
 namespace {
 // Surfaces and CompositorTimingHistory don't support more than 1 pending swap.
-const int kMaxPendingSwaps = 1;
+const int kMaxPendingSubmitFrames = 1;
 }  // namespace
 
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
@@ -26,7 +26,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       forced_redraw_state_(FORCED_REDRAW_STATE_IDLE),
       commit_count_(0),
       current_frame_number_(0),
-      last_frame_number_swap_performed_(-1),
+      last_frame_number_submit_performed_(-1),
       last_frame_number_draw_performed_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_invalidate_compositor_frame_sink_performed_(-1),
@@ -35,8 +35,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       invalidate_compositor_frame_sink_funnel_(false),
       prepare_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
-      pending_swaps_(0),
-      swaps_with_current_compositor_frame_sink_(0),
+      pending_submit_frames_(0),
+      submit_frames_with_current_compositor_frame_sink_(0),
       needs_redraw_(false),
       needs_prepare_tiles_(false),
       needs_begin_main_frame_(false),
@@ -60,7 +60,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_commit_had_no_updates_(false),
       wait_for_ready_to_draw_(false),
       did_draw_in_last_frame_(false),
-      did_swap_in_last_frame_(false) {}
+      did_submit_in_last_frame_(false) {}
 
 const char* SchedulerStateMachine::CompositorFrameSinkStateToString(
     CompositorFrameSinkState state) {
@@ -165,12 +165,12 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_COMMIT";
     case ACTION_ACTIVATE_SYNC_TREE:
       return "ACTION_ACTIVATE_SYNC_TREE";
-    case ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
-      return "ACTION_DRAW_AND_SWAP_IF_POSSIBLE";
-    case ACTION_DRAW_AND_SWAP_FORCED:
-      return "ACTION_DRAW_AND_SWAP_FORCED";
-    case ACTION_DRAW_AND_SWAP_ABORT:
-      return "ACTION_DRAW_AND_SWAP_ABORT";
+    case ACTION_DRAW_IF_POSSIBLE:
+      return "ACTION_DRAW_IF_POSSIBLE";
+    case ACTION_DRAW_FORCED:
+      return "ACTION_DRAW_FORCED";
+    case ACTION_DRAW_ABORT:
+      return "ACTION_DRAW_ABORT";
     case ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION:
       return "ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION";
     case ACTION_PREPARE_TILES:
@@ -208,8 +208,8 @@ void SchedulerStateMachine::AsValueInto(
   state->BeginDictionary("minor_state");
   state->SetInteger("commit_count", commit_count_);
   state->SetInteger("current_frame_number", current_frame_number_);
-  state->SetInteger("last_frame_number_swap_performed",
-                    last_frame_number_swap_performed_);
+  state->SetInteger("last_frame_number_submit_performed",
+                    last_frame_number_submit_performed_);
   state->SetInteger("last_frame_number_draw_performed",
                     last_frame_number_draw_performed_);
   state->SetInteger("last_frame_number_begin_main_frame_sent",
@@ -222,9 +222,9 @@ void SchedulerStateMachine::AsValueInto(
                     invalidate_compositor_frame_sink_funnel_);
   state->SetInteger("consecutive_checkerboard_animations",
                     consecutive_checkerboard_animations_);
-  state->SetInteger("pending_swaps_", pending_swaps_);
-  state->SetInteger("swaps_with_current_compositor_frame_sink",
-                    swaps_with_current_compositor_frame_sink_);
+  state->SetInteger("pending_submit_frames_", pending_submit_frames_);
+  state->SetInteger("submit_frames_with_current_compositor_frame_sink",
+                    submit_frames_with_current_compositor_frame_sink_);
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
@@ -254,7 +254,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("defer_commits", defer_commits_);
   state->SetBoolean("last_commit_had_no_updates", last_commit_had_no_updates_);
   state->SetBoolean("did_draw_in_last_frame", did_draw_in_last_frame_);
-  state->SetBoolean("did_swap_in_last_frame", did_swap_in_last_frame_);
+  state->SetBoolean("did_submit_in_last_frame", did_submit_in_last_frame_);
   state->EndDictionary();
 }
 
@@ -354,8 +354,8 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (compositor_frame_sink_state_ != COMPOSITOR_FRAME_SINK_ACTIVE)
     return false;
 
-  // Do not queue too many swaps.
-  if (SwapThrottled())
+  // Do not queue too many draws.
+  if (IsDrawThrottled())
     return false;
 
   // Except for the cases above, do not draw outside of the BeginImplFrame
@@ -440,9 +440,9 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!settings_.main_frame_before_activation_enabled && has_pending_tree_)
     return false;
 
-  // We are waiting for previous frame to be drawn, swapped and acked.
+  // We are waiting for previous frame to be drawn, submitted and acked.
   if (settings_.commit_to_active_tree &&
-      (active_tree_needs_first_draw_ || SwapThrottled())) {
+      (active_tree_needs_first_draw_ || IsDrawThrottled())) {
     return false;
   }
 
@@ -473,15 +473,16 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!HasInitializedCompositorFrameSink())
     return false;
 
-  if (!settings_.main_frame_while_swap_throttled_enabled) {
-    // SwapAck throttle the BeginMainFrames unless we just swapped to
-    // potentially improve impl-thread latency over main-thread throughput.
+  if (!settings_.main_frame_while_submit_frame_throttled_enabled) {
+    // Throttle the BeginMainFrames on CompositorFrameAck unless we just
+    // submitted a frame to potentially improve impl-thread latency over
+    // main-thread throughput.
     // TODO(brianderson): Remove this restriction to improve throughput or
     // make it conditional on ImplLatencyTakesPriority.
-    bool just_swapped_in_deadline =
+    bool just_submitted_in_deadline =
         begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE &&
-        did_swap_in_last_frame_;
-    if (SwapThrottled() && !just_swapped_in_deadline)
+        did_submit_in_last_frame_;
+    if (IsDrawThrottled() && !just_submitted_in_deadline)
       return false;
   }
 
@@ -506,7 +507,7 @@ bool SchedulerStateMachine::ShouldCommit() const {
   DCHECK(!settings_.commit_to_active_tree || !active_tree_needs_first_draw_);
 
   // In browser compositor commit reclaims any resources submitted during draw.
-  DCHECK(!settings_.commit_to_active_tree || !SwapThrottled());
+  DCHECK(!settings_.commit_to_active_tree || !IsDrawThrottled());
 
   return true;
 }
@@ -552,11 +553,11 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     return ACTION_COMMIT;
   if (ShouldDraw()) {
     if (PendingDrawsShouldBeAborted())
-      return ACTION_DRAW_AND_SWAP_ABORT;
+      return ACTION_DRAW_ABORT;
     else if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
-      return ACTION_DRAW_AND_SWAP_FORCED;
+      return ACTION_DRAW_FORCED;
     else
-      return ACTION_DRAW_AND_SWAP_IF_POSSIBLE;
+      return ACTION_DRAW_IF_POSSIBLE;
   }
   if (ShouldPrepareTiles())
     return ACTION_PREPARE_TILES;
@@ -659,7 +660,7 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
       forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
       break;
     case DRAW_ABORTED_CHECKERBOARD_ANIMATIONS:
-      DCHECK(!did_swap_in_last_frame_);
+      DCHECK(!did_submit_in_last_frame_);
       needs_begin_main_frame_ = true;
       needs_redraw_ = true;
       consecutive_checkerboard_animations_++;
@@ -674,7 +675,7 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
       }
       break;
     case DRAW_ABORTED_MISSING_HIGH_RES_CONTENT:
-      DCHECK(!did_swap_in_last_frame_);
+      DCHECK(!did_submit_in_last_frame_);
       // It's not clear whether this missing content is because of missing
       // pictures (which requires a commit) or because of memory pressure
       // removing textures (which might not).  To be safe, request a commit
@@ -693,7 +694,7 @@ void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
   DidDrawInternal(draw_result);
 }
 
-void SchedulerStateMachine::AbortDrawAndSwap() {
+void SchedulerStateMachine::AbortDraw() {
   // Pretend like the draw was successful.
   // Note: We may abort at any time and cannot DCHECK that
   // we haven't drawn in or swapped in the last frame here.
@@ -808,11 +809,10 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   if (needs_prepare_tiles_)
     return true;
 
-  // If we just tried to DrawAndSwap, it's likely that we are going to produce
-  // another frame soon. This helps avoid negative glitches in our
-  // SetNeedsBeginFrame requests, which may propagate to the BeginImplFrame
-  // provider and get sampled at an inopportune time, delaying the next
-  // BeginImplFrame.
+  // If we just tried to draw, it's likely that we are going to produce another
+  // frame soon. This helps avoid negative glitches in our SetNeedsBeginFrame
+  // requests, which may propagate to the BeginImplFrame provider and get
+  // sampled at an inopportune time, delaying the next BeginImplFrame.
   if (did_draw_in_last_frame_)
     return true;
 
@@ -830,7 +830,7 @@ void SchedulerStateMachine::OnBeginImplFrame() {
 
   last_commit_had_no_updates_ = false;
   did_draw_in_last_frame_ = false;
-  did_swap_in_last_frame_ = false;
+  did_submit_in_last_frame_ = false;
   needs_one_begin_impl_frame_ = false;
 
   // Clear funnels for any actions we perform during the frame.
@@ -899,8 +899,9 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (PendingActivationsShouldBeForced() && !has_pending_tree_)
     return true;
 
-  // SwapAck throttle the deadline since we wont draw and swap anyway.
-  if (SwapThrottled())
+  // Throttle the deadline on CompositorFrameAck since we wont draw and submit
+  // anyway.
+  if (IsDrawThrottled())
     return false;
 
   if (active_tree_needs_first_draw_)
@@ -924,8 +925,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   return false;
 }
 
-bool SchedulerStateMachine::SwapThrottled() const {
-  return pending_swaps_ >= kMaxPendingSwaps;
+bool SchedulerStateMachine::IsDrawThrottled() const {
+  return pending_submit_frames_ >= kMaxPendingSubmitFrames;
 }
 
 void SchedulerStateMachine::SetVisible(bool visible) {
@@ -974,22 +975,22 @@ void SchedulerStateMachine::SetNeedsPrepareTiles() {
     needs_prepare_tiles_ = true;
   }
 }
-void SchedulerStateMachine::DidSwapBuffers() {
-  TRACE_EVENT_ASYNC_BEGIN1("cc", "Scheduler:pending_swaps", this,
-                           "pending_frames", pending_swaps_);
-  DCHECK_LT(pending_swaps_, kMaxPendingSwaps);
+void SchedulerStateMachine::DidSubmitCompositorFrame() {
+  TRACE_EVENT_ASYNC_BEGIN1("cc", "Scheduler:pending_submit_frames", this,
+                           "pending_frames", pending_submit_frames_);
+  DCHECK_LT(pending_submit_frames_, kMaxPendingSubmitFrames);
 
-  pending_swaps_++;
-  swaps_with_current_compositor_frame_sink_++;
+  pending_submit_frames_++;
+  submit_frames_with_current_compositor_frame_sink_++;
 
-  did_swap_in_last_frame_ = true;
-  last_frame_number_swap_performed_ = current_frame_number_;
+  did_submit_in_last_frame_ = true;
+  last_frame_number_submit_performed_ = current_frame_number_;
 }
 
-void SchedulerStateMachine::DidSwapBuffersComplete() {
-  TRACE_EVENT_ASYNC_END1("cc", "Scheduler:pending_swaps", this,
-                         "pending_frames", pending_swaps_);
-  pending_swaps_--;
+void SchedulerStateMachine::DidReceiveCompositorFrameAck() {
+  TRACE_EVENT_ASYNC_END1("cc", "Scheduler:pending_submit_frames", this,
+                         "pending_frames", pending_submit_frames_);
+  pending_submit_frames_--;
 }
 
 void SchedulerStateMachine::SetTreePrioritiesAndScrollState(
@@ -1092,8 +1093,8 @@ void SchedulerStateMachine::DidCreateAndInitializeCompositorFrameSink() {
     needs_begin_main_frame_ = true;
   }
   did_create_and_initialize_first_compositor_frame_sink_ = true;
-  pending_swaps_ = 0;
-  swaps_with_current_compositor_frame_sink_ = 0;
+  pending_submit_frames_ = 0;
+  submit_frames_with_current_compositor_frame_sink_ = 0;
   main_thread_missed_last_deadline_ = false;
 }
 

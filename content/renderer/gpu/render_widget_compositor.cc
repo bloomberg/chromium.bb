@@ -1058,7 +1058,7 @@ void RenderWidgetCompositor::DidCommitAndDrawFrame() {
   delegate_->DidCommitAndDrawCompositorFrame();
 }
 
-void RenderWidgetCompositor::DidCompleteSwapBuffers() {
+void RenderWidgetCompositor::DidReceiveCompositorFrameAck() {
   delegate_->DidCompleteSwapBuffers();
   if (!threaded_)
     delegate_->OnSwapBuffersComplete();

@@ -157,7 +157,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
   // Called on impl thread.
   // ChannelImpl implementation
-  void DidCompleteSwapBuffers() override;
+  void DidReceiveCompositorFrameAck() override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;
@@ -172,7 +172,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
 
   // called on main thread.
   void HandleProto(const proto::CompositorMessageToImpl& proto);
-  void DidCompleteSwapBuffersOnMain();
+  void DidReceiveCompositorFrameAckOnMain();
   void DidCommitAndDrawFrameOnMain();
   void DidLoseCompositorFrameSinkOnMain();
   void RequestNewCompositorFrameSinkOnMain();

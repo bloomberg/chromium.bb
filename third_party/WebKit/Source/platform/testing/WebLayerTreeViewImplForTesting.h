@@ -93,7 +93,7 @@ class WebLayerTreeViewImplForTesting
   void WillCommit() override {}
   void DidCommit() override {}
   void DidCommitAndDrawFrame() override {}
-  void DidCompleteSwapBuffers() override {}
+  void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation() override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.

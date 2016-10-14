@@ -82,7 +82,7 @@ class DirectCompositorFrameSinkTest : public testing::Test {
     CompositorFrame frame;
     frame.delegated_frame_data = std::move(frame_data);
 
-    compositor_frame_sink_->SwapBuffers(std::move(frame));
+    compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
   }
 
   void SetUp() override {

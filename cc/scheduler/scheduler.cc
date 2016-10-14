@@ -129,21 +129,21 @@ void Scheduler::SetNeedsPrepareTiles() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidSwapBuffers() {
-  compositor_timing_history_->DidSwapBuffers();
-  state_machine_.DidSwapBuffers();
+void Scheduler::DidSubmitCompositorFrame() {
+  compositor_timing_history_->DidSubmitCompositorFrame();
+  state_machine_.DidSubmitCompositorFrame();
 
   // There is no need to call ProcessScheduledActions here because
-  // swapping should not trigger any new actions.
+  // submitting a CompositorFrame should not trigger any new actions.
   if (!inside_process_scheduled_actions_) {
     DCHECK_EQ(state_machine_.NextAction(), SchedulerStateMachine::ACTION_NONE);
   }
 }
 
-void Scheduler::DidSwapBuffersComplete() {
-  DCHECK_GT(state_machine_.pending_swaps(), 0) << AsValue()->ToString();
-  compositor_timing_history_->DidSwapBuffersComplete();
-  state_machine_.DidSwapBuffersComplete();
+void Scheduler::DidReceiveCompositorFrameAck() {
+  DCHECK_GT(state_machine_.pending_submit_frames(), 0) << AsValue()->ToString();
+  compositor_timing_history_->DidReceiveCompositorFrameAck();
+  state_machine_.DidReceiveCompositorFrameAck();
   ProcessScheduledActions();
 }
 
@@ -525,28 +525,28 @@ void Scheduler::OnBeginImplFrameDeadline() {
   FinishImplFrame();
 }
 
-void Scheduler::DrawAndSwapIfPossible() {
+void Scheduler::DrawIfPossible() {
   bool drawing_with_new_active_tree =
       state_machine_.active_tree_needs_first_draw();
   bool main_thread_missed_last_deadline =
       state_machine_.main_thread_missed_last_deadline();
   compositor_timing_history_->WillDraw();
   state_machine_.WillDraw();
-  DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
+  DrawResult result = client_->ScheduledActionDrawIfPossible();
   state_machine_.DidDraw(result);
   compositor_timing_history_->DidDraw(
       drawing_with_new_active_tree, main_thread_missed_last_deadline,
       begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().frame_time);
 }
 
-void Scheduler::DrawAndSwapForced() {
+void Scheduler::DrawForced() {
   bool drawing_with_new_active_tree =
       state_machine_.active_tree_needs_first_draw();
   bool main_thread_missed_last_deadline =
       state_machine_.main_thread_missed_last_deadline();
   compositor_timing_history_->WillDraw();
   state_machine_.WillDraw();
-  DrawResult result = client_->ScheduledActionDrawAndSwapForced();
+  DrawResult result = client_->ScheduledActionDrawForced();
   state_machine_.DidDraw(result);
   compositor_timing_history_->DidDraw(
       drawing_with_new_active_tree, main_thread_missed_last_deadline,
@@ -602,16 +602,16 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionActivateSyncTree();
         compositor_timing_history_->DidActivate();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
-        DrawAndSwapIfPossible();
+      case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE:
+        DrawIfPossible();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
-        DrawAndSwapForced();
+      case SchedulerStateMachine::ACTION_DRAW_FORCED:
+        DrawForced();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT: {
+      case SchedulerStateMachine::ACTION_DRAW_ABORT: {
         // No action is actually performed, but this allows the state machine to
         // drain the pipeline without actually drawing.
-        state_machine_.AbortDrawAndSwap();
+        state_machine_.AbortDraw();
         compositor_timing_history_->DrawAborted();
         break;
       }
@@ -713,7 +713,7 @@ bool Scheduler::ShouldRecoverImplLatency(
 
   // If we are swap throttled at the BeginFrame, that means the impl thread is
   // very likely in a high latency mode.
-  bool impl_thread_is_likely_high_latency = state_machine_.SwapThrottled();
+  bool impl_thread_is_likely_high_latency = state_machine_.IsDrawThrottled();
   if (!impl_thread_is_likely_high_latency)
     return false;
 

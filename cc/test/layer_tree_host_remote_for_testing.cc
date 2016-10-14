@@ -90,8 +90,8 @@ class LayerTreeHostRemoteForTesting::LayerTreeHostInProcessClient
   void DidCommitAndDrawFrame() override {
     layer_tree_host_remote_->client()->DidCommitAndDrawFrame();
   }
-  void DidCompleteSwapBuffers() override {
-    layer_tree_host_remote_->client()->DidCompleteSwapBuffers();
+  void DidReceiveCompositorFrameAck() override {
+    layer_tree_host_remote_->client()->DidReceiveCompositorFrameAck();
   }
   void DidCompletePageScaleAnimation() override {
     NOTREACHED() << "The remote mode doesn't support sending animations";
@@ -259,7 +259,7 @@ LayerTreeHostRemoteForTesting::CreateLayerTreeHostInProcess(
   return LayerTreeHostInProcess::CreateThreaded(impl_task_runner, &params);
 }
 
-void LayerTreeHostRemoteForTesting::DispatchDrawAndSwapCallbacks() {
+void LayerTreeHostRemoteForTesting::DispatchDrawAndSubmitCallbacks() {
   // Don't dispatch callbacks right after the commit on the remote host. Since
   // tests rely on CompositorFrames being swapped on the CompositorFrameSink,
   // we wait for these callbacks from the LayerTreeHostInProcess.

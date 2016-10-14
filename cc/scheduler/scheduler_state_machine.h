@@ -116,9 +116,9 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_SEND_BEGIN_MAIN_FRAME,
     ACTION_COMMIT,
     ACTION_ACTIVATE_SYNC_TREE,
-    ACTION_DRAW_AND_SWAP_IF_POSSIBLE,
-    ACTION_DRAW_AND_SWAP_FORCED,
-    ACTION_DRAW_AND_SWAP_ABORT,
+    ACTION_DRAW_IF_POSSIBLE,
+    ACTION_DRAW_FORCED,
+    ACTION_DRAW_ABORT,
     ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION,
     ACTION_PREPARE_TILES,
     ACTION_INVALIDATE_COMPOSITOR_FRAME_SINK,
@@ -139,7 +139,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   void DidDraw(DrawResult draw_result);
 
-  void AbortDrawAndSwap();
+  void AbortDraw();
 
   // Indicates whether the impl thread needs a BeginImplFrame callback in order
   // to make progress.
@@ -168,7 +168,7 @@ class CC_EXPORT SchedulerStateMachine {
     return main_thread_missed_last_deadline_;
   }
 
-  bool SwapThrottled() const;
+  bool IsDrawThrottled() const;
 
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
@@ -188,19 +188,16 @@ class CC_EXPORT SchedulerStateMachine {
   // PrepareTiles will occur shortly (even if no redraw is required).
   void SetNeedsPrepareTiles();
 
-  // If the scheduler attempted to draw and swap, this provides feedback
-  // regarding whether or not the swap actually occured. We might skip the
-  // swap when there is not damage, for example.
-  void DidSwapBuffers();
+  // If the scheduler attempted to draw, this provides feedback regarding
+  // whether or not a CompositorFrame was actually submitted. We might skip the
+  // submitting anything when there is not damage, for example.
+  void DidSubmitCompositorFrame();
 
-  // Indicates whether a redraw is required because we are currently rendering
-  // with a low resolution or checkerboarded tile.
-  void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
+  // Notification from the CompositorFrameSink that a submitted frame has been
+  // consumed and it is ready for the next one.
+  void DidReceiveCompositorFrameAck();
 
-  // Notification from the CompositorFrameSink that a swap has been consumed.
-  void DidSwapBuffersComplete();
-
-  int pending_swaps() const { return pending_swaps_; }
+  int pending_submit_frames() const { return pending_submit_frames_; }
 
   // Indicates whether to prioritize impl thread latency (i.e., animation
   // smoothness) over new content activation.
@@ -305,7 +302,7 @@ class CC_EXPORT SchedulerStateMachine {
   // These are used for tracing only.
   int commit_count_;
   int current_frame_number_;
-  int last_frame_number_swap_performed_;
+  int last_frame_number_submit_performed_;
   int last_frame_number_draw_performed_;
   int last_frame_number_begin_main_frame_sent_;
   int last_frame_number_invalidate_compositor_frame_sink_performed_;
@@ -322,8 +319,8 @@ class CC_EXPORT SchedulerStateMachine {
   int prepare_tiles_funnel_;
 
   int consecutive_checkerboard_animations_;
-  int pending_swaps_;
-  int swaps_with_current_compositor_frame_sink_;
+  int pending_submit_frames_;
+  int submit_frames_with_current_compositor_frame_sink_;
   bool needs_redraw_;
   bool needs_prepare_tiles_;
   bool needs_begin_main_frame_;
@@ -346,7 +343,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool last_commit_had_no_updates_;
   bool wait_for_ready_to_draw_;
   bool did_draw_in_last_frame_;
-  bool did_swap_in_last_frame_;
+  bool did_submit_in_last_frame_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

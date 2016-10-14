@@ -128,7 +128,7 @@ class TestScheduler : public Scheduler {
       OrderedSimpleTaskRunner* task_runner,
       std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
 
-  bool SwapThrottled() const { return state_machine_.SwapThrottled(); }
+  bool IsDrawThrottled() const { return state_machine_.IsDrawThrottled(); }
 
   bool NeedsBeginMainFrame() const {
     return state_machine_.needs_begin_main_frame();

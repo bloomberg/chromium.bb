@@ -129,7 +129,7 @@ void RemoteChannelMain::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
 
   // The client will not inform us when the frame buffers are swapped.
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&RemoteChannelMain::DidCompleteSwapBuffers,
+      FROM_HERE, base::Bind(&RemoteChannelMain::DidReceiveCompositorFrameAck,
                             weak_factory_.GetWeakPtr()));
 }
 
@@ -264,11 +264,11 @@ void RemoteChannelMain::HandleProto(
 
 void RemoteChannelMain::DidCommitAndDrawFrame() {
   proxy_main_->DidCommitAndDrawFrame();
-  DidCompleteSwapBuffers();
+  DidReceiveCompositorFrameAck();
 }
 
-void RemoteChannelMain::DidCompleteSwapBuffers() {
-  proxy_main_->DidCompleteSwapBuffers();
+void RemoteChannelMain::DidReceiveCompositorFrameAck() {
+  proxy_main_->DidReceiveCompositorFrameAck();
 }
 
 base::SingleThreadTaskRunner* RemoteChannelMain::MainThreadTaskRunner() const {

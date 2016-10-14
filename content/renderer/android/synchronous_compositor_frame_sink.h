@@ -49,8 +49,8 @@ class SynchronousCompositorFrameSinkClient {
  public:
   virtual void DidActivatePendingTree() = 0;
   virtual void Invalidate() = 0;
-  virtual void SwapBuffers(uint32_t compositor_frame_sink_id,
-                           cc::CompositorFrame frame) = 0;
+  virtual void SubmitCompositorFrame(uint32_t compositor_frame_sink_id,
+                                     cc::CompositorFrame frame) = 0;
 
  protected:
   virtual ~SynchronousCompositorFrameSinkClient() {}
@@ -84,7 +84,7 @@ class SynchronousCompositorFrameSink
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* sink_client) override;
   void DetachFromClient() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
   void Invalidate() override;
 
   // Partial SynchronousCompositor API implementation.
@@ -128,7 +128,7 @@ class SynchronousCompositorFrameSink
 
   cc::ManagedMemoryPolicy memory_policy_;
   bool in_software_draw_ = false;
-  bool did_swap_ = false;
+  bool did_submit_frame_ = false;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
   base::CancelableClosure fallback_tick_;

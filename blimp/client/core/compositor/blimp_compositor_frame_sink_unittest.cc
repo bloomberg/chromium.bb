@@ -28,7 +28,7 @@ class FakeBlimpCompositorFrameSinkProxy : public BlimpCompositorFrameSinkProxy {
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner)
       : compositor_task_runner_(compositor_task_runner),
         proxy_client_(nullptr),
-        swap_count_(0),
+        submit_count_(0),
         weak_factory_(this) {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
@@ -49,13 +49,14 @@ class FakeBlimpCompositorFrameSinkProxy : public BlimpCompositorFrameSinkProxy {
     bound_ = true;
   }
 
-  void SwapCompositorFrame(cc::CompositorFrame frame) override {
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    swap_count_++;
+    submit_count_++;
     compositor_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&BlimpCompositorFrameSinkProxyClient::SwapCompositorFrameAck,
-                   proxy_client_));
+        base::Bind(
+            &BlimpCompositorFrameSinkProxyClient::SubmitCompositorFrameAck,
+            proxy_client_));
   }
 
   void UnbindProxyClient() override {
@@ -65,14 +66,14 @@ class FakeBlimpCompositorFrameSinkProxy : public BlimpCompositorFrameSinkProxy {
     proxy_client_ = nullptr;
   }
 
-  int swap_count() const { return swap_count_; }
+  int submit_count() const { return submit_count_; }
   bool bound() const { return bound_; }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   bool bound_ = false;
   base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client_;
-  int swap_count_;
+  int submit_count_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<FakeBlimpCompositorFrameSinkProxy> weak_factory_;
 };
@@ -131,21 +132,20 @@ class BlimpCompositorFrameSinkTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void DoSwapBuffers() {
-    base::WaitableEvent swap_event(
+  void DoSubmitCompositorFrame() {
+    base::WaitableEvent submit_event(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &BlimpCompositorFrameSinkTest::DoSwapBuffersOnCompositorThread,
-            base::Unretained(this), &swap_event));
-    swap_event.Wait();
+        FROM_HERE, base::Bind(&BlimpCompositorFrameSinkTest::
+                                  DoSubmitCompositorFrameOnCompositorThread,
+                              base::Unretained(this), &submit_event));
+    submit_event.Wait();
   }
 
   void TearDown() override {
-    EXPECT_EQ(main_thread_proxy_->swap_count(),
-              compositor_frame_sink_client_.swap_count());
+    EXPECT_EQ(main_thread_proxy_->submit_count(),
+              compositor_frame_sink_client_.ack_count());
   }
 
   void EndTest() {
@@ -170,8 +170,8 @@ class BlimpCompositorFrameSinkTest : public testing::Test {
     event->Signal();
   }
 
-  void DoSwapBuffersOnCompositorThread(base::WaitableEvent* event) {
-    compositor_frame_sink_->SwapBuffers(cc::CompositorFrame());
+  void DoSubmitCompositorFrameOnCompositorThread(base::WaitableEvent* event) {
+    compositor_frame_sink_->SubmitCompositorFrame(cc::CompositorFrame());
     event->Signal();
   }
 
@@ -202,18 +202,18 @@ TEST_F(BlimpCompositorFrameSinkTest, BindFails) {
   EndTest();
 }
 
-TEST_F(BlimpCompositorFrameSinkTest, BindSucceedsSwapBuffers) {
+TEST_F(BlimpCompositorFrameSinkTest, BindSucceedsSubmitCompositorFrame) {
   SetUpTest(false);
   EXPECT_TRUE(main_thread_proxy_->bound());
 
-  DoSwapBuffers();
-  DoSwapBuffers();
-  DoSwapBuffers();
+  DoSubmitCompositorFrame();
+  DoSubmitCompositorFrame();
+  DoSubmitCompositorFrame();
 
   // Run all tasks so the swap buffer calls to the BlimpCompositorFrameSink on
   // the main thread complete.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, main_thread_proxy_->swap_count());
+  EXPECT_EQ(3, main_thread_proxy_->submit_count());
 
   EndTest();
 }

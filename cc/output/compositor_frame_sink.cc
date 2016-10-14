@@ -75,12 +75,6 @@ void CompositorFrameSink::DetachFromClient() {
   client_ = nullptr;
 }
 
-// We don't post tasks bound to the client directly since they might run
-// after the CompositorFrameSink has been destroyed.
-void CompositorFrameSink::OnSwapBuffersComplete() {
-  client_->DidSwapBuffersComplete();
-}
-
 void CompositorFrameSink::DidLoseCompositorFrameSink() {
   TRACE_EVENT0("cc", "CompositorFrameSink::DidLoseCompositorFrameSink");
   client_->DidLoseCompositorFrameSink();

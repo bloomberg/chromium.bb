@@ -29,14 +29,12 @@ class CompositorFrameSink : public cc::CompositorFrameSink,
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
  private:
   // WindowSurfaceClient implementation:
   void OnResourcesReturned(WindowSurface* surface,
                            const cc::ReturnedResourceArray& resources) override;
-
-  void SwapBuffersComplete();
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<WindowSurface> surface_;

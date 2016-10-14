@@ -39,8 +39,8 @@ void BlimpCompositorFrameSink::ReclaimCompositorResources(
   client_->ReclaimResources(resources);
 }
 
-void BlimpCompositorFrameSink::SwapCompositorFrameAck() {
-  client_->DidSwapBuffersComplete();
+void BlimpCompositorFrameSink::SubmitCompositorFrameAck() {
+  client_->DidReceiveCompositorFrameAck();
 }
 
 bool BlimpCompositorFrameSink::BindToClient(
@@ -68,12 +68,14 @@ void BlimpCompositorFrameSink::DetachFromClient() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void BlimpCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
+void BlimpCompositorFrameSink::SubmitCompositorFrame(
+    cc::CompositorFrame frame) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&BlimpCompositorFrameSinkProxy::SwapCompositorFrame,
-                            main_thread_proxy_, base::Passed(&frame)));
+      FROM_HERE,
+      base::Bind(&BlimpCompositorFrameSinkProxy::SubmitCompositorFrame,
+                 main_thread_proxy_, base::Passed(&frame)));
 }
 
 }  // namespace client

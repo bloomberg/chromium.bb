@@ -296,11 +296,12 @@ bool RemoteChannelImpl::MainFrameWillHappenForTesting() {
   return main_frame_will_happen;
 }
 
-void RemoteChannelImpl::DidCompleteSwapBuffers() {
+void RemoteChannelImpl::DidReceiveCompositorFrameAck() {
   DCHECK(task_runner_provider_->IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&RemoteChannelImpl::DidCompleteSwapBuffersOnMain,
-                            impl().remote_channel_weak_ptr));
+      FROM_HERE,
+      base::Bind(&RemoteChannelImpl::DidReceiveCompositorFrameAckOnMain,
+                 impl().remote_channel_weak_ptr));
 }
 
 void RemoteChannelImpl::BeginMainFrameNotExpectedSoon() {}
@@ -370,9 +371,9 @@ void RemoteChannelImpl::SendMessageProto(
                  impl().remote_channel_weak_ptr, base::Passed(&proto)));
 }
 
-void RemoteChannelImpl::DidCompleteSwapBuffersOnMain() {
+void RemoteChannelImpl::DidReceiveCompositorFrameAckOnMain() {
   DCHECK(task_runner_provider_->IsMainThread());
-  main().layer_tree_host->DidCompleteSwapBuffers();
+  main().layer_tree_host->DidReceiveCompositorFrameAck();
 }
 
 void RemoteChannelImpl::DidCommitAndDrawFrameOnMain() {

@@ -116,7 +116,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void SynchronouslyCloseImpl() override;
 
   // ChannelImpl Implementation
-  void DidCompleteSwapBuffers() override;
+  void DidReceiveCompositorFrameAck() override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;

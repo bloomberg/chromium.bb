@@ -57,7 +57,7 @@ class FakeSchedulerClient : public SchedulerClient,
  public:
   FakeSchedulerClient()
       : inside_begin_impl_frame_(false),
-        automatic_swap_ack_(true),
+        automatic_ack_(true),
         scheduler_(nullptr) {
     Reset();
   }
@@ -105,8 +105,8 @@ class FakeSchedulerClient : public SchedulerClient,
   void SetSwapWillHappenIfDrawHappens(bool swap_will_happen_if_draw_happens) {
     swap_will_happen_if_draw_happens_ = swap_will_happen_if_draw_happens;
   }
-  void SetAutomaticSwapAck(bool automatic_swap_ack) {
-    automatic_swap_ack_ = automatic_swap_ack;
+  void SetAutomaticSubmitCompositorFrameAck(bool automatic_ack) {
+    automatic_ack_ = automatic_ack;
   }
   // SchedulerClient implementation.
   void WillBeginImplFrame(const BeginFrameArgs& args) override {
@@ -132,23 +132,23 @@ class FakeSchedulerClient : public SchedulerClient,
     return last_begin_main_frame_args_;
   }
 
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
-    PushAction("ScheduledActionDrawAndSwapIfPossible");
+  DrawResult ScheduledActionDrawIfPossible() override {
+    PushAction("ScheduledActionDrawIfPossible");
     num_draws_++;
     DrawResult result =
         draw_will_happen_ ? DRAW_SUCCESS : DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
     bool swap_will_happen =
         draw_will_happen_ && swap_will_happen_if_draw_happens_;
     if (swap_will_happen) {
-      scheduler_->DidSwapBuffers();
+      scheduler_->DidSubmitCompositorFrame();
 
-      if (automatic_swap_ack_)
-        scheduler_->DidSwapBuffersComplete();
+      if (automatic_ack_)
+        scheduler_->DidReceiveCompositorFrameAck();
     }
     return result;
   }
-  DrawResult ScheduledActionDrawAndSwapForced() override {
-    PushAction("ScheduledActionDrawAndSwapForced");
+  DrawResult ScheduledActionDrawForced() override {
+    PushAction("ScheduledActionDrawForced");
     return DRAW_SUCCESS;
   }
   void ScheduledActionCommit() override {
@@ -215,7 +215,7 @@ class FakeSchedulerClient : public SchedulerClient,
   bool will_begin_impl_frame_requests_one_begin_impl_frame_;
   bool draw_will_happen_;
   bool swap_will_happen_if_draw_happens_;
-  bool automatic_swap_ack_;
+  bool automatic_ack_;
   int num_draws_;
   BeginFrameArgs last_begin_main_frame_args_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
@@ -416,10 +416,10 @@ class SchedulerTest : public testing::Test {
   }
 
   void CheckMainFrameSkippedAfterLateCommit(bool expect_send_begin_main_frame);
-  void ImplFrameSkippedAfterLateSwapAck(bool swap_ack_before_deadline);
-  void ImplFrameNotSkippedAfterLateSwapAck();
+  void ImplFrameSkippedAfterLateAck(bool receive_ack_before_deadline);
+  void ImplFrameNotSkippedAfterLateAck();
   void BeginFramesNotFromClient(BeginFrameSourceType bfs_type);
-  void BeginFramesNotFromClient_SwapThrottled(BeginFrameSourceType bfs_type);
+  void BeginFramesNotFromClient_IsDrawThrottled(BeginFrameSourceType bfs_type);
   bool BeginMainFrameOnCriticalPath(TreePriority tree_priority,
                                     ScrollHandlerState scroll_handler_state,
                                     base::TimeDelta durations);
@@ -537,7 +537,7 @@ TEST_F(SchedulerTest, RequestCommit) {
 
   // BeginImplFrame deadline should draw.
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
@@ -602,7 +602,7 @@ TEST_F(SchedulerTest, DeferCommitWithRedraw) {
 
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_TRUE(scheduler_->begin_frames_expected());
 
@@ -647,7 +647,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   client_->Reset();
 
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 
   // Because we just swapped, the Scheduler should also request the next
@@ -674,7 +674,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
@@ -694,15 +694,15 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
 
   void SetRequestRedrawsInsideDraw(bool enable) { request_redraws_ = enable; }
 
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+  DrawResult ScheduledActionDrawIfPossible() override {
     // Only SetNeedsRedraw the first time this is called
     if (request_redraws_) {
       scheduler_->SetNeedsRedraw();
     }
-    return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
+    return FakeSchedulerClient::ScheduledActionDrawIfPossible();
   }
 
-  DrawResult ScheduledActionDrawAndSwapForced() override {
+  DrawResult ScheduledActionDrawForced() override {
     NOTREACHED();
     return DRAW_SUCCESS;
   }
@@ -713,7 +713,7 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
 
 // Tests for two different situations:
 // 1. the scheduler dropping SetNeedsRedraw requests that happen inside
-//    a ScheduledActionDrawAndSwap
+//    a ScheduledActionDraw
 // 2. the scheduler drawing twice inside a single tick
 TEST_F(SchedulerTest, RequestRedrawInsideDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw* client =
@@ -800,16 +800,16 @@ class SchedulerClientThatSetNeedsBeginMainFrameInsideDraw
   SchedulerClientThatSetNeedsBeginMainFrameInsideDraw()
       : set_needs_commit_on_next_draw_(false) {}
 
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+  DrawResult ScheduledActionDrawIfPossible() override {
     // Only SetNeedsBeginMainFrame the first time this is called
     if (set_needs_commit_on_next_draw_) {
       scheduler_->SetNeedsBeginMainFrame();
       set_needs_commit_on_next_draw_ = false;
     }
-    return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
+    return FakeSchedulerClient::ScheduledActionDrawIfPossible();
   }
 
-  DrawResult ScheduledActionDrawAndSwapForced() override {
+  DrawResult ScheduledActionDrawForced() override {
     NOTREACHED();
     return DRAW_SUCCESS;
   }
@@ -823,7 +823,7 @@ class SchedulerClientThatSetNeedsBeginMainFrameInsideDraw
 };
 
 // Tests for the scheduler infinite-looping on SetNeedsBeginMainFrame requests
-// that happen inside a ScheduledActionDrawAndSwap
+// that happen inside a ScheduledActionDraw
 TEST_F(SchedulerTest, RequestCommitInsideDraw) {
   SchedulerClientThatSetNeedsBeginMainFrameInsideDraw* client =
       new SchedulerClientThatSetNeedsBeginMainFrameInsideDraw;
@@ -937,9 +937,9 @@ TEST_F(SchedulerTest, NoSwapWhenDrawFails) {
 
 class SchedulerClientNeedsPrepareTilesInDraw : public FakeSchedulerClient {
  public:
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+  DrawResult ScheduledActionDrawIfPossible() override {
     scheduler_->SetNeedsPrepareTiles();
-    return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
+    return FakeSchedulerClient::ScheduledActionDrawIfPossible();
   }
 };
 
@@ -959,7 +959,7 @@ TEST_F(SchedulerTest, PrepareTiles) {
   EXPECT_TRUE(client->needs_begin_frames());
   EXPECT_EQ(0, client->num_draws());
   EXPECT_FALSE(client->HasAction("ScheduledActionPrepareTiles"));
-  EXPECT_FALSE(client->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_FALSE(client->HasAction("ScheduledActionDrawIfPossible"));
 
   // We have no immediate actions to perform, so the BeginImplFrame should post
   // the deadline task.
@@ -972,9 +972,9 @@ TEST_F(SchedulerTest, PrepareTiles) {
   client->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client->num_draws());
-  EXPECT_TRUE(client->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(client->HasAction("ScheduledActionPrepareTiles"));
-  EXPECT_LT(client->ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+  EXPECT_LT(client->ActionIndex("ScheduledActionDrawIfPossible"),
             client->ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -1001,9 +1001,9 @@ TEST_F(SchedulerTest, PrepareTiles) {
   client->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client->num_draws());
-  EXPECT_TRUE(client->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(client->HasAction("ScheduledActionPrepareTiles"));
-  EXPECT_LT(client->ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+  EXPECT_LT(client->ActionIndex("ScheduledActionDrawIfPossible"),
             client->ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -1038,7 +1038,7 @@ TEST_F(SchedulerTest, PrepareTiles) {
   client->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(0, client->num_draws());
-  EXPECT_FALSE(client->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_FALSE(client->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(client->HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
 }
@@ -1065,7 +1065,7 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client_->num_draws());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_FALSE(client_->HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -1082,9 +1082,9 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client_->num_draws());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(client_->HasAction("ScheduledActionPrepareTiles"));
-  EXPECT_LT(client_->ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+  EXPECT_LT(client_->ActionIndex("ScheduledActionDrawIfPossible"),
             client_->ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -1106,7 +1106,7 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client_->num_draws());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_FALSE(client_->HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -1130,7 +1130,7 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client_->num_draws());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_FALSE(client_->HasAction("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -1146,9 +1146,9 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client_->num_draws());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(client_->HasAction("ScheduledActionPrepareTiles"));
-  EXPECT_LT(client_->ActionIndex("ScheduledActionDrawAndSwapIfPossible"),
+  EXPECT_LT(client_->ActionIndex("ScheduledActionDrawIfPossible"),
             client_->ActionIndex("ScheduledActionPrepareTiles"));
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -1183,7 +1183,7 @@ TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
 }
 
@@ -1236,7 +1236,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client_->num_draws());
-  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawIfPossible"));
 }
 
 TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
@@ -1496,10 +1496,10 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterCanDrawChanges) {
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 }
 
-void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
-    bool swap_ack_before_deadline) {
+void SchedulerTest::ImplFrameSkippedAfterLateAck(
+    bool receive_ack_before_deadline) {
   // To get into a high latency state, this test disables automatic swap acks.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // Draw and swap for first BeginFrame
   client_->Reset();
@@ -1519,12 +1519,12 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 2, 3);
 
   // Verify we skip every other frame if the swap ack consistently
   // comes back late.
   for (int i = 0; i < 10; i++) {
-    // Not calling scheduler_->DidSwapBuffersComplete() until after next
+    // Not calling scheduler_->DidReceiveCompositorFrameAck() until after next
     // BeginImplFrame puts the impl thread in high latency mode.
     client_->Reset();
     scheduler_->SetNeedsBeginMainFrame();
@@ -1539,14 +1539,14 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
     // Verify that we do not perform any actions after we are no longer
     // swap throttled.
     client_->Reset();
-    if (swap_ack_before_deadline) {
+    if (receive_ack_before_deadline) {
       // It shouldn't matter if the swap ack comes back before the deadline...
-      scheduler_->DidSwapBuffersComplete();
+      scheduler_->DidReceiveCompositorFrameAck();
       task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
     } else {
       // ... or after the deadline.
       task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-      scheduler_->DidSwapBuffersComplete();
+      scheduler_->DidReceiveCompositorFrameAck();
     }
     EXPECT_NO_ACTION(client_);
 
@@ -1565,41 +1565,40 @@ void SchedulerTest::ImplFrameSkippedAfterLateSwapAck(
     task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
     EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
     EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 3);
-    EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
+    EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 2, 3);
   }
 }
 
 TEST_F(SchedulerTest,
-       ImplFrameSkippedAfterLateSwapAck_FastEstimates_SwapAckThenDeadline) {
+       ImplFrameSkippedAfterLateAck_FastEstimates_SubmitAckThenDeadline) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
-  bool swap_ack_before_deadline = true;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+  bool receive_ack_before_deadline = true;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest,
-       ImplFrameSkippedAfterLateSwapAck_FastEstimates_DeadlineThenSwapAck) {
+       ImplFrameSkippedAfterLateAck_FastEstimates_DeadlineThenSubmitAck) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
 
-  bool swap_ack_before_deadline = false;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+  bool receive_ack_before_deadline = false;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest,
-       ImplFrameSkippedAfterLateSwapAck_LongMainFrameQueueDurationNotCritical) {
+       ImplFrameSkippedAfterLateAck_LongMainFrameQueueDurationNotCritical) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
 
-  bool swap_ack_before_deadline = false;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+  bool receive_ack_before_deadline = false;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
 }
 
-TEST_F(SchedulerTest,
-       ImplFrameSkippedAfterLateSwapAck_ImplLatencyTakesPriority) {
+TEST_F(SchedulerTest, ImplFrameSkippedAfterLateAck_ImplLatencyTakesPriority) {
   SetUpScheduler(EXTERNAL_BFS);
 
   // Even if every estimate related to the main thread is slow, we should
@@ -1611,17 +1610,17 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_->SetAllEstimatesTo(kSlowDuration);
   fake_compositor_timing_history_->SetDrawDurationEstimate(kFastDuration);
 
-  bool swap_ack_before_deadline = false;
-  EXPECT_SCOPED(ImplFrameSkippedAfterLateSwapAck(swap_ack_before_deadline));
+  bool receive_ack_before_deadline = false;
+  EXPECT_SCOPED(ImplFrameSkippedAfterLateAck(receive_ack_before_deadline));
 }
 
 TEST_F(SchedulerTest,
-       ImplFrameSkippedAfterLateSwapAck_OnlyImplSideUpdatesExpected) {
+       ImplFrameSkippedAfterLateAck_OnlyImplSideUpdatesExpected) {
   // This tests that we recover impl thread latency when there are no commits.
   SetUpScheduler(EXTERNAL_BFS);
 
   // To get into a high latency state, this test disables automatic swap acks.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // Even if every estimate related to the main thread is slow, we should
   // still expect to recover impl thread latency if there are no commits from
@@ -1640,12 +1639,12 @@ TEST_F(SchedulerTest,
   client_->Reset();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
 
   // Verify we skip every other frame if the swap ack consistently
   // comes back late.
   for (int i = 0; i < 10; i++) {
-    // Not calling scheduler_->DidSwapBuffersComplete() until after next
+    // Not calling scheduler_->DidReceiveCompositorFrameAck() until after next
     // BeginImplFrame puts the impl thread in high latency mode.
     client_->Reset();
     scheduler_->SetNeedsRedraw();
@@ -1659,7 +1658,7 @@ TEST_F(SchedulerTest,
     // Verify that we do not perform any actions after we are no longer
     // swap throttled.
     client_->Reset();
-    scheduler_->DidSwapBuffersComplete();
+    scheduler_->DidReceiveCompositorFrameAck();
     EXPECT_NO_ACTION(client_);
 
     // Verify that we start the next BeginImplFrame and continue normally
@@ -1674,13 +1673,13 @@ TEST_F(SchedulerTest,
     EXPECT_TRUE(client_->IsInsideBeginImplFrame());
     task_runner().RunUntilTime(now_src_->NowTicks());
     EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-    EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+    EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   }
 }
 
-void SchedulerTest::ImplFrameNotSkippedAfterLateSwapAck() {
+void SchedulerTest::ImplFrameNotSkippedAfterLateAck() {
   // To get into a high latency state, this test disables automatic swap acks.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // Draw and swap for first BeginFrame
   client_->Reset();
@@ -1699,12 +1698,13 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateSwapAck() {
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 2, 3);
 
   // Verify impl thread consistently operates in high latency mode
   // without skipping any frames.
   for (int i = 0; i < 10; i++) {
-    // Not calling scheduler_->DidSwapBuffersComplete() until after next frame
+    // Not calling scheduler_->DidReceiveCompositorFrameAck() until after next
+    // frame
     // puts the impl thread in high latency mode.
     client_->Reset();
     scheduler_->SetNeedsBeginMainFrame();
@@ -1715,7 +1715,7 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateSwapAck() {
     EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
     client_->Reset();
-    scheduler_->DidSwapBuffersComplete();
+    scheduler_->DidReceiveCompositorFrameAck();
     scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
     scheduler_->NotifyReadyToCommit();
     scheduler_->NotifyReadyToActivate();
@@ -1725,57 +1725,53 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateSwapAck() {
     EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 0, 4);
     EXPECT_ACTION("ScheduledActionCommit", client_, 1, 4);
     EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 2, 4);
-    EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 4);
+    EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 3, 4);
   }
 }
 
-TEST_F(
-    SchedulerTest,
-    ImplFrameNotSkippedAfterLateSwapAck_MainFrameQueueDurationCriticalTooLong) {
+TEST_F(SchedulerTest,
+       ImplFrameNotSkippedAfterLateAck_MainFrameQueueDurationCriticalTooLong) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationCriticalEstimate(kSlowDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameQueueDurationNotCriticalEstimate(kSlowDuration);
-  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
+  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateAck());
 }
 
-TEST_F(SchedulerTest,
-       ImplFrameNotSkippedAfterLateSwapAck_CommitEstimateTooLong) {
+TEST_F(SchedulerTest, ImplFrameNotSkippedAfterLateAck_CommitEstimateTooLong) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_
       ->SetBeginMainFrameStartToCommitDurationEstimate(kSlowDuration);
-  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
+  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateAck());
 }
 
 TEST_F(SchedulerTest,
-       ImplFrameNotSkippedAfterLateSwapAck_ReadyToActivateEstimateTooLong) {
+       ImplFrameNotSkippedAfterLateAck_ReadyToActivateEstimateTooLong) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       kSlowDuration);
-  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
+  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateAck());
 }
 
-TEST_F(SchedulerTest,
-       ImplFrameNotSkippedAfterLateSwapAck_ActivateEstimateTooLong) {
+TEST_F(SchedulerTest, ImplFrameNotSkippedAfterLateAck_ActivateEstimateTooLong) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetActivateDurationEstimate(kSlowDuration);
-  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
+  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateAck());
 }
 
-TEST_F(SchedulerTest, ImplFrameNotSkippedAfterLateSwapAck_DrawEstimateTooLong) {
+TEST_F(SchedulerTest, ImplFrameNotSkippedAfterLateAck_DrawEstimateTooLong) {
   SetUpScheduler(EXTERNAL_BFS);
   fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
   fake_compositor_timing_history_->SetDrawDurationEstimate(kSlowDuration);
-  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateSwapAck());
+  EXPECT_SCOPED(ImplFrameNotSkippedAfterLateAck());
 }
 
-TEST_F(SchedulerTest,
-       MainFrameThenImplFrameSkippedAfterLateCommitAndLateSwapAck) {
+TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
   // Set up client with custom estimates.
   // This test starts off with expensive estimates to prevent latency recovery
   // initially, then lowers the estimates to enable it once both the main
@@ -1784,7 +1780,7 @@ TEST_F(SchedulerTest,
   fake_compositor_timing_history_->SetAllEstimatesTo(kSlowDuration);
 
   // To get into a high latency state, this test disables automatic swap acks.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // Impl thread hits deadline before commit finishes to make
   // MainThreadMissedLastDeadline true
@@ -1819,11 +1815,12 @@ TEST_F(SchedulerTest,
 
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 5);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 5);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 5);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 2, 5);
   EXPECT_ACTION("ScheduledActionCommit", client_, 3, 5);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 4, 5);
 
-  // Don't call scheduler_->DidSwapBuffersComplete() until after next frame
+  // Don't call scheduler_->DidReceiveCompositorFrameAck() until after next
+  // frame
   // to put the impl thread in a high latency mode.
   client_->Reset();
   scheduler_->SetNeedsBeginMainFrame();
@@ -1836,7 +1833,7 @@ TEST_F(SchedulerTest,
   // Note: BeginMainFrame and swap are skipped here because of
   // swap ack backpressure, not because of latency recovery.
   EXPECT_FALSE(client_->HasAction("ScheduledActionSendBeginMainFrame"));
-  EXPECT_FALSE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+  EXPECT_FALSE(client_->HasAction("ScheduledActionDrawIfPossible"));
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 
   // Lower estimates so that the scheduler will attempt latency recovery.
@@ -1850,15 +1847,15 @@ TEST_F(SchedulerTest,
   client_->Reset();
   // Previous commit request is still outstanding.
   EXPECT_TRUE(scheduler_->NeedsBeginMainFrame());
-  EXPECT_TRUE(scheduler_->SwapThrottled());
+  EXPECT_TRUE(scheduler_->IsDrawThrottled());
   SendNextBeginFrame();
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
-  scheduler_->DidSwapBuffersComplete();
+  scheduler_->DidReceiveCompositorFrameAck();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
 
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 1, 2);
 
   // Verify we skip the BeginImplFrame second.
   client_->Reset();
@@ -1868,7 +1865,7 @@ TEST_F(SchedulerTest,
   SendNextBeginFrame();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
-  scheduler_->DidSwapBuffersComplete();
+  scheduler_->DidReceiveCompositorFrameAck();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_NO_ACTION(client_);
@@ -1885,14 +1882,14 @@ TEST_F(SchedulerTest,
   scheduler_->NotifyReadyToActivate();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
-  scheduler_->DidSwapBuffersComplete();
+  scheduler_->DidReceiveCompositorFrameAck();
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 5);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 5);
   EXPECT_ACTION("ScheduledActionCommit", client_, 2, 5);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 3, 5);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 4, 5);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 4, 5);
 }
 
 TEST_F(
@@ -1901,12 +1898,12 @@ TEST_F(
   // NPAPI plugins on Windows block the Browser UI thread on the Renderer main
   // thread. This prevents the scheduler from receiving any pending swap acks.
 
-  scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
+  scheduler_settings_.main_frame_while_submit_frame_throttled_enabled = true;
   SetUpScheduler(EXTERNAL_BFS);
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // Get a new active tree in main-thread high latency mode and put us
   // in a swap throttled state.
@@ -1926,7 +1923,7 @@ TEST_F(
   EXPECT_ACTION("AddObserver(this)", client_, 0, 6);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 6);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 6);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 6);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 3, 6);
   EXPECT_ACTION("ScheduledActionCommit", client_, 4, 6);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 5, 6);
 
@@ -1964,13 +1961,13 @@ TEST_F(
 
   // Since we are simulating a long commit, set up a client with draw duration
   // estimates that prevent skipping main frames to get to low latency mode.
-  scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
+  scheduler_settings_.main_frame_while_submit_frame_throttled_enabled = true;
   scheduler_settings_.main_frame_before_activation_enabled = true;
   SetUpScheduler(EXTERNAL_BFS);
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // Start a new commit in main-thread high latency mode and hold off on
   // activation.
@@ -1983,14 +1980,14 @@ TEST_F(
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  scheduler_->DidSwapBuffersComplete();
+  scheduler_->DidReceiveCompositorFrameAck();
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
   EXPECT_FALSE(scheduler_->CommitPending());
   EXPECT_ACTION("AddObserver(this)", client_, 0, 5);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 5);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 5);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 3, 5);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 3, 5);
   EXPECT_ACTION("ScheduledActionCommit", client_, 4, 5);
 
   // Start another commit while we still have an active tree.
@@ -2003,11 +2000,11 @@ TEST_F(
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
-  scheduler_->DidSwapBuffersComplete();
+  scheduler_->DidReceiveCompositorFrameAck();
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 3);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 2, 3);
 
   // Can't commit yet because there's still a pending tree.
   client_->Reset();
@@ -2058,7 +2055,7 @@ void SchedulerTest::BeginFramesNotFromClient(BeginFrameSourceType bfs_type) {
   // BeginImplFrame deadline should draw. The following BeginImplFrame deadline
   // should SetNeedsBeginFrame(false) to avoid excessive toggles.
   EXPECT_SCOPED(AdvanceFrame());
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 2);
   client_->Reset();
 
@@ -2077,7 +2074,7 @@ TEST_F(SchedulerTest, UnthrottledBeginFrames) {
   BeginFramesNotFromClient(UNTHROTTLED_BFS);
 }
 
-void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
+void SchedulerTest::BeginFramesNotFromClient_IsDrawThrottled(
     BeginFrameSourceType bfs_type) {
   SetUpScheduler(bfs_type);
 
@@ -2085,7 +2082,7 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   fake_compositor_timing_history_->SetDrawDurationEstimate(base::TimeDelta());
 
   // To test swap ack throttling, this test disables automatic swap acks.
-  client_->SetAutomaticSwapAck(false);
+  client_->SetAutomaticSubmitCompositorFrameAck(false);
 
   // SetNeedsBeginMainFrame should begin the frame on the next BeginImplFrame.
   client_->Reset();
@@ -2114,7 +2111,7 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   // Swapping will put us into a swap throttled state.
   // Run posted deadline.
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2147,7 +2144,7 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   client_->Reset();
 
   // Take us out of a swap throttled state.
-  scheduler_->DidSwapBuffersComplete();
+  scheduler_->DidReceiveCompositorFrameAck();
   EXPECT_SINGLE_ACTION("ScheduledActionSendBeginMainFrame", client_);
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2165,12 +2162,12 @@ void SchedulerTest::BeginFramesNotFromClient_SwapThrottled(
   client_->Reset();
 }
 
-TEST_F(SchedulerTest, SyntheticBeginFrames_SwapThrottled) {
-  BeginFramesNotFromClient_SwapThrottled(THROTTLED_BFS);
+TEST_F(SchedulerTest, SyntheticBeginFrames_IsDrawThrottled) {
+  BeginFramesNotFromClient_IsDrawThrottled(THROTTLED_BFS);
 }
 
-TEST_F(SchedulerTest, UnthrottledBeginFrames_SwapThrottled) {
-  BeginFramesNotFromClient_SwapThrottled(UNTHROTTLED_BFS);
+TEST_F(SchedulerTest, UnthrottledBeginFrames_IsDrawThrottled) {
+  BeginFramesNotFromClient_IsDrawThrottled(UNTHROTTLED_BFS);
 }
 
 TEST_F(SchedulerTest,
@@ -2394,7 +2391,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
 
   client_->Reset();
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
 
   // Idle time between BeginFrames.
   client_->Reset();
@@ -2476,7 +2473,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottled) {
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   scheduler_->SetNeedsRedraw();
 
   // Switch to an unthrottled frame source.
@@ -2491,7 +2488,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottled) {
 
   // If we don't swap on the deadline, we wait for the next BeginFrame.
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 }
@@ -2518,14 +2515,14 @@ TEST_F(SchedulerTest, SwitchFrameSourceToUnthrottledBeforeDeadline) {
   client_->Reset();
 
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
   // Unthrottled frame source will immediately begin a new frame.
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 2);
   scheduler_->SetNeedsRedraw();
   client_->Reset();
 
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 }
@@ -2545,7 +2542,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToThrottled) {
   client_->Reset();
 
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2565,7 +2562,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToThrottled) {
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
 }
 
 TEST_F(SchedulerTest, SwitchFrameSourceToNullInsideDeadline) {
@@ -2586,7 +2583,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToNullInsideDeadline) {
 
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(scheduler_->begin_frames_expected());
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2615,7 +2612,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceToNullInsideDeadline) {
   client_->Reset();
 
   task_runner().RunPendingTasks();
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
 }
 
 // This test maskes sure that switching a frame source when not observing
@@ -2692,7 +2689,7 @@ TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 5);
   EXPECT_ACTION("ScheduledActionCommit", client_, 2, 5);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 3, 5);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 4, 5);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 4, 5);
   client_->Reset();
 
   // The following BeginImplFrame deadline should SetNeedsBeginFrame(false)
@@ -2732,7 +2729,7 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2750,7 +2747,7 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2771,7 +2768,7 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
   bool resourceless_software_draw = false;
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   EXPECT_ACTION("AddObserver(this)", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2864,7 +2861,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommit) {
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
@@ -2927,9 +2924,9 @@ class SchedulerClientSetNeedsPrepareTilesOnDraw : public FakeSchedulerClient {
   SchedulerClientSetNeedsPrepareTilesOnDraw() : FakeSchedulerClient() {}
 
  protected:
-  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+  DrawResult ScheduledActionDrawIfPossible() override {
     scheduler_->SetNeedsPrepareTiles();
-    return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
+    return FakeSchedulerClient::ScheduledActionDrawIfPossible();
   }
 };
 
@@ -2954,7 +2951,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -2963,7 +2960,7 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -2997,7 +2994,7 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
   client_->Reset();
@@ -3025,7 +3022,7 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
-  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawIfPossible", client_);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
   client_->Reset();
@@ -3046,7 +3043,7 @@ TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
   bool resourceless_software_draw = true;
   scheduler_->OnDrawForCompositorFrameSink(resourceless_software_draw);
   // SynchronousCompositor has to draw regardless of visibility.
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 1);
+  EXPECT_ACTION("ScheduledActionDrawIfPossible", client_, 0, 1);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 }

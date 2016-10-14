@@ -36,8 +36,8 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddPrepareTilesDuration(base::TimeDelta duration) = 0;
   virtual void AddActivateDuration(base::TimeDelta duration) = 0;
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
-  virtual void AddSwapToAckLatency(base::TimeDelta duration) = 0;
-  virtual void AddSwapAckWasFast(bool was_fast) = 0;
+  virtual void AddSubmitToAckLatency(base::TimeDelta duration) = 0;
+  virtual void AddSubmitAckWasFast(bool was_fast) = 0;
 
   // Synchronization measurements
   virtual void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) = 0;
@@ -59,7 +59,7 @@ const double kPrepareTilesEstimationPercentile = 90.0;
 const double kActivateEstimationPercentile = 90.0;
 const double kDrawEstimationPercentile = 90.0;
 
-constexpr base::TimeDelta kSwapAckWatchdogTimeout =
+constexpr base::TimeDelta kSubmitAckWatchdogTimeout =
     base::TimeDelta::FromSeconds(8);
 
 const int kUmaDurationMinMicros = 1;
@@ -190,12 +190,12 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
                                         duration);
   }
 
-  void AddSwapToAckLatency(base::TimeDelta duration) override {
+  void AddSubmitToAckLatency(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Renderer.SwapToAckLatency",
                                         duration);
   }
 
-  void AddSwapAckWasFast(bool was_fast) override {
+  void AddSubmitAckWasFast(bool was_fast) override {
     UMA_HISTOGRAM_BOOLEAN("Scheduling.Renderer.SwapAckWasFast", was_fast);
   }
 
@@ -267,12 +267,12 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
                                         duration);
   }
 
-  void AddSwapToAckLatency(base::TimeDelta duration) override {
+  void AddSubmitToAckLatency(base::TimeDelta duration) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION("Scheduling.Browser.SwapToAckLatency",
                                         duration);
   }
 
-  void AddSwapAckWasFast(bool was_fast) override {
+  void AddSubmitAckWasFast(bool was_fast) override {
     UMA_HISTOGRAM_BOOLEAN("Scheduling.Browser.SwapAckWasFast", was_fast);
   }
 
@@ -300,8 +300,8 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddPrepareTilesDuration(base::TimeDelta duration) override {}
   void AddActivateDuration(base::TimeDelta duration) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
-  void AddSwapToAckLatency(base::TimeDelta duration) override {}
-  void AddSwapAckWasFast(bool was_fast) override {}
+  void AddSubmitToAckLatency(base::TimeDelta duration) override {}
+  void AddSubmitAckWasFast(bool was_fast) override {}
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
 };
 
@@ -328,7 +328,7 @@ CompositorTimingHistory::CompositorTimingHistory(
       activate_duration_history_(kDurationHistorySize),
       draw_duration_history_(kDurationHistorySize),
       begin_main_frame_on_critical_path_(false),
-      swap_ack_watchdog_enabled_(false),
+      submit_ack_watchdog_enabled_(false),
       uma_reporter_(CreateUMAReporter(uma_category)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {}
 
@@ -455,9 +455,9 @@ base::TimeDelta CompositorTimingHistory::DrawDurationEstimate() const {
 
 void CompositorTimingHistory::DidCreateAndInitializeCompositorFrameSink() {
   // After we get a new output surface, we won't get a spurious
-  // swap ack from the old output surface.
-  swap_start_time_ = base::TimeTicks();
-  swap_ack_watchdog_enabled_ = false;
+  // CompositorFrameAck from the old output surface.
+  submit_start_time_ = base::TimeTicks();
+  submit_ack_watchdog_enabled_ = false;
 }
 
 void CompositorTimingHistory::WillBeginImplFrame(
@@ -473,12 +473,12 @@ void CompositorTimingHistory::WillBeginImplFrame(
     SetBeginMainFrameCommittingContinuously(false);
   }
 
-  if (swap_ack_watchdog_enabled_) {
-    base::TimeDelta swap_not_acked_time_ = Now() - swap_start_time_;
-    if (swap_not_acked_time_ >= kSwapAckWatchdogTimeout) {
-      uma_reporter_->AddSwapAckWasFast(false);
-      // Only record this UMA once per swap.
-      swap_ack_watchdog_enabled_ = false;
+  if (submit_ack_watchdog_enabled_) {
+    base::TimeDelta submit_not_acked_time_ = Now() - submit_start_time_;
+    if (submit_not_acked_time_ >= kSubmitAckWatchdogTimeout) {
+      uma_reporter_->AddSubmitAckWasFast(false);
+      // Only record this UMA once per submitted CompositorFrame.
+      submit_ack_watchdog_enabled_ = false;
     }
   }
 
@@ -718,22 +718,22 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
   draw_start_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::DidSwapBuffers() {
-  DCHECK_EQ(base::TimeTicks(), swap_start_time_);
-  swap_start_time_ = Now();
-  swap_ack_watchdog_enabled_ = true;
+void CompositorTimingHistory::DidSubmitCompositorFrame() {
+  DCHECK_EQ(base::TimeTicks(), submit_start_time_);
+  submit_start_time_ = Now();
+  submit_ack_watchdog_enabled_ = true;
 }
 
-void CompositorTimingHistory::DidSwapBuffersComplete() {
-  DCHECK_NE(base::TimeTicks(), swap_start_time_);
-  base::TimeDelta swap_to_ack_duration = Now() - swap_start_time_;
-  uma_reporter_->AddSwapToAckLatency(swap_to_ack_duration);
-  if (swap_ack_watchdog_enabled_) {
-    bool was_fast = swap_to_ack_duration < kSwapAckWatchdogTimeout;
-    uma_reporter_->AddSwapAckWasFast(was_fast);
-    swap_ack_watchdog_enabled_ = false;
+void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
+  DCHECK_NE(base::TimeTicks(), submit_start_time_);
+  base::TimeDelta submit_to_ack_duration = Now() - submit_start_time_;
+  uma_reporter_->AddSubmitToAckLatency(submit_to_ack_duration);
+  if (submit_ack_watchdog_enabled_) {
+    bool was_fast = submit_to_ack_duration < kSubmitAckWatchdogTimeout;
+    uma_reporter_->AddSubmitAckWasFast(was_fast);
+    submit_ack_watchdog_enabled_ = false;
   }
-  swap_start_time_ = base::TimeTicks();
+  submit_start_time_ = base::TimeTicks();
 }
 
 }  // namespace cc

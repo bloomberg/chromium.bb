@@ -32,7 +32,7 @@ using testing::StrictMock;
 #define EXPECT_BEGIN_MAIN_FRAME_AND_COMMIT(client, num)    \
   EXPECT_BEGIN_MAIN_FRAME(client, num)                     \
   EXPECT_CALL(client, DidCommitAndDrawFrame()).Times(num); \
-  EXPECT_CALL(client, DidCompleteSwapBuffers()).Times(num);
+  EXPECT_CALL(client, DidReceiveCompositorFrameAck()).Times(num);
 
 namespace cc {
 namespace {
@@ -93,7 +93,7 @@ class MockLayerTreeHostClient : public StubLayerTreeHostClient {
   MOCK_METHOD0(WillCommit, void());
   MOCK_METHOD0(DidCommit, void());
   MOCK_METHOD0(DidCommitAndDrawFrame, void());
-  MOCK_METHOD0(DidCompleteSwapBuffers, void());
+  MOCK_METHOD0(DidReceiveCompositorFrameAck, void());
 
  private:
   base::Closure update_host_callback_;

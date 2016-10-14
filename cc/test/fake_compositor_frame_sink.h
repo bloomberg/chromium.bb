@@ -49,7 +49,7 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   }
 
   // CompositorFrameSink implementation.
-  void SwapBuffers(CompositorFrame frame) override;
+  void SubmitCompositorFrame(CompositorFrame frame) override;
   void DetachFromClient() override;
 
   CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
@@ -80,7 +80,7 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
   gfx::Rect last_swap_rect_;
 
  private:
-  void SwapBuffersAck();
+  void DidReceiveCompositorFrameAck();
 
   base::WeakPtrFactory<FakeCompositorFrameSink> weak_ptr_factory_;
 };

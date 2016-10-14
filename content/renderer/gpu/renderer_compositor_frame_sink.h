@@ -61,7 +61,7 @@ class RendererCompositorFrameSink
   // cc::CompositorFrameSink implementation.
   bool BindToClient(cc::CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
  protected:
   uint32_t compositor_frame_sink_id_;

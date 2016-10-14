@@ -38,8 +38,8 @@ class SchedulerClient {
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame(
       const BeginFrameArgs& args) = 0;
-  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
-  virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
+  virtual DrawResult ScheduledActionDrawIfPossible() = 0;
+  virtual DrawResult ScheduledActionDrawForced() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginCompositorFrameSinkCreation() = 0;
@@ -89,8 +89,12 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void SetNeedsPrepareTiles();
 
-  void DidSwapBuffers();
-  void DidSwapBuffersComplete();
+  // Drawing should result in submitting a CompositorFrame to the
+  // CompositorFrameSink and then calling this.
+  void DidSubmitCompositorFrame();
+  // The CompositorFrameSink acks when it is ready for a new frame which
+  // should result in this getting called to unblock the next draw.
+  void DidReceiveCompositorFrameAck();
 
   void SetTreePrioritiesAndScrollState(TreePriority tree_priority,
                                        ScrollHandlerState scroll_handler_state);
@@ -174,8 +178,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void ScheduleBeginImplFrameDeadlineIfNeeded();
   void BeginImplFrameNotExpectedSoon();
   void SetupNextBeginFrameIfNeeded();
-  void DrawAndSwapIfPossible();
-  void DrawAndSwapForced();
+  void DrawIfPossible();
+  void DrawForced();
   void ProcessScheduledActions();
   void UpdateCompositorTimingHistoryRecordingEnabled();
   bool ShouldRecoverMainLatency(const BeginFrameArgs& args,

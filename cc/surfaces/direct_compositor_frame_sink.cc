@@ -84,7 +84,7 @@ void DirectCompositorFrameSink::DetachFromClient() {
   CompositorFrameSink::DetachFromClient();
 }
 
-void DirectCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
+void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   gfx::Size frame_size =
       frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
@@ -141,7 +141,7 @@ void DirectCompositorFrameSink::DisplayDidDrawAndSwap() {
 }
 
 void DirectCompositorFrameSink::DidDrawCallback() {
-  client_->DidSwapBuffersComplete();
+  client_->DidReceiveCompositorFrameAck();
 }
 
 }  // namespace cc

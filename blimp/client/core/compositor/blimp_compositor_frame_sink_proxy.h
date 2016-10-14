@@ -25,9 +25,9 @@ class BlimpCompositorFrameSinkProxyClient {
   virtual void ReclaimCompositorResources(
       const cc::ReturnedResourceArray& resources) = 0;
 
-  // Called when SwapCompositorFrame has been processed and another frame
+  // Called when SubmitCompositorFrame has been processed and another frame
   // should be started.
-  virtual void SwapCompositorFrameAck() = 0;
+  virtual void SubmitCompositorFrameAck() = 0;
 };
 
 // This class is meant to bounce CompositorFrames from the compositor thread's
@@ -46,7 +46,7 @@ class BlimpCompositorFrameSinkProxy {
   // The implementation should take the contents of the compositor frame and
   // return the referenced resources when the frame is no longer being drawn
   // using BlimpCompositorFrameSinkProxyClient::ReclaimCompositorResources.
-  virtual void SwapCompositorFrame(cc::CompositorFrame frame) = 0;
+  virtual void SubmitCompositorFrame(cc::CompositorFrame frame) = 0;
 
   // Will be called when the use of the CompositorFrameSink is being terminated.
   // No calls from this output surface will be made to the client after this

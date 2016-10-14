@@ -104,10 +104,10 @@ class CC_EXPORT CompositorFrameSink {
   // there's new content.
   virtual void Invalidate() {}
 
-  // For successful swaps, the implementation must call DidSwapBuffersComplete()
-  // (via OnSwapBuffersComplete()) eventually.
-  virtual void SwapBuffers(CompositorFrame frame) = 0;
-  virtual void OnSwapBuffersComplete();
+  // For successful swaps, the implementation must call
+  // DidReceiveCompositorFrameAck() asynchronously when the frame has been
+  // processed in order to unthrottle the next frame.
+  virtual void SubmitCompositorFrame(CompositorFrame frame) = 0;
 
  protected:
   // Bound to the ContextProvider to hear about when it is lost and inform the

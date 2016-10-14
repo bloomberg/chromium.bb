@@ -71,7 +71,7 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   void SendMessageProto(const proto::CompositorMessage& proto);
   void HandleProto(const proto::CompositorMessageToMain& proto);
   void DidCommitAndDrawFrame();
-  void DidCompleteSwapBuffers();
+  void DidReceiveCompositorFrameAck();
 
   base::SingleThreadTaskRunner* MainThreadTaskRunner() const;
 

@@ -320,8 +320,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidCommitAndDrawFrame();
   }
 
-  void DidCompleteSwapBuffers() override {
-    test_hooks_->DidCompleteSwapBuffers();
+  void DidReceiveCompositorFrameAck() override {
+    test_hooks_->DidReceiveCompositorFrameAck();
   }
 
   void DidPostSwapBuffers() override {}
