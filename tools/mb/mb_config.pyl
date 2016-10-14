@@ -185,7 +185,7 @@
       'Site Isolation Win': 'release_trybot_x86',
       'ThinLTO Linux ToT': 'thin_lto_clang_tot_release_static',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
-      'WebKit Linux - TraceWrappables': 'release_bot',
+      'WebKit Linux - TraceWrappables': 'debug_bot',
       'WebKit Linux - WPTServe': 'release_bot',
       'WebKit Mac - WPTServe': 'release_bot',
       'WebKit Win - WPTServe': 'release_bot_x86',
