@@ -12,6 +12,7 @@ import("//tools/grit/grit_rule.gni")
 grit("resources") {
   source = "common_resources.grd"
   use_qualified_include = true
+  defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   output_name = "common_resources"
   outputs = [
@@ -24,6 +25,7 @@ buildflag_header("features") {
   header = "features.h"
   flags = [
     "ANDROID_JAVA_UI=$android_java_ui",
+    "ENABLE_APP_LIST=$enable_app_list",
     "ENABLE_BACKGROUND=$enable_background",
     "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
     "ENABLE_CAPTIVE_PORTAL_DETECTION=$enable_captive_portal_detection",

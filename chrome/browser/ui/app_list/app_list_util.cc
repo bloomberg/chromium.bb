@@ -10,7 +10,7 @@
 #include "components/prefs/pref_service.h"
 
 bool IsAppLauncherEnabled() {
-#if !defined(ENABLE_APP_LIST)
+#if !BUILDFLAG(ENABLE_APP_LIST)
   return false;
 #elif defined(OS_CHROMEOS) || defined(USE_ASH)
   return true;

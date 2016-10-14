@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -34,7 +35,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     // Desktop types.
 #if !defined(OS_ANDROID)
     datatypes.push_back(syncer::APPS);
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
     if (app_list::switches::IsAppListSyncEnabled())
       datatypes.push_back(syncer::APP_LIST);
 #endif

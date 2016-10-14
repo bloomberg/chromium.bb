@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_
 
 #include "base/callback_forward.h"
+#include "chrome/common/features.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -38,7 +39,7 @@ bool CanShowAppInfoDialog();
 // Returns the size of the native window container for the app info dialog.
 gfx::Size GetAppInfoNativeDialogSize();
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 // Shows the chrome app information as a frameless window for the given |app|
 // and |profile| at the given |app_list_bounds|. Appears 'inside' the app list.
 void ShowAppInfoInAppList(gfx::NativeWindow parent,

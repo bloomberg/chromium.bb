@@ -15,6 +15,8 @@ declare_args() {
   # through the environment.
   android_java_ui = is_android
 
+  enable_app_list = is_chromeos
+
   # Enables support for background apps.
   enable_background = !is_ios && !is_android && !is_chromecast
 
@@ -66,6 +68,7 @@ declare_args() {
 }
 
 chrome_grit_defines = [
+  "enable_app_list=$enable_app_list",
   "enable_background=$enable_background",
   "enable_google_now=$enable_google_now",
   "enable_hotwording=$enable_hotwording",

@@ -633,10 +633,6 @@ group("both_gn_and_gyp") {
       }
     }
 
-    if (enable_app_list) {
-      deps += [ "//ui/app_list:app_list_demo" ]
-    }
-
     if (use_x11) {
       if (target_cpu != "arm") {
         deps += [ "//gpu/tools/compositor_model_bench" ]

@@ -181,7 +181,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AppShortcutManagerFactory::GetInstance();
 #endif
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
 

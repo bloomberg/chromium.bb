@@ -12,6 +12,7 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/features.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest.h"
@@ -21,7 +22,7 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/google_now_extension.h"
 #endif
 
@@ -58,7 +59,7 @@ void ExternalComponentLoader::StartLoading() {
     AddExternalExtension(extension_misc::kMediaRouterStableExtensionId);
 #endif  // defined(ENABLE_MEDIA_ROUTER) && defined(GOOGLE_CHROME_BUILD)
 
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
   std::string google_now_extension_id;
   if (GetGoogleNowExtensionId(&google_now_extension_id))
     AddExternalExtension(google_now_extension_id);

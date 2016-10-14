@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
 grit("locale_settings") {
   source = "locale_settings.grd"
   use_qualified_include = true
+  defines = chrome_grit_defines
   output_dir = "$root_gen_dir/chrome"
   outputs = [
     "grit/locale_settings.h",
@@ -84,6 +86,7 @@ grit("platform_locale_settings") {
     source = "locale_settings_linux.grd"
   }
 
+  defines = chrome_grit_defines
   use_qualified_include = true
   outputs = [
     "grit/platform_locale_settings.h",

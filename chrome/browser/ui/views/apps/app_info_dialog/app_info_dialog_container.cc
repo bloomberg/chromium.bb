@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/common/features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
@@ -27,7 +28,7 @@
 #include "ui/views/window/native_frame_view.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/app_list/app_list_constants.h"  // nogncheck
 #include "ui/views/background.h"
@@ -44,7 +45,7 @@ const views::BubbleBorder::Shadow kShadowType =
     views::BubbleBorder::SMALL_SHADOW;
 #endif
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 // The background for App List dialogs, which appears as a rounded rectangle
 // with the same border radius and color as the app list contents.
 class AppListOverlayBackground : public views::Background {
@@ -123,7 +124,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(BaseDialogContainer);
 };
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
@@ -241,7 +242,7 @@ class NativeDialogContainer : public BaseDialogContainer {
 
 }  // namespace
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 views::DialogDelegateView* CreateAppListContainerForView(
     views::View* view,
     const base::Closure& close_callback) {

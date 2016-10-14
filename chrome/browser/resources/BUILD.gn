@@ -40,6 +40,7 @@ grit("password_manager_internals_resources") {
 
 grit("policy_resources") {
   source = "md_policy/policy_resources.grd"
+  defines = chrome_grit_defines
 
   # TODO(thestig): use_qualified_include = true
   outputs = [

@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/features.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -120,7 +121,7 @@ bool CreateDesktopShortcut(
     const web_app::ShortcutInfo& shortcut_info,
     const web_app::ShortcutLocations& creation_locations);
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 // Create shortcuts in the application menu for the app launcher. Duplicate
 // shortcuts are avoided, so if a requested shortcut already exists it is
 // deleted first. Also creates the icon required by the shortcut.

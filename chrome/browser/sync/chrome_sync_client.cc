@@ -66,7 +66,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/device_form_factor.h"
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "ui/app_list/app_list_switches.h"
@@ -338,7 +338,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return extensions::settings_sync_util::GetSyncableService(profile_, type)
           ->AsWeakPtr();
 #endif
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
     case syncer::APP_LIST:
       return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();
@@ -569,7 +569,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   }
 #endif
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   if (app_list::switches::IsAppListSyncEnabled()) {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<UIDataTypeController>(syncer::APP_LIST, error_callback,

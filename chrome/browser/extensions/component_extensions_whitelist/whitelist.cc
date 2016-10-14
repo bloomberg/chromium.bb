@@ -14,7 +14,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "extensions/common/constants.h"
 
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/google_now_extension.h"
 #endif
 
@@ -48,7 +48,7 @@ bool IsComponentExtensionWhitelisted(const std::string& extension_id) {
       return true;
   }
 
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
   std::string google_now_extension_id;
   if (GetGoogleNowExtensionId(&google_now_extension_id) &&
       google_now_extension_id == extension_id) {
@@ -72,7 +72,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
   switch (manifest_resource_id) {
     // Please keep the list in alphabetical order.
     case IDR_BOOKMARKS_MANIFEST:
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
     case IDR_CHROME_APP_MANIFEST:
 #endif
 #if defined(ENABLE_PRINTING)

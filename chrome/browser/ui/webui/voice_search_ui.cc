@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -380,7 +381,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 
   // Adds information specific to voice search in the app launcher to the list.
   void AddAppListInfo(base::ListValue* list) {
-#if defined (ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
     std::string state = "No Start Page Service";
     app_list::StartPageService* start_page_service =
         app_list::StartPageService::Get(profile_);

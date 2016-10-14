@@ -44,6 +44,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
@@ -232,7 +233,7 @@ void AppLauncherHandler::RegisterMessages() {
       content::Source<WebContents>(web_ui()->GetWebContents()));
 
   // Some tests don't have a local state.
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   if (g_browser_process->local_state()) {
     local_state_pref_change_registrar_.Init(g_browser_process->local_state());
     local_state_pref_change_registrar_.Add(
@@ -737,7 +738,7 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
 
 void AppLauncherHandler::HandleStopShowingAppLauncherPromo(
     const base::ListValue* args) {
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   g_browser_process->local_state()->SetBoolean(
       prefs::kShowAppLauncherPromo, false);
   RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_DISMISSED);
@@ -797,7 +798,7 @@ void AppLauncherHandler::OnExtensionPreferenceChanged() {
 }
 
 void AppLauncherHandler::OnLocalStatePreferenceChanged() {
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   web_ui()->CallJavascriptFunctionUnsafe(
       "ntp.appLauncherPromoPrefChangeCallback",
       base::FundamentalValue(g_browser_process->local_state()->GetBoolean(

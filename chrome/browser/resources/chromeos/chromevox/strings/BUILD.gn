@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
 chromevox_out_dir = "$root_out_dir/resources/chromeos/chromevox"
 
 grit("chromevox_strings") {
   source = "chromevox_strings.grd"
+  defines = chrome_grit_defines
   use_qualified_include = true
   outputs = [
     "_locales/am/messages.json",

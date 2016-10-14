@@ -47,6 +47,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -267,7 +268,7 @@ namespace shell_integration_linux {
 
 namespace {
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 // The Categories for the App Launcher desktop shortcut. Should be the same as
 // the Chrome desktop shortcut, so they are in the same sub-menu.
 const char kAppListCategories[] = "Network;WebBrowser;";
@@ -499,7 +500,7 @@ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 
 const char kDirectoryFilename[] = "chrome-apps.directory";
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kAppListDesktopName[] = "chrome-app-list";
 #else  // CHROMIUM_BUILD
@@ -1028,7 +1029,7 @@ bool CreateDesktopShortcut(
   return success;
 }
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 bool CreateAppListDesktopShortcut(
     const std::string& wm_class,
     const std::string& title) {

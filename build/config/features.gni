@@ -57,8 +57,6 @@ declare_args() {
   # Android stores them separately on the Java side.
   enable_session_service = !is_android && !is_ios && !is_chromecast
 
-  enable_app_list = is_chromeos
-
   enable_supervised_users = !is_ios && !is_chromecast
 
   # Variable safe_browsing is used to control the build time configuration for

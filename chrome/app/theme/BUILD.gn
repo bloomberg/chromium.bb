@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
 
 grit("theme_resources") {
   source = "theme_resources.grd"
+  defines = chrome_grit_defines
   outputs = [
     "grit/theme_resources.h",
     "grit/theme_resources_map.cc",
@@ -25,6 +27,7 @@ grit("theme_resources") {
 
 grit("chrome_unscaled_resources") {
   source = "chrome_unscaled_resources.grd"
+  defines = chrome_grit_defines
   use_qualified_include = true
   outputs = [
     "grit/chrome_unscaled_resources.h",

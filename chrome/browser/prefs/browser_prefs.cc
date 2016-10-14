@@ -107,7 +107,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "net/http/http_server_properties_manager.h"
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/apps/drive/drive_app_mapping.h"
 #endif
 
@@ -216,7 +216,7 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
@@ -503,7 +503,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
 
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   app_list::AppListPrefs::RegisterProfilePrefs(registry);
 #endif
 
@@ -565,7 +565,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
-#if defined(ENABLE_APP_LIST)
+#if BUILDFLAG(ENABLE_APP_LIST)
   DriveAppMapping::RegisterProfilePrefs(registry);
 #endif
   extensions::CommandService::RegisterProfilePrefs(registry);
@@ -608,7 +608,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
   ArcAppListPrefs::RegisterProfilePrefs(registry);
 #endif
 

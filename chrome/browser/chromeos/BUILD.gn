@@ -62,6 +62,7 @@ source_set("chromeos") {
     "//components/feedback",
     "//components/flags_ui",
     "//components/login",
+    "//components/metrics/leak_detector",
     "//components/onc",
     "//components/ownership",
     "//components/pairing",
