@@ -60,12 +60,4 @@
   [[connection_ remoteObjectProxy] notificationClick:response];
 }
 
-// _NSUserNotificationCenterDelegatePrivate
-- (void)userNotificationCenter:(NSUserNotificationCenter*)center
-               didDismissAlert:(NSUserNotification*)notification {
-  NSDictionary* response =
-      [NotificationResponseBuilder buildDictionary:notification];
-  [[connection_ remoteObjectProxy] notificationClick:response];
-}
-
 @end

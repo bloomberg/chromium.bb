@@ -11,34 +11,24 @@
 #include "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class NotificationResponseBuilderMacTest : public testing::Test {
- protected:
-  base::scoped_nsobject<NotificationBuilder> NewTestBuilder() {
-    base::scoped_nsobject<NotificationBuilder> builder(
-        [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
-                                           optionsLabel:@"Options"
-                                          settingsLabel:@"Settings"]);
-    [builder setTitle:@"Title"];
-    [builder setSubTitle:@"https://www.miguel.com"];
-    [builder setContextMessage:@""];
-    [builder setTag:@"tag1"];
-    [builder setIcon:[NSImage imageNamed:NSImageNameApplicationIcon]];
-    [builder setNotificationId:@"notificationId"];
-    [builder setProfileId:@"profileId"];
-    [builder setIncognito:false];
-    [builder setNotificationType:@(NotificationCommon::PERSISTENT)];
-    return builder;
-  }
-};
+TEST(NotificationResponseBuilderMacTest, TestNotificationClick) {
+  base::scoped_nsobject<NotificationBuilder> builder(
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
+  [builder setTitle:@"Title"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@""];
+  [builder setTag:@"tag1"];
+  [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
+  [builder setNotificationId:@"notificationId"];
+  [builder setProfileId:@"profileId"];
+  [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
-TEST_F(NotificationResponseBuilderMacTest, TestNotificationClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
   NSUserNotification* notification = [builder buildUserNotification];
-  // This will be set by the notification center to indicate the notification
-  // was clicked.
-  [notification setValue:@(NSUserNotificationActivationTypeContentsClicked)
-                  forKey:@"_activationType"];
-
   NSDictionary* response =
       [NotificationResponseBuilder buildDictionary:notification];
 
@@ -50,14 +40,32 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationClick) {
   EXPECT_EQ(-1, buttonIndex.intValue);
 }
 
-TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+TEST(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
+  base::scoped_nsobject<NotificationBuilder> builder(
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
+  [builder setTitle:@"Title"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@""];
+  [builder setTag:@"tag1"];
+  [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
+  [builder setNotificationId:@"notificationId"];
+  [builder setProfileId:@"profileId"];
+  [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
+
   NSUserNotification* notification = [builder buildUserNotification];
 
   // This will be set by the notification center to indicate the only available
   // button was clicked.
-  [notification setValue:@(NSUserNotificationActivationTypeActionButtonClicked)
-                  forKey:@"_activationType"];
+  [notification
+      setValue:
+          [NSNumber
+              numberWithInt:NSUserNotificationActivationTypeActionButtonClicked]
+        forKey:@"_activationType"];
   NSDictionary* response =
       [NotificationResponseBuilder buildDictionary:notification];
 
@@ -69,16 +77,33 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
   EXPECT_EQ(-1, buttonIndex.intValue);
 }
 
-TEST_F(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+TEST(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
+  base::scoped_nsobject<NotificationBuilder> builder(
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
+  [builder setTitle:@"Title"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@""];
   [builder setButtons:@"Button1" secondaryButton:@""];
+  [builder setTag:@"tag1"];
+  [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
+  [builder setNotificationId:@"notificationId"];
+  [builder setProfileId:@"profileId"];
+  [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
   // These values will be set by the notification center to indicate that button
   // 1 was clicked.
-  [notification setValue:@(NSUserNotificationActivationTypeActionButtonClicked)
-                  forKey:@"_activationType"];
+  [notification
+      setValue:
+          [NSNumber
+              numberWithInt:NSUserNotificationActivationTypeActionButtonClicked]
+        forKey:@"_activationType"];
   [notification setValue:[NSNumber numberWithInt:0]
                   forKey:@"_alternateActionIndex"];
   NSDictionary* response =
@@ -92,16 +117,33 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
   EXPECT_EQ(0, buttonIndex.intValue);
 }
 
-TEST_F(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+TEST(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
+  base::scoped_nsobject<NotificationBuilder> builder(
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
+  [builder setTitle:@"Title"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@""];
   [builder setButtons:@"Button1" secondaryButton:@"Button2"];
+  [builder setTag:@"tag1"];
+  [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
+  [builder setNotificationId:@"notificationId"];
+  [builder setProfileId:@"profileId"];
+  [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
   // These values will be set by the notification center to indicate that button
   // 2 was clicked.
-  [notification setValue:@(NSUserNotificationActivationTypeActionButtonClicked)
-                  forKey:@"_activationType"];
+  [notification
+      setValue:
+          [NSNumber
+              numberWithInt:NSUserNotificationActivationTypeActionButtonClicked]
+        forKey:@"_activationType"];
   [notification setValue:[NSNumber numberWithInt:1]
                   forKey:@"_alternateActionIndex"];
 
@@ -116,10 +158,25 @@ TEST_F(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
   EXPECT_EQ(1, buttonIndex.intValue);
 }
 
-TEST_F(NotificationResponseBuilderMacTest,
-       TestNotificationTwoActionSettingsClick) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
+TEST(NotificationResponseBuilderMacTest,
+     TestNotificationTwoActionSettingsClick) {
+  base::scoped_nsobject<NotificationBuilder> builder(
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
+  [builder setTitle:@"Title"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@""];
   [builder setButtons:@"Button1" secondaryButton:@"Button2"];
+  [builder setTag:@"tag1"];
+  [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
+  [builder setNotificationId:@"notificationId"];
+  [builder setProfileId:@"profileId"];
+  [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
+
   NSUserNotification* notification = [builder buildUserNotification];
 
   // These values will be set by the notification center to indicate that button
@@ -140,25 +197,5 @@ TEST_F(NotificationResponseBuilderMacTest,
   NSNumber* buttonIndex =
       [response objectForKey:notification_constants::kNotificationButtonIndex];
   EXPECT_EQ(2 /* NOTIFICATION_SETTINGS */, operation.intValue);
-  EXPECT_EQ(-1, buttonIndex.intValue);
-}
-
-TEST_F(NotificationResponseBuilderMacTest, TestNotificationClose) {
-  base::scoped_nsobject<NotificationBuilder> builder = NewTestBuilder();
-  NSUserNotification* notification = [builder buildUserNotification];
-
-  // None is what the NSUserNotification center emits when closing since it
-  // interprets it as not activated.
-  [notification setValue:@(NSUserNotificationActivationTypeNone)
-                  forKey:@"_activationType"];
-
-  NSDictionary* response =
-      [NotificationResponseBuilder buildDictionary:notification];
-
-  NSNumber* operation =
-      [response objectForKey:notification_constants::kNotificationOperation];
-  NSNumber* buttonIndex =
-      [response objectForKey:notification_constants::kNotificationButtonIndex];
-  EXPECT_EQ(1 /* NOTIFICATION_CLOSE */, operation.intValue);
   EXPECT_EQ(-1, buttonIndex.intValue);
 }
