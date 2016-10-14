@@ -146,9 +146,8 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
 views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
                                                     bool highlight,
                                                     bool checked) {
-  checkable_ = true;
-  checked_ = checked;
   if (checked) {
+    accessibility_state_ = AccessibilityState::CHECKED_CHECKBOX;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* check =
         rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
@@ -175,6 +174,8 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
     SetAccessibleName(text);
     return text_label_;
   }
+
+  accessibility_state_ = AccessibilityState::UNCHECKED_CHECKBOX;
   return AddLabel(text, gfx::ALIGN_LEFT, highlight);
 }
 
@@ -189,6 +190,13 @@ void HoverHighlightView::SetHighlight(bool highlight) {
   DCHECK(text_label_);
   text_label_->SetFontList(GetFontList(highlight));
   text_label_->InvalidateLayout();
+}
+
+void HoverHighlightView::SetAccessiblityState(
+    AccessibilityState accessibility_state) {
+  accessibility_state_ = accessibility_state;
+  if (accessibility_state_ != AccessibilityState::DEFAULT)
+    NotifyAccessibilityEvent(ui::AX_EVENT_CHECKED_STATE_CHANGED, true);
 }
 
 void HoverHighlightView::SetHoverHighlight(bool hover) {
@@ -216,11 +224,13 @@ bool HoverHighlightView::PerformAction(const ui::Event& event) {
 void HoverHighlightView::GetAccessibleState(ui::AXViewState* state) {
   ActionableView::GetAccessibleState(state);
 
-  if (checkable_) {
+  if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX ||
+      accessibility_state_ == AccessibilityState::UNCHECKED_CHECKBOX) {
     state->role = ui::AX_ROLE_CHECK_BOX;
-    if (checked_)
-      state->AddStateFlag(ui::AX_STATE_CHECKED);
   }
+
+  if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX)
+    state->AddStateFlag(ui::AX_STATE_CHECKED);
 }
 
 gfx::Size HoverHighlightView::GetPreferredSize() const {

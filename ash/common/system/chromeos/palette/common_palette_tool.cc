@@ -58,16 +58,22 @@ void CommonPaletteTool::OnEnable() {
   PaletteTool::OnEnable();
   start_time_ = base::TimeTicks::Now();
 
-  if (highlight_view_)
+  if (highlight_view_) {
     highlight_view_->SetRightIconVisible(true);
+    highlight_view_->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
+  }
 }
 
 void CommonPaletteTool::OnDisable() {
   PaletteTool::OnDisable();
   AddHistogramTimes(GetToolId(), base::TimeTicks::Now() - start_time_);
 
-  if (highlight_view_)
+  if (highlight_view_) {
     highlight_view_->SetRightIconVisible(false);
+    highlight_view_->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+  }
 }
 
 void CommonPaletteTool::OnViewClicked(views::View* sender) {
@@ -100,8 +106,14 @@ views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
   highlight_view_->set_custom_height(kMenuButtonSize);
   highlight_view_->text_label()->SetFontList(GetLabelFont());
 
-  if (!enabled())
+  if (enabled()) {
+    highlight_view_->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
+  } else {
     highlight_view_->SetRightIconVisible(false);
+    highlight_view_->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+  }
 
   return highlight_view_;
 }
