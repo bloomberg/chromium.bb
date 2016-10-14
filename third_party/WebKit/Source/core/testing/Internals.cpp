@@ -214,12 +214,6 @@ static ScrollableArea* scrollableAreaForNode(Node* node) {
   return toLayoutBox(layoutObject)->getScrollableArea();
 }
 
-const char* Internals::internalsId = "internals";
-
-Internals* Internals::create(ScriptState* scriptState) {
-  return new Internals(scriptState);
-}
-
 Internals::~Internals() {}
 
 static RuntimeEnabledFeatures::Backup* sFeaturesBackup = nullptr;
@@ -253,8 +247,8 @@ void Internals::resetToConsistentState(Page* page) {
   KeyboardEventManager::setCurrentCapsLockState(OverrideCapsLockState::Default);
 }
 
-Internals::Internals(ScriptState* scriptState)
-    : ContextLifecycleObserver(scriptState->getExecutionContext()),
+Internals::Internals(ExecutionContext* context)
+    : ContextLifecycleObserver(context),
       m_runtimeFlags(InternalRuntimeFlags::create()) {
   contextDocument()->fetcher()->enableIsPreloadedForTest();
 }

@@ -8,14 +8,9 @@
 
 namespace blink {
 
-// static
-WorkerInternals* WorkerInternals::create(ScriptState* scriptState) {
-  return new WorkerInternals(scriptState);
-}
-
 WorkerInternals::~WorkerInternals() {}
 
-WorkerInternals::WorkerInternals(ScriptState*) {}
+WorkerInternals::WorkerInternals() {}
 
 OriginTrialsTest* WorkerInternals::originTrialsTest() const {
   return OriginTrialsTest::create();

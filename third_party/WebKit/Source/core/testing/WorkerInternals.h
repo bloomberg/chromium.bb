@@ -5,7 +5,6 @@
 #ifndef WorkerInternals_h
 #define WorkerInternals_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 
@@ -18,14 +17,14 @@ class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WorkerInternals* create(ScriptState*);
+  static WorkerInternals* create() { return new WorkerInternals(); }
   virtual ~WorkerInternals();
   OriginTrialsTest* originTrialsTest() const;
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit WorkerInternals(ScriptState*);
+  explicit WorkerInternals();
 };
 
 }  // namespace blink

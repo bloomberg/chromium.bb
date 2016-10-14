@@ -26,28 +26,15 @@
 #ifndef WebCoreTestSupport_h
 #define WebCoreTestSupport_h
 
-// Normally we'd have:
-// #include <v8.h>
-// ...but this file is used in cases where we don't have V8 (e.g., Skia)
-namespace v8 {
-class Context;
-class Function;
-class Isolate;
-class Object;
-class Value;
-template <class T>
-class Local;
-}
+#include <v8.h>
 
 namespace blink {
 class ScriptState;
-class DOMWrapperWorld;
 struct WrapperTypeInfo;
 }
 
 namespace WebCoreTestSupport {
 
-v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context>);
 void injectInternalsObject(v8::Local<v8::Context>);
 void resetInternalsObject(v8::Local<v8::Context>);
 void installConditionalFeaturesForTests(

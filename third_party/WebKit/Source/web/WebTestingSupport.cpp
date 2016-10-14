@@ -32,12 +32,6 @@
 
 namespace blink {
 
-v8::Local<v8::Value> WebTestingSupport::createInternalsObject(
-    v8::Local<v8::Context> context) {
-  V8InternalsPartial::initialize();
-  return WebCoreTestSupport::createInternalsObject(context);
-}
-
 void WebTestingSupport::injectInternalsObject(WebLocalFrame* frame) {
   V8InternalsPartial::initialize();
   v8::HandleScope handleScope(v8::Isolate::GetCurrent());

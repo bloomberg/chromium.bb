@@ -42,20 +42,22 @@ using namespace blink;
 namespace WebCoreTestSupport {
 
 namespace {
+
 blink::InstallConditionalFeaturesFunction
     s_originalInstallConditionalFeaturesFunction = nullptr;
-}
 
 v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context) {
   ScriptState* scriptState = ScriptState::from(context);
   v8::Local<v8::Object> global = scriptState->context()->Global();
   ExecutionContext* executionContext = scriptState->getExecutionContext();
-  if (executionContext->isDocument())
-    return toV8(Internals::create(scriptState), global, scriptState->isolate());
-  if (executionContext->isWorkerGlobalScope())
-    return toV8(WorkerInternals::create(scriptState), global,
+  if (executionContext->isDocument()) {
+    return toV8(Internals::create(executionContext), global,
                 scriptState->isolate());
+  }
+  if (executionContext->isWorkerGlobalScope())
+    return toV8(WorkerInternals::create(), global, scriptState->isolate());
   return v8::Local<v8::Value>();
+}
 }
 
 void injectInternalsObject(v8::Local<v8::Context> context) {
@@ -76,8 +78,7 @@ void injectInternalsObject(v8::Local<v8::Context> context) {
 
   global
       ->Set(scriptState->context(),
-            v8AtomicString(scriptState->isolate(), Internals::internalsId),
-            internals)
+            v8AtomicString(scriptState->isolate(), "internals"), internals)
       .ToChecked();
 }
 

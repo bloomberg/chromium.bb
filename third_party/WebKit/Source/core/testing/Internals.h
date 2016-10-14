@@ -83,7 +83,9 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   USING_GARBAGE_COLLECTED_MIXIN(Internals);
 
  public:
-  static Internals* create(ScriptState*);
+  static Internals* create(ExecutionContext* context) {
+    return new Internals(context);
+  }
   virtual ~Internals();
 
   static void resetToConsistentState(Page*);
@@ -299,8 +301,6 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   unsigned numberOfScrollableAreas(Document*);
 
   bool isPageBoxVisible(Document*, int pageNumber);
-
-  static const char* internalsId;
 
   InternalSettings* settings() const;
   InternalRuntimeFlags* runtimeFlags() const;
@@ -531,7 +531,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   void crash();
 
  private:
-  explicit Internals(ScriptState*);
+  explicit Internals(ExecutionContext*);
   Document* contextDocument() const;
   LocalFrame* frame() const;
   Vector<String> iconURLs(Document*, int iconTypesMask) const;
