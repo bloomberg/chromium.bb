@@ -1131,6 +1131,13 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 
 crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 
+# TODO(alph): Rebaseline once v8 part lands.
+crbug.com/655430 inspector/tracing/timeline-js/timeline-script-tag-1.html [ NeedsManualRebaseline ]
+crbug.com/655430 inspector/tracing/timeline-js/timeline-script-tag-2.html [ NeedsManualRebaseline ]
+crbug.com/655430 inspector/tracing/timeline-misc/timeline-receive-response-event.html [ NeedsManualRebaseline ]
+crbug.com/655430 inspector/tracing/timeline-time/timeline-time.html [ NeedsManualRebaseline ]
+crbug.com/655430 inspector/tracing/timeline-time/timeline-timer.html [ NeedsManualRebaseline ]
+
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/624019 [ Mac ] bluetooth/notifications/add-multiple-event-listeners.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/concurrent-stops.html [ Skip ]
