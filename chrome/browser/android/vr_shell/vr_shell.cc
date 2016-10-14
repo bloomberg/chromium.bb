@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/screen_info.h"
-#include "jni/VrShell_jni.h"
+#include "jni/VrShellImpl_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
