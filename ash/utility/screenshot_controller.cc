@@ -295,6 +295,14 @@ void ScreenshotController::StartPartialScreenshotSession(
 }
 
 void ScreenshotController::CancelScreenshotSession() {
+  for (aura::Window* root : Shell::GetAllRootWindows()) {
+    // Having pre-handled all mouse events, widgets that had mouse capture may
+    // now misbehave, so break any existing captures. Do this after the
+    // screenshot session is over so that it's still possible to screenshot
+    // things like menus.
+    aura::client::GetCaptureClient(root)->SetCapture(nullptr);
+  }
+
   mode_ = NONE;
   pen_events_only_ = false;
   root_window_ = nullptr;

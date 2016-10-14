@@ -481,4 +481,17 @@ TEST_F(ScreenshotControllerTest, MultipleDisplays) {
   EXPECT_FALSE(IsActive());
 }
 
+// Windows that take capture can misbehave due to a screenshot session. Break
+// mouse capture when the screenshot session is over. See crbug.com/651939
+TEST_F(ScreenshotControllerTest, BreaksCapture) {
+  std::unique_ptr<aura::Window> window(
+      CreateSelectableWindow(gfx::Rect(100, 100, 100, 100)));
+  window->SetCapture();
+  EXPECT_TRUE(window->HasCapture());
+  StartWindowScreenshotSession();
+  EXPECT_TRUE(window->HasCapture());
+  Cancel();
+  EXPECT_FALSE(window->HasCapture());
+}
+
 }  // namespace ash
