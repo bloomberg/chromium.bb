@@ -117,8 +117,8 @@ void BaseSessionService::ClearPendingCommands() {
 
 void BaseSessionService::StartSaveTimer() {
   // Don't start a timer when testing.
-  if (delegate_->ShouldUseDelayedSave() && base::MessageLoop::current() &&
-      !weak_factory_.HasWeakPtrs()) {
+  if (delegate_->ShouldUseDelayedSave() &&
+      base::ThreadTaskRunnerHandle::IsSet() && !weak_factory_.HasWeakPtrs()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&BaseSessionService::Save, weak_factory_.GetWeakPtr()),
