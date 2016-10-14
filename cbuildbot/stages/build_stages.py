@@ -126,11 +126,12 @@ class CleanUpStage(generic_stages.BuilderStage):
       if buildbucket_ids:
         logging.info('Going to cancel buildbucket_ids: %s',
                      str(buildbucket_ids))
+        # TODO: set dryrun to True to prevent it from cancelling builds.
         cancel_content = buildbucket_lib.CancelBatchBuildBucket(
             buildbucket_ids,
             buildbucket_http,
             self._run.options.test_tryjob,
-            dryrun=self._run.options.debug)
+            dryrun=True)
 
         result_map = buildbucket_lib.GetResultMap(cancel_content)
         for build_id, result in result_map.iteritems():
