@@ -776,14 +776,16 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(
 }
 
 void WebLocalFrameImpl::requestExecuteV8Function(
+    v8::Local<v8::Context> context,
     v8::Local<v8::Function> function,
     v8::Local<v8::Value> receiver,
     int argc,
     v8::Local<v8::Value> argv[],
     WebScriptExecutionCallback* callback) {
   DCHECK(frame());
-  SuspendableScriptExecutor::createAndRun(frame(), toIsolate(frame()), function,
-                                          receiver, argc, argv, callback);
+  SuspendableScriptExecutor::createAndRun(frame(), toIsolate(frame()), context,
+                                          function, receiver, argc, argv,
+                                          callback);
 }
 
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(

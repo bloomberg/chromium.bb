@@ -31,6 +31,7 @@ class SuspendableScriptExecutor final
                            WebScriptExecutionCallback*);
   static void createAndRun(LocalFrame*,
                            v8::Isolate*,
+                           v8::Local<v8::Context>,
                            v8::Local<v8::Function>,
                            v8::Local<v8::Value> receiver,
                            int argc,

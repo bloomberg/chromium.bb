@@ -75,6 +75,7 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::execute(LocalFrame* frame) {
 class V8FunctionExecutor : public SuspendableScriptExecutor::Executor {
  public:
   V8FunctionExecutor(v8::Isolate*,
+                     ScriptState*,
                      v8::Local<v8::Function>,
                      v8::Local<v8::Value> receiver,
                      int argc,
@@ -86,16 +87,19 @@ class V8FunctionExecutor : public SuspendableScriptExecutor::Executor {
   ScopedPersistent<v8::Function> m_function;
   ScopedPersistent<v8::Value> m_receiver;
   V8PersistentValueVector<v8::Value> m_args;
+  RefPtr<ScriptState> m_scriptState;
 };
 
 V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
+                                       ScriptState* scriptState,
                                        v8::Local<v8::Function> function,
                                        v8::Local<v8::Value> receiver,
                                        int argc,
                                        v8::Local<v8::Value> argv[])
     : m_function(isolate, function),
       m_receiver(isolate, receiver),
-      m_args(isolate) {
+      m_args(isolate),
+      m_scriptState(scriptState) {
   m_args.ReserveCapacity(argc);
   for (int i = 0; i < argc; ++i)
     m_args.Append(argv[i]);
@@ -104,6 +108,9 @@ V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
 Vector<v8::Local<v8::Value>> V8FunctionExecutor::execute(LocalFrame* frame) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Vector<v8::Local<v8::Value>> results;
+  if (!m_scriptState->contextIsValid())
+    return results;
+  ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Value> singleResult;
   Vector<v8::Local<v8::Value>> args;
   args.reserveCapacity(m_args.Size());
@@ -136,14 +143,21 @@ void SuspendableScriptExecutor::createAndRun(
 void SuspendableScriptExecutor::createAndRun(
     LocalFrame* frame,
     v8::Isolate* isolate,
+    v8::Local<v8::Context> context,
     v8::Local<v8::Function> function,
     v8::Local<v8::Value> receiver,
     int argc,
     v8::Local<v8::Value> argv[],
     WebScriptExecutionCallback* callback) {
+  ScriptState* scriptState = ScriptState::from(context);
+  if (!scriptState->contextIsValid()) {
+    if (callback)
+      callback->completed(Vector<v8::Local<v8::Value>>());
+    return;
+  }
   SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(
-      frame, callback,
-      new V8FunctionExecutor(isolate, function, receiver, argc, argv));
+      frame, callback, new V8FunctionExecutor(isolate, scriptState, function,
+                                              receiver, argc, argv));
   executor->run();
 }
 

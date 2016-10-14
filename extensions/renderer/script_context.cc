@@ -211,7 +211,8 @@ void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
                                  v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Local<v8::Object> global = v8_context()->Global();
   if (web_frame_) {
-    web_frame_->requestExecuteV8Function(function, global, argc, argv, nullptr);
+    web_frame_->requestExecuteV8Function(v8_context(), function, global, argc,
+                                         argv, nullptr);
   } else {
     // TODO(devlin): This probably isn't safe.
     function->Call(global, argc, argv);

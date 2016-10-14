@@ -196,7 +196,8 @@ class WebLocalFrame : public WebFrame {
 
   // Requests execution of the given function, but allowing for script
   // suspension and asynchronous execution.
-  virtual void requestExecuteV8Function(v8::Local<v8::Function>,
+  virtual void requestExecuteV8Function(v8::Local<v8::Context>,
+                                        v8::Local<v8::Function>,
                                         v8::Local<v8::Value> receiver,
                                         int argc,
                                         v8::Local<v8::Value> argv[],
