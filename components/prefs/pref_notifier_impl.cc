@@ -19,10 +19,8 @@ PrefNotifierImpl::~PrefNotifierImpl() {
 
   // Verify that there are no pref observers when we shut down.
   for (const auto& observer_list : pref_observers_) {
-    PrefObserverList::Iterator obs_iterator(observer_list.second.get());
-    if (obs_iterator.GetNext()) {
+    if (observer_list.second->begin() != observer_list.second->end())
       LOG(WARNING) << "Pref observer found at shutdown.";
-    }
   }
 
   // Same for initialization observers.
