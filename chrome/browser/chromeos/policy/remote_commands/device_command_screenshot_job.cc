@@ -9,13 +9,13 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/chromeos/logging.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/syslog_logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -110,14 +110,14 @@ enterprise_management::RemoteCommand_Type DeviceCommandScreenshotJob::GetType()
 }
 
 void DeviceCommandScreenshotJob::OnSuccess() {
-  CHROMEOS_SYSLOG(WARNING) << "Upload successful.";
+  SYSLOG(INFO) << "Upload successful.";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(succeeded_callback_,
                             base::Passed(base::MakeUnique<Payload>(SUCCESS))));
 }
 
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
-  CHROMEOS_SYSLOG(ERROR) << "Upload failure: " << error_code;
+  SYSLOG(ERROR) << "Upload failure: " << error_code;
   ResultCode result_code = FAILURE_CLIENT;
   switch (error_code) {
     case UploadJob::AUTHENTICATION_ERROR:
@@ -192,11 +192,11 @@ void DeviceCommandScreenshotJob::RunImpl(
   succeeded_callback_ = succeeded_callback;
   failed_callback_ = failed_callback;
 
-  CHROMEOS_SYSLOG(WARNING) << "Executing screenshot command.";
+  SYSLOG(INFO) << "Executing screenshot command.";
 
   // Fail if the delegate says screenshots are not allowed in this session.
   if (!screenshot_delegate_->IsScreenshotAllowed()) {
-    CHROMEOS_SYSLOG(ERROR) << "Screenshots are not allowed.";
+    SYSLOG(ERROR) << "Screenshots are not allowed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(base::MakeUnique<Payload>(
@@ -207,7 +207,7 @@ void DeviceCommandScreenshotJob::RunImpl(
 
   // Immediately fail if the upload url is invalid.
   if (!upload_url_.is_valid()) {
-    CHROMEOS_SYSLOG(ERROR) << upload_url_ << " is not a valid URL.";
+    SYSLOG(ERROR) << upload_url_ << " is not a valid URL.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(base::MakeUnique<Payload>(
@@ -217,7 +217,7 @@ void DeviceCommandScreenshotJob::RunImpl(
 
   // Immediately fail if there are no attached screens.
   if (root_windows.size() == 0) {
-    CHROMEOS_SYSLOG(ERROR) << "No attached screens.";
+    SYSLOG(ERROR) << "No attached screens.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(failed_callback_, base::Passed(base::MakeUnique<Payload>(

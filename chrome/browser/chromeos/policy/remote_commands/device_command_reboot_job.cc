@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/chromeos/logging.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
+#include "base/syslog_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -49,7 +49,7 @@ bool DeviceCommandRebootJob::IsExpired(base::TimeTicks now) {
 void DeviceCommandRebootJob::RunImpl(
     const CallbackWithResult& succeeded_callback,
     const CallbackWithResult& failed_callback) {
-  CHROMEOS_SYSLOG(WARNING) << "Running reboot command.";
+  SYSLOG(INFO) << "Running reboot command.";
 
   // Determines the time delta between the command having been issued and the
   // boot time of the system.
@@ -60,14 +60,14 @@ void DeviceCommandRebootJob::RunImpl(
   // server that the reboot succeeded. Otherwise, the reboot must still be
   // performed and we invoke it.
   if (delta > base::TimeDelta()) {
-    CHROMEOS_SYSLOG(WARNING) << "Ignoring reboot command issued " << delta
-                             << " before current boot time";
+    SYSLOG(WARNING) << "Ignoring reboot command issued " << delta
+                    << " before current boot time";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(succeeded_callback, nullptr));
     return;
   }
 
-  CHROMEOS_SYSLOG(WARNING) << "Rebooting immediately.";
+  SYSLOG(INFO) << "Rebooting immediately.";
   power_manager_client_->RequestRestart();
 }
 

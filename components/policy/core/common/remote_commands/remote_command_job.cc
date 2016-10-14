@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/chromeos/logging.h"
+#include "base/syslog_logging.h"
 
 namespace policy {
 
@@ -48,9 +48,8 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
     issued_time_ =
         now - base::TimeDelta::FromMilliseconds(command.age_of_command());
   } else {
-    CHROMEOS_SYSLOG(WARNING)
-        << "No age_of_command provided be server for command " << unique_id_
-        << ".";
+    SYSLOG(WARNING) << "No age_of_command provided by server for command "
+                    << unique_id_ << ".";
     // Otherwise, assuming the command was issued just now.
     issued_time_ = now;
   }
@@ -60,18 +59,17 @@ bool RemoteCommandJob::Init(base::TimeTicks now,
 
   switch (command.type()) {
     case em::RemoteCommand_Type_COMMAND_ECHO_TEST: {
-      CHROMEOS_SYSLOG(WARNING) << "Remote echo test command " << unique_id_
-                               << " initialized.";
+      SYSLOG(INFO) << "Remote echo test command " << unique_id_
+                   << " initialized.";
       break;
     }
     case em::RemoteCommand_Type_DEVICE_REBOOT: {
-      CHROMEOS_SYSLOG(WARNING) << "Remote reboot command " << unique_id_
-                               << " initialized.";
+      SYSLOG(INFO) << "Remote reboot command " << unique_id_ << " initialized.";
       break;
     }
     case em::RemoteCommand_Type_DEVICE_SCREENSHOT: {
-      CHROMEOS_SYSLOG(WARNING) << "Remote screenshot command " << unique_id_
-                               << " initialized.";
+      SYSLOG(INFO) << "Remote screenshot command " << unique_id_
+                   << " initialized.";
       break;
     }
   }
@@ -84,16 +82,16 @@ bool RemoteCommandJob::Run(base::TimeTicks now,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (status_ == INVALID) {
-    CHROMEOS_SYSLOG(ERROR) << "Remote command " << unique_id_ << " is invalid.";
+    SYSLOG(ERROR) << "Remote command " << unique_id_ << " is invalid.";
     return false;
   }
 
   DCHECK_EQ(NOT_STARTED, status_);
 
   if (IsExpired(now)) {
-    CHROMEOS_SYSLOG(ERROR) << "Remote command " << unique_id_
-                           << " expired (it was issued " << now - issued_time_
-                           << " ago).";
+    SYSLOG(ERROR) << "Remote command " << unique_id_
+                  << " expired (it was issued " << now - issued_time_
+                  << " ago).";
     status_ = EXPIRED;
     return false;
   }

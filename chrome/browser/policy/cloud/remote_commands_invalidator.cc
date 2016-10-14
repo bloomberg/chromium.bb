@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/chromeos/logging.h"
 #include "base/logging.h"
+#include "base/syslog_logging.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -29,7 +29,7 @@ void RemoteCommandsInvalidator::Initialize(
   DCHECK_EQ(SHUT_DOWN, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Initialize RemoteCommandsInvalidator.";
+  SYSLOG(INFO) << "Initialize RemoteCommandsInvalidator.";
 
   DCHECK(invalidation_service);
   invalidation_service_ = invalidation_service;
@@ -42,7 +42,7 @@ void RemoteCommandsInvalidator::Shutdown() {
   DCHECK_NE(SHUT_DOWN, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Shutdown RemoteCommandsInvalidator.";
+  SYSLOG(INFO) << "Shutdown RemoteCommandsInvalidator.";
 
   Stop();
 
@@ -54,7 +54,7 @@ void RemoteCommandsInvalidator::Start() {
   DCHECK_EQ(STOPPED, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Starting RemoteCommandsInvalidator.";
+  SYSLOG(INFO) << "Starting RemoteCommandsInvalidator.";
 
   state_ = STARTED;
 
@@ -65,7 +65,7 @@ void RemoteCommandsInvalidator::Stop() {
   DCHECK_NE(SHUT_DOWN, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Stopping RemoteCommandsInvalidator.";
+  SYSLOG(INFO) << "Stopping RemoteCommandsInvalidator.";
 
   if (state_ == STARTED) {
     Unregister();
@@ -80,8 +80,7 @@ void RemoteCommandsInvalidator::OnInvalidatorStateChange(
   DCHECK_EQ(STARTED, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "RemoteCommandsInvalidator state changed: "
-                           << state;
+  SYSLOG(INFO) << "RemoteCommandsInvalidator state changed: " << state;
 
   invalidation_service_enabled_ = state == syncer::INVALIDATIONS_ENABLED;
   UpdateInvalidationsEnabled();
@@ -92,8 +91,7 @@ void RemoteCommandsInvalidator::OnIncomingInvalidation(
   DCHECK_EQ(STARTED, state_);
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING)
-      << "RemoteCommandsInvalidator received invalidation.";
+  SYSLOG(INFO) << "RemoteCommandsInvalidator received invalidation.";
 
   if (!invalidation_service_enabled_)
     LOG(WARNING) << "Unexpected invalidation received.";
@@ -109,7 +107,7 @@ void RemoteCommandsInvalidator::OnIncomingInvalidation(
   for (const auto& it : list)
     it.Acknowledge();
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Invalidations acknowledged.";
+  SYSLOG(INFO) << "Invalidations acknowledged.";
 
   DoRemoteCommandsFetch();
 }
@@ -122,7 +120,7 @@ void RemoteCommandsInvalidator::ReloadPolicyData(
     const enterprise_management::PolicyData* policy) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "RemoteCommandsInvalidator ReloadPolicyData.";
+  SYSLOG(INFO) << "RemoteCommandsInvalidator ReloadPolicyData.";
 
   if (state_ != STARTED)
     return;
@@ -146,7 +144,7 @@ void RemoteCommandsInvalidator::ReloadPolicyData(
 void RemoteCommandsInvalidator::Register(
     const invalidation::ObjectId& object_id) {
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Register RemoteCommandsInvalidator.";
+  SYSLOG(INFO) << "Register RemoteCommandsInvalidator.";
 
   // Register this handler with the invalidation service if needed.
   if (!is_registered_) {
@@ -166,7 +164,7 @@ void RemoteCommandsInvalidator::Register(
 
 void RemoteCommandsInvalidator::Unregister() {
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
-  CHROMEOS_SYSLOG(WARNING) << "Unregister RemoteCommandsInvalidator.";
+  SYSLOG(INFO) << "Unregister RemoteCommandsInvalidator.";
   if (is_registered_) {
     CHECK(invalidation_service_->UpdateRegisteredInvalidationIds(
         this, syncer::ObjectIdSet()));

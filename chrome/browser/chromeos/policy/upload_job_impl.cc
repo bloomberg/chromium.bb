@@ -8,10 +8,10 @@
 #include <set>
 #include <utility>
 
-#include "base/chromeos/logging.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/syslog_logging.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/mime_util.h"
@@ -180,7 +180,7 @@ void UploadJobImpl::Start() {
     return;
   DCHECK_EQ(0, retry_);
 
-  CHROMEOS_SYSLOG(WARNING) << "Upload job started";
+  SYSLOG(INFO) << "Upload job started";
   RequestAccessToken();
 }
 
@@ -257,7 +257,7 @@ bool UploadJobImpl::SetUpMultipart() {
 
   // Issues a warning if our buffer size estimate was too small.
   if (post_data_->size() > size) {
-    CHROMEOS_SYSLOG(WARNING)
+    SYSLOG(INFO)
         << "Reallocation needed in POST data buffer. Expected maximum size "
         << size << " bytes, actual size " << post_data_->size() << " bytes.";
   }
@@ -289,7 +289,7 @@ void UploadJobImpl::StartUpload() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!SetUpMultipart()) {
-    CHROMEOS_SYSLOG(ERROR) << "Multipart message assembly failed.";
+    SYSLOG(ERROR) << "Multipart message assembly failed.";
     state_ = ERROR;
     return;
   }
@@ -316,7 +316,7 @@ void UploadJobImpl::OnGetTokenFailure(
   DCHECK_EQ(ACQUIRING_TOKEN, state_);
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
-  CHROMEOS_SYSLOG(ERROR) << "Token request failed: " << error.ToString();
+  SYSLOG(ERROR) << "Token request failed: " << error.ToString();
   HandleError(AUTHENTICATION_ERROR);
 }
 
@@ -324,18 +324,18 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
   retry_++;
   upload_fetcher_.reset();
 
-  CHROMEOS_SYSLOG(ERROR) << "Upload failed, error code: " << error_code;
+  SYSLOG(ERROR) << "Upload failed, error code: " << error_code;
 
   if (retry_ >= kMaxAttempts) {
     // Maximum number of attempts reached, failure.
-    CHROMEOS_SYSLOG(ERROR) << "Maximum number of attempts reached.";
+    SYSLOG(ERROR) << "Maximum number of attempts reached.";
     access_token_.clear();
     post_data_.reset();
     state_ = ERROR;
     delegate_->OnFailure(error_code);
   } else {
     if (error_code == AUTHENTICATION_ERROR) {
-      CHROMEOS_SYSLOG(ERROR) << "Retrying upload with a new token.";
+      SYSLOG(ERROR) << "Retrying upload with a new token.";
       // Request new token and retry.
       OAuth2TokenService::ScopeSet scope_set;
       scope_set.insert(GaiaConstants::kDeviceManagementServiceOAuth);
@@ -349,7 +349,7 @@ void UploadJobImpl::HandleError(ErrorCode error_code) {
     } else {
       // Retry without a new token.
       state_ = ACQUIRING_TOKEN;
-      CHROMEOS_SYSLOG(WARNING) << "Retrying upload with the same token.";
+      SYSLOG(WARNING) << "Retrying upload with the same token.";
       task_runner_->PostDelayedTask(
           FROM_HERE,
           base::Bind(&UploadJobImpl::StartUpload, weak_factory_.GetWeakPtr()),
@@ -363,7 +363,7 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(UPLOADING, state_);
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
-    CHROMEOS_SYSLOG(ERROR) << "URLRequestStatus error " << status.error();
+    SYSLOG(ERROR) << "URLRequestStatus error " << status.error();
     HandleError(NETWORK_ERROR);
   } else {
     const int response_code = source->GetResponseCode();
@@ -375,11 +375,11 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
       state_ = SUCCESS;
       delegate_->OnSuccess();
     } else if (response_code == net::HTTP_UNAUTHORIZED) {
-      CHROMEOS_SYSLOG(ERROR) << "Unauthorized request.";
+      SYSLOG(ERROR) << "Unauthorized request.";
       HandleError(AUTHENTICATION_ERROR);
     } else {
-      CHROMEOS_SYSLOG(ERROR) << "POST request failed with HTTP status code "
-                             << response_code << ".";
+      SYSLOG(ERROR) << "POST request failed with HTTP status code "
+                    << response_code << ".";
       HandleError(SERVER_ERROR);
     }
   }
