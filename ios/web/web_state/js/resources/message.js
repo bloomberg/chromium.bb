@@ -27,7 +27,7 @@ __gCrWeb.message = {};
       messageQueue_.queue = [];
       // Since the array will be JSON serialized, protect against non-standard
       // custom versions of Array.prototype.toJSON.
-      messageQueue_.queue.toJSON = null
+      delete messageQueue_.queue.toJSON;
     }
   };
   messageQueue_.reset();
@@ -80,7 +80,7 @@ __gCrWeb.message = {};
         // object ensures that original and working implementation of
         // window.webkit is restored.
         var oldWebkit = window.webkit;
-        delete window.webkit;
+        delete window['webkit'];
         window.webkit.messageHandlers[queueObject.scheme].postMessage(
             stringifiedMessage);
         window.webkit = oldWebkit;

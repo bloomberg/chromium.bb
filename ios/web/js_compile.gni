@@ -119,7 +119,6 @@ template("js_compile_checked") {
       #   --jscomp_error=checkVars
       #   --jscomp_error=missingProperties
       #   --jscomp_error=undefinedVars
-
       args = [
         "--compilation_level",
         "SIMPLE_OPTIMIZATIONS",
@@ -137,10 +136,26 @@ template("js_compile_checked") {
         "--jscomp_error=unknownDefines",
         "--jscomp_error=uselessCode",
         "--jscomp_error=visibility",
+        "--module_output_path_prefix",
+        rebase_path(target_gen_dir, root_build_dir) + "/",
+        "--js",
+        rebase_path("//ios/web/web_state/js/resources/base.js", root_build_dir),
+        "--module",
+        "base_module:1",
+        "--js",
+        rebase_path("//ios/web/web_state/js/resources/common.js",
+                    root_build_dir),
+        "--module",
+        "common_module:1:base_module",
+        "--js",
+        rebase_path("//ios/web/web_state/js/resources/message.js",
+                    root_build_dir),
+        "--module",
+        "message_module:1:common_module",
         "--js",
         "{{source}}",
-        "--js_output_file",
-        rebase_path("$target_gen_dir/{{source_file_part}}", root_build_dir),
+        "--module",
+        "{{source_name_part}}:1:common_module:message_module",
       ]
     }
 

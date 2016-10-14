@@ -561,7 +561,8 @@ __gCrWeb['common'] = {};
    */
   __gCrWeb.common.createAndDispatchHTMLEvent = function(
       element, type, bubbles, cancelable) {
-    var changeEvent = element.ownerDocument.createEvent('HTMLEvents');
+    var changeEvent =
+        /** @type {!Event} */(element.ownerDocument.createEvent('HTMLEvents'));
     changeEvent.initEvent(type, bubbles, cancelable);
 
     // A timer is used to avoid reentering JavaScript evaluation.
@@ -578,7 +579,7 @@ __gCrWeb['common'] = {};
   __gCrWeb.common.getFavicons = function() {
     var favicons = [];
     var hasFavicon = false;
-    favicons.toJSON = null;  // Never inherit Array.prototype.toJSON.
+    delete favicons.toJSON;  // Never inherit Array.prototype.toJSON.
     var links = document.getElementsByTagName('link');
     var linkCount = links.length;
     for (var i = 0; i < linkCount; ++i) {
@@ -641,15 +642,15 @@ __gCrWeb['common'] = {};
   /**
    * Returns a list of plugin elements in the document that have no fallback
    * content. For nested plugins, only the innermost plugin element is returned.
-   * @return {Array} A list of plugin elements.
+   * @return {!Array<!HTMLElement>} A list of plugin elements.
    * @private
    */
   var findPluginNodesWithoutFallback_ = function() {
-    var pluginNodes = [];
+    var i, pluginNodes = [];
     var objects = document.getElementsByTagName('object');
     var objectCount = objects.length;
-    for (var i = 0; i < objectCount; i++) {
-      var object = objects[i];
+    for (i = 0; i < objectCount; i++) {
+      var object = /** @type {!HTMLElement} */(objects[i]);
       if (objectNodeIsPlugin_(object) &&
           !pluginHasFallbackContent_(object)) {
         pluginNodes.push(object);
@@ -657,8 +658,8 @@ __gCrWeb['common'] = {};
     }
     var applets = document.getElementsByTagName('applet');
     var appletsCount = applets.length;
-    for (var i = 0; i < appletsCount; i++) {
-      var applet = applets[i];
+    for (i = 0; i < appletsCount; i++) {
+      var applet = /** @type {!HTMLElement} */(applets[i]);
       if (!pluginHasFallbackContent_(applet)) {
         pluginNodes.push(applet);
       }
