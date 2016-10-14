@@ -56,8 +56,8 @@ static_library("vr_common") {
 
 generate_jni("vr_shell_jni_headers") {
   sources = [
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellDelegate.java",
+    "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/VrShellImpl.java",
   ]
   jni_package = "vr_shell"
 }

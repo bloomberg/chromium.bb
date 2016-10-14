@@ -34,10 +34,10 @@ public class VrShellDelegate {
 
     private boolean mVrEnabled;
 
-    private Class<? extends VrShellInterface> mVrShellClass;
-    private Class<? extends NonPresentingGvrContextInterface> mNonPresentingGvrContextClass;
-    private VrShellInterface mVrShell;
-    private NonPresentingGvrContextInterface mNonPresentingGvrContext;
+    private Class<? extends VrShell> mVrShellClass;
+    private Class<? extends NonPresentingGvrContext> mNonPresentingGvrContextClass;
+    private VrShell mVrShell;
+    private NonPresentingGvrContext mNonPresentingGvrContext;
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private String mVrExtra;
@@ -70,11 +70,11 @@ public class VrShellDelegate {
     @SuppressWarnings("unchecked")
     private boolean maybeFindVrClasses() {
         try {
-            mVrShellClass = (Class<? extends VrShellInterface>) Class.forName(
-                    "org.chromium.chrome.browser.vr_shell.VrShell");
+            mVrShellClass = (Class<? extends VrShell>) Class.forName(
+                    "org.chromium.chrome.browser.vr_shell.VrShellImpl");
             mNonPresentingGvrContextClass =
-                    (Class<? extends NonPresentingGvrContextInterface>) Class.forName(
-                            "org.chromium.chrome.browser.vr_shell.NonPresentingGvrContext");
+                    (Class<? extends NonPresentingGvrContext>) Class.forName(
+                            "org.chromium.chrome.browser.vr_shell.NonPresentingGvrContextImpl");
             return true;
         } catch (ClassNotFoundException e) {
             mVrShellClass = null;
@@ -195,7 +195,7 @@ public class VrShellDelegate {
             Constructor<?> nonPresentingGvrContextConstructor =
                     mNonPresentingGvrContextClass.getConstructor(Activity.class);
             mNonPresentingGvrContext =
-                    (NonPresentingGvrContextInterface)
+                    (NonPresentingGvrContext)
                             nonPresentingGvrContextConstructor.newInstance(mActivity);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException e) {
@@ -232,7 +232,7 @@ public class VrShellDelegate {
         StrictMode.allowThreadDiskWrites();
         try {
             Constructor<?> vrShellConstructor = mVrShellClass.getConstructor(Activity.class);
-            mVrShell = (VrShellInterface) vrShellConstructor.newInstance(mActivity);
+            mVrShell = (VrShell) vrShellConstructor.newInstance(mActivity);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException e) {
             Log.e(TAG, "Unable to instantiate VrShell", e);

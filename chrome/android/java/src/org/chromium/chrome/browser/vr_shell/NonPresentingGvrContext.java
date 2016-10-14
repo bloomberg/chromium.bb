@@ -4,54 +4,28 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import android.app.Activity;
-import android.os.StrictMode;
-
-import com.google.vr.ndk.base.GvrLayout;
-
-import org.chromium.base.Log;
-import org.chromium.base.annotations.UsedByReflection;
-
 /**
- * Creates an active GvrContext from a detached GvrLayout. This is used by magic window mode.
+ * Abstracts away the NonPresentingGvrContext class, which may or may not be present at runtime
+ * depending on compile flags.
  */
-@UsedByReflection("VrShellDelegate.java")
-public class NonPresentingGvrContext implements NonPresentingGvrContextInterface {
-    private static final String TAG = "NPGvrContext";
-    private GvrLayout mGvrLayout;
+public interface NonPresentingGvrContext {
+    /**
+     * Returns the native gvr context.
+     */
+    long getNativeGvrContext();
 
-    @UsedByReflection("VrShellDelegate.java")
-    public NonPresentingGvrContext(Activity activity) {
-        mGvrLayout = new GvrLayout(activity);
-    }
+    /**
+     * Must be called when activity resumes.
+     */
+    void resume();
 
-    @Override
-    public long getNativeGvrContext() {
-        long nativeGvrContext = 0;
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            nativeGvrContext = mGvrLayout.getGvrApi().getNativeGvrContext();
-        } catch (Exception ex) {
-            Log.e(TAG, "Unable to instantiate GvrApi", ex);
-            return 0;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-        return nativeGvrContext;
-    }
+    /**
+     * Must be called when activity pauses.
+     */
+    void pause();
 
-    @Override
-    public void resume() {
-        mGvrLayout.onResume();
-    }
-
-    @Override
-    public void pause() {
-        mGvrLayout.onPause();
-    }
-
-    @Override
-    public void shutdown() {
-        mGvrLayout.shutdown();
-    }
+    /**
+     * Shutdown the native gvr context.
+     */
+    void shutdown();
 }
