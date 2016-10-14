@@ -1648,9 +1648,6 @@ CSSTransitionData& ComputedStyle::accessTransitions() {
 const Font& ComputedStyle::font() const {
   return m_styleInheritedData->font;
 }
-const FontMetrics& ComputedStyle::getFontMetrics() const {
-  return m_styleInheritedData->font.getFontMetrics();
-}
 const FontDescription& ComputedStyle::getFontDescription() const {
   return m_styleInheritedData->font.getFontDescription();
 }
@@ -1838,7 +1835,7 @@ int ComputedStyle::computedLineHeight() const {
   // Negative value means the line height is not set. Use the font's built-in
   // spacing, if avalible.
   if (lh.isNegative() && font().primaryFont())
-    return getFontMetrics().lineSpacing();
+    return font().primaryFont()->getFontMetrics().lineSpacing();
 
   if (lh.isPercentOrCalc())
     return minimumValueForLength(lh, LayoutUnit(computedFontSize())).toInt();

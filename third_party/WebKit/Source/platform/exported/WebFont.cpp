@@ -44,24 +44,36 @@ WebFontDescription WebFont::getFontDescription() const {
   return WebFontDescription(m_private->getFont().getFontDescription());
 }
 
+static inline const SimpleFontData* getFontData(const Font& font) {
+  const SimpleFontData* fontData = font.primaryFont();
+  DCHECK(fontData);
+  return fontData;
+}
+
 int WebFont::ascent() const {
-  return m_private->getFont().getFontMetrics().ascent();
+  const SimpleFontData* fontData = getFontData(m_private->getFont());
+  return fontData ? fontData->getFontMetrics().ascent() : 0;
 }
 
 int WebFont::descent() const {
-  return m_private->getFont().getFontMetrics().descent();
+  const SimpleFontData* fontData = getFontData(m_private->getFont());
+  return fontData ? fontData->getFontMetrics().descent() : 0;
 }
 
 int WebFont::height() const {
-  return m_private->getFont().getFontMetrics().height();
+  const SimpleFontData* fontData = getFontData(m_private->getFont());
+  return fontData ? fontData->getFontMetrics().height() : 0;
 }
 
 int WebFont::lineSpacing() const {
-  return m_private->getFont().getFontMetrics().lineSpacing();
+  const SimpleFontData* fontData = getFontData(m_private->getFont());
+  return fontData ? fontData->getFontMetrics().lineSpacing() : 0;
 }
 
 float WebFont::xHeight() const {
-  return m_private->getFont().getFontMetrics().xHeight();
+  const SimpleFontData* fontData = m_private->getFont().primaryFont();
+  DCHECK(fontData);
+  return fontData ? fontData->getFontMetrics().xHeight() : 0;
 }
 
 void WebFont::drawText(WebCanvas* canvas,

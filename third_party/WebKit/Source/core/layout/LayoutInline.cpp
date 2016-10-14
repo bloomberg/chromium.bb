@@ -618,8 +618,18 @@ static inline void computeItemTopHeight(const LayoutInline* container,
                                         LayoutUnit* top,
                                         LayoutUnit* height) {
   bool firstLine = rootBox.isFirstLineStyle();
-  auto metrics = rootBox.getLineLayoutItem().style(firstLine)->getFontMetrics();
-  auto containerMetrics = container->style(firstLine)->getFontMetrics();
+  const SimpleFontData* fontData =
+      rootBox.getLineLayoutItem().style(firstLine)->font().primaryFont();
+  const SimpleFontData* containerFontData =
+      container->style(firstLine)->font().primaryFont();
+  DCHECK(fontData && containerFontData);
+  if (!fontData || !containerFontData) {
+    *top = LayoutUnit();
+    *height = LayoutUnit();
+    return;
+  }
+  auto metrics = fontData->getFontMetrics();
+  auto containerMetrics = containerFontData->getFontMetrics();
   *top = rootBox.logicalTop() + (metrics.ascent() - containerMetrics.ascent());
   *height = LayoutUnit(containerMetrics.height());
 }
@@ -1340,7 +1350,11 @@ int LayoutInline::baselinePosition(FontBaseline baselineType,
                                    LineDirectionMode direction,
                                    LinePositionMode linePositionMode) const {
   ASSERT(linePositionMode == PositionOnContainingLine);
-  const FontMetrics& fontMetrics = style(firstLine)->getFontMetrics();
+  const SimpleFontData* fontData = style(firstLine)->font().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return -1;
+  const FontMetrics& fontMetrics = fontData->getFontMetrics();
   return (fontMetrics.ascent(baselineType) +
           (lineHeight(firstLine, direction, linePositionMode) -
            fontMetrics.height()) /

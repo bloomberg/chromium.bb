@@ -125,9 +125,14 @@ void SVGTextLayoutEngine::computeCurrentFragmentMetrics(
   const Font& scaledFont = textLineLayout.scaledFont();
   FloatRect glyphOverflowBounds;
 
+  const SimpleFontData* fontData = scaledFont.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return;
+
   float width = scaledFont.width(run, nullptr, &glyphOverflowBounds);
-  float ascent = scaledFont.getFontMetrics().floatAscent();
-  float descent = scaledFont.getFontMetrics().floatDescent();
+  float ascent = fontData->getFontMetrics().floatAscent();
+  float descent = fontData->getFontMetrics().floatDescent();
   m_currentTextFragment.glyphOverflow.setFromBounds(glyphOverflowBounds, ascent,
                                                     descent, width);
   m_currentTextFragment.glyphOverflow.top /= scalingFactor;
@@ -135,7 +140,7 @@ void SVGTextLayoutEngine::computeCurrentFragmentMetrics(
   m_currentTextFragment.glyphOverflow.right /= scalingFactor;
   m_currentTextFragment.glyphOverflow.bottom /= scalingFactor;
 
-  float height = scaledFont.getFontMetrics().floatHeight();
+  float height = fontData->getFontMetrics().floatHeight();
   m_currentTextFragment.height = height / scalingFactor;
   m_currentTextFragment.width = width / scalingFactor;
 }

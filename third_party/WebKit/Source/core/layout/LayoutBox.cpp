@@ -4531,7 +4531,9 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box,
   // giant tall-as-window insertion point
   //
   // FIXME: ignoring :first-line, missing good reason to take care of
-  LayoutUnit fontHeight = LayoutUnit(style()->getFontMetrics().height());
+  const SimpleFontData* fontData = style()->font().primaryFont();
+  LayoutUnit fontHeight =
+      LayoutUnit(fontData ? fontData->getFontMetrics().height() : 0);
   if (fontHeight > rect.height() || (!isAtomicInlineLevel() && !isTable()))
     rect.setHeight(fontHeight);
 

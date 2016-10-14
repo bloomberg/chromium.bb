@@ -1316,9 +1316,15 @@ void LayoutText::computePreferredLogicalWidths(
     m_lastLineLineMinWidth = currMaxWidth;
   }
 
+  const SimpleFontData* fontData = f.primaryFont();
+  DCHECK(fontData);
+
   GlyphOverflow glyphOverflow;
-  glyphOverflow.setFromBounds(glyphBounds, f.getFontMetrics().floatAscent(),
-                              f.getFontMetrics().floatDescent(), m_maxWidth);
+  if (fontData) {
+    glyphOverflow.setFromBounds(
+        glyphBounds, fontData->getFontMetrics().floatAscent(),
+        fontData->getFontMetrics().floatDescent(), m_maxWidth);
+  }
   // We shouldn't change our mind once we "know".
   ASSERT(!m_knownToHaveNoOverflowAndNoFallbackFonts ||
          (fallbackFonts.isEmpty() && glyphOverflow.isApproximatelyZero()));
@@ -1715,6 +1721,11 @@ float LayoutText::width(unsigned from,
   if (!textLength())
     return 0;
 
+  const SimpleFontData* fontData = f.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return 0;
+
   float w;
   if (&f == &style()->font()) {
     if (!style()->preserveNewline() && !from && len == textLength()) {
@@ -1726,8 +1737,8 @@ float LayoutText::width(unsigned from,
               0, *fallbackFonts, *glyphBounds);
         else
           *glyphBounds =
-              FloatRect(0, -f.getFontMetrics().floatAscent(), m_maxWidth,
-                        f.getFontMetrics().floatHeight());
+              FloatRect(0, -fontData->getFontMetrics().floatAscent(),
+                        m_maxWidth, fontData->getFontMetrics().floatHeight());
         w = m_maxWidth;
       } else {
         w = maxLogicalWidth();

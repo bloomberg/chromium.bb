@@ -66,7 +66,10 @@ unsigned LayoutListBox::size() const {
 }
 
 LayoutUnit LayoutListBox::defaultItemHeight() const {
-  return LayoutUnit(style()->getFontMetrics().height() + defaultPaddingBottom);
+  const SimpleFontData* fontData = style()->font().primaryFont();
+  if (!fontData)
+    return LayoutUnit();
+  return LayoutUnit(fontData->getFontMetrics().height() + defaultPaddingBottom);
 }
 
 LayoutUnit LayoutListBox::itemHeight() const {

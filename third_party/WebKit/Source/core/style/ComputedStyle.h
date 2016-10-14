@@ -2514,7 +2514,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Font properties.
   const Font& font() const;
   void setFont(const Font&);
-  const FontMetrics& getFontMetrics() const;
   const FontDescription& getFontDescription() const;
   bool setFontDescription(const FontDescription&);
   bool hasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;

@@ -2601,7 +2601,13 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex) {
     return false;
   const ComputedStyle* itemStyle =
       select.itemComputedStyle(*select.listItems()[itemIndex]);
-  return itemStyle ? itemStyle->font().getFontMetrics().height() : 0;
+
+  if (itemStyle) {
+    const SimpleFontData* fontData = itemStyle->font().primaryFont();
+    DCHECK(fontData);
+    return fontData ? fontData->getFontMetrics().height() : 0;
+  }
+  return 0;
 }
 
 void Internals::resetTypeAheadSession(HTMLSelectElement* select) {

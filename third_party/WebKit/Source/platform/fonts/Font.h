@@ -140,10 +140,6 @@ class PLATFORM_EXPORT Font {
   Vector<CharacterRange> individualCharacterRanges(const TextRun&) const;
 
   // Metrics that we query the FontFallbackList for.
-  const FontMetrics& getFontMetrics() const {
-    RELEASE_ASSERT(primaryFont());
-    return primaryFont()->getFontMetrics();
-  }
   float spaceWidth() const {
     return primaryFont()->spaceWidth() + getFontDescription().letterSpacing();
   }
@@ -156,6 +152,9 @@ class PLATFORM_EXPORT Font {
   int emphasisMarkDescent(const AtomicString&) const;
   int emphasisMarkHeight(const AtomicString&) const;
 
+  // This may fail and return a nullptr in case the last resort font cannot be
+  // loaded. This *should* not happen but in reality it does ever now and then
+  // when, for whatever reason, the last resort font cannot be loaded.
   const SimpleFontData* primaryFont() const;
   const FontData* fontDataAt(unsigned) const;
 

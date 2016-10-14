@@ -54,13 +54,14 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo,
   context.clip(pixelSnappedIntRect(contentRect));
 
   Font font = replacementTextFont();
-  // TODO(trchen): Speculative fix for crbug.com/481880
-  // With last resort font, how could this ever be null?
-  ASSERT(font.primaryFont());
-  if (!font.primaryFont())
+  const SimpleFontData* fontData = font.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
     return;
+
   TextRun textRun(m_layoutEmbeddedObject.unavailablePluginReplacementText());
-  FloatSize textGeometry(font.width(textRun), font.getFontMetrics().height());
+  FloatSize textGeometry(font.width(textRun),
+                         fontData->getFontMetrics().height());
 
   LayoutRect backgroundRect(
       0, 0,
@@ -84,7 +85,7 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo,
   context.setFillColor(scaleAlpha(Color::black, replacementTextTextOpacity));
   context.drawBidiText(
       font, runInfo,
-      textRect.location() + FloatSize(0, font.getFontMetrics().ascent()));
+      textRect.location() + FloatSize(0, fontData->getFontMetrics().ascent()));
 }
 
 }  // namespace blink

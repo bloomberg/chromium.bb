@@ -188,8 +188,16 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
                                              float deviceScaleFactor) {
   const Font labelFont =
       deriveDragLabelFont(kDragLinkLabelFontSize, FontWeightBold, systemFont);
+  const SimpleFontData* labelFontData = labelFont.primaryFont();
+  DCHECK(labelFontData);
   const Font urlFont =
       deriveDragLabelFont(kDragLinkUrlFontSize, FontWeightNormal, systemFont);
+  const SimpleFontData* urlFontData = urlFont.primaryFont();
+  DCHECK(urlFontData);
+
+  if (!labelFontData || !urlFontData)
+    return nullptr;
+
   FontCachePurgePreventer fontCachePurgePreventer;
 
   bool drawURLString = true;
@@ -209,8 +217,8 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
   TextRun labelRun(label.impl());
   TextRun urlRun(urlString.impl());
   IntSize labelSize(labelFont.width(labelRun),
-                    labelFont.getFontMetrics().ascent() +
-                        labelFont.getFontMetrics().descent());
+                    labelFontData->getFontMetrics().ascent() +
+                        labelFontData->getFontMetrics().descent());
 
   if (labelSize.width() > maxDragLabelStringWidthDIP) {
     labelSize.setWidth(maxDragLabelStringWidthDIP);
@@ -223,8 +231,8 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
 
   if (drawURLString) {
     urlStringSize.setWidth(urlFont.width(urlRun));
-    urlStringSize.setHeight(urlFont.getFontMetrics().ascent() +
-                            urlFont.getFontMetrics().descent());
+    urlStringSize.setHeight(urlFontData->getFontMetrics().ascent() +
+                            urlFontData->getFontMetrics().descent());
     imageSize.setHeight(imageSize.height() + urlStringSize.height());
     if (urlStringSize.width() > maxDragLabelStringWidthDIP) {
       imageSize.setWidth(maxDragLabelStringWidthDIP);
@@ -260,9 +268,10 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
     if (clipURLString)
       urlString = StringTruncator::centerTruncate(
           urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
-    IntPoint textPos(kDragLabelBorderX,
-                     imageSize.height() - (kLabelBorderYOffset +
-                                           urlFont.getFontMetrics().descent()));
+    IntPoint textPos(
+        kDragLabelBorderX,
+        imageSize.height() -
+            (kLabelBorderYOffset + urlFontData->getFontMetrics().descent()));
     TextRun textRun(urlString);
     urlFont.drawText(buffer->canvas(), TextRunPaintInfo(textRun), textPos,
                      deviceScaleFactor, textPaint);

@@ -2487,11 +2487,15 @@ int LayoutBlockFlow::firstLineBoxBaseline() const {
     return -1;
   if (!childrenInline())
     return LayoutBlock::firstLineBoxBaseline();
-  if (firstLineBox())
+  if (firstLineBox()) {
+    const SimpleFontData* fontData = style(true)->font().primaryFont();
+    DCHECK(fontData);
+    if (!fontData)
+      return -1;
     return (firstLineBox()->logicalTop() +
-            style(true)->getFontMetrics().ascent(
-                firstRootBox()->baselineType()))
+            fontData->getFontMetrics().ascent(firstRootBox()->baselineType()))
         .toInt();
+  }
   return -1;
 }
 
@@ -2519,15 +2523,25 @@ int LayoutBlockFlow::inlineBlockBaseline(
     return -1;
   if (!childrenInline())
     return LayoutBlock::inlineBlockBaseline(lineDirection);
-  if (lastLineBox())
+  if (lastLineBox()) {
+    const SimpleFontData* fontData =
+        style(lastLineBox() == firstLineBox())->font().primaryFont();
+    DCHECK(fontData);
+    if (!fontData)
+      return -1;
     return (lastLineBox()->logicalTop() +
-            style(lastLineBox() == firstLineBox())
-                ->getFontMetrics()
-                .ascent(lastRootBox()->baselineType()))
+            fontData->getFontMetrics().ascent(lastRootBox()->baselineType()))
         .toInt();
+  }
   if (!hasLineIfEmpty())
     return -1;
-  const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
+
+  const SimpleFontData* fontData = firstLineStyle()->font().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return -1;
+
+  const FontMetrics& fontMetrics = fontData->getFontMetrics();
   return (fontMetrics.ascent() +
           (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) -
            fontMetrics.height()) /

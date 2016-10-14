@@ -83,13 +83,15 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo,
       textY = LayoutUnit(m_layoutFileUploadControl.baselinePosition(
           AlphabeticBaseline, true, HorizontalLine, PositionOnContainingLine));
     TextRunPaintInfo textRunPaintInfo(textRun);
+
+    const SimpleFontData* fontData =
+        m_layoutFileUploadControl.style()->font().primaryFont();
+    if (!fontData)
+      return;
     // FIXME: Shouldn't these offsets be rounded? crbug.com/350474
     textRunPaintInfo.bounds = FloatRect(
-        textX.toFloat(),
-        textY.toFloat() -
-            m_layoutFileUploadControl.style()->getFontMetrics().ascent(),
-        textWidth,
-        m_layoutFileUploadControl.style()->getFontMetrics().height());
+        textX.toFloat(), textY.toFloat() - fontData->getFontMetrics().ascent(),
+        textWidth, fontData->getFontMetrics().height());
 
     // Draw the filename.
     LayoutObjectDrawingRecorder recorder(

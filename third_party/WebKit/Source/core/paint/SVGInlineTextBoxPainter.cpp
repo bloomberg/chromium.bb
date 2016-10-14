@@ -329,8 +329,13 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
   if (thickness <= 0)
     return;
 
+  const SimpleFontData* fontData = scaledFont.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return;
+
   float decorationOffset = baselineOffsetForDecoration(
-      decoration, scaledFont.getFontMetrics(), thickness);
+      decoration, fontData->getFontMetrics(), thickness);
   FloatPoint decorationOrigin(fragment.x,
                               fragment.y - decorationOffset / scalingFactor);
 
@@ -449,7 +454,11 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
   textRunPaintInfo.from = startPosition;
   textRunPaintInfo.to = endPosition;
 
-  float baseline = scaledFont.getFontMetrics().floatAscent();
+  const SimpleFontData* fontData = scaledFont.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return;
+  float baseline = fontData->getFontMetrics().floatAscent();
   textRunPaintInfo.bounds = FloatRect(textOrigin.x(), textOrigin.y() - baseline,
                                       textSize.width(), textSize.height());
 

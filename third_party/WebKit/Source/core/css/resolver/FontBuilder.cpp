@@ -319,11 +319,14 @@ void FontBuilder::updateAdjustedSize(FontDescription& fontDescription,
 
   Font font(fontDescription);
   font.update(fontSelector);
-  if (!font.getFontMetrics().hasXHeight())
+
+  const SimpleFontData* fontData = font.primaryFont();
+
+  if (!fontData || !fontData->getFontMetrics().hasXHeight())
     return;
 
   const float sizeAdjust = fontDescription.sizeAdjust();
-  float aspectValue = font.getFontMetrics().xHeight() / specifiedSize;
+  float aspectValue = fontData->getFontMetrics().xHeight() / specifiedSize;
   float adjustedSize = (sizeAdjust / aspectValue) * specifiedSize;
   adjustedSize = getComputedSizeFromSpecifiedSize(
       fontDescription, style.effectiveZoom(), adjustedSize);

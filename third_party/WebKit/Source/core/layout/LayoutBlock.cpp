@@ -1690,7 +1690,12 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType,
   // Note that inline-block counts as replaced here.
   ASSERT(linePositionMode == PositionOfInteriorLineBoxes);
 
-  const FontMetrics& fontMetrics = style(firstLine)->getFontMetrics();
+  const SimpleFontData* fontData = style(firstLine)->font().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return -1;
+
+  const FontMetrics& fontMetrics = fontData->getFontMetrics();
   return (fontMetrics.ascent(baselineType) +
           (lineHeight(firstLine, direction, linePositionMode) -
            fontMetrics.height()) /
@@ -1759,8 +1764,9 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const {
             .toInt();  // Translate to our coordinate space.
     }
   }
-  if (!haveNormalFlowChild && hasLineIfEmpty()) {
-    const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
+  const SimpleFontData* fontData = firstLineStyle()->font().primaryFont();
+  if (fontData && !haveNormalFlowChild && hasLineIfEmpty()) {
+    const FontMetrics& fontMetrics = fontData->getFontMetrics();
     return (fontMetrics.ascent() +
             (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) -
              fontMetrics.height()) /

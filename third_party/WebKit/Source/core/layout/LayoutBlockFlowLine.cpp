@@ -621,9 +621,11 @@ static inline void setLogicalWidthForTextRun(
     measuredWidth = 0;
   }
 
-  glyphOverflow.setFromBounds(glyphBounds, font.getFontMetrics().floatAscent(),
-                              font.getFontMetrics().floatDescent(),
-                              measuredWidth);
+  const SimpleFontData* fontData = font.primaryFont();
+  DCHECK(fontData);
+  glyphOverflow.setFromBounds(
+      glyphBounds, fontData ? fontData->getFontMetrics().floatAscent() : 0,
+      fontData ? fontData->getFontMetrics().floatDescent() : 0, measuredWidth);
 
   run->m_box->setLogicalWidth(LayoutUnit(measuredWidth) + hyphenWidth);
   if (!fallbackFonts.isEmpty()) {

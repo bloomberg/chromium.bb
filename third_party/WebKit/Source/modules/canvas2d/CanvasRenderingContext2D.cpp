@@ -753,6 +753,10 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
 
   canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
   const Font& font = accessFont();
+  const SimpleFontData* fontData = font.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return metrics;
 
   TextDirection direction;
   if (state().getDirection() == CanvasRenderingContext2DState::DirectionInherit)
@@ -773,7 +777,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   metrics->setActualBoundingBoxRight(textBounds.maxX());
 
   // y direction
-  const FontMetrics& fontMetrics = font.getFontMetrics();
+  const FontMetrics& fontMetrics = fontData->getFontMetrics();
   const float ascent = fontMetrics.floatAscent();
   const float descent = fontMetrics.floatDescent();
   const float baselineY = getFontBaseline(fontMetrics);
@@ -829,10 +833,11 @@ void CanvasRenderingContext2D::drawTextInternal(
         DisableDeferralReasonSubPixelTextAntiAliasingSupport);
 
   const Font& font = accessFont();
-  if (!font.primaryFont())
+  const SimpleFontData* fontData = font.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
     return;
-
-  const FontMetrics& fontMetrics = font.getFontMetrics();
+  const FontMetrics& fontMetrics = fontData->getFontMetrics();
 
   // FIXME: Need to turn off font smoothing.
 

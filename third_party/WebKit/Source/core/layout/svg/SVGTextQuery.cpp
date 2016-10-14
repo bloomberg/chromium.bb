@@ -466,10 +466,14 @@ static inline FloatRect calculateGlyphBoundaries(
     int startPosition) {
   const float scalingFactor = queryData->textLineLayout.scalingFactor();
   ASSERT(scalingFactor);
-  const float baseline =
-      queryData->textLineLayout.scaledFont().getFontMetrics().floatAscent() /
-      scalingFactor;
+  const SimpleFontData* fontData =
+      queryData->textLineLayout.scaledFont().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return FloatRect();
 
+  const float baseline =
+      fontData->getFontMetrics().floatAscent() / scalingFactor;
   float glyphOffsetInDirection =
       calculateGlyphRange(queryData, fragment, 0, startPosition);
   FloatPoint glyphPosition = logicalGlyphPositionToPhysical(
@@ -566,9 +570,15 @@ static bool characterNumberAtPositionCallback(QueryData* queryData,
 
   const float scalingFactor = data->textLineLayout.scalingFactor();
   ASSERT(scalingFactor);
+
+  const SimpleFontData* fontData =
+      data->textLineLayout.scaledFont().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return false;
+
   const float baseline =
-      data->textLineLayout.scaledFont().getFontMetrics().floatAscent() /
-      scalingFactor;
+      fontData->getFontMetrics().floatAscent() / scalingFactor;
 
   // Test the query point against the bounds of the entire fragment first.
   if (!fragment.boundingBox(baseline).contains(data->position))

@@ -730,7 +730,12 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
 
   if (verticalAlign != VerticalAlignBaseline) {
     const Font& font = parent.style(firstLine)->font();
-    const FontMetrics& fontMetrics = font.getFontMetrics();
+    const SimpleFontData* fontData = font.primaryFont();
+    DCHECK(fontData);
+    if (!fontData)
+      return LayoutUnit();
+
+    const FontMetrics& fontMetrics = fontData->getFontMetrics();
     int fontSize = font.getFontDescription().computedPixelSize();
 
     LineDirectionMode lineDirection =

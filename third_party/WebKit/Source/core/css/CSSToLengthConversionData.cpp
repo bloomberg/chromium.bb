@@ -52,17 +52,22 @@ CSSToLengthConversionData::FontSizes::FontSizes(const ComputedStyle* style,
 
 float CSSToLengthConversionData::FontSizes::ex() const {
   ASSERT(m_font);
+  const SimpleFontData* fontData = m_font->primaryFont();
+  DCHECK(fontData);
+
   // FIXME: We have a bug right now where the zoom will be applied twice to EX
   // units. We really need to compute EX using fontMetrics for the original
   // specifiedSize and not use our actual constructed layoutObject font.
-  if (!m_font->getFontMetrics().hasXHeight())
+  if (!fontData || !fontData->getFontMetrics().hasXHeight())
     return m_em / 2.0f;
-  return m_font->getFontMetrics().xHeight();
+  return fontData->getFontMetrics().xHeight();
 }
 
 float CSSToLengthConversionData::FontSizes::ch() const {
-  ASSERT(m_font);
-  return m_font->getFontMetrics().zeroWidth();
+  DCHECK(m_font);
+  const SimpleFontData* fontData = m_font->primaryFont();
+  DCHECK(fontData);
+  return fontData ? fontData->getFontMetrics().zeroWidth() : 0;
 }
 
 CSSToLengthConversionData::ViewportSize::ViewportSize(

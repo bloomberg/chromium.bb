@@ -690,8 +690,12 @@ void InlineFlowBox::placeBoxesInBlockDirection(
     FontBaseline baselineType) {
   bool isRootBox = isRootInlineBox();
   if (isRootBox) {
-    const FontMetrics& fontMetrics =
-        getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics();
+    const SimpleFontData* fontData =
+        getLineLayoutItem().style(isFirstLineStyle())->font().primaryFont();
+    DCHECK(fontData);
+    if (!fontData)
+      return;
+    const FontMetrics& fontMetrics = fontData->getFontMetrics();
     // RootInlineBoxes are always placed at pixel boundaries in their logical y
     // direction. Not doing so results in incorrect layout of text decorations,
     // most notably underlines.
@@ -740,8 +744,15 @@ void InlineFlowBox::placeBoxesInBlockDirection(
     LayoutUnit boxHeightIncludingMargins = boxHeight;
     LayoutUnit borderPaddingHeight;
     if (curr->isText() || curr->isInlineFlowBox()) {
-      const FontMetrics& fontMetrics =
-          curr->getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics();
+      const SimpleFontData* fontData = curr->getLineLayoutItem()
+                                           .style(isFirstLineStyle())
+                                           ->font()
+                                           .primaryFont();
+      DCHECK(fontData);
+      if (!fontData)
+        continue;
+
+      const FontMetrics& fontMetrics = fontData->getFontMetrics();
       newLogicalTop += curr->baselinePosition(baselineType) -
                        fontMetrics.ascent(baselineType);
       if (curr->isInlineFlowBox()) {

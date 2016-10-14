@@ -34,16 +34,21 @@ SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font,
 float SVGTextLayoutEngineBaseline::calculateBaselineShift(
     const ComputedStyle& style) const {
   const SVGComputedStyle& svgStyle = style.svgStyle();
+  const SimpleFontData* fontData = m_font.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return 0;
 
+  DCHECK(m_effectiveZoom);
   switch (svgStyle.baselineShift()) {
     case BS_LENGTH:
       return SVGLengthContext::valueForLength(
           svgStyle.baselineShiftValue(), style,
           m_font.getFontDescription().computedPixelSize() / m_effectiveZoom);
     case BS_SUB:
-      return -m_font.getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
+      return -fontData->getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
     case BS_SUPER:
-      return m_font.getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
+      return fontData->getFontMetrics().floatHeight() / 2 / m_effectiveZoom;
     default:
       ASSERT_NOT_REACHED();
       return 0;
@@ -121,7 +126,12 @@ float SVGTextLayoutEngineBaseline::calculateAlignmentBaselineShift(
     ASSERT(baseline != AB_AUTO && baseline != AB_BASELINE);
   }
 
-  const FontMetrics& fontMetrics = m_font.getFontMetrics();
+  const SimpleFontData* fontData = m_font.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return 0;
+
+  const FontMetrics& fontMetrics = fontData->getFontMetrics();
   float ascent = fontMetrics.floatAscent() / m_effectiveZoom;
   float descent = fontMetrics.floatDescent() / m_effectiveZoom;
   float xheight = fontMetrics.xHeight() / m_effectiveZoom;

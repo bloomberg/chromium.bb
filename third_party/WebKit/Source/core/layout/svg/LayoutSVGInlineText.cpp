@@ -151,8 +151,11 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(
     return createPositionWithAffinity(0);
 
   ASSERT(m_scalingFactor);
+
+  const SimpleFontData* fontData = m_scaledFont.primaryFont();
+  DCHECK(fontData);
   float baseline =
-      m_scaledFont.getFontMetrics().floatAscent() / m_scalingFactor;
+      fontData ? fontData->getFontMetrics().floatAscent() / m_scalingFactor : 0;
 
   LayoutBlock* containingBlock = this->containingBlock();
   ASSERT(containingBlock);
@@ -287,8 +290,13 @@ void LayoutSVGInlineText::addMetricsFromRun(const TextRun& run,
       scaledFont().individualCharacterRanges(run);
   synthesizeGraphemeWidths(run, charRanges);
 
+  const SimpleFontData* fontData = scaledFont().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return;
+
   const float cachedFontHeight =
-      scaledFont().getFontMetrics().floatHeight() / m_scalingFactor;
+      fontData->getFontMetrics().floatHeight() / m_scalingFactor;
   const bool preserveWhiteSpace = styleRef().whiteSpace() == PRE;
   const unsigned runLength = run.length();
 

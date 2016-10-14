@@ -253,11 +253,7 @@ inline bool requiresLineBoxForContent(LineLayoutInline flow,
       (flow.style(lineInfo.isFirstLine())->lineHeight() !=
            parent.style(lineInfo.isFirstLine())->lineHeight() ||
        flow.style()->verticalAlign() != parent.style()->verticalAlign() ||
-       !parent.style()
-            ->font()
-            .getFontMetrics()
-            .hasIdenticalAscentDescentAndLineGap(
-                flow.style()->font().getFontMetrics())))
+       !parent.style()->hasIdenticalAscentDescentAndLineGap(flow.styleRef())))
     return true;
   return false;
 }

@@ -58,13 +58,17 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo,
     context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
 
   const Font& font = style.font();
+  const SimpleFontData* fontData = font.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return;
 
   TextPainter::Style textStyle = TextPainter::textPaintingStyle(
       m_ellipsisBox.getLineLayoutItem(), style, paintInfo);
   TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style,
                                      TextRun::AllowTrailingExpansion);
   LayoutPoint textOrigin(boxOrigin.x(),
-                         boxOrigin.y() + font.getFontMetrics().ascent());
+                         boxOrigin.y() + fontData->getFontMetrics().ascent());
   TextPainter textPainter(context, font, textRun, textOrigin, boxRect,
                           m_ellipsisBox.isHorizontal());
   textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(),

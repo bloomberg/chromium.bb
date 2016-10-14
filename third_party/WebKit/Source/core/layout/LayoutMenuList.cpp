@@ -155,7 +155,9 @@ void LayoutMenuList::styleDidChange(StyleDifference diff,
 }
 
 void LayoutMenuList::updateInnerBlockHeight() {
-  m_innerBlockHeight = style()->getFontMetrics().height() +
+  const SimpleFontData* fontData = style()->font().primaryFont();
+  DCHECK(fontData);
+  m_innerBlockHeight = (fontData ? fontData->getFontMetrics().height() : 0) +
                        m_innerBlock->borderAndPaddingHeight();
 }
 

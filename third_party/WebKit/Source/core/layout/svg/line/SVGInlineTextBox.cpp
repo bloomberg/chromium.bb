@@ -112,7 +112,12 @@ FloatRect SVGInlineTextBox::selectionRectForTextFragment(
   ASSERT(scalingFactor);
 
   const Font& scaledFont = lineLayoutItem.scaledFont();
-  const FontMetrics& scaledFontMetrics = scaledFont.getFontMetrics();
+  const SimpleFontData* fontData = scaledFont.primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return FloatRect();
+
+  const FontMetrics& scaledFontMetrics = fontData->getFontMetrics();
   FloatPoint textOrigin(fragment.x, fragment.y);
   if (scalingFactor != 1)
     textOrigin.scale(scalingFactor, scalingFactor);
@@ -257,11 +262,14 @@ void SVGInlineTextBox::paintTextMatchMarkerBackground(
 LayoutRect SVGInlineTextBox::calculateBoundaries() const {
   LineLayoutSVGInlineText lineLayoutItem =
       LineLayoutSVGInlineText(this->getLineLayoutItem());
+  const SimpleFontData* fontData = lineLayoutItem.scaledFont().primaryFont();
+  DCHECK(fontData);
+  if (!fontData)
+    return LayoutRect();
+
   float scalingFactor = lineLayoutItem.scalingFactor();
   ASSERT(scalingFactor);
-  LayoutUnit baseline(
-      lineLayoutItem.scaledFont().getFontMetrics().floatAscent() /
-      scalingFactor);
+  LayoutUnit baseline(fontData->getFontMetrics().floatAscent() / scalingFactor);
 
   LayoutRect textBoundingRect;
   for (const SVGTextFragment& fragment : m_textFragments)
@@ -296,11 +304,15 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result,
       if (locationInContainer.intersects(rect)) {
         LineLayoutSVGInlineText lineLayoutItem =
             LineLayoutSVGInlineText(this->getLineLayoutItem());
-        ASSERT(lineLayoutItem.scalingFactor());
-        float baseline =
-            lineLayoutItem.scaledFont().getFontMetrics().floatAscent() /
-            lineLayoutItem.scalingFactor();
+        const SimpleFontData* fontData =
+            lineLayoutItem.scaledFont().primaryFont();
+        DCHECK(fontData);
+        if (!fontData)
+          return false;
 
+        DCHECK(lineLayoutItem.scalingFactor());
+        float baseline = fontData->getFontMetrics().floatAscent() /
+                         lineLayoutItem.scalingFactor();
         FloatPoint floatLocation = FloatPoint(locationInContainer.point());
         for (const SVGTextFragment& fragment : m_textFragments) {
           FloatQuad fragmentQuad = fragment.boundingQuad(baseline);
