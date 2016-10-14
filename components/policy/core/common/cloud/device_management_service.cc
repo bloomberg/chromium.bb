@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -232,6 +233,22 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementRequestJobImpl);
 };
 
+// Used in the Enterprise.DMServerRequestSuccess histogram, shows how many
+// retries we had to do to execute the DeviceManagementRequestJob.
+enum DMServerRequestSuccess {
+  // No retries happened, the request succeeded for the first try.
+  REQUEST_NO_RETRY = 0,
+
+  // 1..kMaxRetries: number of retries
+
+  // The request failed (too many retries or non-retriable error).
+  REQUEST_FAILED = 10,
+  // The server responded with an error.
+  REQUEST_ERROR,
+
+  REQUEST_MAX
+};
+
 DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     JobType type,
     const std::string& agent_parameter,
@@ -258,6 +275,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     int response_code,
     const std::string& data) {
   if (status.status() != net::URLRequestStatus::SUCCESS) {
+    UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
+                              DMServerRequestSuccess::REQUEST_FAILED,
+                              DMServerRequestSuccess::REQUEST_MAX);
     LOG(WARNING) << "DMServer request failed, status: " << status.status()
                  << ", error: " << status.error();
     em::DeviceManagementResponse dummy_response;
@@ -265,8 +285,17 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     return;
   }
 
-  if (response_code != kSuccess)
+  if (response_code != kSuccess) {
+    UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
+                              DMServerRequestSuccess::REQUEST_ERROR,
+                              DMServerRequestSuccess::REQUEST_MAX);
     LOG(WARNING) << "DMServer sent an error response: " << response_code;
+  } else {
+    // Success with retries_count_ retries.
+    UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
+                              retries_count_,
+                              DMServerRequestSuccess::REQUEST_MAX);
+  }
 
   switch (response_code) {
     case kSuccess: {
