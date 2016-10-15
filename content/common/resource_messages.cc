@@ -396,6 +396,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::GetSize(
   if (p.get()) {
     GetParamSize(s, *p->elements());
     GetParamSize(s, p->identifier());
+    GetParamSize(s, p->contains_sensitive_info());
   }
 }
 
@@ -406,6 +407,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::Write(
   if (p.get()) {
     WriteParam(m, *p->elements());
     WriteParam(m, p->identifier());
+    WriteParam(m, p->contains_sensitive_info());
   }
 }
 
@@ -424,9 +426,13 @@ bool ParamTraits<scoped_refptr<content::ResourceRequestBodyImpl>>::Read(
   int64_t identifier;
   if (!ReadParam(m, iter, &identifier))
     return false;
+  bool contains_sensitive_info;
+  if (!ReadParam(m, iter, &contains_sensitive_info))
+    return false;
   *r = new content::ResourceRequestBodyImpl;
   (*r)->swap_elements(&elements);
   (*r)->set_identifier(identifier);
+  (*r)->set_contains_sensitive_info(contains_sensitive_info);
   return true;
 }
 

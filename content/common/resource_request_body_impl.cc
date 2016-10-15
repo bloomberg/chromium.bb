@@ -12,7 +12,9 @@ using blink::WebString;
 
 namespace content {
 
-ResourceRequestBodyImpl::ResourceRequestBodyImpl() : identifier_(0) {}
+ResourceRequestBodyImpl::ResourceRequestBodyImpl()
+    : identifier_(0),
+      contains_sensitive_info_(false) {}
 
 void ResourceRequestBodyImpl::AppendBytes(const char* bytes, int bytes_len) {
   if (bytes_len > 0) {

@@ -233,6 +233,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
   WebHTTPBody http_body;
   http_body.initialize();
   http_body.setIdentifier(input->identifier());
+  http_body.setContainsPasswordData(input->contains_sensitive_info());
   for (const auto& element : *input->elements()) {
     switch (element.type()) {
       case ResourceRequestBodyImpl::Element::TYPE_BYTES:
@@ -328,6 +329,7 @@ scoped_refptr<ResourceRequestBodyImpl> GetRequestBodyForWebHTTPBody(
     }
   }
   request_body->set_identifier(httpBody.identifier());
+  request_body->set_contains_sensitive_info(httpBody.containsPasswordData());
   return request_body;
 }
 

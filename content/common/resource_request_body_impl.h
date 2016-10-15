@@ -58,11 +58,20 @@ class CONTENT_EXPORT ResourceRequestBodyImpl : public ResourceRequestBody,
   // Returns paths referred to by |elements| of type Element::TYPE_FILE.
   std::vector<base::FilePath> GetReferencedFiles() const;
 
+  // Sets the flag which indicates whether the post data contains sensitive
+  // information like passwords.
+  void set_contains_sensitive_info(bool contains_sensitive_info) {
+    contains_sensitive_info_ = contains_sensitive_info;
+  }
+  bool contains_sensitive_info() const { return contains_sensitive_info_; }
+
  private:
   ~ResourceRequestBodyImpl() override;
 
   std::vector<Element> elements_;
   int64_t identifier_;
+
+  bool contains_sensitive_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestBodyImpl);
 };

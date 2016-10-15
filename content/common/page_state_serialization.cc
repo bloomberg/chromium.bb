@@ -765,6 +765,10 @@ scoped_refptr<ResourceRequestBodyImpl> DecodeResourceRequestBody(
   scoped_refptr<ResourceRequestBodyImpl> result = new ResourceRequestBodyImpl();
   SerializeObject obj(data, static_cast<int>(size));
   ReadResourceRequestBody(&obj, result);
+  // Please see the EncodeResourceRequestBody() function below for information
+  // about why the contains_sensitive_info() field is being explicitly
+  // deserialized.
+  result->set_contains_sensitive_info(ReadBoolean(&obj));
   return obj.parse_error ? nullptr : result;
 }
 
@@ -773,6 +777,11 @@ std::string EncodeResourceRequestBody(
   SerializeObject obj;
   obj.version = kCurrentVersion;
   WriteResourceRequestBody(resource_request_body, &obj);
+  // EncodeResourceRequestBody() is different from WriteResourceRequestBody()
+  // because it covers additional data (e.g.|contains_sensitive_info|) which
+  // is marshaled between native code and java. WriteResourceRequestBody()
+  // serializes data which needs to be saved out to disk.
+  WriteBoolean(resource_request_body.contains_sensitive_info(), &obj);
   return obj.GetAsString();
 }
 
