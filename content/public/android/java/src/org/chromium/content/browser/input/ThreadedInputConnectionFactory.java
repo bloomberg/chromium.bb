@@ -54,8 +54,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         }
     }
 
-    ThreadedInputConnectionFactory(
-            InputMethodManagerWrapper inputMethodManagerWrapper) {
+    ThreadedInputConnectionFactory(InputMethodManagerWrapper inputMethodManagerWrapper) {
         mInputMethodManagerWrapper = inputMethodManagerWrapper;
         mHandler = createHandler();
         mInputMethodUma = createInputMethodUma();
@@ -140,9 +139,11 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (mReentrantTriggering) return;
 
         // We need to check this before creating invalidator.
-        if (!view.hasFocus() || !view.hasWindowFocus()) return;
+        if (!view.hasFocus()) return;
 
         mCheckInvalidator = new CheckInvalidator();
+
+        if (!view.hasWindowFocus()) mCheckInvalidator.invalidate();
 
         if (mProxyView == null) {
             mProxyView = createProxyView(mHandler, view);
@@ -155,8 +156,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         view.getHandler().post(new Runnable() {
             @Override
             public void run() {
-                if (mCheckInvalidator.isInvalid()) return;
-
                 // This is a hack to make InputMethodManager believe that the proxy view
                 // now has a focus. As a result, InputMethodManager will think that mProxyView
                 // is focused, and will call getHandler() of the view when creating input
@@ -207,12 +206,12 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
             return;
         }
 
-        if (checkInvalidator.isInvalid()) return;
-
         if (retry > 0) {
             postCheckRegisterResultOnUiThread(view, checkInvalidator, retry - 1);
             return;
         }
+
+        if (checkInvalidator.isInvalid()) return;
 
         onRegisterProxyViewFailure();
     }

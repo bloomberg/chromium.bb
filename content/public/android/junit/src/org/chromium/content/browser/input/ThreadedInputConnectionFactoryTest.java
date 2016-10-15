@@ -8,9 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
@@ -21,9 +19,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +32,10 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.ShadowLooper;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.concurrent.Callable;
 
@@ -90,8 +89,15 @@ public class ThreadedInputConnectionFactoryTest {
         public boolean hasFailed() {
             return mFailed;
         }
+
         public boolean hasSucceeded() {
             return mSucceeded;
+        }
+
+        @Override
+        public void onWindowFocusChanged(boolean gainFocus) {
+            mHasWindowFocus = gainFocus;
+            super.onWindowFocusChanged(gainFocus);
         }
     }
 
@@ -113,7 +119,7 @@ public class ThreadedInputConnectionFactoryTest {
     private TestFactory mFactory;
     private InputConnection mInputConnection;
     private InOrder mInOrder;
-    private boolean mWindowFocusChanged;
+    private boolean mHasWindowFocus;
 
     @Before
     public void setUp() throws Exception {
@@ -128,6 +134,7 @@ public class ThreadedInputConnectionFactoryTest {
         mInputMethodManager = Mockito.mock(InputMethodManager.class);
 
         mFactory = new TestFactory(new InputMethodManagerWrapper(mContext));
+        mFactory.onWindowFocusChanged(true);
 
         when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE))
                 .thenReturn(mInputMethodManager);
@@ -140,13 +147,6 @@ public class ThreadedInputConnectionFactoryTest {
         when(mProxyView.getContext()).thenReturn(mContext);
         when(mProxyView.requestFocus()).thenReturn(true);
         when(mProxyView.getHandler()).thenReturn(mImeHandler);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                mWindowFocusChanged = true;
-                return null;
-            }
-        }).when(mProxyView).onWindowFocusChanged(true);
         final Callable<InputConnection> callable = new Callable<InputConnection>() {
             @Override
             public InputConnection call() throws Exception {
@@ -168,17 +168,22 @@ public class ThreadedInputConnectionFactoryTest {
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
                 mCount++;
-                if (mCount == 1 && mWindowFocusChanged) {
+                // To simplify IMM's behavior, let's say that it succeeds input method activation
+                // only when the view has a window focus.
+                if (!mHasWindowFocus) return false;
+                if (mCount == 1) {
                     mInputConnection = mProxyView.onCreateInputConnection(mEditorInfo);
                     return false;
-                } else if (mCount == 2) {
-                    return true;
                 }
-                fail();
-                return false;
+                return mHasWindowFocus;
             }
         });
-        when(mInputMethodManager.isActive(mProxyView)).thenReturn(true);
+        when(mInputMethodManager.isActive(mProxyView)).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                return mInputConnection != null;
+            }
+        });
 
         mInOrder = inOrder(mImeAdapter, mInputMethodManager, mContainerView, mProxyView);
     }
@@ -239,29 +244,7 @@ public class ThreadedInputConnectionFactoryTest {
 
     @Test
     @Feature({"TextInput"})
-    public void testCreateInputConnection_WindowFocusLostOnFirstLoop() {
-        // Somehow input was activated right after window focus was lost.
-        when(mContainerView.hasWindowFocus()).thenReturn(false);
-
-        // Pause all the loopers.
-        Robolectric.getForegroundThreadScheduler().pause();
-        mImeShadowLooper.pause();
-
-        activateInput();
-
-        // The first onCreateInputConnection().
-        runOneUiTask();
-        mInOrder.verify(mContainerView).hasFocus();
-        mInOrder.verify(mContainerView).hasWindowFocus();
-        mInOrder.verifyNoMoreInteractions();
-        assertNull(mInputConnection);
-        assertFalse(mFactory.hasSucceeded());
-        assertFalse(mFactory.hasFailed());
-    }
-
-    @Test
-    @Feature({"TextInput"})
-    public void testCreateInputConnection_WindowFocusLostOnSecondLoop() {
+    public void testCreateInputConnection_Failure() {
         // Pause all the loopers.
         Robolectric.getForegroundThreadScheduler().pause();
         mImeShadowLooper.pause();
@@ -279,11 +262,30 @@ public class ThreadedInputConnectionFactoryTest {
 
         // Now window focus was lost before the second onCreateInputConnection().
         mFactory.onWindowFocusChanged(false);
-
-        // The second onCreateInputConnection() gets ignored.
-        runOneUiTask();
         mInOrder.verify(mProxyView).onOriginalViewWindowFocusChanged(false);
+
+        // The second onCreateInputConnection().
+        runOneUiTask();
+        mInOrder.verify(mProxyView).onWindowFocusChanged(true);
+        mInOrder.verify(mInputMethodManager).isActive(mContainerView);
         mInOrder.verifyNoMoreInteractions();
+
+        // Window focus is lost and we fail to activate.
+        assertNull(mInputConnection);
+
+        // Verification process.
+        mImeShadowLooper.runOneTask();
+        mInOrder.verify(mContainerView).getHandler();
+        runOneUiTask();
+        mInOrder.verify(mInputMethodManager).isActive(mProxyView);
+
+        // Wait one more UI loop.
+        mInOrder.verify(mContainerView).getHandler();
+        runOneUiTask();
+        mInOrder.verify(mInputMethodManager).isActive(mProxyView);
+
+        mInOrder.verifyNoMoreInteractions();
+        // Failed, but no logging because check has been invalidated.
         assertNull(mInputConnection);
         assertFalse(mFactory.hasSucceeded());
         assertFalse(mFactory.hasFailed());

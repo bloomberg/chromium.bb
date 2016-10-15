@@ -107,7 +107,10 @@ public class ThreadedInputConnectionProxyView extends View {
     @Override
     public View getRootView() {
         if (DEBUG_LOGS) Log.w(TAG, "getRootView");
-        return mRootView.get();
+        // Returning a null here matches mCurRootView being null value in InputMethodManager,
+        // which represents that the current focused window is not IME target window.
+        // In this case, you are still able to type.
+        return mWindowFocused.get() ? mRootView.get() : null;
     }
 
     @Override
