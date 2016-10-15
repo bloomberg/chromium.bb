@@ -4,9 +4,7 @@
   "display_name": "MUS Demo",
   "capabilities": {
     "required": {
-      "service:ui": {
-        "classes": [ "app", "ui:window_manager" ]
-      }
+      "service:ui": [ "app", "ui:window_manager" ]
     }
   }
 }

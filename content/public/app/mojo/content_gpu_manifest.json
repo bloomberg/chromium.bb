@@ -13,11 +13,7 @@
       ]
     },
     "required": {
-      "service:content_browser": {
-        "classes": [
-          "gpu"
-        ]
-      }
+      "service:content_browser": [ "gpu" ]
     }
   }
 }

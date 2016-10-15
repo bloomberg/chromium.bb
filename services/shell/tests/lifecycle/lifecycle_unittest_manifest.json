@@ -4,19 +4,13 @@
   "display_name": "Lifecycle Unittest",
   "capabilities": {
     "required": {
-      "*": {
-        "classes": [ "lifecycle_unittest:lifecycle_control" ]
-      },
-      "service:lifecycle_unittest_parent": {
-        "classes":  [ "lifecycle_unittest:parent" ]
-      },
-      "service:shell": {
-        "classes": [
-          "shell:service_manager",
-          "shell:instance_name",
-          "shell:client_process"
-        ]
-      }
+      "*": [ "lifecycle_unittest:lifecycle_control" ],
+      "service:lifecycle_unittest_parent": [ "lifecycle_unittest:parent" ],
+      "service:shell": [
+        "shell:service_manager",
+        "shell:instance_name",
+        "shell:client_process"
+      ]
     }
   }
 }

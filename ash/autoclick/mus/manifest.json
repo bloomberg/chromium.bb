@@ -8,8 +8,8 @@
       "ash:autoclick": [ "ash::autoclick::mojom::AutoclickController" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "service:shell": { "classes": [ "shell:service_manager" ] }
+      "*": [ "app" ],
+      "service:shell": [ "shell:service_manager" ]
     }
   }
 }

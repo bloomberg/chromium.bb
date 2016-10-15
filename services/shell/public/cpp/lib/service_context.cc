@@ -63,9 +63,11 @@ void ServiceContext::OnStart(const shell::Identity& identity,
 void ServiceContext::OnConnect(
     const Identity& source,
     mojom::InterfaceProviderRequest interfaces,
-    const CapabilityRequest& allowed_capabilities) {
+    const Interfaces& allowed_interfaces,
+    const Classes& allowed_classes) {
+  // TODO(beng): do something with |allowed_classes|.
   std::unique_ptr<InterfaceRegistry> registry(
-      new InterfaceRegistry(identity_, source, allowed_capabilities));
+      new InterfaceRegistry(identity_, source, allowed_interfaces));
   registry->Bind(std::move(interfaces));
 
   if (!service_->OnConnect(source, registry.get()))

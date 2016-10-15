@@ -30,14 +30,22 @@ std::unique_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
 
   std::unique_ptr<base::DictionaryValue> capabilities(
       new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> provided_classes(
+      new base::DictionaryValue);
+  std::unique_ptr<base::ListValue> provided_classes_list(
+      new base::ListValue);
+  provided_classes_list->AppendString("shell::mojom::TestService");
+  provided_classes->Set("shell:test_service", std::move(provided_classes_list));
+  capabilities->Set(Store::kCapabilities_ProvidedKey,
+                    std::move(provided_classes));
   std::unique_ptr<base::DictionaryValue> required_capabilities(
       new base::DictionaryValue);
-  std::unique_ptr<base::DictionaryValue> interfaces_dictionary(
+  std::unique_ptr<base::DictionaryValue> classes_dictionary(
       new base::DictionaryValue);
-  std::unique_ptr<base::ListValue> interfaces_list(new base::ListValue);
-  interfaces_list->AppendString("shell::mojom::TestService");
-  interfaces_dictionary->Set("interfaces", std::move(interfaces_list));
-  required_capabilities->Set("*", std::move(interfaces_dictionary));
+  std::unique_ptr<base::ListValue> classes_list(new base::ListValue);
+  classes_list->AppendString("shell:test_service");
+  classes_dictionary->Set("classes", std::move(classes_list));
+  required_capabilities->Set("*", std::move(classes_dictionary));
   capabilities->Set(Store::kCapabilities_RequiredKey,
                     std::move(required_capabilities));
   app->Set(Store::kCapabilitiesKey, std::move(capabilities));

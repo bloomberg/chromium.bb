@@ -13,12 +13,8 @@
       "connect_unittests:user_id_test": [ "shell::test::mojom::UserIdTest" ]
     },
     "required": {
-      "service:connect_unittests": {
-        "classes": [ "connect_unittests:exposed_interface" ]
-      },
-      "service:connect_test_class_app": {
-        "classes": [ "connect_unittests:class" ]
-      }
+      "service:connect_unittests": [ "connect_unittests:exposed_interface" ],
+      "service:connect_test_class_app": [ "connect_unittests:class" ]
     }
   }
 }

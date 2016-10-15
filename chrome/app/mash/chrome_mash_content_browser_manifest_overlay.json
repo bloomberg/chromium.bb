@@ -16,9 +16,9 @@
       ]
     },
     "required": {
-      "service:ash": { "classes": [ "ash" ] },
-      "service:accessibility_autoclick": { "classes": [ "ash:autoclick" ] },
-      "service:mash_session": { "classes": [ "app" ] }
+      "service:ash": [ "ash" ],
+      "service:accessibility_autoclick": [ "ash:autoclick" ],
+      "service:mash_session": [ "app" ]
     }
   }
 }

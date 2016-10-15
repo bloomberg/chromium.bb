@@ -4,8 +4,7 @@
   "display_name": "Video Capture Unittests",
   "capabilities": {
     "required": {
-      "service:video_capture": {
-        "classes": [ "tests" ] }
+      "service:video_capture": [ "tests" ]
     }
   }
 }

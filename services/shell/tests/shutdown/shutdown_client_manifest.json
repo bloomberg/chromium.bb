@@ -9,10 +9,8 @@
       ]
     },
     "required": {
-      "service:shell": { "classes": [ "shell:service_manager" ] },
-      "service:shutdown_service": {
-        "classes": [ "shutdown_unittest:shutdown_test_service" ]
-      }
+      "service:shell": [ "shell:service_manager" ],
+      "service:shutdown_service": [ "shutdown_unittest:shutdown_test_service" ]
     }
   }
 }

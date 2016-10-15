@@ -9,8 +9,8 @@
       ]
     },
     "required": {
-      "service:shell": { "classes": [ "shell:service_manager" ] },
-      "exe:shell_unittest_driver": { "classes":  [ "shell_unittest:driver" ] }
+      "service:shell": [ "shell:service_manager" ],
+      "exe:shell_unittest_driver": [ "shell_unittest:driver" ]
     }
   }
 }

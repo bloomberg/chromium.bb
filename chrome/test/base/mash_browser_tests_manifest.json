@@ -7,7 +7,7 @@
       "shell:service_factory":  [ "shell::mojom::ServiceFactory" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

@@ -9,7 +9,7 @@
       "file:leveldb": [ "leveldb::mojom::LevelDBService" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

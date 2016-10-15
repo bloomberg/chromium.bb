@@ -10,7 +10,7 @@
       ]
     },
     "required": {
-      "service:shell": { "classes":  [ "shell:explicit_class" ] }
+      "service:shell": [ "shell:explicit_class" ]
     }
   }
 }

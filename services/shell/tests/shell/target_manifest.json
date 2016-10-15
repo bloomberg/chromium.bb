@@ -4,9 +4,7 @@
   "display_name": "Shell Unittest: Target",
   "capabilities": {
     "required": {
-      "service:shell_unittest": {
-        "classes": [ "shell_unittest:create_instance_test" ]
-      }
+      "service:shell_unittest": [ "shell_unittest:create_instance_test" ]
     }
   }
 }

@@ -7,9 +7,9 @@
       "mash_init:init": [ "mash::init::mojom::Init" ]
     },
     "required": {
-      "*": { },
-      "service:login": { "classes": [ "login:login" ] },
-      "service:shell": { "classes": [ "shell:user_id", "shell:all_users" ] }
+      "*": [],
+      "service:login": [ "login:login" ],
+      "service:shell": [ "shell:user_id", "shell:all_users" ]
     }
   }
 }

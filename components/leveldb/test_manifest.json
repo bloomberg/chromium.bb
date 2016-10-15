@@ -4,8 +4,8 @@
   "display_name": "LevelDB Service Unittests",
   "capabilities": {
     "required": {
-      "service:filesystem": { "classes": [ "filesystem:filesystem" ] },
-      "service:leveldb": { "classes":  [ "leveldb:leveldb" ] }
+      "service:filesystem": [ "filesystem:filesystem" ],
+      "service:leveldb": [ "leveldb:leveldb" ]
     }
   }
 }

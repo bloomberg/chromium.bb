@@ -4,7 +4,7 @@
   "display_name": "Runner Child Apptest",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

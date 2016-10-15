@@ -60,11 +60,6 @@ TEST_F(EntryTest, Simple) {
   EXPECT_EQ("Foo", entry->display_name());
 }
 
-TEST_F(EntryTest, NoWildcardInInterfaces) {
-  std::unique_ptr<Entry> entry = ReadEntry("wildcard_interfaces", nullptr);
-  EXPECT_EQ(nullptr, entry.get());
-}
-
 TEST_F(EntryTest, Instance) {
   std::unique_ptr<Entry> entry = ReadEntry("instance", nullptr);
   EXPECT_EQ("service:foo", entry->name());
@@ -79,9 +74,9 @@ TEST_F(EntryTest, Capabilities) {
   EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
   shell::CapabilitySpec spec;
-  shell::CapabilityRequest request;
-  request.interfaces.insert("mojo::Bar");
-  spec.required["service:bar"] = request;
+  shell::Classes classes;
+  classes.insert("bar:bar");
+  spec.required["service:bar"] = classes;
   EXPECT_EQ(spec, entry->capabilities());
 }
 

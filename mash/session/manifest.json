@@ -6,6 +6,6 @@
     "provided": {
       "mash_session:session": [ "mash::session::mojom::Session" ]
     },
-    "required": { "*": { "classes": [ "app" ] } }
+    "required": { "*": [ "app" ] }
   }
 }

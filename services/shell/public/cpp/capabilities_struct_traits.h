@@ -11,72 +11,65 @@
 namespace mojo {
 
 template <>
-struct StructTraits<shell::mojom::CapabilityRequest::DataView,
-                    shell::CapabilityRequest> {
-  static const shell::Classes& classes(
-      const shell::CapabilityRequest& request) {
-    return request.classes;
-  }
-  static const shell::Interfaces& interfaces(
-      const shell::CapabilityRequest& request) {
-    return request.interfaces;
-  }
-  static bool Read(shell::mojom::CapabilityRequestDataView data,
-                   shell::CapabilityRequest* out) {
-    ArrayDataView<StringDataView> classes_data_view;
-    data.GetClassesDataView(&classes_data_view);
-    for (size_t i = 0; i < classes_data_view.size(); ++i) {
-      std::string clazz;
-      if (!classes_data_view.Read(i, &clazz))
-        return false;
-      out->classes.insert(std::move(clazz));
-    }
-
-    ArrayDataView<StringDataView> interfaces_data_view;
-    data.GetInterfacesDataView(&interfaces_data_view);
-    for (size_t i = 0; i < interfaces_data_view.size(); ++i) {
-      std::string interface_name;
-      if (!interfaces_data_view.Read(i, &interface_name))
-        return false;
-      out->interfaces.insert(std::move(interface_name));
-    }
-    return true;
-  }
-};
-
-template <>
 struct StructTraits<shell::mojom::CapabilitySpec::DataView,
                     shell::CapabilitySpec> {
   static const std::map<shell::Class, shell::Interfaces>& provided(
       const shell::CapabilitySpec& spec) {
     return spec.provided;
   }
-  static const std::map<shell::Name, shell::CapabilityRequest>& required(
+  static const std::map<shell::Name, shell::Classes>& required(
       const shell::CapabilitySpec& spec) {
     return spec.required;
   }
   static bool Read(shell::mojom::CapabilitySpecDataView data,
                    shell::CapabilitySpec* out) {
-    MapDataView<StringDataView, ArrayDataView<StringDataView>>
-        provided_data_view;
-    data.GetProvidedDataView(&provided_data_view);
+    return data.ReadProvided(&out->provided) &&
+           data.ReadRequired(&out->required);
+  }
+};
 
-    for (size_t i = 0; i < provided_data_view.keys().size(); ++i) {
-      std::string clazz;
-      if (!provided_data_view.keys().Read(i, &clazz))
+template <>
+struct StructTraits<shell::mojom::Interfaces::DataView,
+                    shell::Interfaces> {
+  static std::vector<std::string> interfaces(const shell::Interfaces& spec) {
+    std::vector<std::string> vec;
+    for (const auto& interface_name : spec)
+      vec.push_back(interface_name);
+    return vec;
+  }
+  static bool Read(shell::mojom::InterfacesDataView data,
+                   shell::Interfaces* out) {
+    ArrayDataView<StringDataView> interfaces_data_view;
+    data.GetInterfacesDataView(&interfaces_data_view);
+    for (size_t i = 0; i < interfaces_data_view.size(); ++i) {
+      std::string interface_name;
+      if (!interfaces_data_view.Read(i, &interface_name))
         return false;
-
-      std::vector<std::string> interfaces_vec;
-      if (!provided_data_view.values().Read(i, &interfaces_vec))
-        return false;
-      std::set<std::string> interfaces;
-      for (const auto& interface_name : interfaces_vec)
-        interfaces.insert(interface_name);
-
-      out->provided[clazz] = std::move(interfaces);
+      out->insert(std::move(interface_name));
     }
+    return true;
+  }
+};
 
-    return data.ReadRequired(&out->required);
+template <>
+struct StructTraits<shell::mojom::Classes::DataView,
+                    shell::Classes> {
+  static std::vector<std::string> classes(const shell::Classes& spec) {
+    std::vector<std::string> vec;
+    for (const auto& class_name : spec)
+      vec.push_back(class_name);
+    return vec;
+  }
+  static bool Read(shell::mojom::ClassesDataView data, shell::Classes* out) {
+    ArrayDataView<StringDataView> classes_data_view;
+    data.GetClassesDataView(&classes_data_view);
+    for (size_t i = 0; i < classes_data_view.size(); ++i) {
+      std::string class_name;
+      if (!classes_data_view.Read(i, &class_name))
+        return false;
+      out->insert(std::move(class_name));
+    }
+    return true;
   }
 };
 

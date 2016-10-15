@@ -54,58 +54,56 @@ Identity CreateCatalogIdentity() {
 
 CapabilitySpec GetPermissiveCapabilities() {
   CapabilitySpec capabilities;
-  CapabilityRequest spec;
-  spec.interfaces.insert("*");
-  capabilities.required["*"] = spec;
+  Interfaces interfaces;
+  interfaces.insert("*");
+  capabilities.required["*"] = interfaces;
   return capabilities;
 }
 
-CapabilityRequest GetCapabilityRequest(const CapabilitySpec& source_spec,
-                                       const Identity& target) {
-  CapabilityRequest request;
+Classes GetRequestedClasses(const CapabilitySpec& source_spec,
+                            const Identity& target) {
+  Classes classes;
 
   // Start by looking for specs specific to the supplied identity.
   auto it = source_spec.required.find(target.name());
   if (it != source_spec.required.end()) {
-    std::copy(it->second.classes.begin(), it->second.classes.end(),
-              std::inserter(request.classes, request.classes.begin()));
-    std::copy(it->second.interfaces.begin(), it->second.interfaces.end(),
-              std::inserter(request.interfaces, request.interfaces.begin()));
+    std::copy(it->second.begin(), it->second.end(),
+              std::inserter(classes, classes.begin()));
   }
 
   // Apply wild card rules too.
   it = source_spec.required.find("*");
   if (it != source_spec.required.end()) {
-    std::copy(it->second.classes.begin(), it->second.classes.end(),
-              std::inserter(request.classes, request.classes.begin()));
-    std::copy(it->second.interfaces.begin(), it->second.interfaces.end(),
-              std::inserter(request.interfaces, request.interfaces.begin()));
+    std::copy(it->second.begin(), it->second.end(),
+              std::inserter(classes, classes.begin()));
   }
-  return request;
+  return classes;
 }
 
-CapabilityRequest GenerateCapabilityRequestForConnection(
+void GetClassesAndInterfacesForConnection(
     const CapabilitySpec& source_spec,
     const Identity& target,
-    const CapabilitySpec& target_spec) {
-  CapabilityRequest request = GetCapabilityRequest(source_spec, target);
+    const CapabilitySpec& target_spec,
+    Classes* classes,
+    Interfaces* interfaces) {
+  DCHECK(classes && interfaces);
+  *classes = GetRequestedClasses(source_spec, target);
   // Flatten all interfaces from classes requested by the source into the
   // allowed interface set in the request.
-  for (const auto& class_name : request.classes) {
+  for (const auto& class_name : *classes) {
     auto it = target_spec.provided.find(class_name);
     if (it != target_spec.provided.end()) {
       for (const auto& interface_name : it->second)
-        request.interfaces.insert(interface_name);
+        interfaces->insert(interface_name);
     }
   }
-  return request;
 }
 
 bool HasClass(const CapabilitySpec& spec, const std::string& class_name) {
   auto it = spec.required.find(kServiceManagerName);
   if (it == spec.required.end())
     return false;
-  return it->second.classes.find(class_name) != it->second.classes.end();
+  return it->second.find(class_name) != it->second.end();
 }
 
 // Encapsulates a connection to an instance of a service, tracked by the
@@ -177,23 +175,27 @@ class ServiceManager::Instance
         params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                        identity_.user_id());
     }
-    CapabilityRequest request;
-    request.interfaces.insert("*");
+
+    Classes classes;
+    Interfaces interfaces;
     Instance* source = service_manager_->GetExistingInstance(params->source());
     if (source) {
-      request = GenerateCapabilityRequestForConnection(
-          source->capability_spec_, identity_, capability_spec_);
+      GetClassesAndInterfacesForConnection(source->capability_spec_,
+                                           identity_, capability_spec_,
+                                           &classes, &interfaces);
+    } else {
+      interfaces.insert("*");
     }
 
     // The target has specified that sources must request one of its provided
     // classes instead of specifying a wild-card for interfaces.
     if (HasClass(capability_spec_, kCapabilityClass_ExplicitClass) &&
-        (request.interfaces.count("*") != 0)) {
-      request.interfaces.erase("*");
+        (interfaces.count("*") != 0)) {
+      interfaces.erase("*");
     }
 
     service_->OnConnect(params->source(), params->TakeRemoteInterfaces(),
-                        request);
+                        interfaces, classes);
     return true;
   }
 
@@ -497,8 +499,8 @@ ServiceManager::ServiceManager(
   CapabilitySpec spec;
   spec.provided[kCapabilityClass_ServiceManager].insert(
       "shell::mojom::ServiceManager");
-  spec.required["*"].classes.insert("shell:service_factory");
-  spec.required["service:catalog"].classes.insert("shell:resolver");
+  spec.required["*"].insert("shell:service_factory");
+  spec.required["service:catalog"].insert("shell:resolver");
 
   service_manager_instance_ =
       CreateInstance(Identity(), CreateServiceManagerIdentity(), spec);

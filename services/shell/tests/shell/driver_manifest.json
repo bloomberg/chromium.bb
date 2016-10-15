@@ -7,8 +7,8 @@
       "shell_unittest:driver": [ "shell::test::mojom::Driver" ]
     },
     "required": {
-      "exe:shell_unittest_target": { },
-      "service:shell": { "classes": [ "shell:client_process" ] }
+      "exe:shell_unittest_target": [ ],
+      "service:shell": [ "shell:client_process" ]
     }
   }
 }

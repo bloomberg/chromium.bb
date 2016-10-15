@@ -37,24 +37,18 @@
       ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-
+      "*": [ "app" ],
       // In classic ash, the browser supplies ash interfaces to itself.
-      "service:content_browser": { "classes": [ "ash" ] },
-      "service:content_gpu": { "classes": [ "browser" ] },
-      "service:content_plugin": { "classes": [ "browser" ] },
-      "service:content_renderer": { "classes": [ "browser" ] },
-      "service:content_utility": { "classes": [ "browser" ] },
-
-      "service:shell": {
-        "classes": [
-          "shell:client_process",
-          "shell:instance_name",
-          "shell:user_id"
-        ]
-      },
-      "service:file": { "classes": [ "file:filesystem", "file:leveldb" ] },
-      "service:media": { "classes": [ "media:media" ] }
+      "service:content_browser": [ "ash" ],
+      "service:content_gpu": [ "browser" ],
+      "service:content_plugin": [ "browser" ],
+      "service:content_renderer": [ "browser" ],
+      "service:content_utility": [ "browser" ],
+      "service:shell": [ "shell:client_process",
+                         "shell:instance_name",
+                         "shell:user_id" ],
+      "service:file": [ "file:filesystem", "file:leveldb" ],
+      "service:media": [ "media:media" ]
     }
   }
 }

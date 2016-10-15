@@ -4,7 +4,7 @@
   "display_name": "Test IME Driver",
   "capabilities": {
     "required": {
-      "service:ui": { "classes": [ "ui:ime_registrar" ] }
+      "service:ui": [ "ui:ime_registrar" ]
     }
   }
 }

@@ -11,7 +11,7 @@
       ]
     },
     "required": {
-      "service:shell": { "classes": [ "shell:all_users" ] }
+      "service:shell": [ "shell:all_users" ]
     }
   }
 }

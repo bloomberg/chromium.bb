@@ -9,7 +9,7 @@
       ]
     },
     "required": {
-      "service:shell": { "classes": [ "shell:service_manager" ] }
+      "service:shell": [ "shell:service_manager" ]
     }
   }
 }

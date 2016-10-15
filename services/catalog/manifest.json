@@ -13,7 +13,7 @@
       "control": [ "catalog::mojom::CatalogControl" ]
     },
     "required": {
-      "service:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
+      "service:shell": [ "shell:all_users", "shell:explicit_class" ]
     }
   }
 }

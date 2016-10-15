@@ -4,7 +4,7 @@
   "display_name": "MUS Demo Unittests",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app", "test" ] }
+      "*": [ "app", "test" ]
     }
   }
 }

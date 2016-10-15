@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//services/shell/public/cpp/service.gni")
+import("//services/shell/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -26,8 +27,7 @@ source_set("unittests") {
   ]
 
   deps = [
-    ":test_app_bindings",
-    ":test_support",
+    ":test_service_interfaces",
     "//base",
     "//services/shell/background:lib",
     "//services/shell/background:main",
@@ -37,11 +37,12 @@ source_set("unittests") {
   ]
 
   data_deps = [
-    ":test_app",
+    ":background_shell_test_service",
+    ":test_manifest",
   ]
 }
 
-mojom("test_app_bindings") {
+mojom("test_service_interfaces") {
   sources = [
     "test.mojom",
   ]
@@ -49,17 +50,29 @@ mojom("test_app_bindings") {
   use_new_wrapper_types = false
 }
 
-service("test_app") {
-  output_name = "background_shell_test_app"
-
+service("background_shell_test_service") {
   sources = [
     "test_service.cc",
   ]
 
   deps = [
-    ":test_app_bindings",
+    ":test_service_interfaces",
     "//base",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
   ]
+
+  data_deps = [
+    ":test_service_manifest",
+  ]
+}
+
+service_manifest("test_manifest") {
+  name = "background_shell_unittest"
+  source = "test_manifest.json"
+}
+
+service_manifest("test_service_manifest") {
+  name = "background_shell_test_service"
+  source = "test_service_manifest.json"
 }

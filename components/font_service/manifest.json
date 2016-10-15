@@ -4,12 +4,10 @@
   "display_name": "Font Service",
   "capabilities": {
     "provided": {
-      "app": [
-        "font_service::mojom::FontService"
-      ]
+      "app": [ "font_service::mojom::FontService" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

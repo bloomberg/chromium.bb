@@ -4,13 +4,11 @@
   "display_name": "Shutdown Unittest",
   "capabilities": {
     "required": {
-      "service:shell": { "classes": [ "shell:service_manager" ] },
-      "service:shutdown_client": {
-        "classes":  [ "shutdown_unittest:shutdown_test_client_controller" ]
-      },
-      "service:shutdown_service": {
-        "classes": [ "shutdown_unittest:shutdown_test_service" ]
-      }
+      "service:shell": [ "shell:service_manager" ],
+      "service:shutdown_client": [
+        "shutdown_unittest:shutdown_test_client_controller"
+      ],
+      "service:shutdown_service": [ "shutdown_unittest:shutdown_test_service" ]
     }
   }
 }

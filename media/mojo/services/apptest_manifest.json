@@ -4,8 +4,8 @@
   "display_name": "Media Apptests",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] },
-      "service:media": { "classes": [ "media:service_factory" ] }
+      "*": [ "app" ],
+      "service:media": [ "media:service_factory" ]
     }
   }
 }

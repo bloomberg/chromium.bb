@@ -18,17 +18,7 @@ using Interfaces = std::set<std::string>;
 using Name = std::string;
 
 // See comments in services/shell/public/interfaces/capabilities.mojom for a
-// description of CapabilityRequest and CapabilitySpec.
-
-struct CapabilityRequest {
-  CapabilityRequest();
-  CapabilityRequest(const CapabilityRequest& other);
-  ~CapabilityRequest();
-  bool operator==(const CapabilityRequest& other) const;
-  bool operator<(const CapabilityRequest& other) const;
-  Classes classes;
-  Interfaces interfaces;
-};
+// description of CapabilitySpec.
 
 struct CapabilitySpec {
   CapabilitySpec();
@@ -37,7 +27,7 @@ struct CapabilitySpec {
   bool operator==(const CapabilitySpec& other) const;
   bool operator<(const CapabilitySpec& other) const;
   std::map<Class, Interfaces> provided;
-  std::map<Name, CapabilityRequest> required;
+  std::map<Name, Classes> required;
 };
 
 }  // namespace shell

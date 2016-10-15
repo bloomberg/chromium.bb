@@ -4,10 +4,8 @@
   "display_name": "App Driver",
   "capabilities": {
     "required": {
-      "*": {
-        "classes": [ "mash:launchable", "mus:window_manager" ]
-      },
-      "service:catalog": { "classes": [ "catalog:catalog" ] }
+      "*": [ "mash:launchable", "mus:window_manager" ],
+      "service:catalog": [ "catalog:catalog" ]
     }
   }
 }

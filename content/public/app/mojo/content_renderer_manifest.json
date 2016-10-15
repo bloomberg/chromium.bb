@@ -19,8 +19,8 @@
       ]
     },
     "required": {
-      "service:content_browser": { "classes":  [ "renderer" ] },
-      "service:ui": { "classes":  [ "ui:gpu_client" ] }
+      "service:content_browser": [ "renderer" ],
+      "service:ui": [ "ui:gpu_client" ]
     }
   }
 }

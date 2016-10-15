@@ -9,4 +9,6 @@ traits_headers = [ "//services/shell/public/cpp/capabilities_struct_traits.h" ]
 type_mappings = [
   "shell.mojom.CapabilityRequest=::shell::CapabilityRequest",
   "shell.mojom.CapabilitySpec=::shell::CapabilitySpec",
+  "shell.mojom.Interfaces=::shell::Interfaces",
+  "shell.mojom.Classes=::shell::Classes",
 ]

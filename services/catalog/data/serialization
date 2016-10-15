@@ -9,10 +9,7 @@
       "bar": ["mojo::Bork"]
     },
     "required": {
-      "service:bar": {
-        "classes": ["a", "b"],
-        "interfaces": ["mojo::Blork", "mojo::Blark"]
-      }
+      "service:bar":["a", "b"]
     }
   }
 }

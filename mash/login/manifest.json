@@ -7,10 +7,10 @@
       "login:login": [ "mash::login::mojom::Login" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "service:mash_init": { "classes": [ "mash_init:init" ] },
-      "service:ui": { "classes": [ "ui:user_access_manager" ] },
-      "service:shell": { "classes": [ "shell:all_users" ] }
+      "*": [ "app" ],
+      "service:mash_init": [ "mash_init:init" ],
+      "service:ui": [ "ui:user_access_manager" ],
+      "service:shell": [ "shell:all_users" ]
     }
   }
 }

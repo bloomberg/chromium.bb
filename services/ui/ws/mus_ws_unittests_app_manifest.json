@@ -9,11 +9,9 @@
       ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "service:mus_ws_unittests_app": {
-        "classes": [ "ui:window_tree_client" ]
-      },
-      "service:ui": { "classes": [ "ui:window_tree_host_factory" ] }
+      "*": [ "app" ],
+      "service:mus_ws_unittests_app": [ "ui:window_tree_client" ],
+      "service:ui": [ "ui:window_tree_host_factory" ]
     }
   }
 }

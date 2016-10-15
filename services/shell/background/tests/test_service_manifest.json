@@ -1,0 +1,12 @@
+{
+  "manifest_version": 1,
+  "name": "service:background_shell_test_service",
+  "display_name": "Background Shell Test Service",
+  "capabilities": {
+    "provided": {
+      "background_shell_unittest:test_service": [
+        "shell::mojom::TestService"
+      ]
+    }
+  }
+}

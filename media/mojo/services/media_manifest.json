@@ -9,7 +9,7 @@
       "media:service_factory": [ "media::mojom::ServiceFactory" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

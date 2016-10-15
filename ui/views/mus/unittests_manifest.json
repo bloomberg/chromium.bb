@@ -4,7 +4,7 @@
   "display_name": "Views Mus Unittests",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

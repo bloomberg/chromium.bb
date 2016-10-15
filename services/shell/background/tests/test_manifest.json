@@ -1,0 +1,12 @@
+{
+  "manifest_version": 1,
+  "name": "service:background_shell_unittest",
+  "display_name": "Background Shell Unittest",
+  "capabilities": {
+    "required": {
+      "service:background_shell_test_service": [
+        "background_shell_unittest:test_service"
+      ]
+    }
+  }
+}

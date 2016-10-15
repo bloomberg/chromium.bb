@@ -3,6 +3,6 @@
   "name": "exe:mus_clipboard_unittests",
   "display_name": "Clipboard Service Unittests",
   "capabilities": {
-    "required": { "service:ui": { "classes": [ "app" ] } }
+    "required": { "service:ui": [ "app" ] }
   }
 }

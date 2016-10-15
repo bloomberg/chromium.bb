@@ -31,10 +31,6 @@ class Store {
   // Value is a dictionary.
   static const char kCapabilities_RequiredKey[];
   // Value is a list.
-  static const char kCapabilities_ClassesKey[];
-  // Value is a list.
-  static const char kCapabilities_InterfacesKey[];
-  // Value is a list.
   static const char kServicesKey[];
 
   virtual ~Store() {}

@@ -10,11 +10,7 @@
       ]
     },
     "required": {
-      "service:content_browser": {
-        "classes": [
-          "plugin"
-        ]
-      }
+      "service:content_browser": [ "plugin" ]
     }
   }
 }

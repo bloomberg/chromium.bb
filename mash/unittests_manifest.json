@@ -4,8 +4,8 @@
   "display_name": "Mash Unittests",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app", "test" ] },
-      "service:ash": { "classes": [ "mus:window_manager" ] }
+      "*": [ "app", "test" ],
+      "service:ash": [ "mus:window_manager" ]
     }
   }
 }

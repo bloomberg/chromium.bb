@@ -5,7 +5,7 @@
   "process-group": "bar",
   "capabilities": {
     "required": {
-      "service:bar": { "interfaces": [ "mojo::Bar" ] }
+      "service:bar": [ "bar:bar" ]
     }
   }
 }

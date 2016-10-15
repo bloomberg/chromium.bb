@@ -35,19 +35,6 @@ bool ReadStringSetFromValue(const base::Value& value,
   return ReadStringSet(*list_value, string_set);
 }
 
-bool ReadStringSetFromDictionary(const base::DictionaryValue& dictionary,
-                                 const std::string& key,
-                                 std::set<std::string>* string_set) {
-  const base::ListValue* list_value = nullptr;
-  if (dictionary.HasKey(key) && !dictionary.GetList(key, &list_value)) {
-    LOG(ERROR) << "Entry::Deserialize: " << key << " must be a list.";
-    return false;
-  }
-  if (list_value)
-    return ReadStringSet(*list_value, string_set);
-  return true;
-}
-
 bool BuildCapabilities(const base::DictionaryValue& value,
                        shell::CapabilitySpec* capabilities) {
   DCHECK(capabilities);
@@ -60,7 +47,6 @@ bool BuildCapabilities(const base::DictionaryValue& value,
     return false;
   }
   if (provided_value) {
-    shell::CapabilityRequest provided;
     base::DictionaryValue::Iterator it(*provided_value);
     for(; !it.IsAtEnd(); it.Advance()) {
       shell::Interfaces interfaces;
@@ -84,35 +70,20 @@ bool BuildCapabilities(const base::DictionaryValue& value,
   if (required_value) {
     base::DictionaryValue::Iterator it(*required_value);
     for (; !it.IsAtEnd(); it.Advance()) {
-      shell::CapabilityRequest spec;
-      const base::DictionaryValue* entry_value = nullptr;
-      if (!it.value().GetAsDictionary(&entry_value)) {
+      shell::Classes classes;
+      const base::ListValue* entry_value = nullptr;
+      if (!it.value().GetAsList(&entry_value)) {
         LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_RequiredKey
-                   << " must be a dictionary.";
+                   << " entry must be a list.";
         return false;
       }
-      if (!ReadStringSetFromDictionary(
-              *entry_value, Store::kCapabilities_ClassesKey, &spec.classes)) {
+      if (!ReadStringSet(*entry_value, &classes)) {
         LOG(ERROR) << "Entry::Deserialize: Invalid classes list in required "
                    << "capabilities dictionary.";
         return false;
       }
-      shell::Interfaces interfaces;
-      if (!ReadStringSetFromDictionary(*entry_value,
-                                       Store::kCapabilities_InterfacesKey,
-                                       &interfaces)) {
-        LOG(ERROR) << "Entry::Deserialize: Invalid interfaces list in required "
-                   << "capabilities dictionary.";
-        return false;
-      }
-      if (interfaces.count("*") > 0) {
-        LOG(ERROR) << "Entry::Deserializer: Wildcard not valid in interfaces "
-                   << "list.";
-        return false;
-      }
-      spec.interfaces = interfaces;
 
-      capabilities->required[it.key()] = spec;
+      capabilities->required[it.key()] = classes;
     }
   }
   return true;
@@ -144,16 +115,10 @@ std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
 
   std::unique_ptr<base::DictionaryValue> required(new base::DictionaryValue);
   for (const auto& i : capabilities_.required) {
-    std::unique_ptr<base::DictionaryValue> request(new base::DictionaryValue);
     std::unique_ptr<base::ListValue> classes(new base::ListValue);
-    for (const auto& class_name : i.second.classes)
+    for (const auto& class_name : i.second)
       classes->AppendString(class_name);
-    request->Set(Store::kCapabilities_ClassesKey, std::move(classes));
-    std::unique_ptr<base::ListValue> interfaces(new base::ListValue);
-    for (const auto& interface_name : i.second.interfaces)
-      interfaces->AppendString(interface_name);
-    request->Set(Store::kCapabilities_InterfacesKey, std::move(interfaces));
-    required->Set(i.first, std::move(request));
+    required->Set(i.first, std::move(classes));
   }
   spec->Set(Store::kCapabilities_RequiredKey, std::move(required));
 

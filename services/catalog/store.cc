@@ -21,10 +21,6 @@ const char Store::kCapabilities_ProvidedKey[] = "provided";
 // static
 const char Store::kCapabilities_RequiredKey[] = "required";
 // static
-const char Store::kCapabilities_ClassesKey[] = "classes";
-// static
-const char Store::kCapabilities_InterfacesKey[] = "interfaces";
-// static
 const char Store::kServicesKey[] = "services";
 
 }  // namespace catalog

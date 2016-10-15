@@ -4,7 +4,7 @@
   "display_name": "Filesystem Service Unittests",
   "capabilities": {
     "required": {
-      "service:filesystem": { "classes": [ "filesystem:filesystem" ] }
+      "service:filesystem": [ "filesystem:filesystem" ]
     }
   }
 }

@@ -42,11 +42,9 @@
       ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "service:shell": {
-        "classes": [ "shell:all_users", "shell:explicit_class" ]
-      },
-      "service:ui": { "classes": [ "ozone" ] }
+      "*": [ "app" ],
+      "service:shell": [ "shell:all_users", "shell:explicit_class" ],
+      "service:ui": [ "ozone" ]
     }
   }
 }

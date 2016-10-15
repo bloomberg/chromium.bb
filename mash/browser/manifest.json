@@ -5,7 +5,7 @@
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

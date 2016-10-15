@@ -7,8 +7,10 @@
       "app": [ "navigation::mojom::ViewFactory" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "service:shell": { "classes": [ "shell:client_process", "shell:user_id", "shell:instance_name" ] }
+      "*": [ "app" ],
+      "service:shell": [ "shell:client_process",
+                         "shell:user_id",
+                         "shell:instance_name" ]
     }
   }
 }

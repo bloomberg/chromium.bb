@@ -57,5 +57,6 @@ interface Service {
   //
   OnConnect(Identity source,
             InterfaceProvider&? interfaces,
-            CapabilityRequest allowed_capabilities);
+            Interfaces required_interfaces,
+            Classes required_classes);
 };

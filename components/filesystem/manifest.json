@@ -7,7 +7,7 @@
       "filesystem:filesystem": [ "filesystem::mojom::FileSystem" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": [ "app" ]
     }
   }
 }

@@ -17,13 +17,13 @@ InterfaceRegistry::InterfaceRegistry()
 InterfaceRegistry::InterfaceRegistry(
     const Identity& local_identity,
     const Identity& remote_identity,
-    const CapabilityRequest& capability_request)
+    const Interfaces& allowed_interfaces)
     : binding_(this),
       local_identity_(local_identity),
       remote_identity_(remote_identity),
-      capability_request_(capability_request),
-      allow_all_interfaces_(capability_request.interfaces.size() == 1 &&
-                            capability_request.interfaces.count("*") == 1),
+      allowed_interfaces_(allowed_interfaces),
+      allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
+                            allowed_interfaces_.count("*") == 1),
       weak_factory_(this) {}
 
 InterfaceRegistry::~InterfaceRegistry() {}
@@ -123,8 +123,7 @@ bool InterfaceRegistry::SetInterfaceBinderForName(
 
 bool InterfaceRegistry::CanBindRequestForInterface(
     const std::string& interface_name) const {
-  return allow_all_interfaces_ ||
-      capability_request_.interfaces.count(interface_name);
+  return allow_all_interfaces_ || allowed_interfaces_.count(interface_name);
 }
 
 }  // namespace shell

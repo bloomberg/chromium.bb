@@ -7,9 +7,9 @@
       "lifecycle_unittest:parent": [ "shell::test::mojom::Parent" ]
     },
     "required": {
-      "service:lifecycle_unittest_app": {
-        "classes": [ "lifecycle_unittest:lifecycle_control" ]
-      }
+      "service:lifecycle_unittest_app": [
+        "lifecycle_unittest:lifecycle_control"
+      ]
     }
   }
 }
