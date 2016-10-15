@@ -22,8 +22,8 @@ void CastVSyncSettings::SetVSyncInterval(base::TimeDelta interval) {
   if (interval_ == interval)
     return;
   interval_ = interval;
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnVSyncIntervalChanged(interval));
+  for (auto& observer : observers_)
+    observer.OnVSyncIntervalChanged(interval);
 }
 
 void CastVSyncSettings::AddObserver(Observer* observer) {
