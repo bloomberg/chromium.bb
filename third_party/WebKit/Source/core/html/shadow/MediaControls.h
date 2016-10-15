@@ -81,6 +81,15 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   // used for overlap checking during text track layout. May be null.
   LayoutObject* layoutObjectForTextTrackLayout();
 
+  // Return the internal elements, which is used by registering clicking
+  // EventHandlers from MediaControlsWindowEventListener.
+  MediaControlPanelElement* panelElement() { return m_panel; }
+  MediaControlTimelineElement* timelineElement() { return m_timeline; }
+  MediaControlCastButtonElement* castButtonElement() { return m_castButton; }
+  MediaControlVolumeSliderElement* volumeSliderElement() {
+    return m_volumeSlider;
+  }
+
   // Notify us that our controls enclosure has changed width.
   void notifyPanelWidthChanged(const LayoutUnit& newWidth);
 
