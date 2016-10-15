@@ -627,15 +627,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     /**
-     * Returns the context used to obtain display density (ratio of physical pixels to DIP).
-     */
-    private Context getDisplayContext(WindowAndroid window) {
-        Context displayContext = null;
-        if (window != null) displayContext = window.getContext().get();
-        return displayContext != null ? displayContext : mContext;
-    }
-
-    /**
      *
      * @param viewDelegate Delegate to add/remove anchor views.
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
@@ -668,7 +659,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         setContainerViewInternals(internalDispatcher);
 
         mRenderCoordinates.reset();
-        mRenderCoordinates.setDeviceScaleFactor(getDisplayContext(windowAndroid));
+        mRenderCoordinates.updateDeviceScaleFactorFromWindow(windowAndroid);
 
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter();
@@ -692,7 +683,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mSelectPopup = null;
         mPastePopupMenu = null;
 
-        mRenderCoordinates.setDeviceScaleFactor(getDisplayContext(windowAndroid));
         addDisplayAndroidObserverIfNeeded();
 
         for (WindowAndroidChangedObserver observer : mWindowAndroidChangedObservers) {
@@ -704,6 +694,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if (!mAttachedToWindow) return;
         WindowAndroid windowAndroid = getWindowAndroid();
         if (windowAndroid != null) {
+            mRenderCoordinates.updateDeviceScaleFactorFromWindow(windowAndroid);
             windowAndroid.getDisplay().addObserver(this);
             onRotationChanged(windowAndroid.getDisplay().getRotation());
         }

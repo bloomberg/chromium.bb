@@ -11,6 +11,9 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 
+import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
+
 import java.util.WeakHashMap;
 
 /**
@@ -33,6 +36,8 @@ public class DisplayAndroid {
         void onRotationChanged(int rotation);
     }
 
+    private static final String TAG = "DisplayAndroid";
+
     private static final DisplayAndroidObserver[] EMPTY_OBSERVER_ARRAY =
             new DisplayAndroidObserver[0];
 
@@ -45,6 +50,37 @@ public class DisplayAndroid {
     private final Point mPhysicalSize;
     private final DisplayMetrics mDisplayMetrics;
     private int mRotation;
+
+    // When this object exists, a positive value means that the forced DIP scale is set and
+    // the zero means it is not. The non existing object (i.e. null reference) means that
+    // the existence and value of the forced DIP scale has not yet been determined.
+    private static Float sForcedDIPScale;
+
+    private static boolean hasForcedDIPScale() {
+        if (sForcedDIPScale == null) {
+            String forcedScaleAsString = CommandLine.getInstance().getSwitchValue(
+                    DisplaySwitches.FORCE_DEVICE_SCALE_FACTOR);
+            if (forcedScaleAsString == null) {
+                sForcedDIPScale = Float.valueOf(0.0f);
+            } else {
+                boolean isInvalid = false;
+                try {
+                    sForcedDIPScale = Float.valueOf(forcedScaleAsString);
+                    // Negative values are discarded.
+                    if (sForcedDIPScale.floatValue() <= 0.0f) isInvalid = true;
+                } catch (NumberFormatException e) {
+                    // Strings that do not represent numbers are discarded.
+                    isInvalid = true;
+                }
+
+                if (isInvalid) {
+                    Log.w(TAG, "Ignoring invalid forced DIP scale '" + forcedScaleAsString + "'");
+                    sForcedDIPScale = Float.valueOf(0.0f);
+                }
+            }
+        }
+        return sForcedDIPScale.floatValue() > 0;
+    }
 
     private static DisplayAndroidManager getManager() {
         return DisplayAndroidManager.getInstance();
@@ -98,7 +134,7 @@ public class DisplayAndroid {
     /**
      * @return A scaling factor for the Density Independent Pixel unit.
      */
-    public double getDIPScale() {
+    public float getDIPScale() {
         return mDisplayMetrics.density;
     }
 
@@ -146,6 +182,8 @@ public class DisplayAndroid {
     /* package */ void updateFromDisplay(Display display) {
         display.getSize(mSize);
         display.getMetrics(mDisplayMetrics);
+
+        if (hasForcedDIPScale()) mDisplayMetrics.density = sForcedDIPScale.floatValue();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             display.getRealSize(mPhysicalSize);

@@ -45,10 +45,6 @@ public abstract class ContentSwitches {
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
-    // Native switch - gfx_switches::kForceDeviceScaleFactor
-    public static final String FORCE_DEVICE_SCALE_FACTOR =
-            "force-device-scale-factor";
-
     // Enable mouse hover emulation by holding your finger just over the screen.
     public static final String ENABLE_TOUCH_HOVER = "enable-touch-hover";
 
