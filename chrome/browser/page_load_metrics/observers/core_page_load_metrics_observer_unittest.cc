@@ -383,23 +383,6 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedBackgroundProvisionalLoad) {
                                       0);
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, BackgroundBeforePaint) {
-  page_load_metrics::PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_paint = base::TimeDelta::FromSeconds(10);
-  PopulateRequiredTimingFields(&timing);
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  // Background the tab and go for a coffee or something.
-  web_contents()->WasHidden();
-  SimulateTimingUpdate(timing);
-  // Come back and start browsing again.
-  web_contents()->WasShown();
-  // Simulate the user performaning another navigation.
-  NavigateAndCommit(GURL("https://www.example.com"));
-  histogram_tester().ExpectTotalCount(internal::kHistogramBackgroundBeforePaint,
-                                      1);
-}
-
 TEST_F(CorePageLoadMetricsObserverTest, NoRappor) {
   rappor::TestSample::Shadow* sample_obj =
       rappor_tester_.GetRecordedSampleForMetric(

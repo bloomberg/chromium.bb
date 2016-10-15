@@ -167,17 +167,9 @@ const char kHistogramLoadTypeParseStartForwardBackNoStore[] =
 const char kHistogramLoadTypeParseStartNewNavigation[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.NewNavigation";
 
-const char kHistogramFirstBackground[] =
-    "PageLoad.Timing2.NavigationToFirstBackground";
 const char kHistogramFirstForeground[] =
     "PageLoad.Timing2.NavigationToFirstForeground";
 
-const char kHistogramBackgroundBeforePaint[] =
-    "PageLoad.Timing2.NavigationToFirstBackground.AfterCommit.BeforePaint";
-const char kHistogramBackgroundBeforeCommit[] =
-    "PageLoad.Timing2.NavigationToFirstBackground.BeforeCommit";
-const char kHistogramBackgroundDuringParse[] =
-    "PageLoad.Timing2.NavigationToFirstBackground.DuringParse";
 const char kHistogramFailedProvisionalLoad[] =
     "PageLoad.Timing2.NavigationToFailedProvisionalLoad";
 
@@ -515,11 +507,6 @@ void CorePageLoadMetricsObserver::OnComplete(
 void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (extra_info.started_in_foreground && extra_info.first_background_time) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
-                        extra_info.first_background_time.value());
-  }
-
   // Only handle actual failures; provisional loads that failed due to another
   // committed load or due to user action are recorded in
   // AbortsPageLoadMetricsObserver.
@@ -581,24 +568,7 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
-  if (info.started_in_foreground) {
-    if (info.first_background_time) {
-      const base::TimeDelta first_background_time =
-          info.first_background_time.value();
-
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstBackground,
-                          first_background_time);
-      if (!timing.first_paint || timing.first_paint > first_background_time) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforePaint,
-                            first_background_time);
-      }
-      if (timing.parse_start && first_background_time >= timing.parse_start &&
-          (!timing.parse_stop || timing.parse_stop > first_background_time)) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundDuringParse,
-                            first_background_time);
-      }
-    }
-  } else {
+  if (!info.started_in_foreground) {
     if (info.first_foreground_time)
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
                           info.first_foreground_time.value());
