@@ -475,20 +475,16 @@ void WebStateImpl::SetContentsMimeType(const std::string& mime_type) {
 }
 
 bool WebStateImpl::ShouldAllowRequest(NSURLRequest* request) {
-  base::ObserverListBase<WebStatePolicyDecider>::Iterator it(&policy_deciders_);
-  WebStatePolicyDecider* policy_decider = nullptr;
-  while ((policy_decider = it.GetNext()) != nullptr) {
-    if (!policy_decider->ShouldAllowRequest(request))
+  for (auto& policy_decider : policy_deciders_) {
+    if (!policy_decider.ShouldAllowRequest(request))
       return false;
   }
   return true;
 }
 
 bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response) {
-  base::ObserverListBase<WebStatePolicyDecider>::Iterator it(&policy_deciders_);
-  WebStatePolicyDecider* policy_decider = nullptr;
-  while ((policy_decider = it.GetNext()) != nullptr) {
-    if (!policy_decider->ShouldAllowResponse(response))
+  for (auto& policy_decider : policy_deciders_) {
+    if (!policy_decider.ShouldAllowResponse(response))
       return false;
   }
   return true;

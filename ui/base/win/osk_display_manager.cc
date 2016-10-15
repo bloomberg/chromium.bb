@@ -237,11 +237,8 @@ void OnScreenKeyboardDetector::HandleKeyboardHidden() {
 }
 
 void OnScreenKeyboardDetector::ClearObservers() {
-  base::ObserverListBase<OnScreenKeyboardObserver>::Iterator iter(&observers_);
-  for (OnScreenKeyboardObserver* observer = iter.GetNext(); observer;
-       observer = iter.GetNext()) {
-    RemoveObserver(observer);
-  }
+  for (auto& observer : observers_)
+    RemoveObserver(&observer);
 }
 
 // OnScreenKeyboardDisplayManager member definitions.

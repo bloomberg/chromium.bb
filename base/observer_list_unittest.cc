@@ -905,10 +905,18 @@ TEST(ObserverListTest, AddObserverInTheLastObserve) {
   a.SetToAdd(&b);
   observer_list.AddObserver(&a);
 
-  FooList::Iterator it(&observer_list);
-  Foo* foo;
-  while ((foo = it.GetNext()) != nullptr)
-    foo->Observe(10);
+  auto it = observer_list.begin();
+  while (it != observer_list.end()) {
+    auto& observer = *it;
+    // Intentionally increment the iterator before calling Observe(). The
+    // ObserverList starts with only one observer, and it == observer_list.end()
+    // should be true after the next line.
+    ++it;
+    // However, the first Observe() call will add a second observer: at this
+    // point, it != observer_list.end() should be true, and Observe() should be
+    // called on the newly added observer on the next iteration of the loop.
+    observer.Observe(10);
+  }
 
   EXPECT_EQ(-10, b.total);
 }
