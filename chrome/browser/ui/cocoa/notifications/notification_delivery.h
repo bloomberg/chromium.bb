@@ -16,6 +16,12 @@
 // |notificationData| is generated using a NofiticationBuilder object.
 - (void)deliverNotification:(NSDictionary*)notificationData;
 
+// Closes an alert with the given |notificationId| and |profileId|.
+- (void)closeNotificationWithId:(NSString*)notificationId
+                  withProfileId:(NSString*)profileId;
+
+// Closes all the alerts being displayed.
+- (void)closeAllNotifications;
 @end
 
 // Response protocol for the XPC notification service to notify Chrome of

@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
+#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
 @class NSUserNotificationCenter;
 
@@ -19,6 +20,31 @@
 
   [[NSUserNotificationCenter defaultUserNotificationCenter]
       deliverNotification:toast];
+}
+
+- (void)closeNotificationWithId:(NSString*)notificationId
+                  withProfileId:(NSString*)profileId {
+  NSUserNotificationCenter* notificationCenter =
+      [NSUserNotificationCenter defaultUserNotificationCenter];
+  for (NSUserNotification* candidate in
+       [notificationCenter deliveredNotifications]) {
+    NSString* candidateId = [candidate.userInfo
+        objectForKey:notification_constants::kNotificationId];
+
+    NSString* candidateProfileId = [candidate.userInfo
+        objectForKey:notification_constants::kNotificationProfileId];
+
+    if ([candidateId isEqualToString:notificationId] &&
+        [profileId isEqualToString:candidateProfileId]) {
+      [notificationCenter removeDeliveredNotification:candidate];
+      break;
+    }
+  }
+}
+
+- (void)closeAllNotifications {
+  [[NSUserNotificationCenter defaultUserNotificationCenter]
+      removeAllDeliveredNotifications];
 }
 
 @end

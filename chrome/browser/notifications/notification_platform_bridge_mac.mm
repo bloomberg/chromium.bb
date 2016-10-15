@@ -114,7 +114,15 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 // Interface to communicate with the Alert XPC service.
 @interface NotificationRemoteDispatcher : NSObject
 
+// Deliver a notification to the XPC service to be displayed as an alert.
 - (void)dispatchNotification:(NSDictionary*)data;
+
+// Close a notification for a given |notificationId| and |profileId|.
+- (void)closeNotificationWithId:(NSString*)notificationId
+                  withProfileId:(NSString*)profileId;
+
+// Close all notifications.
+- (void)closeAllNotifications;
 
 @end
 
@@ -137,9 +145,11 @@ NotificationPlatformBridgeMac::NotificationPlatformBridgeMac(
 NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
   [notification_center_ setDelegate:nil];
 
-  // TODO(miguelg) remove only alerts shown by the XPC service.
   // TODO(miguelg) do not remove banners if possible.
   [notification_center_ removeAllDeliveredNotifications];
+#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
+  [notification_remote_dispatcher_ closeAllNotifications];
+#endif  // BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
 }
 
 void NotificationPlatformBridgeMac::Display(
@@ -231,8 +241,9 @@ void NotificationPlatformBridgeMac::Display(
 void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
                                           const std::string& notification_id) {
   NSString* candidate_id = base::SysUTF8ToNSString(notification_id);
-
   NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
+
+  bool notification_removed = false;
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toast_id =
@@ -244,8 +255,19 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
     if ([toast_id isEqualToString:candidate_id] &&
         [persistent_profile_id isEqualToString:current_profile_id]) {
       [notification_center_ removeDeliveredNotification:toast];
+      notification_removed = true;
+      break;
     }
   }
+#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
+  // If no banner existed with that ID try to see if there is an alert
+  // in the xpc server.
+  if (!notification_removed) {
+    [notification_remote_dispatcher_
+        closeNotificationWithId:candidate_id
+                  withProfileId:current_profile_id];
+  }
+#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 bool NotificationPlatformBridgeMac::GetDisplayed(
@@ -439,6 +461,16 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 
 - (void)dispatchNotification:(NSDictionary*)data {
   [[xpcConnection_ remoteObjectProxy] deliverNotification:data];
+}
+
+- (void)closeNotificationWithId:(NSString*)notificationId
+                  withProfileId:(NSString*)profileId {
+  [[xpcConnection_ remoteObjectProxy] closeNotificationWithId:notificationId
+                                                withProfileId:profileId];
+}
+
+- (void)closeAllNotifications {
+  [[xpcConnection_ remoteObjectProxy] closeAllNotifications];
 }
 
 // NotificationReply implementation
