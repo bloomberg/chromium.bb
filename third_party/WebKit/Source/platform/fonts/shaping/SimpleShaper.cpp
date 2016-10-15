@@ -84,7 +84,7 @@ float SimpleShaper::characterWidth(UChar32 character,
   ASSERT(fontData);
 
   if (UNLIKELY(character == tabulationCharacter && m_textRun.allowTabs()))
-    return m_font->tabWidth(*fontData, m_textRun.getTabSize(),
+    return m_font->tabWidth(fontData, m_textRun.getTabSize(),
                             m_textRun.xPos() + m_runWidthSoFar);
 
   float width = fontData->widthForGlyph(glyphData.glyph);

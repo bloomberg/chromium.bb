@@ -389,7 +389,7 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(
   float position = textRun.xPos() + positionOffset;
   float startPosition = position;
   for (unsigned i = 0; i < count; i++) {
-    float advance = font->tabWidth(*fontData, textRun.getTabSize(), position);
+    float advance = font->tabWidth(fontData, textRun.getTabSize(), position);
     run->m_glyphData[i].characterIndex = i;
     run->setGlyphAndPositions(i, fontData->spaceGlyph(), advance, 0, 0);
     position += advance;

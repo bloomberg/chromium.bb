@@ -145,9 +145,9 @@ class PLATFORM_EXPORT Font {
     return (primaryFont() ? primaryFont()->spaceWidth() : 0) +
            getFontDescription().letterSpacing();
   }
-  float tabWidth(const SimpleFontData&, const TabSize&, float position) const;
+  float tabWidth(const SimpleFontData*, const TabSize&, float position) const;
   float tabWidth(const TabSize& tabSize, float position) const {
-    return tabWidth(*primaryFont(), tabSize, position);
+    return tabWidth(primaryFont(), tabSize, position);
   }
 
   int emphasisMarkAscent(const AtomicString&) const;
@@ -262,10 +262,12 @@ inline FontSelector* Font::getFontSelector() const {
   return m_fontFallbackList ? m_fontFallbackList->getFontSelector() : 0;
 }
 
-inline float Font::tabWidth(const SimpleFontData& fontData,
+inline float Font::tabWidth(const SimpleFontData* fontData,
                             const TabSize& tabSize,
                             float position) const {
-  float baseTabWidth = tabSize.getPixelSize(fontData.spaceWidth());
+  if (!fontData)
+    return getFontDescription().letterSpacing();
+  float baseTabWidth = tabSize.getPixelSize(fontData->spaceWidth());
   if (!baseTabWidth)
     return getFontDescription().letterSpacing();
   float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
@@ -273,7 +275,7 @@ inline float Font::tabWidth(const SimpleFontData& fontData,
   // Let the minimum width be the half of the space width so that it's always
   // recognizable.  if the distance to the next tab stop is less than that,
   // advance an additional tab stop.
-  if (distanceToTabStop < fontData.spaceWidth() / 2)
+  if (distanceToTabStop < fontData->spaceWidth() / 2)
     distanceToTabStop += baseTabWidth;
 
   return distanceToTabStop;
