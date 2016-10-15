@@ -44,11 +44,6 @@ public interface ContextualSearchNetworkCommunicator {
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption);
 
-    /**
-     * @return Whether the device is currently online.
-     */
-    boolean isOnline();
-
     // --------------------------------------------------------------------------------------------
     // These are non-network actions that need to be stubbed out for testing.
     // --------------------------------------------------------------------------------------------
