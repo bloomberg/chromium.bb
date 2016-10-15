@@ -912,6 +912,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "quota_SuggestionFetcher": "2"
+                    },
                     "enable_features": [
                         "NTPArticleSuggestions",
                         "NTPBookmarkSuggestions",
