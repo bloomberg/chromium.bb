@@ -162,6 +162,13 @@ void DidOpenURLOnUI(const OpenURLCallback& callback,
     return;
   }
 
+  // ContentBrowserClient::OpenURL calls ui::BaseWindow::Show which
+  // makes the destination window the main+key window, but won't make Chrome
+  // the active application (https://crbug.com/470830). Since OpenWindow is
+  // always called from a user gesture (e.g. notification click), we should
+  // explicitly activate the window, which brings Chrome to the front.
+  static_cast<WebContentsImpl*>(web_contents)->Activate();
+
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
   new OpenURLObserver(web_contents,

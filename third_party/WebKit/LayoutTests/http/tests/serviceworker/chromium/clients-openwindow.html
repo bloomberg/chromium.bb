@@ -51,11 +51,6 @@ t.step(function() {
                     'openWindow() error is: TypeError',
                     ];
 
-    // LayoutTests on Mac do not open focused windows.
-    var isMac = navigator.platform.indexOf('Mac') == 0;
-    if (isMac)
-      expected[10] = ' focused: false';
-
     function onMessage(e) {
       var message = e.data;
 
