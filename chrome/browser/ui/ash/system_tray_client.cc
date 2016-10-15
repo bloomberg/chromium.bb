@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -138,6 +139,15 @@ void SystemTrayClient::ShowPublicAccountInfo() {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetActiveUserProfile());
   chrome::ShowPolicy(displayer.browser());
+}
+
+void SystemTrayClient::ShowNetworkConfigure(const std::string& service_path) {
+  // TODO(jamescook): Consolidate this with the classic ash version from
+  // NetworkConnectDelegateChromeOS. This will require moving the window
+  // container calculation to this class, then plumbing a container ID through
+  // the dialog code.
+  CHECK(chrome::IsRunningInMash());
+  chromeos::NetworkConfigView::Show(service_path, nullptr /* parent */);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

@@ -34,6 +34,7 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void ShowPaletteHelp() override;
   void ShowPaletteSettings() override;
   void ShowPublicAccountInfo() override;
+  void ShowNetworkConfigure(const std::string& network_id) override;
   void ShowNetworkSettings(const std::string& network_id) override;
   void ShowProxySettings() override;
 

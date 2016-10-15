@@ -30,6 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/mus/network_connect_delegate_mus.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -40,28 +41,6 @@
 
 namespace ash {
 namespace mus {
-
-#if defined(OS_CHROMEOS)
-// TODO(mash): Replace ui::NetworkConnect::Delegate with a mojo interface on a
-// NetworkConfig service. http://crbug.com/644355
-class WindowManagerApplication::StubNetworkConnectDelegate
-    : public ui::NetworkConnect::Delegate {
- public:
-  StubNetworkConnectDelegate() {}
-  ~StubNetworkConnectDelegate() override {}
-
-  void ShowNetworkConfigure(const std::string& network_id) override {}
-  void ShowNetworkSettingsForGuid(const std::string& network_id) override {}
-  bool ShowEnrollNetwork(const std::string& network_id) override {
-    return false;
-  }
-  void ShowMobileSimDialog() override {}
-  void ShowMobileSetupDialog(const std::string& service_path) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubNetworkConnectDelegate);
-};
-#endif  // OS_CHROMEOS
 
 WindowManagerApplication::WindowManagerApplication()
     : screenlock_state_listener_binding_(this) {}
@@ -130,7 +109,7 @@ void WindowManagerApplication::InitializeComponents() {
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
       chromeos::DBusThreadManager::Get()->IsUsingFakes());
   chromeos::NetworkHandler::Initialize();
-  network_connect_delegate_.reset(new StubNetworkConnectDelegate());
+  network_connect_delegate_.reset(new NetworkConnectDelegateMus());
   ui::NetworkConnect::Initialize(network_connect_delegate_.get());
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();

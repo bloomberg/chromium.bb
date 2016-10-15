@@ -47,6 +47,7 @@ namespace mus {
 
 class AcceleratorRegistrarImpl;
 class NativeWidgetFactoryMus;
+class NetworkConnectDelegateMus;
 class WindowManager;
 
 // Hosts the window manager and the ash system user interface for mash.
@@ -115,8 +116,7 @@ class WindowManagerApplication
       screenlock_state_listener_binding_;
 
 #if defined(OS_CHROMEOS)
-  class StubNetworkConnectDelegate;
-  std::unique_ptr<StubNetworkConnectDelegate> network_connect_delegate_;
+  std::unique_ptr<NetworkConnectDelegateMus> network_connect_delegate_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
 #endif
