@@ -6,10 +6,10 @@
     "provided": {
       "browser": [
         "IPC::mojom::ChannelBootstrap",
-        "shell::mojom::ServiceFactory"
+        "service_manager::mojom::ServiceFactory"
       ],
       "shell:service_factory": [
-        "shell::mojom::ServiceFactory"
+        "service_manager::mojom::ServiceFactory"
       ]
     }
   }

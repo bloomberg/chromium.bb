@@ -231,18 +231,18 @@ ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {
   return nullptr;
 }
 
-shell::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
+service_manager::InterfaceRegistry* MockRenderThread::GetInterfaceRegistry() {
   if (!interface_registry_)
-    interface_registry_.reset(new shell::InterfaceRegistry);
+    interface_registry_.reset(new service_manager::InterfaceRegistry);
   return interface_registry_.get();
 }
 
-shell::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
+service_manager::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
   if (!remote_interfaces_) {
-    shell::mojom::InterfaceProviderPtr remote_interface_provider;
+    service_manager::mojom::InterfaceProviderPtr remote_interface_provider;
     pending_remote_interface_provider_request_ =
         GetProxy(&remote_interface_provider);
-    remote_interfaces_.reset(new shell::InterfaceProvider);
+    remote_interfaces_.reset(new service_manager::InterfaceProvider);
     remote_interfaces_->Bind(std::move(remote_interface_provider));
   }
   return remote_interfaces_.get();

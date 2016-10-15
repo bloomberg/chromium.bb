@@ -11,10 +11,10 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
 
-namespace shell {
+namespace service_manager {
 namespace {
 
-shell::ServiceRunner* g_app = nullptr;
+service_manager::ServiceRunner* g_app = nullptr;
 
 class ShutdownServiceApp
     : public Service,
@@ -25,7 +25,7 @@ class ShutdownServiceApp
   ~ShutdownServiceApp() override {}
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   bool OnConnect(const Identity& remote_identity,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<mojom::ShutdownTestService>(this);
@@ -48,11 +48,11 @@ class ShutdownServiceApp
 };
 
 }  // namespace
-}  // namespace shell
-
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::ShutdownServiceApp);
-  shell::g_app = &runner;
+  service_manager::ServiceRunner runner(
+      new service_manager::ShutdownServiceApp);
+  service_manager::g_app = &runner;
   return runner.Run(service_request_handle);
 }

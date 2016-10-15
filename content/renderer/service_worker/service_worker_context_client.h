@@ -93,8 +93,8 @@ class ServiceWorkerContextClient
 
   // Called some time after the worker has started.
   void BindInterfaceProviders(
-      shell::mojom::InterfaceProviderRequest request,
-      shell::mojom::InterfaceProviderPtr remote_interfaces);
+      service_manager::mojom::InterfaceProviderRequest request,
+      service_manager::mojom::InterfaceProviderPtr remote_interfaces);
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;

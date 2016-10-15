@@ -7,6 +7,6 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(mash::login::CreateLogin());
+  service_manager::ServiceRunner runner(mash::login::CreateLogin());
   return runner.Run(service_request_handle);
 }

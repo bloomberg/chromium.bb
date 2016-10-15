@@ -7,16 +7,17 @@
 
 #include "content/common/content_export.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
 namespace content {
 
-// Get shell::InterfaceProvider that can be used to bind interfaces registered
+// Get service_manager::InterfaceProvider that can be used to bind interfaces
+// registered
 // via ContentGpuClient::ExposeInterfacesToBrowser().
 // This must be called on IO thread.
-CONTENT_EXPORT shell::InterfaceProvider* GetGpuRemoteInterfaces();
+CONTENT_EXPORT service_manager::InterfaceProvider* GetGpuRemoteInterfaces();
 
 }  // namespace content
 

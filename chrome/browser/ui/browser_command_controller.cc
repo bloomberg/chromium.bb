@@ -630,7 +630,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #if defined(OS_CHROMEOS)
     case IDC_TOUCH_HUD_PROJECTION_TOGGLE:
       if (chrome::IsRunningInMash()) {
-        shell::Connector* connector =
+        service_manager::Connector* connector =
             content::ServiceManagerConnection::GetForProcess()->GetConnector();
         mash::mojom::LaunchablePtr launchable;
         connector->ConnectToInterface("service:touch_hud", &launchable);

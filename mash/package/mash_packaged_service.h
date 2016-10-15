@@ -28,31 +28,32 @@ namespace mash {
 //   - Add the new service to mash_browser_tests's deps section and
 //     packaged_services section.
 //   - Add an entry for the new service in MashPackagedService::CreateService().
-class MashPackagedService
-    : public shell::Service,
-      public shell::mojom::ServiceFactory,
-      public shell::InterfaceFactory<shell::mojom::ServiceFactory> {
+class MashPackagedService : public service_manager::Service,
+                            public service_manager::mojom::ServiceFactory,
+                            public service_manager::InterfaceFactory<
+                                service_manager::mojom::ServiceFactory> {
  public:
   MashPackagedService();
   ~MashPackagedService() override;
 
-  // shell::Service:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<ServiceFactory>
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<ServiceFactory>
+  void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<ServiceFactory> request) override;
 
   // ServiceFactory:
-  void CreateService(shell::mojom::ServiceRequest request,
+  void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& mojo_name) override;
 
  private:
-  std::unique_ptr<shell::Service> CreateService(const std::string& name);
+  std::unique_ptr<service_manager::Service> CreateService(
+      const std::string& name);
 
   mojo::BindingSet<ServiceFactory> service_factory_bindings_;
-  std::unique_ptr<shell::Service> service_;
+  std::unique_ptr<service_manager::Service> service_;
 
   DISALLOW_COPY_AND_ASSIGN(MashPackagedService);
 };

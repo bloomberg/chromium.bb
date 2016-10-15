@@ -19,9 +19,9 @@
 #include "services/ui/ws/test_change_tracker.h"
 
 using mojo::Array;
-using shell::Connection;
+using service_manager::Connection;
 using mojo::InterfaceRequest;
-using shell::Service;
+using service_manager::Service;
 using mojo::String;
 using ui::mojom::WindowDataPtr;
 using ui::mojom::WindowTree;
@@ -58,7 +58,7 @@ void EmbedCallbackImpl(base::RunLoop* run_loop,
 
 // -----------------------------------------------------------------------------
 
-bool EmbedUrl(shell::Connector* connector,
+bool EmbedUrl(service_manager::Connector* connector,
               WindowTree* tree,
               const String& url,
               Id root_id) {
@@ -506,7 +506,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
 // InterfaceFactory for vending TestWindowTreeClients.
 class WindowTreeClientFactory
-    : public shell::InterfaceFactory<WindowTreeClient> {
+    : public service_manager::InterfaceFactory<WindowTreeClient> {
  public:
   WindowTreeClientFactory() {}
   ~WindowTreeClientFactory() override {}
@@ -524,7 +524,7 @@ class WindowTreeClientFactory
 
  private:
   // InterfaceFactory<WindowTreeClient>:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               InterfaceRequest<WindowTreeClient> request) override {
     client_impl_ = base::MakeUnique<TestWindowTreeClient>();
     client_impl_->Bind(std::move(request));
@@ -633,8 +633,8 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
   }
 
   // WindowServerServiceTestBase:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface(client_factory_.get());
     return true;
   }

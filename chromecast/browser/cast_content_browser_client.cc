@@ -77,7 +77,7 @@ namespace shell {
 
 namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-static std::unique_ptr<::shell::Service> CreateMojoMediaApplication(
+static std::unique_ptr<service_manager::Service> CreateMojoMediaApplication(
     CastContentBrowserClient* browser_client,
     const base::Closure& quit_closure) {
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
@@ -88,7 +88,7 @@ static std::unique_ptr<::shell::Service> CreateMojoMediaApplication(
                      base::Unretained(browser_client)),
           browser_client->GetVideoResolutionPolicy(),
           browser_client->media_resource_tracker()));
-  return std::unique_ptr<::shell::Service>(
+  return std::unique_ptr<service_manager::Service>(
       new ::media::MojoMediaApplication(std::move(mojo_media_client),
                                         quit_closure));
 }
@@ -416,7 +416,7 @@ bool CastContentBrowserClient::CanCreateWindow(
 }
 
 void CastContentBrowserClient::ExposeInterfacesToRenderer(
-    ::shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
       base::Bind(&media::MediaCapsImpl::AddBinding,

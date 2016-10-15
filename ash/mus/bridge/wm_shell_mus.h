@@ -15,10 +15,6 @@
 #include "base/observer_list.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 
-namespace shell {
-class Connector;
-}
-
 namespace ui {
 class WindowTreeClient;
 }

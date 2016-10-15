@@ -20,8 +20,9 @@
 // . Override BindUIHandler() to create and bind the implementation of the
 //   bindings.
 template <typename Interface>
-class MojoWebUIIOSController : public web::WebUIIOSController,
-                               public shell::InterfaceFactory<Interface> {
+class MojoWebUIIOSController
+    : public web::WebUIIOSController,
+      public service_manager::InterfaceFactory<Interface> {
  public:
   explicit MojoWebUIIOSController(web::WebUIIOS* web_ui)
       : web::WebUIIOSController(web_ui) {
@@ -33,8 +34,8 @@ class MojoWebUIIOSController : public web::WebUIIOSController,
   virtual void BindUIHandler(mojo::InterfaceRequest<Interface> request) = 0;
 
  private:
-  // shell::InterfaceFactory overrides:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory overrides:
+  void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<Interface> request) override {
     BindUIHandler(std::move(request));
   }

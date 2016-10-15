@@ -11,7 +11,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -30,7 +30,7 @@ std::unique_ptr<WindowTreeClient> CreateWindowTreeHost(
     mojom::WindowTreeHostPtr* host,
     WindowManagerDelegate* window_manager_delegate);
 std::unique_ptr<WindowTreeClient> CreateWindowTreeHost(
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     mojom::WindowTreeHostPtr* host,
     WindowManagerDelegate* window_manager_delegate);

@@ -7,7 +7,7 @@
 #include "base/guid.h"
 #include "services/service_manager/public/cpp/names.h"
 
-namespace shell {
+namespace service_manager {
 
 Identity::Identity() {}
 
@@ -40,4 +40,4 @@ bool Identity::operator==(const Identity& other) const {
          other.user_id_ == user_id_;
 }
 
-}  // namespace shell
+}  // namespace service_manager

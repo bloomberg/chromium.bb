@@ -70,7 +70,7 @@ std::unique_ptr<RendererFactory> DefaultMojoMediaClient::CreateRendererFactory(
 }
 
 std::unique_ptr<CdmFactory> DefaultMojoMediaClient::CreateCdmFactory(
-    shell::mojom::InterfaceProvider* /* interface_provider */) {
+    service_manager::mojom::InterfaceProvider* /* interface_provider */) {
   DVLOG(1) << __FUNCTION__;
   return base::MakeUnique<DefaultCdmFactory>();
 }

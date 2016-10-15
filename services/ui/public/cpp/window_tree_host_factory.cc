@@ -25,7 +25,7 @@ std::unique_ptr<WindowTreeClient> CreateWindowTreeHost(
 }
 
 std::unique_ptr<WindowTreeClient> CreateWindowTreeHost(
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     mojom::WindowTreeHostPtr* host,
     WindowManagerDelegate* window_manager_delegate) {

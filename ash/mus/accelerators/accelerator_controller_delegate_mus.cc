@@ -12,7 +12,7 @@ namespace ash {
 namespace mus {
 
 AcceleratorControllerDelegateMus::AcceleratorControllerDelegateMus(
-    shell::Connector* connector)
+    service_manager::Connector* connector)
     : connector_(connector) {
 #if !defined(OS_CHROMEOS)
   // To avoid trybot complaining that |connector_| is not being

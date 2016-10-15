@@ -34,7 +34,7 @@ class Insets;
 class Point;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -181,7 +181,7 @@ class ASH_EXPORT WmShell {
     return window_selector_controller_.get();
   }
 
-  // Returns true when ash is running as a shell::Service.
+  // Returns true when ash is running as a service_manager::Service.
   virtual bool IsRunningInMash() const = 0;
 
   virtual WmWindow* NewWindow(ui::wm::WindowType window_type,

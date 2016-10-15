@@ -5,14 +5,14 @@
 #ifndef MASH_LOGIN_LOGIN_H_
 #define MASH_LOGIN_LOGIN_H_
 
-namespace shell {
+namespace service_manager {
 class Service;
 }
 
 namespace mash {
 namespace login {
 
-shell::Service* CreateLogin();
+service_manager::Service* CreateLogin();
 
 }  // namespace login
 }  // namespace mash

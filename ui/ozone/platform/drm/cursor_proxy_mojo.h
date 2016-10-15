@@ -10,7 +10,7 @@
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -23,7 +23,7 @@ namespace ui {
 // priviledged process.
 class CursorProxyMojo : public DrmCursorProxy {
  public:
-  explicit CursorProxyMojo(shell::Connector* connector);
+  explicit CursorProxyMojo(service_manager::Connector* connector);
   ~CursorProxyMojo() override;
 
  private:
@@ -35,7 +35,7 @@ class CursorProxyMojo : public DrmCursorProxy {
   void Move(gfx::AcceleratedWidget window, const gfx::Point& point) override;
   void InitializeOnEvdev() override;
 
-  std::unique_ptr<shell::Connector> connector_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
   // Mojo implementation of the DrmCursorProxy.
   ui::ozone::mojom::DeviceCursorPtr main_cursor_ptr_;

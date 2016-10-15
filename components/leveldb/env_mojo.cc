@@ -359,7 +359,8 @@ Status MojoEnv::UnlockFile(FileLock* lock) {
 
 Status MojoEnv::GetTestDirectory(std::string* path) {
   // TODO(erg): This method is actually only used from the test harness in
-  // leveldb. And when we go and port that test stuff to a shell::ServiceTest,
+  // leveldb. And when we go and port that test stuff to a
+  // service_manager::ServiceTest,
   // we probably won't use it since the mojo filesystem actually handles
   // temporary filesystems just fine.
   NOTREACHED();

@@ -2426,7 +2426,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (web::MojoFacade*)mojoFacade {
   if (!_mojoFacade) {
-    shell::mojom::InterfaceProvider* interfaceProvider =
+    service_manager::mojom::InterfaceProvider* interfaceProvider =
         _webStateImpl->GetMojoInterfaceRegistry();
     _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
   }

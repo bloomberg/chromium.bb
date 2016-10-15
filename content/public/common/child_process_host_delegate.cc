@@ -10,7 +10,8 @@ bool ChildProcessHostDelegate::CanShutdown() {
   return true;
 }
 
-shell::InterfaceProvider* ChildProcessHostDelegate::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+ChildProcessHostDelegate::GetRemoteInterfaces() {
   return nullptr;
 }
 

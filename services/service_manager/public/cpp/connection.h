@@ -10,7 +10,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 class InterfaceProvider;
 
@@ -89,6 +89,6 @@ class Connection {
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_CONNECTION_H_

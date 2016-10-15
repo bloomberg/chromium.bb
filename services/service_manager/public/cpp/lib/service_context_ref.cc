@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace shell {
+namespace service_manager {
 
 class ServiceContextRefImpl : public ServiceContextRef {
  public:
@@ -83,4 +83,4 @@ void ServiceContextRefFactory::Release() {
     quit_closure_.Run();
 }
 
-}  // namespace shell
+}  // namespace service_manager

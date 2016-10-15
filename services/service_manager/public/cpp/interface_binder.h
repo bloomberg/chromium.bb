@@ -9,7 +9,7 @@
 
 #include "mojo/public/cpp/system/message_pipe.h"
 
-namespace shell {
+namespace service_manager {
 
 class Identity;
 
@@ -25,6 +25,6 @@ class InterfaceBinder {
                              mojo::ScopedMessagePipeHandle handle) = 0;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_BINDER_H_

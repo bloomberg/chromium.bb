@@ -112,7 +112,7 @@ TestShellDelegate::TestShellDelegate()
 
 TestShellDelegate::~TestShellDelegate() {}
 
-::shell::Connector* TestShellDelegate::GetShellConnector() const {
+::service_manager::Connector* TestShellDelegate::GetShellConnector() const {
   return nullptr;
 }
 

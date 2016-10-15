@@ -19,7 +19,7 @@
 #include "services/service_manager/public/cpp/lib/interface_factory_binder.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connection;
 class InterfaceBinder;
 
@@ -183,6 +183,6 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   DISALLOW_COPY_AND_ASSIGN(InterfaceRegistry);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_REGISTRY_H_

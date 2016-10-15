@@ -11,7 +11,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.device.BatteryMonitor;
 import org.chromium.device.BatteryStatus;
 import org.chromium.device.battery.BatteryStatusManager.BatteryStatusCallback;
-import org.chromium.services.shell.InterfaceFactory;
+import org.chromium.services.service_manager.InterfaceFactory;
 
 import java.util.HashSet;
 

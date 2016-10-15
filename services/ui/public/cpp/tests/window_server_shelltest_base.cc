@@ -20,16 +20,17 @@ namespace {
 
 const char kTestAppName[] = "service:mus_ws_unittests_app";
 
-class WindowServerServiceTestClient : public shell::test::ServiceTestClient {
+class WindowServerServiceTestClient
+    : public service_manager::test::ServiceTestClient {
  public:
   explicit WindowServerServiceTestClient(WindowServerServiceTestBase* test)
       : ServiceTestClient(test), test_(test) {}
   ~WindowServerServiceTestClient() override {}
 
  private:
-  // shell::test::ServiceTestClient:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
+  // service_manager::test::ServiceTestClient:
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
     return test_->OnConnect(remote_identity, registry);
   }
 
@@ -54,7 +55,7 @@ WindowServerServiceTestBase::WindowServerServiceTestBase()
 
 WindowServerServiceTestBase::~WindowServerServiceTestBase() {}
 
-std::unique_ptr<shell::Service>
+std::unique_ptr<service_manager::Service>
 WindowServerServiceTestBase::CreateService() {
   return base::MakeUnique<WindowServerServiceTestClient>(this);
 }

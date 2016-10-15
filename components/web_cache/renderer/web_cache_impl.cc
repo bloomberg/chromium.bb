@@ -15,7 +15,7 @@
 namespace web_cache {
 
 WebCacheImpl::WebCacheImpl() : clear_cache_state_(kInit) {
-  shell::InterfaceRegistry* registry =
+  service_manager::InterfaceRegistry* registry =
       content::RenderThread::Get()->GetInterfaceRegistry();
   registry->AddInterface(
       base::Bind(&WebCacheImpl::BindRequest, base::Unretained(this)));

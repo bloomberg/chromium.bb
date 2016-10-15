@@ -14,13 +14,14 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "v8/include/v8.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 }
 
 namespace content {
 
-// A JS wrapper around shell::InterfaceRegistry that allows connecting to
+// A JS wrapper around service_manager::InterfaceRegistry that allows connecting
+// to
 // interfaces exposed by the renderer for testing.
 class InterfaceRegistryJsWrapper
     : public gin::Wrappable<InterfaceRegistryJsWrapper> {
@@ -28,7 +29,7 @@ class InterfaceRegistryJsWrapper
   static gin::Handle<InterfaceRegistryJsWrapper> Create(
       v8::Isolate* isolate,
       v8::Handle<v8::Context> context,
-      shell::InterfaceRegistry* interface_registry);
+      service_manager::InterfaceRegistry* interface_registry);
 
   // gin::Wrappable<InterfaceRegistryJsWrapper> overrides.
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -48,7 +49,7 @@ class InterfaceRegistryJsWrapper
   InterfaceRegistryJsWrapper(
       v8::Isolate* isolate,
       v8::Handle<v8::Context> context,
-      base::WeakPtr<shell::InterfaceRegistry> interface_registry);
+      base::WeakPtr<service_manager::InterfaceRegistry> interface_registry);
   ~InterfaceRegistryJsWrapper() override;
 
   void CallJsFactory(const ScopedJsFactory& factory,
@@ -59,7 +60,7 @@ class InterfaceRegistryJsWrapper
 
   v8::Isolate* isolate_;
   v8::Global<v8::Context> context_;
-  base::WeakPtr<shell::InterfaceRegistry> interface_registry_;
+  base::WeakPtr<service_manager::InterfaceRegistry> interface_registry_;
 
   base::WeakPtrFactory<InterfaceRegistryJsWrapper> weak_factory_;
 

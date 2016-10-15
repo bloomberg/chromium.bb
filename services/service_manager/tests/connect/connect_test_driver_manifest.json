@@ -5,7 +5,7 @@
   "capabilities": {
     "provided": {
       "connect_unittests:client_process_test": [
-        "shell::test::mojom::ClientProcessTest"
+        "service_manager::test::mojom::ClientProcessTest"
       ]
     }
   }

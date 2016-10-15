@@ -15,13 +15,14 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "v8/include/v8.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
 namespace content {
 
-// A JS wrapper around shell::InterfaceProvider that allows connecting to
+// A JS wrapper around service_manager::InterfaceProvider that allows connecting
+// to
 // remote services.
 class CONTENT_EXPORT InterfaceProviderJsWrapper
     : public gin::Wrappable<InterfaceProviderJsWrapper> {
@@ -30,7 +31,7 @@ class CONTENT_EXPORT InterfaceProviderJsWrapper
   static gin::Handle<InterfaceProviderJsWrapper> Create(
       v8::Isolate* isolate,
       v8::Handle<v8::Context> context,
-      shell::InterfaceProvider* remote_interfaces);
+      service_manager::InterfaceProvider* remote_interfaces);
 
   // gin::Wrappable<InterfaceProviderJsWrapper> overrides.
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -53,7 +54,7 @@ class CONTENT_EXPORT InterfaceProviderJsWrapper
   InterfaceProviderJsWrapper(
       v8::Isolate* isolate,
       v8::Handle<v8::Context> context,
-      base::WeakPtr<shell::InterfaceProvider> remote_interfaces);
+      base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces);
 
   void CallJsFactory(const ScopedJsFactory& factory,
                      mojo::ScopedMessagePipeHandle pipe);
@@ -63,7 +64,7 @@ class CONTENT_EXPORT InterfaceProviderJsWrapper
 
   v8::Isolate* isolate_;
   v8::Global<v8::Context> context_;
-  base::WeakPtr<shell::InterfaceProvider> remote_interfaces_;
+  base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces_;
 
   base::WeakPtrFactory<InterfaceProviderJsWrapper> weak_factory_;
 

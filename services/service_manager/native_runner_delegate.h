@@ -9,7 +9,7 @@ namespace base {
 class CommandLine;
 }
 
-namespace shell {
+namespace service_manager {
 class Identity;
 
 class NativeRunnerDelegate {
@@ -24,6 +24,6 @@ class NativeRunnerDelegate {
   virtual ~NativeRunnerDelegate() {}
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_NATIVE_RUNNER_DELEGATE_H_

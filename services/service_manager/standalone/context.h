@@ -25,7 +25,7 @@ class Catalog;
 class Store;
 }
 
-namespace shell {
+namespace service_manager {
 class NativeRunnerDelegate;
 
 // The "global" context for the shell's main process.
@@ -80,6 +80,6 @@ class Context : public mojo::edk::ProcessDelegate {
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_STANDALONE_CONTEXT_H_

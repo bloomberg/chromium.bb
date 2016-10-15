@@ -29,7 +29,7 @@ namespace filesystem {
 class LockTable;
 }
 
-namespace shell {
+namespace service_manager {
 class ServiceContext;
 }
 
@@ -42,12 +42,14 @@ class Store;
 
 // Creates and owns an instance of the catalog. Exposes a ServicePtr that
 // can be passed to the Shell, potentially in a different process.
-class Catalog : public shell::Service,
-                public shell::InterfaceFactory<mojom::Catalog>,
-                public shell::InterfaceFactory<filesystem::mojom::Directory>,
-                public shell::InterfaceFactory<shell::mojom::Resolver>,
-                public shell::InterfaceFactory<mojom::CatalogControl>,
-                public mojom::CatalogControl {
+class Catalog
+    : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::Catalog>,
+      public service_manager::InterfaceFactory<filesystem::mojom::Directory>,
+      public service_manager::InterfaceFactory<
+          service_manager::mojom::Resolver>,
+      public service_manager::InterfaceFactory<mojom::CatalogControl>,
+      public mojom::CatalogControl {
  public:
   // |manifest_provider| may be null.
   Catalog(base::SequencedWorkerPool* worker_pool,
@@ -64,7 +66,7 @@ class Catalog : public shell::Service,
   void OverridePackageName(const std::string& service_name,
                            const std::string& package_name);
 
-  shell::mojom::ServicePtr TakeService();
+  service_manager::mojom::ServicePtr TakeService();
 
  private:
   explicit Catalog(std::unique_ptr<Store> store);
@@ -72,24 +74,24 @@ class Catalog : public shell::Service,
   // Starts a scane for system packages.
   void ScanSystemPackageDir();
 
-  // shell::Service:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<shell::mojom::Resolver>:
-  void Create(const shell::Identity& remote_identity,
-              shell::mojom::ResolverRequest request) override;
+  // service_manager::InterfaceFactory<service_manager::mojom::Resolver>:
+  void Create(const service_manager::Identity& remote_identity,
+              service_manager::mojom::ResolverRequest request) override;
 
-  // shell::InterfaceFactory<mojom::Catalog>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::Catalog>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::CatalogRequest request) override;
 
-  // shell::InterfaceFactory<filesystem::mojom::Directory>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<filesystem::mojom::Directory>:
+  void Create(const service_manager::Identity& remote_identity,
               filesystem::mojom::DirectoryRequest request) override;
 
-  // shell::InterfaceFactory<mojom::CatalogControl>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::CatalogControl>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::CatalogControlRequest request) override;
 
   // mojom::CatalogControl:
@@ -104,8 +106,8 @@ class Catalog : public shell::Service,
 
   std::unique_ptr<Store> store_;
 
-  shell::mojom::ServicePtr service_;
-  std::unique_ptr<shell::ServiceContext> shell_connection_;
+  service_manager::mojom::ServicePtr service_;
+  std::unique_ptr<service_manager::ServiceContext> service_manager_connection_;
 
   std::map<std::string, std::unique_ptr<Instance>> instances_;
 

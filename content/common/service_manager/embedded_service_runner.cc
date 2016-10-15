@@ -33,7 +33,7 @@ class EmbeddedServiceRunner::Instance
       task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
-  void BindServiceRequest(shell::mojom::ServiceRequest request) {
+  void BindServiceRequest(service_manager::mojom::ServiceRequest request) {
     DCHECK(runner_thread_checker_.CalledOnValidThread());
 
     if (use_own_thread_ && !thread_) {
@@ -73,7 +73,7 @@ class EmbeddedServiceRunner::Instance
   }
 
   void BindServiceRequestOnApplicationThread(
-      shell::mojom::ServiceRequest request) {
+      service_manager::mojom::ServiceRequest request) {
     DCHECK(task_runner_->BelongsToCurrentThread());
 
     if (!service_) {
@@ -81,15 +81,15 @@ class EmbeddedServiceRunner::Instance
           base::Bind(&Instance::Quit, base::Unretained(this)));
     }
 
-    shell::ServiceContext* new_connection =
-        new shell::ServiceContext(service_.get(), std::move(request));
+    service_manager::ServiceContext* new_connection =
+        new service_manager::ServiceContext(service_.get(), std::move(request));
     shell_connections_.push_back(base::WrapUnique(new_connection));
     new_connection->SetConnectionLostClosure(
         base::Bind(&Instance::OnStop, base::Unretained(this),
                    new_connection));
   }
 
-  void OnStop(shell::ServiceContext* connection) {
+  void OnStop(service_manager::ServiceContext* connection) {
     DCHECK(task_runner_->BelongsToCurrentThread());
 
     for (auto it = shell_connections_.begin(); it != shell_connections_.end();
@@ -140,8 +140,9 @@ class EmbeddedServiceRunner::Instance
   // These fields must only be accessed from the application thread, except in
   // the destructor which may run on either the runner thread or the application
   // thread.
-  std::unique_ptr<shell::Service> service_;
-  std::vector<std::unique_ptr<shell::ServiceContext>> shell_connections_;
+  std::unique_ptr<service_manager::Service> service_;
+  std::vector<std::unique_ptr<service_manager::ServiceContext>>
+      shell_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
@@ -159,7 +160,7 @@ EmbeddedServiceRunner::~EmbeddedServiceRunner() {
 }
 
 void EmbeddedServiceRunner::BindServiceRequest(
-    shell::mojom::ServiceRequest request) {
+    service_manager::mojom::ServiceRequest request) {
   instance_->BindServiceRequest(std::move(request));
 }
 

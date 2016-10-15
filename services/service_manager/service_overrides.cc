@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -75,4 +75,4 @@ bool ServiceOverrides::GetExecutablePathOverride(
   return true;
 }
 
-}  // namespace shell
+}  // namespace service_manager

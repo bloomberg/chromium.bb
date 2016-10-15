@@ -52,12 +52,12 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
 
-class IMEAppTest : public shell::test::ServiceTest {
+class IMEAppTest : public service_manager::test::ServiceTest {
  public:
   IMEAppTest() : ServiceTest("exe:mus_ime_unittests") {}
   ~IMEAppTest() override {}
 
-  // shell::test::ServiceTest:
+  // service_manager::test::ServiceTest:
   void SetUp() override {
     ServiceTest::SetUp();
     // test_ime_driver will register itself as the current IMEDriver.

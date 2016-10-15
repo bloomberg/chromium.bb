@@ -26,7 +26,7 @@ namespace blink {
 class WebBluetoothRemoteGATTCharacteristic;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -41,7 +41,7 @@ class CONTENT_EXPORT WebBluetoothImpl
     : NON_EXPORTED_BASE(public blink::mojom::WebBluetoothServiceClient),
       NON_EXPORTED_BASE(public blink::WebBluetooth) {
  public:
-  WebBluetoothImpl(shell::InterfaceProvider* remote_interfaces);
+  WebBluetoothImpl(service_manager::InterfaceProvider* remote_interfaces);
   ~WebBluetoothImpl() override;
 
   // blink::WebBluetooth interface:
@@ -130,7 +130,7 @@ class CONTENT_EXPORT WebBluetoothImpl
       const std::vector<uint8_t>& value);
 
   blink::mojom::WebBluetoothService& GetWebBluetoothService();
-  shell::InterfaceProvider* const remote_interfaces_;
+  service_manager::InterfaceProvider* const remote_interfaces_;
   blink::mojom::WebBluetoothServicePtr web_bluetooth_service_;
 
   // Map of characteristic_instance_ids to

@@ -49,8 +49,10 @@ class Entry {
   void set_display_name(const std::string& display_name) {
     display_name_ = display_name;
   }
-  const shell::CapabilitySpec& capabilities() const { return capabilities_; }
-  void set_capabilities(const shell::CapabilitySpec& capabilities) {
+  const service_manager::CapabilitySpec& capabilities() const {
+    return capabilities_;
+  }
+  void set_capabilities(const service_manager::CapabilitySpec& capabilities) {
     capabilities_ = capabilities;
   }
   const Entry* package() const { return package_; }
@@ -65,7 +67,7 @@ class Entry {
   base::FilePath path_;
   std::string qualifier_;
   std::string display_name_;
-  shell::CapabilitySpec capabilities_;
+  service_manager::CapabilitySpec capabilities_;
   Entry* package_ = nullptr;
   std::vector<std::unique_ptr<Entry>> children_;
 };
@@ -74,8 +76,9 @@ class Entry {
 
 namespace mojo {
 template <>
-struct TypeConverter<shell::mojom::ResolveResultPtr, catalog::Entry> {
-  static shell::mojom::ResolveResultPtr Convert(const catalog::Entry& input);
+struct TypeConverter<service_manager::mojom::ResolveResultPtr, catalog::Entry> {
+  static service_manager::mojom::ResolveResultPtr Convert(
+      const catalog::Entry& input);
 };
 
 template<>

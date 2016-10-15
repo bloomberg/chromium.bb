@@ -8,7 +8,7 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/lib/connection_impl.h"
 
-namespace shell {
+namespace service_manager {
 
 Connector::ConnectParams::ConnectParams(const Identity& target)
     : target_(target) {}
@@ -122,4 +122,4 @@ std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
   return base::MakeUnique<ConnectorImpl>(proxy.PassInterface());
 }
 
-}  // namespace shell
+}  // namespace service_manager

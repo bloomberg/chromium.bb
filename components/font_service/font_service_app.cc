@@ -48,18 +48,18 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::OnStart(const shell::Identity& identity) {
+void FontServiceApp::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 }
 
-bool FontServiceApp::OnConnect(const shell::Identity& remote_identity,
-                               shell::InterfaceRegistry* registry) {
+bool FontServiceApp::OnConnect(const service_manager::Identity& remote_identity,
+                               service_manager::InterfaceRegistry* registry) {
   registry->AddInterface(this);
   return true;
 }
 
 void FontServiceApp::Create(
-    const shell::Identity& remote_identity,
+    const service_manager::Identity& remote_identity,
     mojo::InterfaceRequest<mojom::FontService> request) {
   bindings_.AddBinding(this, std::move(request));
 }

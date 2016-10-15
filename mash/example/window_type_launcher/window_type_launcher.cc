@@ -225,7 +225,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                public views::ContextMenuController {
  public:
   explicit WindowTypeLauncherView(WindowTypeLauncher* window_type_launcher,
-                                  shell::Connector* connector)
+                                  service_manager::Connector* connector)
       : window_type_launcher_(window_type_launcher),
         connector_(connector),
         create_button_(
@@ -432,7 +432,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   }
 
   WindowTypeLauncher* window_type_launcher_;
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
   views::Button* create_button_;
   views::Button* always_on_top_button_;
   views::Button* panel_button_;
@@ -469,15 +469,16 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void WindowTypeLauncher::OnStart(const shell::Identity& identity) {
+void WindowTypeLauncher::OnStart(const service_manager::Identity& identity) {
   aura_init_.reset(
       new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool WindowTypeLauncher::OnConnect(const shell::Identity& remote_identity,
-                                   shell::InterfaceRegistry* registry) {
+bool WindowTypeLauncher::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mash::mojom::Launchable>(this);
   return true;
 }
@@ -497,12 +498,13 @@ void WindowTypeLauncher::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void WindowTypeLauncher::Create(const shell::Identity& remote_identity,
-                                mash::mojom::LaunchableRequest request) {
+void WindowTypeLauncher::Create(
+    const service_manager::Identity& remote_identity,
+    mash::mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  return shell::ServiceRunner(new WindowTypeLauncher)
+  return service_manager::ServiceRunner(new WindowTypeLauncher)
       .Run(service_request_handle);
 }

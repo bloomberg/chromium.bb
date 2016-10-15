@@ -66,7 +66,7 @@ class InputMethodMusTest : public testing::Test {
   InputMethodMusTest() : message_loop_(base::MessageLoop::TYPE_UI) {}
   ~InputMethodMusTest() override {}
 
-  shell::Connector* connector() {
+  service_manager::Connector* connector() {
     return WindowManagerConnection::Get()->connector();
   }
 

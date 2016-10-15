@@ -675,11 +675,12 @@ class MockMediaSource {
 //               preferably by eliminating multiple inheritance here which is
 //               banned by Google C++ style.
 #if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
-class PipelineIntegrationTestHost : public shell::test::ServiceTest,
+class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
                                     public PipelineIntegrationTestBase {
  public:
   PipelineIntegrationTestHost()
-      : shell::test::ServiceTest("exe:media_pipeline_integration_shelltests") {}
+      : service_manager::test::ServiceTest(
+            "exe:media_pipeline_integration_shelltests") {}
 
   void SetUp() override {
     ServiceTest::SetUp();

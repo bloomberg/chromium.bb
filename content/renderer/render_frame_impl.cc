@@ -1119,13 +1119,13 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       frame_binding_(this),
       has_accessed_initial_document_(false),
       weak_factory_(this) {
-  // We don't have a shell::Connection at this point, so use nullptr.
+  // We don't have a service_manager::Connection at this point, so use nullptr.
   // TODO(beng): We should fix this, so we can apply policy about which
   //             interfaces get exposed.
-  interface_registry_.reset(new shell::InterfaceRegistry);
-  shell::mojom::InterfaceProviderPtr remote_interfaces;
+  interface_registry_.reset(new service_manager::InterfaceRegistry);
+  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
-  remote_interfaces_.reset(new shell::InterfaceProvider);
+  remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   blink_interface_provider_.reset(new BlinkInterfaceProviderImpl(
       remote_interfaces_->GetWeakPtr()));
@@ -2483,11 +2483,11 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   OnJavaScriptExecuteRequest(javascript, 0, false);
 }
 
-shell::InterfaceRegistry* RenderFrameImpl::GetInterfaceRegistry() {
+service_manager::InterfaceRegistry* RenderFrameImpl::GetInterfaceRegistry() {
   return interface_registry_.get();
 }
 
-shell::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider* RenderFrameImpl::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 
@@ -2631,7 +2631,7 @@ bool RenderFrameImpl::IsPasting() const {
 // mojom::Frame implementation -------------------------------------------------
 
 void RenderFrameImpl::GetInterfaceProvider(
-    shell::mojom::InterfaceProviderRequest request) {
+    service_manager::mojom::InterfaceProviderRequest request) {
   interface_registry_->Bind(std::move(request));
 }
 
@@ -6320,7 +6320,8 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 }
 
 #if defined(ENABLE_MOJO_MEDIA)
-shell::mojom::InterfaceProvider* RenderFrameImpl::GetMediaInterfaceProvider() {
+service_manager::mojom::InterfaceProvider*
+RenderFrameImpl::GetMediaInterfaceProvider() {
   if (!media_interface_provider_) {
     media_interface_provider_.reset(
         new MediaInterfaceProvider(GetRemoteInterfaces()));

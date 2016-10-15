@@ -80,7 +80,7 @@ class GlApiLoader {
 
 class OzonePlatformGbm
     : public OzonePlatform,
-      public shell::InterfaceFactory<ozone::mojom::DeviceCursor> {
+      public service_manager::InterfaceFactory<ozone::mojom::DeviceCursor> {
  public:
   OzonePlatformGbm() : using_mojo_(false), single_process_(false) {}
   ~OzonePlatformGbm() override {}
@@ -107,11 +107,11 @@ class OzonePlatformGbm
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return event_factory_ozone_->CreateSystemInputInjector();
   }
-  void AddInterfaces(shell::InterfaceRegistry* registry) override {
+  void AddInterfaces(service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<ozone::mojom::DeviceCursor>(this);
   }
-  // shell::InterfaceFactory<ozone::mojom::DeviceCursor> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<ozone::mojom::DeviceCursor>:
+  void Create(const service_manager::Identity& remote_identity,
               ozone::mojom::DeviceCursorRequest request) override {
     if (drm_thread_proxy_)
       drm_thread_proxy_->AddBinding(std::move(request));

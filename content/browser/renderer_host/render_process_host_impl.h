@@ -162,7 +162,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebRtcRtpPacketCallback& packet_callback) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
@@ -403,7 +403,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // the render process currently hosted by the RPHI. Callbacks added by this
   // method will never run beyond the next invocation of Cleanup().
   template <typename CallbackType>
-  void AddUIThreadInterface(shell::InterfaceRegistry* registry,
+  void AddUIThreadInterface(service_manager::InterfaceRegistry* registry,
                             const CallbackType& callback) {
     registry->AddInterface(
         base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
@@ -417,7 +417,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int connection_filter_id_ =
       ServiceManagerConnection::kInvalidConnectionFilterId;
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
-  shell::mojom::ServicePtr test_service_;
+  service_manager::mojom::ServicePtr test_service_;
 
   size_t service_worker_ref_count_;
   size_t shared_worker_ref_count_;

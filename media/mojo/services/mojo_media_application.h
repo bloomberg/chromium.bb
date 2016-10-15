@@ -27,8 +27,9 @@ class MediaLog;
 class MojoMediaClient;
 
 class MEDIA_MOJO_EXPORT MojoMediaApplication
-    : public NON_EXPORTED_BASE(shell::Service),
-      public NON_EXPORTED_BASE(shell::InterfaceFactory<mojom::MediaService>),
+    : public NON_EXPORTED_BASE(service_manager::Service),
+      public NON_EXPORTED_BASE(
+          service_manager::InterfaceFactory<mojom::MediaService>),
       public NON_EXPORTED_BASE(mojom::MediaService) {
  public:
   MojoMediaApplication(std::unique_ptr<MojoMediaClient> mojo_media_client,
@@ -36,20 +37,20 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
   ~MojoMediaApplication() final;
 
  private:
-  // shell::Service implementation.
-  void OnStart(const shell::Identity& identity) final;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) final;
+  // service_manager::Service implementation.
+  void OnStart(const service_manager::Identity& identity) final;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) final;
   bool OnStop() final;
 
-  // shell::InterfaceFactory<mojom::MediaService> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::MediaService> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::MediaServiceRequest request) final;
 
   // mojom::MediaService implementation.
   void CreateServiceFactory(
       mojom::ServiceFactoryRequest request,
-      shell::mojom::InterfaceProviderPtr remote_interfaces) final;
+      service_manager::mojom::InterfaceProviderPtr remote_interfaces) final;
 
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using
@@ -57,7 +58,7 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
   scoped_refptr<MediaLog> media_log_;
-  shell::ServiceContextRefFactory ref_factory_;
+  service_manager::ServiceContextRefFactory ref_factory_;
 
   mojo::BindingSet<mojom::MediaService> bindings_;
 };

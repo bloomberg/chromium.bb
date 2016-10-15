@@ -299,9 +299,9 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
 
  private:
   // ConnectionFilter:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry,
-                 shell::Connector* connector) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry,
+                 service_manager::Connector* connector) override {
     if (remote_identity.name() != kGpuServiceName)
       return false;
 
@@ -335,7 +335,7 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
 
 // static
 GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
-  DCHECK(!shell::ShellIsRemote());
+  DCHECK(!service_manager::ServiceManagerIsRemote());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Don't grant further access to GPU if it is not allowed.
@@ -415,7 +415,7 @@ void GpuProcessHost::RegisterGpuMainThreadFactory(
   g_gpu_main_thread_factory = create;
 }
 
-shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
+service_manager::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
   return process_->child_connection()->GetRemoteInterfaces();
 }
 

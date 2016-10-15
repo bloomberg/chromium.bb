@@ -5,7 +5,7 @@
   "capabilities": {
     "provided": {
       "background_shell_unittest:test_service": [
-        "shell::mojom::TestService"
+        "service_manager::mojom::TestService"
       ]
     }
   }

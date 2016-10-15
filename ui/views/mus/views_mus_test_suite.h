@@ -24,7 +24,7 @@ class ViewsMusTestSuite : public ViewsTestSuite {
   void Initialize() override;
   void Shutdown() override;
 
-  std::unique_ptr<ShellConnection> shell_connections_;
+  std::unique_ptr<ShellConnection> service_manager_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsMusTestSuite);
 };

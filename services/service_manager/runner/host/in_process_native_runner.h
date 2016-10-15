@@ -18,7 +18,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace shell {
+namespace service_manager {
 
 // An implementation of |NativeRunner| that loads/runs the given service (from
 // the file system) on a separate thread (in the current process).
@@ -65,6 +65,6 @@ class InProcessNativeRunnerFactory : public NativeRunnerFactory {
   DISALLOW_COPY_AND_ASSIGN(InProcessNativeRunnerFactory);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_IN_PROCESS_NATIVE_RUNNER_H_

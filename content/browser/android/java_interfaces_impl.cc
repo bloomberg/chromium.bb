@@ -24,7 +24,7 @@ namespace {
 class JavaInterfaceProviderHolder {
  public:
   JavaInterfaceProviderHolder() {
-    shell::mojom::InterfaceProviderPtr provider;
+    service_manager::mojom::InterfaceProviderPtr provider;
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_InterfaceRegistrarImpl_createInterfaceRegistryForContext(
         env, mojo::GetProxy(&provider).PassMessagePipe().release().value(),
@@ -37,20 +37,22 @@ class JavaInterfaceProviderHolder {
     return base::Singleton<JavaInterfaceProviderHolder>::get();
   }
 
-  shell::InterfaceProvider* GetJavaInterfaces() { return &interface_provider_; }
+  service_manager::InterfaceProvider* GetJavaInterfaces() {
+    return &interface_provider_;
+  }
 
  private:
-  shell::InterfaceProvider interface_provider_;
+  service_manager::InterfaceProvider interface_provider_;
 };
 
 }  // namespace
 
-shell::InterfaceProvider* GetGlobalJavaInterfaces() {
+service_manager::InterfaceProvider* GetGlobalJavaInterfaces() {
   return JavaInterfaceProviderHolder::GetInstance()->GetJavaInterfaces();
 }
 
 void BindInterfaceRegistryForWebContents(
-    shell::mojom::InterfaceProviderRequest request,
+    service_manager::mojom::InterfaceProviderRequest request,
     WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrarImpl_createInterfaceRegistryForWebContents(

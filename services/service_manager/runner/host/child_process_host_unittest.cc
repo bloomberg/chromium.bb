@@ -23,7 +23,7 @@
 #include "services/service_manager/native_runner_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace shell {
+namespace service_manager {
 namespace {
 
 void ProcessReadyCallbackAdapater(const base::Closure& callback,
@@ -107,4 +107,4 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace service_manager

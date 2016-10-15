@@ -103,7 +103,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
       public NON_EXPORTED_BASE(
-          shell::InterfaceFactory<media::mojom::ServiceFactory>) {
+          service_manager::InterfaceFactory<media::mojom::ServiceFactory>) {
  public:
   using AXTreeSnapshotCallback =
       base::Callback<void(
@@ -153,8 +153,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CopyImageAt(int x, int y) override;
   void SaveImageAt(int x, int y) override;
   RenderViewHost* GetRenderViewHost() override;
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   blink::WebPageVisibilityState GetVisibilityState() override;
   bool IsRenderFrameLive() override;
@@ -167,7 +167,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // mojom::FrameHost
   void GetInterfaceProvider(
-      shell::mojom::InterfaceProviderRequest interfaces) override;
+      service_manager::mojom::InterfaceProviderRequest interfaces) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -207,8 +207,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstanceImpl::Observer
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
 
-  // shell::InterfaceFactory<media::mojom::ServiceFactory>
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<media::mojom::ServiceFactory>
+  void Create(const service_manager::Identity& remote_identity,
               media::mojom::ServiceFactoryRequest request) override;
 
   // Creates a RenderFrame in the renderer process.
@@ -965,8 +965,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstance.  May be null in tests.
   std::unique_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
 
-  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
 
 #if defined(OS_ANDROID)
   // The filter for MessagePort messages between an Android apps and web.
@@ -1053,7 +1053,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 
-  std::vector<std::unique_ptr<shell::InterfaceRegistry>> media_registries_;
+  std::vector<std::unique_ptr<service_manager::InterfaceRegistry>>
+      media_registries_;
 
   std::unique_ptr<AssociatedInterfaceProviderImpl>
       remote_associated_interfaces_;

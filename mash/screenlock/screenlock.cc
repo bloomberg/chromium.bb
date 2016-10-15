@@ -25,7 +25,7 @@ namespace {
 class ScreenlockView : public views::WidgetDelegateView,
                        public views::ButtonListener {
  public:
-  explicit ScreenlockView(shell::Connector* connector)
+  explicit ScreenlockView(service_manager::Connector* connector)
       : connector_(connector),
         unlock_button_(
             views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock"))) {
@@ -62,7 +62,7 @@ class ScreenlockView : public views::WidgetDelegateView,
     session->UnlockScreen();
   }
 
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
   views::MdTextButton* unlock_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockView);
@@ -73,7 +73,7 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::OnStart(const shell::Identity& identity) {
+void Screenlock::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   mash::session::mojom::SessionPtr session;

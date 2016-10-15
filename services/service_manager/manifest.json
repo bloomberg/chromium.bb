@@ -27,7 +27,7 @@
       // capability interface sets.
       "shell:explicit_class": [ ],
 
-      "shell:service_manager": [ "shell::mojom::ServiceManager" ]
+      "shell:service_manager": [ "service_manager::mojom::ServiceManager" ]
     },
     "required": {
       "service:shell": [ "shell:all_users" ]

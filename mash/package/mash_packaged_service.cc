@@ -25,27 +25,29 @@ MashPackagedService::MashPackagedService() {}
 
 MashPackagedService::~MashPackagedService() {}
 
-bool MashPackagedService::OnConnect(const shell::Identity& remote_identity,
-                                    shell::InterfaceRegistry* registry) {
+bool MashPackagedService::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<ServiceFactory>(this);
   return true;
 }
 
 void MashPackagedService::Create(
-    const shell::Identity& remote_identity,
+    const service_manager::Identity& remote_identity,
     mojo::InterfaceRequest<ServiceFactory> request) {
   service_factory_bindings_.AddBinding(this, std::move(request));
 }
 
-void MashPackagedService::CreateService(shell::mojom::ServiceRequest request,
-                                        const std::string& mojo_name) {
+void MashPackagedService::CreateService(
+    service_manager::mojom::ServiceRequest request,
+    const std::string& mojo_name) {
   if (service_) {
     LOG(ERROR) << "request to create additional service " << mojo_name;
     return;
   }
   service_ = CreateService(mojo_name);
   if (service_) {
-    service_->set_context(base::MakeUnique<shell::ServiceContext>(
+    service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
         service_.get(), std::move(request)));
     return;
   }
@@ -54,7 +56,7 @@ void MashPackagedService::CreateService(shell::mojom::ServiceRequest request,
 }
 
 // Please see header file for details on adding new services.
-std::unique_ptr<shell::Service> MashPackagedService::CreateService(
+std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
     const std::string& name) {
   if (name == "service:ash")
     return base::WrapUnique(new ash::mus::WindowManagerApplication);

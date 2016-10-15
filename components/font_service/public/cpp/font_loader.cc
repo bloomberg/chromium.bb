@@ -13,7 +13,7 @@
 
 namespace font_service {
 
-FontLoader::FontLoader(shell::Connector* connector) {
+FontLoader::FontLoader(service_manager::Connector* connector) {
   mojom::FontServicePtr font_service;
   connector->ConnectToInterface("service:font_service", &font_service);
   thread_ = new internal::FontServiceThread(std::move(font_service));

@@ -28,7 +28,7 @@
 #include "services/service_manager/runner/host/mach_broker.h"
 #endif
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -125,4 +125,4 @@ void ChildProcessMainWithCallback(const RunCallback& callback) {
   callback.Run(GetServiceRequestFromCommandLine());
 }
 
-}  // namespace shell
+}  // namespace service_manager

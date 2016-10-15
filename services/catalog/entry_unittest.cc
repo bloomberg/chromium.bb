@@ -56,7 +56,7 @@ class EntryTest : public testing::Test {
 TEST_F(EntryTest, Simple) {
   std::unique_ptr<Entry> entry = ReadEntry("simple", nullptr);
   EXPECT_EQ("service:foo", entry->name());
-  EXPECT_EQ(shell::GetNamePath(entry->name()), entry->qualifier());
+  EXPECT_EQ(service_manager::GetNamePath(entry->name()), entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
@@ -73,8 +73,8 @@ TEST_F(EntryTest, Capabilities) {
   EXPECT_EQ("service:foo", entry->name());
   EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
-  shell::CapabilitySpec spec;
-  shell::Classes classes;
+  service_manager::CapabilitySpec spec;
+  service_manager::Classes classes;
   classes.insert("bar:bar");
   spec.required["service:bar"] = classes;
   EXPECT_EQ(spec, entry->capabilities());

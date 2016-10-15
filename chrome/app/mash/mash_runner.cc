@@ -35,7 +35,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
-using shell::mojom::ServiceFactory;
+using service_manager::mojom::ServiceFactory;
 
 namespace {
 
@@ -76,15 +76,15 @@ void InitializeResources() {
       locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }
 
-class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
+class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
  public:
   NativeRunnerDelegateImpl() {}
   ~NativeRunnerDelegateImpl() override {}
 
  private:
-  // shell::NativeRunnerDelegate:
+  // service_manager::NativeRunnerDelegate:
   void AdjustCommandLineArgumentsForTarget(
-      const shell::Identity& target,
+      const service_manager::Identity& target,
       base::CommandLine* command_line) override {
     if (target.name() != content::kBrowserServiceName) {
       // If running anything other than the browser process, launch a mash
@@ -127,19 +127,19 @@ void MashRunner::RunMain() {
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
   NativeRunnerDelegateImpl native_runner_delegate;
-  shell::BackgroundShell background_shell;
-  std::unique_ptr<shell::BackgroundShell::InitParams> init_params(
-      new shell::BackgroundShell::InitParams);
+  service_manager::BackgroundShell background_service_manager;
+  std::unique_ptr<service_manager::BackgroundShell::InitParams> init_params(
+      new service_manager::BackgroundShell::InitParams);
   init_params->native_runner_delegate = &native_runner_delegate;
-  background_shell.Init(std::move(init_params));
+  background_service_manager.Init(std::move(init_params));
   service_.reset(new mash::MashPackagedService);
-  service_->set_context(base::MakeUnique<shell::ServiceContext>(
+  service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
       service_.get(),
-      background_shell.CreateServiceRequest(kChromeMashServiceName)));
+      background_service_manager.CreateServiceRequest(kChromeMashServiceName)));
 
   // We need to send a sync messages to the Catalog, so we wait for a completed
   // connection first.
-  std::unique_ptr<shell::Connection> catalog_connection =
+  std::unique_ptr<service_manager::Connection> catalog_connection =
       service_->connector()->Connect("service:catalog");
   {
     base::RunLoop run_loop;
@@ -171,19 +171,19 @@ void MashRunner::RunMain() {
 void MashRunner::RunChild() {
   base::i18n::InitializeICU();
   InitializeResources();
-  shell::ChildProcessMainWithCallback(
+  service_manager::ChildProcessMainWithCallback(
       base::Bind(&MashRunner::StartChildApp, base::Unretained(this)));
 }
 
 void MashRunner::StartChildApp(
-    shell::mojom::ServiceRequest service_request) {
+    service_manager::mojom::ServiceRequest service_request) {
   // TODO(sad): Normally, this would be a TYPE_DEFAULT message loop. However,
   // TYPE_UI is needed for mojo:ui. But it is not known whether the child app is
   // going to be mojo:ui at this point. So always create a TYPE_UI message loop
   // for now.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   service_.reset(new mash::MashPackagedService);
-  service_->set_context(base::MakeUnique<shell::ServiceContext>(
+  service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
       service_.get(), std::move(service_request)));
   base::RunLoop().Run();
 }

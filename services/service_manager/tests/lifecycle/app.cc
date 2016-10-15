@@ -7,8 +7,8 @@
 #include "services/service_manager/tests/lifecycle/app_client.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::test::AppClient* app = new shell::test::AppClient;
-  shell::ServiceRunner runner(app);
+  service_manager::test::AppClient* app = new service_manager::test::AppClient;
+  service_manager::ServiceRunner runner(app);
   app->set_runner(&runner);
   return runner.Run(service_request_handle);
 }

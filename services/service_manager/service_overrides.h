@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 
-namespace shell {
+namespace service_manager {
 
 class ServiceOverrides {
  public:
@@ -39,6 +39,6 @@ class ServiceOverrides {
   DISALLOW_COPY_AND_ASSIGN(ServiceOverrides);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_SERVICE_OVERRIDES_H_

@@ -26,7 +26,7 @@ class WindowServerTestBase
     : public WindowServerServiceTestBase,
       public WindowTreeClientDelegate,
       public WindowManagerDelegate,
-      public shell::InterfaceFactory<mojom::WindowTreeClient> {
+      public service_manager::InterfaceFactory<mojom::WindowTreeClient> {
  public:
   WindowServerTestBase();
   ~WindowServerTestBase() override;
@@ -67,8 +67,8 @@ class WindowServerTestBase
   void SetUp() override;
 
   // WindowServerServiceTestBase:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
@@ -99,7 +99,7 @@ class WindowServerTestBase
                                    const ui::Event& event) override;
 
   // InterfaceFactory<WindowTreeClient>:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
   // Used to receive the most recent window tree client loaded by an embed

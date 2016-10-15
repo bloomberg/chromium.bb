@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_binder.h"
 
-namespace shell {
+namespace service_manager {
 namespace internal {
 
 template <typename Interface>
@@ -67,7 +67,7 @@ class GenericCallbackBinder : public InterfaceBinder {
 
  private:
   // InterfaceBinder:
-  void BindInterface(const shell::Identity& remote_identity,
+  void BindInterface(const service_manager::Identity& remote_identity,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle handle) override;
 
@@ -81,6 +81,6 @@ class GenericCallbackBinder : public InterfaceBinder {
 };
 
 }  // namespace internal
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_LIB_CALLBACK_BINDER_H_

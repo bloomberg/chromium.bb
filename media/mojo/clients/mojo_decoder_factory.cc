@@ -13,7 +13,7 @@
 namespace media {
 
 MojoDecoderFactory::MojoDecoderFactory(
-    shell::mojom::InterfaceProvider* interface_provider)
+    service_manager::mojom::InterfaceProvider* interface_provider)
     : interface_provider_(interface_provider) {
   DCHECK(interface_provider_);
 }
@@ -25,8 +25,8 @@ void MojoDecoderFactory::CreateAudioDecoders(
     ScopedVector<AudioDecoder>* audio_decoders) {
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
   mojom::AudioDecoderPtr audio_decoder_ptr;
-  shell::GetInterface<mojom::AudioDecoder>(interface_provider_,
-                                           &audio_decoder_ptr);
+  service_manager::GetInterface<mojom::AudioDecoder>(interface_provider_,
+                                                     &audio_decoder_ptr);
 
   audio_decoders->push_back(
       new MojoAudioDecoder(task_runner, std::move(audio_decoder_ptr)));
@@ -39,8 +39,8 @@ void MojoDecoderFactory::CreateVideoDecoders(
     ScopedVector<VideoDecoder>* video_decoders) {
 #if defined(ENABLE_MOJO_VIDEO_DECODER)
   mojom::VideoDecoderPtr remote_decoder;
-  shell::GetInterface<mojom::VideoDecoder>(interface_provider_,
-                                           &remote_decoder);
+  service_manager::GetInterface<mojom::VideoDecoder>(interface_provider_,
+                                                     &remote_decoder);
   video_decoders->push_back(new MojoVideoDecoder(task_runner, gpu_factories,
                                                  std::move(remote_decoder)));
 #endif

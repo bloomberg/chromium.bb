@@ -13,7 +13,7 @@
 namespace content {
 
 BlinkInterfaceRegistryImpl::BlinkInterfaceRegistryImpl(
-    base::WeakPtr<shell::InterfaceRegistry> interface_registry)
+    base::WeakPtr<service_manager::InterfaceRegistry> interface_registry)
     : interface_registry_(interface_registry) {}
 
 BlinkInterfaceRegistryImpl::~BlinkInterfaceRegistryImpl() = default;

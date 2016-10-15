@@ -11,7 +11,7 @@
 #include "services/service_manager/public/cpp/interface_binder.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 
-namespace shell {
+namespace service_manager {
 namespace internal {
 
 template <typename Interface>
@@ -34,6 +34,6 @@ class InterfaceFactoryBinder : public InterfaceBinder {
 };
 
 }  // namespace internal
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_LIB_INTERFACE_FACTORY_BINDER_H_

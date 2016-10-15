@@ -11,7 +11,7 @@ namespace base {
 template <typename T> struct DefaultSingletonTraits;
 }
 
-namespace shell {
+namespace service_manager {
 
 // A global singleton |MachBroker| is used by the shell to provide access to
 // Mach task ports for shell out-of-process applications.
@@ -47,6 +47,6 @@ class MachBroker {
   base::MachPortBroker broker_;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_MACH_BROKER_H_

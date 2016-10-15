@@ -11,34 +11,35 @@
 namespace mojo {
 
 template <>
-struct StructTraits<shell::mojom::CapabilitySpec::DataView,
-                    shell::CapabilitySpec> {
-  static const std::map<shell::Class, shell::Interfaces>& provided(
-      const shell::CapabilitySpec& spec) {
+struct StructTraits<service_manager::mojom::CapabilitySpec::DataView,
+                    service_manager::CapabilitySpec> {
+  static const std::map<service_manager::Class, service_manager::Interfaces>&
+  provided(const service_manager::CapabilitySpec& spec) {
     return spec.provided;
   }
-  static const std::map<shell::Name, shell::Classes>& required(
-      const shell::CapabilitySpec& spec) {
+  static const std::map<service_manager::Name, service_manager::Classes>&
+  required(const service_manager::CapabilitySpec& spec) {
     return spec.required;
   }
-  static bool Read(shell::mojom::CapabilitySpecDataView data,
-                   shell::CapabilitySpec* out) {
+  static bool Read(service_manager::mojom::CapabilitySpecDataView data,
+                   service_manager::CapabilitySpec* out) {
     return data.ReadProvided(&out->provided) &&
            data.ReadRequired(&out->required);
   }
 };
 
 template <>
-struct StructTraits<shell::mojom::Interfaces::DataView,
-                    shell::Interfaces> {
-  static std::vector<std::string> interfaces(const shell::Interfaces& spec) {
+struct StructTraits<service_manager::mojom::Interfaces::DataView,
+                    service_manager::Interfaces> {
+  static std::vector<std::string> interfaces(
+      const service_manager::Interfaces& spec) {
     std::vector<std::string> vec;
     for (const auto& interface_name : spec)
       vec.push_back(interface_name);
     return vec;
   }
-  static bool Read(shell::mojom::InterfacesDataView data,
-                   shell::Interfaces* out) {
+  static bool Read(service_manager::mojom::InterfacesDataView data,
+                   service_manager::Interfaces* out) {
     ArrayDataView<StringDataView> interfaces_data_view;
     data.GetInterfacesDataView(&interfaces_data_view);
     for (size_t i = 0; i < interfaces_data_view.size(); ++i) {
@@ -52,15 +53,17 @@ struct StructTraits<shell::mojom::Interfaces::DataView,
 };
 
 template <>
-struct StructTraits<shell::mojom::Classes::DataView,
-                    shell::Classes> {
-  static std::vector<std::string> classes(const shell::Classes& spec) {
+struct StructTraits<service_manager::mojom::Classes::DataView,
+                    service_manager::Classes> {
+  static std::vector<std::string> classes(
+      const service_manager::Classes& spec) {
     std::vector<std::string> vec;
     for (const auto& class_name : spec)
       vec.push_back(class_name);
     return vec;
   }
-  static bool Read(shell::mojom::ClassesDataView data, shell::Classes* out) {
+  static bool Read(service_manager::mojom::ClassesDataView data,
+                   service_manager::Classes* out) {
     ArrayDataView<StringDataView> classes_data_view;
     data.GetClassesDataView(&classes_data_view);
     for (size_t i = 0; i < classes_data_view.size(); ++i) {

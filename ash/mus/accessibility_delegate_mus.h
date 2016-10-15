@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -17,7 +17,7 @@ namespace ash {
 
 class AccessibilityDelegateMus : public DefaultAccessibilityDelegate {
  public:
-  explicit AccessibilityDelegateMus(shell::Connector* connector);
+  explicit AccessibilityDelegateMus(service_manager::Connector* connector);
   ~AccessibilityDelegateMus() override;
 
  private:
@@ -27,7 +27,7 @@ class AccessibilityDelegateMus : public DefaultAccessibilityDelegate {
   void ToggleHighContrast() override;
 
   ui::mojom::AccessibilityManagerPtr accessibility_manager_ptr_;
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateMus);
 };

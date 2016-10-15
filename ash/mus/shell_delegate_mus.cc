@@ -108,14 +108,14 @@ class MediaDelegateStub : public MediaDelegate {
 
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus(shell::Connector* connector)
+ShellDelegateMus::ShellDelegateMus(service_manager::Connector* connector)
     : connector_(connector), app_list_presenter_(connector) {
   // |connector_| may be null in tests.
 }
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
-::shell::Connector* ShellDelegateMus::GetShellConnector() const {
+service_manager::Connector* ShellDelegateMus::GetShellConnector() const {
   return connector_;
 }
 

@@ -597,8 +597,8 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
       content::BrowserContext* browser_context,
       VisitCountingContext* context)
       : MockRenderProcessHost(browser_context), widgets_(0) {
-    SetRemoteInterfaces(base::MakeUnique<shell::InterfaceProvider>());
-    shell::InterfaceProvider::TestApi test_api(GetRemoteInterfaces());
+    SetRemoteInterfaces(base::MakeUnique<service_manager::InterfaceProvider>());
+    service_manager::InterfaceProvider::TestApi test_api(GetRemoteInterfaces());
     test_api.SetBinderForName(
         mojom::VisitedLinkNotificationSink::Name_,
         base::Bind(&VisitCountingContext::Bind, base::Unretained(context)));

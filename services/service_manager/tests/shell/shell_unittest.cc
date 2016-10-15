@@ -21,7 +21,7 @@
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/tests/shell/shell_unittest.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -53,12 +53,12 @@ class ShellTestClient
   }
 
   // test::mojom::CreateInstanceTest:
-  void SetTargetIdentity(const shell::Identity& identity) override {
+  void SetTargetIdentity(const service_manager::Identity& identity) override {
     target_identity_ = identity;
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  shell::Identity target_identity_;
+  service_manager::Identity target_identity_;
 
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
@@ -138,7 +138,7 @@ class ShellTest : public test::ServiceTest,
   void OnServiceCreated(mojom::ServiceInfoPtr instance) override {
     instances_.push_back(InstanceInfo(instance->identity));
   }
-  void OnServiceStarted(const shell::Identity& identity,
+  void OnServiceStarted(const service_manager::Identity& identity,
                         uint32_t pid) override {
     for (auto& instance : instances_) {
       if (instance.identity == identity) {
@@ -147,7 +147,7 @@ class ShellTest : public test::ServiceTest,
       }
     }
   }
-  void OnServiceStopped(const shell::Identity& identity) override {
+  void OnServiceStopped(const service_manager::Identity& identity) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto& instance = *it;
       if (instance.identity == identity) {
@@ -212,4 +212,4 @@ TEST_F(ShellTest, CreateInstance) {
   base::RunLoop().Run();
 }
 
-}  // namespace shell
+}  // namespace service_manager

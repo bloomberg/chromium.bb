@@ -18,7 +18,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // Encapsulates a connection to the Service Manager in two parts:
 // - a bound InterfacePtr to mojom::Connector, the primary mechanism
@@ -48,7 +48,7 @@ class ServiceContext : public mojom::Service {
   // ServiceContext. If either |connector| or |connector_request| is non-null
   // both must be non-null. If both are null, the connection will create its own
   // Connector and request to pass to the Service Manager on initialization.
-  ServiceContext(shell::Service* service,
+  ServiceContext(service_manager::Service* service,
                  mojom::ServiceRequest request,
                  std::unique_ptr<Connector> connector = nullptr,
                  mojom::ConnectorRequest connector_request = nullptr);
@@ -85,10 +85,10 @@ class ServiceContext : public mojom::Service {
   // Manager.
   mojom::ConnectorRequest pending_connector_request_;
 
-  shell::Service* service_;
+  service_manager::Service* service_;
   mojo::Binding<mojom::Service> binding_;
   std::unique_ptr<Connector> connector_;
-  shell::Identity identity_;
+  service_manager::Identity identity_;
   bool should_run_connection_lost_closure_ = false;
 
   base::Closure connection_lost_closure_;
@@ -96,6 +96,6 @@ class ServiceContext : public mojom::Service {
   DISALLOW_COPY_AND_ASSIGN(ServiceContext);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_CONTEXT_H_

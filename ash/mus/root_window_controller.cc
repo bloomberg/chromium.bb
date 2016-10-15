@@ -84,7 +84,7 @@ void RootWindowController::Shutdown() {
   wm_root_window_controller_->CloseChildWindows();
 }
 
-shell::Connector* RootWindowController::GetConnector() {
+service_manager::Connector* RootWindowController::GetConnector() {
   return window_manager_->connector();
 }
 

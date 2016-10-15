@@ -45,7 +45,7 @@ BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {
 }
 
 void BlimpContentBrowserClient::ExposeInterfacesToRenderer(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface<mojom::BlobChannel>(base::Bind(
       &BlobChannelService::BindRequest,

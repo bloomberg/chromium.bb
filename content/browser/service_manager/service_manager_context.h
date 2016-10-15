@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -23,8 +23,8 @@ class CONTENT_EXPORT ServiceManagerContext {
   ServiceManagerContext();
   ~ServiceManagerContext();
 
-  // Returns a shell::Connector that can be used on the IO thread.
-  static shell::Connector* GetConnectorForIOThread();
+  // Returns a service_manager::Connector that can be used on the IO thread.
+  static service_manager::Connector* GetConnectorForIOThread();
 
  private:
   class InProcessServiceManagerContext;

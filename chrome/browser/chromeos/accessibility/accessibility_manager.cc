@@ -600,7 +600,7 @@ void AccessibilityManager::UpdateAutoclickFromPref() {
   autoclick_enabled_ = enabled;
 
   if (chrome::IsRunningInMash()) {
-    shell::Connector* connector =
+    service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     mash::mojom::LaunchablePtr launchable;
     connector->ConnectToInterface("service:accessibility_autoclick",
@@ -638,7 +638,7 @@ void AccessibilityManager::UpdateAutoclickDelayFromPref() {
   autoclick_delay_ms_ = autoclick_delay_ms;
 
   if (chrome::IsRunningInMash()) {
-    shell::Connector* connector =
+    service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
     connector->ConnectToInterface("service:accessibility_autoclick",

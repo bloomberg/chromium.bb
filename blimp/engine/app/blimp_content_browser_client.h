@@ -33,7 +33,7 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
   void ExposeInterfacesToRenderer(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       const std::string& name) override;

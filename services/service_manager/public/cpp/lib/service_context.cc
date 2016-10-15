@@ -14,12 +14,12 @@
 #include "services/service_manager/public/cpp/lib/connector_impl.h"
 #include "services/service_manager/public/cpp/service.h"
 
-namespace shell {
+namespace service_manager {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, public:
 
-ServiceContext::ServiceContext(shell::Service* service,
+ServiceContext::ServiceContext(service_manager::Service* service,
                                mojom::ServiceRequest request,
                                std::unique_ptr<Connector> connector,
                                mojom::ConnectorRequest connector_request)
@@ -49,7 +49,7 @@ void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, mojom::Service implementation:
 
-void ServiceContext::OnStart(const shell::Identity& identity,
+void ServiceContext::OnStart(const service_manager::Identity& identity,
                              const OnStartCallback& callback) {
   identity_ = identity;
   if (!initialize_handler_.is_null())
@@ -93,4 +93,4 @@ void ServiceContext::OnConnectionError() {
   // Connect() will return nullptr if they try to connect to anything.
 }
 
-}  // namespace shell
+}  // namespace service_manager

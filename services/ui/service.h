@@ -48,7 +48,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -62,20 +62,21 @@ class WindowServer;
 }
 
 class Service
-    : public shell::Service,
+    : public service_manager::Service,
       public ws::WindowServerDelegate,
-      public shell::InterfaceFactory<mojom::AccessibilityManager>,
-      public shell::InterfaceFactory<mojom::Clipboard>,
-      public shell::InterfaceFactory<mojom::DisplayManager>,
-      public shell::InterfaceFactory<mojom::GpuService>,
-      public shell::InterfaceFactory<mojom::IMERegistrar>,
-      public shell::InterfaceFactory<mojom::IMEServer>,
-      public shell::InterfaceFactory<mojom::UserAccessManager>,
-      public shell::InterfaceFactory<mojom::UserActivityMonitor>,
-      public shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>,
-      public shell::InterfaceFactory<mojom::WindowTreeFactory>,
-      public shell::InterfaceFactory<mojom::WindowTreeHostFactory>,
-      public shell::InterfaceFactory<mojom::WindowServerTest> {
+      public service_manager::InterfaceFactory<mojom::AccessibilityManager>,
+      public service_manager::InterfaceFactory<mojom::Clipboard>,
+      public service_manager::InterfaceFactory<mojom::DisplayManager>,
+      public service_manager::InterfaceFactory<mojom::GpuService>,
+      public service_manager::InterfaceFactory<mojom::IMERegistrar>,
+      public service_manager::InterfaceFactory<mojom::IMEServer>,
+      public service_manager::InterfaceFactory<mojom::UserAccessManager>,
+      public service_manager::InterfaceFactory<mojom::UserActivityMonitor>,
+      public service_manager::InterfaceFactory<
+          mojom::WindowManagerWindowTreeFactory>,
+      public service_manager::InterfaceFactory<mojom::WindowTreeFactory>,
+      public service_manager::InterfaceFactory<mojom::WindowTreeHostFactory>,
+      public service_manager::InterfaceFactory<mojom::WindowServerTest> {
  public:
   Service();
   ~Service() override;
@@ -88,20 +89,20 @@ class Service
 
   using UserIdToUserState = std::map<ws::UserId, std::unique_ptr<UserState>>;
 
-  void InitializeResources(shell::Connector* connector);
+  void InitializeResources(service_manager::Connector* connector);
 
   // Returns the user specific state for the user id of |remote_identity|.
   // Service owns the return value.
   // TODO(sky): if we allow removal of user ids then we need to close anything
   // associated with the user (all incoming pipes...) on removal.
-  UserState* GetUserState(const shell::Identity& remote_identity);
+  UserState* GetUserState(const service_manager::Identity& remote_identity);
 
-  void AddUserIfNecessary(const shell::Identity& remote_identity);
+  void AddUserIfNecessary(const service_manager::Identity& remote_identity);
 
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // WindowServerDelegate:
   void OnFirstDisplayReady() override;
@@ -110,53 +111,55 @@ class Service
   void CreateDefaultDisplays() override;
   void UpdateTouchTransforms() override;
 
-  // shell::InterfaceFactory<mojom::AccessibilityManager> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::AccessibilityManager>
+  // implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::AccessibilityManagerRequest request) override;
 
-  // shell::InterfaceFactory<mojom::Clipboard> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::Clipboard> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::ClipboardRequest request) override;
 
-  // shell::InterfaceFactory<mojom::DisplayManager> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::DisplayManager> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::DisplayManagerRequest request) override;
 
-  // shell::InterfaceFactory<mojom::GpuService> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::GpuService> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::GpuServiceRequest request) override;
 
-  // shell::InterfaceFactory<mojom::IMERegistrar> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::IMERegistrar> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::IMERegistrarRequest request) override;
 
-  // shell::InterfaceFactory<mojom::IMEServer> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::IMEServer> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::IMEServerRequest request) override;
 
-  // shell::InterfaceFactory<mojom::UserAccessManager> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::UserAccessManager> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::UserAccessManagerRequest request) override;
 
-  // shell::InterfaceFactory<mojom::UserActivityMonitor> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::UserActivityMonitor>
+  // implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::UserActivityMonitorRequest request) override;
 
-  // shell::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>
+  // service_manager::InterfaceFactory<mojom::WindowManagerWindowTreeFactory>
   // implementation.
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               mojom::WindowManagerWindowTreeFactoryRequest request) override;
 
-  // shell::InterfaceFactory<mojom::WindowTreeFactory>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::WindowTreeFactory>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::WindowTreeFactoryRequest request) override;
 
-  // shell::InterfaceFactory<mojom::WindowTreeHostFactory>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::WindowTreeHostFactory>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::WindowTreeHostFactoryRequest request) override;
 
-  // shell::InterfaceFactory<mojom::WindowServerTest> implementation.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::WindowServerTest> implementation.
+  void Create(const service_manager::Identity& remote_identity,
               mojom::WindowServerTestRequest request) override;
 
   std::unique_ptr<ws::WindowServer> window_server_;
@@ -168,7 +171,7 @@ class Service
   UserIdToUserState user_id_to_user_state_;
 
   // Provides input-device information via Mojo IPC. Registers Mojo interfaces
-  // and must outlive shell::InterfaceRegistry.
+  // and must outlive service_manager::InterfaceRegistry.
   InputDeviceServer input_device_server_;
 
   bool test_config_;
@@ -177,7 +180,7 @@ class Service
 #endif
 
   // Manages display hardware and handles display management. May register Mojo
-  // interfaces and must outlive shell::InterfaceRegistry.
+  // interfaces and must outlive service_manager::InterfaceRegistry.
   std::unique_ptr<display::PlatformScreen> platform_screen_;
 
   std::unique_ptr<ws::TouchController> touch_controller_;

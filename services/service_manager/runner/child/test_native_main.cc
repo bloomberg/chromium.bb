@@ -20,7 +20,7 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/init.h"
 
-namespace shell {
+namespace service_manager {
 namespace {
 
 class ProcessDelegate : public mojo::edk::ProcessDelegate {
@@ -36,8 +36,8 @@ class ProcessDelegate : public mojo::edk::ProcessDelegate {
 
 }  // namespace
 
-int TestNativeMain(shell::Service* service) {
-  shell::WaitForDebuggerIfNecessary();
+int TestNativeMain(service_manager::Service* service) {
+  service_manager::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
   base::debug::EnableInProcessStackDumping();
@@ -58,8 +58,8 @@ int TestNativeMain(shell::Service* service) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    service->set_context(base::MakeUnique<shell::ServiceContext>(
-        service, shell::GetServiceRequestFromCommandLine()));
+    service->set_context(base::MakeUnique<service_manager::ServiceContext>(
+        service, service_manager::GetServiceRequestFromCommandLine()));
     base::RunLoop().Run();
 
     mojo::edk::ShutdownIPCSupport();
@@ -70,4 +70,4 @@ int TestNativeMain(shell::Service* service) {
   return 0;
 }
 
-}  // namespace shell
+}  // namespace service_manager

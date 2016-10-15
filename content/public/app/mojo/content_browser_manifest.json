@@ -33,7 +33,7 @@
         "memory_coordinator::mojom::MemoryCoordinatorHandle"
       ],
       "shell:service_factory": [
-        "shell::mojom::ServiceFactory"
+        "service_manager::mojom::ServiceFactory"
       ]
     },
     "required": {

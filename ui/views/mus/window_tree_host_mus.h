@@ -16,7 +16,7 @@ namespace ui {
 class Window;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -32,7 +32,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   ~WindowTreeHostMus() override;
   NativeWidgetMus* native_widget() { return native_widget_; }
 
-  void InitInputMethod(shell::Connector* connector);
+  void InitInputMethod(service_manager::Connector* connector);
 
  private:
   // aura::WindowTreeHostPlatform:

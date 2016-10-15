@@ -5,11 +5,11 @@
 #ifndef SERVICES_SHELL_STANDALONE_DESKTOP_MAIN_HELPER_H
 #define SERVICES_SHELL_STANDALONE_DESKTOP_MAIN_HELPER_H
 
-namespace shell {
+namespace service_manager {
 
 // Helper method to start Mojo standalone shell code.
 int StandaloneShellMain(int argc, char** argv);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SHELL_STANDALONE_DESKTOP_MAIN_HELPER_H

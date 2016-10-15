@@ -48,7 +48,7 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
                               const Extension* extension) {
   DCHECK(extension);
 
-  shell::InterfaceRegistry* registry =
+  service_manager::InterfaceRegistry* registry =
       render_frame_host->GetInterfaceRegistry();
   registry->AddInterface(base::Bind(
       KeepAliveImpl::Create,

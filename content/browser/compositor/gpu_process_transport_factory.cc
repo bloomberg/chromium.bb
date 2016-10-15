@@ -100,7 +100,7 @@ namespace {
 const int kNumRetriesBeforeSoftwareFallback = 4;
 
 bool IsUsingMus() {
-  return shell::ShellIsRemote();
+  return service_manager::ServiceManagerIsRemote();
 }
 
 scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
@@ -197,7 +197,7 @@ std::unique_ptr<cc::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(USE_AURA)
-  if (shell::ShellIsRemote()) {
+  if (service_manager::ServiceManagerIsRemote()) {
     NOTREACHED();
     return nullptr;
   }

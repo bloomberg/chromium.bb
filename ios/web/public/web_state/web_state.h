@@ -35,7 +35,7 @@ class DictionaryValue;
 class Value;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 }
 
@@ -238,7 +238,7 @@ class WebState : public base::SupportsUserData {
                             const ImageDownloadCallback& callback) = 0;
 
   // Returns Mojo interface registry for this WebState.
-  virtual shell::InterfaceRegistry* GetMojoInterfaceRegistry() = 0;
+  virtual service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() = 0;
 
  protected:
   friend class WebStateObserver;

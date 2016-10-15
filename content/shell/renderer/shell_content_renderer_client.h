@@ -35,7 +35,7 @@ class ShellContentRendererClient : public ContentRendererClient {
       v8::Local<v8::Context> context) override;
 
   void ExposeInterfacesToBrowser(
-      shell::InterfaceRegistry* interface_registry) override;
+      service_manager::InterfaceRegistry* interface_registry) override;
 
 #if defined(OS_ANDROID)
   void AddSupportedKeySystems(

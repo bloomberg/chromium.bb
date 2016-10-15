@@ -52,9 +52,9 @@ class WindowManager;
 
 // Hosts the window manager and the ash system user interface for mash.
 class WindowManagerApplication
-    : public shell::Service,
-      public shell::InterfaceFactory<mojom::WallpaperController>,
-      public shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
+    : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::WallpaperController>,
+      public service_manager::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener {
  public:
   WindowManagerApplication();
@@ -78,17 +78,17 @@ class WindowManagerApplication
   void InitializeComponents();
   void ShutdownComponents();
 
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // InterfaceFactory<mojom::WallpaperController>:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               mojom::WallpaperControllerRequest request) override;
 
-  // shell::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
+  void Create(const service_manager::Identity& remote_identity,
               ui::mojom::AcceleratorRegistrarRequest request) override;
 
   // session::mojom::ScreenlockStateListener:

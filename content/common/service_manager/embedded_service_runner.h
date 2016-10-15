@@ -36,7 +36,7 @@ class EmbeddedServiceRunner {
   // Binds an incoming ServiceRequest for this service. If the service isn't
   // already running, it is started. Otherwise the request is bound to the
   // running instance.
-  void BindServiceRequest(shell::mojom::ServiceRequest request);
+  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
   // Sets a callback to run after the service loses its last connection and is
   // torn down.

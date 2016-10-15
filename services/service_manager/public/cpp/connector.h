@@ -13,7 +13,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // An interface that encapsulates the Mojo Shell's broker interface by which
 // connections between applications are established. Once Connect() is called,
@@ -108,6 +108,6 @@ class Connector {
   virtual std::unique_ptr<Connector> Clone() = 0;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_CONNECTOR_H_

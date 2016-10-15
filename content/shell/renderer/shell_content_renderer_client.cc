@@ -135,7 +135,7 @@ void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
 }
 
 void ShellContentRendererClient::ExposeInterfacesToBrowser(
-    shell::InterfaceRegistry* interface_registry) {
+    service_manager::InterfaceRegistry* interface_registry) {
   interface_registry->AddInterface<mojom::TestService>(
       base::Bind(&CreateTestService));
 }

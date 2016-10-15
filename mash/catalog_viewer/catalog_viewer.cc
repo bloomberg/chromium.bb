@@ -165,7 +165,7 @@ void CatalogViewer::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void CatalogViewer::OnStart(const shell::Identity& identity) {
+void CatalogViewer::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   aura_init_.reset(
@@ -174,8 +174,8 @@ void CatalogViewer::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool CatalogViewer::OnConnect(const shell::Identity& remote_identity,
-                              shell::InterfaceRegistry* registry) {
+bool CatalogViewer::OnConnect(const service_manager::Identity& remote_identity,
+                              service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
@@ -197,7 +197,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void CatalogViewer::Create(const shell::Identity& remote_identity,
+void CatalogViewer::Create(const service_manager::Identity& remote_identity,
                            mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

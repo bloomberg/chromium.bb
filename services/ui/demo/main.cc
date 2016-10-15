@@ -7,6 +7,6 @@
 #include "services/ui/demo/mus_demo.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new ui::demo::MusDemo);
+  service_manager::ServiceRunner runner(new ui::demo::MusDemo);
   return runner.Run(service_request_handle);
 }

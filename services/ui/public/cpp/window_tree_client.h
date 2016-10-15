@@ -33,7 +33,7 @@ class Insets;
 class Size;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -63,10 +63,10 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   ~WindowTreeClient() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
-  void ConnectViaWindowTreeFactory(shell::Connector* connector);
+  void ConnectViaWindowTreeFactory(service_manager::Connector* connector);
 
   // Establishes the connection by way of WindowManagerWindowTreeFactory.
-  void ConnectAsWindowManager(shell::Connector* connector);
+  void ConnectAsWindowManager(service_manager::Connector* connector);
 
   // Wait for OnEmbed(), returning when done.
   void WaitForEmbed();

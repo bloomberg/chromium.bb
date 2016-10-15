@@ -230,7 +230,8 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // with the new render frame if necessary.  Note that this call needs to
     // occur before initializing the RenderView; the flow of creating the
     // RenderView can cause browser-side code to execute that expects the this
-    // RFH's shell::InterfaceRegistry to be initialized (e.g., if the site is a
+    // RFH's service_manager::InterfaceRegistry to be initialized (e.g., if the
+    // site is a
     // WebUI site that is handled via Mojo, then Mojo WebUI code in //chrome
     // will add an interface to this RFH's InterfaceRegistry).
     dest_render_frame_host->SetUpMojoIfNeeded();

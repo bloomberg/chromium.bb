@@ -14,7 +14,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // This class represents a request for the application manager to connect to an
 // application.
@@ -64,6 +64,6 @@ class ConnectParams {
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_CONNECT_PARAMS_H_

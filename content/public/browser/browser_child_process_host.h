@@ -25,7 +25,7 @@ class FilePath;
 class SharedPersistentMemoryAllocator;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 

@@ -42,7 +42,8 @@ Provider::~Provider() {
   StopTracing();
 }
 
-void Provider::Initialize(shell::Connector* connector, const std::string& url) {
+void Provider::Initialize(service_manager::Connector* connector,
+                          const std::string& url) {
   {
     base::AutoLock lock(g_singleton_lock.Get());
     if (g_tracing_singleton_created)

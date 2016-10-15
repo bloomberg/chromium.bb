@@ -36,7 +36,7 @@
 #include "services/service_manager/runner/host/native_library_runner.h"
 #include "services/service_manager/runner/init.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -69,4 +69,4 @@ int ChildProcessMain() {
   return 0;
 }
 
-}  // namespace shell
+}  // namespace service_manager

@@ -28,9 +28,9 @@ class Navigation : public content::ConnectionFilter, public mojom::ViewFactory {
 
  private:
   // content::ConnectionFilter:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry,
-                 shell::Connector* connector) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry,
+                 service_manager::Connector* connector) override;
 
   // mojom::ViewFactory:
   void CreateView(mojom::ViewClientPtr client,
@@ -41,11 +41,11 @@ class Navigation : public content::ConnectionFilter, public mojom::ViewFactory {
 
   scoped_refptr<base::SequencedTaskRunner> view_task_runner_;
 
-  shell::Connector* connector_ = nullptr;
+  service_manager::Connector* connector_ = nullptr;
   std::string client_user_id_;
 
-  shell::ServiceContextRefFactory ref_factory_;
-  std::set<std::unique_ptr<shell::ServiceContextRef>> refs_;
+  service_manager::ServiceContextRefFactory ref_factory_;
+  std::set<std::unique_ptr<service_manager::ServiceContextRef>> refs_;
 
   mojo::BindingSet<mojom::ViewFactory> bindings_;
 

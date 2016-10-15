@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 class ShutdownClientApp
     : public Service,
@@ -25,7 +25,7 @@ class ShutdownClientApp
   ~ShutdownClientApp() override {}
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   bool OnConnect(const Identity& remote_identity,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<mojom::ShutdownTestClientController>(this);
@@ -64,10 +64,9 @@ class ShutdownClientApp
   DISALLOW_COPY_AND_ASSIGN(ShutdownClientApp);
 };
 
-}  // namespace shell
-
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::ShutdownClientApp);
+  service_manager::ServiceRunner runner(new service_manager::ShutdownClientApp);
   return runner.Run(service_request_handle);
 }

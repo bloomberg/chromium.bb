@@ -22,21 +22,21 @@ class Connection;
 namespace mash {
 namespace init {
 
-class Init : public shell::Service,
-             public shell::InterfaceFactory<mojom::Init>,
+class Init : public service_manager::Service,
+             public service_manager::InterfaceFactory<mojom::Init>,
              public mojom::Init {
  public:
   Init();
   ~Init() override;
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<mojom::Login>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::Login>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::InitRequest request) override;
 
   // mojom::Init:
@@ -49,9 +49,10 @@ class Init : public shell::Service,
   void StartTracing();
   void StartLogin();
 
-  std::unique_ptr<shell::Connection> login_connection_;
+  std::unique_ptr<service_manager::Connection> login_connection_;
   mojo::BindingSet<mojom::Init> init_bindings_;
-  std::map<std::string, std::unique_ptr<shell::Connection>> user_services_;
+  std::map<std::string, std::unique_ptr<service_manager::Connection>>
+      user_services_;
 
   DISALLOW_COPY_AND_ASSIGN(Init);
 };

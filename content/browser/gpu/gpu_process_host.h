@@ -47,7 +47,7 @@ struct GpuPreferences;
 struct SyncToken;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -113,7 +113,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   CONTENT_EXPORT static void RegisterGpuMainThreadFactory(
       GpuMainThreadFactoryFunction create);
 
-  shell::InterfaceProvider* GetRemoteInterfaces();
+  service_manager::InterfaceProvider* GetRemoteInterfaces();
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.

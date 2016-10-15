@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
-namespace shell {
+namespace service_manager {
 
 int g_service_runner_argc;
 const char* const* g_service_runner_argv;
@@ -88,4 +88,4 @@ void ServiceRunner::Quit() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-}  // namespace shell
+}  // namespace service_manager

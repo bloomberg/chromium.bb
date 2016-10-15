@@ -19,7 +19,8 @@ namespace {
 // CastAudioRendererSink is only used to hold audio-device-id.
 class CastAudioRendererSink : public ::media::AudioRendererSink {
  public:
-  CastAudioRendererSink(const std::string& device_id) : device_id_(device_id) {}
+  explicit CastAudioRendererSink(const std::string& device_id)
+      : device_id_(device_id) {}
 
   // ::media::AudioRendererSink implementation.
   void Initialize(const ::media::AudioParameters& params,
@@ -113,7 +114,7 @@ CastMojoMediaClient::CreateRendererFactory(
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(
-    ::shell::mojom::InterfaceProvider* interface_provider) {
+    service_manager::mojom::InterfaceProvider* interface_provider) {
   return create_cdm_factory_cb_.Run();
 }
 

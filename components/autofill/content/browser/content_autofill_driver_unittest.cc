@@ -261,9 +261,9 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     driver_.reset(new TestContentAutofillDriver(web_contents()->GetMainFrame(),
                                                 test_autofill_client_.get()));
 
-    shell::InterfaceProvider* remote_interfaces =
+    service_manager::InterfaceProvider* remote_interfaces =
         web_contents()->GetMainFrame()->GetRemoteInterfaces();
-    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
     test_api.SetBinderForName(mojom::AutofillAgent::Name_,
                               base::Bind(&FakeAutofillAgent::BindRequest,
                                          base::Unretained(&fake_agent_)));

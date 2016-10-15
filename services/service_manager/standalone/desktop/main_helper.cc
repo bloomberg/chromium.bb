@@ -25,7 +25,7 @@
 #include <unistd.h>
 #endif
 
-namespace shell {
+namespace service_manager {
 
 int StandaloneShellMain(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -46,4 +46,4 @@ int StandaloneShellMain(int argc, char** argv) {
   return LauncherProcessMain();
 }
 
-}  // namespace shell
+}  // namespace service_manager

@@ -45,7 +45,7 @@ ClipboardMus::ClipboardMus() {}
 
 ClipboardMus::~ClipboardMus() {}
 
-void ClipboardMus::Init(shell::Connector* connector) {
+void ClipboardMus::Init(service_manager::Connector* connector) {
   connector->ConnectToInterface("service:ui", &clipboard_);
 }
 

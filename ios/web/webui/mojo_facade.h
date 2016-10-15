@@ -18,11 +18,11 @@ class DictionaryValue;
 class Value;
 }  // base
 
-namespace shell {
+namespace service_manager {
 namespace mojom {
 class InterfaceProvider;
 }  // mojom
-}  // shell
+}  // service_manager
 
 namespace web {
 
@@ -33,7 +33,7 @@ class MojoFacade {
  public:
   // Constructs MojoFacade. The calling code must retain the ownership of
   // |interface_provider| and |script_evaluator|, both can not be null.
-  MojoFacade(shell::mojom::InterfaceProvider* interface_provider,
+  MojoFacade(service_manager::mojom::InterfaceProvider* interface_provider,
              id<CRWJSInjectionEvaluator> script_evaluator);
   ~MojoFacade();
 
@@ -126,7 +126,7 @@ class MojoFacade {
       const base::DictionaryValue* args);
 
   // Provides interfaces.
-  shell::mojom::InterfaceProvider* interface_provider_;
+  service_manager::mojom::InterfaceProvider* interface_provider_;
   // Runs JavaScript on WebUI page.
   base::WeakNSProtocol<id<CRWJSInjectionEvaluator>> script_evaluator_;
   // Id of the last created watch.

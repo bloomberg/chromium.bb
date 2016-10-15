@@ -55,7 +55,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   DCHECK(connection);
 #if defined(USE_AURA)
-  if (shell::ShellIsRemote()) {
+  if (service_manager::ServiceManagerIsRemote()) {
     // TODO(rockot): Remove the blocking wait for init.
     // http://crbug.com/594852.
     base::RunLoop wait_loop;

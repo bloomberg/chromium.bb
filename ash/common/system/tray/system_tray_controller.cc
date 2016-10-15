@@ -12,7 +12,8 @@
 
 namespace ash {
 
-SystemTrayController::SystemTrayController(shell::Connector* connector)
+SystemTrayController::SystemTrayController(
+    service_manager::Connector* connector)
     : connector_(connector), hour_clock_type_(base::GetHourClockType()) {}
 
 SystemTrayController::~SystemTrayController() {}

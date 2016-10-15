@@ -24,24 +24,24 @@ class WindowManagerConnection;
 }
 
 class ViewsExamples
-    : public shell::Service,
+    : public service_manager::Service,
       public mash::mojom::Launchable,
-      public shell::InterfaceFactory<mash::mojom::Launchable> {
+      public service_manager::InterfaceFactory<mash::mojom::Launchable> {
  public:
   ViewsExamples() {}
   ~ViewsExamples() override {}
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override {
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override {
     tracing_.Initialize(connector(), identity.name());
     aura_init_.reset(
         new views::AuraInit(connector(), "views_mus_resources.pak"));
     window_manager_connection_ =
         views::WindowManagerConnection::Create(connector(), identity);
   }
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<mash::mojom::Launchable>(this);
     return true;
   }
@@ -52,8 +52,8 @@ class ViewsExamples
                                         nullptr, nullptr);
   }
 
-  // shell::InterfaceFactory<mash::mojom::Launchable>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mash::mojom::Launchable>:
+  void Create(const service_manager::Identity& remote_identity,
               mash::mojom::LaunchableRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -68,5 +68,6 @@ class ViewsExamples
 };
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  return shell::ServiceRunner(new ViewsExamples).Run(service_request_handle);
+  return service_manager::ServiceRunner(new ViewsExamples)
+      .Run(service_request_handle);
 }

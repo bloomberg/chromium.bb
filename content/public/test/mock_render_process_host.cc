@@ -97,7 +97,7 @@ void MockRenderProcessHost::SimulateCrash() {
 
 bool MockRenderProcessHost::Init() {
   has_connection_ = true;
-  remote_interfaces_.reset(new shell::InterfaceProvider);
+  remote_interfaces_.reset(new service_manager::InterfaceProvider);
   return true;
 }
 
@@ -253,7 +253,8 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
   return base::TimeDelta::FromMilliseconds(0);
 }
 
-shell::InterfaceProvider* MockRenderProcessHost::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+MockRenderProcessHost::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 

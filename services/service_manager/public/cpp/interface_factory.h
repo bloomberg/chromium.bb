@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace shell {
+namespace service_manager {
 
 class Identity;
 
@@ -23,6 +23,6 @@ class InterfaceFactory {
                       mojo::InterfaceRequest<Interface> request) = 0;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_FACTORY_H_

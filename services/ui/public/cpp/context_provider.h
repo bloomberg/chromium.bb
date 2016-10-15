@@ -17,7 +17,7 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 

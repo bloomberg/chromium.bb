@@ -19,12 +19,12 @@ int main(int argc, char** argv) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  shell::WaitForDebuggerIfNecessary();
+  service_manager::WaitForDebuggerIfNecessary();
 
   if (command_line.HasSwitch(switches::kChildProcess)) {
     base::AtExitManager at_exit;
 
-    return shell::ChildProcessMain();
+    return service_manager::ChildProcessMain();
   }
 
   mojo::edk::Init();

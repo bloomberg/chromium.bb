@@ -37,12 +37,12 @@ base::Callback<void(T1, T2, T3)> Capture(T1* t1, T2* t2, T3* t3) {
   return base::Bind(&DoCaptures<T1, T2, T3>, t1, t2, t3);
 }
 
-class FilesTestBase : public shell::test::ServiceTest {
+class FilesTestBase : public service_manager::test::ServiceTest {
  public:
   FilesTestBase();
   ~FilesTestBase() override;
 
-  // Overridden from shell::test::ServiceTest:
+  // Overridden from service_manager::test::ServiceTest:
   void SetUp() override;
 
  protected:

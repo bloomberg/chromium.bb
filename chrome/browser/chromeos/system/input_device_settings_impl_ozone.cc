@@ -20,7 +20,9 @@ namespace {
 InputDeviceSettings* g_instance = nullptr;
 
 std::unique_ptr<ui::InputController> CreateStubInputControllerIfNecessary() {
-  return shell::ShellIsRemote() ? ui::CreateStubInputController() : nullptr;
+  return service_manager::ServiceManagerIsRemote()
+             ? ui::CreateStubInputController()
+             : nullptr;
 }
 
 // InputDeviceSettings for Linux without X11 (a.k.a. Ozone).

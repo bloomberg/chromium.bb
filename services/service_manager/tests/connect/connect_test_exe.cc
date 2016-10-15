@@ -15,31 +15,31 @@
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 
-using shell::test::mojom::ConnectTestService;
-using shell::test::mojom::ConnectTestServiceRequest;
+using service_manager::test::mojom::ConnectTestService;
+using service_manager::test::mojom::ConnectTestServiceRequest;
 
 namespace {
 
-class Target : public shell::Service,
-               public shell::InterfaceFactory<ConnectTestService>,
+class Target : public service_manager::Service,
+               public service_manager::InterfaceFactory<ConnectTestService>,
                public ConnectTestService {
  public:
   Target() {}
   ~Target() override {}
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override {
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override {
     identity_ = identity;
   }
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<ConnectTestService>(this);
     return true;
   }
 
-  // shell::InterfaceFactory<ConnectTestService>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<ConnectTestService>:
+  void Create(const service_manager::Identity& remote_identity,
               ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -52,7 +52,7 @@ class Target : public shell::Service,
     callback.Run(identity_.instance());
   }
 
-  shell::Identity identity_;
+  service_manager::Identity identity_;
   mojo::BindingSet<ConnectTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
@@ -64,8 +64,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  shell::InitializeLogging();
+  service_manager::InitializeLogging();
 
   Target target;
-  return shell::TestNativeMain(&target);
+  return service_manager::TestNativeMain(&target);
 }

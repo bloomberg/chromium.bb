@@ -23,7 +23,7 @@
 
 namespace filesystem {
 
-FileSystemImpl::FileSystemImpl(const shell::Identity& remote_identity,
+FileSystemImpl::FileSystemImpl(const service_manager::Identity& remote_identity,
                                base::FilePath persistent_dir,
                                scoped_refptr<LockTable> lock_table)
     : remote_application_name_(remote_identity.name()),

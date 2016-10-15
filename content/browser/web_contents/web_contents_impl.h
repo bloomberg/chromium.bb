@@ -51,7 +51,7 @@
 
 struct ViewHostMsg_DateTimeDialogValue_Params;
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -423,7 +423,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual WebContentsAndroid* GetWebContentsAndroid();
   void ActivateNearestFindResult(float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
-  shell::InterfaceProvider* GetJavaInterfaces() override;
+  service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #elif defined(OS_MACOSX)
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
@@ -1428,7 +1428,7 @@ class CONTENT_EXPORT WebContentsImpl
   RenderWidgetHostImpl* mouse_lock_widget_;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<shell::InterfaceProvider> java_interfaces_;
+  std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;
 #endif
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;

@@ -15,7 +15,8 @@ class ShellContentUtilityClient : public ContentUtilityClient {
 
   // ContentUtilityClient:
   void RegisterServices(StaticServiceMap* services) override;
-  void ExposeInterfacesToBrowser(shell::InterfaceRegistry* registry) override;
+  void ExposeInterfacesToBrowser(
+      service_manager::InterfaceRegistry* registry) override;
 };
 
 }  // namespace content

@@ -18,21 +18,22 @@
 
 namespace font_service {
 
-class FontServiceApp : public shell::Service,
-                       public shell::InterfaceFactory<mojom::FontService>,
-                       public mojom::FontService {
+class FontServiceApp
+    : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::FontService>,
+      public mojom::FontService {
  public:
   FontServiceApp();
   ~FontServiceApp() override;
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<mojom::FontService>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::FontService>:
+  void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::FontService> request) override;
 
   // FontService:

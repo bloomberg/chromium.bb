@@ -89,7 +89,7 @@ class FakeBatteryMonitor : public device::BatteryMonitor {
 class TestContentBrowserClient : public ContentBrowserClient {
  public:
   void ExposeInterfacesToRenderer(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) override {
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);

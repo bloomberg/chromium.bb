@@ -13,7 +13,7 @@ namespace base {
 class CommandLine;
 }
 
-namespace shell {
+namespace service_manager {
 
 // Creates a new Service pipe and returns one end of it. The other end is
 // passed via a token in |command_line|. A child of the calling process may
@@ -29,8 +29,8 @@ mojom::ServiceRequest GetServiceRequestFromCommandLine();
 
 // Returns true if the ServiceRequest came via the command line from a shell
 // instance in another process.
-bool ShellIsRemote();
+bool ServiceManagerIsRemote();
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_COMMON_CLIENT_UTIL_H_

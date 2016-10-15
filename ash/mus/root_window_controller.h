@@ -17,7 +17,7 @@ namespace gfx {
 class Insets;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -46,7 +46,7 @@ class RootWindowController {
 
   void Shutdown();
 
-  shell::Connector* GetConnector();
+  service_manager::Connector* GetConnector();
 
   ui::Window* root() { return root_; }
   WmRootWindowControllerMus* wm_root_window_controller() {

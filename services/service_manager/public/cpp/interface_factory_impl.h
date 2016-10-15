@@ -7,7 +7,7 @@
 
 #include "services/service_manager/public/cpp/interface_factory.h"
 
-namespace shell {
+namespace service_manager {
 
 // Use this class to allocate and bind instances of Impl to interface requests.
 // The lifetime of the constructed Impl is bound to the pipe.
@@ -44,6 +44,6 @@ class InterfaceFactoryImplWithContext : public InterfaceFactory<Interface> {
   Context* context_;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_FACTORY_IMPL_H_

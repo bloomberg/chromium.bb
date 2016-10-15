@@ -18,7 +18,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
-namespace shell {
+namespace service_manager {
 namespace internal {
 
 // A ConnectionImpl represents each half of a connection between two
@@ -39,25 +39,26 @@ class ConnectionImpl : public Connection {
     remote_interfaces_ = remote_interfaces;
   }
 
-  shell::mojom::Connector::ConnectCallback GetConnectCallback();
+  service_manager::mojom::Connector::ConnectCallback GetConnectCallback();
 
  private:
   // Connection:
   const Identity& GetRemoteIdentity() const override;
   void SetConnectionLostClosure(const base::Closure& handler) override;
-  shell::mojom::ConnectResult GetResult() const override;
+  service_manager::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
   void AddConnectionCompletedClosure(const base::Closure& callback) override;
   InterfaceProvider* GetRemoteInterfaces() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  void OnConnectionCompleted(shell::mojom::ConnectResult result,
+  void OnConnectionCompleted(service_manager::mojom::ConnectResult result,
                              const std::string& target_user_id);
 
   Identity remote_;
 
   State state_;
-  shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
+  service_manager::mojom::ConnectResult result_ =
+      service_manager::mojom::ConnectResult::SUCCEEDED;
   std::vector<base::Closure> connection_completed_callbacks_;
 
   InterfaceProvider* remote_interfaces_ = nullptr;
@@ -70,6 +71,6 @@ class ConnectionImpl : public Connection {
 };
 
 }  // namespace internal
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_LIB_CONNECTION_IMPL_H_

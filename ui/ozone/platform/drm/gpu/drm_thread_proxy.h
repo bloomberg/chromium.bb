@@ -12,7 +12,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connection;
 }
 

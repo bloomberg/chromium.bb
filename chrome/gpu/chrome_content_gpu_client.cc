@@ -73,7 +73,7 @@ void ChromeContentGpuClient::Initialize(
 }
 
 void ChromeContentGpuClient::ExposeInterfacesToBrowser(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     const gpu::GpuPreferences& gpu_preferences) {
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
@@ -84,7 +84,7 @@ void ChromeContentGpuClient::ExposeInterfacesToBrowser(
 }
 
 void ChromeContentGpuClient::ConsumeInterfacesFromBrowser(
-    shell::InterfaceProvider* provider) {
+    service_manager::InterfaceProvider* provider) {
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
   provider->GetInterface(&browser_interface);
   g_call_stack_profile_collector.Get().SetParentProfileCollector(

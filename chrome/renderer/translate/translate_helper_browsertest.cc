@@ -151,9 +151,9 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::SetUp();
     translate_helper_ = new TestTranslateHelper(view_->GetMainRenderFrame());
 
-    shell::InterfaceProvider* remote_interfaces =
+    service_manager::InterfaceProvider* remote_interfaces =
         view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
     test_api.SetBinderForName(
         translate::mojom::ContentTranslateDriver::Name_,
         base::Bind(&FakeContentTranslateDriver::BindHandle,

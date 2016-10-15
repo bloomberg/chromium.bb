@@ -50,7 +50,7 @@
 #include "services/service_manager/runner/host/mach_broker.h"
 #endif
 
-namespace shell {
+namespace service_manager {
 namespace {
 
 base::FilePath::StringType GetPathFromCommandLineSwitch(
@@ -292,4 +292,4 @@ void Context::Run(const std::string& name) {
   service_manager_->Connect(std::move(params));
 }
 
-}  // namespace shell
+}  // namespace service_manager

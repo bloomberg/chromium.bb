@@ -16,7 +16,7 @@
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 #include "services/service_manager/tests/util.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -81,7 +81,7 @@ class InstanceState : public mojom::ServiceManagerListener {
     instances_[instance->identity.name()] =
         Instance(instance->identity, instance->pid);
   }
-  void OnServiceStarted(const shell::Identity& identity,
+  void OnServiceStarted(const service_manager::Identity& identity,
                         uint32_t pid) override {
     for (auto& instance : instances_) {
       if (instance.second.identity == identity) {
@@ -90,7 +90,7 @@ class InstanceState : public mojom::ServiceManagerListener {
       }
     }
   }
-  void OnServiceStopped(const shell::Identity& identity) override {
+  void OnServiceStopped(const service_manager::Identity& identity) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       if (it->second.identity == identity) {
         instances_.erase(it);
@@ -449,4 +449,4 @@ TEST_F(LifecycleTest, ShutdownTree) {
   EXPECT_FALSE(instances()->HasInstanceForName(kTestAppName));
 }
 
-}  // namespace shell
+}  // namespace service_manager

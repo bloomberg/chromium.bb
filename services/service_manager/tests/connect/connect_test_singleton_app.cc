@@ -7,7 +7,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 
-namespace shell {
+namespace service_manager {
 
 class ConnectTestSingletonApp : public Service {
  public:
@@ -15,7 +15,7 @@ class ConnectTestSingletonApp : public Service {
   ~ConnectTestSingletonApp() override {}
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   bool OnConnect(const Identity& remote_identity,
                  InterfaceRegistry* registry) override {
     return true;
@@ -24,10 +24,10 @@ class ConnectTestSingletonApp : public Service {
   DISALLOW_COPY_AND_ASSIGN(ConnectTestSingletonApp);
 };
 
-}  // namespace shell
-
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::ConnectTestSingletonApp);
+  service_manager::ServiceRunner runner(
+      new service_manager::ConnectTestSingletonApp);
   return runner.Run(service_request_handle);
 }

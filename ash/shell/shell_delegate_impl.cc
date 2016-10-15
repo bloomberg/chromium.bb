@@ -196,7 +196,7 @@ ShellDelegateImpl::ShellDelegateImpl()
 
 ShellDelegateImpl::~ShellDelegateImpl() {}
 
-::shell::Connector* ShellDelegateImpl::GetShellConnector() const {
+::service_manager::Connector* ShellDelegateImpl::GetShellConnector() const {
   return nullptr;
 }
 

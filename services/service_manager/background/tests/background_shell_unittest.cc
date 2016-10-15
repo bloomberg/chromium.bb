@@ -14,7 +14,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace shell {
+namespace service_manager {
 namespace {
 
 const char kTestName[] = "service:background_shell_unittest";
@@ -62,4 +62,4 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
   EXPECT_TRUE(got_result);
 }
 
-}  // namespace shell
+}  // namespace service_manager

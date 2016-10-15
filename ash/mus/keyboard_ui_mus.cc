@@ -10,7 +10,7 @@
 
 namespace ash {
 
-KeyboardUIMus::KeyboardUIMus(::shell::Connector* connector)
+KeyboardUIMus::KeyboardUIMus(service_manager::Connector* connector)
     : is_enabled_(false), observer_binding_(this) {
   if (connector) {
     // TODO(sky): should be something like mojo:keyboard, but need mapping.
@@ -23,7 +23,7 @@ KeyboardUIMus::~KeyboardUIMus() {}
 
 // static
 std::unique_ptr<KeyboardUI> KeyboardUIMus::Create(
-    ::shell::Connector* connector) {
+    service_manager::Connector* connector) {
   return base::MakeUnique<KeyboardUIMus>(connector);
 }
 

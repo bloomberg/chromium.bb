@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  shell::InitializeLogging();
+  service_manager::InitializeLogging();
 
-  shell::test::AppClient client;
-  return shell::TestNativeMain(&client);
+  service_manager::test::AppClient client;
+  return service_manager::TestNativeMain(&client);
 }

@@ -4,7 +4,7 @@
   "display_name": "Shell Unittest: Driver",
   "capabilities": {
     "provided": {
-      "shell_unittest:driver": [ "shell::test::mojom::Driver" ]
+      "shell_unittest:driver": [ "service_manager::test::mojom::Driver" ]
     },
     "required": {
       "exe:shell_unittest_target": [ ],

@@ -518,8 +518,8 @@ class RenderProcessHostImpl::ConnectionFilterController
 class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl(
-      const shell::Identity& child_identity,
-      std::unique_ptr<shell::InterfaceRegistry> registry)
+      const service_manager::Identity& child_identity,
+      std::unique_ptr<service_manager::InterfaceRegistry> registry)
       : child_identity_(child_identity),
         registry_(std::move(registry)),
         controller_(new ConnectionFilterController(this)),
@@ -546,9 +546,9 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
  private:
   // ConnectionFilter:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry,
-                 shell::Connector* connector) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry,
+                 service_manager::Connector* connector) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // We only fulfill connections from the renderer we host.
@@ -578,7 +578,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
                     mojo::ScopedMessagePipeHandle handle) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    shell::mojom::InterfaceProvider* provider = registry_.get();
+    service_manager::mojom::InterfaceProvider* provider = registry_.get();
 
     base::AutoLock lock(enabled_lock_);
     if (enabled_)
@@ -586,8 +586,8 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   }
 
   base::ThreadChecker thread_checker_;
-  shell::Identity child_identity_;
-  std::unique_ptr<shell::InterfaceRegistry> registry_;
+  service_manager::Identity child_identity_;
+  std::unique_ptr<service_manager::InterfaceRegistry> registry_;
   scoped_refptr<ConnectionFilterController> controller_;
 
   // Guards |enabled_|.
@@ -953,7 +953,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 
   // Acquire a Connector which will route connections to a new instance of the
   // renderer service.
-  shell::Connector* connector =
+  service_manager::Connector* connector =
       BrowserContext::GetConnectorFor(browser_context_);
   if (!connector) {
     // Note that some embedders (e.g. Android WebView) may not initialize a
@@ -964,7 +964,8 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
       // ServiceManagerConnection prior to this point. This class of test code
       // doesn't care about render processes, so we can initialize a dummy
       // connection.
-      shell::mojom::ServiceRequest request = mojo::GetProxy(&test_service_);
+      service_manager::mojom::ServiceRequest request =
+          mojo::GetProxy(&test_service_);
       ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
           std::move(request), io_task_runner));
     }
@@ -1225,8 +1226,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
-  std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry);
+  std::unique_ptr<service_manager::InterfaceRegistry> registry(
+      new service_manager::InterfaceRegistry);
 
   channel_->AddAssociatedInterface(
       base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,
@@ -1359,7 +1360,8 @@ void RenderProcessHostImpl::ResumeDeferredNavigation(
   widget_helper_->ResumeDeferredNavigation(request_id);
 }
 
-shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+RenderProcessHostImpl::GetRemoteInterfaces() {
   return child_connection_->GetRemoteInterfaces();
 }
 

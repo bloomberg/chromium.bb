@@ -38,7 +38,8 @@ class DefaultMojoMediaClient : public MojoMediaClient {
   std::unique_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
-      shell::mojom::InterfaceProvider* /* interface_provider */) final;
+      service_manager::mojom::InterfaceProvider* /* interface_provider */)
+      final;
 
  private:
   ScopedAudioManagerPtr audio_manager_;

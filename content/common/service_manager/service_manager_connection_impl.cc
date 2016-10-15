@@ -39,18 +39,22 @@ ServiceManagerConnection::Factory* service_manager_connection_factory = nullptr;
 // bindings.
 class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
-      public shell::Service,
-      public shell::InterfaceFactory<shell::mojom::ServiceFactory>,
-      public shell::mojom::ServiceFactory {
+      public service_manager::Service,
+      public service_manager::InterfaceFactory<
+          service_manager::mojom::ServiceFactory>,
+      public service_manager::mojom::ServiceFactory {
  public:
-  using InitializeCallback = base::Callback<void(const shell::Identity&)>;
+  using InitializeCallback =
+      base::Callback<void(const service_manager::Identity&)>;
   using ServiceFactoryCallback =
-      base::Callback<void(shell::mojom::ServiceRequest, const std::string&)>;
+      base::Callback<void(service_manager::mojom::ServiceRequest,
+                          const std::string&)>;
 
-  IOThreadContext(shell::mojom::ServiceRequest service_request,
-                  scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-                  std::unique_ptr<shell::Connector> io_thread_connector,
-                  shell::mojom::ConnectorRequest connector_request)
+  IOThreadContext(
+      service_manager::mojom::ServiceRequest service_request,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      std::unique_ptr<service_manager::Connector> io_thread_connector,
+      service_manager::mojom::ConnectorRequest connector_request)
       : pending_service_request_(std::move(service_request)),
         io_task_runner_(io_task_runner),
         io_thread_connector_(std::move(io_thread_connector)),
@@ -109,7 +113,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   // Safe to call any time before Start() is called.
   void SetDefaultBinderForBrowserConnection(
-      const shell::InterfaceRegistry::Binder& binder) {
+      const service_manager::InterfaceRegistry::Binder& binder) {
     DCHECK(!started_);
     default_browser_binder_ = base::Bind(
         &IOThreadContext::CallBinderOnTaskRunner,
@@ -160,7 +164,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
   void StartOnIOThread() {
     // Should bind |io_thread_checker_| to the context's thread.
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    service_context_.reset(new shell::ServiceContext(
+    service_context_.reset(new service_manager::ServiceContext(
         this, std::move(pending_service_request_),
         std::move(io_thread_connector_),
         std::move(pending_connector_request_)));
@@ -212,9 +216,9 @@ class ServiceManagerConnectionImpl::IOThreadContext
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // shell::Service implementation
+  // service_manager::Service implementation
 
-  void OnStart(const shell::Identity& identity) override {
+  void OnStart(const service_manager::Identity& identity) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     DCHECK(!initialize_handler_.is_null());
     id_ = identity;
@@ -223,13 +227,13 @@ class ServiceManagerConnectionImpl::IOThreadContext
     callback_task_runner_->PostTask(FROM_HERE, base::Bind(handler, identity));
   }
 
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     std::string remote_service = remote_identity.name();
     if (remote_service == "service:shell") {
       // Only expose the SCF interface to the shell.
-      registry->AddInterface<shell::mojom::ServiceFactory>(this);
+      registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
       return true;
     }
 
@@ -262,18 +266,19 @@ class ServiceManagerConnectionImpl::IOThreadContext
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // shell::InterfaceFactory<shell::mojom::ServiceFactory> implementation
+  // service_manager::InterfaceFactory<service_manager::mojom::ServiceFactory>
+  // implementation
 
-  void Create(const shell::Identity& remote_identity,
-              shell::mojom::ServiceFactoryRequest request) override {
+  void Create(const service_manager::Identity& remote_identity,
+              service_manager::mojom::ServiceFactoryRequest request) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     factory_bindings_.AddBinding(this, std::move(request));
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // shell::mojom::ServiceFactory implementation
+  // service_manager::mojom::ServiceFactory implementation
 
-  void CreateService(shell::mojom::ServiceRequest request,
+  void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     callback_task_runner_->PostTask(
@@ -283,7 +288,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   static void CallBinderOnTaskRunner(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const shell::InterfaceRegistry::Binder& binder,
+      const service_manager::InterfaceRegistry::Binder& binder,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle request_handle) {
     task_runner->PostTask(FROM_HERE, base::Bind(binder, interface_name,
@@ -295,10 +300,10 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   // Temporary state established on construction and consumed on the IO thread
   // once the connection is started.
-  shell::mojom::ServiceRequest pending_service_request_;
+  service_manager::mojom::ServiceRequest pending_service_request_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  std::unique_ptr<shell::Connector> io_thread_connector_;
-  shell::mojom::ConnectorRequest pending_connector_request_;
+  std::unique_ptr<service_manager::Connector> io_thread_connector_;
+  service_manager::mojom::ConnectorRequest pending_connector_request_;
 
   // TaskRunner on which to run our owner's callbacks, i.e. the ones passed to
   // Start().
@@ -317,17 +322,17 @@ class ServiceManagerConnectionImpl::IOThreadContext
   // default binder (below) has been set up.
   bool has_browser_connection_ = false;
 
-  shell::Identity id_;
+  service_manager::Identity id_;
 
   // Default binder callback used for the browser connection's
   // InterfaceRegistry.
   //
   // TODO(rockot): Remove this once all interfaces exposed to the browser are
   // exposed via a ConnectionFilter.
-  shell::InterfaceRegistry::Binder default_browser_binder_;
+  service_manager::InterfaceRegistry::Binder default_browser_binder_;
 
-  std::unique_ptr<shell::ServiceContext> service_context_;
-  mojo::BindingSet<shell::mojom::ServiceFactory> factory_bindings_;
+  std::unique_ptr<service_manager::ServiceContext> service_context_;
+  mojo::BindingSet<service_manager::mojom::ServiceFactory> factory_bindings_;
   int next_filter_id_ = kInvalidConnectionFilterId;
 
   // Not owned.
@@ -371,7 +376,7 @@ void ServiceManagerConnection::SetFactoryForTest(Factory* factory) {
 
 // static
 std::unique_ptr<ServiceManagerConnection> ServiceManagerConnection::Create(
-    shell::mojom::ServiceRequest request,
+    service_manager::mojom::ServiceRequest request,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   if (service_manager_connection_factory)
     return service_manager_connection_factory->Run();
@@ -385,13 +390,14 @@ ServiceManagerConnection::~ServiceManagerConnection() {}
 // ServiceManagerConnectionImpl, public:
 
 ServiceManagerConnectionImpl::ServiceManagerConnectionImpl(
-    shell::mojom::ServiceRequest request,
+    service_manager::mojom::ServiceRequest request,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : weak_factory_(this) {
-  shell::mojom::ConnectorRequest connector_request;
-  connector_ = shell::Connector::Create(&connector_request);
+  service_manager::mojom::ConnectorRequest connector_request;
+  connector_ = service_manager::Connector::Create(&connector_request);
 
-  std::unique_ptr<shell::Connector> io_thread_connector = connector_->Clone();
+  std::unique_ptr<service_manager::Connector> io_thread_connector =
+      connector_->Clone();
   context_ = new IOThreadContext(
       std::move(request), io_task_runner, std::move(io_thread_connector),
       std::move(connector_request));
@@ -420,11 +426,12 @@ void ServiceManagerConnectionImpl::SetInitializeHandler(
   initialize_handler_ = handler;
 }
 
-shell::Connector* ServiceManagerConnectionImpl::GetConnector() {
+service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
 }
 
-const shell::Identity& ServiceManagerConnectionImpl::GetIdentity() const {
+const service_manager::Identity& ServiceManagerConnectionImpl::GetIdentity()
+    const {
   return identity_;
 }
 
@@ -434,8 +441,8 @@ void ServiceManagerConnectionImpl::SetConnectionLostClosure(
 }
 
 void ServiceManagerConnectionImpl::SetupInterfaceRequestProxies(
-    shell::InterfaceRegistry* registry,
-    shell::InterfaceProvider* provider) {
+    service_manager::InterfaceRegistry* registry,
+    service_manager::InterfaceProvider* provider) {
   // It's safe to bind |registry| as a raw pointer because the caller must
   // guarantee that it outlives |this|, and |this| is bound as a weak ptr here.
   context_->SetDefaultBinderForBrowserConnection(
@@ -474,7 +481,7 @@ void ServiceManagerConnectionImpl::AddServiceRequestHandler(
 }
 
 void ServiceManagerConnectionImpl::CreateService(
-    shell::mojom::ServiceRequest request,
+    service_manager::mojom::ServiceRequest request,
     const std::string& name) {
   auto it = request_handlers_.find(name);
   if (it != request_handlers_.end())
@@ -482,7 +489,7 @@ void ServiceManagerConnectionImpl::CreateService(
 }
 
 void ServiceManagerConnectionImpl::OnContextInitialized(
-    const shell::Identity& identity) {
+    const service_manager::Identity& identity) {
   identity_ = identity;
   if (!initialize_handler_.is_null())
     base::ResetAndReturn(&initialize_handler_).Run();
@@ -494,7 +501,7 @@ void ServiceManagerConnectionImpl::OnConnectionLost() {
 }
 
 void ServiceManagerConnectionImpl::GetInterface(
-    shell::mojom::InterfaceProvider* provider,
+    service_manager::mojom::InterfaceProvider* provider,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle request_handle) {
   provider->GetInterface(interface_name, std::move(request_handle));

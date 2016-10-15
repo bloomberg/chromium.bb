@@ -263,9 +263,9 @@ class ChannelBootstrapFilter : public ConnectionFilter {
 
  private:
   // ConnectionFilter:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry,
-                 shell::Connector* connector) override {
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry,
+                 service_manager::Connector* connector) override {
     if (remote_identity.name() != kBrowserServiceName)
       return false;
 
@@ -452,13 +452,13 @@ void ChildThreadImpl::Init(const Options& options) {
         mojo::edk::CreateChildMessagePipe(service_request_token);
     DCHECK(handle.is_valid());
     service_manager_connection_ = ServiceManagerConnection::Create(
-        mojo::MakeRequest<shell::mojom::Service>(std::move(handle)),
+        mojo::MakeRequest<service_manager::mojom::Service>(std::move(handle)),
         GetIOTaskRunner());
 
     // When connect_to_browser is true, we obtain interfaces from the browser
     // process by connecting to it, rather than from the incoming interface
     // provider. Exposed interfaces are subject to manifest capability spec.
-    shell::InterfaceProvider* remote_interfaces = nullptr;
+    service_manager::InterfaceProvider* remote_interfaces = nullptr;
     if (options.connect_to_browser) {
       browser_connection_ =
           service_manager_connection_->GetConnector()->Connect(
@@ -655,18 +655,18 @@ ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
   return service_manager_connection_.get();
 }
 
-shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
+service_manager::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistry() {
   if (!interface_registry_.get())
-    interface_registry_.reset(new shell::InterfaceRegistry);
+    interface_registry_.reset(new service_manager::InterfaceRegistry);
   return interface_registry_.get();
 }
 
-shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
   if (browser_connection_)
     return browser_connection_->GetRemoteInterfaces();
 
   if (!remote_interfaces_.get())
-    remote_interfaces_.reset(new shell::InterfaceProvider);
+    remote_interfaces_.reset(new service_manager::InterfaceProvider);
   return remote_interfaces_.get();
 }
 

@@ -215,8 +215,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for Fetch Events
   FetchEventCallbacksMap fetch_event_callbacks;
 
-  shell::InterfaceRegistry interface_registry;
-  shell::InterfaceProvider remote_interfaces;
+  service_manager::InterfaceRegistry interface_registry;
+  service_manager::InterfaceProvider remote_interfaces;
 
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
@@ -322,8 +322,8 @@ void ServiceWorkerContextClient::OnMessageReceived(
 }
 
 void ServiceWorkerContextClient::BindInterfaceProviders(
-    shell::mojom::InterfaceProviderRequest request,
-    shell::mojom::InterfaceProviderPtr remote_interfaces) {
+    service_manager::mojom::InterfaceProviderRequest request,
+    service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
   context_->interface_registry.Bind(std::move(request));
   context_->remote_interfaces.Bind(std::move(remote_interfaces));
 }

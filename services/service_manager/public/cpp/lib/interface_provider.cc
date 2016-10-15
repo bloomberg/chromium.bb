@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace shell {
+namespace service_manager {
 
 InterfaceProvider::InterfaceProvider() : weak_factory_(this) {
   pending_request_ = GetProxy(&interface_provider_);
@@ -62,4 +62,4 @@ void InterfaceProvider::ClearBinders() {
   binders_.clear();
 }
 
-}  // namespace shell
+}  // namespace service_manager

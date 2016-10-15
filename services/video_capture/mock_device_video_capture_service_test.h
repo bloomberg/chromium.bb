@@ -14,7 +14,8 @@
 namespace video_capture {
 
 // Reusable test setup for testing with a single mock device.
-class MockDeviceVideoCaptureServiceTest : public shell::test::ServiceTest {
+class MockDeviceVideoCaptureServiceTest
+    : public service_manager::test::ServiceTest {
  public:
   MockDeviceVideoCaptureServiceTest();
   ~MockDeviceVideoCaptureServiceTest() override;

@@ -11,17 +11,20 @@
 namespace mojo {
 
 template <>
-struct StructTraits<shell::mojom::IdentityDataView, shell::Identity> {
-  static const std::string& name(const shell::Identity& identity) {
+struct StructTraits<service_manager::mojom::IdentityDataView,
+                    service_manager::Identity> {
+  static const std::string& name(const service_manager::Identity& identity) {
     return identity.name();
   }
-  static const std::string& user_id(const shell::Identity& identity) {
+  static const std::string& user_id(const service_manager::Identity& identity) {
     return identity.user_id();
   }
-  static const std::string& instance(const shell::Identity& identity) {
+  static const std::string& instance(
+      const service_manager::Identity& identity) {
     return identity.instance();
   }
-  static bool Read(shell::mojom::IdentityDataView data, shell::Identity* out) {
+  static bool Read(service_manager::mojom::IdentityDataView data,
+                   service_manager::Identity* out) {
     std::string name, user_id, instance;
     if (!data.ReadName(&name))
       return false;
@@ -32,7 +35,7 @@ struct StructTraits<shell::mojom::IdentityDataView, shell::Identity> {
     if (!data.ReadInstance(&instance))
       return false;
 
-    *out = shell::Identity(name, user_id, instance);
+    *out = service_manager::Identity(name, user_id, instance);
     return true;
   }
 };

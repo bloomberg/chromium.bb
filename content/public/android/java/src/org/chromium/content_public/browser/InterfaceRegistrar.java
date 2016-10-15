@@ -6,7 +6,7 @@ package org.chromium.content_public.browser;
 
 import android.content.Context;
 
-import org.chromium.services.shell.InterfaceRegistry;
+import org.chromium.services.service_manager.InterfaceRegistry;
 
 import java.util.ArrayList;
 import java.util.List;

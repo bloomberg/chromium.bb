@@ -23,7 +23,7 @@
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/runner/common/switches.h"
 
-namespace shell {
+namespace service_manager {
 namespace test {
 
 namespace {
@@ -37,7 +37,7 @@ void QuitLoop(base::RunLoop* loop) {
 std::unique_ptr<Connection> LaunchAndConnectToProcess(
     const std::string& target_exe_name,
     const Identity target,
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     base::Process* process) {
   base::FilePath target_path;
   CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
@@ -69,14 +69,15 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
   mojo::ScopedMessagePipeHandle pipe =
       mojo::edk::CreateParentMessagePipe(primordial_pipe_token, child_token);
 
-  shell::mojom::ServicePtr client;
-  client.Bind(
-      mojo::InterfacePtrInfo<shell::mojom::Service>(std::move(pipe), 0u));
-  shell::mojom::PIDReceiverPtr receiver;
+  service_manager::mojom::ServicePtr client;
+  client.Bind(mojo::InterfacePtrInfo<service_manager::mojom::Service>(
+      std::move(pipe), 0u));
+  service_manager::mojom::PIDReceiverPtr receiver;
 
-  shell::Connector::ConnectParams params(target);
+  service_manager::Connector::ConnectParams params(target);
   params.set_client_process_connection(std::move(client), GetProxy(&receiver));
-  std::unique_ptr<shell::Connection> connection = connector->Connect(&params);
+  std::unique_ptr<service_manager::Connection> connection =
+      connector->Connect(&params);
   {
     base::RunLoop loop;
     connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -101,4 +102,4 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
 }
 
 }  // namespace test
-}  // namespace shell
+}  // namespace service_manager

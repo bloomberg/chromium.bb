@@ -27,7 +27,7 @@
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/service_overrides.h"
 
-namespace shell {
+namespace service_manager {
 class ServiceContext;
 
 // Creates an identity for the Service Manager, used when the Service Manager
@@ -190,6 +190,6 @@ class ServiceManager : public Service {
 
 mojom::Connector::ConnectCallback EmptyConnectCallback();
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_SERVICE_MANAGER_H_

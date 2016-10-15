@@ -7,6 +7,7 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new mash::catalog_viewer::CatalogViewer);
+  service_manager::ServiceRunner runner(
+      new mash::catalog_viewer::CatalogViewer);
   return runner.Run(service_request_handle);
 }

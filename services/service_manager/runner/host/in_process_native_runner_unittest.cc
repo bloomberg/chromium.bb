@@ -6,11 +6,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace shell {
+namespace service_manager {
 
 TEST(InProcessNativeRunnerTest, NotStarted) {
   InProcessNativeRunner runner;
   // Shouldn't crash or DCHECK on destruction.
 }
 
-}  // namespace shell
+}  // namespace service_manager

@@ -10,7 +10,7 @@
 #include "ui/display/screen_base.h"
 #include "ui/views/mus/mus_export.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -27,7 +27,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
-  void Init(shell::Connector* connector);
+  void Init(service_manager::Connector* connector);
 
  private:
   // display::Screen:

@@ -7,5 +7,6 @@
 #include "services/tracing/service.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  return shell::ServiceRunner(new tracing::Service).Run(service_request_handle);
+  return service_manager::ServiceRunner(new tracing::Service)
+      .Run(service_request_handle);
 }

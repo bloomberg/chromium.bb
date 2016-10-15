@@ -28,14 +28,14 @@ namespace display {
 class PlatformScreenOzone
     : public PlatformScreen,
       public ui::DisplayConfigurator::Observer,
-      public shell::InterfaceFactory<mojom::DisplayController>,
+      public service_manager::InterfaceFactory<mojom::DisplayController>,
       public mojom::DisplayController {
  public:
   PlatformScreenOzone();
   ~PlatformScreenOzone() override;
 
   // PlatformScreen:
-  void AddInterfaces(shell::InterfaceRegistry* registry) override;
+  void AddInterfaces(service_manager::InterfaceRegistry* registry) override;
   void Init(PlatformScreenDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
   int64_t GetPrimaryDisplayId() const override;
@@ -102,7 +102,7 @@ class PlatformScreenOzone
       ui::MultipleDisplayState failed_new_state) override;
 
   // mojo::InterfaceFactory<mojom::DisplayController>:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               mojom::DisplayControllerRequest request) override;
 
   ui::DisplayConfigurator display_configurator_;

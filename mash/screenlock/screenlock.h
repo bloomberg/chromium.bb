@@ -22,15 +22,15 @@ class WindowManagerConnection;
 namespace mash {
 namespace screenlock {
 
-class Screenlock : public shell::Service,
+class Screenlock : public service_manager::Service,
                    public session::mojom::ScreenlockStateListener {
  public:
   Screenlock();
   ~Screenlock() override;
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;

@@ -312,7 +312,8 @@ void BrowserChildProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   child_process_host_->AddFilter(filter->GetFilter());
 }
 
-shell::InterfaceProvider* BrowserChildProcessHostImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+BrowserChildProcessHostImpl::GetRemoteInterfaces() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!child_connection_)
     return nullptr;

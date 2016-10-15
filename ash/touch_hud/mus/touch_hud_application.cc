@@ -64,14 +64,15 @@ class TouchHudUI : public views::WidgetDelegateView,
 TouchHudApplication::TouchHudApplication() : binding_(this) {}
 TouchHudApplication::~TouchHudApplication() {}
 
-void TouchHudApplication::OnStart(const shell::Identity& identity) {
+void TouchHudApplication::OnStart(const service_manager::Identity& identity) {
   aura_init_.reset(new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool TouchHudApplication::OnConnect(const shell::Identity& remote_identity,
-                                    shell::InterfaceRegistry* registry) {
+bool TouchHudApplication::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mash::mojom::Launchable>(this);
   return true;
 }
@@ -105,8 +106,9 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
   }
 }
 
-void TouchHudApplication::Create(const shell::Identity& remote_identity,
-                                 mash::mojom::LaunchableRequest request) {
+void TouchHudApplication::Create(
+    const service_manager::Identity& remote_identity,
+    mash::mojom::LaunchableRequest request) {
   binding_.Close();
   binding_.Bind(std::move(request));
 }

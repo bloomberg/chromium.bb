@@ -22,7 +22,7 @@
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/standalone/context.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -175,4 +175,4 @@ void BackgroundShell::ExecuteOnServiceManagerThread(
                             base::Unretained(thread_.get()), callback));
 }
 
-}  // namespace shell
+}  // namespace service_manager

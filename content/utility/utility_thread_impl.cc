@@ -122,7 +122,7 @@ void UtilityThreadImpl::OnBatchModeFinished() {
 }
 
 void UtilityThreadImpl::BindServiceFactoryRequest(
-    shell::mojom::ServiceFactoryRequest request) {
+    service_manager::mojom::ServiceFactoryRequest request) {
   DCHECK(service_factory_);
   service_factory_bindings_.AddBinding(service_factory_.get(),
                                        std::move(request));

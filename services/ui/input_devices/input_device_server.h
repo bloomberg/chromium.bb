@@ -14,7 +14,7 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 }
 
@@ -24,7 +24,7 @@ namespace ui {
 // updates to any registered InputDeviceObserverMojo in other processes via
 // Mojo IPC. This runs in the mus-ws process.
 class InputDeviceServer
-    : public shell::InterfaceFactory<mojom::InputDeviceServer>,
+    : public service_manager::InterfaceFactory<mojom::InputDeviceServer>,
       public mojom::InputDeviceServer,
       public ui::InputDeviceEventObserver {
  public:
@@ -39,7 +39,7 @@ class InputDeviceServer
   // connect. You should have already called RegisterAsObserver() to get local
   // input-device event updates and checked it was successful by calling
   // IsRegisteredAsObserver().
-  void AddInterface(shell::InterfaceRegistry* registry);
+  void AddInterface(service_manager::InterfaceRegistry* registry);
 
   // mojom::InputDeviceServer:
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;
@@ -57,7 +57,7 @@ class InputDeviceServer
   void SendDeviceListsComplete(mojom::InputDeviceObserverMojo* observer);
 
   // mojo::InterfaceFactory<mojom::InputDeviceServer>:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               mojom::InputDeviceServerRequest request) override;
 
   mojo::BindingSet<mojom::InputDeviceServer> bindings_;

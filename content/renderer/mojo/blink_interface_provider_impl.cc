@@ -14,7 +14,7 @@
 namespace content {
 
 BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
-    base::WeakPtr<shell::InterfaceProvider> remote_interfaces)
+    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces)
     : remote_interfaces_(remote_interfaces),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}

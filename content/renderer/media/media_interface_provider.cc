@@ -15,9 +15,8 @@
 namespace content {
 
 MediaInterfaceProvider::MediaInterfaceProvider(
-    shell::InterfaceProvider* remote_interfaces)
-    : remote_interfaces_(remote_interfaces) {
-}
+    service_manager::InterfaceProvider* remote_interfaces)
+    : remote_interfaces_(remote_interfaces) {}
 
 MediaInterfaceProvider::~MediaInterfaceProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -18,8 +18,8 @@ namespace content {
 class EmbeddedServiceRunner;
 
 // Base class for child-process specific implementations of
-// shell::mojom::ServiceFactory.
-class ServiceFactory : public shell::mojom::ServiceFactory {
+// service_manager::mojom::ServiceFactory.
+class ServiceFactory : public service_manager::mojom::ServiceFactory {
  public:
   using ServiceMap = std::map<std::string, ServiceInfo>;
 
@@ -29,8 +29,8 @@ class ServiceFactory : public shell::mojom::ServiceFactory {
   virtual void RegisterServices(ServiceMap* services) = 0;
   virtual void OnServiceQuit() {}
 
-  // shell::mojom::ServiceFactory:
-  void CreateService(shell::mojom::ServiceRequest request,
+  // service_manager::mojom::ServiceFactory:
+  void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override;
 
  private:

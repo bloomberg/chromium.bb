@@ -83,7 +83,8 @@ void GetSessionStorageUsageHelper(
 // for now).
 class DOMStorageContextWrapper::MojoState {
  public:
-  MojoState(shell::Connector* connector, const base::FilePath& subdirectory)
+  MojoState(service_manager::Connector* connector,
+            const base::FilePath& subdirectory)
       : connector_(connector),
         // TODO(michaeln): Enable writing to disk when db is versioned,
         // for now using an empty subdirectory to use an in-memory db.
@@ -102,7 +103,7 @@ class DOMStorageContextWrapper::MojoState {
   }
 
   void OnUserServiceConnectionComplete() {
-    CHECK_EQ(shell::mojom::ConnectResult::SUCCEEDED,
+    CHECK_EQ(service_manager::mojom::ConnectResult::SUCCEEDED,
              file_service_connection_->GetResult());
   }
 
@@ -123,7 +124,7 @@ class DOMStorageContextWrapper::MojoState {
   // Maps between an origin and its prefixed LevelDB view.
   std::map<url::Origin, std::unique_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
 
-  shell::Connector* const connector_;
+  service_manager::Connector* const connector_;
   const base::FilePath subdirectory_;
 
   enum ConnectionState {
@@ -132,7 +133,7 @@ class DOMStorageContextWrapper::MojoState {
     CONNECTION_FINISHED
   } connection_state_;
 
-  std::unique_ptr<shell::Connection> file_service_connection_;
+  std::unique_ptr<service_manager::Connection> file_service_connection_;
 
   file::mojom::FileSystemPtr file_system_;
   filesystem::mojom::DirectoryPtr directory_;
@@ -262,7 +263,7 @@ void DOMStorageContextWrapper::MojoState::BindLocalStorage(
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     const base::FilePath& profile_path,
     const base::FilePath& local_partition_path,
     storage::SpecialStoragePolicy* special_storage_policy) {

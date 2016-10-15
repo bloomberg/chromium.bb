@@ -22,9 +22,10 @@ void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
 }
 
-class Parent : public shell::Service,
-               public shell::InterfaceFactory<shell::test::mojom::Parent>,
-               public shell::test::mojom::Parent {
+class Parent : public service_manager::Service,
+               public service_manager::InterfaceFactory<
+                   service_manager::test::mojom::Parent>,
+               public service_manager::test::mojom::Parent {
  public:
   Parent() {}
   ~Parent() override {
@@ -34,22 +35,22 @@ class Parent : public shell::Service,
 
  private:
   // Service:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
-    registry->AddInterface<shell::test::mojom::Parent>(this);
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
+    registry->AddInterface<service_manager::test::mojom::Parent>(this);
     return true;
   }
 
-  // InterfaceFactory<shell::test::mojom::Parent>:
-  void Create(const shell::Identity& remote_identity,
-              shell::test::mojom::ParentRequest request) override {
+  // InterfaceFactory<service_manager::test::mojom::Parent>:
+  void Create(const service_manager::Identity& remote_identity,
+              service_manager::test::mojom::ParentRequest request) override {
     parent_bindings_.AddBinding(this, std::move(request));
   }
 
   // Parent:
   void ConnectToChild(const ConnectToChildCallback& callback) override {
     child_connection_ = connector()->Connect("service:lifecycle_unittest_app");
-    shell::test::mojom::LifecycleControlPtr lifecycle;
+    service_manager::test::mojom::LifecycleControlPtr lifecycle;
     child_connection_->GetInterface(&lifecycle);
     {
       base::RunLoop loop;
@@ -64,8 +65,8 @@ class Parent : public shell::Service,
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  std::unique_ptr<shell::Connection> child_connection_;
-  mojo::BindingSet<shell::test::mojom::Parent> parent_bindings_;
+  std::unique_ptr<service_manager::Connection> child_connection_;
+  mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Parent);
 };
@@ -74,5 +75,5 @@ class Parent : public shell::Service,
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
   Parent* parent = new Parent;
-  return shell::ServiceRunner(parent).Run(service_request_handle);
+  return service_manager::ServiceRunner(parent).Run(service_request_handle);
 }

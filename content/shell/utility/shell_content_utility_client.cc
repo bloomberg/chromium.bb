@@ -66,9 +66,9 @@ class TestServiceImpl : public mojom::TestService {
   DISALLOW_COPY_AND_ASSIGN(TestServiceImpl);
 };
 
-std::unique_ptr<shell::Service> CreateTestService(
+std::unique_ptr<service_manager::Service> CreateTestService(
     const base::Closure& quit_closure) {
-  return std::unique_ptr<shell::Service>(new TestService);
+  return std::unique_ptr<service_manager::Service>(new TestService);
 }
 
 }  // namespace
@@ -83,7 +83,7 @@ void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
 }
 
 void ShellContentUtilityClient::ExposeInterfacesToBrowser(
-    shell::InterfaceRegistry* registry) {
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface(base::Bind(&TestServiceImpl::Create));
 }
 

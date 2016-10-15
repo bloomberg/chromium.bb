@@ -32,7 +32,7 @@ void EnsureCommandLineSwitch(const std::string& name) {
     cmd_line->AppendSwitch(name);
 }
 
-class DefaultService : public shell::Service {
+class DefaultService : public service_manager::Service {
  public:
   DefaultService() {}
   ~DefaultService() override {}
@@ -43,8 +43,8 @@ class DefaultService : public shell::Service {
 
 class PlatformTestHelperMus : public PlatformTestHelper {
  public:
-  PlatformTestHelperMus(shell::Connector* connector,
-                        const shell::Identity& identity) {
+  PlatformTestHelperMus(service_manager::Connector* connector,
+                        const service_manager::Identity& identity) {
     // It is necessary to recreate the WindowManagerConnection for each test,
     // since a new MessageLoop is created for each test.
     connection_ = WindowManagerConnection::Create(connector, identity);
@@ -58,8 +58,8 @@ class PlatformTestHelperMus : public PlatformTestHelper {
 };
 
 std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
-    const shell::Identity& identity,
-    const base::Callback<shell::Connector*(void)>& callback) {
+    const service_manager::Identity& identity,
+    const base::Callback<service_manager::Connector*(void)>& callback) {
   return base::MakeUnique<PlatformTestHelperMus>(callback.Run(), identity);
 }
 
@@ -67,7 +67,7 @@ std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
 
 class ShellConnection {
  public:
-  ShellConnection() : thread_("Persistent shell connections") {
+  ShellConnection() : thread_("Persistent service_manager connections") {
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Thread::Options options;
@@ -83,7 +83,7 @@ class ShellConnection {
     // been installed first. So delay the creation until the necessary
     // dependencies have been met.
     PlatformTestHelper::set_factory(base::Bind(
-        &CreatePlatformTestHelper, shell_identity_,
+        &CreatePlatformTestHelper, service_manager_identity_,
         base::Bind(&ShellConnection::GetConnector, base::Unretained(this))));
   }
 
@@ -97,40 +97,44 @@ class ShellConnection {
   }
 
  private:
-  shell::Connector* GetConnector() {
-    shell_connector_.reset();
+  service_manager::Connector* GetConnector() {
+    service_manager_connector_.reset();
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(FROM_HERE,
                                     base::Bind(&ShellConnection::CloneConnector,
                                                base::Unretained(this), &wait));
     wait.Wait();
-    DCHECK(shell_connector_);
-    return shell_connector_.get();
+    DCHECK(service_manager_connector_);
+    return service_manager_connector_.get();
   }
 
   void CloneConnector(base::WaitableEvent* wait) {
-    shell_connector_ = shell_connection_->connector()->Clone();
+    service_manager_connector_ =
+        service_manager_connection_->connector()->Clone();
     wait->Signal();
   }
 
   void SetUpConnections(base::WaitableEvent* wait) {
-    background_shell_ = base::MakeUnique<shell::BackgroundShell>();
+    background_shell_ = base::MakeUnique<service_manager::BackgroundShell>();
     background_shell_->Init(nullptr);
     service_ = base::MakeUnique<DefaultService>();
-    shell_connection_ = base::MakeUnique<shell::ServiceContext>(
-        service_.get(), background_shell_->CreateServiceRequest(GetTestName()));
+    service_manager_connection_ =
+        base::MakeUnique<service_manager::ServiceContext>(
+            service_.get(),
+            background_shell_->CreateServiceRequest(GetTestName()));
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
-    shell::Connector* connector = shell_connection_->connector();
+    service_manager::Connector* connector =
+        service_manager_connection_->connector();
     connector->Connect("service:test_wm");
-    shell_connector_ = connector->Clone();
-    shell_identity_ = shell_connection_->identity();
+    service_manager_connector_ = connector->Clone();
+    service_manager_identity_ = service_manager_connection_->identity();
     wait->Signal();
   }
 
   void TearDownConnections(base::WaitableEvent* wait) {
-    shell_connection_.reset();
+    service_manager_connection_.reset();
     wait->Signal();
   }
 
@@ -144,11 +148,11 @@ class ShellConnection {
   }
 
   base::Thread thread_;
-  std::unique_ptr<shell::BackgroundShell> background_shell_;
-  std::unique_ptr<shell::ServiceContext> shell_connection_;
+  std::unique_ptr<service_manager::BackgroundShell> background_shell_;
+  std::unique_ptr<service_manager::ServiceContext> service_manager_connection_;
   std::unique_ptr<DefaultService> service_;
-  std::unique_ptr<shell::Connector> shell_connector_;
-  shell::Identity shell_identity_;
+  std::unique_ptr<service_manager::Connector> service_manager_connector_;
+  service_manager::Identity service_manager_identity_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellConnection);
 };
@@ -166,11 +170,11 @@ void ViewsMusTestSuite::Initialize() {
   EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
 
   ViewsTestSuite::Initialize();
-  shell_connections_ = base::MakeUnique<ShellConnection>();
+  service_manager_connections_ = base::MakeUnique<ShellConnection>();
 }
 
 void ViewsMusTestSuite::Shutdown() {
-  shell_connections_.reset();
+  service_manager_connections_.reset();
   ViewsTestSuite::Shutdown();
 }
 

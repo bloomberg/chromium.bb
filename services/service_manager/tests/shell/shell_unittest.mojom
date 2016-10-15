@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module shell.test.mojom;
+module service_manager.test.mojom;
 
 import "services/service_manager/public/interfaces/connector.mojom";
 
 interface CreateInstanceTest {
-  SetTargetIdentity(shell.mojom.Identity identity);
+  SetTargetIdentity(service_manager.mojom.Identity identity);
 };
 
 interface Driver {

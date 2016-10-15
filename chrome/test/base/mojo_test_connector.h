@@ -38,7 +38,7 @@ class MojoTestConnector {
   ~MojoTestConnector();
 
   // Initializes the background thread the Shell runs on.
-  shell::mojom::ServiceRequest Init();
+  service_manager::mojom::ServiceRequest Init();
 
   std::unique_ptr<content::TestState> PrepareForTest(
       base::CommandLine* command_line,
@@ -49,7 +49,7 @@ class MojoTestConnector {
 
   std::unique_ptr<NativeRunnerDelegateImpl> native_runner_delegate_;
 
-  shell::BackgroundShell background_shell_;
+  service_manager::BackgroundShell background_shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestConnector);
 };

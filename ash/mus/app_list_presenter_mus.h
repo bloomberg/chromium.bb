@@ -9,7 +9,7 @@
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -19,7 +19,7 @@ namespace ash {
 // talks to the app list service in chrome.
 class AppListPresenterMus : public app_list::AppListPresenter {
  public:
-  explicit AppListPresenterMus(::shell::Connector* connector);
+  explicit AppListPresenterMus(service_manager::Connector* connector);
   ~AppListPresenterMus() override;
 
   // app_list::AppListPresenter:
@@ -34,7 +34,7 @@ class AppListPresenterMus : public app_list::AppListPresenter {
   // been established or has an error.
   void ConnectIfNeeded();
 
-  ::shell::Connector* connector_;
+  service_manager::Connector* connector_;
   app_list::mojom::AppListPresenterPtr presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterMus);

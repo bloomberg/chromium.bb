@@ -864,7 +864,7 @@ std::unique_ptr<navigation::View> Browser::CreateView() {
   return base::MakeUnique<navigation::View>(std::move(factory));
 }
 
-void Browser::OnStart(const shell::Identity& identity) {
+void Browser::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   aura_init_.reset(
@@ -873,8 +873,8 @@ void Browser::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool Browser::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool Browser::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
@@ -895,7 +895,7 @@ void Browser::Launch(uint32_t what, mojom::LaunchMode how) {
   AddWindow(window);
 }
 
-void Browser::Create(const shell::Identity& remote_identity,
+void Browser::Create(const service_manager::Identity& remote_identity,
                      mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

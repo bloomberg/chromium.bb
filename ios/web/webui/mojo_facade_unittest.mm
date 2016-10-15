@@ -44,13 +44,14 @@ id GetObject(const std::string& json) {
 }
 
 // Test mojo handler factory.
-class TestUIHandlerFactory : public shell::InterfaceFactory<TestUIHandlerMojo> {
+class TestUIHandlerFactory
+    : public service_manager::InterfaceFactory<TestUIHandlerMojo> {
  public:
   ~TestUIHandlerFactory() override {}
 
  private:
-  // shell::InterfaceFactory overrides.
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory overrides.
+  void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<TestUIHandlerMojo> request) override {}
 };
 
@@ -60,7 +61,7 @@ class TestUIHandlerFactory : public shell::InterfaceFactory<TestUIHandlerMojo> {
 class MojoFacadeTest : public WebTest {
  protected:
   MojoFacadeTest() {
-    interface_registry_.reset(new shell::InterfaceRegistry);
+    interface_registry_.reset(new service_manager::InterfaceRegistry);
     interface_registry_->AddInterface(&ui_handler_factory_);
     evaluator_.reset([[OCMockObject
         mockForProtocol:@protocol(CRWJSInjectionEvaluator)] retain]);
@@ -74,7 +75,7 @@ class MojoFacadeTest : public WebTest {
 
  private:
   TestUIHandlerFactory ui_handler_factory_;
-  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   base::scoped_nsobject<OCMockObject> evaluator_;
   std::unique_ptr<MojoFacade> facade_;
 };

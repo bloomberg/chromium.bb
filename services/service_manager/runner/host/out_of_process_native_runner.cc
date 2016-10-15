@@ -18,7 +18,7 @@
 #include "services/service_manager/runner/host/child_process_host.h"
 #include "services/service_manager/runner/host/in_process_native_runner.h"
 
-namespace shell {
+namespace service_manager {
 
 OutOfProcessNativeRunner::OutOfProcessNativeRunner(
     base::TaskRunner* launch_process_runner,
@@ -72,4 +72,4 @@ std::unique_ptr<NativeRunner> OutOfProcessNativeRunnerFactory::Create(
                                                     delegate_);
 }
 
-}  // namespace shell
+}  // namespace service_manager

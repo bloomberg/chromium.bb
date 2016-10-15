@@ -22,7 +22,7 @@ namespace base {
 class FilePath;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(
-      shell::Connector* connector,
+      service_manager::Connector* connector,
       const base::FilePath& data_path,
       const base::FilePath& local_partition_path,
       storage::SpecialStoragePolicy* special_storage_policy);

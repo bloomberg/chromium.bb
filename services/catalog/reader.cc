@@ -25,9 +25,9 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
                                const std::string& name,
                                const std::string& package_name_override) {
   // TODO(beng): think more about how this should be done for exe targets.
-  std::string type = shell::GetNameType(name);
-  std::string path = shell::GetNamePath(name);
-  if (type == shell::kNameType_Service) {
+  std::string type = service_manager::GetNameType(name);
+  std::string path = service_manager::GetNamePath(name);
+  if (type == service_manager::kNameType_Service) {
     std::string package_name;
     if (package_name_override.empty())
       package_name = path;
@@ -36,26 +36,27 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
     return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
         package_name + "/manifest.json");
   }
-  if (type == shell::kNameType_Exe)
+  if (type == service_manager::kNameType_Exe)
     return package_dir.AppendASCII(path + "_manifest.json");
   return base::FilePath();
 }
 
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
-  std::string type = shell::GetNameType(name);
-  if (type == shell::kNameType_Service) {
+  std::string type = service_manager::GetNameType(name);
+  if (type == service_manager::kNameType_Service) {
     // It's still a mojo: URL, use the default mapping scheme.
-    const std::string host = shell::GetNamePath(name);
+    const std::string host = service_manager::GetNamePath(name);
     return package_dir.AppendASCII(host + "/" + host + ".library");
   }
-  if (type == shell::kNameType_Exe) {
+  if (type == service_manager::kNameType_Exe) {
 #if defined OS_WIN
     std::string extension = ".exe";
 #else
     std::string extension;
 #endif
-    return package_dir.AppendASCII(shell::GetNamePath(name) + extension);
+    return package_dir.AppendASCII(service_manager::GetNamePath(name) +
+                                   extension);
   }
   return base::FilePath();
 }
@@ -156,7 +157,7 @@ void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
   (*cache)[entry->name()] = std::move(entry);
 }
 
-void DoNothing(shell::mojom::ResolveResultPtr) {}
+void DoNothing(service_manager::mojom::ResolveResultPtr) {}
 
 }  // namespace
 
@@ -251,8 +252,8 @@ void Reader::OnReadManifest(
     std::unique_ptr<Entry> entry) {
   if (!entry)
     return;
-  shell::mojom::ResolveResultPtr result =
-      shell::mojom::ResolveResult::From(*entry);
+  service_manager::mojom::ResolveResultPtr result =
+      service_manager::mojom::ResolveResult::From(*entry);
   AddEntryToCache(cache, std::move(entry));
   entry_created_callback.Run(std::move(result));
 }

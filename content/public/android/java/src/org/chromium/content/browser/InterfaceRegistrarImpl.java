@@ -18,7 +18,7 @@ import org.chromium.device.battery.BatteryMonitorFactory;
 import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.mojo.system.impl.CoreImpl;
-import org.chromium.services.shell.InterfaceRegistry;
+import org.chromium.services.service_manager.InterfaceRegistry;
 
 @JNINamespace("content")
 class InterfaceRegistrarImpl {

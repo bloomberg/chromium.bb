@@ -130,7 +130,8 @@ void WindowManagerApplication::ShutdownComponents() {
   message_center::MessageCenter::Shutdown();
 }
 
-void WindowManagerApplication::OnStart(const shell::Identity& identity) {
+void WindowManagerApplication::OnStart(
+    const service_manager::Identity& identity) {
   aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak",
                                        "ash_mus_resources_200.pak"));
   gpu_service_ = ui::GpuService::Create(connector());
@@ -156,8 +157,9 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
   InitWindowManager(std::move(window_tree_client), blocking_pool_);
 }
 
-bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
-                                         shell::InterfaceRegistry* registry) {
+bool WindowManagerApplication::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   // Register services used in both classic ash and mash.
   mojo_interface_factory::RegisterInterfaces(
       registry, base::ThreadTaskRunnerHandle::Get());
@@ -173,7 +175,7 @@ bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
 }
 
 void WindowManagerApplication::Create(
-    const ::shell::Identity& remote_identity,
+    const ::service_manager::Identity& remote_identity,
     mojom::WallpaperControllerRequest request) {
   mojom::WallpaperController* wallpaper_controller =
       static_cast<WallpaperDelegateMus*>(WmShell::Get()->wallpaper_delegate());
@@ -183,7 +185,7 @@ void WindowManagerApplication::Create(
 }
 
 void WindowManagerApplication::Create(
-    const shell::Identity& remote_identity,
+    const service_manager::Identity& remote_identity,
     ui::mojom::AcceleratorRegistrarRequest request) {
   if (!window_manager_->window_manager_client())
     return;  // Can happen during shutdown.

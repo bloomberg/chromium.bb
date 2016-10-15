@@ -10,7 +10,8 @@
 namespace ui {
 namespace ws {
 
-UserIdTracker::UserIdTracker() : active_id_(shell::mojom::kRootUserID) {
+UserIdTracker::UserIdTracker()
+    : active_id_(service_manager::mojom::kRootUserID) {
   ids_.insert(active_id_);
 }
 

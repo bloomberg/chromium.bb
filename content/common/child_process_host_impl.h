@@ -82,7 +82,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
 #if defined(OS_POSIX)
   base::ScopedFD TakeClientFileDescriptor() override;
 #endif

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "services/ui/display/platform_screen_delegate.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 }
 
@@ -28,7 +28,7 @@ class PlatformScreen {
   static PlatformScreen* GetInstance();
 
   // Registers Mojo interfaces provided.
-  virtual void AddInterfaces(shell::InterfaceRegistry* registry) = 0;
+  virtual void AddInterfaces(service_manager::InterfaceRegistry* registry) = 0;
 
   // Triggers initial display configuration to start. On device this will
   // configuration the connected displays. Off device this will create one or

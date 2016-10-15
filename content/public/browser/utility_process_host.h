@@ -17,7 +17,7 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -34,7 +34,7 @@ struct ChildProcessData;
 // EndBatchMode().
 // If you need to bind Mojo interfaces, use Start() to start the child
 // process and GetRemoteInterfaces() to get the utility process'
-// shell::InterfaceProvider.
+// service_manager::InterfaceProvider.
 //
 // Note: If your class keeps a ptr to an object of this type, grab a weak ptr to
 // avoid a use after free since this object is deleted synchronously but the
@@ -82,9 +82,10 @@ class UtilityProcessHost : public IPC::Sender {
   // Starts the utility process.
   virtual bool Start() = 0;
 
-  // Returns the shell::InterfaceProvider the browser process can use to bind
+  // Returns the service_manager::InterfaceProvider the browser process can use
+  // to bind
   // interfaces exposed to it from the utility process.
-  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
+  virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
 
   // Set the name of the process to appear in the task manager.
   virtual void SetName(const base::string16& name) = 0;

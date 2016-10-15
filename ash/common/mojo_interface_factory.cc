@@ -28,7 +28,7 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
 namespace mojo_interface_factory {
 
 void RegisterInterfaces(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(base::Bind(&BindShelfControllerRequestOnMainThread),
                          main_thread_task_runner);

@@ -75,7 +75,7 @@ AutoclickApplication::AutoclickApplication()
 
 AutoclickApplication::~AutoclickApplication() {}
 
-void AutoclickApplication::OnStart(const shell::Identity& identity) {
+void AutoclickApplication::OnStart(const service_manager::Identity& identity) {
   aura_init_.reset(new views::AuraInit(connector(), "views_mus_resources.pak"));
   window_manager_connection_ =
       views::WindowManagerConnection::Create(connector(), identity);
@@ -83,8 +83,9 @@ void AutoclickApplication::OnStart(const shell::Identity& identity) {
       base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
 }
 
-bool AutoclickApplication::OnConnect(const shell::Identity& remote_identity,
-                                     shell::InterfaceRegistry* registry) {
+bool AutoclickApplication::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mash::mojom::Launchable>(this);
   registry->AddInterface<mojom::AutoclickController>(this);
   return true;
@@ -125,14 +126,16 @@ void AutoclickApplication::SetAutoclickDelay(uint32_t delay_in_milliseconds) {
       base::TimeDelta::FromMilliseconds(delay_in_milliseconds));
 }
 
-void AutoclickApplication::Create(const shell::Identity& remote_identity,
-                                  mash::mojom::LaunchableRequest request) {
+void AutoclickApplication::Create(
+    const service_manager::Identity& remote_identity,
+    mash::mojom::LaunchableRequest request) {
   launchable_binding_.Close();
   launchable_binding_.Bind(std::move(request));
 }
 
-void AutoclickApplication::Create(const shell::Identity& remote_identity,
-                                  mojom::AutoclickControllerRequest request) {
+void AutoclickApplication::Create(
+    const service_manager::Identity& remote_identity,
+    mojom::AutoclickControllerRequest request) {
   autoclick_binding_.Close();
   autoclick_binding_.Bind(std::move(request));
 }

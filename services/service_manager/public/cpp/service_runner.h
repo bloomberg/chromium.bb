@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace shell {
+namespace service_manager {
 
 class Service;
 class ServiceContext;
@@ -19,7 +19,7 @@ class ServiceContext;
 // use from your ServiceMain:
 //
 //  MojoResult ServiceMain(MojoHandle service_request_handle) {
-//    shell::ServiceRunner runner(new MyService);
+//    service_manager::ServiceRunner runner(new MyService);
 //    return runner.Run(service_request_handle);
 //  }
 //
@@ -69,6 +69,6 @@ class ServiceRunner {
   DISALLOW_COPY_AND_ASSIGN(ServiceRunner);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_RUNNER_H_

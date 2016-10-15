@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/service_manager/public/cpp/connection.h"
 
-namespace shell {
+namespace service_manager {
 
 InterfaceRegistry::InterfaceRegistry()
     : binding_(this), allow_all_interfaces_(true), weak_factory_(this) {}
@@ -126,4 +126,4 @@ bool InterfaceRegistry::CanBindRequestForInterface(
   return allow_all_interfaces_ || allowed_interfaces_.count(interface_name);
 }
 
-}  // namespace shell
+}  // namespace service_manager

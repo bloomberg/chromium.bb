@@ -17,14 +17,14 @@ namespace init {
 Init::Init() {}
 Init::~Init() {}
 
-void Init::OnStart(const shell::Identity& identity) {
+void Init::OnStart(const service_manager::Identity& identity) {
   connector()->Connect("service:ui");
   StartTracing();
   StartLogin();
 }
 
-bool Init::OnConnect(const shell::Identity& remote_identity,
-                     shell::InterfaceRegistry* registry) {
+bool Init::OnConnect(const service_manager::Identity& remote_identity,
+                     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Init>(this);
   return true;
 }
@@ -32,8 +32,9 @@ bool Init::OnConnect(const shell::Identity& remote_identity,
 void Init::StartService(const mojo::String& name,
                         const mojo::String& user_id) {
   if (user_services_.find(user_id) == user_services_.end()) {
-    shell::Connector::ConnectParams params(shell::Identity(name, user_id));
-    std::unique_ptr<shell::Connection> connection =
+    service_manager::Connector::ConnectParams params(
+        service_manager::Identity(name, user_id));
+    std::unique_ptr<service_manager::Connection> connection =
         connector()->Connect(&params);
     connection->SetConnectionLostClosure(
         base::Bind(&Init::UserServiceQuit, base::Unretained(this), user_id));
@@ -47,7 +48,7 @@ void Init::StopServicesForUser(const mojo::String& user_id) {
     user_services_.erase(it);
 }
 
-void Init::Create(const shell::Identity& remote_identity,
+void Init::Create(const service_manager::Identity& remote_identity,
                   mojom::InitRequest request) {
   init_bindings_.AddBinding(this, std::move(request));
 }

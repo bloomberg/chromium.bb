@@ -14,7 +14,7 @@ namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
     const GetGpuFactoriesCB& get_gpu_factories_cb,
-    shell::mojom::InterfaceProvider* interface_provider)
+    service_manager::mojom::InterfaceProvider* interface_provider)
     : get_gpu_factories_cb_(get_gpu_factories_cb),
       interface_provider_(interface_provider) {
   DCHECK(interface_provider_);
@@ -38,7 +38,8 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
   }
 
   mojom::RendererPtr renderer_ptr;
-  shell::GetInterface<mojom::Renderer>(interface_provider_, &renderer_ptr);
+  service_manager::GetInterface<mojom::Renderer>(interface_provider_,
+                                                 &renderer_ptr);
 
   return std::unique_ptr<Renderer>(
       new MojoRenderer(media_task_runner, std::move(overlay_factory),

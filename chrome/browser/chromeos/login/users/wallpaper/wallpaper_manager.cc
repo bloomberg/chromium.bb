@@ -210,7 +210,7 @@ ash::mojom::WallpaperLayout WallpaperLayoutToMojo(
 void SetWallpaper(const gfx::ImageSkia& image,
                   wallpaper::WallpaperLayout layout) {
   if (chrome::IsRunningInMash()) {
-    shell::Connector* connector =
+    service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     ash::mojom::WallpaperControllerPtr wallpaper_controller;
     connector->ConnectToInterface("service:ash", &wallpaper_controller);

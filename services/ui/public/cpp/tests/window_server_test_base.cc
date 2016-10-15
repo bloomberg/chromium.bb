@@ -89,8 +89,9 @@ void WindowServerTestBase::SetUp() {
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
 }
 
-bool WindowServerTestBase::OnConnect(const shell::Identity& remote_identity,
-                                     shell::InterfaceRegistry* registry) {
+bool WindowServerTestBase::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::WindowTreeClient>(this);
   return true;
 }
@@ -181,8 +182,9 @@ mojom::EventResult WindowServerTestBase::OnAccelerator(uint32_t accelerator_id,
              : mojom::EventResult::UNHANDLED;
 }
 
-void WindowServerTestBase::Create(const shell::Identity& remote_identity,
-                                  mojom::WindowTreeClientRequest request) {
+void WindowServerTestBase::Create(
+    const service_manager::Identity& remote_identity,
+    mojom::WindowTreeClientRequest request) {
   window_tree_clients_.insert(
       base::MakeUnique<WindowTreeClient>(this, nullptr, std::move(request)));
 }

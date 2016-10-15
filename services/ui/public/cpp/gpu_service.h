@@ -19,7 +19,7 @@
 #include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -38,7 +38,7 @@ class GpuService : public gpu::GpuChannelHostFactory,
   // the gpu channel. If no |task_runner| is provided, then a new thread is
   // created and used.
   static std::unique_ptr<GpuService> Create(
-      shell::Connector* connector,
+      service_manager::Connector* connector,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
   // gpu::GpuChannelEstablishFactory:
@@ -50,7 +50,7 @@ class GpuService : public gpu::GpuChannelHostFactory,
  private:
   friend struct base::DefaultSingletonTraits<GpuService>;
 
-  GpuService(shell::Connector* connector,
+  GpuService(service_manager::Connector* connector,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
@@ -67,7 +67,7 @@ class GpuService : public gpu::GpuChannelHostFactory,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_;

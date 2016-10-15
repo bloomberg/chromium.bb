@@ -9,7 +9,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 
-namespace shell {
+namespace service_manager {
 
 class TestClient : public Service,
                    public InterfaceFactory<mojom::TestService>,
@@ -45,9 +45,9 @@ class TestClient : public Service,
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::TestClient);
+  service_manager::ServiceRunner runner(new service_manager::TestClient);
   return runner.Run(service_request_handle);
 }

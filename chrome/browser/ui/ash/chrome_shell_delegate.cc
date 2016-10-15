@@ -332,7 +332,7 @@ ChromeShellDelegate::ChromeShellDelegate()
 ChromeShellDelegate::~ChromeShellDelegate() {
 }
 
-shell::Connector* ChromeShellDelegate::GetShellConnector() const {
+service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
   return content::ServiceManagerConnection::GetForProcess()->GetConnector();
 }
 

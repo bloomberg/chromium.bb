@@ -14,7 +14,7 @@ namespace media {
 class MojoDecoderFactory : public DecoderFactory {
  public:
   explicit MojoDecoderFactory(
-      shell::mojom::InterfaceProvider* interface_provider);
+      service_manager::mojom::InterfaceProvider* interface_provider);
   ~MojoDecoderFactory() final;
 
   void CreateAudioDecoders(
@@ -27,7 +27,7 @@ class MojoDecoderFactory : public DecoderFactory {
       ScopedVector<VideoDecoder>* video_decoders) final;
 
  private:
-  shell::mojom::InterfaceProvider* interface_provider_;
+  service_manager::mojom::InterfaceProvider* interface_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoDecoderFactory);
 };

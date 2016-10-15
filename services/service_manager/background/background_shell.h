@@ -17,7 +17,7 @@ namespace catalog {
 class Store;
 }
 
-namespace shell {
+namespace service_manager {
 
 class NativeRunnerDelegate;
 class ServiceManager;
@@ -64,6 +64,6 @@ class BackgroundShell {
   DISALLOW_COPY_AND_ASSIGN(BackgroundShell);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SHELL_H_

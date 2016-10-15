@@ -63,14 +63,14 @@ MusDemo::MusDemo() {}
 
 MusDemo::~MusDemo() {}
 
-void MusDemo::OnStart(const shell::Identity& identity) {
+void MusDemo::OnStart(const service_manager::Identity& identity) {
   gpu_service_ = GpuService::Create(connector());
   window_tree_client_ = base::MakeUnique<WindowTreeClient>(this, this);
   window_tree_client_->ConnectAsWindowManager(connector());
 }
 
-bool MusDemo::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool MusDemo::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   return true;
 }
 

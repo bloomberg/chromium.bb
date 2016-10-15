@@ -16,7 +16,7 @@ void RunCallback(bool* success, const base::Closure& callback, bool result) {
   callback.Run();
 }
 
-class AppLaunchTest : public shell::test::ServiceTest {
+class AppLaunchTest : public service_manager::test::ServiceTest {
  public:
   AppLaunchTest() : ServiceTest("exe:mash_unittests") {}
   ~AppLaunchTest() override {}

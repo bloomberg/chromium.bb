@@ -25,21 +25,21 @@ namespace ash {
 namespace autoclick {
 
 class AutoclickApplication
-    : public shell::Service,
+    : public service_manager::Service,
       public mash::mojom::Launchable,
       public mojom::AutoclickController,
-      public shell::InterfaceFactory<mash::mojom::Launchable>,
-      public shell::InterfaceFactory<mojom::AutoclickController>,
+      public service_manager::InterfaceFactory<mash::mojom::Launchable>,
+      public service_manager::InterfaceFactory<mojom::AutoclickController>,
       public AutoclickControllerCommonDelegate {
  public:
   AutoclickApplication();
   ~AutoclickApplication() override;
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
@@ -47,12 +47,12 @@ class AutoclickApplication
   // mojom::AutoclickController:
   void SetAutoclickDelay(uint32_t delay_in_milliseconds) override;
 
-  // shell::InterfaceFactory<mojom::Launchable>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::Launchable>:
+  void Create(const service_manager::Identity& remote_identity,
               mash::mojom::LaunchableRequest request) override;
 
-  // shell::InterfaceFactory<mojom::AutoclickController>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::AutoclickController>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::AutoclickControllerRequest request) override;
 
   // AutoclickControllerCommonDelegate:

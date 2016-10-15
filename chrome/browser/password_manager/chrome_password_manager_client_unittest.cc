@@ -198,9 +198,9 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  shell::InterfaceProvider* remote_interfaces =
+  service_manager::InterfaceProvider* remote_interfaces =
       web_contents()->GetMainFrame()->GetRemoteInterfaces();
-  shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+  service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
   test_api.SetBinderForName(autofill::mojom::PasswordAutofillAgent::Name_,
                             base::Bind(&FakePasswordAutofillAgent::BindRequest,
                                        base::Unretained(&fake_agent_)));

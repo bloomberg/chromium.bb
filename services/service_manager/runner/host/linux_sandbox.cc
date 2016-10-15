@@ -28,7 +28,7 @@
 
 using sandbox::syscall_broker::BrokerFilePermission;
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -166,4 +166,4 @@ void LinuxSandbox::Seal() {
   proc_fd_.reset();
 }
 
-}  // namespace shell
+}  // namespace service_manager

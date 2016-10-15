@@ -24,11 +24,10 @@ InterfaceProviderJsWrapper::~InterfaceProviderJsWrapper() {
 }
 
 // static
-gin::Handle<InterfaceProviderJsWrapper>
-InterfaceProviderJsWrapper::Create(
+gin::Handle<InterfaceProviderJsWrapper> InterfaceProviderJsWrapper::Create(
     v8::Isolate* isolate,
     v8::Handle<v8::Context> context,
-    shell::InterfaceProvider* remote_interfaces) {
+    service_manager::InterfaceProvider* remote_interfaces) {
   return gin::CreateHandle(
       isolate,
       new InterfaceProviderJsWrapper(
@@ -62,7 +61,8 @@ void InterfaceProviderJsWrapper::AddOverrideForTesting(
     const std::string& interface_name,
     v8::Local<v8::Function> service_factory) {
   ScopedJsFactory factory(v8::Isolate::GetCurrent(), service_factory);
-  shell::InterfaceProvider::TestApi test_api(remote_interfaces_.get());
+  service_manager::InterfaceProvider::TestApi test_api(
+      remote_interfaces_.get());
   test_api.SetBinderForName(
       interface_name,
       base::Bind(&InterfaceProviderJsWrapper::CallJsFactory,
@@ -70,14 +70,15 @@ void InterfaceProviderJsWrapper::AddOverrideForTesting(
 }
 
 void InterfaceProviderJsWrapper::ClearOverridesForTesting() {
-  shell::InterfaceProvider::TestApi test_api(remote_interfaces_.get());
+  service_manager::InterfaceProvider::TestApi test_api(
+      remote_interfaces_.get());
   test_api.ClearBinders();
 }
 
 InterfaceProviderJsWrapper::InterfaceProviderJsWrapper(
     v8::Isolate* isolate,
     v8::Handle<v8::Context> context,
-    base::WeakPtr<shell::InterfaceProvider> remote_interfaces)
+    base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces)
     : isolate_(isolate),
       context_(isolate, context),
       remote_interfaces_(remote_interfaces),

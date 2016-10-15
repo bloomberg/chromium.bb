@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace shell {
+namespace service_manager {
 
 // Represents the identity of an application.
 // |name| is the structured name of the application.
@@ -39,6 +39,6 @@ class Identity {
   std::string instance_;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_IDENTITY_H_

@@ -18,9 +18,9 @@ using DefaultClient = media::DefaultMojoMediaClient;
 namespace media {
 
 // static
-std::unique_ptr<shell::Service> CreateMojoMediaApplication(
+std::unique_ptr<service_manager::Service> CreateMojoMediaApplication(
     const base::Closure& quit_closure) {
-  return std::unique_ptr<shell::Service>(new MojoMediaApplication(
+  return std::unique_ptr<service_manager::Service>(new MojoMediaApplication(
       base::MakeUnique<DefaultClient>(), quit_closure));
 }
 

@@ -86,8 +86,8 @@ class MockRenderThread : public RenderThread {
   void ReleaseCachedFonts() override;
 #endif
   ServiceManagerConnection* GetServiceManagerConnection() override;
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
@@ -163,9 +163,9 @@ class MockRenderThread : public RenderThread {
   base::ObserverList<RenderThreadObserver> observers_;
 
   cc::TestSharedBitmapManager shared_bitmap_manager_;
-  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
-  shell::mojom::InterfaceProviderRequest
+  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
+  service_manager::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
   std::unique_ptr<mojom::RenderMessageFilter> mock_render_message_filter_;

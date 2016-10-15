@@ -90,8 +90,8 @@ WindowManagerConnection::~WindowManagerConnection() {
 
 // static
 std::unique_ptr<WindowManagerConnection> WindowManagerConnection::Create(
-    shell::Connector* connector,
-    const shell::Identity& identity,
+    service_manager::Connector* connector,
+    const service_manager::Identity& identity,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   WindowManagerConnection* connection =
@@ -139,8 +139,8 @@ const std::set<ui::Window*>& WindowManagerConnection::GetRoots() const {
 }
 
 WindowManagerConnection::WindowManagerConnection(
-    shell::Connector* connector,
-    const shell::Identity& identity,
+    service_manager::Connector* connector,
+    const service_manager::Identity& identity,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);

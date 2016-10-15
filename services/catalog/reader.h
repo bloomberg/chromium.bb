@@ -31,7 +31,7 @@ class Reader {
  public:
   using ReadManifestCallback = base::Callback<void(std::unique_ptr<Entry>)>;
   using CreateEntryForNameCallback =
-      base::Callback<void(shell::mojom::ResolveResultPtr)>;
+      base::Callback<void(service_manager::mojom::ResolveResultPtr)>;
 
   Reader(base::SequencedWorkerPool* worker_pool,
          ManifestProvider* manifest_provider);

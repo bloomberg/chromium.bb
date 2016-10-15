@@ -4,9 +4,9 @@
 
 #include "services/service_manager/connect_params.h"
 
-namespace shell {
+namespace service_manager {
 
 ConnectParams::ConnectParams() {}
 ConnectParams::~ConnectParams() {}
 
-}  // namespace shell
+}  // namespace service_manager

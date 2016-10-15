@@ -45,7 +45,7 @@ class MusViewsDelegate : public ViewsDelegate {
 
 }  // namespace
 
-AuraInit::AuraInit(shell::Connector* connector,
+AuraInit::AuraInit(service_manager::Connector* connector,
                    const std::string& resource_file,
                    const std::string& resource_file_200)
     : resource_file_(resource_file),
@@ -80,7 +80,7 @@ AuraInit::~AuraInit() {
 #endif
 }
 
-void AuraInit::InitializeResources(shell::Connector* connector) {
+void AuraInit::InitializeResources(service_manager::Connector* connector) {
   // Resources may have already been initialized (e.g. when 'chrome --mash' is
   // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())

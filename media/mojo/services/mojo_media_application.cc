@@ -27,12 +27,13 @@ MojoMediaApplication::MojoMediaApplication(
 
 MojoMediaApplication::~MojoMediaApplication() {}
 
-void MojoMediaApplication::OnStart(const shell::Identity& identity) {
+void MojoMediaApplication::OnStart(const service_manager::Identity& identity) {
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::OnConnect(const shell::Identity& remote_identity,
-                                     shell::InterfaceRegistry* registry) {
+bool MojoMediaApplication::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::MediaService>(this);
   return true;
 }
@@ -42,14 +43,15 @@ bool MojoMediaApplication::OnStop() {
   return true;
 }
 
-void MojoMediaApplication::Create(const shell::Identity& remote_identity,
-                                  mojom::MediaServiceRequest request) {
+void MojoMediaApplication::Create(
+    const service_manager::Identity& remote_identity,
+    mojom::MediaServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void MojoMediaApplication::CreateServiceFactory(
     mojom::ServiceFactoryRequest request,
-    shell::mojom::InterfaceProviderPtr remote_interfaces) {
+    service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
   // Ignore request if service has already stopped.
   if (!mojo_media_client_)
     return;

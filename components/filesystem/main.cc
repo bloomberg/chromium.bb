@@ -8,6 +8,6 @@
 #include "services/service_manager/public/cpp/service_runner.h"
 
 MojoResult ServiceMain(MojoHandle request) {
-  shell::ServiceRunner runner(new filesystem::FileSystemApp());
+  service_manager::ServiceRunner runner(new filesystem::FileSystemApp());
   return runner.Run(request);
 }

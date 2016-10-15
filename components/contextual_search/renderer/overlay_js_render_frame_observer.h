@@ -36,7 +36,8 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
-  // Add the mojo interface to a RenderFrame's shell::InterfaceRegistry.
+  // Add the mojo interface to a RenderFrame's
+  // service_manager::InterfaceRegistry.
   void RegisterMojoInterface();
   // Creates the OverlayPageNotifierService connecting the browser to this
   // observer.

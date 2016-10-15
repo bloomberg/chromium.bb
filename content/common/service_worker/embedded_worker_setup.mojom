@@ -9,6 +9,6 @@ import "services/service_manager/public/interfaces/interface_provider.mojom";
 interface EmbeddedWorkerSetup {
   ExchangeInterfaceProviders(
       int32 thread_id,
-      shell.mojom.InterfaceProvider& remote_interfaces,
-      shell.mojom.InterfaceProvider local_interfaces);
+      service_manager.mojom.InterfaceProvider& remote_interfaces,
+      service_manager.mojom.InterfaceProvider local_interfaces);
 };

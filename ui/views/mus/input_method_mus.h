@@ -27,7 +27,7 @@ class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
                  ui::Window* window);
   ~InputMethodMus() override;
 
-  void Init(shell::Connector* connector);
+  void Init(service_manager::Connector* connector);
 
   // Overridden from ui::InputMethod:
   void OnFocus() override;

@@ -33,10 +33,10 @@ class ViewImpl : public mojom::View,
                  public ui::WindowTreeClientDelegate,
                  public views::WidgetDelegate {
  public:
-  ViewImpl(std::unique_ptr<shell::Connector> connector,
+  ViewImpl(std::unique_ptr<service_manager::Connector> connector,
            const std::string& client_user_id,
            mojom::ViewClientPtr client,
-           std::unique_ptr<shell::ServiceContextRef> ref);
+           std::unique_ptr<service_manager::ServiceContextRef> ref);
   ~ViewImpl() override;
 
  private:
@@ -87,9 +87,9 @@ class ViewImpl : public mojom::View,
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
 
-  std::unique_ptr<shell::Connector> connector_;
+  std::unique_ptr<service_manager::Connector> connector_;
   mojom::ViewClientPtr client_;
-  std::unique_ptr<shell::ServiceContextRef> ref_;
+  std::unique_ptr<service_manager::ServiceContextRef> ref_;
 
   std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
 

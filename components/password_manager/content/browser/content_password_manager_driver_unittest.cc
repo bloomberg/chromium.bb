@@ -101,9 +101,9 @@ class ContentPasswordManagerDriverTest
     ON_CALL(password_manager_client_, GetLogManager())
         .WillByDefault(Return(&log_manager_));
 
-    shell::InterfaceProvider* remote_interfaces =
+    service_manager::InterfaceProvider* remote_interfaces =
         web_contents()->GetMainFrame()->GetRemoteInterfaces();
-    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
     test_api.SetBinderForName(
         autofill::mojom::PasswordAutofillAgent::Name_,
         base::Bind(&FakePasswordAutofillAgent::BindRequest,

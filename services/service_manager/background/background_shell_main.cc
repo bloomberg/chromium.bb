@@ -12,7 +12,7 @@
 #include "services/service_manager/runner/host/child_process.h"
 #include "services/service_manager/runner/init.h"
 
-namespace shell {
+namespace service_manager {
 namespace {
 
 int RunChildProcess() {
@@ -26,13 +26,13 @@ int RunChildProcess() {
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace service_manager
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kChildProcess)) {
-    return shell::RunChildProcess();
+    return service_manager::RunChildProcess();
   }
   // Reset CommandLine as most likely main() is going to use CommandLine too
   // and expect to be able to initialize it.

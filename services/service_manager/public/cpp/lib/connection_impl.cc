@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_binder.h"
 
-namespace shell {
+namespace service_manager {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,8 @@ void ConnectionImpl::SetRemoteInterfaces(
   set_remote_interfaces(remote_interfaces_owner_.get());
 }
 
-shell::mojom::Connector::ConnectCallback ConnectionImpl::GetConnectCallback() {
+service_manager::mojom::Connector::ConnectCallback
+ConnectionImpl::GetConnectCallback() {
   return base::Bind(&ConnectionImpl::OnConnectionCompleted,
                     weak_factory_.GetWeakPtr());
 }
@@ -52,7 +53,7 @@ void ConnectionImpl::SetConnectionLostClosure(const base::Closure& handler) {
   remote_interfaces_->SetConnectionLostClosure(handler);
 }
 
-shell::mojom::ConnectResult ConnectionImpl::GetResult() const {
+service_manager::mojom::ConnectResult ConnectionImpl::GetResult() const {
   return result_;
 }
 
@@ -79,13 +80,15 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, private:
 
-void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
-                                           const std::string& target_user_id) {
+void ConnectionImpl::OnConnectionCompleted(
+    service_manager::mojom::ConnectResult result,
+    const std::string& target_user_id) {
   DCHECK(State::PENDING == state_);
 
   result_ = result;
-  state_ = result_ == shell::mojom::ConnectResult::SUCCEEDED ?
-      State::CONNECTED : State::DISCONNECTED;
+  state_ = result_ == service_manager::mojom::ConnectResult::SUCCEEDED
+               ? State::CONNECTED
+               : State::DISCONNECTED;
   remote_.set_user_id(target_user_id);
   std::vector<base::Closure> callbacks;
   callbacks.swap(connection_completed_callbacks_);
@@ -94,4 +97,4 @@ void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
 }
 
 }  // namespace internal
-}  // namespace shell
+}  // namespace service_manager

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-namespace shell {
+namespace service_manager {
 
 class ServiceContextRefImpl;
 
@@ -54,6 +54,6 @@ class ServiceContextRefFactory {
   DISALLOW_COPY_AND_ASSIGN(ServiceContextRefFactory);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_CONTEXT_REF_H_

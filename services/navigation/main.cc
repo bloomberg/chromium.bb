@@ -24,7 +24,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
 int main(int argc, const char** argv) {
 #endif
   base::CommandLine::Init(argc, argv);
-  shell::WaitForDebuggerIfNecessary();
+  service_manager::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
 #if defined(OS_WIN)

@@ -12,18 +12,18 @@
 #include "services/service_manager/runner/init.h"
 #include "services/service_manager/tests/shell/shell_unittest.mojom.h"
 
-using shell::test::mojom::CreateInstanceTestPtr;
+using service_manager::test::mojom::CreateInstanceTestPtr;
 
 namespace {
 
-class Target : public shell::Service {
+class Target : public service_manager::Service {
  public:
   Target() {}
   ~Target() override {}
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override {
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override {
     CreateInstanceTestPtr service;
     connector()->ConnectToInterface("service:shell_unittest", &service);
     service->SetTargetIdentity(identity);
@@ -38,8 +38,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  shell::InitializeLogging();
+  service_manager::InitializeLogging();
 
   Target target;
-  return shell::TestNativeMain(&target);
+  return service_manager::TestNativeMain(&target);
 }

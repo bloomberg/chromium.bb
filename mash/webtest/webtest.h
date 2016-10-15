@@ -22,10 +22,9 @@ class WindowManagerConnection;
 namespace mash {
 namespace webtest {
 
-class Webtest
-    : public shell::Service,
-      public mojom::Launchable,
-      public shell::InterfaceFactory<mojom::Launchable> {
+class Webtest : public service_manager::Service,
+                public mojom::Launchable,
+                public service_manager::InterfaceFactory<mojom::Launchable> {
  public:
   Webtest();
   ~Webtest() override;
@@ -34,16 +33,16 @@ class Webtest
   void RemoveWindow(views::Widget* window);
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // mojom::Launchable:
   void Launch(uint32_t what, mojom::LaunchMode how) override;
 
-  // shell::InterfaceFactory<mojom::Launchable>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::Launchable>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::LaunchableRequest request) override;
 
   mojo::BindingSet<mojom::Launchable> bindings_;

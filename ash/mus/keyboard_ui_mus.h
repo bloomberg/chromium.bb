@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/keyboard/keyboard.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -21,10 +21,11 @@ namespace ash {
 class KeyboardUIMus : public KeyboardUI,
                       public keyboard::mojom::KeyboardObserver {
  public:
-  explicit KeyboardUIMus(::shell::Connector* connector);
+  explicit KeyboardUIMus(service_manager::Connector* connector);
   ~KeyboardUIMus() override;
 
-  static std::unique_ptr<KeyboardUI> Create(::shell::Connector* connector);
+  static std::unique_ptr<KeyboardUI> Create(
+      service_manager::Connector* connector);
 
   // KeyboardUI:
   void Hide() override;

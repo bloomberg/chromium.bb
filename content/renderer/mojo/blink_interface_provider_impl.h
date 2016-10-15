@@ -15,18 +15,18 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
 namespace content {
 
 // An implementation of blink::InterfaceProvider that forwards to a
-// shell::InterfaceProvider.
+// service_manager::InterfaceProvider.
 class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
  public:
   explicit BlinkInterfaceProviderImpl(
-      base::WeakPtr<shell::InterfaceProvider> remote_interfaces);
+      base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces);
   ~BlinkInterfaceProviderImpl();
 
   // blink::InterfaceProvider override.
@@ -34,7 +34,7 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
                     mojo::ScopedMessagePipeHandle handle) override;
 
  private:
-  const base::WeakPtr<shell::InterfaceProvider> remote_interfaces_;
+  const base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

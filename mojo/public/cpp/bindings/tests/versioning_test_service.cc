@@ -95,12 +95,12 @@ class HumanResourceDatabaseImpl : public HumanResourceDatabase {
 };
 
 class HumanResourceSystemServer
-    : public shell::Service,
+    : public service_manager::Service,
       public InterfaceFactory<HumanResourceDatabase> {
  public:
   HumanResourceSystemServer() {}
 
-  // shell::Service implementation.
+  // service_manager::Service implementation.
   bool OnConnect(Connection* connection) override {
     connection->AddInterface<HumanResourceDatabase>(this);
     return true;

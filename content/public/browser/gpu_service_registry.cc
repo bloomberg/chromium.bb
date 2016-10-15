@@ -8,7 +8,7 @@
 
 namespace content {
 
-shell::InterfaceProvider* GetGpuRemoteInterfaces() {
+service_manager::InterfaceProvider* GetGpuRemoteInterfaces() {
   GpuProcessHost* host =
       GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
   return host->GetRemoteInterfaces();

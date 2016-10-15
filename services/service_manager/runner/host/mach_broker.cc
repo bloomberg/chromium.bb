@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 const char kBootstrapPortName[] = "mojo_shell";
@@ -40,4 +40,4 @@ void MachBroker::RemovePid(base::ProcessHandle pid) {
   broker_.InvalidatePid(pid);
 }
 
-}  // namespace shell
+}  // namespace service_manager

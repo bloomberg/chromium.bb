@@ -10,7 +10,7 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/service_manager.h"
 
-namespace shell {
+namespace service_manager {
 
 mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
     ServiceManager* service_manager,
@@ -28,4 +28,4 @@ mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
   return std::move(pipe.handle0);
 }
 
-}  // namespace shell
+}  // namespace service_manager

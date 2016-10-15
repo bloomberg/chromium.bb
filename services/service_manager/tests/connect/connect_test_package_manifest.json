@@ -5,10 +5,10 @@
   "capabilities": {
     "provided": {
       "connect_unittests:connect_test_service": [
-        "shell::test::mojom::ConnectTestService"
+        "service_manager::test::mojom::ConnectTestService"
       ],
       "shell:service_factory": [
-        "shell::mojom::ServiceFactory"
+        "service_manager::mojom::ServiceFactory"
       ]
     }
   }

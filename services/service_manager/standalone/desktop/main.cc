@@ -5,5 +5,5 @@
 #include "services/service_manager/standalone/desktop/main_helper.h"
 
 int main(int argc, char** argv) {
-  return shell::StandaloneShellMain(argc, argv);
+  return service_manager::StandaloneShellMain(argc, argv);
 }

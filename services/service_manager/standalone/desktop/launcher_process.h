@@ -7,11 +7,11 @@
 
 #include "base/callback_forward.h"
 
-namespace shell {
+namespace service_manager {
 
 // Main method for the launcher process.
 int LauncherProcessMain();
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SHELL_STANDALONE_LAUNCHER_PROCESS_H_

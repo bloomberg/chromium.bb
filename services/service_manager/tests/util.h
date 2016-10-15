@@ -12,7 +12,7 @@ namespace base {
 class Process;
 }
 
-namespace shell {
+namespace service_manager {
 class Connection;
 class Connector;
 class Identity;
@@ -25,10 +25,10 @@ namespace test {
 std::unique_ptr<Connection> LaunchAndConnectToProcess(
     const std::string& target_exe_name,
     const Identity target,
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     base::Process* process);
 
 }  // namespace test
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_TESTS_UTIL_H_

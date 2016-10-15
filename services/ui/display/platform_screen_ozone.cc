@@ -62,7 +62,8 @@ PlatformScreenOzone::~PlatformScreenOzone() {
   display_configurator_.RemoveObserver(this);
 }
 
-void PlatformScreenOzone::AddInterfaces(shell::InterfaceRegistry* registry) {
+void PlatformScreenOzone::AddInterfaces(
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::DisplayController>(this);
 }
 
@@ -262,8 +263,9 @@ void PlatformScreenOzone::OnDisplayModeChangeFailed(
   wait_for_display_config_update_ = false;
 }
 
-void PlatformScreenOzone::Create(const shell::Identity& remote_identity,
-                                 mojom::DisplayControllerRequest request) {
+void PlatformScreenOzone::Create(
+    const service_manager::Identity& remote_identity,
+    mojom::DisplayControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

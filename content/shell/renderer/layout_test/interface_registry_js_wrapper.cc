@@ -25,7 +25,7 @@ InterfaceRegistryJsWrapper::~InterfaceRegistryJsWrapper() = default;
 gin::Handle<InterfaceRegistryJsWrapper> InterfaceRegistryJsWrapper::Create(
     v8::Isolate* isolate,
     v8::Handle<v8::Context> context,
-    shell::InterfaceRegistry* interface_registry) {
+    service_manager::InterfaceRegistry* interface_registry) {
   return gin::CreateHandle(
       isolate, new InterfaceRegistryJsWrapper(
                    isolate, context, interface_registry->GetWeakPtr()));
@@ -43,7 +43,8 @@ mojo::Handle InterfaceRegistryJsWrapper::GetLocalInterfaceForTesting(
     const std::string& interface_name) {
   mojo::MessagePipe pipe;
   if (interface_registry_) {
-    shell::InterfaceRegistry::TestApi test_api(interface_registry_.get());
+    service_manager::InterfaceRegistry::TestApi test_api(
+        interface_registry_.get());
     test_api.GetLocalInterface(interface_name, std::move(pipe.handle0));
   }
   return pipe.handle1.release();
@@ -52,7 +53,7 @@ mojo::Handle InterfaceRegistryJsWrapper::GetLocalInterfaceForTesting(
 InterfaceRegistryJsWrapper::InterfaceRegistryJsWrapper(
     v8::Isolate* isolate,
     v8::Handle<v8::Context> context,
-    base::WeakPtr<shell::InterfaceRegistry> interface_registry)
+    base::WeakPtr<service_manager::InterfaceRegistry> interface_registry)
     : isolate_(isolate),
       context_(isolate, context),
       interface_registry_(interface_registry),

@@ -188,7 +188,7 @@ void SystemTrayClient::ConnectToSystemTray() {
   if (system_tray_.is_bound())
     return;
 
-  shell::Connector* connector =
+  service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   // Under mash the SystemTray interface is in the ash process. In classic ash
   // we provide it to ourself.

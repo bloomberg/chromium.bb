@@ -27,7 +27,7 @@ namespace session {
 Session::Session() : screen_locked_(false) {}
 Session::~Session() {}
 
-void Session::OnStart(const shell::Identity& identity) {
+void Session::OnStart(const service_manager::Identity& identity) {
   StartAppDriver();
   StartWindowManager();
   StartQuickLaunch();
@@ -35,8 +35,8 @@ void Session::OnStart(const shell::Identity& identity) {
   connector()->Connect("service:content_browser");
 }
 
-bool Session::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool Session::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Session>(this);
   return true;
 }
@@ -84,7 +84,7 @@ void Session::UnlockScreen() {
   StopScreenlock();
 }
 
-void Session::Create(const shell::Identity& remote_identity,
+void Session::Create(const service_manager::Identity& remote_identity,
                      mojom::SessionRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
@@ -127,7 +127,7 @@ void Session::StartRestartableService(
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
-  std::unique_ptr<shell::Connection> connection =
+  std::unique_ptr<service_manager::Connection> connection =
       connector()->Connect(url);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {

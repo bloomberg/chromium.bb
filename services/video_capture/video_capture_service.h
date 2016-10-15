@@ -18,19 +18,19 @@ class FakeVideoCaptureDeviceFactoryConfiguratorImpl;
 
 // Implementation of mojom::VideoCaptureService as a Mojo Shell Service.
 class VideoCaptureService
-    : public shell::Service,
-      public shell::InterfaceFactory<mojom::VideoCaptureService>,
+    : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::VideoCaptureService>,
       public mojom::VideoCaptureService {
  public:
   VideoCaptureService();
   ~VideoCaptureService() override;
 
-  // shell::Service:
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
-  // shell::InterfaceFactory<mojom::VideoCaptureService>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::VideoCaptureService>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::VideoCaptureServiceRequest request) override;
 
   // mojom::VideoCaptureService

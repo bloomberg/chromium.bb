@@ -58,10 +58,10 @@ mojom::NavigationEntryPtr EntryPtrFromNavEntry(
 
 }  // namespace
 
-ViewImpl::ViewImpl(std::unique_ptr<shell::Connector> connector,
+ViewImpl::ViewImpl(std::unique_ptr<service_manager::Connector> connector,
                    const std::string& client_user_id,
                    mojom::ViewClientPtr client,
-                   std::unique_ptr<shell::ServiceContextRef> ref)
+                   std::unique_ptr<service_manager::ServiceContextRef> ref)
     : connector_(std::move(connector)),
       client_(std::move(client)),
       ref_(std::move(ref)),

@@ -5,12 +5,12 @@
 #ifndef SERVICES_SERVICE_MANAGER_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 #define SERVICES_SERVICE_MANAGER_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 
-namespace shell {
+namespace service_manager {
 
 class Service;
 
 int TestNativeMain(Service* service);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_CHILD_TEST_NATIVE_MAIN_H_

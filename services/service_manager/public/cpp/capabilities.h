@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-namespace shell {
+namespace service_manager {
 
 using Class = std::string;
 using Classes = std::set<std::string>;
@@ -30,6 +30,6 @@ struct CapabilitySpec {
   std::map<Name, Classes> required;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_CAPABILITIES_H_

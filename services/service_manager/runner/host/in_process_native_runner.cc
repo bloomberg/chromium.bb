@@ -20,7 +20,7 @@
 #include "services/service_manager/runner/host/out_of_process_native_runner.h"
 #include "services/service_manager/runner/init.h"
 
-namespace shell {
+namespace service_manager {
 
 InProcessNativeRunner::InProcessNativeRunner() : library_(nullptr) {}
 
@@ -92,4 +92,4 @@ std::unique_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
   return base::WrapUnique(new InProcessNativeRunner);
 }
 
-}  // namespace shell
+}  // namespace service_manager

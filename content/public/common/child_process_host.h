@@ -21,7 +21,7 @@ namespace IPC {
 class MessageFilter;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -98,9 +98,10 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // Adds an IPC message filter.  A reference will be kept to the filter.
   virtual void AddFilter(IPC::MessageFilter* filter) = 0;
 
-  // Returns the shell::InterfaceProvider the process host can use to bind
+  // Returns the service_manager::InterfaceProvider the process host can use to
+  // bind
   // interfaces exposed to it from the child.
-  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
+  virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
 
 #if defined(OS_POSIX)
   // See IPC::Channel::TakeClientFileDescriptor.

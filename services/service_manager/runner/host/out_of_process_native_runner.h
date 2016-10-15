@@ -19,7 +19,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace shell {
+namespace service_manager {
 
 class ChildProcessHost;
 class NativeRunnerDelegate;
@@ -69,6 +69,6 @@ class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunnerFactory);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_

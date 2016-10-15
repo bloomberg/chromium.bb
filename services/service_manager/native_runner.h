@@ -16,7 +16,7 @@ namespace base {
 class FilePath;
 }
 
-namespace shell {
+namespace service_manager {
 class Identity;
 
 // Shell requires implementations of NativeRunner and NativeRunnerFactory to run
@@ -43,6 +43,6 @@ class NativeRunnerFactory {
       const base::FilePath& app_path) = 0;
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_NATIVE_RUNNER_H_

@@ -16,7 +16,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
@@ -31,7 +31,7 @@ class ConnectTestClassApp
   ~ConnectTestClassApp() override {}
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   void OnStart(const Identity& identity) override {
     identity_ = identity;
   }
@@ -87,10 +87,10 @@ class ConnectTestClassApp
   DISALLOW_COPY_AND_ASSIGN(ConnectTestClassApp);
 };
 
-}  // namespace shell
-
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::ConnectTestClassApp);
+  service_manager::ServiceRunner runner(
+      new service_manager::ConnectTestClassApp);
   return runner.Run(service_request_handle);
 }

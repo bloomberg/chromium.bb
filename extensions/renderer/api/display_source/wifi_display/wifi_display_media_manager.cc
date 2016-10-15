@@ -86,7 +86,7 @@ WiFiDisplayMediaManager::WiFiDisplayMediaManager(
     const blink::WebMediaStreamTrack& video_track,
     const blink::WebMediaStreamTrack& audio_track,
     const std::string& sink_ip_address,
-    shell::InterfaceProvider* interface_provider,
+    service_manager::InterfaceProvider* interface_provider,
     const ErrorCallback& error_callback)
     : video_track_(video_track),
       audio_track_(audio_track),

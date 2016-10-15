@@ -67,9 +67,10 @@ class TestAcceleratorHandler : public AcceleratorHandler {
   DISALLOW_COPY_AND_ASSIGN(TestAcceleratorHandler);
 };
 
-class AcceleratorRegistrarTest : public shell::test::ServiceTest {
+class AcceleratorRegistrarTest : public service_manager::test::ServiceTest {
  public:
-  AcceleratorRegistrarTest() : shell::test::ServiceTest("exe:mash_unittests") {}
+  AcceleratorRegistrarTest()
+      : service_manager::test::ServiceTest("exe:mash_unittests") {}
   ~AcceleratorRegistrarTest() override {}
 
  protected:

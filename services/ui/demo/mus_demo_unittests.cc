@@ -22,9 +22,9 @@ void RunCallback(bool* success, const base::Closure& callback, bool result) {
   callback.Run();
 }
 
-class MusDemoTest : public shell::test::ServiceTest {
+class MusDemoTest : public service_manager::test::ServiceTest {
  public:
-  MusDemoTest() : shell::test::ServiceTest(kTestAppName) {}
+  MusDemoTest() : service_manager::test::ServiceTest(kTestAppName) {}
   ~MusDemoTest() override {}
 
   void SetUp() override {

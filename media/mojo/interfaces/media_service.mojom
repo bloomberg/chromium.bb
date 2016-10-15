@@ -9,5 +9,5 @@ import "services/service_manager/public/interfaces/interface_provider.mojom";
 
 interface MediaService {
   CreateServiceFactory(ServiceFactory& factory,
-                       shell.mojom.InterfaceProvider frame_interfaces);
+                       service_manager.mojom.InterfaceProvider frame_interfaces);
 };

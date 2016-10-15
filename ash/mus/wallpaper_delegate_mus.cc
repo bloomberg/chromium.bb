@@ -33,7 +33,8 @@ wallpaper::WallpaperLayout WallpaperLayoutFromMojo(
 
 namespace ash {
 
-WallpaperDelegateMus::WallpaperDelegateMus(shell::Connector* connector)
+WallpaperDelegateMus::WallpaperDelegateMus(
+    service_manager::Connector* connector)
     : connector_(connector) {}
 
 WallpaperDelegateMus::~WallpaperDelegateMus() {}

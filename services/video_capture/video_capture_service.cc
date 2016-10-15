@@ -28,14 +28,16 @@ VideoCaptureService::VideoCaptureService() = default;
 
 VideoCaptureService::~VideoCaptureService() = default;
 
-bool VideoCaptureService::OnConnect(const shell::Identity& remote_identity,
-                                    shell::InterfaceRegistry* registry) {
+bool VideoCaptureService::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::VideoCaptureService>(this);
   return true;
 }
 
-void VideoCaptureService::Create(const shell::Identity& remote_identity,
-                                 mojom::VideoCaptureServiceRequest request) {
+void VideoCaptureService::Create(
+    const service_manager::Identity& remote_identity,
+    mojom::VideoCaptureServiceRequest request) {
   service_bindings_.AddBinding(this, std::move(request));
 }
 

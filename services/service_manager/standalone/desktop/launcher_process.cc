@@ -22,7 +22,7 @@
 #include "services/service_manager/standalone/context.h"
 #include "services/service_manager/switches.h"
 
-namespace shell {
+namespace service_manager {
 
 int LauncherProcessMain() {
 #if !defined(OFFICIAL_BUILD)
@@ -55,4 +55,4 @@ int LauncherProcessMain() {
   return 0;
 }
 
-}  // namespace shell
+}  // namespace service_manager

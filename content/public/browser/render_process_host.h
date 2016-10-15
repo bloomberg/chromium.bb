@@ -32,7 +32,7 @@ class AudioOutputController;
 class MediaKeys;
 }
 
-namespace shell {
+namespace service_manager {
 class Connection;
 class InterfaceProvider;
 }
@@ -263,9 +263,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // transferring it to a new renderer process.
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id) = 0;
 
-  // Returns the shell::InterfaceProvider the browser process can use to bind
+  // Returns the service_manager::InterfaceProvider the browser process can use
+  // to bind
   // interfaces exposed to it from the renderer.
-  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
+  virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data

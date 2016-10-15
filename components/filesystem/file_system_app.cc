@@ -40,18 +40,18 @@ FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {}
 
 FileSystemApp::~FileSystemApp() {}
 
-void FileSystemApp::OnStart(const shell::Identity& identity) {
+void FileSystemApp::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 }
 
-bool FileSystemApp::OnConnect(const shell::Identity& remote_identity,
-                              shell::InterfaceRegistry* registry) {
+bool FileSystemApp::OnConnect(const service_manager::Identity& remote_identity,
+                              service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::FileSystem>(this);
   return true;
 }
 
 // |InterfaceFactory<Files>| implementation:
-void FileSystemApp::Create(const shell::Identity& remote_identity,
+void FileSystemApp::Create(const service_manager::Identity& remote_identity,
                            mojom::FileSystemRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<FileSystemImpl>(
                               remote_identity, GetUserDataDir(), lock_table_),

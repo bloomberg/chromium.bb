@@ -113,7 +113,7 @@ class UrlIndex;
 class WebEncryptedMediaClientImpl;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 class InterfaceProvider;
 }
@@ -421,8 +421,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   bool IsMainFrame() override;
   bool IsHidden() override;
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry() override;
   AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
 #if defined(ENABLE_PLUGINS)
@@ -454,7 +454,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::Frame implementation:
   void GetInterfaceProvider(
-      shell::mojom::InterfaceProviderRequest request) override;
+      service_manager::mojom::InterfaceProviderRequest request) override;
 
   // blink::WebFrameClient implementation:
   blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
@@ -1033,7 +1033,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool AreSecureCodecsSupported();
 
 #if defined(ENABLE_MOJO_MEDIA)
-  shell::mojom::InterfaceProvider* GetMediaInterfaceProvider();
+  service_manager::mojom::InterfaceProvider* GetMediaInterfaceProvider();
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -1235,15 +1235,15 @@ class CONTENT_EXPORT RenderFrameImpl
   // initialized.
   PresentationDispatcher* presentation_dispatcher_;
 
-  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
-  shell::mojom::InterfaceProviderRequest
+  service_manager::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
   // The shell proxy used to connect to services.
-  shell::mojom::ConnectorPtr connector_;
+  service_manager::mojom::ConnectorPtr connector_;
 
   // The screen orientation dispatcher attached to the frame, lazily
   // initialized.

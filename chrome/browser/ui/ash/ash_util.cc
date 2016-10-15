@@ -18,7 +18,7 @@ bool ShouldOpenAshOnStartup() {
 }
 
 bool IsRunningInMash() {
-  return shell::ShellIsRemote();
+  return service_manager::ServiceManagerIsRemote();
 }
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {

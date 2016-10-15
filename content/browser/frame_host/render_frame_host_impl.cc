@@ -534,11 +534,12 @@ RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }
 
-shell::InterfaceRegistry* RenderFrameHostImpl::GetInterfaceRegistry() {
+service_manager::InterfaceRegistry*
+RenderFrameHostImpl::GetInterfaceRegistry() {
   return interface_registry_.get();
 }
 
-shell::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 
@@ -860,23 +861,23 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
 }
 
 void RenderFrameHostImpl::Create(
-    const shell::Identity& remote_identity,
+    const service_manager::Identity& remote_identity,
     media::mojom::ServiceFactoryRequest request) {
-  std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry);
+  std::unique_ptr<service_manager::InterfaceRegistry> registry(
+      new service_manager::InterfaceRegistry);
 #if defined(OS_ANDROID) && defined(ENABLE_MOJO_CDM)
   registry->AddInterface(
       base::Bind(&ProvisionFetcherImpl::Create, this));
 #endif
   GetContentClient()->browser()->ExposeInterfacesToMediaService(registry.get(),
                                                                 this);
-  shell::mojom::InterfaceProviderPtr interfaces;
+  service_manager::mojom::InterfaceProviderPtr interfaces;
   registry->Bind(GetProxy(&interfaces));
   media_registries_.push_back(std::move(registry));
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   media::mojom::MediaServicePtr media_service;
-  shell::Connector* connector =
+  service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("service:media", &media_service);
   media_service->CreateServiceFactory(std::move(request),
@@ -2624,7 +2625,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   if (interface_registry_.get())
     return;
 
-  interface_registry_.reset(new shell::InterfaceRegistry);
+  interface_registry_.reset(new service_manager::InterfaceRegistry);
   if (!GetProcess()->GetRemoteInterfaces())
     return;
 
@@ -2634,11 +2635,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   frame_factory->CreateFrame(routing_id_, GetProxy(&frame_),
                              frame_host_binding_.CreateInterfacePtrAndBind());
 
-
-  shell::mojom::InterfaceProviderPtr remote_interfaces;
-  shell::mojom::InterfaceProviderRequest remote_interfaces_request =
+  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
+  service_manager::mojom::InterfaceProviderRequest remote_interfaces_request =
       GetProxy(&remote_interfaces);
-  remote_interfaces_.reset(new shell::InterfaceProvider);
+  remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   frame_->GetInterfaceProvider(std::move(remote_interfaces_request));
 }
@@ -2908,7 +2908,7 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
 }
 
 void RenderFrameHostImpl::GetInterfaceProvider(
-    shell::mojom::InterfaceProviderRequest interfaces) {
+    service_manager::mojom::InterfaceProviderRequest interfaces) {
   interface_registry_->Bind(std::move(interfaces));
 }
 

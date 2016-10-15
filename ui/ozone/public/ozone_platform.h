@@ -18,7 +18,7 @@ namespace IPC {
 class MessageFilter;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 class InterfaceRegistry;
 }
@@ -60,7 +60,7 @@ class OZONE_EXPORT OzonePlatform {
     // Ozone may retain this pointer for later use. An Ozone platform embedder
     // must set this parameter in order for the Ozone platform implementation to
     // be able to use Mojo.
-    shell::Connector* connector = nullptr;
+    service_manager::Connector* connector = nullptr;
 
     // Setting this to true indicates that the platform implementation should
     // operate as a single process for platforms (i.e. drm) that are usually
@@ -108,12 +108,12 @@ class OZONE_EXPORT OzonePlatform {
   // Ozone platform implementations may also choose to expose mojo interfaces to
   // internal functionality. Embedders wishing to take advantage of ozone mojo
   // implementations must invoke AddInterfaces with a valid
-  // shell::InterfaceRegistry* pointer to export all Mojo interfaces defined
-  // within Ozone.
+  // service_manager::InterfaceRegistry* pointer to export all Mojo interfaces
+  // defined within Ozone.
   //
   // A default do-nothing implementation is provided to permit platform
   // implementations to opt out of implementing any Mojo interfaces.
-  virtual void AddInterfaces(shell::InterfaceRegistry* registry);
+  virtual void AddInterfaces(service_manager::InterfaceRegistry* registry);
 
  private:
   virtual void InitializeUI() = 0;

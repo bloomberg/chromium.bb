@@ -21,7 +21,7 @@ namespace content {
 namespace {
 
 void CallBinderOnTaskRunner(
-    const shell::InterfaceRegistry::Binder& binder,
+    const service_manager::InterfaceRegistry::Binder& binder,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle request_handle) {
@@ -37,13 +37,13 @@ class ChildConnection::IOThreadContext
  public:
   IOThreadContext() {}
 
-  void Initialize(const shell::Identity& child_identity,
-                  shell::Connector* connector,
+  void Initialize(const service_manager::Identity& child_identity,
+                  service_manager::Connector* connector,
                   mojo::ScopedMessagePipeHandle service_pipe,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
     DCHECK(!io_task_runner_);
     io_task_runner_ = io_task_runner;
-    std::unique_ptr<shell::Connector> io_thread_connector;
+    std::unique_ptr<service_manager::Connector> io_thread_connector;
     if (connector)
       io_thread_connector = connector->Clone();
     io_task_runner_->PostTask(
@@ -85,16 +85,16 @@ class ChildConnection::IOThreadContext
   virtual ~IOThreadContext() {}
 
   void InitializeOnIOThread(
-      const shell::Identity& child_identity,
-      std::unique_ptr<shell::Connector> connector,
+      const service_manager::Identity& child_identity,
+      std::unique_ptr<service_manager::Connector> connector,
       mojo::ScopedMessagePipeHandle service_pipe) {
-    shell::mojom::ServicePtr service;
-    service.Bind(mojo::InterfacePtrInfo<shell::mojom::Service>(
+    service_manager::mojom::ServicePtr service;
+    service.Bind(mojo::InterfacePtrInfo<service_manager::mojom::Service>(
         std::move(service_pipe), 0u));
-    shell::mojom::PIDReceiverRequest pid_receiver_request =
+    service_manager::mojom::PIDReceiverRequest pid_receiver_request =
         mojo::GetProxy(&pid_receiver_);
 
-    shell::Connector::ConnectParams params(child_identity);
+    service_manager::Connector::ConnectParams params(child_identity);
     params.set_client_process_connection(std::move(service),
                                          std::move(pid_receiver_request));
 
@@ -115,8 +115,8 @@ class ChildConnection::IOThreadContext
   }
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  std::unique_ptr<shell::Connection> connection_;
-  shell::mojom::PIDReceiverPtr pid_receiver_;
+  std::unique_ptr<service_manager::Connection> connection_;
+  service_manager::mojom::PIDReceiverPtr pid_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
@@ -125,10 +125,12 @@ ChildConnection::ChildConnection(
     const std::string& service_name,
     const std::string& instance_id,
     const std::string& child_token,
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : context_(new IOThreadContext),
-      child_identity_(service_name, shell::mojom::kInheritUserID, instance_id),
+      child_identity_(service_name,
+                      service_manager::mojom::kInheritUserID,
+                      instance_id),
       service_token_(mojo::edk::GenerateRandomToken()),
       weak_factory_(this) {
   mojo::ScopedMessagePipeHandle service_pipe =

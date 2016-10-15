@@ -31,9 +31,10 @@ class WindowTreeClientDelegate : public ui::WindowTreeClientDelegate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientDelegate);
 };
 
-class WindowManagerTest : public shell::test::ServiceTest {
+class WindowManagerTest : public service_manager::test::ServiceTest {
  public:
-  WindowManagerTest() : shell::test::ServiceTest("exe:mash_unittests") {}
+  WindowManagerTest()
+      : service_manager::test::ServiceTest("exe:mash_unittests") {}
   ~WindowManagerTest() override {}
 
  private:

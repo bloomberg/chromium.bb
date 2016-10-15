@@ -86,12 +86,12 @@ void AppDriver::OnAvailableCatalogEntries(
   }
 }
 
-void AppDriver::OnStart(const shell::Identity& identity) {
+void AppDriver::OnStart(const service_manager::Identity& identity) {
   AddAccelerators();
 }
 
-bool AppDriver::OnConnect(const shell::Identity& remote_identity,
-                          shell::InterfaceRegistry* registry) {
+bool AppDriver::OnConnect(const service_manager::Identity& remote_identity,
+                          service_manager::InterfaceRegistry* registry) {
   return true;
 }
 

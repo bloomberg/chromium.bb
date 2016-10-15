@@ -43,7 +43,8 @@ void PlatformScreenStub::FixedSizeScreenConfiguration() {
                             device_scale_factor);
 }
 
-void PlatformScreenStub::AddInterfaces(shell::InterfaceRegistry* registry) {}
+void PlatformScreenStub::AddInterfaces(
+    service_manager::InterfaceRegistry* registry) {}
 
 void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {
   DCHECK(delegate);

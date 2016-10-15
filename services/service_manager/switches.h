@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-namespace shell {
+namespace service_manager {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -17,6 +17,6 @@ extern const char kNoSandbox[];
 extern const char kSingleProcess[];
 
 }  // namespace switches
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_SWITCHES_H_

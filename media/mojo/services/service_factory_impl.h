@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace shell {
+namespace service_manager {
 namespace mojom {
 class InterfaceProvider;
 }
@@ -28,10 +28,11 @@ class RendererFactory;
 
 class ServiceFactoryImpl : public mojom::ServiceFactory {
  public:
-  ServiceFactoryImpl(shell::mojom::InterfaceProviderPtr interfaces,
-                     scoped_refptr<MediaLog> media_log,
-                     std::unique_ptr<shell::ServiceContextRef> connection_ref,
-                     MojoMediaClient* mojo_media_client);
+  ServiceFactoryImpl(
+      service_manager::mojom::InterfaceProviderPtr interfaces,
+      scoped_refptr<MediaLog> media_log,
+      std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
+      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
   // mojom::ServiceFactory implementation.
@@ -58,11 +59,11 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
 
 #if defined(ENABLE_MOJO_CDM)
   std::unique_ptr<CdmFactory> cdm_factory_;
-  shell::mojom::InterfaceProviderPtr interfaces_;
+  service_manager::mojom::InterfaceProviderPtr interfaces_;
 #endif  // defined(ENABLE_MOJO_CDM)
 
   scoped_refptr<MediaLog> media_log_;
-  std::unique_ptr<shell::ServiceContextRef> connection_ref_;
+  std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);

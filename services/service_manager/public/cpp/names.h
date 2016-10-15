@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace shell {
+namespace service_manager {
 
 extern const char kNameType_Service[];
 extern const char kNameType_Exe[];
@@ -48,6 +48,6 @@ std::string GetNameType(const std::string& name);
 // Get the path component of the specified name.
 std::string GetNamePath(const std::string& name);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_NAMES_H_

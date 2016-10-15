@@ -21,7 +21,7 @@ namespace font_service {
 class FontLoader;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -35,14 +35,14 @@ class VIEWS_MUS_EXPORT AuraInit {
   // |resource_file| is the file to load strings and 1x icons from.
   // |resource_file_200| can be an empty string, otherwise it is the file to
   // load 2x icons from.
-  AuraInit(shell::Connector* connector,
+  AuraInit(service_manager::Connector* connector,
            const std::string& resource_file,
            const std::string& resource_file_200 = std::string());
 
   ~AuraInit();
 
  private:
-  void InitializeResources(shell::Connector* connector);
+  void InitializeResources(service_manager::Connector* connector);
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;

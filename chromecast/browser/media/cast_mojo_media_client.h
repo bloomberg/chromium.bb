@@ -31,7 +31,7 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   std::unique_ptr<::media::RendererFactory> CreateRendererFactory(
       const scoped_refptr<::media::MediaLog>& media_log) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
-      ::shell::mojom::InterfaceProvider* interface_provider) override;
+      service_manager::mojom::InterfaceProvider* interface_provider) override;
 
  private:
   const CreateMediaPipelineBackendCB create_backend_cb_;

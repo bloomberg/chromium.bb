@@ -4,7 +4,7 @@
   "display_name": "Mash Browser Tests",
   "capabilities": {
     "provided": {
-      "shell:service_factory":  [ "shell::mojom::ServiceFactory" ]
+      "shell:service_factory":  [ "service_manager::mojom::ServiceFactory" ]
     },
     "required": {
       "*": [ "app" ]

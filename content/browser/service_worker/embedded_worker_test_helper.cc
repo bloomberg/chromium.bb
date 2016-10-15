@@ -72,8 +72,8 @@ class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
 
   void ExchangeInterfaceProviders(
       int32_t thread_id,
-      shell::mojom::InterfaceProviderRequest request,
-      shell::mojom::InterfaceProviderPtr remote_interfaces) override {
+      service_manager::mojom::InterfaceProviderRequest request,
+      service_manager::mojom::InterfaceProviderPtr remote_interfaces) override {
     if (!helper_)
       return;
     helper_->OnSetupMojoStub(thread_id, std::move(request),
@@ -303,7 +303,7 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
 
 void EmbeddedWorkerTestHelper::OnSetupMojo(
     int thread_id,
-    shell::InterfaceRegistry* interface_registry) {
+    service_manager::InterfaceRegistry* interface_registry) {
   interface_registry->AddInterface(base::Bind(&MockFetchEventDispatcher::Create,
                                               weak_factory_.GetWeakPtr(),
                                               thread_id));
@@ -516,14 +516,14 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
 
 void EmbeddedWorkerTestHelper::OnSetupMojoStub(
     int thread_id,
-    shell::mojom::InterfaceProviderRequest request,
-    shell::mojom::InterfaceProviderPtr remote_interfaces) {
-  std::unique_ptr<shell::InterfaceRegistry> local(
-      new shell::InterfaceRegistry);
+    service_manager::mojom::InterfaceProviderRequest request,
+    service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
+  std::unique_ptr<service_manager::InterfaceRegistry> local(
+      new service_manager::InterfaceRegistry);
   local->Bind(std::move(request));
 
-  std::unique_ptr<shell::InterfaceProvider> remote(
-      new shell::InterfaceProvider);
+  std::unique_ptr<service_manager::InterfaceProvider> remote(
+      new service_manager::InterfaceProvider);
   remote->Bind(std::move(remote_interfaces));
 
   OnSetupMojo(thread_id, local.get());
@@ -544,20 +544,20 @@ EmbeddedWorkerTestHelper::NewMessagePortMessageFilter() {
   return filter.get();
 }
 
-std::unique_ptr<shell::InterfaceRegistry>
+std::unique_ptr<service_manager::InterfaceRegistry>
 EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
-  std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry);
+  std::unique_ptr<service_manager::InterfaceRegistry> registry(
+      new service_manager::InterfaceRegistry);
   registry->AddInterface(
       base::Bind(&MockEmbeddedWorkerSetup::Create, AsWeakPtr()));
   registry->AddInterface(
       base::Bind(&MockEmbeddedWorkerInstanceClient::Bind, AsWeakPtr()));
 
-  shell::mojom::InterfaceProviderPtr interfaces;
+  service_manager::mojom::InterfaceProviderPtr interfaces;
   registry->Bind(mojo::GetProxy(&interfaces));
 
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces(
-      new shell::InterfaceProvider);
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces(
+      new service_manager::InterfaceProvider);
   remote_interfaces->Bind(std::move(interfaces));
   rph->SetRemoteInterfaces(std::move(remote_interfaces));
   return registry;

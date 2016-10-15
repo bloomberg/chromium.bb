@@ -13,7 +13,7 @@
 namespace video_capture {
 
 // Basic test fixture that sets up a connection to the fake device factory.
-class VideoCaptureServiceTest : public shell::test::ServiceTest {
+class VideoCaptureServiceTest : public service_manager::test::ServiceTest {
  public:
   VideoCaptureServiceTest();
   ~VideoCaptureServiceTest() override;

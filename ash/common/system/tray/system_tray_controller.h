@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -34,7 +34,7 @@ namespace ash {
 class ASH_EXPORT SystemTrayController
     : NON_EXPORTED_BASE(public mojom::SystemTray) {
  public:
-  explicit SystemTrayController(shell::Connector* connector);
+  explicit SystemTrayController(service_manager::Connector* connector);
   ~SystemTrayController() override;
 
   base::HourClockType hour_clock_type() const { return hour_clock_type_; }
@@ -71,7 +71,7 @@ class ASH_EXPORT SystemTrayController
   void SetUse24HourClock(bool use_24_hour) override;
 
   // May be null in unit tests.
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
 
   // Client interface in chrome browser. Only bound on Chrome OS.
   mojom::SystemTrayClientPtr system_tray_client_;

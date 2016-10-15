@@ -26,7 +26,7 @@
 // implementing ServiceFactory; that these services can be specified by
 // the package's manifest and are thus registered with the PackageManager.
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -60,7 +60,7 @@ class ProvidedService
   }
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   void OnStart(const Identity& identity) override {
     identity_ = identity;
     bindings_.set_connection_error_handler(
@@ -118,7 +118,7 @@ class ProvidedService
 
   // test::mojom::UserIdTest:
   void ConnectToClassAppAsDifferentUser(
-      const shell::Identity& target,
+      const service_manager::Identity& target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
@@ -168,7 +168,7 @@ class ConnectTestService
   ~ConnectTestService() override {}
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   void OnStart(const Identity& identity) override {
     identity_ = identity;
     bindings_.set_connection_error_handler(
@@ -224,9 +224,10 @@ class ConnectTestService
   DISALLOW_COPY_AND_ASSIGN(ConnectTestService);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::ConnectTestService);
+  service_manager::ServiceRunner runner(
+      new service_manager::ConnectTestService);
   return runner.Run(service_request_handle);
 }

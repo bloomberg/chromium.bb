@@ -13,7 +13,7 @@ IMEServerImpl::IMEServerImpl() : current_id_(0) {}
 
 IMEServerImpl::~IMEServerImpl() {}
 
-void IMEServerImpl::Init(shell::Connector* connector) {
+void IMEServerImpl::Init(service_manager::Connector* connector) {
   // TODO(moshayedi): crbug.com/641041. Look up the driver from the mojo:catalog
   // service.
   connector->Connect("service:test_ime_driver");

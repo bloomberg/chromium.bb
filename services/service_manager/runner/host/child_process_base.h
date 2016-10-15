@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // Child processes call this to establish the connection to the shell and obtain
 // the ServiceRequest. Once the connection has been established |callback|
@@ -17,6 +17,6 @@ namespace shell {
 using RunCallback = base::Callback<void(mojom::ServiceRequest)>;
 void ChildProcessMainWithCallback(const RunCallback& callback);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_CHILD_PROCESS_BASE_H_

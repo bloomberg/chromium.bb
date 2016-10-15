@@ -16,10 +16,11 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
 
-using LifecycleControl = shell::test::mojom::LifecycleControl;
-using LifecycleControlRequest = shell::test::mojom::LifecycleControlRequest;
+using LifecycleControl = service_manager::test::mojom::LifecycleControl;
+using LifecycleControlRequest =
+    service_manager::test::mojom::LifecycleControlRequest;
 
-namespace shell {
+namespace service_manager {
 class ServiceContext;
 
 namespace test {
@@ -29,7 +30,7 @@ class AppClient : public Service,
                   public LifecycleControl {
  public:
   AppClient();
-  explicit AppClient(shell::mojom::ServiceRequest request);
+  explicit AppClient(service_manager::mojom::ServiceRequest request);
   ~AppClient() override;
 
   void set_runner(ServiceRunner* runner) {
@@ -61,6 +62,6 @@ class AppClient : public Service,
 };
 
 }  // namespace test
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_TESTS_LIFECYCLE_APP_CLIENT_H_

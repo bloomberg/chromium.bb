@@ -8,8 +8,8 @@ traits_headers =
     [ "//services/service_manager/public/cpp/capabilities_struct_traits.h" ]
 
 type_mappings = [
-  "shell.mojom.CapabilityRequest=::shell::CapabilityRequest",
-  "shell.mojom.CapabilitySpec=::shell::CapabilitySpec",
-  "shell.mojom.Interfaces=::shell::Interfaces",
-  "shell.mojom.Classes=::shell::Classes",
+  "service_manager.mojom.CapabilityRequest=::service_manager::CapabilityRequest",
+  "service_manager.mojom.CapabilitySpec=::service_manager::CapabilitySpec",
+  "service_manager.mojom.Interfaces=::service_manager::Interfaces",
+  "service_manager.mojom.Classes=::service_manager::Classes",
 ]

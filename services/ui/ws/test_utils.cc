@@ -191,8 +191,9 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
   const uint32_t embed_flags = 0;
   WindowTree* tree = window_server_->EmbedAtWindow(
-      root, shell::mojom::kRootUserID, ui::mojom::WindowTreeClientPtr(),
-      embed_flags, base::WrapUnique(new WindowManagerAccessPolicy));
+      root, service_manager::mojom::kRootUserID,
+      ui::mojom::WindowTreeClientPtr(), embed_flags,
+      base::WrapUnique(new WindowManagerAccessPolicy));
   tree->ConfigureWindowManager();
   return tree;
 }

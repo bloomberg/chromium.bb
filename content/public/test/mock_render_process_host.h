@@ -92,7 +92,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       const WebRtcRtpPacketCallback& packet_callback) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
@@ -136,7 +136,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   int worker_ref_count() const { return worker_ref_count_; }
 
   void SetRemoteInterfaces(
-      std::unique_ptr<shell::InterfaceProvider> remote_interfaces) {
+      std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces) {
     remote_interfaces_ = std::move(remote_interfaces);
   }
 
@@ -159,7 +159,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_process_backgrounded_;
   std::unique_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

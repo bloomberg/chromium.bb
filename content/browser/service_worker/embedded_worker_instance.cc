@@ -108,8 +108,8 @@ void SetupOnUI(
 void SetupMojoOnUIThread(
     int process_id,
     int thread_id,
-    shell::mojom::InterfaceProviderRequest remote_interfaces,
-    shell::mojom::InterfaceProviderPtrInfo exposed_interfaces) {
+    service_manager::mojom::InterfaceProviderRequest remote_interfaces,
+    service_manager::mojom::InterfaceProviderPtrInfo exposed_interfaces) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // |rph| or its InterfaceProvider may be NULL in unit tests.
   if (!rph || !rph->GetRemoteInterfaces())
@@ -450,8 +450,8 @@ void EmbeddedWorkerInstance::Start(
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
-  interface_registry_.reset(new shell::InterfaceRegistry);
-  remote_interfaces_.reset(new shell::InterfaceProvider);
+  interface_registry_.reset(new service_manager::InterfaceRegistry);
+  remote_interfaces_.reset(new service_manager::InterfaceProvider);
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStarting());
 
   params->embedded_worker_id = embedded_worker_id_;
@@ -539,14 +539,16 @@ void EmbeddedWorkerInstance::ResumeAfterDownload() {
                                     embedded_worker_id_));
 }
 
-shell::InterfaceRegistry* EmbeddedWorkerInstance::GetInterfaceRegistry() {
+service_manager::InterfaceRegistry*
+EmbeddedWorkerInstance::GetInterfaceRegistry() {
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
          status_ == EmbeddedWorkerStatus::RUNNING)
       << static_cast<int>(status_);
   return interface_registry_.get();
 }
 
-shell::InterfaceProvider* EmbeddedWorkerInstance::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+EmbeddedWorkerInstance::GetRemoteInterfaces() {
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
          status_ == EmbeddedWorkerStatus::RUNNING)
       << static_cast<int>(status_);
@@ -697,10 +699,10 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   thread_id_ = thread_id;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
-  shell::mojom::InterfaceProviderPtr exposed_interfaces;
+  service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
   interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
-  shell::mojom::InterfaceProviderPtr remote_interfaces;
-  shell::mojom::InterfaceProviderRequest request =
+  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
+  service_manager::mojom::InterfaceProviderRequest request =
       mojo::GetProxy(&remote_interfaces);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   BrowserThread::PostTask(

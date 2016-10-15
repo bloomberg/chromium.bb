@@ -23,18 +23,18 @@ class Connection;
 namespace mash {
 namespace session {
 
-class Session : public shell::Service,
+class Session : public service_manager::Service,
                 public mojom::Session,
-                public shell::InterfaceFactory<mojom::Session> {
+                public service_manager::InterfaceFactory<mojom::Session> {
  public:
   Session();
   ~Session() override;
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // mojom::Session:
   void Logout() override;
@@ -44,8 +44,8 @@ class Session : public shell::Service,
   void LockScreen() override;
   void UnlockScreen() override;
 
-  // shell::InterfaceFactory<mojom::Session>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<mojom::Session>:
+  void Create(const service_manager::Identity& remote_identity,
               mojom::SessionRequest request) override;
 
   void StartWindowManager();
@@ -60,7 +60,8 @@ class Session : public shell::Service,
   void StartRestartableService(const std::string& url,
                                const base::Closure& restart_callback);
 
-  std::map<std::string, std::unique_ptr<shell::Connection>> connections_;
+  std::map<std::string, std::unique_ptr<service_manager::Connection>>
+      connections_;
   bool screen_locked_;
   mojo::BindingSet<mojom::Session> bindings_;
   mojo::InterfacePtrSet<mojom::ScreenlockStateListener> screenlock_listeners_;

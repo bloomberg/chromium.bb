@@ -16,7 +16,8 @@ class WindowManager;
 
 class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
  public:
-  explicit AcceleratorControllerDelegateMus(shell::Connector* connector);
+  explicit AcceleratorControllerDelegateMus(
+      service_manager::Connector* connector);
   ~AcceleratorControllerDelegateMus() override;
 
   // AcceleratorControllerDelegate:
@@ -32,7 +33,7 @@ class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
                                              int new_shortcut_id) override;
 
  private:
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateMus);
 };

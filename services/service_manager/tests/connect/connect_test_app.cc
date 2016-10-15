@@ -19,7 +19,7 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -52,7 +52,7 @@ class ConnectTestApp : public Service,
   ~ConnectTestApp() override {}
 
  private:
-  // shell::Service:
+  // service_manager::Service:
   void OnStart(const Identity& identity) override {
     identity_ = identity;
     bindings_.set_connection_error_handler(
@@ -169,7 +169,7 @@ class ConnectTestApp : public Service,
 
   // test::mojom::UserIdTest:
   void ConnectToClassAppAsDifferentUser(
-      const shell::Identity& target,
+      const service_manager::Identity& target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
@@ -215,9 +215,9 @@ class ConnectTestApp : public Service,
   DISALLOW_COPY_AND_ASSIGN(ConnectTestApp);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new shell::ConnectTestApp);
+  service_manager::ServiceRunner runner(new service_manager::ConnectTestApp);
   return runner.Run(service_request_handle);
 }

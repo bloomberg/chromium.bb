@@ -13,7 +13,7 @@
 #include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/public/c/system/thunks.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -102,4 +102,4 @@ bool RunServiceInNativeLibrary(base::NativeLibrary library,
   return true;
 }
 
-}  // namespace shell
+}  // namespace service_manager

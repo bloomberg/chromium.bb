@@ -13,7 +13,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 }
 
@@ -25,7 +25,7 @@ namespace mojo_interface_factory {
 // (when running ash in-process in chrome) or on the main thread (when running
 // in mash).
 ASH_EXPORT void RegisterInterfaces(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
 }  // namespace mojo_interface_factory

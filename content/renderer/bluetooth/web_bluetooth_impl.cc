@@ -36,7 +36,8 @@ int32_t ToInt32(blink::mojom::WebBluetoothResult result) {
 
 }  // namespace
 
-WebBluetoothImpl::WebBluetoothImpl(shell::InterfaceProvider* remote_interfaces)
+WebBluetoothImpl::WebBluetoothImpl(
+    service_manager::InterfaceProvider* remote_interfaces)
     : remote_interfaces_(remote_interfaces), binding_(this) {}
 
 WebBluetoothImpl::~WebBluetoothImpl() {

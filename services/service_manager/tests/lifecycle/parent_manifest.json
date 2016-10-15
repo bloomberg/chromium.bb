@@ -4,7 +4,7 @@
   "display_name": "Lifecycle Unittest Parent",
   "capabilities": {
     "provided": {
-      "lifecycle_unittest:parent": [ "shell::test::mojom::Parent" ]
+      "lifecycle_unittest:parent": [ "service_manager::test::mojom::Parent" ]
     },
     "required": {
       "service:lifecycle_unittest_app": [

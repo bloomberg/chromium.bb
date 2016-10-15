@@ -36,7 +36,7 @@ bool ReadStringSetFromValue(const base::Value& value,
 }
 
 bool BuildCapabilities(const base::DictionaryValue& value,
-                       shell::CapabilitySpec* capabilities) {
+                       service_manager::CapabilitySpec* capabilities) {
   DCHECK(capabilities);
   const base::DictionaryValue* provided_value = nullptr;
   if (value.HasKey(Store::kCapabilities_ProvidedKey) &&
@@ -49,7 +49,7 @@ bool BuildCapabilities(const base::DictionaryValue& value,
   if (provided_value) {
     base::DictionaryValue::Iterator it(*provided_value);
     for(; !it.IsAtEnd(); it.Advance()) {
-      shell::Interfaces interfaces;
+      service_manager::Interfaces interfaces;
       if (!ReadStringSetFromValue(it.value(), &interfaces)) {
         LOG(ERROR) << "Entry::Deserialize: Invalid interface list in provided "
                    << " classes dictionary";
@@ -70,7 +70,7 @@ bool BuildCapabilities(const base::DictionaryValue& value,
   if (required_value) {
     base::DictionaryValue::Iterator it(*required_value);
     for (; !it.IsAtEnd(); it.Advance()) {
-      shell::Classes classes;
+      service_manager::Classes classes;
       const base::ListValue* entry_value = nullptr;
       if (!it.value().GetAsList(&entry_value)) {
         LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_RequiredKey
@@ -93,7 +93,9 @@ bool BuildCapabilities(const base::DictionaryValue& value,
 
 Entry::Entry() {}
 Entry::Entry(const std::string& name)
-    : name_(name), qualifier_(shell::GetNamePath(name)), display_name_(name) {}
+    : name_(name),
+      qualifier_(service_manager::GetNamePath(name)),
+      display_name_(name) {}
 Entry::~Entry() {}
 
 std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
@@ -150,7 +152,7 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
                << Store::kNameKey << " key";
     return nullptr;
   }
-  if (!shell::IsValidName(name_string)) {
+  if (!service_manager::IsValidName(name_string)) {
     LOG(ERROR) << "Entry::Deserialize: " << name_string << " is not a valid "
                << "Mojo name";
     return nullptr;
@@ -167,7 +169,7 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     }
     entry->set_qualifier(qualifier);
   } else {
-    entry->set_qualifier(shell::GetNamePath(name_string));
+    entry->set_qualifier(service_manager::GetNamePath(name_string));
   }
 
   // Human-readable name.
@@ -187,7 +189,7 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     return nullptr;
   }
 
-  shell::CapabilitySpec spec;
+  service_manager::CapabilitySpec spec;
   if (!BuildCapabilities(*capabilities, &spec)) {
     LOG(ERROR) << "Entry::Deserialize: failed to build capability spec for "
                << entry->name();
@@ -234,10 +236,11 @@ bool Entry::operator<(const Entry& other) const {
 namespace mojo {
 
 // static
-shell::mojom::ResolveResultPtr
-    TypeConverter<shell::mojom::ResolveResultPtr, catalog::Entry>::Convert(
-        const catalog::Entry& input) {
-  shell::mojom::ResolveResultPtr result(shell::mojom::ResolveResult::New());
+service_manager::mojom::ResolveResultPtr
+TypeConverter<service_manager::mojom::ResolveResultPtr,
+              catalog::Entry>::Convert(const catalog::Entry& input) {
+  service_manager::mojom::ResolveResultPtr result(
+      service_manager::mojom::ResolveResult::New());
   result->name = input.name();
   const catalog::Entry& package = input.package() ? *input.package() : input;
   result->resolved_name = package.name();

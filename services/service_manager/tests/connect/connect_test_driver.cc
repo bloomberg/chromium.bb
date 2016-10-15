@@ -17,22 +17,22 @@
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 #include "services/service_manager/tests/util.h"
 
-using shell::test::mojom::ClientProcessTest;
-using shell::test::mojom::ClientProcessTestRequest;
+using service_manager::test::mojom::ClientProcessTest;
+using service_manager::test::mojom::ClientProcessTestRequest;
 
 namespace {
 
-class Driver : public shell::Service,
-               public shell::InterfaceFactory<ClientProcessTest>,
+class Driver : public service_manager::Service,
+               public service_manager::InterfaceFactory<ClientProcessTest>,
                public ClientProcessTest {
  public:
   Driver() {}
   ~Driver() override {}
 
  private:
-  // shell::Service:
-  bool OnConnect(const shell::Identity& remote_identity,
-    shell::InterfaceRegistry* registry) override {
+  // service_manager::Service:
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<ClientProcessTest>(this);
     return true;
   }
@@ -42,8 +42,8 @@ class Driver : public shell::Service,
     _exit(1);
   }
 
-  // shell::InterfaceFactory<ConnectTestService>:
-  void Create(const shell::Identity& remote_identity,
+  // service_manager::InterfaceFactory<ConnectTestService>:
+  void Create(const service_manager::Identity& remote_identity,
               ClientProcessTestRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -52,15 +52,15 @@ class Driver : public shell::Service,
   void LaunchAndConnectToProcess(
       const LaunchAndConnectToProcessCallback& callback) override {
     base::Process process;
-    std::unique_ptr<shell::Connection> connection =
-        shell::test::LaunchAndConnectToProcess(
+    std::unique_ptr<service_manager::Connection> connection =
+        service_manager::test::LaunchAndConnectToProcess(
 #if defined(OS_WIN)
             "connect_test_exe.exe",
 #else
             "connect_test_exe",
 #endif
-            shell::Identity("exe:connect_test_exe",
-                            shell::mojom::kInheritUserID),
+            service_manager::Identity("exe:connect_test_exe",
+                                      service_manager::mojom::kInheritUserID),
             connector(), &process);
     callback.Run(static_cast<int32_t>(connection->GetResult()),
                  connection->GetRemoteIdentity());
@@ -77,8 +77,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  shell::InitializeLogging();
+  service_manager::InitializeLogging();
 
   Driver driver;
-  return shell::TestNativeMain(&driver);
+  return service_manager::TestNativeMain(&driver);
 }

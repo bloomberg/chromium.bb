@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 
-namespace shell {
+namespace service_manager {
 class Service;
 }
 
@@ -21,8 +21,9 @@ namespace content {
 // ServiceInfo provides details necessary to construct and bind new instances
 // of embedded services.
 struct CONTENT_EXPORT ServiceInfo {
-  using ServiceFactory = base::Callback<std::unique_ptr<shell::Service>(
-      const base::Closure& quit_closure)>;
+  using ServiceFactory =
+      base::Callback<std::unique_ptr<service_manager::Service>(
+          const base::Closure& quit_closure)>;
 
   ServiceInfo();
   ServiceInfo(const ServiceInfo& other);

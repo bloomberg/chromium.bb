@@ -5,11 +5,11 @@
 #ifndef SERVICES_SERVICE_MANAGER_RUNNER_HOST_CHILD_PROCESS_H_
 #define SERVICES_SERVICE_MANAGER_RUNNER_HOST_CHILD_PROCESS_H_
 
-namespace shell {
+namespace service_manager {
 
 // Main method for a child process.
 int ChildProcessMain();
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_CHILD_PROCESS_H_

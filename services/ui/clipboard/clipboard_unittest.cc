@@ -28,12 +28,12 @@ const char* kHtmlData = "<html>data</html>";
 
 }  // namespace
 
-class ClipboardAppTest : public shell::test::ServiceTest {
+class ClipboardAppTest : public service_manager::test::ServiceTest {
  public:
   ClipboardAppTest() : ServiceTest("exe:mus_clipboard_unittests") {}
   ~ClipboardAppTest() override {}
 
-  // Overridden from shell::test::ServiceTest:
+  // Overridden from service_manager::test::ServiceTest:
   void SetUp() override {
     ServiceTest::SetUp();
 

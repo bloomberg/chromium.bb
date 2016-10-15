@@ -34,9 +34,9 @@
 namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
-    shell::mojom::InterfaceProviderPtr interfaces,
+    service_manager::mojom::InterfaceProviderPtr interfaces,
     scoped_refptr<MediaLog> media_log,
-    std::unique_ptr<shell::ServiceContextRef> connection_ref,
+    std::unique_ptr<service_manager::ServiceContextRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     :
 #if defined(ENABLE_MOJO_CDM)

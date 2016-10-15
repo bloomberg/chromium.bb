@@ -31,7 +31,7 @@ class Point;
 class Rect;
 }
 
-namespace shell {
+namespace service_manager {
 class Connection;
 }
 

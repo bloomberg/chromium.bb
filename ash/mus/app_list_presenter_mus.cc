@@ -16,7 +16,7 @@ bool HasConnection(app_list::mojom::AppListPresenterPtr* interface_ptr) {
 
 }  // namespace
 
-AppListPresenterMus::AppListPresenterMus(::shell::Connector* connector)
+AppListPresenterMus::AppListPresenterMus(service_manager::Connector* connector)
     : connector_(connector) {}
 
 AppListPresenterMus::~AppListPresenterMus() {}

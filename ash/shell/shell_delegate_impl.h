@@ -29,7 +29,7 @@ class ShellDelegateImpl : public ShellDelegate {
   ~ShellDelegateImpl() override;
 
   // ShellDelegate:
-  ::shell::Connector* GetShellConnector() const override;
+  ::service_manager::Connector* GetShellConnector() const override;
   bool IsFirstRunAfterBoot() const override;
   bool IsIncognitoAllowed() const override;
   bool IsMultiProfilesEnabled() const override;

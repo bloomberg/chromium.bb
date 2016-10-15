@@ -12,7 +12,7 @@ namespace content {
 class WebContents;
 
 void BindInterfaceRegistryForWebContents(
-    shell::mojom::InterfaceProviderRequest request,
+    service_manager::mojom::InterfaceProviderRequest request,
     WebContents* web_contents);
 
 }  // namespace content

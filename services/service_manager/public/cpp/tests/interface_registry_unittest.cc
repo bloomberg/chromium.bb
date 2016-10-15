@@ -8,7 +8,7 @@
 #include "services/service_manager/public/cpp/interface_binder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace shell {
+namespace service_manager {
 namespace internal {
 namespace {
 
@@ -16,7 +16,7 @@ class TestBinder : public InterfaceBinder {
  public:
   explicit TestBinder(int* delete_count) : delete_count_(delete_count) {}
   ~TestBinder() override { (*delete_count_)++; }
-  void BindInterface(const shell::Identity& remote_identity,
+  void BindInterface(const service_manager::Identity& remote_identity,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle client_handle) override {}
 
@@ -69,4 +69,4 @@ TEST(InterfaceRegistryTest, Ownership) {
 
 }  // namespace
 }  // namespace internal
-}  // namespace shell
+}  // namespace service_manager

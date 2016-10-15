@@ -124,7 +124,8 @@ void ConnectResourceReporterOnIOThread(
   if (!host)
     return;
 
-  shell::InterfaceProvider* interfaces = host->GetHost()->GetRemoteInterfaces();
+  service_manager::InterfaceProvider* interfaces =
+      host->GetHost()->GetRemoteInterfaces();
   if (interfaces)
     interfaces->GetInterface(std::move(resource_reporter));
 }

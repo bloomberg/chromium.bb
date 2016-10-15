@@ -84,7 +84,7 @@ class FactoryImpl {
 
   template <typename Interface>
   static void AddFactory(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     registry->AddInterface<Interface>(
         base::Bind(&FactoryImpl::CallMainThreadFactory<Interface>),
@@ -158,9 +158,10 @@ ChromeInterfaceFactory::ChromeInterfaceFactory()
 
 ChromeInterfaceFactory::~ChromeInterfaceFactory() {}
 
-bool ChromeInterfaceFactory::OnConnect(const shell::Identity& remote_identity,
-                                       shell::InterfaceRegistry* registry,
-                                       shell::Connector* connector) {
+bool ChromeInterfaceFactory::OnConnect(
+    const service_manager::Identity& remote_identity,
+    service_manager::InterfaceRegistry* registry,
+    service_manager::Connector* connector) {
   FactoryImpl::AddFactory<keyboard::mojom::Keyboard>(registry,
                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,

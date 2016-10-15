@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "services/catalog/store.h"
 
-namespace shell {
+namespace service_manager {
 
 // ApplicationCatalogStore implementation that takes the ListValue to return
 // as store.
@@ -39,6 +39,6 @@ std::unique_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
     const std::string& name,
     const std::string& display_name);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_BACKGROUND_TESTS_TEST_CATALOG_STORE_H_

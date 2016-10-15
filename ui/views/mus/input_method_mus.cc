@@ -27,7 +27,7 @@ InputMethodMus::InputMethodMus(ui::internal::InputMethodDelegate* delegate,
 
 InputMethodMus::~InputMethodMus() {}
 
-void InputMethodMus::Init(shell::Connector* connector) {
+void InputMethodMus::Init(service_manager::Connector* connector) {
   connector->ConnectToInterface("service:ui", &ime_server_);
 }
 

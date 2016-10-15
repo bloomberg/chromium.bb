@@ -36,16 +36,17 @@
 
 namespace {
 
-class Driver : public shell::Service,
-               public shell::InterfaceFactory<shell::test::mojom::Driver>,
-               public shell::test::mojom::Driver {
+class Driver : public service_manager::Service,
+               public service_manager::InterfaceFactory<
+                   service_manager::test::mojom::Driver>,
+               public service_manager::test::mojom::Driver {
  public:
   Driver() : weak_factory_(this) {}
   ~Driver() override {}
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override {
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
   #if defined(OS_WIN)
@@ -72,17 +73,17 @@ class Driver : public shell::Service,
         &child_command_line, &handle_passing_info);
 
     std::string child_token = mojo::edk::GenerateRandomToken();
-    shell::mojom::ServicePtr client =
-        shell::PassServiceRequestOnCommandLine(&child_command_line,
-                                                   child_token);
-    shell::mojom::PIDReceiverPtr receiver;
+    service_manager::mojom::ServicePtr client =
+        service_manager::PassServiceRequestOnCommandLine(&child_command_line,
+                                                         child_token);
+    service_manager::mojom::PIDReceiverPtr receiver;
 
-    shell::Identity target("exe:shell_unittest_target",
-                           shell::mojom::kInheritUserID);
-    shell::Connector::ConnectParams params(target);
+    service_manager::Identity target("exe:shell_unittest_target",
+                                     service_manager::mojom::kInheritUserID);
+    service_manager::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(client),
                                          GetProxy(&receiver));
-    std::unique_ptr<shell::Connection> connection =
+    std::unique_ptr<service_manager::Connection> connection =
         connector()->Connect(&params);
     connection->AddConnectionCompletedClosure(
         base::Bind(&Driver::OnConnectionCompleted, base::Unretained(this)));
@@ -101,15 +102,15 @@ class Driver : public shell::Service,
                                     child_token);
   }
 
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override {
-    registry->AddInterface<shell::test::mojom::Driver>(this);
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override {
+    registry->AddInterface<service_manager::test::mojom::Driver>(this);
     return true;
   }
 
-  // shell::InterfaceFactory<Driver>:
-  void Create(const shell::Identity& remote_identity,
-              shell::test::mojom::DriverRequest request) override {
+  // service_manager::InterfaceFactory<Driver>:
+  void Create(const service_manager::Identity& remote_identity,
+              service_manager::test::mojom::DriverRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -122,7 +123,7 @@ class Driver : public shell::Service,
   void OnConnectionCompleted() {}
 
   base::Process target_;
-  mojo::BindingSet<shell::test::mojom::Driver> bindings_;
+  mojo::BindingSet<service_manager::test::mojom::Driver> bindings_;
   base::WeakPtrFactory<Driver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Driver);
@@ -134,8 +135,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  shell::InitializeLogging();
+  service_manager::InitializeLogging();
 
   Driver driver;
-  return shell::TestNativeMain(&driver);
+  return service_manager::TestNativeMain(&driver);
 }

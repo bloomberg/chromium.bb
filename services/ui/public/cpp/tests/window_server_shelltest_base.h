@@ -12,17 +12,17 @@
 namespace ui {
 
 // Base class for all window manager ServiceTests to perform some common setup.
-class WindowServerServiceTestBase : public shell::test::ServiceTest {
+class WindowServerServiceTestBase : public service_manager::test::ServiceTest {
  public:
   WindowServerServiceTestBase();
   ~WindowServerServiceTestBase() override;
 
-  virtual bool OnConnect(const shell::Identity& remote_identity,
-                         shell::InterfaceRegistry* registry) = 0;
+  virtual bool OnConnect(const service_manager::Identity& remote_identity,
+                         service_manager::InterfaceRegistry* registry) = 0;
 
  private:
-  // shell::test::ServiceTest:
-  std::unique_ptr<shell::Service> CreateService() override;
+  // service_manager::test::ServiceTest:
+  std::unique_ptr<service_manager::Service> CreateService() override;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerServiceTestBase);
 };

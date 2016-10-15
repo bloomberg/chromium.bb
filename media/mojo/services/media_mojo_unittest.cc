@@ -62,7 +62,7 @@ class MockRendererClient : public mojom::RendererClient {
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
 };
 
-class MediaServiceTest : public shell::test::ServiceTest {
+class MediaServiceTest : public service_manager::test::ServiceTest {
  public:
   MediaServiceTest()
       : ServiceTest("exe:media_mojo_unittests"),
@@ -146,7 +146,7 @@ class MediaServiceTest : public shell::test::ServiceTest {
   std::unique_ptr<MojoDemuxerStreamImpl> mojo_video_stream_;
 
  private:
-  std::unique_ptr<shell::Connection> connection_;
+  std::unique_ptr<service_manager::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaServiceTest);
 };

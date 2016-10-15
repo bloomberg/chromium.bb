@@ -19,7 +19,8 @@ namespace content {
 
 // A helper interface for connecting to remote Channel-associated interfaces.
 //
-// This is analogous to shell::InterfaceProvider in that it provides a means of
+// This is analogous to service_manager::InterfaceProvider in that it provides a
+// means of
 // binding proxies to remote interfaces, but this is specifically for interfaces
 // which must be assocaited with an IPC::Channel, i.e. retain FIFO message
 // ordering with respect to legacy IPC messages.

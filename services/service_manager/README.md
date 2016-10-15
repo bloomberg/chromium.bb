@@ -61,14 +61,14 @@ used to allow multiple instances of a service to exist for the same Name,UserId
 pair. In Chrome an example of this would be multiple instances of the renderer
 or the same profile.
 
-A Service implements the Mojo interface shell.mojom.Service, which is the
+A Service implements the Mojo interface service_manager.mojom.Service, which is the
 primary means the Service Manager has of communicating with its service. Service
 has two methods: OnStart(), called once at when the Service Manager first learns
 about the service, and OnConnect(), which the Service Manager calls every time
 some other service tries to connect to this one.
 
 Services have a link back to the Service Manager too, primarily in the form of
-the shell.mojom.Connector interface. The Connector allows services to open
+the service_manager.mojom.Connector interface. The Connector allows services to open
 connections to other services.
 
 A unique connection from the Service Manager to a service is called an
@@ -96,21 +96,21 @@ Consider this simple application that implements the Service interface:
     #include "services/service_manager/public/cpp/identity.h"
     #include "services/service_manager/public/cpp/service.h"
 
-    class Service : public shell::Service {
+    class Service : public service_manager::Service {
      public:
       Service() {}
       ~Service() override {}
 
-      // Overridden from shell::Service:
-      void OnStart(const shell::Identity& identity) override {
+      // Overridden from service_manager::Service:
+      void OnStart(const service_manager::Identity& identity) override {
       }
-      bool OnConnect(shell::Connection* connection) override {
+      bool OnConnect(service_manager::Connection* connection) override {
         return true;
       }
     };
 
     MojoResult ServiceMain(MojoHandle service_request_handle) {
-      return shell::ServiceRunner(new Service).Run(service_request_handle);
+      return service_manager::ServiceRunner(new Service).Run(service_request_handle);
     }
 
     app_manifest.json:
@@ -128,7 +128,7 @@ Consider this simple application that implements the Service interface:
 
     service("app") {
       sources = [ "app.cc" ]
-      deps = [ "//base", "//mojo/shell/public/cpp" ]
+      deps = [ "//base", "//services/service_manager/public/cpp" ]
       data_deps = [ ":manifest" ]
     }
 
@@ -150,18 +150,18 @@ important as we begin to do more in our service.
 
 ##### OnStart Parameters
 
-###### const shell::Identity& identity
+###### const service_manager::Identity& identity
 This is the identity this service is known to the Service Manager as. It
 includes the services Name, User ID and Instance Name.
 
 ##### OnConnect Parameters
 
-###### shell::Connection* connection
+###### service_manager::Connection* connection
 This is a pointer to an object that encapsulates the connection with a remote
 service. The service uses this object to learn about the service at the remote
 end, to bind interfaces from it, and to expose interfaces to it. The
 Connection concept is implemented under the hood by a pair of
-shell.mojom.InterfaceProviders - this is the physical link between the service
+service_manager.mojom.InterfaceProviders - this is the physical link between the service
 that give the Connection its utility. The Connection object is owned by the
 caller of OnConnect, and will outlive the underlying pipes.
 
@@ -178,8 +178,8 @@ it. This will lay the groundwork to understanding how to export an interface.
 Once we have a Connector, we can connect to other services and bind interfaces
 from them. In the trivial app above we can do this directly in OnStart:
 
-    void OnStart(const shell::Identity& identity) override {
-      scoped_ptr<shell::Connection> connection = 
+    void OnStart(const service_manager::Identity& identity) override {
+      scoped_ptr<service_manager::Connection> connection =
           connector()->Connect("mojo:service");
       mojom::SomeInterfacePtr some_interface;
       connection->GetInterface(&some_interface);
@@ -192,7 +192,7 @@ exported by another Mojo client identified by the name mojo:service.
 What is happening here? Lets look line-by-line
 
 
-    scoped_ptr<shell::Connection> connection = 
+    scoped_ptr<service_manager::Connection> connection =
         connector->Connect("mojo:service");
 
 This asks the Service Manager to open a connection to the service named
@@ -254,20 +254,20 @@ implements it. Lets look at a snippet of a class that does all of this:
 
 **service.cc:**
 
-    class Service : public shell::Service,
-                    public shell::InterfaceFactory<mojom::SomeInterface>,
+    class Service : public service_manager::Service,
+                    public service_manager::InterfaceFactory<mojom::SomeInterface>,
                     public mojom::SomeInterface {
      public:
       ..
 
-      // Overridden from shell::Service:
-      bool OnConnect(shell::Connection* connection) override {
+      // Overridden from service_manager::Service:
+      bool OnConnect(service_manager::Connection* connection) override {
         connection->AddInterface<mojom::SomeInterface>(this);
         return true;
       }
 
-      // Overridden from shell::InterfaceFactory<mojom::SomeInterface>:
-      void Create(shell::Connection* connection,
+      // Overridden from service_manager::InterfaceFactory<mojom::SomeInterface>:
+      void Create(service_manager::Connection* connection,
                   mojom::SomeInterfaceRequest request) override {
         bindings_.AddBinding(this, std::move(request));
       }
@@ -410,21 +410,21 @@ Connecting services like mojo:app just need to state that interface.)
 
 Now that weve built a simple application and service, its time to write a test
 for them. The Shell client library provides a gtest base class
-**shell::test::ServiceTest** that makes writing integration tests of services
+**service_manager::test::ServiceTest** that makes writing integration tests of services
 straightforward. Lets look at a simple test of our service:
 
     #include "base/bind.h"
     #include "base/run_loop.h"
-    #include "mojo/shell/public/cpp/service_test.h"
+    #include "services/service_manager/public/cpp/service_test.h"
     #include "path/to/some_interface.mojom.h"
 
     void QuitLoop(base::RunLoop* loop) {
       loop->Quit();
     }
 
-    class Test : public shell::test::ServiceTest {
+    class Test : public service_manager::test::ServiceTest {
      public:
-      Test() : shell::test::ServiceTest(exe:service_unittest) {}
+      Test() : service_manager::test::ServiceTest(exe:service_unittest) {}
       ~Test() override {}
     }
 
@@ -437,7 +437,8 @@ straightforward. Lets look at a simple test of our service:
     }
 
 The BUILD.gn for this test file looks like any other using the test() template.
-It must also depend on //services/service_manager/public/cpp:shell_test_support.
+It must also depend on
+//services/service_manager/public/cpp:service_test_support.
 
 ServiceTest does a few things, but most importantly it register the test itself
 as a Service, with the name you pass it via its constructor. In the example
@@ -465,7 +466,7 @@ Service Managers own suite of tests, under //services/service_manager/tests.
 By default a .library statically links its dependencies, so having many of them
 will yield an installed product many times larger than Chrome today. For this
 reason its desirable to package several Services together in a single binary.
-The Service Manager provides an interface **shell.mojom.ServiceFactory**:
+The Service Manager provides an interface **service_manager.mojom.ServiceFactory**:
 
     interface ServiceFactory {
       CreateService(Service& service, string name);
@@ -479,11 +480,11 @@ mojo:service1 and mojo:service2, and then a Service implementation for
 mojo:services - the latter implements ServiceFactory and instantiates the other
 two:
 
-    using shell::mojom::ServiceFactory;
-    using shell::mojom::ServiceRequest;
+    using service_manager::mojom::ServiceFactory;
+    using service_manager::mojom::ServiceRequest;
 
-    class Services : public shell::Service,
-                     public shell::InterfaceFactory<ServiceFactory>,
+    class Services : public service_manager::Service,
+                     public service_manager::InterfaceFactory<ServiceFactory>,
                      public ServiceFactory {
 
       // Expose ServiceFactory to inbound connections and implement
@@ -540,7 +541,7 @@ can study the resulting manifest to see what gets generated.
 
 At startup, the Service Manager will scan the package directory and consume the
 manifests it finds, so it can learn about how to resolve aliases that it might
-encounter subsequently. 
+encounter subsequently.
 
 ### Executables
 
@@ -561,16 +562,16 @@ connection with the Service Manager:
     #include "services/service_manager/public/cpp/service_context.h"
     #include "services/service_manager/runner/child/runner_connection.h"
 
-    class MyClient : public shell::Service {
+    class MyClient : public service_manager::Service {
     ..
     };
 
-    shell::mojom::ServiceRequest request;
-    scoped_ptr<shell::RunnerConnection> connection(
-       shell::RunnerConnection::ConnectToRunner(
+    service_manager::mojom::ServiceRequest request;
+    scoped_ptr<service_manager::RunnerConnection> connection(
+       service_manager::RunnerConnection::ConnectToRunner(
             &request, ScopedMessagePipeHandle()));
     MyService service;
-    shell::ServiceContext context(&service, std::move(request));
+    service_manager::ServiceContext context(&service, std::move(request));
 
 Whats happening here? The Service/ServiceContext usage should be familiar from
 our earlier examples. The interesting part here happens in
@@ -615,23 +616,23 @@ referred to as the driver) works like this:
     pair.PrepareToPassClientHandleToChildProcess(&target_command_line, &info);
 
     std::string token = mojo::edk::GenerateRandomToken();
-    target_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken, 
+    target_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
                                           token);
 
     mojo::ScopedMessagePipeHandle pipe =
         mojo::edk::CreateParentMessagePipe(token);
 
-    shell::mojom::ServiceFactoryPtr factory;
+    service_manager::mojom::ServiceFactoryPtr factory;
     factory.Bind(
-        mojo::InterfacePtrInfo<shell::mojom::ServiceFactory>(
+        mojo::InterfacePtrInfo<service_manager::mojom::ServiceFactory>(
             std::move(pipe), 0u));
-    shell::mojom::PIDReceiverPtr receiver;
+    service_manager::mojom::PIDReceiverPtr receiver;
 
-    shell::Identity target("exe:target",shell::mojom::kInheritUserID);
-    shell::Connector::ConnectParams params(target);
-    params.set_client_process_connection(std::move(factory), 
+    service_manager::Identity target("exe:target",service_manager::mojom::kInheritUserID);
+    service_manager::Connector::ConnectParams params(target);
+    params.set_client_process_connection(std::move(factory),
                                          GetProxy(&receiver));
-    scoped_ptr<shell::Connection> connection = connector->Connect(&params);
+    scoped_ptr<service_manager::Connection> connection = connector->Connect(&params);
 
     base::LaunchOptions options;
     options.handles_to_inherit = &info;
@@ -649,11 +650,11 @@ the target process and passing both through Connector::Connect().
 
 In this example the target executable could be the same as the previous example.
 
-A word about process lifetimes. Processes created by the shell are managed by
-the Service Manager. While a service-launched process may quit itself at any
-point, when the Service Manager shuts down it will also shut down any process it
-started. Processes created by services themselves are left to those services to
-manage.
+A word about process lifetimes. Processes created by the Service Manager are
+also managed by the Service Manager. While a service-launched process may quit
+itself at any point, when the Service Manager shuts down it will also shut down
+any process it started. Processes created by services themselves are left to
+those services to manage.
 
 ***
 

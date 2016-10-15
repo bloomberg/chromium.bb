@@ -14,7 +14,7 @@
 namespace media {
 
 // Creates a MojoMediaApplication instance using the default MojoMediaClient.
-std::unique_ptr<shell::Service> MEDIA_MOJO_EXPORT
+std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
 CreateMojoMediaApplication(const base::Closure& quit_closure);
 
 }  // namespace media

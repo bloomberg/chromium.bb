@@ -50,9 +50,10 @@ base::FilePath GetPathForApplicationName(const std::string& application_name) {
     return base::FilePath();
   if (is_service) {
     path.erase(path.begin(),
-      path.begin() + strlen(shell::kNameType_Service) + 1);
+               path.begin() + strlen(service_manager::kNameType_Service) + 1);
   } else {
-    path.erase(path.begin(), path.begin() + strlen(shell::kNameType_Exe) + 1);
+    path.erase(path.begin(),
+               path.begin() + strlen(service_manager::kNameType_Exe) + 1);
   }
   base::TrimString(path, "/", &path);
   size_t end_of_name = path.find('/');
@@ -94,14 +95,15 @@ void Catalog::OverridePackageName(const std::string& service_name,
   system_reader_->OverridePackageName(service_name, package_name);
 }
 
-shell::mojom::ServicePtr Catalog::TakeService() {
+service_manager::mojom::ServicePtr Catalog::TakeService() {
   return std::move(service_);
 }
 
 Catalog::Catalog(std::unique_ptr<Store> store)
     : store_(std::move(store)), weak_factory_(this) {
-  shell::mojom::ServiceRequest request = GetProxy(&service_);
-  shell_connection_.reset(new shell::ServiceContext(this, std::move(request)));
+  service_manager::mojom::ServiceRequest request = GetProxy(&service_);
+  service_manager_connection_.reset(
+      new service_manager::ServiceContext(this, std::move(request)));
 }
 
 void Catalog::ScanSystemPackageDir() {
@@ -113,28 +115,28 @@ void Catalog::ScanSystemPackageDir() {
                                   weak_factory_.GetWeakPtr()));
 }
 
-bool Catalog::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool Catalog::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Catalog>(this);
   registry->AddInterface<mojom::CatalogControl>(this);
   registry->AddInterface<filesystem::mojom::Directory>(this);
-  registry->AddInterface<shell::mojom::Resolver>(this);
+  registry->AddInterface<service_manager::mojom::Resolver>(this);
   return true;
 }
 
-void Catalog::Create(const shell::Identity& remote_identity,
-                     shell::mojom::ResolverRequest request) {
+void Catalog::Create(const service_manager::Identity& remote_identity,
+                     service_manager::mojom::ResolverRequest request) {
   Instance* instance = GetInstanceForUserId(remote_identity.user_id());
   instance->BindResolver(std::move(request));
 }
 
-void Catalog::Create(const shell::Identity& remote_identity,
+void Catalog::Create(const service_manager::Identity& remote_identity,
                      mojom::CatalogRequest request) {
   Instance* instance = GetInstanceForUserId(remote_identity.user_id());
   instance->BindCatalog(std::move(request));
 }
 
-void Catalog::Create(const shell::Identity& remote_identity,
+void Catalog::Create(const service_manager::Identity& remote_identity,
                      filesystem::mojom::DirectoryRequest request) {
   if (!lock_table_)
     lock_table_ = new filesystem::LockTable;
@@ -147,7 +149,7 @@ void Catalog::Create(const shell::Identity& remote_identity,
       std::move(request));
 }
 
-void Catalog::Create(const shell::Identity& remote_identity,
+void Catalog::Create(const service_manager::Identity& remote_identity,
                      mojom::CatalogControlRequest request) {
   control_bindings_.AddBinding(this, std::move(request));
 }

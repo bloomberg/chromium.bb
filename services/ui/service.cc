@@ -53,7 +53,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-using shell::Connection;
+using service_manager::Connection;
 using mojo::InterfaceRequest;
 using ui::mojom::WindowServerTest;
 using ui::mojom::WindowTreeHostFactory;
@@ -70,7 +70,7 @@ const char kResourceFile200[] = "mus_app_resources_200.pak";
 
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
 struct Service::PendingRequest {
-  shell::Identity remote_identity;
+  service_manager::Identity remote_identity;
   std::unique_ptr<mojom::WindowTreeFactoryRequest> wtf_request;
   std::unique_ptr<mojom::DisplayManagerRequest> dm_request;
 };
@@ -93,7 +93,7 @@ Service::~Service() {
   window_server_.reset();
 }
 
-void Service::InitializeResources(shell::Connector* connector) {
+void Service::InitializeResources(service_manager::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
 
@@ -121,7 +121,7 @@ void Service::InitializeResources(shell::Connector* connector) {
 }
 
 Service::UserState* Service::GetUserState(
-    const shell::Identity& remote_identity) {
+    const service_manager::Identity& remote_identity) {
   const ws::UserId& user_id = remote_identity.user_id();
   auto it = user_id_to_user_state_.find(user_id);
   if (it != user_id_to_user_state_.end())
@@ -130,11 +130,12 @@ Service::UserState* Service::GetUserState(
   return user_id_to_user_state_[user_id].get();
 }
 
-void Service::AddUserIfNecessary(const shell::Identity& remote_identity) {
+void Service::AddUserIfNecessary(
+    const service_manager::Identity& remote_identity) {
   window_server_->user_id_tracker()->AddUserId(remote_identity.user_id());
 }
 
-void Service::OnStart(const shell::Identity& identity) {
+void Service::OnStart(const service_manager::Identity& identity) {
   base::PlatformThread::SetName("mus");
   tracing_.Initialize(connector(), identity.name());
   TRACE_EVENT0("mus", "Service::Initialize started");
@@ -193,8 +194,8 @@ void Service::OnStart(const shell::Identity& identity) {
   ime_server_.Init(connector());
 }
 
-bool Service::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool Service::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::AccessibilityManager>(this);
   registry->AddInterface<mojom::Clipboard>(this);
   registry->AddInterface<mojom::DisplayManager>(this);
@@ -257,7 +258,7 @@ void Service::CreateDefaultDisplays() {
   platform_screen_->Init(window_server_->display_manager());
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::AccessibilityManagerRequest request) {
   UserState* user_state = GetUserState(remote_identity);
   if (!user_state->accessibility) {
@@ -268,7 +269,7 @@ void Service::Create(const shell::Identity& remote_identity,
   user_state->accessibility->Bind(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::ClipboardRequest request) {
   UserState* user_state = GetUserState(remote_identity);
   if (!user_state->clipboard)
@@ -276,7 +277,7 @@ void Service::Create(const shell::Identity& remote_identity,
   user_state->clipboard->AddBinding(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::DisplayManagerRequest request) {
   // DisplayManagerObservers generally expect there to be at least one display.
   if (!window_server_->display_manager()->has_displays()) {
@@ -292,27 +293,27 @@ void Service::Create(const shell::Identity& remote_identity,
       ->AddDisplayManagerBinding(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::GpuServiceRequest request) {
   window_server_->gpu_proxy()->Add(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::IMERegistrarRequest request) {
   ime_registrar_.AddBinding(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::IMEServerRequest request) {
   ime_server_.AddBinding(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::UserAccessManagerRequest request) {
   window_server_->user_id_tracker()->Bind(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::UserActivityMonitorRequest request) {
   AddUserIfNecessary(remote_identity);
   const ws::UserId& user_id = remote_identity.user_id();
@@ -320,14 +321,14 @@ void Service::Create(const shell::Identity& remote_identity,
       std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::WindowManagerWindowTreeFactoryRequest request) {
   AddUserIfNecessary(remote_identity);
   window_server_->window_manager_window_tree_factory_set()->Add(
     remote_identity.user_id(), std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::WindowTreeFactoryRequest request) {
   AddUserIfNecessary(remote_identity);
   if (!window_server_->display_manager()->has_displays()) {
@@ -345,7 +346,7 @@ void Service::Create(const shell::Identity& remote_identity,
                           std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::WindowTreeHostFactoryRequest request) {
   UserState* user_state = GetUserState(remote_identity);
   if (!user_state->window_tree_host_factory) {
@@ -355,7 +356,7 @@ void Service::Create(const shell::Identity& remote_identity,
   user_state->window_tree_host_factory->AddBinding(std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::WindowServerTestRequest request) {
   if (!test_config_)
     return;

@@ -9,7 +9,7 @@
 
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // Binds |ptr| to a remote implementation of Interface from |interfaces|.
 template <typename Interface>
@@ -20,6 +20,6 @@ inline void GetInterface(mojom::InterfaceProvider* interfaces,
   interfaces->GetInterface(Interface::Name_, std::move(pipe.handle1));
 }
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_CONNECT_H_

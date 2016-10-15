@@ -10,7 +10,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/runner/common/switches.h"
 
-namespace shell {
+namespace service_manager {
 
 mojom::ServicePtr PassServiceRequestOnCommandLine(
     base::CommandLine* command_line, const std::string& child_token) {
@@ -34,9 +34,9 @@ mojom::ServiceRequest GetServiceRequestFromCommandLine() {
   return request;
 }
 
-bool ShellIsRemote() {
+bool ServiceManagerIsRemote() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPrimordialPipeToken);
 }
 
-}  // namespace shell
+}  // namespace service_manager

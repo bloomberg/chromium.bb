@@ -6,7 +6,7 @@
 
 #include "services/service_manager/public/cpp/service_context.h"
 
-namespace shell {
+namespace service_manager {
 
 Service::Service() {}
 Service::~Service() {}
@@ -32,4 +32,4 @@ void Service::set_context(std::unique_ptr<ServiceContext> context) {
   context_ = std::move(context);
 }
 
-}  // namespace shell
+}  // namespace service_manager

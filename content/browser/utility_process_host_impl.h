@@ -57,7 +57,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   void SetEnv(const base::EnvironmentMap& env) override;
 #endif
   bool Start() override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   void SetName(const base::string16& name) override;
 
   void set_child_flags(int flags) { child_flags_ = flags; }

@@ -8,7 +8,7 @@
 
 namespace ui {
 
-CursorProxyMojo::CursorProxyMojo(shell::Connector* connector)
+CursorProxyMojo::CursorProxyMojo(service_manager::Connector* connector)
     : connector_(connector->Clone()) {
   connector->ConnectToInterface("service:ui", &main_cursor_ptr_);
 }

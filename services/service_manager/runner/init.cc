@@ -24,7 +24,7 @@
 #include <unistd.h>
 #endif
 
-namespace shell {
+namespace service_manager {
 
 void InitializeLogging() {
   logging::LoggingSettings settings;
@@ -94,4 +94,4 @@ void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
   // general system for other people.
 }
 
-}  // namespace shell
+}  // namespace service_manager

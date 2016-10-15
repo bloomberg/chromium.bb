@@ -38,7 +38,7 @@
 #include "services/service_manager/runner/host/mach_broker.h"
 #endif
 
-namespace shell {
+namespace service_manager {
 
 ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
                                    NativeRunnerDelegate* delegate,
@@ -216,4 +216,4 @@ void ChildProcessHost::DoLaunch(
   start_child_process_event_.Signal();
 }
 
-}  // namespace shell
+}  // namespace service_manager

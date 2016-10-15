@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
-namespace shell {
+namespace service_manager {
 
 class Connector;
 class Identity;
@@ -63,6 +63,6 @@ class Service {
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_H_

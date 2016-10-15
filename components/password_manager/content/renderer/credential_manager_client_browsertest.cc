@@ -83,9 +83,9 @@ class CredentialManagerClientTest : public content::RenderViewTest {
     content::RenderViewTest::SetUp();
     client_.reset(new CredentialManagerClient(view_));
 
-    shell::InterfaceProvider* remote_interfaces =
+    service_manager::InterfaceProvider* remote_interfaces =
         view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
     test_api.SetBinderForName(
         mojom::CredentialManager::Name_,
         base::Bind(&CredentialManagerClientTest::BindCredentialManager,

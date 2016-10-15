@@ -32,7 +32,7 @@ Instance::Instance(std::unique_ptr<Store> store, Reader* system_reader)
       weak_factory_(this) {}
 Instance::~Instance() {}
 
-void Instance::BindResolver(shell::mojom::ResolverRequest request) {
+void Instance::BindResolver(service_manager::mojom::ResolverRequest request) {
   if (system_cache_)
     resolver_bindings_.AddBinding(this, std::move(request));
   else
@@ -56,17 +56,18 @@ void Instance::CacheReady(EntryCache* cache) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Instance, shell::mojom::Resolver:
+// Instance, service_manager::mojom::Resolver:
 
 void Instance::ResolveMojoName(const std::string& mojo_name,
                                const ResolveMojoNameCallback& callback) {
   DCHECK(system_cache_);
 
-  std::string type = shell::GetNameType(mojo_name);
-  if (type != shell::kNameType_Service && type != shell::kNameType_Exe) {
+  std::string type = service_manager::GetNameType(mojo_name);
+  if (type != service_manager::kNameType_Service &&
+      type != service_manager::kNameType_Exe) {
     std::unique_ptr<Entry> entry(new Entry(mojo_name));
-    shell::mojom::ResolveResultPtr result =
-        shell::mojom::ResolveResult::From(*entry);
+    service_manager::mojom::ResolveResultPtr result =
+        service_manager::mojom::ResolveResult::From(*entry);
     result->capabilities = base::nullopt;
     callback.Run(std::move(result));
     return;
@@ -75,12 +76,12 @@ void Instance::ResolveMojoName(const std::string& mojo_name,
   // TODO(beng): per-user catalogs.
   auto entry = system_cache_->find(mojo_name);
   if (entry != system_cache_->end()) {
-    callback.Run(shell::mojom::ResolveResult::From(*entry->second));
+    callback.Run(service_manager::mojom::ResolveResult::From(*entry->second));
     return;
   }
 
   // Manifests for mojo: names should always be in the catalog by this point.
-  //DCHECK(type == shell::kNameType_Exe);
+  // DCHECK(type == service_manager::kNameType_Exe);
   system_reader_->CreateEntryForName(
       mojo_name, system_cache_,
       base::Bind(&Instance::OnReadManifest, weak_factory_.GetWeakPtr(),
@@ -170,7 +171,7 @@ void Instance::SerializeCatalog() {
 void Instance::OnReadManifest(base::WeakPtr<Instance> instance,
                               const std::string& mojo_name,
                               const ResolveMojoNameCallback& callback,
-                              shell::mojom::ResolveResultPtr result) {
+                              service_manager::mojom::ResolveResultPtr result) {
   callback.Run(std::move(result));
   if (instance)
     instance->SerializeCatalog();

@@ -29,7 +29,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -115,7 +115,7 @@ class ServiceManager::Instance
       public InterfaceFactory<mojom::ServiceManager>,
       public mojom::ServiceManager {
  public:
-  Instance(shell::ServiceManager* service_manager,
+  Instance(service_manager::ServiceManager* service_manager,
            const Identity& identity,
            const CapabilitySpec& capability_spec)
       : service_manager_(service_manager),
@@ -259,7 +259,7 @@ class ServiceManager::Instance
 
  private:
   // mojom::Connector implementation:
-  void Connect(const shell::Identity& in_target,
+  void Connect(const service_manager::Identity& in_target,
                mojom::InterfaceProviderRequest remote_interfaces,
                mojom::ClientProcessConnectionPtr client_process_connection,
                const ConnectCallback& callback) override {
@@ -416,12 +416,14 @@ class ServiceManager::Instance
     service_manager_->NotifyPIDAvailable(identity_, pid_);
   }
 
-  void OnServiceLost(base::WeakPtr<shell::ServiceManager> service_manager) {
+  void OnServiceLost(
+      base::WeakPtr<service_manager::ServiceManager> service_manager) {
     service_.reset();
     OnConnectionLost(service_manager);
   }
 
-  void OnConnectionLost(base::WeakPtr<shell::ServiceManager> service_manager) {
+  void OnConnectionLost(
+      base::WeakPtr<service_manager::ServiceManager> service_manager) {
     // Any time a Connector is lost or we lose the Service connection, it
     // may have been the last pipe using this Instance. If so, clean up.
     if (service_manager && !service_) {
@@ -449,7 +451,7 @@ class ServiceManager::Instance
     service_manager_->OnInstanceError(this);
   }
 
-  shell::ServiceManager* const service_manager_;
+  service_manager::ServiceManager* const service_manager_;
 
   // An id that identifies this instance. Distinct from pid, as a single process
   // may vend multiple application instances, and this object may exist before a
@@ -498,7 +500,7 @@ ServiceManager::ServiceManager(
 
   CapabilitySpec spec;
   spec.provided[kCapabilityClass_ServiceManager].insert(
-      "shell::mojom::ServiceManager");
+      "service_manager::mojom::ServiceManager");
   spec.required["*"].insert("shell:service_factory");
   spec.required["service:catalog"].insert("shell:resolver");
 
@@ -582,7 +584,7 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   CapabilitySpec spec;
   spec.provided["app"].insert("filesystem::mojom::Directory");
   spec.provided["catalog:catalog"].insert("catalog::mojom::Catalog");
-  spec.provided["shell:resolver"].insert("shell::mojom::Resolver");
+  spec.provided["shell:resolver"].insert("service_manager::mojom::Resolver");
   spec.provided["control"].insert("catalog::mojom::CatalogControl");
   Instance* instance = CreateInstance(
       CreateServiceManagerIdentity(), CreateCatalogIdentity(), spec);
@@ -661,10 +663,10 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
 
   std::string name = params->target().name();
   resolver->ResolveMojoName(
-      name, base::Bind(&shell::ServiceManager::OnGotResolvedName,
-                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
-                       base::Passed(&service), !!source_instance,
-                       source_instance));
+      name,
+      base::Bind(&service_manager::ServiceManager::OnGotResolvedName,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&params),
+                 base::Passed(&service), !!source_instance, source_instance));
 }
 
 ServiceManager::Instance* ServiceManager::GetExistingInstance(
@@ -758,9 +760,9 @@ mojom::ServiceFactory* ServiceManager::GetServiceFactory(
   ConnectToInterface(this, source_identity, service_factory_identity,
                      &factory);
   mojom::ServiceFactory* factory_interface = factory.get();
-  factory.set_connection_error_handler(base::Bind(
-      &shell::ServiceManager::OnServiceFactoryLost,
-      weak_ptr_factory_.GetWeakPtr(), service_factory_identity));
+  factory.set_connection_error_handler(
+      base::Bind(&service_manager::ServiceManager::OnServiceFactoryLost,
+                 weak_ptr_factory_.GetWeakPtr(), service_factory_identity));
   service_factories_[service_factory_identity] = std::move(factory);
   return factory_interface;
 }
@@ -880,4 +882,4 @@ base::WeakPtr<ServiceManager> ServiceManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-}  // namespace shell
+}  // namespace service_manager

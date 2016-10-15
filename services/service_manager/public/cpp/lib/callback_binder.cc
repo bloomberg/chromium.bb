@@ -4,7 +4,7 @@
 
 #include "services/service_manager/public/cpp/lib/callback_binder.h"
 
-namespace shell {
+namespace service_manager {
 namespace internal {
 
 GenericCallbackBinder::GenericCallbackBinder(
@@ -36,4 +36,4 @@ void GenericCallbackBinder::RunCallbackOnTaskRunner(
 }
 
 }  // namespace internal
-}  // namespace shell
+}  // namespace service_manager

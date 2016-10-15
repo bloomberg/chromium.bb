@@ -31,7 +31,7 @@
 
 namespace {
 
-void ConnectToDefaultApps(shell::Connector* connector) {
+void ConnectToDefaultApps(service_manager::Connector* connector) {
   connector->Connect("service:mash_session");
 }
 
@@ -88,7 +88,7 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     if (!mojo_test_connector_) {
       mojo_test_connector_ = base::MakeUnique<MojoTestConnector>();
       service_ = base::MakeUnique<mash::MashPackagedService>();
-      service_->set_context(base::MakeUnique<shell::ServiceContext>(
+      service_->set_context(base::MakeUnique<service_manager::ServiceContext>(
           service_.get(), mojo_test_connector_->Init()));
     }
     std::unique_ptr<content::TestState> test_state =
@@ -124,13 +124,13 @@ std::unique_ptr<content::ServiceManagerConnection>
   return connection;
 }
 
-void StartChildApp(shell::mojom::ServiceRequest service_request) {
+void StartChildApp(service_manager::mojom::ServiceRequest service_request) {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
   base::RunLoop run_loop;
   mash::MashPackagedService service;
-  std::unique_ptr<shell::ServiceContext> context =
-      base::MakeUnique<shell::ServiceContext>(&service,
-                                              std::move(service_request));
+  std::unique_ptr<service_manager::ServiceContext> context =
+      base::MakeUnique<service_manager::ServiceContext>(
+          &service, std::move(service_request));
   context->SetConnectionLostClosure(run_loop.QuitClosure());
   service.set_context(std::move(context));
   run_loop.Run();
@@ -150,7 +150,7 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     base::AtExitManager exit_manager;
 #endif
     base::i18n::InitializeICU();
-    shell::ChildProcessMainWithCallback(base::Bind(&StartChildApp));
+    service_manager::ChildProcessMainWithCallback(base::Bind(&StartChildApp));
     *exit_code = 0;
     return true;
   }
@@ -158,12 +158,12 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   if (command_line.HasSwitch(switches::kChildProcess) &&
       !command_line.HasSwitch(MojoTestConnector::kTestSwitch)) {
     base::AtExitManager at_exit;
-    shell::InitializeLogging();
-    shell::WaitForDebuggerIfNecessary();
+    service_manager::InitializeLogging();
+    service_manager::WaitForDebuggerIfNecessary();
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
     base::RouteStdioToConsole(false);
 #endif
-    *exit_code = shell::ChildProcessMain();
+    *exit_code = service_manager::ChildProcessMain();
     return true;
   }
 
@@ -173,13 +173,13 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   // from the command line. In this case we have to start up
   // ServiceManagerConnection
   // as though we were embedded.
-  content::ServiceManagerConnection::Factory shell_connection_factory;
+  content::ServiceManagerConnection::Factory service_manager_connection_factory;
   if (command_line.HasSwitch(content::kSingleProcessTestsFlag) &&
       !command_line.HasSwitch(switches::kPrimordialPipeToken)) {
-    shell_connection_factory =
+    service_manager_connection_factory =
         base::Bind(&CreateServiceManagerConnection, &delegate);
     content::ServiceManagerConnection::SetFactoryForTest(
-        &shell_connection_factory);
+        &service_manager_connection_factory);
   }
   *exit_code = LaunchChromeTests(default_jobs, &delegate, argc, argv);
   return true;

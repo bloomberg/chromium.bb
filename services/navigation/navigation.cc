@@ -16,11 +16,11 @@ namespace navigation {
 namespace {
 
 void CreateViewOnViewTaskRunner(
-    std::unique_ptr<shell::Connector> connector,
+    std::unique_ptr<service_manager::Connector> connector,
     const std::string& client_user_id,
     mojom::ViewClientPtr client,
     mojom::ViewRequest request,
-    std::unique_ptr<shell::ServiceContextRef> context_ref) {
+    std::unique_ptr<service_manager::ServiceContextRef> context_ref) {
   mojo::MakeStrongBinding(
       base::MakeUnique<ViewImpl>(std::move(connector), client_user_id,
                                  std::move(client), std::move(context_ref)),
@@ -38,9 +38,9 @@ Navigation::Navigation()
 }
 Navigation::~Navigation() {}
 
-bool Navigation::OnConnect(const shell::Identity& remote_identity,
-                           shell::InterfaceRegistry* registry,
-                           shell::Connector* connector) {
+bool Navigation::OnConnect(const service_manager::Identity& remote_identity,
+                           service_manager::InterfaceRegistry* registry,
+                           service_manager::Connector* connector) {
   std::string remote_user_id = remote_identity.user_id();
   if (!client_user_id_.empty() && client_user_id_ != remote_user_id) {
     LOG(ERROR) << "Must have a separate Navigation service instance for "
@@ -56,8 +56,9 @@ bool Navigation::OnConnect(const shell::Identity& remote_identity,
 
 void Navigation::CreateView(mojom::ViewClientPtr client,
                             mojom::ViewRequest request) {
-  std::unique_ptr<shell::Connector> new_connector = connector_->Clone();
-  std::unique_ptr<shell::ServiceContextRef> context_ref =
+  std::unique_ptr<service_manager::Connector> new_connector =
+      connector_->Clone();
+  std::unique_ptr<service_manager::ServiceContextRef> context_ref =
       ref_factory_.CreateRef();
   view_task_runner_->PostTask(
       FROM_HERE,

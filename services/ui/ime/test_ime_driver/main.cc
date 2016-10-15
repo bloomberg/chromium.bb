@@ -7,6 +7,6 @@
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new ui::test::TestIMEApplication);
+  service_manager::ServiceRunner runner(new ui::test::TestIMEApplication);
   return runner.Run(service_request_handle);
 }

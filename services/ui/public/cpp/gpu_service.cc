@@ -17,7 +17,7 @@
 
 namespace ui {
 
-GpuService::GpuService(shell::Connector* connector,
+GpuService::GpuService(service_manager::Connector* connector,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
@@ -47,7 +47,7 @@ GpuService::~GpuService() {
 
 // static
 std::unique_ptr<GpuService> GpuService::Create(
-    shell::Connector* connector,
+    service_manager::Connector* connector,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return base::WrapUnique(new GpuService(connector, std::move(task_runner)));
 }

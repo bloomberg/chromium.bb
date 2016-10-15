@@ -6,7 +6,7 @@
 
 using catalog::Store;
 
-namespace shell {
+namespace service_manager {
 
 TestCatalogStore::TestCatalogStore(std::unique_ptr<base::ListValue> store)
     : store_(std::move(store)) {}
@@ -34,7 +34,7 @@ std::unique_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
       new base::DictionaryValue);
   std::unique_ptr<base::ListValue> provided_classes_list(
       new base::ListValue);
-  provided_classes_list->AppendString("shell::mojom::TestService");
+  provided_classes_list->AppendString("service_manager::mojom::TestService");
   provided_classes->Set("shell:test_service", std::move(provided_classes_list));
   capabilities->Set(Store::kCapabilities_ProvidedKey,
                     std::move(provided_classes));
@@ -52,4 +52,4 @@ std::unique_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
   return app;
 }
 
-}  // namespace shell
+}  // namespace service_manager

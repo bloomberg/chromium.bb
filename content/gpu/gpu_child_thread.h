@@ -127,7 +127,8 @@ class GpuChildThread : public ChildThreadImpl,
 #endif
   void OnLoseAllContexts();
 
-  void BindServiceFactoryRequest(shell::mojom::ServiceFactoryRequest request);
+  void BindServiceFactoryRequest(
+      service_manager::mojom::ServiceFactoryRequest request);
 
   // Set this flag to true if a fatal error occurred before we receive the
   // OnInitialize message, in which case we just declare ourselves DOA.
@@ -159,11 +160,12 @@ class GpuChildThread : public ChildThreadImpl,
   // The gpu::GpuMemoryBufferFactory instance used to allocate GpuMemoryBuffers.
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
-  // ServiceFactory for shell::Service hosting.
+  // ServiceFactory for service_manager::Service hosting.
   std::unique_ptr<GpuServiceFactory> service_factory_;
 
-  // Bindings to the shell::mojom::ServiceFactory impl.
-  mojo::BindingSet<shell::mojom::ServiceFactory> service_factory_bindings_;
+  // Bindings to the service_manager::mojom::ServiceFactory impl.
+  mojo::BindingSet<service_manager::mojom::ServiceFactory>
+      service_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

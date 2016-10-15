@@ -11,7 +11,7 @@
 #include "ash/mus/app_list_presenter_mus.h"
 #include "base/macros.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -19,11 +19,11 @@ namespace ash {
 
 class ShellDelegateMus : public ShellDelegate {
  public:
-  explicit ShellDelegateMus(shell::Connector* connector);
+  explicit ShellDelegateMus(service_manager::Connector* connector);
   ~ShellDelegateMus() override;
 
   // ShellDelegate:
-  ::shell::Connector* GetShellConnector() const override;
+  service_manager::Connector* GetShellConnector() const override;
   bool IsFirstRunAfterBoot() const override;
   bool IsIncognitoAllowed() const override;
   bool IsMultiProfilesEnabled() const override;
@@ -51,7 +51,7 @@ class ShellDelegateMus : public ShellDelegate {
   gfx::Image GetDeprecatedAcceleratorImage() const override;
 
  private:
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
   AppListPresenterMus app_list_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);

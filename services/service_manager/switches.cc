@@ -4,7 +4,7 @@
 
 #include "services/service_manager/switches.h"
 
-namespace shell {
+namespace service_manager {
 namespace switches {
 
 // Disables the sandbox for debugging.
@@ -14,4 +14,4 @@ const char kNoSandbox[] = "no-sandbox";
 const char kSingleProcess[] = "single-process";
 
 }  // namespace switches
-}  // namespace shell
+}  // namespace service_manager

@@ -21,14 +21,14 @@ TestService::TestService() : service_binding_(this) {
 TestService::~TestService() {
 }
 
-bool TestService::OnConnect(const shell::Identity& remote_identity,
-                            shell::InterfaceRegistry* registry) {
+bool TestService::OnConnect(const service_manager::Identity& remote_identity,
+                            service_manager::InterfaceRegistry* registry) {
   requestor_name_ = remote_identity.name();
   registry->AddInterface<mojom::TestService>(this);
   return true;
 }
 
-void TestService::Create(const shell::Identity& remote_identity,
+void TestService::Create(const service_manager::Identity& remote_identity,
                          mojom::TestServiceRequest request) {
   DCHECK(!service_binding_.is_bound());
   service_binding_.Bind(std::move(request));

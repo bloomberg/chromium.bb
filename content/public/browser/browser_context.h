@@ -30,7 +30,7 @@ class FilePath;
 class Time;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -166,7 +166,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns a Connector associated with this BrowserContext, which can be used
   // to connect to service instances bound as this user.
-  static shell::Connector* GetConnectorFor(BrowserContext* browser_context);
+  static service_manager::Connector* GetConnectorFor(
+      BrowserContext* browser_context);
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserContext* browser_context);
 

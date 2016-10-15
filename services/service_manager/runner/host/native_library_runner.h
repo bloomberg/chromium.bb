@@ -13,7 +13,7 @@ namespace base {
 class FilePath;
 }
 
-namespace shell {
+namespace service_manager {
 
 // Loads the native Service from the DSO specified by |app_path|.
 // Returns the |base::NativeLibrary| for the service on success (or null on
@@ -33,6 +33,6 @@ base::NativeLibrary LoadNativeLibrary(const base::FilePath& app_path);
 bool RunServiceInNativeLibrary(base::NativeLibrary library,
                                mojom::ServiceRequest request);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_NATIVE_LIBRARY_RUNNER_H_

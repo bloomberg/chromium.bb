@@ -13,7 +13,7 @@
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 
-namespace shell {
+namespace service_manager {
 
 // Encapsulates all tasks related to raising the sandbox for mojo runner.
 class LinuxSandbox {
@@ -46,6 +46,6 @@ class LinuxSandbox {
   DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_LINUX_SANDBOX_H_

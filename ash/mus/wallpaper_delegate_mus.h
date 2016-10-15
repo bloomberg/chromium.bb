@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -18,7 +18,7 @@ namespace ash {
 class WallpaperDelegateMus : public WallpaperDelegate,
                              public mojom::WallpaperController {
  public:
-  explicit WallpaperDelegateMus(shell::Connector* connector);
+  explicit WallpaperDelegateMus(service_manager::Connector* connector);
   ~WallpaperDelegateMus() override;
 
  private:
@@ -38,7 +38,7 @@ class WallpaperDelegateMus : public WallpaperDelegate,
   void SetWallpaper(const SkBitmap& wallpaper,
                     mojom::WallpaperLayout layout) override;
 
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperDelegateMus);
 };

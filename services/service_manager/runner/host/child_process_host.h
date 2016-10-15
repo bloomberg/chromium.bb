@@ -29,7 +29,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace shell {
+namespace service_manager {
 
 class Identity;
 class NativeRunnerDelegate;
@@ -94,6 +94,6 @@ class ChildProcessHost {
   DISALLOW_COPY_AND_ASSIGN(ChildProcessHost);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_HOST_CHILD_PROCESS_HOST_H_

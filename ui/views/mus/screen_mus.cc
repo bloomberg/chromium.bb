@@ -41,7 +41,7 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
 
 ScreenMus::~ScreenMus() {}
 
-void ScreenMus::Init(shell::Connector* connector) {
+void ScreenMus::Init(service_manager::Connector* connector) {
   connector->ConnectToInterface("service:ui", &display_manager_);
 
   display_manager_->AddObserver(

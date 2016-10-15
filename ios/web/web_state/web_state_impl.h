@@ -251,7 +251,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     const ImageDownloadCallback& callback) override;
-  shell::InterfaceRegistry* GetMojoInterfaceRegistry() override;
+  service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() override;
   base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Adds |interstitial|'s view to the web controller's content view.
@@ -366,7 +366,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   base::WeakPtrFactory<WebState> weak_factory_;
 
   // Mojo interface registry for this WebState.
-  std::unique_ptr<shell::InterfaceRegistry> mojo_interface_registry_;
+  std::unique_ptr<service_manager::InterfaceRegistry> mojo_interface_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

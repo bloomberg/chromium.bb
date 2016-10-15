@@ -10,7 +10,7 @@
 #include "services/service_manager/background/background_shell.h"
 #include "services/service_manager/public/cpp/service.h"
 
-namespace shell {
+namespace service_manager {
 namespace test {
 
 ServiceTestClient::ServiceTestClient(ServiceTest* test) : test_(test) {}
@@ -51,7 +51,7 @@ void ServiceTest::OnStartCalled(Connector* connector,
 void ServiceTest::SetUp() {
   service_ = CreateService();
   message_loop_ = CreateMessageLoop();
-  background_shell_.reset(new shell::BackgroundShell);
+  background_shell_.reset(new service_manager::BackgroundShell);
   background_shell_->Init(nullptr);
 
   // Create the shell connection. We don't proceed until we get our
@@ -75,4 +75,4 @@ void ServiceTest::TearDown() {
 }
 
 }  // namespace test
-}  // namespace shell
+}  // namespace service_manager

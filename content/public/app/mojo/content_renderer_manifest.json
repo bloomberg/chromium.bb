@@ -15,7 +15,7 @@
         "web_cache::mojom::WebCache"
       ],
       "shell:service_factory": [
-        "shell::mojom::ServiceFactory"
+        "service_manager::mojom::ServiceFactory"
       ]
     },
     "required": {

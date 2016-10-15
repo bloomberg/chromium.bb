@@ -20,7 +20,7 @@
 namespace mash {
 namespace app_driver {
 
-class AppDriver : public shell::Service,
+class AppDriver : public service_manager::Service,
                   public ui::mojom::AcceleratorHandler {
  public:
   AppDriver();
@@ -29,10 +29,10 @@ class AppDriver : public shell::Service,
  private:
   void OnAvailableCatalogEntries(std::vector<catalog::mojom::EntryPtr> entries);
 
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
   bool OnStop() override;
 
   // ui::mojom::AcceleratorHandler:

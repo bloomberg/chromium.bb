@@ -229,7 +229,8 @@ bool UtilityProcessHostImpl::Start() {
   return StartProcess();
 }
 
-shell::InterfaceProvider* UtilityProcessHostImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+UtilityProcessHostImpl::GetRemoteInterfaces() {
   return process_->child_connection()->GetRemoteInterfaces();
 }
 

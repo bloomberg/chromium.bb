@@ -1479,7 +1479,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 void ForwardShareServiceRequest(
-    base::WeakPtr<shell::InterfaceProvider> interface_provider,
+    base::WeakPtr<service_manager::InterfaceProvider> interface_provider,
     blink::mojom::ShareServiceRequest request) {
   if (!interface_provider ||
       ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare")) {
@@ -2884,7 +2884,7 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 #endif  // defined(OS_WIN)
 
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     content::RenderProcessHost* render_process_host) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       content::BrowserThread::GetTaskRunnerForThread(
@@ -2908,7 +2908,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
 // TODO(xhwang): Only register this when ENABLE_MOJO_MEDIA.
 #if defined(OS_CHROMEOS)
@@ -2924,7 +2924,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 }
 
 void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
   if (base::FeatureList::IsEnabled(features::kWebUsb)
 #if defined(ENABLE_EXTENSIONS)
@@ -2987,7 +2987,7 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
-    shell::InterfaceRegistry* registry,
+    service_manager::InterfaceRegistry* registry,
     content::GpuProcessHost* render_process_host) {
   registry->AddInterface(
       base::Bind(&metrics::CallStackProfileCollector::Create,

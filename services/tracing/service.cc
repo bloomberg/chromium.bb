@@ -19,8 +19,8 @@ namespace tracing {
 Service::Service() : collector_binding_(this), tracing_active_(false) {}
 Service::~Service() {}
 
-bool Service::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool Service::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Factory>(this);
   registry->AddInterface<mojom::Collector>(this);
   registry->AddInterface<mojom::StartupPerformanceDataCollector>(this);
@@ -35,19 +35,18 @@ bool Service::OnStop() {
   return false;
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::FactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void Service::Create(const shell::Identity& remote_identity,
+void Service::Create(const service_manager::Identity& remote_identity,
                      mojom::CollectorRequest request) {
   collector_binding_.Bind(std::move(request));
 }
 
-void Service::Create(
-    const shell::Identity& remote_identity,
-    mojom::StartupPerformanceDataCollectorRequest request) {
+void Service::Create(const service_manager::Identity& remote_identity,
+                     mojom::StartupPerformanceDataCollectorRequest request) {
   startup_performance_data_collector_bindings_.AddBinding(this,
                                                           std::move(request));
 }

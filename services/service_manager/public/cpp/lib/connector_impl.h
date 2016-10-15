@@ -12,7 +12,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 class ConnectorImpl : public Connector {
  public:
@@ -38,6 +38,6 @@ class ConnectorImpl : public Connector {
   DISALLOW_COPY_AND_ASSIGN(ConnectorImpl);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_LIB_CONNECTOR_IMPL_H_

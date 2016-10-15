@@ -17,7 +17,7 @@
 namespace media {
 
 MojoCdmFactory::MojoCdmFactory(
-    shell::mojom::InterfaceProvider* interface_provider)
+    service_manager::mojom::InterfaceProvider* interface_provider)
     : interface_provider_(interface_provider) {
   DCHECK(interface_provider_);
 }
@@ -51,8 +51,8 @@ void MojoCdmFactory::Create(
   }
 
   mojom::ContentDecryptionModulePtr cdm_ptr;
-  shell::GetInterface<mojom::ContentDecryptionModule>(interface_provider_,
-                                                      &cdm_ptr);
+  service_manager::GetInterface<mojom::ContentDecryptionModule>(
+      interface_provider_, &cdm_ptr);
 
   MojoCdm::Create(key_system, security_origin, cdm_config, std::move(cdm_ptr),
                   session_message_cb, session_closed_cb, session_keys_change_cb,

@@ -32,7 +32,7 @@ namespace base {
 class CommandLine;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -88,7 +88,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   bool CanShutdown() override;
   void OnChildDisconnected() override;
   const base::Process& GetProcess() const override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
   void OnChannelError() override;

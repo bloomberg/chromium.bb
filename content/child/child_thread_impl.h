@@ -38,9 +38,9 @@ class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
 
-namespace shell {
+namespace service_manager {
 class Connection;
-}  // namespace shell
+}  // namespace service_manager
 
 namespace mojo {
 namespace edk {
@@ -103,8 +103,8 @@ class CONTENT_EXPORT ChildThreadImpl
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
   ServiceManagerConnection* GetServiceManagerConnection() override;
-  shell::InterfaceRegistry* GetInterfaceRegistry() override;
-  shell::InterfaceProvider* GetRemoteInterfaces() override;
+  service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
+  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -267,10 +267,10 @@ class CONTENT_EXPORT ChildThreadImpl
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
-  std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
-  std::unique_ptr<shell::Connection> browser_connection_;
+  std::unique_ptr<service_manager::Connection> browser_connection_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
   mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider>

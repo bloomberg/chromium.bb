@@ -28,7 +28,7 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
 #if defined(USE_AURA)
-  if (shell::ShellIsRemote()) {
+  if (service_manager::ServiceManagerIsRemote()) {
     BrowserNonClientFrameViewMus* frame_view =
         new BrowserNonClientFrameViewMus(frame, browser_view);
     frame_view->Init();

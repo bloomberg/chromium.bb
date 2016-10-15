@@ -15,20 +15,21 @@
 
 namespace leveldb {
 
-class LevelDBApp : public shell::Service,
-                   public shell::InterfaceFactory<mojom::LevelDBService> {
+class LevelDBApp
+    : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::LevelDBService> {
  public:
   LevelDBApp();
   ~LevelDBApp() override;
 
  private:
   // |Service| override:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // |InterfaceFactory<mojom::LevelDBService>| implementation:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
   tracing::Provider tracing_;

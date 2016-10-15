@@ -46,7 +46,7 @@ namespace net {
 struct LoadStateWithParam;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -741,7 +741,7 @@ class WebContents : public PageNavigator,
   // Returns an InterfaceProvider for Java-implemented interfaces that are
   // scoped to this WebContents. This provides access to interfaces implemented
   // in Java in the browser process to C++ code in the browser process.
-  virtual shell::InterfaceProvider* GetJavaInterfaces() = 0;
+  virtual service_manager::InterfaceProvider* GetJavaInterfaces() = 0;
 #elif defined(OS_MACOSX)
   // Allowing other views disables optimizations which assume that only a single
   // WebContents is present.

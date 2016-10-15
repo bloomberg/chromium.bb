@@ -11,7 +11,7 @@
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (shell::ShellIsRemote())
+  if (service_manager::ServiceManagerIsRemote())
     return new BrowserFrameMus(browser_frame, browser_view);
   return new BrowserFrameAsh(browser_frame, browser_view);
 }

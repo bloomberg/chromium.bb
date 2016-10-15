@@ -56,18 +56,21 @@ class UtilityThreadImpl : public UtilityThread,
   void OnBatchModeStarted();
   void OnBatchModeFinished();
 
-  void BindServiceFactoryRequest(shell::mojom::ServiceFactoryRequest request);
+  void BindServiceFactoryRequest(
+      service_manager::mojom::ServiceFactoryRequest request);
 
   // True when we're running in batch mode.
   bool batch_mode_;
 
   std::unique_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
 
-  // shell::mojom::ServiceFactory for shell::Service hosting.
+  // service_manager::mojom::ServiceFactory for service_manager::Service
+  // hosting.
   std::unique_ptr<UtilityServiceFactory> service_factory_;
 
-  // Bindings to the shell::mojom::ServiceFactory impl.
-  mojo::BindingSet<shell::mojom::ServiceFactory> service_factory_bindings_;
+  // Bindings to the service_manager::mojom::ServiceFactory impl.
+  mojo::BindingSet<service_manager::mojom::ServiceFactory>
+      service_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

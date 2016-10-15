@@ -231,7 +231,7 @@ TabDragController::TabDragController()
 #if defined(USE_AURA)
   content::ServiceManagerConnection* service_manager_connection =
       content::ServiceManagerConnection::GetForProcess();
-  if (service_manager_connection && shell::ShellIsRemote())
+  if (service_manager_connection && service_manager::ServiceManagerIsRemote())
     window_finder_.reset(new WindowFinderMus);
   else
 #endif

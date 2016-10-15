@@ -1376,7 +1376,7 @@ void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(USE_AURA)
   if (content::ServiceManagerConnection::GetForProcess() &&
-      shell::ShellIsRemote()) {
+      service_manager::ServiceManagerIsRemote()) {
     content::ServiceManagerConnection::GetForProcess()->
         SetConnectionLostClosure(base::Bind(&chrome::SessionEnding));
   }

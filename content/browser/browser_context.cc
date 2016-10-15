@@ -150,9 +150,9 @@ void SetDownloadManager(BrowserContext* context,
 class BrowserContextServiceManagerConnectionHolder
     : public base::SupportsUserData::Data {
  public:
-   BrowserContextServiceManagerConnectionHolder(
-      std::unique_ptr<shell::Connection> connection,
-      shell::mojom::ServiceRequest request)
+  BrowserContextServiceManagerConnectionHolder(
+      std::unique_ptr<service_manager::Connection> connection,
+      service_manager::mojom::ServiceRequest request)
       : root_connection_(std::move(connection)),
         service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
@@ -164,7 +164,7 @@ class BrowserContextServiceManagerConnectionHolder
   }
 
  private:
-  std::unique_ptr<shell::Connection> root_connection_;
+  std::unique_ptr<service_manager::Connection> root_connection_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextServiceManagerConnectionHolder);
@@ -435,12 +435,13 @@ void BrowserContext::Initialize(
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global service manager connection.
 
-    shell::mojom::ServicePtr service;
-    shell::mojom::ServiceRequest service_request = mojo::GetProxy(&service);
+    service_manager::mojom::ServicePtr service;
+    service_manager::mojom::ServiceRequest service_request =
+        mojo::GetProxy(&service);
 
-    shell::mojom::PIDReceiverPtr pid_receiver;
-    shell::Connector::ConnectParams params(
-        shell::Identity(kBrowserServiceName, new_id));
+    service_manager::mojom::PIDReceiverPtr pid_receiver;
+    service_manager::Connector::ConnectParams params(
+        service_manager::Identity(kBrowserServiceName, new_id));
     params.set_client_process_connection(std::move(service),
                                          mojo::GetProxy(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
@@ -489,7 +490,7 @@ BrowserContext* BrowserContext::GetBrowserContextForServiceUserId(
 }
 
 // static
-shell::Connector* BrowserContext::GetConnectorFor(
+service_manager::Connector* BrowserContext::GetConnectorFor(
     BrowserContext* browser_context) {
   ServiceManagerConnection* connection =
       GetServiceManagerConnectionFor(browser_context);

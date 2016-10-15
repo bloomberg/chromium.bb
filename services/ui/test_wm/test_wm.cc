@@ -19,7 +19,7 @@
 namespace ui {
 namespace test {
 
-class TestWM : public shell::Service,
+class TestWM : public service_manager::Service,
                public ui::WindowTreeClientDelegate,
                public ui::WindowManagerDelegate {
  public:
@@ -27,8 +27,8 @@ class TestWM : public shell::Service,
   ~TestWM() override {}
 
  private:
-  // shell::Service:
-  void OnStart(const shell::Identity& identity) override {
+  // service_manager::Service:
+  void OnStart(const service_manager::Identity& identity) override {
     window_tree_client_.reset(new ui::WindowTreeClient(this, this));
     window_tree_client_->ConnectAsWindowManager(connector());
   }
@@ -109,6 +109,6 @@ class TestWM : public shell::Service,
 }  // namespace ui
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  shell::ServiceRunner runner(new ui::test::TestWM);
+  service_manager::ServiceRunner runner(new ui::test::TestWM);
   return runner.Run(service_request_handle);
 }

@@ -327,9 +327,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void RegisterMainFrameRemoteInterfaces() override {
     // We only use the fake driver for main frame
     // because our test cases only involve the main frame.
-    shell::InterfaceProvider* remote_interfaces =
+    service_manager::InterfaceProvider* remote_interfaces =
         view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
     test_api.SetBinderForName(
         mojom::PasswordManagerDriver::Name_,
         base::Bind(&PasswordAutofillAgentTest::BindPasswordManagerDriver,

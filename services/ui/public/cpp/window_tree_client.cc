@@ -119,7 +119,7 @@ WindowTreeClient::~WindowTreeClient() {
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory(
-    shell::Connector* connector) {
+    service_manager::Connector* connector) {
   // The client id doesn't really matter, we use 101 purely for debugging.
   client_id_ = 101;
 
@@ -131,7 +131,8 @@ void WindowTreeClient::ConnectViaWindowTreeFactory(
   SetWindowTree(std::move(window_tree));
 }
 
-void WindowTreeClient::ConnectAsWindowManager(shell::Connector* connector) {
+void WindowTreeClient::ConnectAsWindowManager(
+    service_manager::Connector* connector) {
   DCHECK(window_manager_delegate_);
 
   mojom::WindowManagerWindowTreeFactoryPtr factory;

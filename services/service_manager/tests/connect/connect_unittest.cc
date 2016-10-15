@@ -23,7 +23,7 @@
 // implementing ServiceFactory; that these services can be specified by
 // the package's manifest and are thus registered with the PackageManager.
 
-namespace shell {
+namespace service_manager {
 
 namespace {
 
@@ -56,7 +56,7 @@ void ReceiveConnectionResult(mojom::ConnectResult* out_result,
                              Identity* out_target,
                              base::RunLoop* loop,
                              int32_t in_result,
-                             const shell::Identity& in_identity) {
+                             const service_manager::Identity& in_identity) {
   *out_result = static_cast<mojom::ConnectResult>(in_result);
   *out_target = in_identity;
   loop->Quit();
@@ -412,4 +412,4 @@ TEST_F(ConnectTest, AllUsersSingleton) {
   }
 }
 
-}  // namespace shell
+}  // namespace service_manager

@@ -9,7 +9,7 @@ import android.app.Activity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.device.nfc.NfcImpl;
 import org.chromium.device.nfc.mojom.Nfc;
-import org.chromium.services.shell.InterfaceFactory;
+import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.ui.base.WindowAndroid;
 
 class NfcFactory implements InterfaceFactory<Nfc> {

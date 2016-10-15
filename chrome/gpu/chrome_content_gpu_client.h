@@ -20,10 +20,10 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
   // content::ContentGpuClient:
   void Initialize(base::FieldTrialList::Observer* observer) override;
   void ExposeInterfacesToBrowser(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       const gpu::GpuPreferences& gpu_preferences) override;
   void ConsumeInterfacesFromBrowser(
-      shell::InterfaceProvider* provider) override;
+      service_manager::InterfaceProvider* provider) override;
 
  private:
   std::unique_ptr<chrome_variations::ChildProcessFieldTrialSyncer>

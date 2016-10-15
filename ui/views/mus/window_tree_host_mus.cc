@@ -69,7 +69,7 @@ WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyDispatcher();
 }
 
-void WindowTreeHostMus::InitInputMethod(shell::Connector* connector) {
+void WindowTreeHostMus::InitInputMethod(service_manager::Connector* connector) {
   input_method_->Init(connector);
 }
 

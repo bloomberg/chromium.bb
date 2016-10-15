@@ -64,7 +64,7 @@ namespace media {
 class CdmFactory;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 class Service;
 }
@@ -649,19 +649,19 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |registry| will by default be run immediately on the IO thread, unless a
   // task runner is provided.
   virtual void ExposeInterfacesToRenderer(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       RenderProcessHost* render_process_host) {}
 
   // Called when RenderFrameHostImpl connects to the Media service. Expose
   // interfaces to the service using |registry|.
   virtual void ExposeInterfacesToMediaService(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
   // Allows to register browser Mojo interfaces exposed through the
   // RenderFrameHost.
   virtual void RegisterRenderFrameMojoInterfaces(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
   // Allows to register browser Mojo interfaces exposed through the
@@ -669,7 +669,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // callbacks added to |registry| will by default be run immediately on the IO
   // thread, unless a task runner is provided.
   virtual void ExposeInterfacesToGpuProcess(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       GpuProcessHost* render_process_host) {}
 
   using StaticServiceMap = std::map<std::string, ServiceInfo>;

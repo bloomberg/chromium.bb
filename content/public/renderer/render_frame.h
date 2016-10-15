@@ -34,7 +34,7 @@ class Range;
 class Size;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 class InterfaceProvider;
 }
@@ -151,11 +151,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the InterfaceRegistry that this process uses to expose interfaces
   // to the application running in this frame.
-  virtual shell::InterfaceRegistry* GetInterfaceRegistry() = 0;
+  virtual service_manager::InterfaceRegistry* GetInterfaceRegistry() = 0;
 
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
-  virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
+  virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
 
   // Returns the AssociatedInterfaceRegistry this frame can use to expose
   // frame-specific Channel-associated interfaces to the remote RenderFrameHost.

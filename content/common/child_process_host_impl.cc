@@ -131,7 +131,8 @@ void ChildProcessHostImpl::AddFilter(IPC::MessageFilter* filter) {
     filter->OnFilterAdded(channel_.get());
 }
 
-shell::InterfaceProvider* ChildProcessHostImpl::GetRemoteInterfaces() {
+service_manager::InterfaceProvider*
+ChildProcessHostImpl::GetRemoteInterfaces() {
   return delegate_->GetRemoteInterfaces();
 }
 
@@ -160,7 +161,7 @@ void ChildProcessHostImpl::CreateChannelMojo() {
   DCHECK(channel_id_.empty());
   channel_id_ = "ChannelMojo";
 
-  shell::InterfaceProvider* remote_interfaces = GetRemoteInterfaces();
+  service_manager::InterfaceProvider* remote_interfaces = GetRemoteInterfaces();
   DCHECK(remote_interfaces);
 
   IPC::mojom::ChannelBootstrapPtr bootstrap;

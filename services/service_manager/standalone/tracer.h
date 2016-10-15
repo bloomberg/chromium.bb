@@ -18,7 +18,7 @@
 #include "services/tracing/public/cpp/provider.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // Tracer collects tracing data from base/trace_event and from externally
 // configured sources, aggregates it into a single stream, and writes it out to
@@ -95,6 +95,6 @@ class Tracer : public mojo::common::DataPipeDrainer::Client {
   DISALLOW_COPY_AND_ASSIGN(Tracer);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_STANDALONE_TRACER_H_

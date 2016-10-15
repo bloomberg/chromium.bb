@@ -142,7 +142,7 @@ int TestWebState::DownloadImage(const GURL& url,
   return 0;
 }
 
-shell::InterfaceRegistry* TestWebState::GetMojoInterfaceRegistry() {
+service_manager::InterfaceRegistry* TestWebState::GetMojoInterfaceRegistry() {
   return nullptr;
 }
 

@@ -277,16 +277,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int sandbox_type) const override;
 #endif
   void ExposeInterfacesToRenderer(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   void ExposeInterfacesToMediaService(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RegisterRenderFrameMojoInterfaces(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void ExposeInterfacesToGpuProcess(
-      shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       content::GpuProcessHost* render_process_host) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   void RegisterOutOfProcessServices(

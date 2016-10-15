@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -17,7 +17,7 @@ namespace content {
 // This provides access to interfaces implemented in Java in the browser process
 // to C++ code in the browser process. This and the returned InterfaceProvider
 // may only be used on the UI thread.
-CONTENT_EXPORT shell::InterfaceProvider* GetGlobalJavaInterfaces();
+CONTENT_EXPORT service_manager::InterfaceProvider* GetGlobalJavaInterfaces();
 
 }  // namespace content
 

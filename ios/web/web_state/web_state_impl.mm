@@ -532,9 +532,9 @@ int WebStateImpl::DownloadImage(
                                               callback:callback];
 }
 
-shell::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
+service_manager::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
   if (!mojo_interface_registry_) {
-    mojo_interface_registry_.reset(new shell::InterfaceRegistry);
+    mojo_interface_registry_.reset(new service_manager::InterfaceRegistry);
   }
   return mojo_interface_registry_.get();
 }

@@ -369,8 +369,8 @@ void CreateFrameFactory(mojom::FrameFactoryRequest request) {
 }
 
 void SetupEmbeddedWorkerOnWorkerThread(
-    shell::mojom::InterfaceProviderRequest request,
-    shell::mojom::InterfaceProviderPtrInfo remote_interfaces) {
+    service_manager::mojom::InterfaceProviderRequest request,
+    service_manager::mojom::InterfaceProviderPtrInfo remote_interfaces) {
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   // It is possible for client to be null if for some reason the worker died
@@ -388,8 +388,8 @@ class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
 
   void ExchangeInterfaceProviders(
       int32_t thread_id,
-      shell::mojom::InterfaceProviderRequest request,
-      shell::mojom::InterfaceProviderPtr remote_interfaces) override {
+      service_manager::mojom::InterfaceProviderRequest request,
+      service_manager::mojom::InterfaceProviderPtr remote_interfaces) override {
     WorkerThreadRegistry::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
         FROM_HERE,
         base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&request),

@@ -233,7 +233,7 @@ void Display::InitWindowManagerDisplayRootsIfNecessary() {
     WindowManagerDisplayRoot* display_root = display_root_ptr.get();
     // For this case we never create additional displays roots, so any
     // id works.
-    window_manager_display_root_map_[shell::mojom::kRootUserID] =
+    window_manager_display_root_map_[service_manager::mojom::kRootUserID] =
         display_root_ptr.get();
     WindowTree* window_tree = binding_->CreateWindowTree(display_root->root());
     display_root->window_manager_state_ = window_tree->window_manager_state();

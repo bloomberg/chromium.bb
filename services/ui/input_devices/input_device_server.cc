@@ -34,7 +34,8 @@ bool InputDeviceServer::IsRegisteredAsObserver() const {
   return manager_ != nullptr;
 }
 
-void InputDeviceServer::AddInterface(shell::InterfaceRegistry* registry) {
+void InputDeviceServer::AddInterface(
+    service_manager::InterfaceRegistry* registry) {
   DCHECK(IsRegisteredAsObserver());
   registry->AddInterface<mojom::InputDeviceServer>(this);
 }
@@ -109,7 +110,7 @@ void InputDeviceServer::SendDeviceListsComplete(
       manager_->GetMouseDevices(), manager_->GetTouchpadDevices());
 }
 
-void InputDeviceServer::Create(const shell::Identity& remote_identity,
+void InputDeviceServer::Create(const service_manager::Identity& remote_identity,
                                mojom::InputDeviceServerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

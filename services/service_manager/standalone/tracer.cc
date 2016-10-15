@@ -18,7 +18,7 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
 
-namespace shell {
+namespace service_manager {
 
 Tracer::Tracer()
     : tracing_(false), first_chunk_written_(false), trace_file_(nullptr) {}
@@ -162,4 +162,4 @@ void Tracer::WriteCommaIfNeeded() {
   first_chunk_written_ = true;
 }
 
-}  // namespace shell
+}  // namespace service_manager

@@ -10,7 +10,7 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 class ServiceManager;
 
@@ -44,6 +44,6 @@ inline void ConnectToInterface(ServiceManager* service_manager,
   ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_CONNECT_UTIL_H_

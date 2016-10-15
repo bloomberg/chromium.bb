@@ -31,7 +31,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   ~ChromeShellDelegate() override;
 
   // ash::ShellDelegate overrides;
-  shell::Connector* GetShellConnector() const override;
+  service_manager::Connector* GetShellConnector() const override;
   bool IsFirstRunAfterBoot() const override;
   bool IsMultiProfilesEnabled() const override;
   bool IsIncognitoAllowed() const override;

@@ -4,19 +4,19 @@
 
 #include "build/build_config.h"
 
-namespace shell {
+namespace service_manager {
 
 extern int g_service_runner_argc;
 extern const char* const* g_service_runner_argv;
 
-}  // namespace shell
+}  // namespace service_manager
 
 #if !defined(OS_WIN)
 extern "C" {
 __attribute__((visibility("default"))) void InitCommandLineArgs(
     int argc, const char* const* argv) {
-  shell::g_service_runner_argc = argc;
-  shell::g_service_runner_argv = argv;
+  service_manager::g_service_runner_argc = argc;
+  service_manager::g_service_runner_argv = argv;
 }
 }
 #endif

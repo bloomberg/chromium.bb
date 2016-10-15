@@ -103,7 +103,7 @@ void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
   run_loop.Run();
 }
 
-class LevelDBServiceTest : public shell::test::ServiceTest {
+class LevelDBServiceTest : public service_manager::test::ServiceTest {
  public:
   LevelDBServiceTest() : ServiceTest("exe:leveldb_service_unittests") {}
   ~LevelDBServiceTest() override {}

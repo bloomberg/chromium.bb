@@ -42,7 +42,7 @@
 namespace ash {
 namespace mus {
 
-WindowManager::WindowManager(shell::Connector* connector)
+WindowManager::WindowManager(service_manager::Connector* connector)
     : connector_(connector) {}
 
 WindowManager::~WindowManager() {

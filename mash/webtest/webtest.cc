@@ -156,7 +156,7 @@ void Webtest::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void Webtest::OnStart(const shell::Identity& identity) {
+void Webtest::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   aura_init_.reset(
@@ -165,8 +165,8 @@ void Webtest::OnStart(const shell::Identity& identity) {
       views::WindowManagerConnection::Create(connector(), identity);
 }
 
-bool Webtest::OnConnect(const shell::Identity& remote_identity,
-                        shell::InterfaceRegistry* registry) {
+bool Webtest::OnConnect(const service_manager::Identity& remote_identity,
+                        service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
@@ -194,7 +194,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   AddWindow(window);
 }
 
-void Webtest::Create(const shell::Identity& remote_identity,
+void Webtest::Create(const service_manager::Identity& remote_identity,
                      mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

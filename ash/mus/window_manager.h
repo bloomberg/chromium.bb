@@ -27,7 +27,7 @@ class Display;
 class ScreenBase;
 }
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -53,7 +53,7 @@ class WmTestHelper;
 class WindowManager : public ui::WindowManagerDelegate,
                       public ui::WindowTreeClientDelegate {
  public:
-  explicit WindowManager(shell::Connector* connector);
+  explicit WindowManager(service_manager::Connector* connector);
   ~WindowManager() override;
 
   void Init(std::unique_ptr<ui::WindowTreeClient> window_tree_client,
@@ -71,7 +71,7 @@ class WindowManager : public ui::WindowManagerDelegate,
     return window_manager_client_;
   }
 
-  shell::Connector* connector() { return connector_; }
+  service_manager::Connector* connector() { return connector_; }
 
   void SetScreenLocked(bool is_locked);
 
@@ -149,7 +149,7 @@ class WindowManager : public ui::WindowManagerDelegate,
   ui::mojom::EventResult OnAccelerator(uint32_t id,
                                        const ui::Event& event) override;
 
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
 
   std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
 

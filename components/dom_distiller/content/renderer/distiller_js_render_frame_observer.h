@@ -33,7 +33,8 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
                               int extension_group,
                               int world_id) override;
 
-  // Add the mojo interface to a RenderFrame's shell::InterfaceRegistry.
+  // Add the mojo interface to a RenderFrame's
+  // service_manager::InterfaceRegistry.
   void RegisterMojoInterface();
   // Flag the current page as a distiller page.
   void SetIsDistillerPage();

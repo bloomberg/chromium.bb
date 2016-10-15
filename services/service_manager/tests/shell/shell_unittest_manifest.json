@@ -5,7 +5,7 @@
   "capabilities": {
     "provided": {
       "shell_unittest:create_instance_test": [
-        "shell::test::mojom::CreateInstanceTest"
+        "service_manager::test::mojom::CreateInstanceTest"
       ]
     },
     "required": {

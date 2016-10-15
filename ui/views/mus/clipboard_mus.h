@@ -9,7 +9,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/views/mus/mus_export.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -22,7 +22,7 @@ class VIEWS_MUS_EXPORT ClipboardMus : public ui::Clipboard {
   ClipboardMus();
   ~ClipboardMus() override;
 
-  void Init(shell::Connector* connector);
+  void Init(service_manager::Connector* connector);
 
  private:
   bool HasMimeType(const mojo::Array<mojo::String>& available_types,

@@ -39,7 +39,7 @@ base::Callback<void(const base::UnguessableToken&)> CaptureToken(
                     quit_closure);
 }
 
-class RemoteIteratorTest : public shell::test::ServiceTest {
+class RemoteIteratorTest : public service_manager::test::ServiceTest {
  public:
   RemoteIteratorTest() : ServiceTest("exe:leveldb_service_unittests") {}
   ~RemoteIteratorTest() override {}

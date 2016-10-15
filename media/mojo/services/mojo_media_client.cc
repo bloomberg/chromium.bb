@@ -47,7 +47,7 @@ std::unique_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
 }
 
 std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
-    shell::mojom::InterfaceProvider* interface_provider) {
+    service_manager::mojom::InterfaceProvider* interface_provider) {
   return nullptr;
 }
 

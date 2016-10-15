@@ -16,15 +16,15 @@
 
 namespace file {
 
-std::unique_ptr<shell::Service> CreateFileService(
+std::unique_ptr<service_manager::Service> CreateFileService(
     scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner,
     const base::Closure& quit_closure);
 
 class FileService
-    : public shell::Service,
-      public shell::InterfaceFactory<mojom::FileSystem>,
-      public shell::InterfaceFactory<leveldb::mojom::LevelDBService> {
+    : public service_manager::Service,
+      public service_manager::InterfaceFactory<mojom::FileSystem>,
+      public service_manager::InterfaceFactory<leveldb::mojom::LevelDBService> {
  public:
   FileService(
       scoped_refptr<base::SingleThreadTaskRunner> file_service_runner,
@@ -33,16 +33,16 @@ class FileService
 
  private:
   // |Service| override:
-  void OnStart(const shell::Identity& identity) override;
-  bool OnConnect(const shell::Identity& remote_identity,
-                 shell::InterfaceRegistry* registry) override;
+  void OnStart(const service_manager::Identity& identity) override;
+  bool OnConnect(const service_manager::Identity& remote_identity,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // |InterfaceFactory<mojom::FileSystem>| implementation:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               mojom::FileSystemRequest request) override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
-  void Create(const shell::Identity& remote_identity,
+  void Create(const service_manager::Identity& remote_identity,
               leveldb::mojom::LevelDBServiceRequest request) override;
 
   void OnLevelDBServiceError();

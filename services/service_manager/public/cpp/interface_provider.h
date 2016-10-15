@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
-namespace shell {
+namespace service_manager {
 
 // Encapsulates a mojom::InterfaceProviderPtr implemented in a remote
 // application. Provides two main features:
@@ -117,6 +117,6 @@ class InterfaceProvider {
   DISALLOW_COPY_AND_ASSIGN(InterfaceProvider);
 };
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_INTERFACE_PROVIDER_H_

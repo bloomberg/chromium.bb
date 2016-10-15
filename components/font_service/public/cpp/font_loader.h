@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -35,7 +35,7 @@ class FontServiceThread;
 class FontLoader : public SkFontConfigInterface,
                    public internal::MappedFontFile::Observer {
  public:
-  explicit FontLoader(shell::Connector* connector);
+  explicit FontLoader(service_manager::Connector* connector);
   ~FontLoader() override;
 
   // Shuts down the background thread.

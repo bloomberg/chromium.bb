@@ -35,10 +35,10 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
   QuickLaunchUI(QuickLaunch* quick_launch,
-                shell::Connector* connector,
+                service_manager::Connector* connector,
                 catalog::mojom::CatalogPtr catalog)
       : quick_launch_(quick_launch),
-    connector_(connector),
+        connector_(connector),
         prompt_(new views::Textfield),
         catalog_(std::move(catalog)) {
     set_background(views::Background::CreateStandardPanelBackground());
@@ -131,7 +131,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   }
 
   void Launch(const std::string& name, bool new_window) {
-    std::unique_ptr<shell::Connection> connection = connector_->Connect(name);
+    std::unique_ptr<service_manager::Connection> connection =
+        connector_->Connect(name);
     mojom::LaunchablePtr launchable;
     connection->GetInterface(&launchable);
     connections_.push_back(std::move(connection));
@@ -141,9 +142,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   }
 
   QuickLaunch* quick_launch_;
-  shell::Connector* connector_;
+  service_manager::Connector* connector_;
   views::Textfield* prompt_;
-  std::vector<std::unique_ptr<shell::Connection>> connections_;
+  std::vector<std::unique_ptr<service_manager::Connection>> connections_;
   catalog::mojom::CatalogPtr catalog_;
   std::set<base::string16> app_names_;
   bool suggestion_rejected_ = false;
@@ -162,7 +163,7 @@ void QuickLaunch::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void QuickLaunch::OnStart(const shell::Identity& identity) {
+void QuickLaunch::OnStart(const service_manager::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   aura_init_.reset(
@@ -173,8 +174,8 @@ void QuickLaunch::OnStart(const shell::Identity& identity) {
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
 
-bool QuickLaunch::OnConnect(const shell::Identity& remote_identity,
-                            shell::InterfaceRegistry* registry) {
+bool QuickLaunch::OnConnect(const service_manager::Identity& remote_identity,
+                            service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::Launchable>(this);
   return true;
 }
@@ -196,7 +197,7 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
   windows_.push_back(window);
 }
 
-void QuickLaunch::Create(const shell::Identity& remote_identity,
+void QuickLaunch::Create(const service_manager::Identity& remote_identity,
                          mojom::LaunchableRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

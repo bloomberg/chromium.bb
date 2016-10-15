@@ -374,7 +374,8 @@ class MessageReceiverMojoTestService : public MessageReceiver {
   MessageReceiverMojoTestService() : MessageReceiver() {}
   ~MessageReceiverMojoTestService() override {}
 
-  void OnSetupMojo(int thread_id, shell::InterfaceRegistry* registry) override {
+  void OnSetupMojo(int thread_id,
+                   service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface(base::Bind(&TestServiceImpl::Create));
   }
 

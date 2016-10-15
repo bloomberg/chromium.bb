@@ -6,7 +6,7 @@
 
 #include <tuple>
 
-namespace shell {
+namespace service_manager {
 
 CapabilitySpec::CapabilitySpec() {}
 CapabilitySpec::CapabilitySpec(const CapabilitySpec& other) = default;
@@ -21,4 +21,4 @@ bool CapabilitySpec::operator<(const CapabilitySpec& other) const {
       std::tie(other.provided, other.required);
 }
 
-}  // namespace shell
+}  // namespace service_manager

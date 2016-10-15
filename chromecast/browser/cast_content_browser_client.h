@@ -29,7 +29,7 @@ namespace metrics {
 class MetricsService;
 }
 
-namespace shell {
+namespace service_manager {
 class InterfaceRegistry;
 }
 
@@ -149,7 +149,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       int opener_render_frame_id,
       bool* no_javascript_access) override;
   void ExposeInterfacesToRenderer(
-      ::shell::InterfaceRegistry* registry,
+      service_manager::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(

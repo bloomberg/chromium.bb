@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connector;
 }
 
@@ -21,7 +21,7 @@ class IMEServerImpl : public mojom::IMEServer {
   IMEServerImpl();
   ~IMEServerImpl() override;
 
-  void Init(shell::Connector* connector);
+  void Init(service_manager::Connector* connector);
   void AddBinding(mojom::IMEServerRequest request);
   void OnDriverChanged(mojom::IMEDriverPtr driver);
 

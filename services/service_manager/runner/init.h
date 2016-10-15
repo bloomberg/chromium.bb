@@ -7,7 +7,7 @@
 
 #include "base/native_library.h"
 
-namespace shell {
+namespace service_manager {
 
 // Initialization routines shared by desktop and Android main functions.
 void InitializeLogging();
@@ -18,6 +18,6 @@ void WaitForDebuggerIfNecessary();
 // common initialization there now.
 void CallLibraryEarlyInitialization(base::NativeLibrary app_library);
 
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_RUNNER_INIT_H_

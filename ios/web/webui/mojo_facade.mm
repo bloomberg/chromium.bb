@@ -34,8 +34,9 @@ std::unique_ptr<base::Value> ValueFromInteger(IntegerT handle) {
 
 }  // namespace
 
-MojoFacade::MojoFacade(shell::mojom::InterfaceProvider* interface_provider,
-                       id<CRWJSInjectionEvaluator> script_evaluator)
+MojoFacade::MojoFacade(
+    service_manager::mojom::InterfaceProvider* interface_provider,
+    id<CRWJSInjectionEvaluator> script_evaluator)
     : interface_provider_(interface_provider),
       script_evaluator_(script_evaluator) {
   DCHECK_CURRENTLY_ON(WebThread::UI);

@@ -12,7 +12,7 @@
 
 namespace {
 
-shell::ServiceRunner* g_runner = nullptr;
+service_manager::ServiceRunner* g_runner = nullptr;
 
 void QuitApplication() {
   DCHECK(g_runner);
@@ -24,15 +24,15 @@ void QuitApplication() {
 MojoResult ServiceMain(MojoHandle mojo_handle) {
   // Enable logging.
   base::AtExitManager at_exit;
-  shell::ServiceRunner::InitBaseCommandLine();
+  service_manager::ServiceRunner::InitBaseCommandLine();
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
 
-  std::unique_ptr<shell::Service> service =
+  std::unique_ptr<service_manager::Service> service =
       media::CreateMojoMediaApplication(base::Bind(&QuitApplication));
-  shell::ServiceRunner runner(service.release());
+  service_manager::ServiceRunner runner(service.release());
   g_runner = &runner;
   return runner.Run(mojo_handle, false /* init_base */);
 }

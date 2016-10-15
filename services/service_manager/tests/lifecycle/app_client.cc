@@ -7,11 +7,11 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
-namespace shell {
+namespace service_manager {
 namespace test {
 
 AppClient::AppClient() {}
-AppClient::AppClient(shell::mojom::ServiceRequest request)
+AppClient::AppClient(service_manager::mojom::ServiceRequest request)
     : context_(new ServiceContext(this, std::move(request))) {}
 AppClient::~AppClient() {}
 
@@ -55,6 +55,4 @@ void AppClient::BindingLost() {
 }
 
 }  // namespace test
-}  // namespace shell
-
-
+}  // namespace service_manager

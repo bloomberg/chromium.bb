@@ -17,7 +17,7 @@ namespace base {
 class MessageLoop;
 }
 
-namespace shell {
+namespace service_manager {
 
 class BackgroundShell;
 
@@ -95,8 +95,8 @@ class ServiceTest : public testing::Test {
 
   Connector* connector_ = nullptr;
   std::string initialize_name_;
-  std::string initialize_userid_ = shell::mojom::kInheritUserID;
-  uint32_t initialize_instance_id_ = shell::mojom::kInvalidInstanceID;
+  std::string initialize_userid_ = service_manager::mojom::kInheritUserID;
+  uint32_t initialize_instance_id_ = service_manager::mojom::kInvalidInstanceID;
 
   base::Closure initialize_called_;
 
@@ -104,6 +104,6 @@ class ServiceTest : public testing::Test {
 };
 
 }  // namespace test
-}  // namespace shell
+}  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_SERVICE_TEST_H_

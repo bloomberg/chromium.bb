@@ -523,8 +523,8 @@ void GpuChildThread::OnLoseAllContexts() {
 }
 
 void GpuChildThread::BindServiceFactoryRequest(
-    shell::mojom::ServiceFactoryRequest request) {
-  DVLOG(1) << "GPU: Binding shell::mojom::ServiceFactoryRequest";
+    service_manager::mojom::ServiceFactoryRequest request) {
+  DVLOG(1) << "GPU: Binding service_manager::mojom::ServiceFactoryRequest";
   DCHECK(service_factory_);
   service_factory_bindings_.AddBinding(service_factory_.get(),
                                        std::move(request));

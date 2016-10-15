@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 
@@ -36,9 +36,11 @@ class ChildProcessHostDelegate : public IPC::Listener {
   // OnProcessLaunched is called or it will be invalid and may crash.
   virtual const base::Process& GetProcess() const = 0;
 
-  // Returns the shell::InterfaceProvider the process host can use to bind
+  // Returns the service_manager::InterfaceProvider the process host can use to
+  // bind
   // interfaces exposed to it from the child.
-  CONTENT_EXPORT virtual shell::InterfaceProvider* GetRemoteInterfaces();
+  CONTENT_EXPORT virtual service_manager::InterfaceProvider*
+  GetRemoteInterfaces();
 };
 
 };  // namespace content

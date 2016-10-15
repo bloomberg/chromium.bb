@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class InterfaceProvider;
 }
 

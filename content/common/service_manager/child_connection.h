@@ -18,7 +18,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
-namespace shell {
+namespace service_manager {
 class Connection;
 class Connector;
 }
@@ -37,15 +37,15 @@ class CONTENT_EXPORT ChildConnection {
   ChildConnection(const std::string& name,
                   const std::string& instance_id,
                   const std::string& child_token,
-                  shell::Connector* connector,
+                  service_manager::Connector* connector,
                   scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~ChildConnection();
 
-  shell::InterfaceProvider* GetRemoteInterfaces() {
+  service_manager::InterfaceProvider* GetRemoteInterfaces() {
     return &remote_interfaces_;
   }
 
-  const shell::Identity& child_identity() const {
+  const service_manager::Identity& child_identity() const {
     return child_identity_;
   }
 
@@ -63,10 +63,10 @@ class CONTENT_EXPORT ChildConnection {
   class IOThreadContext;
 
   scoped_refptr<IOThreadContext> context_;
-  shell::Identity child_identity_;
+  service_manager::Identity child_identity_;
   const std::string service_token_;
 
-  shell::InterfaceProvider remote_interfaces_;
+  service_manager::InterfaceProvider remote_interfaces_;
 
   base::WeakPtrFactory<ChildConnection> weak_factory_;
 

@@ -7,7 +7,7 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
 
-namespace shell {
+namespace service_manager {
 namespace {
 
 class ShutdownTest : public test::ServiceTest {
@@ -42,4 +42,4 @@ TEST_F(ShutdownTest, ConnectRace) {
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace service_manager

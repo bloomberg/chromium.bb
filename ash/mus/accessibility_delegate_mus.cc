@@ -8,7 +8,8 @@
 
 namespace ash {
 
-AccessibilityDelegateMus::AccessibilityDelegateMus(shell::Connector* connector)
+AccessibilityDelegateMus::AccessibilityDelegateMus(
+    service_manager::Connector* connector)
     : connector_(connector) {}
 
 AccessibilityDelegateMus::~AccessibilityDelegateMus() {}
