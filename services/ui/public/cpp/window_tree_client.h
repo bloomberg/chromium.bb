@@ -133,9 +133,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client);
 
-  void OnWindowSurfaceDetached(Id window_id,
-                               const cc::SurfaceSequence& sequence);
-
   // Sets the input capture to |window| without notifying the server.
   void LocalSetCapture(Window* window);
   // Sets focus to |window| without notifying the server.
@@ -331,11 +328,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
                                        mojom::Cursor cursor) override;
-  void OnWindowSurfaceChanged(Id window_id,
-                              const cc::SurfaceId& surface_id,
-                              const cc::SurfaceSequence& surface_sequence,
-                              const gfx::Size& frame_size,
-                              float device_scale_factor) override;
   void OnDragDropStart(
       mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
   void OnDragEnter(Id window_id,

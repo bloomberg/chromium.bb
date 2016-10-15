@@ -30,7 +30,6 @@ ServerWindowSurface::ServerWindowSurface(
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
   surface_manager->RegisterFrameSinkId(frame_sink_id_);
   surface_manager->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-  surface_sequence_generator_.set_frame_sink_id(frame_sink_id_);
 }
 
 ServerWindowSurface::~ServerWindowSurface() {
@@ -67,10 +66,6 @@ cc::SurfaceId ServerWindowSurface::GetSurfaceId() const {
   if (local_frame_id_.is_null())
     return cc::SurfaceId();
   return cc::SurfaceId(frame_sink_id_, local_frame_id_);
-}
-
-cc::SurfaceSequence ServerWindowSurface::CreateSurfaceSequence() {
-  return surface_sequence_generator_.CreateSurfaceSequence();
 }
 
 ServerWindow* ServerWindowSurface::window() {

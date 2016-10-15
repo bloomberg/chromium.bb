@@ -16,7 +16,6 @@
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/in_flight_change.h"
 #include "services/ui/public/cpp/input_event_handler.h"
-#include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/cpp/window_drop_target.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_observer.h"
@@ -355,13 +354,6 @@ void WindowTreeClient::AttachSurface(
     mojom::SurfaceClientPtr client) {
   DCHECK(tree_);
   tree_->AttachSurface(window_id, type, std::move(surface), std::move(client));
-}
-
-void WindowTreeClient::OnWindowSurfaceDetached(
-    Id window_id,
-    const cc::SurfaceSequence& sequence) {
-  DCHECK(tree_);
-  tree_->OnWindowSurfaceDetached(window_id, sequence);
 }
 
 void WindowTreeClient::LocalSetCapture(Window* window) {
@@ -1098,23 +1090,6 @@ void WindowTreeClient::OnWindowPredefinedCursorChanged(
     return;
 
   WindowPrivate(window).LocalSetPredefinedCursor(cursor);
-}
-
-void WindowTreeClient::OnWindowSurfaceChanged(
-    Id window_id,
-    const cc::SurfaceId& surface_id,
-    const cc::SurfaceSequence& surface_sequence,
-    const gfx::Size& frame_size,
-    float device_scale_factor) {
-  Window* window = GetWindowByServerId(window_id);
-  if (!window)
-    return;
-  std::unique_ptr<SurfaceInfo> surface_info(base::MakeUnique<SurfaceInfo>());
-  surface_info->surface_id = surface_id;
-  surface_info->surface_sequence = surface_sequence;
-  surface_info->frame_size = frame_size;
-  surface_info->device_scale_factor = device_scale_factor;
-  WindowPrivate(window).LocalSetSurfaceId(std::move(surface_info));
 }
 
 void WindowTreeClient::OnDragDropStart(

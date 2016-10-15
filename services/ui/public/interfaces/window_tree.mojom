@@ -5,7 +5,6 @@
 module ui.mojom;
 
 import "cc/ipc/surface_id.mojom";
-import "cc/ipc/surface_sequence.mojom";
 import "services/ui/public/interfaces/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
@@ -142,9 +141,6 @@ interface WindowTree {
                 SurfaceType type,
                 Surface& surface,
                 SurfaceClient client);
-
-  // Returns surface reference back to window server for reclamation.
-  OnWindowSurfaceDetached(uint32 window_id, cc.mojom.SurfaceSequence sequence);
 
   // Reparents a window.
   // This fails for any of the following reasons:
@@ -425,18 +421,6 @@ interface WindowTreeClient {
 
   OnWindowPredefinedCursorChanged(uint32 window_id, Cursor cursor_id);
 
-  // Invoked when a client window submits a new surface ID. The surface ID and
-  // associated information is propagated to the parent connection. The parent
-  // compositor can take ownership of this surface ID and embed it along with
-  // the SurfaceSequence, frame_size, and device_scale_factor in a layer.
-  // TODO(fsamuel): Surface IDs should be passed to parents directly instead of
-  // going through the window server. http://crbug.com/655231
-  OnWindowSurfaceChanged(uint32 window_id,
-                         cc.mojom.SurfaceId surface_id,
-                         cc.mojom.SurfaceSequence surface_sequence,
-                         gfx.mojom.Size frame_size,
-                         float device_scale_factor);
-                         
   // Called when the mouse cursor enters a window on this connection for the
   // first time, providing a list of available mime types. We want to send this
   // set of data only one time, so this isn't part of OnDragEnter(), which

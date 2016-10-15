@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/gfx/geometry/insets.h"
@@ -28,7 +27,6 @@ namespace ui {
 
 class InputEventHandler;
 class ServiceProviderImpl;
-class SurfaceIdHandler;
 class WindowObserver;
 class WindowSurface;
 class WindowSurfaceBinding;
@@ -162,10 +160,6 @@ class Window {
 
   void set_input_event_handler(InputEventHandler* input_event_handler) {
     input_event_handler_ = input_event_handler;
-  }
-
-  void set_surface_id_handler(SurfaceIdHandler* surface_id_handler) {
-    surface_id_handler_ = surface_id_handler;
   }
 
   // Observation.
@@ -315,7 +309,6 @@ class Window {
   void LocalSetPredefinedCursor(mojom::Cursor cursor_id);
   void LocalSetSharedProperty(const std::string& name,
                               const std::vector<uint8_t>* data);
-  void LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info);
 
   // Notifies this winodw that its stacking position has changed.
   void NotifyWindowStackingChanged();
@@ -363,7 +356,6 @@ class Window {
 
   base::ObserverList<WindowObserver> observers_;
   InputEventHandler* input_event_handler_;
-  SurfaceIdHandler* surface_id_handler_;
 
   gfx::Rect bounds_;
   gfx::Insets client_area_;
@@ -400,8 +392,6 @@ class Window {
   };
 
   std::map<const void*, Value> prop_map_;
-
-  std::unique_ptr<SurfaceInfo> surface_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

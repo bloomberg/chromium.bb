@@ -20,7 +20,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/surfaces/display_compositor_client.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "services/ui/ws/ids.h"
@@ -51,8 +50,7 @@ class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
                      public GpuServiceProxyDelegate,
                      public UserDisplayManagerDelegate,
-                     public UserIdTrackerObserver,
-                     public DisplayCompositorClient {
+                     public UserIdTrackerObserver {
  public:
   explicit WindowServer(WindowServerDelegate* delegate);
   ~WindowServer() override;
@@ -196,11 +194,6 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWindowDeleted(ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                mojom::Cursor cursor_id);
-  void ProcessWindowSurfaceCreated(ServerWindow* window,
-                                   mojom::SurfaceType surface_type,
-                                   const cc::SurfaceId& surface_id,
-                                   const gfx::Size& frame_size,
-                                   float device_scale_factor);
 
   // Sends an |event| to all WindowTrees belonging to |user_id| that might be
   // observing events. Skips |ignore_tree| if it is non-null. |target_window| is
@@ -339,11 +332,6 @@ class WindowServer : public ServerWindowDelegate,
   // GpuServiceProxyDelegate:
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
-
-  // DisplayCompositorClient:
-  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
-                        const gfx::Size& frame_size,
-                        float device_scale_factor) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,

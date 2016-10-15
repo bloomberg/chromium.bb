@@ -256,10 +256,6 @@ class WindowTree : public mojom::WindowTree,
   void ProcessTransientWindowRemoved(const ServerWindow* window,
                                      const ServerWindow* transient_window,
                                      bool originated_change);
-  void ProcessWindowSurfaceChanged(ServerWindow* window,
-                                   const cc::SurfaceId& surface_id,
-                                   const gfx::Size& frame_size,
-                                   float device_scale_factor);
 
   // Sends this event to the client if it matches an active pointer watcher.
   // |target_window| is the target of the event, and may be null or not known
@@ -417,8 +413,6 @@ class WindowTree : public mojom::WindowTree,
                      mojom::SurfaceType type,
                      mojo::InterfaceRequest<mojom::Surface> surface,
                      mojom::SurfaceClientPtr client) override;
-  void OnWindowSurfaceDetached(Id transport_window_id,
-                               const cc::SurfaceSequence& sequence) override;
   void Embed(Id transport_window_id,
              mojom::WindowTreeClientPtr client,
              uint32_t flags,

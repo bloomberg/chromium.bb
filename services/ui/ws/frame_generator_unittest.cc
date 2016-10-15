@@ -36,7 +36,7 @@ void InitWindow(ServerWindow* window) {
 
 class FrameGeneratorTest : public testing::Test {
  public:
-  FrameGeneratorTest() : display_compositor_(new DisplayCompositor(nullptr)) {}
+  FrameGeneratorTest() : display_compositor_(new DisplayCompositor()) {}
   ~FrameGeneratorTest() override {}
 
   // Calls DrawWindowTree() on |frame_generator_|

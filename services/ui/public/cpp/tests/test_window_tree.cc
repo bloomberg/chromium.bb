@@ -186,8 +186,4 @@ void TestWindowTree::PerformWindowMove(uint32_t change_id,
 
 void TestWindowTree::CancelWindowMove(uint32_t window_id) {}
 
-void TestWindowTree::OnWindowSurfaceDetached(
-    uint32_t window_id,
-    const cc::SurfaceSequence& sequence) {}
-
 }  // namespace ui

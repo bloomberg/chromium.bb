@@ -377,15 +377,6 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     NOTIMPLEMENTED();
   }
 
-  void OnWindowSurfaceChanged(Id window_id,
-                              const cc::SurfaceId& surface_id,
-                              const cc::SurfaceSequence& surface_sequence,
-                              const gfx::Size& frame_size,
-                              float device_scale_factor) override {
-    tracker_.OnWindowSurfaceChanged(window_id, surface_id, surface_sequence,
-                                    frame_size, device_scale_factor);
-  }
-
   void OnDragEnter(uint32_t window,
                    uint32_t key_state,
                    const gfx::Point& position,
@@ -2119,56 +2110,6 @@ TEST_F(WindowTreeClientTest, DISABLED_ExplicitCapturePropagation) {
   wt_client1_->WaitForAllMessages();
 
   EXPECT_TRUE(changes1()->empty());
-}
-
-TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
-  const Id window_1_100 = wt_client1()->NewWindow(100);
-  ASSERT_TRUE(window_1_100);
-  ASSERT_TRUE(wt_client1()->AddWindow(root_window_id(), window_1_100));
-
-  // Establish the second client at 1,100.
-  ASSERT_NO_FATAL_FAILURE(EstablishSecondClientWithRoot(window_1_100));
-
-  // 1,100 is the id in the wt_client1's id space. The new client should see
-  // 2,1 (the server id).
-  const Id window_1_100_in_ws2 = BuildWindowId(client_id_1(), 1);
-  EXPECT_EQ(window_1_100_in_ws2, wt_client2()->root_window_id());
-
-  // The first window created in the second client gets a server id of 2,1
-  // regardless of the id the client uses.
-  const Id window_2_101 = wt_client2()->NewWindow(101);
-  ASSERT_TRUE(wt_client2()->AddWindow(window_1_100_in_ws2, window_2_101));
-  const Id window_2_101_in_ws1 = BuildWindowId(client_id_2(), 1);
-  wt_client1()->WaitForChangeCount(1);
-  EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101_in_ws1) +
-                " old_parent=null new_parent=" + IdToString(window_1_100),
-            SingleChangeToDescription(*changes1()));
-  changes1()->clear();
-
-  // Submit a CompositorFrame to window_2_101 and make sure server gets it.
-  mojom::SurfacePtr surface_ptr;
-  mojom::SurfaceClientRequest client_request;
-  mojom::SurfaceClientPtr surface_client_ptr;
-  client_request = mojo::GetProxy(&surface_client_ptr);
-  wt2()->AttachSurface(window_2_101, mojom::SurfaceType::DEFAULT,
-                       mojo::GetProxy(&surface_ptr),
-                       std::move(surface_client_ptr));
-  cc::CompositorFrame compositor_frame;
-  compositor_frame.delegated_frame_data =
-      base::MakeUnique<cc::DelegatedFrameData>();
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  gfx::Rect frame_rect(0, 0, 100, 100);
-  render_pass->SetNew(cc::RenderPassId(1, 1), frame_rect, frame_rect,
-                      gfx::Transform());
-  compositor_frame.delegated_frame_data->render_pass_list.push_back(
-      std::move(render_pass));
-  surface_ptr->SubmitCompositorFrame(std::move(compositor_frame),
-                                     base::Closure());
-  // Make sure the parent connection gets the surface ID.
-  wt_client1()->WaitForChangeCount(1);
-  // Verify that the submitted frame is for |window_2_101|.
-  EXPECT_EQ(window_2_101_in_ws1,
-            changes1()->back().surface_id.frame_sink_id().client_id());
 }
 
 // TODO(sky): need to better track changes to initial client. For example,
