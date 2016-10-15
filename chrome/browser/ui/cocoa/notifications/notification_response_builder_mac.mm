@@ -46,9 +46,11 @@ enum NotificationOperation {
   NSNumber* notificationType = [[notification userInfo]
       objectForKey:notification_constants::kNotificationType];
 
-  // Initialize operation and button index for the case where the
-  // notification itself was clicked.
-  NotificationOperation operation = NOTIFICATION_CLICK;
+  // Closed notifications are not activated.
+  NotificationOperation operation =
+      notification.activationType == NSUserNotificationActivationTypeNone
+          ? NOTIFICATION_CLOSE
+          : NOTIFICATION_CLICK;
   int buttonIndex = -1;
 
   // Determine whether the user clicked on a button, and if they did, whether it
