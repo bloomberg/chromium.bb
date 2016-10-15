@@ -57,12 +57,18 @@ class V4StoreTest : public PlatformTest {
                     file_format_string.size());
   }
 
-  void UpdatedStoreReadyAfterRiceRemovals(bool* called_back,
-                                          std::unique_ptr<V4Store> new_store) {
+  void UpdatedStoreReady(bool* called_back,
+                         bool expect_store,
+                         std::unique_ptr<V4Store> store) {
     *called_back = true;
-    EXPECT_EQ(2u, new_store->hash_prefix_map_.size());
-    EXPECT_EQ("22222", new_store->hash_prefix_map_[5]);
-    EXPECT_EQ("abcd", new_store->hash_prefix_map_[4]);
+    if (expect_store) {
+      ASSERT_TRUE(store);
+      EXPECT_EQ(2u, store->hash_prefix_map_.size());
+      EXPECT_EQ("22222", store->hash_prefix_map_[5]);
+      EXPECT_EQ("abcd", store->hash_prefix_map_[4]);
+    } else {
+      ASSERT_FALSE(store);
+    }
   }
 
   base::ScopedTempDir temp_dir_;
@@ -734,8 +740,8 @@ TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
 
   bool called_back = false;
   UpdatedStoreReadyCallback store_ready_callback =
-      base::Bind(&V4StoreTest::UpdatedStoreReadyAfterRiceRemovals,
-                 base::Unretained(this), &called_back);
+      base::Bind(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
+                 &called_back, true /* expect_store */);
   EXPECT_FALSE(base::PathExists(store.store_path_));
   store.ApplyUpdate(std::move(lur), task_runner_, store_ready_callback);
   EXPECT_TRUE(base::PathExists(store.store_path_));
@@ -814,6 +820,32 @@ TEST_F(V4StoreTest, WriteToDiskFails) {
   // the temp store file to |store_path_| it fails.
   EXPECT_EQ(UNABLE_TO_RENAME_FAILURE,
             V4Store(task_runner_, temp_dir_.GetPath()).WriteToDisk(Checksum()));
+}
+
+TEST_F(V4StoreTest, FullUpdateFailsChecksumSynchronously) {
+  V4Store store(task_runner_, store_path_);
+  bool called_back = false;
+  UpdatedStoreReadyCallback store_ready_callback =
+      base::Bind(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
+                 &called_back, false /* expect_store */);
+  EXPECT_FALSE(base::PathExists(store.store_path_));
+
+  // Now create a response with invalid checksum.
+  std::unique_ptr<ListUpdateResponse> lur(new ListUpdateResponse);
+  lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
+  lur->mutable_checksum()->set_sha256(std::string(crypto::kSHA256Length, 0));
+  store.ApplyUpdate(std::move(lur), task_runner_, store_ready_callback);
+  // The update should fail synchronously and not create a store file.
+  EXPECT_FALSE(base::PathExists(store.store_path_));
+
+  // Run everything on the task runner to ensure there are no pending tasks.
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // This ensures that the callback was called.
+  EXPECT_TRUE(called_back);
+  // Ensure that the file is still not created.
+  EXPECT_FALSE(base::PathExists(store.store_path_));
 }
 
 }  // namespace safe_browsing

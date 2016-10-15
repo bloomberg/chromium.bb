@@ -256,6 +256,7 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesFailsChecksum);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestChecksumErrorOnStartup);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, WriteToDiskFails);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, FullUpdateFailsChecksumSynchronously);
   friend class V4StoreTest;
 
   // If |prefix_size| is within expected range, and |raw_hashes_length| is a
@@ -306,11 +307,12 @@ class V4Store {
   // The SHA256 checksum of the final list of hash prefixes, in
   // lexicographically sorted order, must match |expected_checksum| (if it's not
   // empty).
-  ApplyUpdateResult MergeUpdate(const HashPrefixMap& old_hash_prefix_map,
-                                const HashPrefixMap& additions_map,
-                                const ::google::protobuf::RepeatedField<
-                                    ::google::protobuf::int32>* raw_removals,
-                                const std::string& expected_checksum);
+  ApplyUpdateResult MergeUpdate(
+      const HashPrefixMap& old_hash_prefix_map,
+      const HashPrefixMap& additions_map,
+      const ::google::protobuf::RepeatedField<::google::protobuf::int32>*
+          raw_removals,
+      const std::string& expected_checksum);
 
   // Processes the FULL_UPDATE |response| from the server, and writes the
   // merged V4Store to disk. If processing the |response| succeeds, it returns
@@ -325,10 +327,12 @@ class V4Store {
   // the |response| succeeds, it returns APPLY_UPDATE_SUCCESS.
   // This method is called when we receive a FULL_UPDATE from the server, and
   // when we read a store file from disk on startup. The UMA metrics for all
-  // interesting sub-operations use the prefix |metric|.
+  // interesting sub-operations use the prefix |metric|. Delays the checksum
+  // check if |delay_checksum_check| is true.
   ApplyUpdateResult ProcessFullUpdate(
       const std::string& metric,
-      const std::unique_ptr<ListUpdateResponse>& response);
+      const std::unique_ptr<ListUpdateResponse>& response,
+      bool delay_checksum_check);
 
   // Merges the hash prefixes in |hash_prefix_map_old| and |response|, updates
   // the |hash_prefix_map_| and |state_| in the V4Store, and writes the merged
@@ -344,11 +348,13 @@ class V4Store {
   // Merges the hash prefixes in |hash_prefix_map_old| and |response|, and
   // updates the |hash_prefix_map_| and |state_| in the V4Store. If processing
   // succeeds, it returns APPLY_UPDATE_SUCCESS. The UMA metrics for all
-  // interesting sub-operations use the prefix |metric|.
+  // interesting sub-operations use the prefix |metric|. Delays the checksum
+  // check if |delay_checksum_check| is true.
   ApplyUpdateResult ProcessUpdate(
       const std::string& metric,
       const HashPrefixMap& hash_prefix_map_old,
-      const std::unique_ptr<ListUpdateResponse>& response);
+      const std::unique_ptr<ListUpdateResponse>& response,
+      bool delay_checksum_check);
 
   // Reads the state of the store from the file on disk and returns the reason
   // for the failure or reports success.
