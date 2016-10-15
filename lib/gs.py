@@ -676,6 +676,8 @@ class GSContext(object):
           'ssl.SSLError: The read operation timed out',
           'Unable to find the server',
           'doesn\'t match cloud-supplied digest',
+          'ssl.SSLError: [Errno 8]',
+          'EOF occurred in violation of protocol',
       )
       if any(x in error for x in RESUMABLE_ERROR_MESSAGE):
         # Only remove the tracker files if we try to upload/download a file.

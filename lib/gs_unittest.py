@@ -983,6 +983,13 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
     e = self._getException(['gsutil', 'rm', 'gs://foo/bar/monkey'], error)
     self.assertEqual(self.ctx._RetryFilter(e), True)
 
+  def testRetrySSLEOF(self):
+    """Verify retry behavior when EOF occurs in violation of SSL protocol."""
+    error = ('ssl.SSLError: [Errno 8] _ssl.c:510: EOF occurred in violation of'
+             ' protocol')
+    e = self._getException(['gsutil', 'cat', 'gs://totally/legit/uri'], error)
+    self.assertEqual(self.ctx._RetryFilter(e), True)
+
 
 class GSContextTest(AbstractGSContextTest):
   """Tests for GSContext()"""
