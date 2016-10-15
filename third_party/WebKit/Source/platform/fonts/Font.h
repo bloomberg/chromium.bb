@@ -141,7 +141,9 @@ class PLATFORM_EXPORT Font {
 
   // Metrics that we query the FontFallbackList for.
   float spaceWidth() const {
-    return primaryFont()->spaceWidth() + getFontDescription().letterSpacing();
+    DCHECK(primaryFont());
+    return (primaryFont() ? primaryFont()->spaceWidth() : 0) +
+           getFontDescription().letterSpacing();
   }
   float tabWidth(const SimpleFontData&, const TabSize&, float position) const;
   float tabWidth(const TabSize& tabSize, float position) const {
