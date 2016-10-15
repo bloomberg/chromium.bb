@@ -156,11 +156,11 @@ bool HostDispatcher::Send(IPC::Message* msg) {
     // destroys the plugin module and in turn the dispatcher.
     ScopedModuleReference scoped_ref(this);
 
-    FOR_EACH_OBSERVER(SyncMessageStatusObserver, sync_status_observer_list_,
-                      BeginBlockOnSyncMessage());
+    for (auto& observer : sync_status_observer_list_)
+      observer.BeginBlockOnSyncMessage();
     bool result = Dispatcher::Send(msg);
-    FOR_EACH_OBSERVER(SyncMessageStatusObserver, sync_status_observer_list_,
-                      EndBlockOnSyncMessage());
+    for (auto& observer : sync_status_observer_list_)
+      observer.EndBlockOnSyncMessage();
 
     return result;
   } else {
