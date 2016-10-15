@@ -15,6 +15,8 @@
     {
       'target_name': 'search_engine_entry',
       'dependencies': [
+        '../compiled_resources2.gyp:settings_action_menu',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
         'search_engines_browser_proxy',

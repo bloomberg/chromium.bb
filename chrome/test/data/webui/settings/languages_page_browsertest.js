@@ -53,6 +53,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     var languagesPage;
     var languagesCollapse;
     var languageHelper;
+    var actionMenu;
 
     /**
      * @param {numExpected} Expected number of languages to eventually be
@@ -88,12 +89,16 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
           languagesSection.querySelector('settings-languages-page'));
       languagesCollapse = languagesPage.$.languagesCollapse;
       languagesCollapse.opened = true;
+      actionMenu = languagesPage.$.menu.get();
 
       languageHelper = languagesPage.languageHelper;
       return languageHelper.whenReady();
     }.bind(this));
 
     teardown(function(done) {
+      if (actionMenu.open)
+        actionMenu.close();
+
       // Close the section if we're in a sub-page.
       if (settings.getCurrentRoute().isSubpage()) {
         settings.navigateTo(settings.Route.BASIC);
@@ -209,35 +214,25 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
         cur = languageHelper.prefs.translate.enabled.value;
       });
 
-      test('structure', function(done) {
+      test('structure', function() {
         var languageOptionsDropdownTrigger = languagesCollapse.querySelector(
             'paper-icon-button');
         assertTrue(!!languageOptionsDropdownTrigger);
         MockInteractions.tap(languageOptionsDropdownTrigger);
-        var languageMenu = assert(languagesPage.$$('cr-shared-menu'));
+        assertTrue(actionMenu.open);
 
-        listenOnce(languageMenu, 'iron-overlay-opened', function() {
-          assertTrue(languageMenu.menuOpen);
+        // Enable Translate so the menu always shows the Translate checkbox.
+        languageHelper.setPrefValue('translate.enabled', true);
 
-          // Enable Translate so the menu always shows the Translate checkbox.
-          languageHelper.setPrefValue('translate.enabled', true);
+        var separator = actionMenu.querySelector('hr');
+        assertEquals(1, separator.offsetHeight);
 
-          var separator = languageMenu.querySelector('hr');
-          assertEquals(1, separator.offsetHeight);
-
-          // Disable Translate. On platforms that can't change the UI language,
-          // this hides all the checkboxes, so the separator isn't needed.
-          // Chrome OS and Windows still show a checkbox and thus the separator.
-          languageHelper.setPrefValue('translate.enabled', false);
-          if (cr.isChromeOS || cr.isWindows)
-            assertEquals(1, separator.offsetHeight);
-          else
-            assertEquals(0, separator.offsetHeight);
-
-          MockInteractions.tap(languageOptionsDropdownTrigger);
-          assertFalse(languageMenu.menuOpen);
-          done();
-        });
+        // Disable Translate. On platforms that can't change the UI language,
+        // this hides all the checkboxes, so the separator isn't needed.
+        // Chrome OS and Windows still show a checkbox and thus the separator.
+        languageHelper.setPrefValue('translate.enabled', false);
+        assertEquals(
+            cr.isChromeOS || cr.isWindows ? 1 : 0, separator.offsetHeight);
       });
 
       test('remove language', function() {
@@ -264,18 +259,17 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
           // Open the menu and select Remove.
           MockInteractions.tap(item.querySelector('paper-icon-button'));
 
-          var languageMenu = assert(languagesPage.$$('cr-shared-menu'));
-          assertTrue(languageMenu.menuOpen);
-          var removeMenuItem = assert(languageMenu.querySelector(
+          assertTrue(actionMenu.open);
+          var removeMenuItem = assert(actionMenu.querySelector(
               '.dropdown-item:last-child'));
           assertFalse(removeMenuItem.disabled);
           MockInteractions.tap(removeMenuItem);
-          assertFalse(languageMenu.menuOpen);
+          assertFalse(actionMenu.open);
 
           // We should go back down to the original number of enabled languages.
-          return whenNumEnabledLanguagesBecomes(numEnabled).then(function() {
-            assertFalse(languageHelper.isLanguageEnabled(newLanguage.code));
-          });
+          return whenNumEnabledLanguagesBecomes(numEnabled);
+        }).then(function() {
+          assertFalse(languageHelper.isLanguageEnabled(newLanguage.code));
         });
       });
     });

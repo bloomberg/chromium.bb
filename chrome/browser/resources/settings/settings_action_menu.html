@@ -1,0 +1,23 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="/direction_delegate.html">
+
+<dom-module id="settings-action-menu">
+  <template>
+    <style>
+      :host {
+        background-color: white;
+        border: none;
+        box-shadow: 0 2px 6px var(--paper-grey-500);
+        margin: 0;
+        outline: none;
+        padding: 0;
+      }
+
+      :host::backdrop {
+        background-color: transparent;
+      }
+    </style>
+    <content select=".dropdown-item,hr"></content>
+  </template>
+  <script src="settings_action_menu.js"></script>
+</dom-module>

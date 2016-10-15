@@ -187,6 +187,9 @@ cr.define('settings_search_engines_page', function() {
       });
 
       test('MakeDefault_Enabled', function() {
+        // Open action menu.
+        MockInteractions.tap(entry.$$('paper-icon-button'));
+
         var makeDefaultButton = entry.$.makeDefault;
         assertTrue(!!makeDefaultButton);
         MockInteractions.tap(makeDefaultButton);
@@ -198,6 +201,9 @@ cr.define('settings_search_engines_page', function() {
 
       // Test that clicking the "edit" button brings up a dialog.
       test('Edit_Enabled', function() {
+        // Open action menu.
+        MockInteractions.tap(entry.$$('paper-icon-button'));
+
         var engine = entry.engine;
         var editButton = entry.$.edit;
         assertTrue(!!editButton);

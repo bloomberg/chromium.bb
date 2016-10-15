@@ -244,6 +244,12 @@
                  file="settings_ui/settings_ui.js"
                  type="chrome_html"
                  flattenhtml="true" />
+      <structure name="IDR_SETTINGS_SETTINGS_ACTION_MENU_HTML"
+                 file="settings_action_menu.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SETTINGS_ACTION_MENU_JS"
+                 file="settings_action_menu.js"
+                 type="chrome_html" />
       <if expr="use_nss_certs">
         <structure name="IDR_SETTINGS_CERTIFICATE_MANAGER_PAGE_HTML"
                    file="certificate_manager_page/certificate_manager_page.html"

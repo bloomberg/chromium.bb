@@ -952,3 +952,20 @@ TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
 });
 
 GEN('#endif');
+
+function CrSettingsActionMenuTest() {}
+
+CrSettingsActionMenuTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/settings_action_menu.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'settings_action_menu_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsActionMenuTest', 'All', function() {
+  mocha.run();
+});

@@ -72,5 +72,12 @@
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'settings_action_menu',
+      'dependencies': [
+        'direction_delegate',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

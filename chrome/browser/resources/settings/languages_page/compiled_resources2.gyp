@@ -25,10 +25,10 @@
       'dependencies': [
         '../compiled_resources2.gyp:lifetime_browser_proxy',
         '../compiled_resources2.gyp:route',
+        '../compiled_resources2.gyp:settings_action_menu',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-checkbox/compiled_resources2.gyp:paper-checkbox-extracted',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
-        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(DEPTH)/ui/webui/resources/js/chromeos/compiled_resources2.gyp:ui_account_tweaks',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',

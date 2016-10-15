@@ -185,7 +185,7 @@ Polymer({
       // Reset the chosen UI language to the actual UI language.
       this.languageHelper.resetUILanguage();
     }
-    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
   },
 
    /**
@@ -215,7 +215,7 @@ Polymer({
       this.languageHelper.disableTranslateLanguage(
           this.detailLanguage_.language.code);
     }
-    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
   },
 
   /**
@@ -235,7 +235,7 @@ Polymer({
    * @private
    */
   onMoveToTopTap_: function() {
-    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
   },
 
@@ -244,7 +244,7 @@ Polymer({
    * @private
    */
   onMoveUpTap_: function() {
-    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.moveLanguage(this.detailLanguage_.language.code, -1);
   },
 
@@ -253,7 +253,7 @@ Polymer({
    * @private
    */
   onMoveDownTap_: function() {
-    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.moveLanguage(this.detailLanguage_.language.code, 1);
   },
 
@@ -262,7 +262,7 @@ Polymer({
    * @private
    */
   onRemoveLanguageTap_: function() {
-    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    /** @type {!SettingsActionMenuElement} */(this.$.menu.get()).close();
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
 
@@ -449,29 +449,27 @@ Polymer({
   },
 
   /**
-   * Opens or closes the shared menu at the location of the tapped item.
    * @param {!Event} e
    * @private
    */
-  toggleMenu_: function(e) {
-    e.stopPropagation();  // Prevent the tap event from closing the menu.
-
+  onDotsTap_: function(e) {
     this.detailLanguage_ =
         /** @type {!{model: !{item: !LanguageState}}} */(e).model.item;
 
     // Ensure the template has been stamped.
-    var menu = /** @type {?CrSharedMenuElement} */(this.$.menu.getIfExists());
+    var menu = /** @type {?SettingsActionMenuElement} */(
+        this.$.menu.getIfExists());
     if (!menu) {
-      menu = /** @type {!CrSharedMenuElement} */(this.$.menu.get());
+      menu = /** @type {!SettingsActionMenuElement} */(this.$.menu.get());
       this.initializeMenu_(menu);
     }
 
-    menu.toggleMenu(/** @type {!Element} */(e.target));
+    menu.showAt(/** @type {!Element} */ (e.target));
   },
 
   /**
    * Applies Chrome OS session tweaks to the menu.
-   * @param {!CrSharedMenuElement} menu
+   * @param {!SettingsActionMenuElement} menu
    * @private
    */
   initializeMenu_: function(menu) {
