@@ -154,30 +154,30 @@ def ExperimentalCanvasFeaturesPages(base_name):
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_main.html',
-      base_name + '_OffscreenCanvasWebGLGreenBox',
-      test_rect=[0, 0, 300, 300],
-      revision=2,
+      base_name + '_OffscreenCanvasWebGLDefault',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_worker.html',
-      base_name + '_OffscreenCanvasWebGLRedBoxWorker',
-      test_rect=[0, 0, 300, 300],
-      revision=3,
+      base_name + '_OffscreenCanvasWebGLDefaultWorker',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_main.html',
       base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
-      test_rect=[0, 0, 300, 300],
-      revision=1,
+      test_rect=[0, 0, 350, 350],
+      revision=2,
       browser_args=browser_args + ['--disable-gpu-compositing']),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_worker.html',
       base_name + '_OffscreenCanvasWebGLSoftwareCompositingWorker',
-      test_rect=[0, 0, 300, 300],
-      revision=1,
+      test_rect=[0, 0, 350, 350],
+      revision=2,
       browser_args=browser_args + ['--disable-gpu-compositing']),
 
     PixelTestPage(

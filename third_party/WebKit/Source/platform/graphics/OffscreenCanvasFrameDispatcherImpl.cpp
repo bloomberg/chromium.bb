@@ -183,6 +183,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   // TODO(crbug.com/646022): making this overlay-able.
   resource.is_overlay_candidate = false;
 
+  bool yflipped = false;
   OffscreenCanvasCommitType commitType;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, commitTypeHistogram,
@@ -194,6 +195,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       // Case 1: both canvas and compositor are gpu accelerated.
       commitType = CommitGPUCanvasGPUCompositing;
       setTransferableResourceToStaticBitmapImage(resource, image);
+      yflipped = true;
     } else {
       // Case 2: canvas is accelerated but --disable-gpu-compositing is
       // specified, or WebGL's commit is called with SwiftShader. The latter
@@ -208,6 +210,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       // Case 3: canvas is not gpu-accelerated, but compositor is
       commitType = CommitSoftwareCanvasGPUCompositing;
       setTransferableResourceToSharedGPUContext(resource, image);
+      yflipped = true;
     } else {
       // Case 4: both canvas and compositor are not gpu accelerated.
       commitType = CommitSoftwareCanvasSoftwareCompositing;
@@ -230,7 +233,6 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   const gfx::PointF uvTopLeft(0.f, 0.f);
   const gfx::PointF uvBottomRight(1.f, 1.f);
   float vertexOpacity[4] = {1.f, 1.f, 1.f, 1.f};
-  const bool yflipped = false;
   // TODO(crbug.com/645994): this should be true when using style
   // "image-rendering: pixelated".
   const bool nearestNeighbor = false;
