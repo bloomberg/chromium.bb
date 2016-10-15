@@ -82,6 +82,7 @@ action("aggregate_vector_icons") {
     "menu_check.icon",
     "menu_radio_empty.icon",
     "menu_radio_selected.icon",
+    "microphone.icon",
     "midi.icon",
     "mixed_content.icon",
     "mode_edit.icon",

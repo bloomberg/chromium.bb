@@ -26,7 +26,6 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -40,12 +39,14 @@
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include <vector>
 
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "ui/android/window_android.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
@@ -275,11 +276,14 @@ void MediaStreamDevicesController::ForcePermissionDeniedTemporarily() {
   set_persist(true);
 }
 
-int MediaStreamDevicesController::GetIconId() const {
-  if (IsAskingForVideo())
-    return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
-
-  return IDR_INFOBAR_MEDIA_STREAM_MIC;
+PermissionRequest::IconId MediaStreamDevicesController::GetIconId() const {
+#if defined(OS_ANDROID)
+  return IsAskingForVideo() ? IDR_INFOBAR_MEDIA_STREAM_CAMERA
+                            : IDR_INFOBAR_MEDIA_STREAM_MIC;
+#else
+  return IsAskingForVideo() ? gfx::VectorIconId::VIDEOCAM
+                            : gfx::VectorIconId::MICROPHONE;
+#endif
 }
 
 base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {

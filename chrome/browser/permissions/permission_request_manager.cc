@@ -27,7 +27,7 @@ class CancelledRequest : public PermissionRequest {
         origin_(cancelled->GetOrigin()) {}
   ~CancelledRequest() override {}
 
-  int GetIconId() const override { return icon_; }
+  IconId GetIconId() const override { return icon_; }
   base::string16 GetMessageTextFragment() const override {
     return message_fragment_;
   }
@@ -41,7 +41,7 @@ class CancelledRequest : public PermissionRequest {
   void RequestFinished() override { delete this; }
 
  private:
-  int icon_;
+  IconId icon_;
   base::string16 message_fragment_;
   GURL origin_;
 };

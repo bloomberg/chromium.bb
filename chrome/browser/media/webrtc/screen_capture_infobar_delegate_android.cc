@@ -5,12 +5,12 @@
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 
 #include "base/callback_helpers.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/desktop_streams_registry.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
@@ -59,7 +59,7 @@ base::string16 ScreenCaptureInfoBarDelegateAndroid::GetMessageText() const {
 }
 
 int ScreenCaptureInfoBarDelegateAndroid::GetIconId() const {
-  return IDR_INFOBAR_MEDIA_STREAM_SCREEN;
+  return IDR_ANDROID_INFOBAR_MEDIA_STREAM_SCREEN;
 }
 
 base::string16 ScreenCaptureInfoBarDelegateAndroid::GetButtonLabel(

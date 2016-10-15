@@ -205,7 +205,6 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
       requests[0]->GetOrigin(),
       url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   bool show_persistence_toggle = true;
   for (size_t index = 0; index < requests.size(); index++) {
     DCHECK(index < accept_state.size());
@@ -227,13 +226,10 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
         views::BoxLayout::kHorizontal, views::kCheckboxIndent, 0,
         views::kItemLabelSpacing));
     views::ImageView* icon = new views::ImageView();
-    gfx::VectorIconId vector_id = requests[index]->GetVectorIconId();
+    gfx::VectorIconId vector_id = requests[index]->GetIconId();
     if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
       icon->SetImage(
           gfx::CreateVectorIcon(vector_id, kIconSize, gfx::kChromeIconGrey));
-    } else {
-      icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconId()));
-      icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
     }
     icon->SetTooltipText(base::string16());  // Redundant with the text fragment
     label_container->AddChildView(icon);

@@ -23,7 +23,7 @@ class MockPermissionRequest : public PermissionRequest {
 
   ~MockPermissionRequest() override;
 
-  int GetIconId() const override;
+  IconId GetIconId() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
 

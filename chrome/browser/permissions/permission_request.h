@@ -60,16 +60,19 @@ enum class PermissionRequestGestureType {
 // requests, or depending on the situation, not shown at all.
 class PermissionRequest {
  public:
+#if defined(OS_ANDROID)
+  // On Android, icons are represented with an IDR_ identifier.
+  typedef int IconId;
+#else
+  // On desktop, we use a vector icon id.
+  typedef gfx::VectorIconId IconId;
+#endif
+
   PermissionRequest();
   virtual ~PermissionRequest() {}
 
-  // Returns a vector icon id if the icon should be drawn as a vector
-  // resource. Otherwise, returns VECTOR_ICON_NONE.
-  virtual gfx::VectorIconId GetVectorIconId() const;
-
   // The icon to use next to the message text fragment in the permission bubble.
-  // TODO(estade): remove this in favor of GetVectorIconId().
-  virtual int GetIconId() const;
+  virtual IconId GetIconId() const = 0;
 
   // Returns the shortened prompt text for this permission.  Must be phrased
   // as a heading, e.g. "Location", or "Camera". The permission bubble may

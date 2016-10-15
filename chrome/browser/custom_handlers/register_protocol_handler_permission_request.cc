@@ -12,10 +12,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/grit/theme_resources.h"
-#endif
-
 namespace {
 
 base::string16 GetProtocolName(
@@ -42,21 +38,9 @@ RegisterProtocolHandlerPermissionRequest
 RegisterProtocolHandlerPermissionRequest::
 ~RegisterProtocolHandlerPermissionRequest() {}
 
-gfx::VectorIconId RegisterProtocolHandlerPermissionRequest::GetVectorIconId()
+PermissionRequest::IconId RegisterProtocolHandlerPermissionRequest::GetIconId()
     const {
-#if defined(OS_MACOSX)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
   return gfx::VectorIconId::PROTOCOL_HANDLER;
-#endif
-}
-
-int RegisterProtocolHandlerPermissionRequest::GetIconId() const {
-#if defined(OS_MACOSX)
-  return IDR_REGISTER_PROTOCOL_HANDLER;
-#else
-  return 0;
-#endif
 }
 
 base::string16

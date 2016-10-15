@@ -19,7 +19,7 @@ DownloadPermissionRequest::DownloadPermissionRequest(
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
 
-gfx::VectorIconId DownloadPermissionRequest::GetVectorIconId() const {
+PermissionRequest::IconId DownloadPermissionRequest::GetIconId() const {
   return gfx::VectorIconId::FILE_DOWNLOAD;
 }
 

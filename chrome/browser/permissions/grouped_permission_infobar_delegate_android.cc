@@ -5,6 +5,7 @@
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
@@ -46,7 +47,7 @@ int GroupedPermissionInfoBarDelegate::GetIconIdForPermission(
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
     return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 
-  return IDR_INFOBAR_WARNING;
+  return IDR_ANDROID_INFOBAR_WARNING;
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageTextFragment(

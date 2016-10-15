@@ -512,9 +512,9 @@ const NSInteger kFullscreenLeftOffset = 40;
       [[NSView alloc] initWithFrame:NSZeroRect]);
   base::scoped_nsobject<NSImageView> permissionIcon(
       [[NSImageView alloc] initWithFrame:NSZeroRect]);
-  [permissionIcon setImage:NSImageFromImageSkia(
-      gfx::CreateVectorIcon(request->GetVectorIconId(), 18,
-                            gfx::kChromeIconGrey))];
+  [permissionIcon
+      setImage:NSImageFromImageSkia(gfx::CreateVectorIcon(
+                   request->GetIconId(), 18, gfx::kChromeIconGrey))];
   [permissionIcon setFrameSize:kPermissionIconSize];
   [permissionView addSubview:permissionIcon];
 

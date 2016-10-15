@@ -9,10 +9,10 @@
 #include "base/android/jni_array.h"
 #include "base/callback_helpers.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
@@ -154,7 +154,7 @@ PermissionUpdateInfoBarDelegate::GetIdentifier() const {
 }
 
 int PermissionUpdateInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_WARNING;
+  return IDR_ANDROID_INFOBAR_WARNING;
 }
 
 base::string16 PermissionUpdateInfoBarDelegate::GetMessageText() const {

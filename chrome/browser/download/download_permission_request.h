@@ -21,8 +21,8 @@ class DownloadPermissionRequest : public PermissionRequest {
   ~DownloadPermissionRequest() override;
 
  private:
-  // PermisisonBubbleDelegate:
-  gfx::VectorIconId GetVectorIconId() const override;
+  // PermissionBubbleDelegate:
+  IconId GetIconId() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;

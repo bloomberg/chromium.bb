@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/theme_resources.h"
+#include "ui/gfx/vector_icons_public.h"
 
 MockPermissionRequest::MockPermissionRequest()
     : MockPermissionRequest("test",
@@ -59,9 +60,9 @@ MockPermissionRequest::MockPermissionRequest(
 
 MockPermissionRequest::~MockPermissionRequest() {}
 
-int MockPermissionRequest::GetIconId() const {
+PermissionRequest::IconId MockPermissionRequest::GetIconId() const {
   // Use a valid icon ID to support UI tests.
-  return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
+  return gfx::VectorIconId::WARNING;
 }
 
 base::string16 MockPermissionRequest::GetMessageTextFragment() const {

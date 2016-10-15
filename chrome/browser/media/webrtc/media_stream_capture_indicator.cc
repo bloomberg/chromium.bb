@@ -356,6 +356,7 @@ void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon(bool audio,
 void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(estade): these should use vector icons.
   if (!mic_image_) {
     mic_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_INFOBAR_MEDIA_STREAM_MIC);

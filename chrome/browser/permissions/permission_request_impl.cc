@@ -8,15 +8,10 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/android_theme_resources.h"
-#endif
 
 PermissionRequestImpl::PermissionRequestImpl(
     const GURL& request_origin,
@@ -42,10 +37,7 @@ PermissionRequestImpl::~PermissionRequestImpl() {
   }
 }
 
-gfx::VectorIconId PermissionRequestImpl::GetVectorIconId() const {
-#if defined(OS_ANDROID)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
+PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
   switch (permission_type_) {
     case content::PermissionType::GEOLOCATION:
       return gfx::VectorIconId::LOCATION_ON;
@@ -67,24 +59,7 @@ gfx::VectorIconId PermissionRequestImpl::GetVectorIconId() const {
       NOTREACHED();
       return gfx::VectorIconId::VECTOR_ICON_NONE;
   }
-#endif
 }
-
-#if defined(OS_ANDROID)
-int PermissionRequestImpl::GetIconId() const {
-  switch (permission_type_) {
-    case content::PermissionType::GEOLOCATION:
-      return IDR_ANDROID_INFOBAR_GEOLOCATION;
-    case content::PermissionType::MIDI_SYSEX:
-      return IDR_ALLOWED_MIDI_SYSEX;
-    case content::PermissionType::FLASH:
-      return IDR_ALLOWED_PLUGINS;
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-#endif
 
 base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   int message_id;
