@@ -42,6 +42,7 @@ enum ChangeType {
   CHANGE_TYPE_ON_CHANGE_COMPLETED,
   CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
   CHANGE_TYPE_OPACITY,
+  CHANGE_TYPE_SURFACE_CHANGED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -87,6 +88,10 @@ struct Change {
   std::string property_value;
   int32_t cursor_id;
   uint32_t change_id;
+  cc::SurfaceId surface_id;
+  cc::SurfaceSequence surface_sequence;
+  gfx::Size frame_size;
+  float device_scale_factor;
 };
 
 // Converts Changes to string descriptions.
@@ -169,6 +174,11 @@ class TestChangeTracker {
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr window_data,
                          bool drawn);
+  void OnWindowSurfaceChanged(Id window_id,
+                              const cc::SurfaceId& surface_id,
+                              const cc::SurfaceSequence& surface_sequence,
+                              const gfx::Size& frame_size,
+                              float device_scale_factor);
 
  private:
   void AddChange(const Change& change);

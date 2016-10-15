@@ -357,6 +357,13 @@ void TestWindowTreeClient::OnWindowPredefinedCursorChanged(
   tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
 }
 
+void TestWindowTreeClient::OnWindowSurfaceChanged(
+    Id window_id,
+    const cc::SurfaceId& surface_id,
+    const cc::SurfaceSequence& surface_sequence,
+    const gfx::Size& frame_size,
+    float device_scale_factor) {}
+
 void TestWindowTreeClient::OnDragDropStart(
     mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) {}
 
@@ -485,7 +492,7 @@ WindowEventTargetingHelper::WindowEventTargetingHelper()
     : wm_client_(nullptr),
       display_binding_(nullptr),
       display_(nullptr),
-      display_compositor_(new DisplayCompositor()) {
+      display_compositor_(new DisplayCompositor(nullptr)) {
   PlatformDisplayInitParams display_init_params;
   display_init_params.display_compositor = display_compositor_;
   display_ = new Display(window_server(), display_init_params);
