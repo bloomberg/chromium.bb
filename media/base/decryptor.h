@@ -33,11 +33,11 @@ class MEDIA_EXPORT Decryptor {
     kNoKey,    // No key is available to decrypt.
     kNeedMoreData,  // Decoder needs more data to produce a frame.
     kError,         // Key is available but an error occurred during decryption.
-    STATUS_MAX = kError
+    kStatusMax = kError
   };
 
   // TODO(xhwang): Unify this with DemuxerStream::Type.
-  enum StreamType { kAudio, kVideo, STREAM_TYPE_MAX = kVideo };
+  enum StreamType { kAudio, kVideo, kStreamTypeMax = kVideo };
 
   Decryptor();
   virtual ~Decryptor();

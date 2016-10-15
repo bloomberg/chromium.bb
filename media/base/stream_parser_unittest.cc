@@ -50,7 +50,7 @@ static void GenerateBuffers(const int* decode_timestamps,
   DCHECK(decode_timestamps);
   DCHECK(queue);
   DCHECK_NE(type, DemuxerStream::UNKNOWN);
-  DCHECK_LT(type, DemuxerStream::NUM_TYPES);
+  DCHECK_LE(type, DemuxerStream::TYPE_MAX);
   for (int i = 0; decode_timestamps[i] != kEnd; ++i) {
     scoped_refptr<StreamParserBuffer> buffer =
         StreamParserBuffer::CopyFrom(kFakeData, sizeof(kFakeData),

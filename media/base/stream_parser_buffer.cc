@@ -135,9 +135,6 @@ const char* StreamParserBuffer::GetTypeName() const {
       return "text";
     case DemuxerStream::UNKNOWN:
       return "unknown";
-    case DemuxerStream::NUM_TYPES:
-      // Fall-through to NOTREACHED().
-      break;
   }
   NOTREACHED();
   return "";

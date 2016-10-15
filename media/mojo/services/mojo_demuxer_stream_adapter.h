@@ -49,14 +49,14 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) override;
 
  private:
-  void OnStreamReady(mojom::DemuxerStream::Type type,
+  void OnStreamReady(Type type,
                      mojo::ScopedDataPipeConsumerHandle consumer_handle,
                      mojom::AudioDecoderConfigPtr audio_config,
                      mojom::VideoDecoderConfigPtr video_config);
 
   // The callback from |demuxer_stream_| that a read operation has completed.
   // |read_cb| is a callback from the client who invoked Read() on |this|.
-  void OnBufferReady(mojom::DemuxerStream::Status status,
+  void OnBufferReady(Status status,
                      mojom::DecoderBufferPtr buffer,
                      mojom::AudioDecoderConfigPtr audio_config,
                      mojom::VideoDecoderConfigPtr video_config);
@@ -70,16 +70,16 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
 
   // The last ReadCB received through a call to Read().
   // Used to store the results of OnBufferReady() in the event it is called
-  // with DemuxerStream::Status::kConfigChanged and we don't have an up to
-  // date AudioDecoderConfig yet. In that case we can't forward the results
+  // with Status::kConfigChanged and we don't have an up to date
+  // AudioDecoderConfig yet. In that case we can't forward the results
   // on to the caller of Read() until OnAudioDecoderConfigChanged is observed.
-  DemuxerStream::ReadCB read_cb_;
+  ReadCB read_cb_;
 
   // The current config.
   AudioDecoderConfig audio_config_;
   VideoDecoderConfig video_config_;
 
-  DemuxerStream::Type type_;
+  Type type_;
 
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 

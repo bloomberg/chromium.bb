@@ -15,14 +15,12 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/demuxer_stream.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_keys.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
-#include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace mojo {
@@ -38,34 +36,6 @@ namespace mojo {
   static_assert(media::media_enum_value == static_cast<media::media_enum>(     \
                                                media::mojom::mojo_enum_value), \
                 "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
-
-// DemuxerStream Type.  Note: Mojo DemuxerStream's don't have the TEXT type.
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
-                   DemuxerStream::UNKNOWN,
-                   DemuxerStream::Type::UNKNOWN);
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
-                   DemuxerStream::AUDIO,
-                   DemuxerStream::Type::AUDIO);
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
-                   DemuxerStream::VIDEO,
-                   DemuxerStream::Type::VIDEO);
-static_assert(
-    media::DemuxerStream::NUM_TYPES ==
-        static_cast<media::DemuxerStream::Type>(
-            static_cast<int>(media::mojom::DemuxerStream::Type::LAST_TYPE) + 2),
-    "Mismatched enum: media::DemuxerStream::NUM_TYPES != "
-    "media::mojom::DemuxerStream::Type::LAST_TYPE + 2");
-
-// DemuxerStream Status.
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
-                   DemuxerStream::kOk,
-                   DemuxerStream::Status::OK);
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
-                   DemuxerStream::kAborted,
-                   DemuxerStream::Status::ABORTED);
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
-                   DemuxerStream::kConfigChanged,
-                   DemuxerStream::Status::CONFIG_CHANGED);
 
 // CipherMode
 ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,

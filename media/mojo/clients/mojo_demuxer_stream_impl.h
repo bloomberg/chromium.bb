@@ -43,8 +43,11 @@ class MojoDemuxerStreamImpl : public mojom::DemuxerStream {
   }
 
  private:
+  using Type = media::DemuxerStream::Type;
+  using Status = media::DemuxerStream::Status;
+
   void OnBufferReady(const ReadCallback& callback,
-                     media::DemuxerStream::Status status,
+                     Status status,
                      const scoped_refptr<media::DecoderBuffer>& buffer);
 
   mojo::Binding<mojom::DemuxerStream> binding_;

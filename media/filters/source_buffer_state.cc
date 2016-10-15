@@ -488,7 +488,6 @@ void SourceBufferState::SetMemoryLimits(DemuxerStream::Type type,
       }
       break;
     case DemuxerStream::UNKNOWN:
-    case DemuxerStream::NUM_TYPES:
       NOTREACHED();
       break;
   }

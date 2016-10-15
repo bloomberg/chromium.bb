@@ -33,9 +33,8 @@ static bool HasValidStreamConfig(DemuxerStream* stream) {
       return stream->audio_decoder_config().IsValidConfig();
     case DemuxerStream::VIDEO:
       return stream->video_decoder_config().IsValidConfig();
-    case DemuxerStream::UNKNOWN:
     case DemuxerStream::TEXT:
-    case DemuxerStream::NUM_TYPES:
+    case DemuxerStream::UNKNOWN:
       NOTREACHED();
   }
   return false;
@@ -47,9 +46,8 @@ static bool IsStreamEncrypted(DemuxerStream* stream) {
       return stream->audio_decoder_config().is_encrypted();
     case DemuxerStream::VIDEO:
       return stream->video_decoder_config().is_encrypted();
-    case DemuxerStream::UNKNOWN:
     case DemuxerStream::TEXT:
-    case DemuxerStream::NUM_TYPES:
+    case DemuxerStream::UNKNOWN:
       NOTREACHED();
   }
   return false;

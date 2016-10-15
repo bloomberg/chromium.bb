@@ -319,8 +319,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       }
       // TODO(wolenetz): Test text coded frame processing.
       case DemuxerStream::TEXT:
-      case DemuxerStream::UNKNOWN:
-      case DemuxerStream::NUM_TYPES: {
+      case DemuxerStream::UNKNOWN: {
         ASSERT_FALSE(true);
       }
     }

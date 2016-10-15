@@ -1191,7 +1191,6 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
       break;
 
     case DemuxerStream::UNKNOWN:
-    case DemuxerStream::NUM_TYPES:
       NOTREACHED();
       return nullptr;
   }
