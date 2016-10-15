@@ -196,10 +196,11 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 
 // Similar to MAYBE_NONSFI, this is available only on x86-32, x86-64 or
 // ARM linux.
-// TODO(crbug.com/579804) -- tests disabled on Linux for flakiness.
-#if defined(OS_LINUX) && \
+#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER) && \
+    !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(LEAK_SANITIZER) && \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
-#  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
+#  define MAYBE_PNACL_NONSFI(test_case) test_case
 #else
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
 #endif
