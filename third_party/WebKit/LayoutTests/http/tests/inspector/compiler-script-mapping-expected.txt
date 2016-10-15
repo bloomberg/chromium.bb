@@ -108,8 +108,10 @@ g?y/./x resolves to http://a/b/c/g?y/./x===http://a/b/c/g?y/./x passes: true
 g?y/../x resolves to http://a/b/c/g?y/../x===http://a/b/c/g?y/../x passes: true
 g#s/./x resolves to http://a/b/c/g#s/./x===http://a/b/c/g#s/./x passes: true
 g#s/../x resolves to http://a/b/c/g#s/../x===http://a/b/c/g#s/../x passes: true
+Custom completeURL tests
 //secure.com/moo resolves to http://secure.com/moo===http://secure.com/moo passes: true
 cat.jpeg resolves to http://a/b/c/cat.jpeg===http://a/b/c/cat.jpeg passes: true
+ resolves to http://example.com/path.css?query===http://example.com/path.css?query passes: true
 
 Running: testCompilerScriptMapping
 UISourceCodeAdded: [debugger] debugger:///VM1 compiled.js

@@ -5,7 +5,7 @@ Parsing url: http://example.com/?queryParam1=value1&queryParam2=value2#fragmentW
   scheme: http
   host: example.com
   port: undefined
-  path: /?queryParam1=value1&queryParam2=value2
+  path: /
   queryParams: queryParam1=value1&queryParam2=value2
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: 
@@ -16,7 +16,7 @@ Parsing url: http://example.com/foo.html?queryParam1=value1&queryParam2=value2#f
   scheme: http
   host: example.com
   port: undefined
-  path: /foo.html?queryParam1=value1&queryParam2=value2
+  path: /foo.html
   queryParams: queryParam1=value1&queryParam2=value2
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: 
@@ -27,7 +27,7 @@ Parsing url: http://example.com/foo/bar.html?queryParam1=value1&queryParam2=valu
   scheme: http
   host: example.com
   port: undefined
-  path: /foo/bar.html?queryParam1=value1&queryParam2=value2
+  path: /foo/bar.html
   queryParams: queryParam1=value1&queryParam2=value2
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: /foo
@@ -38,7 +38,7 @@ Parsing url: http://example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=
   scheme: http
   host: example.com
   port: undefined
-  path: /foo/bar/baz.html?queryParam1=value1&queryParam2=value2
+  path: /foo/bar/baz.html
   queryParams: queryParam1=value1&queryParam2=value2
   fragment: fragmentWith/Many//Slashes
   folderPathComponents: /foo/bar
@@ -49,7 +49,7 @@ Parsing url: http://example.com//?queryParam1=value1
   scheme: http
   host: example.com
   port: undefined
-  path: //?queryParam1=value1
+  path: //
   queryParams: queryParam1=value1
   fragment: undefined
   folderPathComponents: /

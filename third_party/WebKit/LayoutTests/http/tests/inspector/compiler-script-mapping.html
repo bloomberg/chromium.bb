@@ -162,13 +162,15 @@ function test()
             InspectorTest.addResult("http://example.com/map.json === " + func("http://example.com/script.js", "http://example.com/map.json"));
             InspectorTest.addResult("http://example.com/map.json === " + func("http://example.com/script.js", "/map.json"));
             InspectorTest.addResult("http://example.com/maps/map.json === " + func("http://example.com/scripts/script.js", "../maps/map.json"));
-            var base = "http://a/b/c/d;p?q";
-            InspectorTest.addResult("Tests from http://tools.ietf.org/html/rfc3986#section-5.4 using baseURL=\"" + base + "\"");
-            function rfc3986_5_4(lhs, rhs)
+            function testCompleteURL(base, lhs, rhs)
             {
                 var actual =  WebInspector.ParsedURL.completeURL(base, lhs);
                 InspectorTest.addResult(lhs + " resolves to " + actual + "===" + rhs + " passes: " + (actual === rhs));
             }
+
+            var rfc3986_5_4_baseURL =  "http://a/b/c/d;p?q";
+            InspectorTest.addResult("Tests from http://tools.ietf.org/html/rfc3986#section-5.4 using baseURL=\"" + rfc3986_5_4_baseURL + "\"");
+            var rfc3986_5_4 = testCompleteURL.bind(null, rfc3986_5_4_baseURL);
             rfc3986_5_4("http://h", "http://h");  // modified from RFC3986
             rfc3986_5_4("g", "http://a/b/c/g");
             rfc3986_5_4("./g", "http://a/b/c/g");
@@ -211,8 +213,10 @@ function test()
             rfc3986_5_4("g#s/./x", "http://a/b/c/g#s/./x");
             rfc3986_5_4("g#s/../x", "http://a/b/c/g#s/../x");
 
-             rfc3986_5_4("//secure.com/moo", "http://secure.com/moo");  // not in RFC3986
-             rfc3986_5_4("cat.jpeg", "http://a/b/c/cat.jpeg");  // not in RFC3986
+            InspectorTest.addResult("Custom completeURL tests");
+            testCompleteURL("http://a/b/c/d;p?q", "//secure.com/moo", "http://secure.com/moo");
+            testCompleteURL("http://a/b/c/d;p?q", "cat.jpeg", "http://a/b/c/cat.jpeg");
+            testCompleteURL("http://example.com/path.css?query#fragment","", "http://example.com/path.css?query");
             next();
         },
 

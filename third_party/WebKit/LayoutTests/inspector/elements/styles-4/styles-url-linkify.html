@@ -37,7 +37,7 @@ function test()
     completeURL("https://example.com/foo", dataURL);
     completeURL("http://example.com/foo", "javascript:alert('foo');");
     completeURL("http://example.com/foo", blobURL);
-    InspectorTest.addResult(WebInspector.ParsedURL.completeURL(blobURL));
+    completeURL("", blobURL);
 
     function dumpHref(dumpLinkClass)
     {
