@@ -6,10 +6,12 @@ B<!DOCTYPE html>
 <body>
 <script type="text/javascript" src="webrtc_test_utilities.js"></script>
 <script>
+const HEIGHT = 180;
+const WIDTH = 320;
 
 // Runs an ImageCapture.getPhotoCapabilities().
 function testCreateAndGetCapabilities() {
-  const constraints = { mandatory: { maxHeight: 180, maxWidth: 320 } };
+  const constraints = { mandatory: { maxHeight: HEIGHT, maxWidth: WIDTH } };
   navigator.mediaDevices.getUserMedia({"video" : constraints})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -38,7 +40,7 @@ function testCreateAndGetCapabilities() {
 
 // Runs an ImageCapture.takePhoto().
 function testCreateAndTakePhoto() {
-  const constraints = { mandatory: { maxHeight: 180, maxWidth: 320 } };
+  const constraints = { mandatory: { maxHeight: HEIGHT, maxWidth: WIDTH } };
   navigator.mediaDevices.getUserMedia({"video" : constraints})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -50,6 +52,28 @@ function testCreateAndTakePhoto() {
       .then(blob => {
         assertTrue(blob.type != undefined);
         assertNotEquals(0, blob.size);
+
+        reportTestSuccess();
+      })
+      .catch(err => {
+        return failTest(err.toString());
+      });
+}
+
+// Runs an ImageCapture.grabFrame().
+function testCreateAndGrabFrame() {
+  const constraints = { mandatory: { maxHeight: HEIGHT, maxWidth: WIDTH } };
+  navigator.mediaDevices.getUserMedia({"video" : constraints})
+      .then(stream => {
+        assertEquals('video', stream.getVideoTracks()[0].kind);
+        return new ImageCapture(stream.getVideoTracks()[0]);
+      })
+      .then(capturer => {
+        return capturer.grabFrame();
+      })
+      .then(imageBitmap => {
+        assertEquals(WIDTH, imageBitmap.width);
+        assertEquals(HEIGHT, imageBitmap.height);
 
         reportTestSuccess();
       })

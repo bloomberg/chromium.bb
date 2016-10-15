@@ -106,7 +106,8 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   callback.Run(surface->makeImageSnapshot());
 }
 
-ImageCaptureFrameGrabber::ImageCaptureFrameGrabber() : weak_factory_(this) {}
+ImageCaptureFrameGrabber::ImageCaptureFrameGrabber()
+    : frame_grab_in_progress_(false), weak_factory_(this) {}
 
 ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -121,6 +122,12 @@ void ImageCaptureFrameGrabber::grabFrame(
   DCHECK(track && !track->isNull() && track->getTrackData());
   DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track->source().getType());
 
+  if (frame_grab_in_progress_) {
+    // Reject grabFrame()s too close back to back.
+    callbacks->onError();
+    return;
+  }
+
   ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> scoped_callbacks =
       make_scoped_web_callbacks(callbacks, base::Bind(&OnError));
 
@@ -129,6 +136,7 @@ void ImageCaptureFrameGrabber::grabFrame(
   // SKImages might be sent to resolved |callbacks| while DisconnectFromTrack()
   // is being processed, which might be further held up if UI is busy, see
   // https://crbug.com/623042.
+  frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
       *track, base::Bind(&SingleShotFrameHandler::OnVideoFrameOnIOThread,
                          make_scoped_refptr(new SingleShotFrameHandler),
@@ -145,6 +153,7 @@ void ImageCaptureFrameGrabber::OnSkImage(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   MediaStreamVideoSink::DisconnectFromTrack();
+  frame_grab_in_progress_ = false;
   if (image)
     callbacks.PassCallbacks()->onSuccess(image);
   else

@@ -46,6 +46,9 @@ class CONTENT_EXPORT ImageCaptureFrameGrabber final
       ScopedWebCallbacks<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
       sk_sp<SkImage> image);
 
+  // Flag to indicate that there is a frame grabbing in progress.
+  bool frame_grab_in_progress_;
+
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ImageCaptureFrameGrabber> weak_factory_;
 
