@@ -143,9 +143,11 @@ node = env.CommandSelLdrTestNacl(
     # Add '-a' to enable filesystem access for opening DSOs.
     sel_ldr_flags=['-a'],
     extra_deps=[test_pll_a, test_pll_b, test_pll_tls, test_pll_tls_dependency])
+# TODO: Fix on arm panda hardware.
+on_arm_hw = not env.UsingEmulator() and env.Bit('build_arm')
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
-    'run_pll_loader_test', is_broken=is_broken)
+    'run_pll_loader_test', is_broken=is_broken or on_arm_hw)
 
 
 pll_libc_nonfinal = env.Command(
