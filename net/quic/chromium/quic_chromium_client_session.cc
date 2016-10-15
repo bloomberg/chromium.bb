@@ -760,6 +760,13 @@ void QuicChromiumClientSession::CloseStream(QuicStreamId stream_id) {
 void QuicChromiumClientSession::SendRstStream(QuicStreamId id,
                                               QuicRstStreamErrorCode error,
                                               QuicStreamOffset bytes_written) {
+  ReliableQuicStream* stream = GetOrCreateStream(id);
+  if (stream) {
+    if (id % 2 == 0) {
+      // Stream with even stream is initiated by server for PUSH.
+      bytes_pushed_count_ += stream->stream_bytes_read();
+    }
+  }
   QuicSpdySession::SendRstStream(id, error, bytes_written);
   OnClosedStream();
 }
