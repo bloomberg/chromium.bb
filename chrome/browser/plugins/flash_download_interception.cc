@@ -34,7 +34,7 @@ const char kWwwPrefix[] = "www.";
 // URLs that will be intercepted with any www. prefix pruned.
 const char* kFlashDownloadURLs[] = {
     "get.adobe.com/flash", "macromedia.com/go/getflashplayer",
-};
+    "adobe.com/go/getflashplayer", "adobe.com/go/gntray_dl_getflashplayer"};
 
 void DoNothing(blink::mojom::PermissionStatus result) {}
 
