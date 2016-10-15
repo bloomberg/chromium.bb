@@ -1868,6 +1868,17 @@ def PreCqBuilders(site_config, board_configs, hw_test_list):
           board_configs['daisy']),
   )
 
+  site_config.Add(
+      'signer-pre-cq',
+      site_config.templates.pre_cq,
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      builder_class_name='test_builders.SignerTestsBuilder',
+      description='Run the signer unittests.',
+  )
+
 
 def AndroidPfqBuilders(site_config, board_configs, hw_test_list):
   """Create all build configs associated with the Android PFQ.

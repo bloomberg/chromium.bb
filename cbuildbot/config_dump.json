@@ -19802,6 +19802,17 @@
             "chrome_internal"
         ]
     },
+    "signer-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [],
+        "builder_class_name": "test_builders.SignerTestsBuilder",
+        "description": "Run the signer unittests.",
+        "hw_tests_override": [],
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "vm_tests": []
+    },
     "slippy-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [

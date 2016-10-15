@@ -429,6 +429,20 @@ def RunBranchUtilTest(buildroot, version):
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
+def RunCrosSigningTests(buildroot):
+  """Run the signer unittests.
+
+  These tests don't have a matching ebuild, and don't need to be run during
+  most builds, so we have a special helper to run them.
+
+  Args:
+    buildroot: The buildroot of the current build.
+  """
+  test_runner = os.path.join(
+      buildroot, 'cros-signing', 'signer', 'run_tests.py')
+  cros_build_lib.RunCommand([test_runner], cwd=buildroot)
+
+
 def UpdateBinhostJson(buildroot):
   """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
 

@@ -70,3 +70,15 @@ class UnittestStressBuilder(generic_builders.Builder):
 
     for i in xrange(self.TEST_CYCLES):
       self._RunStage(test_stages.UnitTestStage, board, suffix=' - %d' % i)
+
+
+class SignerTestsBuilder(generic_builders.Builder):
+  """Builder that runs the cros-signing tests, and nothing else."""
+
+  def GetSyncInstance(self):
+    """Returns an instance of a SyncStage that should be run."""
+    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
+
+  def RunStages(self):
+    """Run something after sync/reexec."""
+    self._RunStage(test_stages.CrosSigningTestStage)

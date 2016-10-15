@@ -527,3 +527,14 @@ class BranchUtilTestStage(generic_stages.BuilderStage):
     commands.RunBranchUtilTest(
         self._build_root,
         manifest_manager.GetCurrentVersionInfo().VersionString())
+
+
+class CrosSigningTestStage(generic_stages.BuilderStage):
+  """Stage that verifies Chrome prebuilts.
+
+  This requires an internal source code checkouts.
+  """
+
+  def PerformStage(self):
+    """Run the cros-signing unittests."""
+    commands.RunCrosSigningTests(self._build_root)
