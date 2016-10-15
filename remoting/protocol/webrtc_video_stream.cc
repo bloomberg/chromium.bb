@@ -227,6 +227,8 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
     return;
   }
 
+  scheduler_->OnFrameEncoded(*frame.frame, result);
+
   // Send FrameStats message.
   if (video_stats_dispatcher_.is_connected()) {
     HostFrameStats stats;
