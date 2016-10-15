@@ -322,12 +322,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_shell_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_system_unittests"
       },
       {
@@ -401,6 +395,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "service_manager_unittests"
       },
       {
         "swarming": {
@@ -1315,12 +1315,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_shell_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_system_unittests"
       },
       {
@@ -1370,6 +1364,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sbox_validation_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "service_manager_unittests"
       },
       {
         "swarming": {

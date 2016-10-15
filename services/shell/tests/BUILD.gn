@@ -9,11 +9,11 @@ import("//testing/test.gni")
 group("tests") {
   testonly = true
   deps = [
-    ":mojo_shell_unittests",
+    ":service_manager_unittests",
   ]
 }
 
-test("mojo_shell_unittests") {
+test("service_manager_unittests") {
   deps = [
     ":interfaces",
     "//base",

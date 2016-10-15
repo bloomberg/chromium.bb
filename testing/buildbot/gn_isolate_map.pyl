@@ -642,10 +642,6 @@
     "label": "//services/shell/runner/host:mojo_runner_host_unittests",
     "type": "console_test_launcher",
   },
-  "mojo_shell_unittests": {
-    "label": "//services/shell/tests:mojo_shell_unittests",
-    "type": "console_test_launcher",
-  },
   "mojo_system_unittests": {
     "label": "//mojo/edk/system:mojo_system_unittests",
     "type": "console_test_launcher",
@@ -775,6 +771,10 @@
   },
   "sbox_validation_tests": {
     "label": "//sandbox/win:sbox_validation_tests",
+    "type": "console_test_launcher",
+  },
+  "service_manager_unittests": {
+    "label": "//services/shell/tests:service_manager_unittests",
     "type": "console_test_launcher",
   },
   "setup_unittests": {
