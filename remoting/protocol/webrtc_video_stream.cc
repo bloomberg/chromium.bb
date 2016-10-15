@@ -27,12 +27,9 @@ const char kStreamLabel[] = "screen_stream";
 const char kVideoLabel[] = "screen_video";
 
 struct WebrtcVideoStream::FrameTimestamps {
-  // The following two fields are set only for one frame after each incoming
-  // input event. |input_event_client_timestamp| is event timestamp
-  // received from the client. |input_event_received_time| is local time when
-  // the event was received.
-  int64_t input_event_client_timestamp = -1;
-  base::TimeTicks input_event_received_time;
+  // The following fields is not null only for one frame after each incoming
+  // input event.
+  InputEventTimestamps input_event_timestamps;
 
   base::TimeTicks capture_started_time;
   base::TimeTicks capture_ended_time;
@@ -114,18 +111,14 @@ void WebrtcVideoStream::Start(
                                this);
 }
 
+void WebrtcVideoStream::SetEventTimestampsSource(
+    scoped_refptr<InputEventTimestampsSource> event_timestamps_source) {
+  event_timestamps_source_ = event_timestamps_source;
+}
+
 void WebrtcVideoStream::Pause(bool pause) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scheduler_->Pause(pause);
-}
-
-void WebrtcVideoStream::OnInputEventReceived(int64_t event_timestamp) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!next_frame_timestamps_)
-    next_frame_timestamps_.reset(new FrameTimestamps());
-  next_frame_timestamps_->input_event_client_timestamp = event_timestamp;
-  next_frame_timestamps_->input_event_received_time = base::TimeTicks::Now();
 }
 
 void WebrtcVideoStream::SetLosslessEncode(bool want_lossless) {
@@ -189,14 +182,13 @@ void WebrtcVideoStream::OnChannelClosed(
 void WebrtcVideoStream::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // |next_frame_timestamps_| is not set if no input events were received since
-  // the previous frame. In that case create FrameTimestamps instance without
-  // setting |input_event_client_timestamp| and |input_event_received_time|.
-  if (!next_frame_timestamps_)
-    next_frame_timestamps_.reset(new FrameTimestamps());
-
-  captured_frame_timestamps_ = std::move(next_frame_timestamps_);
+  captured_frame_timestamps_.reset(new FrameTimestamps());
   captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
+
+  if (event_timestamps_source_) {
+    captured_frame_timestamps_->input_event_timestamps =
+        event_timestamps_source_->TakeLastEventTimestamps();
+  }
 
   capturer_->Capture(webrtc::DesktopRegion());
 }
@@ -234,11 +226,12 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
     HostFrameStats stats;
     stats.frame_size = frame.frame->data.size();
 
-    if (!frame.timestamps->input_event_received_time.is_null()) {
-      stats.capture_pending_delay = frame.timestamps->capture_started_time -
-                                    frame.timestamps->input_event_received_time;
-      stats.latest_event_timestamp = base::TimeTicks::FromInternalValue(
-          frame.timestamps->input_event_client_timestamp);
+    if (!frame.timestamps->input_event_timestamps.is_null()) {
+      stats.capture_pending_delay =
+          frame.timestamps->capture_started_time -
+          frame.timestamps->input_event_timestamps.host_timestamp;
+      stats.latest_event_timestamp =
+          frame.timestamps->input_event_timestamps.host_timestamp;
     }
 
     stats.capture_delay = frame.timestamps->capture_delay;

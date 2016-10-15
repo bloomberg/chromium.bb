@@ -77,7 +77,6 @@ class MockConnectionToClientEventHandler
   MOCK_METHOD1(OnConnectionClosed, void(ErrorCode error));
   MOCK_METHOD1(OnCreateVideoEncoder,
                void(std::unique_ptr<VideoEncoder>* encoder));
-  MOCK_METHOD1(OnInputEventReceived, void(int64_t timestamp));
   MOCK_METHOD2(OnRouteChange,
                void(const std::string& channel_name,
                     const TransportRoute& route));

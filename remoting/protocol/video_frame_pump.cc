@@ -69,19 +69,17 @@ VideoFramePump::~VideoFramePump() {
   encode_task_runner_->DeleteSoon(FROM_HERE, encoder_.release());
 }
 
+void VideoFramePump::SetEventTimestampsSource(
+    scoped_refptr<InputEventTimestampsSource> event_timestamps_source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  event_timestamps_source_ = event_timestamps_source;
+}
+
 void VideoFramePump::Pause(bool pause) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   capture_scheduler_.Pause(pause);
-}
-
-void VideoFramePump::OnInputEventReceived(int64_t event_timestamp) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!next_frame_timestamps_)
-    next_frame_timestamps_.reset(new FrameTimestamps());
-  next_frame_timestamps_->input_event_client_timestamp = event_timestamp;
-  next_frame_timestamps_->input_event_received_time = base::TimeTicks::Now();
 }
 
 void VideoFramePump::SetLosslessEncode(bool want_lossless) {
@@ -140,14 +138,13 @@ void VideoFramePump::OnCaptureResult(
 void VideoFramePump::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // |next_frame_timestamps_| is not set if no input events were received since
-  // the previous frame. In that case create FrameTimestamps instance without
-  // setting |input_event_client_timestamp| and |input_event_received_time|.
-  if (!next_frame_timestamps_)
-    next_frame_timestamps_.reset(new FrameTimestamps());
-
-  captured_frame_timestamps_ = std::move(next_frame_timestamps_);
+  captured_frame_timestamps_.reset(new FrameTimestamps());
   captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
+
+  if (event_timestamps_source_) {
+    captured_frame_timestamps_->input_event_timestamps =
+        event_timestamps_source_->TakeLastEventTimestamps();
+  }
 
   capturer_->Capture(webrtc::DesktopRegion());
 }
@@ -209,12 +206,13 @@ void VideoFramePump::SendPacket(std::unique_ptr<PacketWithTimestamps> packet) {
 
 void VideoFramePump::UpdateFrameTimers(VideoPacket* packet,
                                        FrameTimestamps* timestamps) {
-  if (!timestamps->input_event_received_time.is_null()) {
-    packet->set_capture_pending_time_ms((timestamps->capture_started_time -
-                                         timestamps->input_event_received_time)
-                                            .InMilliseconds());
+  if (!timestamps->input_event_timestamps.is_null()) {
+    packet->set_capture_pending_time_ms(
+        (timestamps->capture_started_time -
+         timestamps->input_event_timestamps.host_timestamp)
+            .InMilliseconds());
     packet->set_latest_event_timestamp(
-        timestamps->input_event_client_timestamp);
+        timestamps->input_event_timestamps.client_timestamp.ToInternalValue());
   }
 
   packet->set_capture_overhead_time_ms(

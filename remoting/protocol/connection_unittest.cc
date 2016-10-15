@@ -470,7 +470,6 @@ TEST_P(ConnectionTest, Events) {
 
   base::RunLoop run_loop;
 
-  EXPECT_CALL(host_event_handler_, OnInputEventReceived(_));
   EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(event)))
       .WillOnce(QuitRunLoop(&run_loop));
 
@@ -515,7 +514,6 @@ TEST_P(ConnectionTest, DestroyOnIncomingMessage) {
 
   base::RunLoop run_loop;
 
-  EXPECT_CALL(host_event_handler_, OnInputEventReceived(_));
   EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(event)))
       .WillOnce(DoAll(InvokeWithoutArgs(this, &ConnectionTest::DestroyHost),
                       QuitRunLoop(&run_loop)));
@@ -537,12 +535,15 @@ TEST_P(ConnectionTest, VideoStats) {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
+  scoped_refptr<InputEventTimestampsSourceImpl> input_event_timestamps_source =
+      new InputEventTimestampsSourceImpl();
+  input_event_timestamps_source->OnEventReceived(
+      InputEventTimestamps{start_time, start_time});
+
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
           base::MakeUnique<TestScreenCapturer>());
-
-  // Simulate an input invent injected at the start.
-  video_stream->OnInputEventReceived(start_time.ToInternalValue());
+  video_stream->SetEventTimestampsSource(input_event_timestamps_source);
 
   WaitFirstVideoFrame();
 

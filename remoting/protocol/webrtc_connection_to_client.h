@@ -70,9 +70,6 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
  private:
-  // Callback for the event dispatcher.
-  void OnInputEventReceived(int64_t timestamp);
-
   base::ThreadChecker thread_checker_;
 
   // Event handler for handling events sent from this object.

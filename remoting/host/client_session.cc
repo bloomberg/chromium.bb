@@ -356,14 +356,6 @@ void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
   event_handler_->OnSessionClosed(this);
 }
 
-void ClientSession::OnInputEventReceived(
-    int64_t event_timestamp) {
-  DCHECK(CalledOnValidThread());
-
-  if (video_stream_.get())
-    video_stream_->OnInputEventReceived(event_timestamp);
-}
-
 void ClientSession::OnRouteChange(
     const std::string& channel_name,
     const protocol::TransportRoute& route) {

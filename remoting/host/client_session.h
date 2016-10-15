@@ -119,7 +119,6 @@ class ClientSession : public base::NonThreadSafe,
   void CreateMediaStreams() override;
   void OnConnectionChannelsConnected() override;
   void OnConnectionClosed(protocol::ErrorCode error) override;
-  void OnInputEventReceived(int64_t timestamp) override;
   void OnRouteChange(const std::string& channel_name,
                      const protocol::TransportRoute& route) override;
 

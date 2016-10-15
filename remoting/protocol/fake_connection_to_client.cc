@@ -19,9 +19,10 @@ namespace protocol {
 FakeVideoStream::FakeVideoStream() : weak_factory_(this) {}
 FakeVideoStream::~FakeVideoStream() {}
 
-void FakeVideoStream::Pause(bool pause) {}
+void FakeVideoStream::SetEventTimestampsSource(
+    scoped_refptr<InputEventTimestampsSource> event_timestamps_source) {}
 
-void FakeVideoStream::OnInputEventReceived(int64_t event_timestamp) {}
+void FakeVideoStream::Pause(bool pause) {}
 
 void FakeVideoStream::SetLosslessEncode(bool want_lossless) {}
 

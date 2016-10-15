@@ -53,9 +53,6 @@ class ConnectionToClient {
     // Called when the network connection is closed or failed.
     virtual void OnConnectionClosed(ErrorCode error) = 0;
 
-    // Called when a new input event is received.
-    virtual void OnInputEventReceived(int64_t timestamp) = 0;
-
     // Called on notification of a route change event, which happens when a
     // channel is connected.
     virtual void OnRouteChange(const std::string& channel_name,

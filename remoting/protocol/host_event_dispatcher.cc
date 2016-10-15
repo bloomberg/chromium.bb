@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/host_event_dispatcher.h"
 
+#include "base/memory/ref_counted.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
@@ -16,7 +17,9 @@ namespace remoting {
 namespace protocol {
 
 HostEventDispatcher::HostEventDispatcher()
-    : ChannelDispatcherBase(kEventChannelName) {}
+    : ChannelDispatcherBase(kEventChannelName),
+      event_timestamps_source_(new InputEventTimestampsSourceImpl()) {}
+
 HostEventDispatcher::~HostEventDispatcher() {}
 
 void HostEventDispatcher::OnIncomingMessage(
@@ -28,8 +31,9 @@ void HostEventDispatcher::OnIncomingMessage(
   if (!message)
     return;
 
-  if (!on_input_event_callback_.is_null())
-    on_input_event_callback_.Run(message->timestamp());
+  event_timestamps_source_->OnEventReceived(InputEventTimestamps{
+      base::TimeTicks::FromInternalValue(message->timestamp()),
+      base::TimeTicks::Now()});
 
   if (message->has_key_event()) {
     const KeyEvent& event = message->key_event();

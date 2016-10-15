@@ -76,6 +76,8 @@ static_library("protocol") {
     "ice_transport.h",
     "ice_transport_channel.cc",
     "ice_transport_channel.h",
+    "input_event_timestamps.cc",
+    "input_event_timestamps.h",
     "input_event_tracker.cc",
     "input_event_tracker.h",
     "input_filter.cc",

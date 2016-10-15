@@ -92,6 +92,7 @@ std::unique_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
   std::unique_ptr<VideoFramePump> pump(
       new VideoFramePump(video_encode_task_runner_, std::move(desktop_capturer),
                          std::move(video_encoder), video_dispatcher_.get()));
+  pump->SetEventTimestampsSource(event_dispatcher_->event_timestamps_source());
   video_dispatcher_->set_video_feedback_stub(pump->video_feedback_stub());
   return std::move(pump);
 }
@@ -152,12 +153,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       // Initialize channels.
       control_dispatcher_->Init(transport_.GetMultiplexedChannelFactory(),
                                 this);
-
       event_dispatcher_->Init(transport_.GetMultiplexedChannelFactory(), this);
-      event_dispatcher_->set_on_input_event_callback(
-          base::Bind(&IceConnectionToClient::OnInputEventReceived,
-                     base::Unretained(this)));
-
       video_dispatcher_->Init(transport_.GetChannelFactory(), this);
 
       audio_writer_ = AudioWriter::Create(session_->config());
@@ -202,11 +198,6 @@ void IceConnectionToClient::OnChannelClosed(
     ChannelDispatcherBase* channel_dispatcher) {
   // ICE transport doesn't close channels dynamically.
   NOTREACHED();
-}
-
-void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnInputEventReceived(timestamp);
 }
 
 void IceConnectionToClient::NotifyIfChannelsReady() {
