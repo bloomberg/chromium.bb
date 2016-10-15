@@ -222,14 +222,16 @@ TEST_F(MediaControlsTest, CastButtonDisableRemotePlaybackAttr) {
       mediaControls(), "-internal-media-controls-cast-button");
   ASSERT_NE(nullptr, castButton);
 
+  ASSERT_FALSE(isElementVisible(*castButton));
+  simulateRouteAvailabe();
+  ASSERT_TRUE(isElementVisible(*castButton));
+
   mediaControls().mediaElement().setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
-  simulateRouteAvailabe();
   ASSERT_FALSE(isElementVisible(*castButton));
 
   mediaControls().mediaElement().setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
-  mediaControls().reset();
   ASSERT_TRUE(isElementVisible(*castButton));
 }
 
@@ -247,14 +249,16 @@ TEST_F(MediaControlsTest, CastOverlayDisableRemotePlaybackAttr) {
       mediaControls(), "-internal-media-controls-overlay-cast-button");
   ASSERT_NE(nullptr, castOverlayButton);
 
+  ASSERT_FALSE(isElementVisible(*castOverlayButton));
+  simulateRouteAvailabe();
+  ASSERT_TRUE(isElementVisible(*castOverlayButton));
+
   mediaControls().mediaElement().setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
-  simulateRouteAvailabe();
   ASSERT_FALSE(isElementVisible(*castOverlayButton));
 
   mediaControls().mediaElement().setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
-  mediaControls().reset();
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
 }
 
