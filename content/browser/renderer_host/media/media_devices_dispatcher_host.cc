@@ -19,7 +19,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/media_stream_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/origin.h"
 
 namespace content {

@@ -50,7 +50,7 @@ static_library("utility") {
     "//courgette:courgette_lib",
     "//media",
     "//net:net_with_v8",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
     "//third_party/libxml",

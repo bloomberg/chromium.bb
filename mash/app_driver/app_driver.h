@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"
 
 namespace mash {

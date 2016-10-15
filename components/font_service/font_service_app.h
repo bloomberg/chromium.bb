@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "skia/ext/skia_utils_base.h"
 

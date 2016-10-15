@@ -238,7 +238,7 @@ static_library("headless_lib") {
     "//content/public/renderer",
     "//content/public/utility",
     "//net",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//third_party/mesa:osmesa",
     "//ui/aura",
     "//ui/base",

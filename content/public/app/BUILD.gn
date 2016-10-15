@@ -21,7 +21,7 @@
 #       //content/public/app:both_sources (source set)
 
 import("//build/config/chrome_build.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 public_app_shared_sources = [
   "content_jni_onload.h",

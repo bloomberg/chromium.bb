@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/ime/ime_server_impl.h"

@@ -10,7 +10,7 @@
 #include "blimp/engine/mojo/blob_channel_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_names.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace blimp {

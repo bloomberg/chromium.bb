@@ -30,7 +30,7 @@ mojom("interfaces") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/interfaces",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]

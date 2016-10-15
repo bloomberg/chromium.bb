@@ -259,7 +259,7 @@ source_set("child_call_stacks") {
   ]
   deps = [
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -335,7 +335,7 @@ source_set("unit_tests") {
     "//components/variations",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp:sources",
     "//testing/gtest",
     "//third_party/zlib:compression_utils",
     "//ui/gfx/geometry",

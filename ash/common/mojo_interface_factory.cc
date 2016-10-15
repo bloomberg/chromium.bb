@@ -8,7 +8,7 @@
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace ash {
 

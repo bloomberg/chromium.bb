@@ -302,7 +302,7 @@ group("both_gn_and_gyp") {
       "//mojo/edk/test:mojo_public_bindings_unittests",
       "//mojo/edk/test:mojo_public_system_unittests",
       "//net:net_perftests",
-      "//services/shell/public/cpp",
+      "//services/service_manager/public/cpp",
       "//storage//browser:storage_unittests",
       "//third_party/WebKit/Source/platform:blink_platform_unittests",
       "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
@@ -605,7 +605,7 @@ group("both_gn_and_gyp") {
       "//content/public/app:browser",
       "//content/public/app:child",
       "//mojo/edk/test:mojo_public_system_perftests",
-      "//services/shell/public/cpp",
+      "//services/service_manager/public/cpp",
       "//testing/gmock:gmock_main",
       "//third_party/codesighs:nm2tsv",
     ]

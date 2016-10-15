@@ -6,7 +6,7 @@
 #define UI_VIEWS_MUS_WINDOW_TREE_HOST_MUS_H_
 
 #include "base/macros.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/views/mus/mus_export.h"
 

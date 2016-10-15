@@ -4,6 +4,6 @@ include_rules = [
   "+content/shell",
   "+net/base",
   "+sandbox",
-  "+services/shell",
+  "+services/service_manager",
   "+ui"
 ]

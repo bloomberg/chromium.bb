@@ -7,8 +7,8 @@
 #include "base/single_thread_task_runner.h"
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "services/shell/public/cpp/connect.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/cpp/connect.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 

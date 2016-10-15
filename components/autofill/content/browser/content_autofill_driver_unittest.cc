@@ -27,7 +27,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

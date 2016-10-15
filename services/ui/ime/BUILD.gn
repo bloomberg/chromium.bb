@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -18,7 +18,7 @@ source_set("lib") {
     "//base",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/public/interfaces",
   ]
@@ -39,9 +39,9 @@ test("mus_ime_unittests") {
   deps = [
     "//base",
     "//mojo/common",
-    "//services/shell/public/cpp:service_test_support",
-    "//services/shell/public/cpp:sources",
-    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
     "//services/ui/public/interfaces",
   ]
 

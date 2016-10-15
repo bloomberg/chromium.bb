@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/demo/bitmap_uploader.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"

@@ -58,7 +58,7 @@
 #include "media/base/video_capturer_source.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"

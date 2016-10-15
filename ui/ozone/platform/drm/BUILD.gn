@@ -126,7 +126,7 @@ source_set("gbm") {
     "//base",
     "//ipc",
     "//mojo/common:common_base",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp:sources",
     "//skia",
     "//third_party/minigbm",
     "//ui/base",

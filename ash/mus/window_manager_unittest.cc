@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"

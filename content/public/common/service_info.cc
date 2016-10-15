@@ -5,7 +5,7 @@
 #include "content/public/common/service_info.h"
 
 #include "base/callback.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace content {
 

@@ -24,8 +24,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "ui/app_list/presenter/app_list_presenter.mojom.h"
 #include "ui/keyboard/keyboard.mojom.h"
 

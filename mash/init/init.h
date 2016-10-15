@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "mash/init/public/interfaces/init.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace mojo {
 class Connection;

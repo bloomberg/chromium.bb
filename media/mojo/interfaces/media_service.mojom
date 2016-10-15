@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/service_factory.mojom";
-import "services/shell/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/interfaces/interface_provider.mojom";
 
 interface MediaService {
   CreateServiceFactory(ServiceFactory& factory,

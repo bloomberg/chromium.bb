@@ -8,7 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 

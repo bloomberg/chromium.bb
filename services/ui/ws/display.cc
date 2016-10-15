@@ -11,7 +11,7 @@
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/common_type_converters.h"
-#include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/ws/display_binding.h"

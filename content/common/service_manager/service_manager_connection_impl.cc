@@ -19,10 +19,10 @@
 #include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/service_context.h"
-#include "services/shell/public/interfaces/service_factory.mojom.h"
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/runner/common/client_util.h"
 
 namespace content {
 namespace {

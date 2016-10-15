@@ -9,7 +9,7 @@ foundational "system services" layer.
 
 Roughly each subdirectory here corresponds to a service that:
 
-  * is a client of `//services/shell` with its own unique Identity.
+  * is a client of `//services/service_manager` with its own unique Identity.
   * could logically run a standalone process for security/performance isolation
     benefits depending on the constraints of the host OS.
 

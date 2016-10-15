@@ -13,7 +13,7 @@ include_rules = [
   "+device/geolocation",
   "+mojo/public",
   "+net",
-  "+services/shell/public/cpp",
+  "+services/service_manager/public/cpp",
   "+third_party/blimp_fonts",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",

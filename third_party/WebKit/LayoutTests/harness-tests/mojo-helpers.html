@@ -96,7 +96,7 @@ mojo_test(mojo => {
 mojo_test(() => {
   return loadMojoModules(
       'module loading test',
-      ['services/shell/public/interfaces/interface_provider.mojom']).then(mojo => {
+      ['services/service_manager/public/interfaces/interface_provider.mojom']).then(mojo => {
     let interfaceProvider = mojo.modules[0];
     assert_equals(interfaceProvider.InterfaceProvider.name,
                   'shell::mojom::InterfaceProvider');

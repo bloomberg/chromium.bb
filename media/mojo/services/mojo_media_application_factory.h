@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace media {
 

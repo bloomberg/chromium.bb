@@ -9,7 +9,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     dom_distiller::DistillabilityDriver);

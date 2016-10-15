@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "mash/public/interfaces/launchable.mojom.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/event_matcher_util.h"
 
 using mash::mojom::LaunchablePtr;

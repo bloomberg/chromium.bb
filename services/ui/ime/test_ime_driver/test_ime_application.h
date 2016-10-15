@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_IME_TEST_IME_DRIVER_TEST_IME_APPLICATION_H_
 #define SERVICES_UI_IME_TEST_IME_DRIVER_TEST_IME_APPLICATION_H_
 
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace ui {
 namespace test {

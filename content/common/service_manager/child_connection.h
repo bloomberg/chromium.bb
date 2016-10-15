@@ -14,9 +14,9 @@
 #include "base/process/process_handle.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
-#include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/interface_provider.h"
-#include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 
 namespace shell {
 class Connection;

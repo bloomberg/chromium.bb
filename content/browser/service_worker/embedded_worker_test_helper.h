@@ -22,7 +22,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

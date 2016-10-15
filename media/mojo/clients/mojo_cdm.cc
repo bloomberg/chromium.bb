@@ -19,8 +19,8 @@
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
-#include "services/shell/public/cpp/connect.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/cpp/connect.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "url/gurl.h"
 
 namespace media {

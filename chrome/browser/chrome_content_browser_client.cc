@@ -183,8 +183,8 @@
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
-#include "services/shell/public/cpp/interface_provider.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
@@ -262,7 +262,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif

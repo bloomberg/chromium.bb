@@ -5,6 +5,6 @@ include_rules = [
   "+ash/public",
   "+mash/public/interfaces",
   "+mojo/public",
-  "+services/shell/public",
+  "+services/service_manager/public",
   "+services/ui/public",
 ]

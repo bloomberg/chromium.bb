@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/common/event_matcher_util.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/accelerator_registrar.mojom.h"

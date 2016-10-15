@@ -16,7 +16,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;

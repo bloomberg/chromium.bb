@@ -7,7 +7,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mus.h"
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/runner/common/client_util.h"
 #endif
 
 #if !defined(OS_CHROMEOS)

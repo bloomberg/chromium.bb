@@ -14,7 +14,7 @@ static_library("cpp") {
     "//base",
     "//components/leveldb/public/interfaces",
     "//mojo/common",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//third_party/leveldatabase",
   ]
 }

@@ -11,8 +11,8 @@
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/mojo/clients/mojo_cdm.h"
-#include "services/shell/public/cpp/connect.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/cpp/connect.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 

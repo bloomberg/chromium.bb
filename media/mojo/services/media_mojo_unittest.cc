@@ -21,7 +21,7 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Exactly;

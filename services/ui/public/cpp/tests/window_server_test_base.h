@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "services/shell/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/public/cpp/tests/window_server_shelltest_base.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"

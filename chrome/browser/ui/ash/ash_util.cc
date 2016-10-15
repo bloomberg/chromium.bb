@@ -8,7 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_init.h"
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 
 namespace chrome {

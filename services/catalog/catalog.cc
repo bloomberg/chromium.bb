@@ -18,9 +18,9 @@
 #include "services/catalog/constants.h"
 #include "services/catalog/instance.h"
 #include "services/catalog/reader.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/names.h"
-#include "services/shell/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/names.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace catalog {
 namespace {

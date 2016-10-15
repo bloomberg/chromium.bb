@@ -32,7 +32,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/property_type_converters.h"

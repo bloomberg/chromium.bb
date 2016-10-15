@@ -30,14 +30,14 @@
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/store.h"
 #include "services/file/public/cpp/constants.h"
-#include "services/shell/connect_params.h"
-#include "services/shell/native_runner.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/interfaces/service.mojom.h"
-#include "services/shell/runner/common/client_util.h"
-#include "services/shell/runner/host/in_process_native_runner.h"
-#include "services/shell/service_manager.h"
+#include "services/service_manager/connect_params.h"
+#include "services/service_manager/native_runner.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/runner/common/client_util.h"
+#include "services/service_manager/runner/host/in_process_native_runner.h"
+#include "services/service_manager/service_manager.h"
 
 namespace content {
 

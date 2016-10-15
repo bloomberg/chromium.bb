@@ -4,9 +4,9 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
-import("//services/shell/public/constants.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/constants.gni")
 import("//tools/grit/repack.gni")
 
 group("all") {
@@ -28,7 +28,7 @@ service("ui") {
     ":resources_100",
     ":resources_200",
     ":resources_strings",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp:sources",
     "//services/tracing/public/interfaces",
   ]
 
@@ -86,7 +86,7 @@ source_set("lib") {
     "//cc/surfaces",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/clipboard:lib",
     "//services/ui/ime:lib",

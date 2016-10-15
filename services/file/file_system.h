@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/file/public/interfaces/file_system.mojom.h"
-#include "services/shell/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connection.h"
 
 namespace filesystem {
 class LockTable;

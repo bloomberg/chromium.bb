@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace views {
 class AuraInit;

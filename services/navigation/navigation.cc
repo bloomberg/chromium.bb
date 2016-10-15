@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/navigation/view_impl.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace navigation {
 

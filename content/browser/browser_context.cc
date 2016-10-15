@@ -42,9 +42,9 @@
 #include "services/file/file_service.h"
 #include "services/file/public/cpp/constants.h"
 #include "services/file/user_id_map.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 

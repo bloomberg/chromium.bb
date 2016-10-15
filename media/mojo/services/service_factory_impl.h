@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace shell {
 namespace mojom {

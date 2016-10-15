@@ -7,7 +7,7 @@
 
 #include "ash/common/accelerators/accelerator_controller_delegate.h"
 #include "base/macros.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 namespace mus {

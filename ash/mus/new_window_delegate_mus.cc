@@ -5,7 +5,7 @@
 #include "ash/mus/new_window_delegate_mus.h"
 
 #include "base/logging.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 namespace mus {

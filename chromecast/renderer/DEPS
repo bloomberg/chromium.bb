@@ -11,7 +11,7 @@ include_rules = [
   "+media/base",
   "+media/media_features.h",
   "+media/renderers",
-  "+services/shell/public",
+  "+services/service_manager/public",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
   "+ui/base/resource",

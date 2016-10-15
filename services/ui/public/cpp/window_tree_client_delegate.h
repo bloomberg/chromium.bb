@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace ui {

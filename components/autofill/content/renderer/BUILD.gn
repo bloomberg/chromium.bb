@@ -37,7 +37,7 @@ static_library("renderer") {
     "//ipc",
     "//mojo/common:common_base",
     "//net",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/re2",

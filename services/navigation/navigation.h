@@ -11,9 +11,9 @@
 #include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace content {
 class BrowserContext;

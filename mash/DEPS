@@ -5,7 +5,7 @@ include_rules = [
   "+mojo/converters",
   "+mojo/public",
   "+services/catalog/public",
-  "+services/shell",
+  "+services/service_manager",
   "+services/tracing/public",
   "+services/ui/common",
   "+services/ui/public",

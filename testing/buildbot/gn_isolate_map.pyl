@@ -627,7 +627,7 @@
     "type": "console_test_launcher",
   },
   "mojo_public_application_unittests": {
-    "label": "//services/shell/public/cpp/tests:mojo_public_application_unittests",
+    "label": "//services/service_manager/public/cpp/tests:mojo_public_application_unittests",
     "type": "windowed_test_launcher",
   },
   "mojo_public_bindings_unittests": {
@@ -639,7 +639,7 @@
     "type": "console_test_launcher",
   },
   "mojo_runner_host_unittests": {
-    "label": "//services/shell/runner/host:mojo_runner_host_unittests",
+    "label": "//services/service_manager/runner/host:mojo_runner_host_unittests",
     "type": "console_test_launcher",
   },
   "mojo_system_unittests": {
@@ -774,7 +774,7 @@
     "type": "console_test_launcher",
   },
   "service_manager_unittests": {
-    "label": "//services/shell/tests:service_manager_unittests",
+    "label": "//services/service_manager/tests:service_manager_unittests",
     "type": "console_test_launcher",
   },
   "setup_unittests": {

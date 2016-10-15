@@ -4,8 +4,8 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/repack.gni")
 
 source_set("lib") {
@@ -106,7 +106,7 @@ source_set("lib") {
     "//mash/public/interfaces",
     "//mash/session/public/interfaces",
     "//mojo/common:common_base",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
@@ -159,7 +159,7 @@ service("mus") {
     ":lib",
     ":resources",
     ":resources_200",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 
   # TODO(beng): This target relies on //mash/session, but there is a cycle so we
@@ -264,7 +264,7 @@ source_set("unittests") {
     "//base/test:test_config",
     "//base/test:test_support",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/tests:test_support",

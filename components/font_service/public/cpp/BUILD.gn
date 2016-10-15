@@ -18,8 +18,8 @@ source_set("cpp") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
     "//skia",
   ]
 }

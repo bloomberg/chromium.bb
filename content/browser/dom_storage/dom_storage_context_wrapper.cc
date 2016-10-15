@@ -32,8 +32,8 @@
 #include "mojo/common/common_type_converters.h"
 #include "services/file/public/cpp/constants.h"
 #include "services/file/public/interfaces/file_system.mojom.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 namespace {

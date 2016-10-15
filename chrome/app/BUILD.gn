@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 
 # This target is for dependency tracking for the command ID header.

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace content {
 

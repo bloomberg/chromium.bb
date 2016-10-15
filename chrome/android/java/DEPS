@@ -14,5 +14,5 @@ include_rules = [
   "+components/web_contents_delegate_android",
   "+components/web_restrictions",
   "+content/public/android/java",
-  "+services/shell/public/java",
+  "+services/service_manager/public/java",
 ]

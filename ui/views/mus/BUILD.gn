@@ -4,8 +4,8 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -64,8 +64,8 @@ component("mus") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/catalog/public/cpp",
-    "//services/shell/public/cpp",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",
@@ -131,9 +131,9 @@ static_library("test_support") {
     ":mus",
     "//base",
     "//base/test:test_support",
-    "//services/shell/background:lib",
-    "//services/shell/background/tests:test_support",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/background:lib",
+    "//services/service_manager/background/tests:test_support",
+    "//services/service_manager/public/cpp:sources",
     "//services/ui/common:mus_common",
     "//testing/gtest",
     "//ui/aura",
@@ -172,7 +172,7 @@ test("views_mus_unittests") {
     "//base/test:test_support",
     "//cc",
     "//net",
-    "//services/shell/background:main",  # Provides main().
+    "//services/service_manager/background:main",  # Provides main().
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",
     "//services/ui/public/cpp/tests:unittest_support",
@@ -250,7 +250,7 @@ test("views_mus_interactive_ui_tests") {
     ":mus",
     ":test_support",
     "//base",
-    "//services/shell/background:main",  # Provides main().
+    "//services/service_manager/background:main",  # Provides main().
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",

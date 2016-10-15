@@ -24,7 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace password_manager {
 

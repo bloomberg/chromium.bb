@@ -18,8 +18,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "url/gurl.h"
 

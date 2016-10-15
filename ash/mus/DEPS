@@ -13,7 +13,7 @@ include_rules = [
   "+mojo/common",
   "+mojo/public",
   "+services/catalog/public",
-  "+services/shell/public",
+  "+services/service_manager/public",
   "+services/tracing/public",
 ]
 # Shelf code is being moved into //ash/common. Please ask jamescook@ or msw@

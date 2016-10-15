@@ -14,9 +14,9 @@
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/test/mojo_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 

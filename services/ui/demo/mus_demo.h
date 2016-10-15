@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"

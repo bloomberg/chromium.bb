@@ -28,7 +28,7 @@ source_set("surfaces") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/client",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
     "//services/ui/public/interfaces",

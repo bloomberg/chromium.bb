@@ -10,8 +10,8 @@
 #include "components/filesystem/file_system_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 
 namespace mojo {

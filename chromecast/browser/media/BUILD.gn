@@ -26,7 +26,7 @@ source_set("media") {
     public_deps = [
       "//media/mojo/interfaces",
       "//media/mojo/services",
-      "//services/shell/public/cpp",
+      "//services/service_manager/public/cpp",
     ]
   }
 

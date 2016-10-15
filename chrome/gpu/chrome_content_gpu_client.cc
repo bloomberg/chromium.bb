@@ -14,8 +14,8 @@
 #include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/gpu/gpu_arc_video_service.h"

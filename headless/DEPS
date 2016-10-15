@@ -9,5 +9,5 @@ include_rules = [
   "+ui/gfx/geometry",
   "+ui/gl",
   "+ui/ozone/public",
-  "+services/shell/public",
+  "+services/service_manager/public",
 ]

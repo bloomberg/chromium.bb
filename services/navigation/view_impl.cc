@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/mus/native_widget_mus.h"

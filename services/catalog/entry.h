@@ -11,8 +11,8 @@
 
 #include "base/files/file_path.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/shell/public/cpp/capabilities.h"
-#include "services/shell/public/interfaces/resolver.mojom.h"
+#include "services/service_manager/public/cpp/capabilities.h"
+#include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace base {
 class DictionaryValue;

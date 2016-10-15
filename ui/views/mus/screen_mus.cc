@@ -8,8 +8,8 @@
 
 #include "ui/views/mus/screen_mus.h"
 
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus_delegate.h"

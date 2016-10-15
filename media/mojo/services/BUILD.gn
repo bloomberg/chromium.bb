@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//media/media_options.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 config("mojo_media_config") {
@@ -88,7 +88,7 @@ component("services") {
     "//media/mojo/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//url",
   ]
 
@@ -97,7 +97,7 @@ component("services") {
     "//media:shared_memory_support",
     "//media/mojo/common",
     "//mojo/common",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/interfaces",
   ]
 
   if (is_android) {
@@ -130,7 +130,7 @@ service("media") {
 
   deps = [
     "//mojo/public/c/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -147,8 +147,8 @@ test("media_mojo_shell_unittests") {
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/interfaces",
-    "//services/shell/public/cpp:service_test_support",
-    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -175,7 +175,7 @@ test("media_pipeline_integration_unittests") {
 
   deps = [
     "//media/test:mojo_pipeline_integration_tests",
-    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
   ]
 
   data_deps = [

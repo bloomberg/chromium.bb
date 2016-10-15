@@ -26,7 +26,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
 #include "net/base/escape.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::LoginState;

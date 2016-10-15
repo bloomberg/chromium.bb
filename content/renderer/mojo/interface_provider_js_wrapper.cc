@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "mojo/edk/js/handle.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {

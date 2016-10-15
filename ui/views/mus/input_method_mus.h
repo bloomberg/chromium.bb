@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 #include "ui/views/mus/mus_export.h"
 

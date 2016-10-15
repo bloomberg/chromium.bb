@@ -7,7 +7,7 @@
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
 #include "components/wallpaper/wallpaper_layout.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace {

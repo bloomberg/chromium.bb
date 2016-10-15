@@ -17,8 +17,8 @@
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 

@@ -3,7 +3,7 @@ include_rules = [
   "+mojo/common",
   "+mojo/public",
   "+mojo/util",
-  "+services/shell",
+  "+services/service_manager",
   "+services/tracing/public/cpp",
   "+third_party/leveldatabase",
 ]

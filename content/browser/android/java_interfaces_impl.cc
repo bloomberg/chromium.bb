@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/InterfaceRegistrarImpl_jni.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 

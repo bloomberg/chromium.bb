@@ -16,9 +16,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/types.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/interfaces/resolver.mojom.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/interfaces/resolver.mojom.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace base {
 class SequencedWorkerPool;

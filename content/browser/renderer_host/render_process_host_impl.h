@@ -34,8 +34,8 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "services/shell/public/cpp/interface_registry.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 

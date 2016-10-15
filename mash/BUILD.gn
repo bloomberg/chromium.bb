@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 # Target that builders build.
@@ -49,7 +49,7 @@ test("mash_unittests") {
     "//ash/mus:unittests",
     "//base",
     "//base/test:test_support",
-    "//services/shell/background:main",
+    "//services/service_manager/background:main",
     "//ui/aura",
     "//ui/base",
     "//ui/compositor:test_support",

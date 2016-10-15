@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
 
 namespace content {
 

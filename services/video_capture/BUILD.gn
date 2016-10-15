@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 service("video_capture") {
@@ -17,7 +17,7 @@ service("video_capture") {
     ":lib",
     "//media/capture:capture",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/video_capture/public/interfaces",
   ]
 
@@ -58,7 +58,7 @@ source_set("lib") {
     "//media/mojo/common:common",
     "//media/mojo/interfaces:image_capture",
     "//mojo/common:common_base",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/video_capture/public/interfaces",
   ]
 }
@@ -90,9 +90,9 @@ test("video_capture_unittests") {
     "//base",
     "//base/test:test_support",
     "//media/mojo/common:common",
-    "//services/shell/public/cpp",
-    "//services/shell/public/cpp:service_test_support",
-    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
     "//services/video_capture/public/interfaces",
     "//testing/gmock",
     "//testing/gtest",

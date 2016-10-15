@@ -17,7 +17,7 @@ static_library("renderer") {
     "//components/translate/core/language_detection",
     "//content/public/common",
     "//content/public/renderer",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//third_party/WebKit/public:blink",
     "//third_party/cld",
     "//url",

@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "content/public/common/service_info.h"
-#include "services/shell/public/interfaces/service.mojom.h"
-#include "services/shell/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
 namespace content {
 

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -30,8 +30,8 @@ executable("navigation") {
     "//content/public/app:both",
     "//mojo/public/cpp/bindings",
     "//services/navigation/content_client",
-    "//services/shell/runner:init",
-    "//services/shell/runner/common",
+    "//services/service_manager/runner:init",
+    "//services/service_manager/runner/common",
     "//services/ui/public/cpp",
     "//ui/views",
     "//ui/views/controls/webview",
@@ -63,7 +63,7 @@ static_library("lib") {
     "//content/public/common",
     "//mojo/public/cpp/bindings",
     "//services/navigation/public/interfaces",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
   ]
 
@@ -86,9 +86,9 @@ test("navigation_unittests") {
     "//base",
     "//base/test:test_support",
     "//services/navigation/public/interfaces",
-    "//services/shell/public/cpp",
-    "//services/shell/public/cpp:service_test_support",
-    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
     "//testing/gtest",
   ]
 

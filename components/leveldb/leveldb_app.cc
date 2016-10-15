@@ -6,7 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/leveldb/leveldb_service_impl.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace leveldb {
 

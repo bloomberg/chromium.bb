@@ -39,8 +39,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)

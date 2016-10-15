@@ -20,7 +20,7 @@ group("mojo") {
     deps += [ "//mojo/android" ]
   }
 
-  deps += [ "//services/shell:all" ]
+  deps += [ "//services/service_manager:all" ]
 }
 
 group("tests") {
@@ -36,8 +36,8 @@ group("tests") {
     "//mojo/edk/test:mojo_public_bindings_unittests",
     "//mojo/edk/test:mojo_public_system_perftests",
     "//mojo/edk/test:mojo_public_system_unittests",
-    "//services/shell/public/cpp/tests:mojo_public_application_unittests",
-    "//services/shell/runner/host:mojo_runner_host_unittests",
-    "//services/shell/tests",
+    "//services/service_manager/public/cpp/tests:mojo_public_application_unittests",
+    "//services/service_manager/runner/host:mojo_runner_host_unittests",
+    "//services/service_manager/tests",
   ]
 }

@@ -6,7 +6,7 @@
 
 #include "ash/common/keyboard/keyboard_ui_observer.h"
 #include "base/memory/ptr_util.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 

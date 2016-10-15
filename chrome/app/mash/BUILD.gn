@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 source_set("mash") {
   sources = [
@@ -16,13 +16,13 @@ source_set("mash") {
     "//content/public/common",
     "//mash/package",
     "//services/catalog/public/interfaces",
-    "//services/shell",
-    "//services/shell/background:lib",
-    "//services/shell/public/cpp",
-    "//services/shell/public/interfaces",
-    "//services/shell/runner/common",
-    "//services/shell/runner/host:child_process_base",
-    "//services/shell/runner/host:lib",
+    "//services/service_manager",
+    "//services/service_manager/background:lib",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
+    "//services/service_manager/runner/common",
+    "//services/service_manager/runner/host:child_process_base",
+    "//services/service_manager/runner/host:lib",
     "//url",
   ]
   data_deps = [

@@ -4,7 +4,7 @@
 
 #include "ash/mus/app_list_presenter_mus.h"
 
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 

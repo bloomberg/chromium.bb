@@ -9,7 +9,7 @@
 
 #include "blimp/common/blob_cache/id_util.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blimp {
 namespace engine {

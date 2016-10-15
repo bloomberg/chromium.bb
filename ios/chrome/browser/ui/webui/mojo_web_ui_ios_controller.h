@@ -8,8 +8,8 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 // This class is intended for web ui pages that use mojo. It is expected that
 // subclasses will do two things:

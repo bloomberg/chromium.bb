@@ -4,7 +4,7 @@
 
 #include "services/ui/ws/user_id_tracker.h"
 
-#include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 
 namespace ui {

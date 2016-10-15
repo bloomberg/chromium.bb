@@ -16,9 +16,9 @@
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "url/gurl.h"
 
 namespace media {

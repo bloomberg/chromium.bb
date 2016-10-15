@@ -26,7 +26,7 @@
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/geometry/size.h"
 

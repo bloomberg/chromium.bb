@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/interface_factory.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/interfaces/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
 namespace mash {
 

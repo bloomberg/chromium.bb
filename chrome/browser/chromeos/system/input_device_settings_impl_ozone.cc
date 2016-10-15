@@ -8,7 +8,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 

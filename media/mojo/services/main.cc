@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/mojo/services/mojo_media_application_factory.h"
-#include "services/shell/public/c/main.h"
-#include "services/shell/public/cpp/service_runner.h"
+#include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/service_runner.h"
 
 namespace {
 

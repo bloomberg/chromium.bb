@@ -16,7 +16,7 @@
 #include "content/renderer/bluetooth/bluetooth_type_converters.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/array.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDeviceInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"

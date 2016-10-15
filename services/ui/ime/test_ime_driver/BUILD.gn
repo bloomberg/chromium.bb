@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -16,7 +16,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
   ]
 }
@@ -29,7 +29,7 @@ service("test_ime_driver") {
   deps = [
     ":lib",
     "//base",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
   ]
 

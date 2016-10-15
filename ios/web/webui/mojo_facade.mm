@@ -15,7 +15,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/public/web_thread.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

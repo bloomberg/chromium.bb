@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 service("tracing") {
   sources = [
@@ -15,7 +15,7 @@ service("tracing") {
   deps = [
     ":lib",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 
   data_deps = [
@@ -41,7 +41,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//mojo/common:common_base",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/interfaces",
   ]
 }

@@ -13,7 +13,7 @@
 #include "content/public/common/presentation_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/presentation/presentation_connection_client.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

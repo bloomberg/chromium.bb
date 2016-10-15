@@ -5,7 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_VIDEO_CAPTURE_SERVICE_TEST_H_
 #define SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_VIDEO_CAPTURE_SERVICE_TEST_H_
 
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_test.h"
 #include "services/video_capture/mock_device_descriptor_receiver.h"
 #include "services/video_capture/mock_video_capture_device_impl.h"
 #include "services/video_capture/mock_video_frame_receiver.h"

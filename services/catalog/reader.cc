@@ -16,7 +16,7 @@
 #include "services/catalog/constants.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/manifest_provider.h"
-#include "services/shell/public/cpp/names.h"
+#include "services/service_manager/public/cpp/names.h"
 
 namespace catalog {
 namespace {

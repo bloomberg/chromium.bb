@@ -92,7 +92,7 @@ source_set("chromeos") {
     "//mojo/common",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//components/sync",

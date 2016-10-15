@@ -11,10 +11,10 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/interface_registry.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace content {
 

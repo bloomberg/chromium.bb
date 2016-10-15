@@ -5,6 +5,6 @@ include_rules = [
   "+components/keyed_service/content",
   "+content/public/browser",
   "+net",
-  "+services/shell/public/cpp",
+  "+services/service_manager/public/cpp",
   "+third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h",
 ]

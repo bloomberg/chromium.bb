@@ -14,6 +14,6 @@ android_library("vibration_manager_android") {
     "//device/vibration:mojo_bindings_java",
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
-    "//services/shell/public/java:shell_java",
+    "//services/service_manager/public/java:service_manager_java",
   ]
 }

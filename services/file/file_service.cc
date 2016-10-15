@@ -11,7 +11,7 @@
 #include "components/leveldb/leveldb_service_impl.h"
 #include "services/file/file_system.h"
 #include "services/file/user_id_map.h"
-#include "services/shell/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/connection.h"
 
 namespace file {
 

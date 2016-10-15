@@ -20,7 +20,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "device/battery/battery_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 // These tests run against a dummy implementation of the BatteryMonitor service.
 // That is, they verify that the service implementation is correctly exposed to

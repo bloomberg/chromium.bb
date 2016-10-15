@@ -244,7 +244,7 @@ static_library("content_shell_lib") {
     "//net",
     "//net:net_resources",
     "//sandbox",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//storage/browser",
     "//testing/gmock",

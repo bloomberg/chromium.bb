@@ -13,7 +13,7 @@ static_library("renderer") {
     "//components/web_cache/public/interfaces",
     "//content/public/common",
     "//content/public/renderer",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//third_party/WebKit/public:blink",
   ]
 }

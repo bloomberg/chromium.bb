@@ -11,7 +11,7 @@
 #include "mash/quick_launch/quick_launch.h"
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
-#include "services/shell/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 #include "services/ui/service.h"
 

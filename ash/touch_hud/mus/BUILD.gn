@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("lib") {
@@ -20,8 +20,8 @@ source_set("lib") {
     "//mash/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:sources",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//ui/views",
@@ -42,8 +42,8 @@ service("touch_hud") {
     ":lib",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:sources",
     "//ui/views/mus:for_mojo_application",
   ]
 

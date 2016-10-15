@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "services/catalog/public/cpp/resource_loader.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"

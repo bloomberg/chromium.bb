@@ -15,7 +15,7 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_pipeline.h"
 #include "media/base/bind_to_current_loop.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace extensions {
 

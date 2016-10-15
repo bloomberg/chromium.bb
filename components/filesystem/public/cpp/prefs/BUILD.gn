@@ -15,7 +15,7 @@ source_set("prefs") {
     "//components/filesystem/public/interfaces",
     "//components/prefs",
     "//mojo/common",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 
   data_deps = [

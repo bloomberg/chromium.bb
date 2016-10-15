@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -22,7 +22,7 @@ source_set("lib") {
   public_deps = [
     "//base",
     "//services/catalog/public/interfaces",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp:sources",
     "//services/ui/public/interfaces",
   ]
 
@@ -40,8 +40,8 @@ service("app_driver") {
     ":lib",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp",
-    "//services/shell/public/cpp:sources",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:sources",
   ]
 
   data_deps = [

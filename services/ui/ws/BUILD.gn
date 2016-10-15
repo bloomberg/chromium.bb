@@ -4,8 +4,8 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 static_library("lib") {
   sources = [
@@ -128,8 +128,8 @@ static_library("lib") {
     "//cc/surfaces:surface_id",
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
     "//services/ui/display",
@@ -235,10 +235,10 @@ test("mus_ws_unittests") {
     "//cc:cc",
     "//gpu/ipc/client",
     "//mojo/public/cpp/bindings:bindings",
-    "//services/shell/public/cpp:service_test_support",
-    "//services/shell/public/cpp:sources",
-    "//services/shell/public/cpp/test:run_all_shelltests",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal_or_test",

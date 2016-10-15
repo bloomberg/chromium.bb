@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/shell/public/cpp/service_context.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 #include "ui/events/event.h"
 

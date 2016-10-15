@@ -5,7 +5,7 @@
 // Module "content/public/renderer/frame_interfaces"
 //
 // This module provides the JavaScript bindings for
-// services/shell/public/cpp/connection.h.
+// services/service_manager/public/cpp/connection.h.
 // Refer to that file for more detailed documentation for equivalent methods.
 
 define("content/public/renderer/frame_interfaces", [

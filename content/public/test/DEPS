@@ -2,7 +2,7 @@ include_rules = [
   "-content",
   "+content/public",
   "+device/geolocation/android/geolocation_jni_registrar.h",
-  "+services/shell",
+  "+services/service_manager",
   "+v8/include/v8.h",
 ]
 

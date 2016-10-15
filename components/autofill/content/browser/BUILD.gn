@@ -37,7 +37,7 @@ static_library("browser") {
     "//gpu/config",
     "//mojo/common:common_base",
     "//net",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//sql",
     "//third_party/icu",
     "//third_party/libphonenumber",
@@ -78,7 +78,7 @@ source_set("unit_tests") {
     "//mojo/common:common_base",
     "//net",
     "//net:test_support",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

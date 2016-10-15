@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace metrics {
 

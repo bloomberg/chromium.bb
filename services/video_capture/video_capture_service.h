@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/video_capture/public/interfaces/video_capture_service.mojom.h"
 
 namespace video_capture {

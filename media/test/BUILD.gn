@@ -48,7 +48,7 @@ source_set("pipeline_integration_tests") {
       "//media:test_support",
       "//media/base:test_support",
       "//media/mojo/clients",
-      "//services/shell/public/cpp:service_test_support",
+      "//services/service_manager/public/cpp:service_test_support",
       "//url",
 
       # TODO(dalecurtis): Required since the gmock header is included in the
@@ -103,7 +103,7 @@ source_set("mojo_pipeline_integration_tests") {
       "//media/mojo/clients",
       "//media/mojo/interfaces",
       "//media/mojo/services",
-      "//services/shell/public/cpp:service_test_support",
+      "//services/service_manager/public/cpp:service_test_support",
       "//testing/gtest",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",

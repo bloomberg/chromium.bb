@@ -35,7 +35,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"

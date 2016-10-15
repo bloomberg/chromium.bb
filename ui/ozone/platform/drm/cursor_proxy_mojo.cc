@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/drm/cursor_proxy_mojo.h"
 
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace ui {
 

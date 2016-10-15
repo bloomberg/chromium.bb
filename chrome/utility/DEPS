@@ -8,7 +8,7 @@ include_rules = [
   "+courgette",
   "+extensions/common",
   "+media",
-  "+services/shell/public/cpp",
+  "+services/service_manager/public/cpp",
   "+skia/ext",
   "+third_party/libxml",
   "+third_party/zlib/google",

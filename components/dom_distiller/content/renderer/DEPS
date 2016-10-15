@@ -1,7 +1,7 @@
 include_rules = [
   "+gin",
   "+mojo/public",
-  "+services/shell/public/cpp",
+  "+services/service_manager/public/cpp",
   "+third_party/WebKit/public",
   "+v8/include",
 ]

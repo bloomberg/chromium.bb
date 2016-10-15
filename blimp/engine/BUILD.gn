@@ -343,7 +343,7 @@ source_set("renderer") {
     "//components/web_cache/renderer",
     "//content/public/common",
     "//content/public/renderer",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/libwebp",
     "//ui/gfx/geometry",

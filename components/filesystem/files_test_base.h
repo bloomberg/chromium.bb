@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_test.h"
 
 namespace filesystem {
 

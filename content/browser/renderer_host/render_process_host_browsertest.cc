@@ -19,8 +19,8 @@
 #include "content/public/test/test_service.mojom.h"
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/shell/public/cpp/interface_provider.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

@@ -10,7 +10,7 @@
 #include "components/metrics/proto/memory_leak_report.pb.h"
 #include "content/public/renderer/render_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 LeakDetectorRemoteClient::LeakDetectorRemoteClient() {
   // Connect to Mojo service.

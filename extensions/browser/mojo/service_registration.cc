@@ -18,7 +18,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/switches.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(ENABLE_WIFI_DISPLAY)
 #include "extensions/browser/api/display_source/wifi_display/wifi_display_media_service_impl.h"

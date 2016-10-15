@@ -9,7 +9,7 @@
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/reader.h"
 #include "services/catalog/store.h"
-#include "services/shell/public/cpp/names.h"
+#include "services/service_manager/public/cpp/names.h"
 
 namespace catalog {
 namespace {

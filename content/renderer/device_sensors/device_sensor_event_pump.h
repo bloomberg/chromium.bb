@@ -14,7 +14,7 @@
 #include "content/public/renderer/platform_event_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 

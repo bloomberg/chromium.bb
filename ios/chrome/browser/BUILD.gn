@@ -684,7 +684,7 @@ source_set("browser") {
     "//ios/web/public/app",
     "//net",
     "//net:extras",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/brotli",
     "//third_party/google_toolbox_for_mac",

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_JAVA_INTERFACES_IMPL_H_
 
 #include "content/public/browser/android/java_interfaces.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
 class WebContents;

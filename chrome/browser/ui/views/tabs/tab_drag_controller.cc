@@ -51,7 +51,7 @@
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/tabs/window_finder_mus.h"  // nogncheck
 #include "content/public/common/service_manager_connection.h"  // nogncheck
-#include "services/shell/runner/common/client_util.h"  // nogncheck
+#include "services/service_manager/runner/common/client_util.h"  // nogncheck
 #include "ui/aura/env.h"  // nogncheck
 #include "ui/aura/window.h"  // nogncheck
 #include "ui/wm/core/window_modality_controller.h"  // nogncheck

@@ -11,8 +11,8 @@
 #include "base/files/file.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace catalog {
 

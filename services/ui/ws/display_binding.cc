@@ -5,7 +5,7 @@
 #include "services/ui/ws/display_binding.h"
 
 #include "base/memory/ptr_util.h"
-#include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/window_manager_access_policy.h"
 #include "services/ui/ws/window_server.h"

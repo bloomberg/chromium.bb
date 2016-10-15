@@ -847,7 +847,7 @@ component("ash") {
     "//components/wallpaper",
     "//media",
     "//net",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",

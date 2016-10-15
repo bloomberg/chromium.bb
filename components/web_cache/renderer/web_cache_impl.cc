@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
 namespace web_cache {

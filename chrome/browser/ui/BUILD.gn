@@ -565,7 +565,7 @@ split_static_library("ui") {
     "//device/usb",
     "//media",
     "//net:net_with_v8",
-    "//services/shell/runner/common",
+    "//services/service_manager/runner/common",
     "//skia",
     "//storage/browser",
     "//storage/common",

@@ -6,10 +6,10 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/c/main.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/service_runner.h"
+#include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client.h"

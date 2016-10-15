@@ -423,7 +423,7 @@ if (!is_ios) {
       "//device/geolocation",
       "//ipc:test_support",
       "//net:test_support",
-      "//services/shell/public/cpp",
+      "//services/service_manager/public/cpp",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/base",

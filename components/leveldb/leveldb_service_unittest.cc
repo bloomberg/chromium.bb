@@ -11,8 +11,8 @@
 #include "components/leveldb/public/cpp/util.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/service_context.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_test.h"
 
 using filesystem::mojom::FileError;
 

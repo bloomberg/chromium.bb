@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"

@@ -6,8 +6,8 @@
 #define SERVICES_UI_PUBLIC_CPP_TESTS_WINDOW_SERVER_SHELLTEST_BASE_H_
 
 #include "base/macros.h"
-#include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/connection.h"
+#include "services/service_manager/public/cpp/service_test.h"
 
 namespace ui {
 

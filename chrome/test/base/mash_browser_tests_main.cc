@@ -20,14 +20,14 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_launcher.h"
 #include "mash/package/mash_packaged_service.h"
-#include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/service_context.h"
-#include "services/shell/public/cpp/service_runner.h"
-#include "services/shell/runner/common/switches.h"
-#include "services/shell/runner/host/child_process.h"
-#include "services/shell/runner/host/child_process_base.h"
-#include "services/shell/runner/init.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/runner/host/child_process.h"
+#include "services/service_manager/runner/host/child_process_base.h"
+#include "services/service_manager/runner/init.h"
 
 namespace {
 

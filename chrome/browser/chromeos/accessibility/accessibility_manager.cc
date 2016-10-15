@@ -75,7 +75,7 @@
 #include "extensions/common/host_id.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "media/audio/sounds/sounds_manager.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"

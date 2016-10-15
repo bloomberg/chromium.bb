@@ -12,7 +12,7 @@ if (is_chromeos) {
       "//components/metrics/leak_detector:interfaces",
       "//components/metrics/leak_detector:leak_detector",
       "//components/metrics/proto:proto",
-      "//services/shell/public/cpp",
+      "//services/service_manager/public/cpp",
     ]
   }
 }

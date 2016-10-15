@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "services/shell/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/interfaces/interface_provider.mojom";
 
 interface EmbeddedWorkerSetup {
   ExchangeInterfaceProviders(

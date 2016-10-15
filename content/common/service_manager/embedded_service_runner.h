@@ -14,8 +14,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "content/public/common/service_info.h"
-#include "services/shell/public/cpp/service.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace content {
 

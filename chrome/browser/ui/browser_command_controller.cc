@@ -57,7 +57,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "mash/public/interfaces/launchable.mojom.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_MACOSX)

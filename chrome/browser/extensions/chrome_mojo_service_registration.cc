@@ -11,7 +11,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/media_router_feature.h"

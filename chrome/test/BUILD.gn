@@ -13,7 +13,7 @@ import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
 import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//v8/gni/v8.gni")
 
@@ -1182,8 +1182,8 @@ static_library("browser_tests_runner") {
 
     deps += [
       "//mash/package",
-      "//services/shell/background:lib",
-      "//services/shell/background/tests:test_support",
+      "//services/service_manager/background:lib",
+      "//services/service_manager/background/tests:test_support",
     ]
 
     data_deps = [
@@ -1897,7 +1897,7 @@ test("browser_tests") {
       "//net",
       "//net:test_support",
       "//sdch",
-      "//services/shell/public/cpp",
+      "//services/service_manager/public/cpp",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",

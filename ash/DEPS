@@ -10,7 +10,7 @@ include_rules = [
   "+grit/ash_strings.h",
   "+media",
   "+mojo/public",
-  "+services/shell/public",
+  "+services/service_manager/public",
   "+skia/ext",
   "+third_party/cros_system_api",
   "+third_party/skia",

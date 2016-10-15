@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/shell/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
 

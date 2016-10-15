@@ -23,7 +23,7 @@
 #include "content/public/common/process_type.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

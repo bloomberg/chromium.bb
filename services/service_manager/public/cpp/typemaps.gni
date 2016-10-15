@@ -1,0 +1,4 @@
+typemaps = [
+  "//services/service_manager/public/cpp/capabilities.typemap",
+  "//services/service_manager/public/cpp/identity.typemap",
+]

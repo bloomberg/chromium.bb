@@ -11,8 +11,8 @@
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/common/service_info.h"
-#include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace shell {
 class Connection;
@@ -25,7 +25,7 @@ namespace content {
 
 class ConnectionFilter;
 
-// Encapsulates a connection to a //services/shell.
+// Encapsulates a connection to a //services/service_manager.
 // Access a global instance on the thread the ServiceContext was bound by
 // calling Holder::Get().
 // Clients can add shell::Service implementations whose exposed interfaces

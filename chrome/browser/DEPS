@@ -35,7 +35,7 @@ include_rules = [
   "+media/cdm/cdm_paths.h",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
-  "+services/shell/public/cpp",
+  "+services/service_manager/public/cpp",
   "+services/ui/public",
   "+ppapi/c",  # For various types.
   "+ppapi/host",
@@ -43,7 +43,7 @@ include_rules = [
   "+ppapi/shared_impl",
   "+rlz",
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
-  "+services/shell",
+  "+services/service_manager",
   "+skia/ext",
   "+syzygy/kasko",
   "+third_party/cros_system_api",

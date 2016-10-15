@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -17,7 +17,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
   ]
 
@@ -35,7 +35,7 @@ service("font_service") {
     ":lib",
     "//base",
     "//mojo/public/c/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 
   data_deps = [

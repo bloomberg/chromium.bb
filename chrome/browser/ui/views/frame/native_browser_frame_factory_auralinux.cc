@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_auralinux.h"
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/runner/common/client_util.h"
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,

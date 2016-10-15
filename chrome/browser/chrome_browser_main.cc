@@ -272,7 +272,7 @@
 #if defined(USE_AURA)
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/shell/runner/common/client_util.h"
+#include "services/service_manager/runner/common/client_util.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

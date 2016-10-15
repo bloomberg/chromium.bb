@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/shell/public/interfaces/service.mojom.h"
+#include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace shell {
 class Service;

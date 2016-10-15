@@ -13,7 +13,7 @@ source_set("cpp") {
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/interfaces",
   ]
 }

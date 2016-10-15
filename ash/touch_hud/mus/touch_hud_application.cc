@@ -8,7 +8,7 @@
 #include "ash/touch_hud/touch_hud_renderer.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/views/mus/aura_init.h"

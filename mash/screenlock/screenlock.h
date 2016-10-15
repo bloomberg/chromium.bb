@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 
 namespace views {

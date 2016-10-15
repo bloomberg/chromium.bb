@@ -4,7 +4,7 @@
 
 #include "services/ui/ime/ime_server_impl.h"
 
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 
 namespace ui {

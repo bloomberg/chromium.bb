@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/shell/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"

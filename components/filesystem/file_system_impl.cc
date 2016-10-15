@@ -18,7 +18,7 @@
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "url/gurl.h"
 
 namespace filesystem {

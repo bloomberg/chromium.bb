@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 static_library("lib") {
@@ -28,8 +28,8 @@ static_library("lib") {
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
     "//url",
   ]
 }
@@ -48,7 +48,7 @@ service("filesystem") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
   ]
 
@@ -76,9 +76,9 @@ test("filesystem_service_unittests") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp:service_test_support",
-    "//services/shell/public/cpp:sources",
-    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp:sources",
+    "//services/service_manager/public/cpp/test:run_all_shelltests",
   ]
 
   data_deps = [

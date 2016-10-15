@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "services/shell/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/views/mus/mus_export.h"

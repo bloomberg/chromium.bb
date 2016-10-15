@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/shell/public/cpp/service.gni")
-import("//services/shell/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 group("catalog") {
@@ -35,7 +35,7 @@ source_set("lib") {
     "//base",
     "//components/filesystem:lib",
     "//services/catalog/public/interfaces",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
   ]
 
   public_deps = [
@@ -64,7 +64,7 @@ source_set("unittests") {
   deps = [
     ":lib",
     "//base",
-    "//services/shell/public/cpp",
+    "//services/service_manager/public/cpp",
     "//testing/gtest",
   ]
 }

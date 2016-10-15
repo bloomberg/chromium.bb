@@ -5,7 +5,7 @@
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shell/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/ime/test_ime_driver/test_ime_driver.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 

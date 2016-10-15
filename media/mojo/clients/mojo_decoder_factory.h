@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "media/base/decoder_factory.h"
-#include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 

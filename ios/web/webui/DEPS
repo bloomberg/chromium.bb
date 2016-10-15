@@ -1,5 +1,5 @@
 include_rules = [
   "+mojo/public",
-  "+services/shell/public",
+  "+services/service_manager/public",
   "+ui/resources/grit",
 ]

@@ -26,7 +26,7 @@ template("implement_content_app") {
     "//content:sandbox_helper_win",
     "//content/public/common:common_sources",
     "//crypto",
-    "//services/shell/public/interfaces",
+    "//services/service_manager/public/interfaces",
     "//mojo/edk/system",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/base",

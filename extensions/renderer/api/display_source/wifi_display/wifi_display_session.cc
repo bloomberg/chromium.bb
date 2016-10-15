@@ -10,7 +10,7 @@
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_manager.h"
-#include "services/shell/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/wds/src/libwds/public/logging.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
