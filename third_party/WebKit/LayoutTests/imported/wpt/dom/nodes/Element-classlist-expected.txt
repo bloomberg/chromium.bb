@@ -12,7 +12,7 @@ PASS classList.item() must return null for out-of-range index
 PASS classList.item() must return null for negative index 
 PASS classList[index] must be undefined for out-of-range index 
 PASS classList[index] must be undefined for negative index 
-FAIL className should contain initial markup whitespace assert_equals: expected " " but got ""
+PASS className should contain initial markup whitespace 
 PASS classList should contain initial markup whitespace 
 FAIL .contains(empty_string) must return false Failed to execute 'contains' on 'DOMTokenList': The token provided must not be empty.
 PASS .add(empty_string) must throw a SYNTAX_ERR 

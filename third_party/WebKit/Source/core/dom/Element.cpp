@@ -1343,9 +1343,7 @@ static inline ClassStringContent classStringHasClassName(
     ++i;
   } while (i < length);
 
-  if (i == length && length == 1)
-    return ClassStringContent::Empty;
-  if (i == length && length > 1)
+  if (i == length && length >= 1)
     return ClassStringContent::WhiteSpaceOnly;
 
   return ClassStringContent::HasClasses;
