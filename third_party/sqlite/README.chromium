@@ -38,8 +38,8 @@ sqlite3.c.  To prototype, edit in src/, then call
   ./google_generate_amalgamation.sh
 to regenerate sqlite3.c.  The code in src/ is much easier to edit, and the
 SQLite test framework can easily be run.  During development it may be
-convenient to modify sqlite.gyp (or BUILD.gn) based on src/main.mk to just pull
-in the src/ files rather than sqlite3.c.
+convenient to modify BUILD.gn based on src/main.mk to just pull in the src/
+files rather than sqlite3.c.
 
 Once your patch is complete, squash it down into a reasonable CL, then
 re-generate the patches.  This is a truncated version of the import flow.  The
@@ -200,7 +200,7 @@ Find a sucker.  Send review.
 TODO(shess): It is basically impossible to trybot the entire change, it takes
 forever to upload and sqlite3.c breaks things because it's too large.  I have a
 nasty Perl script to break up sqlite3.c into pieces which are then included by a
-single .c file, but there must be a better way.  Perhaps just have sqlite.gyp
+single .c file, but there must be a better way.  Perhaps just have BUILD.gn
 include all the .c files directly?
 
 Note that things can be broken down differently, if you prefer.  For instance,

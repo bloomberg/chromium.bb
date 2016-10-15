@@ -10,7 +10,6 @@ mkdir bld
 cd bld
 ../configure
 FILES="sqlite3.h sqlite3.c"
-# Add any options from sqlite.gyp referenced by parse.y or mkkeywordhash.c.
 OPTS=""
 make "OPTS=$OPTS" $FILES
 cp -f $FILES ../../amalgamation
