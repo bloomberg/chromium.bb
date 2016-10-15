@@ -34,17 +34,6 @@ Polymer({
       value: false,  // Can only be true on Linux, but value exists everywhere.
     },
 
-    /** @private */
-    defaultZoomLevel_: {
-      notify: true,
-      type: Object,
-      value: function() {
-        return {
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-        };
-      },
-    },
-
     /**
      * List of options for the font size drop-down menu.
      * @type {!DropdownMenuOptionList}
@@ -111,8 +100,6 @@ Polymer({
     // NOTE: this pref only exists on Linux.
     'useSystemThemePrefChanged_(prefs.extensions.theme.use_system.value)',
 </if>
-
-    'zoomLevelChanged_(defaultZoomLevel_.value)',
   ],
 
   created: function() {
@@ -121,11 +108,13 @@ Polymer({
 
   ready: function() {
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
-    this.$.pageZoom.menuOptions = this.pageZoomOptions_;
     // TODO(dschuyler): Look into adding a listener for the
     // default zoom percent.
-    chrome.settingsPrivate.getDefaultZoomPercent(
-        this.zoomPrefChanged_.bind(this));
+    chrome.settingsPrivate.getDefaultZoomPercent(function(value) {
+      // TODO(dpapad): Non-integer values will cause no <option> to be selected
+      // until crbug.com/655742 is addressed.
+      this.$.zoomLevel.value = value;
+    }.bind(this));
   },
 
   /**
@@ -228,23 +217,10 @@ Polymer({
     this.themeUrl_ = '';
   },
 
-  /**
-   * @param {number} percent The integer percentage of the page zoom.
-   * @private
-   */
-  zoomPrefChanged_: function(percent) {
-    this.set('defaultZoomLevel_.value', percent);
-  },
-
-  /**
-   * @param {number} percent The integer percentage of the page zoom.
-   * @private
-   */
-  zoomLevelChanged_: function(percent) {
-    // The |percent| may be undefined on startup.
-    if (percent === undefined)
-      return;
-    chrome.settingsPrivate.setDefaultZoomPercent(percent);
+  /** @private */
+  onZoomLevelChange_: function() {
+    chrome.settingsPrivate.setDefaultZoomPercent(
+        parseFloat(this.$.zoomLevel.value));
   },
 
   /**
