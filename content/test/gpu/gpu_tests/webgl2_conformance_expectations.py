@@ -56,10 +56,34 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
+    self.Fail('conformance/buffers/buffer-uninitialized.html',
+        bug=654201)
+    self.Fail('conformance2/transform_feedback/transform_feedback.html',
+        bug=654201)
+    self.Fail('conformance2/context/constants-and-properties-2.html',
+        bug=655836)
+    self.Fail('conformance/extensions/webgl-compressed-texture-etc.html',
+        bug=655836)
+    self.Fail('conformance/extensions/webgl-compressed-texture-pvrtc.html',
+        bug=655836)
+    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
+        bug=655836)
+    self.Fail('conformance/extensions/webgl-compressed-texture-s3tc.html',
+        bug=655836)
+    self.Fail('conformance/extensions/webgl-compressed-texture-s3tc-srgb.html',
+        bug=655836)
+    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
+        bug=655836)
+    self.Fail('deqp/functional/gles3/integerstatequery.html', bug=655836)
+    self.Fail('deqp/functional/gles3/negativetextureapi.html',
+        ['win', 'mac'], bug=655836)
+    self.Fail('deqp/functional/gles3/textureformat/*', bug=655836)
+    self.Fail('deqp/functional/gles3/texturewrap/*', bug=655836)
+    self.Fail('deqp/functional/gles3/texturewrap.html', bug=655836)
 
     # Windows only.
     # We are awesome!
-    self.Fail('conformance2/buffers/getBufferSubData.html',
+    self.Fail('conformance2/buffers/get-buffer-sub-data.html',
         ['win'], bug=654201)
 
     # Win / NVidia
@@ -504,7 +528,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
-    self.Fail('conformance2/buffers/getBufferSubData.html',
+    self.Fail('conformance2/buffers/get-buffer-sub-data.html',
         ['linux'], bug=654201)
 
     self.Flaky('conformance/textures/video/' +
