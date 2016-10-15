@@ -37,7 +37,7 @@ class SyncPointManager;
 }
 
 namespace media {
-class MediaService;
+class MediaGpuChannelManager;
 }
 
 namespace sandbox {
@@ -145,7 +145,7 @@ class GpuChildThread : public ChildThreadImpl,
 
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
 
-  std::unique_ptr<media::MediaService> media_service_;
+  std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;

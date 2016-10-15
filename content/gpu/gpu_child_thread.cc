@@ -37,7 +37,7 @@
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
-#include "media/gpu/ipc/service/media_service.h"
+#include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "services/shell/public/cpp/interface_registry.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -278,7 +278,7 @@ void GpuChildThread::DidCreateOffscreenContext(const GURL& active_url) {
 }
 
 void GpuChildThread::DidDestroyChannel(int client_id) {
-  media_service_->RemoveChannel(client_id);
+  media_gpu_channel_manager_->RemoveChannel(client_id);
   Send(new GpuHostMsg_DestroyChannel(client_id));
 }
 
@@ -356,7 +356,8 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
       ChildProcess::current()->GetShutDownEvent(), sync_point_manager,
       gpu_memory_buffer_factory_));
 
-  media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
+  media_gpu_channel_manager_.reset(
+      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
 
   // Only set once per process instance.
   service_factory_.reset(new GpuServiceFactory);
@@ -480,7 +481,7 @@ void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
   IPC::ChannelHandle channel_handle = gpu_channel_manager_->EstablishChannel(
       params.client_id, params.client_tracing_id, params.preempts,
       params.allow_view_command_buffers, params.allow_real_time_streams);
-  media_service_->AddChannel(params.client_id);
+  media_gpu_channel_manager_->AddChannel(params.client_id);
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
@@ -517,7 +518,7 @@ void GpuChildThread::OnDestroyingVideoSurface(int surface_id) {
 void GpuChildThread::OnLoseAllContexts() {
   if (gpu_channel_manager_) {
     gpu_channel_manager_->DestroyAllChannels();
-    media_service_->DestroyAllChannels();
+    media_gpu_channel_manager_->DestroyAllChannels();
   }
 }
 

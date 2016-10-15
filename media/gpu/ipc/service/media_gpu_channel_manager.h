@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_IPC_SERVICE_MEDIA_SERVICE_H_
-#define MEDIA_GPU_IPC_SERVICE_MEDIA_SERVICE_H_
+#ifndef MEDIA_GPU_IPC_SERVICE_MEDIA_GPU_CHANNEL_MANAGER_H_
+#define MEDIA_GPU_IPC_SERVICE_MEDIA_GPU_CHANNEL_MANAGER_H_
 
 #include <stdint.h>
 
@@ -22,12 +22,12 @@ class GpuChannelManager;
 
 namespace media {
 
-class MediaChannel;
+class MediaGpuChannel;
 
-class MediaService {
+class MediaGpuChannelManager {
  public:
-  MediaService(gpu::GpuChannelManager* channel_manager);
-  ~MediaService();
+  explicit MediaGpuChannelManager(gpu::GpuChannelManager* channel_manager);
+  ~MediaGpuChannelManager();
 
   void AddChannel(int32_t client_id);
   void RemoveChannel(int32_t client_id);
@@ -35,11 +35,11 @@ class MediaService {
 
  private:
   gpu::GpuChannelManager* const channel_manager_;
-  base::ScopedPtrHashMap<int32_t, std::unique_ptr<MediaChannel>>
-      media_channels_;
-  DISALLOW_COPY_AND_ASSIGN(MediaService);
+  base::ScopedPtrHashMap<int32_t, std::unique_ptr<MediaGpuChannel>>
+      media_gpu_channels_;
+  DISALLOW_COPY_AND_ASSIGN(MediaGpuChannelManager);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_IPC_SERVICE_MEDIA_SERVICE_H_
+#endif  // MEDIA_GPU_IPC_SERVICE_MEDIA_GPU_CHANNEL_MANAGER_H_

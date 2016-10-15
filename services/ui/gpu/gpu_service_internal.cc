@@ -21,7 +21,7 @@
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
-#include "media/gpu/ipc/service/media_service.h"
+#include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -45,7 +45,7 @@ GpuServiceInternal::GpuServiceInternal(
 
 GpuServiceInternal::~GpuServiceInternal() {
   binding_.Close();
-  media_service_.reset();
+  media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
 
@@ -88,7 +88,7 @@ void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {
 }
 
 void GpuServiceInternal::DidDestroyChannel(int client_id) {
-  media_service_->RemoveChannel(client_id);
+  media_gpu_channel_manager_->RemoveChannel(client_id);
   NOTIMPLEMENTED();
 }
 
@@ -143,7 +143,8 @@ void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
       &shutdown_event_, owned_sync_point_manager_.get(),
       gpu_memory_buffer_factory_));
 
-  media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
+  media_gpu_channel_manager_.reset(
+      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
   callback.Run(gpu_info_);
 }
 
@@ -167,7 +168,7 @@ void GpuServiceInternal::EstablishGpuChannel(
       client_id, client_tracing_id, preempts, allow_view_command_buffers,
       allow_real_time_streams);
   channel_handle.reset(handle.mojo_handle);
-  media_service_->AddChannel(client_id);
+  media_gpu_channel_manager_->AddChannel(client_id);
   callback.Run(std::move(channel_handle));
 }
 

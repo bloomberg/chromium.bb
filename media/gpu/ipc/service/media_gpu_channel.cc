@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/ipc/service/media_channel.h"
+#include "media/gpu/ipc/service/media_gpu_channel.h"
 
 #include "base/unguessable_token.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -32,9 +32,9 @@ void SendCreateJpegDecoderResult(
 
 }  // namespace
 
-class MediaChannelDispatchHelper {
+class MediaGpuChannelDispatchHelper {
  public:
-  MediaChannelDispatchHelper(MediaChannel* channel, int32_t routing_id)
+  MediaGpuChannelDispatchHelper(MediaGpuChannel* channel, int32_t routing_id)
       : channel_(channel), routing_id_(routing_id) {}
 
   bool Send(IPC::Message* msg) { return channel_->Send(msg); }
@@ -52,15 +52,15 @@ class MediaChannelDispatchHelper {
   }
 
  private:
-  MediaChannel* const channel_;
+  MediaGpuChannel* const channel_;
   const int32_t routing_id_;
-  DISALLOW_COPY_AND_ASSIGN(MediaChannelDispatchHelper);
+  DISALLOW_COPY_AND_ASSIGN(MediaGpuChannelDispatchHelper);
 };
 
 // Filter to respond to GetChannelToken on the IO thread.
-class MediaChannelFilter : public IPC::MessageFilter {
+class MediaGpuChannelFilter : public IPC::MessageFilter {
  public:
-  explicit MediaChannelFilter(const base::UnguessableToken& channel_token)
+  explicit MediaGpuChannelFilter(const base::UnguessableToken& channel_token)
       : channel_token_(channel_token) {}
 
   void OnFilterAdded(IPC::Channel* channel) override { channel_ = channel; }
@@ -68,7 +68,7 @@ class MediaChannelFilter : public IPC::MessageFilter {
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(MediaChannelFilter, msg)
+    IPC_BEGIN_MESSAGE_MAP(MediaGpuChannelFilter, msg)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetChannelToken,
                                       OnGetChannelToken)
       IPC_MESSAGE_UNHANDLED(handled = false)
@@ -83,32 +83,33 @@ class MediaChannelFilter : public IPC::MessageFilter {
   }
 
  private:
-  ~MediaChannelFilter() override {}
+  ~MediaGpuChannelFilter() override {}
 
   IPC::Channel* channel_;
   base::UnguessableToken channel_token_;
 };
 
-MediaChannel::MediaChannel(gpu::GpuChannel* channel) : channel_(channel) {
-  channel_->AddFilter(new MediaChannelFilter(base::UnguessableToken::Create()));
+MediaGpuChannel::MediaGpuChannel(gpu::GpuChannel* channel) : channel_(channel) {
+  channel_->AddFilter(
+      new MediaGpuChannelFilter(base::UnguessableToken::Create()));
 }
 
-MediaChannel::~MediaChannel() {}
+MediaGpuChannel::~MediaGpuChannel() {}
 
-bool MediaChannel::Send(IPC::Message* msg) {
+bool MediaGpuChannel::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-bool MediaChannel::OnMessageReceived(const IPC::Message& message) {
-  MediaChannelDispatchHelper helper(this, message.routing_id());
+bool MediaGpuChannel::OnMessageReceived(const IPC::Message& message) {
+  MediaGpuChannelDispatchHelper helper(this, message.routing_id());
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaChannel, message)
+  IPC_BEGIN_MESSAGE_MAP(MediaGpuChannel, message)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         GpuCommandBufferMsg_CreateVideoDecoder, &helper,
-        MediaChannelDispatchHelper::OnCreateVideoDecoder)
+        MediaGpuChannelDispatchHelper::OnCreateVideoDecoder)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         GpuCommandBufferMsg_CreateVideoEncoder, &helper,
-        MediaChannelDispatchHelper::OnCreateVideoEncoder)
+        MediaGpuChannelDispatchHelper::OnCreateVideoEncoder)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateJpegDecoder,
                                     OnCreateJpegDecoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -116,8 +117,8 @@ bool MediaChannel::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void MediaChannel::OnCreateJpegDecoder(int32_t route_id,
-                                       IPC::Message* reply_msg) {
+void MediaGpuChannel::OnCreateJpegDecoder(int32_t route_id,
+                                          IPC::Message* reply_msg) {
   std::unique_ptr<IPC::Message> msg(reply_msg);
   if (!jpeg_decoder_) {
     jpeg_decoder_.reset(
@@ -129,12 +130,12 @@ void MediaChannel::OnCreateJpegDecoder(int32_t route_id,
                            make_scoped_refptr(channel_->filter())));
 }
 
-void MediaChannel::OnCreateVideoDecoder(
+void MediaGpuChannel::OnCreateVideoDecoder(
     int32_t command_buffer_route_id,
     const VideoDecodeAccelerator::Config& config,
     int32_t decoder_route_id,
     IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoDecoder");
+  TRACE_EVENT0("gpu", "MediaGpuChannel::OnCreateVideoDecoder");
   gpu::GpuCommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);
   if (!stub) {
@@ -153,10 +154,11 @@ void MediaChannel::OnCreateVideoDecoder(
   // self-delete during destruction of this stub.
 }
 
-void MediaChannel::OnCreateVideoEncoder(int32_t command_buffer_route_id,
-                                        const CreateVideoEncoderParams& params,
-                                        IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoEncoder");
+void MediaGpuChannel::OnCreateVideoEncoder(
+    int32_t command_buffer_route_id,
+    const CreateVideoEncoderParams& params,
+    IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "MediaGpuChannel::OnCreateVideoEncoder");
   gpu::GpuCommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);
   if (!stub) {

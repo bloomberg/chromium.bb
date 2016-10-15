@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_IPC_SERVICE_MEDIA_CHANNEL_H_
-#define MEDIA_GPU_IPC_SERVICE_MEDIA_CHANNEL_H_
+#ifndef MEDIA_GPU_IPC_SERVICE_MEDIA_GPU_CHANNEL_H_
+#define MEDIA_GPU_IPC_SERVICE_MEDIA_GPU_CHANNEL_H_
 
 #include <memory>
 
@@ -23,18 +23,18 @@ class GpuCommandBufferStub;
 
 namespace media {
 
-class MediaChannelDispatchHelper;
+class MediaGpuChannelDispatchHelper;
 
-class MediaChannel : public IPC::Listener, public IPC::Sender {
+class MediaGpuChannel : public IPC::Listener, public IPC::Sender {
  public:
-  explicit MediaChannel(gpu::GpuChannel* channel);
-  ~MediaChannel() override;
+  explicit MediaGpuChannel(gpu::GpuChannel* channel);
+  ~MediaGpuChannel() override;
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
  private:
-  friend class MediaChannelDispatchHelper;
+  friend class MediaGpuChannelDispatchHelper;
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -51,9 +51,9 @@ class MediaChannel : public IPC::Listener, public IPC::Sender {
 
   gpu::GpuChannel* const channel_;
   std::unique_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
-  DISALLOW_COPY_AND_ASSIGN(MediaChannel);
+  DISALLOW_COPY_AND_ASSIGN(MediaGpuChannel);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_IPC_SERVICE_MEDIA_CHANNEL_H_
+#endif  // MEDIA_GPU_IPC_SERVICE_MEDIA_GPU_CHANNEL_H_

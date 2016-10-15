@@ -29,7 +29,7 @@ class SyncPointManager;
 }
 
 namespace media {
-class MediaService;
+class MediaGpuChannelManager;
 }
 
 namespace ui {
@@ -114,7 +114,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
-  std::unique_ptr<media::MediaService> media_service_;
+  std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
   mojo::Binding<mojom::GpuServiceInternal> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
