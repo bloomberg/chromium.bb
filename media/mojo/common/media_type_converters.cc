@@ -15,7 +15,6 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_keys.h"
@@ -81,20 +80,6 @@ ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
 ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
                    EncryptionScheme::CipherMode::CIPHER_MODE_MAX,
                    CipherMode::MAX);
-
-// Decryptor Status
-ASSERT_ENUM_EQ_RAW(Decryptor::Status,
-                   Decryptor::kSuccess,
-                   Decryptor::Status::SUCCESS);
-ASSERT_ENUM_EQ_RAW(Decryptor::Status,
-                   Decryptor::kNoKey,
-                   Decryptor::Status::NO_KEY);
-ASSERT_ENUM_EQ_RAW(Decryptor::Status,
-                   Decryptor::kNeedMoreData,
-                   Decryptor::Status::NEED_MORE_DATA);
-ASSERT_ENUM_EQ_RAW(Decryptor::Status,
-                   Decryptor::kError,
-                   Decryptor::Status::DECRYPTION_ERROR);
 
 // CdmException
 #define ASSERT_CDM_EXCEPTION(value)                                        \

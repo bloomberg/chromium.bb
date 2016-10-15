@@ -11,6 +11,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decode_status.h"
+#include "media/base/decryptor.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
@@ -34,6 +35,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ColorSpace, media::COLOR_SPACE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::DecodeStatus,
                           media::DecodeStatus::DECODE_STATUS_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::Decryptor::Status,
+                          media::Decryptor::Status::STATUS_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::Decryptor::StreamType,
+                          media::Decryptor::StreamType::STREAM_TYPE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 

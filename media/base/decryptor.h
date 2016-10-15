@@ -28,20 +28,16 @@ class VideoFrame;
 // asynchronously.
 class MEDIA_EXPORT Decryptor {
  public:
-  // TODO(xhwang): Replace kError with kDecryptError and kDecodeError.
-  // TODO(xhwang): Replace kNeedMoreData with kNotEnoughData.
   enum Status {
     kSuccess,  // Decryption successfully completed. Decrypted buffer ready.
-    kNoKey,  // No key is available to decrypt.
+    kNoKey,    // No key is available to decrypt.
     kNeedMoreData,  // Decoder needs more data to produce a frame.
-    kError  // Key is available but an error occurred during decryption.
+    kError,         // Key is available but an error occurred during decryption.
+    STATUS_MAX = kError
   };
 
   // TODO(xhwang): Unify this with DemuxerStream::Type.
-  enum StreamType {
-    kAudio,
-    kVideo
-  };
+  enum StreamType { kAudio, kVideo, STREAM_TYPE_MAX = kVideo };
 
   Decryptor();
   virtual ~Decryptor();

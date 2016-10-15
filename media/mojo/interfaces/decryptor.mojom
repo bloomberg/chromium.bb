@@ -4,21 +4,19 @@
 
 module media.mojom;
 
-import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 
 // Interface for decrypting (and decoding) encrypted streams.
 // See media/base/decryptor.h for details.
 interface Decryptor {
-  // Status of a decrypt or decrypt-and-decode operation. The returned
-  // buffer/frame of such an operation is NOT null iff the status is SUCCESS.
-  enum Status {
-    SUCCESS,  // Successfully completed. Decrypted buffer ready.
-    NO_KEY,  // No key is available to decrypt.
-    NEED_MORE_DATA,  // Decoder needs more data to produce an output.
-    // Key is available but an error occurred during decryption.
-    DECRYPTION_ERROR
-  };
+  // Status of a decrypt or decrypt-and-decode operation. See decryptor.h for
+  // descriptions.
+  [Native]
+  enum Status;
+
+  // Stream type (audio/video). See decryptor.h for descriptions.
+  [Native]
+  enum StreamType;
 
   // Pass the two data pipes used to transfer DecoderBuffer contents to and
   // from the Decryptor. |receive_pipe| will be used to receive DecoderBuffer
@@ -32,11 +30,11 @@ interface Decryptor {
   // Decrypts the |encrypted| buffer and returns the decrypt |status| and
   // decrypted |buffer|.
   // At most one decrypt call is allowed at any time for a |stream_type|.
-  Decrypt(DemuxerStream.Type stream_type, DecoderBuffer encrypted)
+  Decrypt(StreamType stream_type, DecoderBuffer encrypted)
       => (Status status, DecoderBuffer? buffer);
 
   // Cancels any pending decrypt for |stream_type| with SUCCESS.
-  CancelDecrypt(DemuxerStream.Type stream_type);
+  CancelDecrypt(StreamType stream_type);
 
   // Initializes a decoder with the given |config|. Returns whether the
   // initialization succeeded.
@@ -62,7 +60,7 @@ interface Decryptor {
   // cancels any pending decrypt-and-decode operations immediately with ERROR.
   // This method can only be called after the corresponding decoder has been
   // successfully initialized.
-  ResetDecoder(DemuxerStream.Type stream_type);
+  ResetDecoder(StreamType stream_type);
 
   // Releases decoder resources, deinitializes the decoder, aborts any pending
   // initialization (with false) or decrypt-and-decode (with ERROR) for
@@ -71,7 +69,7 @@ interface Decryptor {
   // has been called (with the correct stream type).
   // After this operation, the decoder is set to an uninitialized state.
   // The decoder can be reinitialized after it is deinitialized.
-  DeinitializeDecoder(DemuxerStream.Type stream_type);
+  DeinitializeDecoder(StreamType stream_type);
 
   // Releases the shared memory.
   ReleaseSharedBuffer(handle<shared_buffer> buffer, uint64 buffer_size);
