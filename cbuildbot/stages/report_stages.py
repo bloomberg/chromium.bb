@@ -79,7 +79,7 @@ def WriteBasicMetadata(builder_run):
 
   builder_run.attrs.metadata.UpdateWithDict(metadata)
 
-def WriteTagMetadata(builder_run):
+def WriteTagMetadata(builder_run, build_id):
   """Add a 'tags' sub-dict to metadata.
 
   This is a proof of concept for using tags to help find commonality
@@ -99,13 +99,14 @@ def WriteTagMetadata(builder_run):
           os.environ.get('BUILDBOT_MASTERNAME', ''),
       'bot-config': builder_run.config['name'],
       'master_build_id': builder_run.options.master_build_id,
+      'build_id': build_id,
   }
 
   # Look up the git version.
   try:
     cmd_result = cros_build_lib.RunCommand(['git', '--version'],
                                            capture_output=True)
-    tags['git_version'] = cmd_result.output
+    tags['git_version'] = cmd_result.output.strip()
   except cros_build_lib.RunCommandError:
     pass  # If we fail, just don't include the tag.
 
@@ -186,7 +187,6 @@ class BuildStartStage(generic_stages.BuilderStage):
                                 self._run.config['doc'])
 
     WriteBasicMetadata(self._run)
-    WriteTagMetadata(self._run)
 
     # This is a heuristic value for |important|, since patches that get applied
     # later in the build might change the config. We write it now anyway,
@@ -247,6 +247,9 @@ class BuildStartStage(generic_stages.BuilderStage):
               master_build_status['builder_name'],
               master_build_status['build_number'])
           logging.PrintBuildbotLink('Link to master build', master_url)
+
+    WriteTagMetadata(self._run, build_id)
+
 
   def HandleSkip(self):
     """Ensure that re-executions use the same db instance as initial db."""
