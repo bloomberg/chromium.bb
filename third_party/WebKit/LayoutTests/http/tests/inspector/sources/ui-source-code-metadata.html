@@ -1,0 +1,91 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/inspector/debugger-test.js"></script>
+<link rel="stylesheet">
+<script>
+
+function addScript()
+{
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "resources/script.js";
+    script.onload = fulfill;
+    document.body.appendChild(script);
+    return promise;
+}
+
+function addStyleSheetAndRunTest()
+{
+    if (testRunner)
+        testRunner.waitUntilDone();
+    var link = document.head.querySelector("link");
+    link.href = "resources/style.css";
+    link.onload = runTest;
+}
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testCachedResource(next)
+        {
+            InspectorTest.waitForScriptSource("style.css", onStyleSheet)
+
+            function onStyleSheet(uiSourceCode)
+            {
+                dumpMetadata(uiSourceCode, next);
+            }
+        },
+
+        function testDynamicResource(next)
+        {
+            InspectorTest.evaluateInPageAsync("addScript()");
+            InspectorTest.waitForScriptSource("script.js", onScript);
+
+            function onScript(uiSourceCode)
+            {
+                dumpMetadata(uiSourceCode, next);
+            }
+        },
+
+        function testInlinedSourceMapSource(next)
+        {
+            InspectorTest.waitForScriptSource("style.scss", onSourceMapSource);
+
+            function onSourceMapSource(uiSourceCode)
+            {
+                dumpMetadata(uiSourceCode, next);
+            }
+        },
+    ]);
+
+    function dumpMetadata(uiSourceCode, next)
+    {
+        uiSourceCode.requestMetadata().then(onMetadata);
+
+        function onMetadata(metadata)
+        {
+            InspectorTest.addResult("Metadata for UISourceCode: " + uiSourceCode.url());
+            if (!metadata) {
+                InspectorTest.addResult("    Metadata is EMPTY");
+                next();
+                return;
+            }
+            var contentSize = metadata.contentSize;
+            var time = metadata.modificationTime ? "<Date>" : "null";
+            InspectorTest.addResult("    content size: " + contentSize);
+            InspectorTest.addResult("    modification time: " + time);
+            next();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="addStyleSheetAndRunTest()">
+<p>Verify that network UISourceCode has metadata.</p>
+</body>
+</html>
