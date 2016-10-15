@@ -48,7 +48,7 @@ class SettingsPrivateDelegate : public KeyedService {
   virtual std::unique_ptr<base::Value> GetDefaultZoomPercent();
 
   // Sets the pref.
-  virtual PrefsUtil::SetPrefResult SetDefaultZoomPercent(int percent);
+  virtual PrefsUtil::SetPrefResult SetDefaultZoomPercent(double percent);
 
  protected:
   Profile* profile_;  // weak; not owned by us

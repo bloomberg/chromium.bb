@@ -60,15 +60,14 @@ PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetPref(
 
 std::unique_ptr<base::Value> SettingsPrivateDelegate::GetDefaultZoomPercent() {
   double zoom = content::ZoomLevelToZoomFactor(
-      profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref()) * 100;
-  std::unique_ptr<base::Value> value(
-      new base::FundamentalValue(std::round(zoom)));
+      profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref());
+  std::unique_ptr<base::Value> value(new base::FundamentalValue(zoom));
   return value;
 }
 
 PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetDefaultZoomPercent(
-    int percent) {
-  double zoom_factor = content::ZoomFactorToZoomLevel(percent * 0.01);
+    double percent) {
+  double zoom_factor = content::ZoomFactorToZoomLevel(percent);
   profile_->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(zoom_factor);
   return PrefsUtil::SetPrefResult::SUCCESS;
 }

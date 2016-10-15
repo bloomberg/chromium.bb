@@ -149,9 +149,9 @@
           <div class="start">$i18n{pageZoom}</div>
           <div class="md-select-wrapper">
             <select id="zoomLevel" class="md-select"
-                  on-change="onZoomLevelChange_">
-              <template is="dom-repeat" items="[[pageZoomOptions_]]">
-                <option value="[[item.value]]">[[item.name]]</option>
+                on-change="onZoomLevelChange_">
+              <template is="dom-repeat" items="[[pageZoomLevels_]]">
+                <option value="[[item]]">[[formatZoom_(item)]]%</option>
               </template>
             </select>
             <span class="md-select-underline"></span>

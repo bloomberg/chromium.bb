@@ -56,27 +56,28 @@ Polymer({
      * List of options for the page zoom drop-down menu.
      * @type {!DropdownMenuOptionList}
      */
-    pageZoomOptions_: {
+    pageZoomLevels_: {
       readOnly: true,
       type: Array,
       value: [
-        {value: 25, name: '25%'},
-        {value: 33, name: '33%'},
-        {value: 50, name: '50%'},
-        {value: 67, name: '67%'},
-        {value: 75, name: '75%'},
-        {value: 80, name: '80%'},
-        {value: 90, name: '90%'},
-        {value: 100, name: '100%'},
-        {value: 110, name: '110%'},
-        {value: 125, name: '125%'},
-        {value: 150, name: '150%'},
-        {value: 175, name: '175%'},
-        {value: 200, name: '200%'},
-        {value: 250, name: '250%'},
-        {value: 300, name: '300%'},
-        {value: 400, name: '400%'},
-        {value: 500, name: '500%'},
+        // TODO(dbeam): get these dynamically from C++ instead.
+        1 / 4,
+        1 / 3,
+        1 / 2,
+        2 / 3,
+        3 / 4,
+        4 / 5,
+        9 / 10,
+        1,
+        11 / 10,
+        5 / 4,
+        3 / 2,
+        7 / 4,
+        2,
+        5 / 2,
+        3,
+        4,
+        5,
       ],
     },
 
@@ -115,6 +116,14 @@ Polymer({
       // until crbug.com/655742 is addressed.
       this.$.zoomLevel.value = value;
     }.bind(this));
+  },
+
+  /**
+   * @param {number} zoom
+   * @return {number} A zoom easier read by users.
+   */
+  formatZoom_: function(zoom) {
+    return Math.round(zoom * 100);
   },
 
   /**
