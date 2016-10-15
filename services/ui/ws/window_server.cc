@@ -46,7 +46,7 @@ struct WindowServer::CurrentDragLoopState {
 
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
-      display_compositor_(new DisplayCompositor()),
+      display_compositor_(new DisplayCompositor(this)),
       next_client_id_(1),
       display_manager_(new DisplayManager(this, &user_id_tracker_)),
       current_operation_(nullptr),
@@ -797,6 +797,28 @@ void WindowServer::OnGpuChannelEstablished(
   const std::set<Display*>& displays = display_manager()->displays();
   for (auto* display : displays)
     display->platform_display()->OnGpuChannelEstablished(gpu_channel_);
+}
+
+void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
+                                    const gfx::Size& frame_size,
+                                    float device_scale_factor) {
+  WindowId window_id(
+      WindowIdFromTransportId(surface_id.frame_sink_id().client_id()));
+  mojom::SurfaceType surface_type(
+      static_cast<mojom::SurfaceType>(surface_id.frame_sink_id().sink_id()));
+  // We only care about propagating default surface IDs.
+  // TODO(fsamuel, sadrul): we should get rid of surface types.
+  if (surface_type != mojom::SurfaceType::DEFAULT)
+    return;
+  ServerWindow* window = GetWindow(window_id);
+  // If the window doesn't have a parent then we have nothing to propagate.
+  if (!window || !window->parent())
+    return;
+  WindowTree* window_tree = GetTreeWithId(window->parent()->id().client_id);
+  if (window_tree) {
+    window_tree->ProcessWindowSurfaceChanged(window, surface_id, frame_size,
+                                             device_scale_factor);
+  }
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,

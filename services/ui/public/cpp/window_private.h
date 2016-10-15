@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/cpp/window.h"
 
 namespace ui {
@@ -87,6 +88,10 @@ class WindowPrivate {
                               const std::vector<uint8_t>* data) {
     window_->LocalSetSharedProperty(name, data);
   }
+  void LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info) {
+    window_->LocalSetSurfaceId(std::move(surface_info));
+  }
+
   void NotifyWindowStackingChanged() { window_->NotifyWindowStackingChanged(); }
 
  private:

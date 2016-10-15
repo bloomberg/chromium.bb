@@ -437,6 +437,11 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnWindowFocused(uint32_t focused_window_id) override;
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
                                        mojom::Cursor cursor_id) override;
+  void OnWindowSurfaceChanged(Id window_id,
+                              const cc::SurfaceId& surface_id,
+                              const cc::SurfaceSequence& surface_sequence,
+                              const gfx::Size& frame_size,
+                              float device_scale_factor) override;
   void OnDragDropStart(
       mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data) override;
   void OnDragEnter(uint32_t window,

@@ -14,6 +14,7 @@
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_sequence_generator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/surface.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -66,6 +67,10 @@ class ServerWindowSurface : public mojom::Surface,
 
   cc::SurfaceId GetSurfaceId() const;
 
+  // Creates a surface dependency token that expires when this
+  // ServerWindowSurface goes away.
+  cc::SurfaceSequence CreateSurfaceSequence();
+
   ServerWindow* window();
 
  private:
@@ -75,6 +80,7 @@ class ServerWindowSurface : public mojom::Surface,
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   const cc::FrameSinkId frame_sink_id_;
+  cc::SurfaceSequenceGenerator surface_sequence_generator_;
 
   ServerWindowSurfaceManager* manager_;  // Owns this.
 

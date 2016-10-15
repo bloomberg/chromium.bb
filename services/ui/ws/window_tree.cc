@@ -20,6 +20,7 @@
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_observer.h"
+#include "services/ui/ws/server_window_surface_manager.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_manager_display_root.h"
 #include "services/ui/ws/window_manager_state.h"
@@ -756,6 +757,26 @@ void WindowTree::ProcessTransientWindowRemoved(
                                      transient_client_window_id.id);
 }
 
+void WindowTree::ProcessWindowSurfaceChanged(ServerWindow* window,
+                                             const cc::SurfaceId& surface_id,
+                                             const gfx::Size& frame_size,
+                                             float device_scale_factor) {
+  ServerWindow* parent_window = window->parent();
+  ClientWindowId client_window_id, parent_client_window_id;
+  if (!IsWindowKnown(window, &client_window_id) ||
+      !IsWindowKnown(parent_window, &parent_client_window_id) ||
+      !created_window_map_.count(parent_window->id())) {
+    return;
+  }
+
+  ServerWindowSurfaceManager* surface_manager =
+      window->GetOrCreateSurfaceManager();
+  ServerWindowSurface* surface = surface_manager->GetDefaultSurface();
+  cc::SurfaceSequence sequence = surface->CreateSurfaceSequence();
+  client()->OnWindowSurfaceChanged(client_window_id.id, surface_id, sequence,
+                                   frame_size, device_scale_factor);
+}
+
 void WindowTree::SendToPointerWatcher(const ui::Event& event,
                                       ServerWindow* target_window) {
   if (!EventMatchesPointerWatcher(event))
@@ -1337,6 +1358,15 @@ void WindowTree::AttachSurface(Id transport_window_id,
     return;
   }
   window->CreateSurface(type, std::move(surface), std::move(client));
+}
+
+void WindowTree::OnWindowSurfaceDetached(Id transport_window_id,
+                                         const cc::SurfaceSequence& sequence) {
+  ServerWindow* window =
+      GetWindowByClientId(ClientWindowId(transport_window_id));
+  if (!window)
+    return;
+  window_server_->GetDisplayCompositor()->ReturnSurfaceReference(sequence);
 }
 
 void WindowTree::SetWindowTextInputState(Id transport_window_id,

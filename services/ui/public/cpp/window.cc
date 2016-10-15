@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "services/ui/common/transient_window_utils.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/cpp/window_private.h"
 #include "services/ui/public/cpp/window_property.h"
@@ -533,6 +534,10 @@ Window::~Window() {
   if (transient_parent_)
     transient_parent_->LocalRemoveTransientWindow(this);
 
+  // Return the surface reference if there is one.
+  if (surface_info_)
+    LocalSetSurfaceId(nullptr);
+
   // Remove transient children.
   while (!transient_children_.empty()) {
     Window* transient_child = transient_children_.front();
@@ -582,6 +587,7 @@ Window::Window(WindowTreeClient* client, Id id)
       // Matches aura, see aura::Window for details.
       observers_(base::ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY),
       input_event_handler_(nullptr),
+      surface_id_handler_(nullptr),
       visible_(false),
       opacity_(1.0f),
       display_id_(display::Display::kInvalidDisplayID),
@@ -788,6 +794,25 @@ void Window::LocalSetSharedProperty(const std::string& name,
   FOR_EACH_OBSERVER(
       WindowObserver, observers_,
       OnWindowSharedPropertyChanged(this, name, old_value_ptr, value));
+}
+
+void Window::LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info) {
+  if (surface_info_) {
+    const cc::SurfaceId& existing_surface_id = surface_info_->surface_id;
+    if (!existing_surface_id.is_null() &&
+        existing_surface_id != surface_info->surface_id) {
+      // Return the existing surface sequence.
+      if (client_) {
+        client_->OnWindowSurfaceDetached(server_id_,
+                                         surface_info_->surface_sequence);
+      }
+    }
+  }
+  if (parent_ && parent_->surface_id_handler_) {
+    parent_->surface_id_handler_->OnChildWindowSurfaceChanged(this,
+                                                              &surface_info);
+  }
+  surface_info_ = std::move(surface_info);
 }
 
 void Window::NotifyWindowStackingChanged() {
