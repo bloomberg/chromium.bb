@@ -47,6 +47,9 @@
 
 #include <string.h>
 
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
@@ -752,21 +755,55 @@ static exsltDateValPtr
 exsltDateCurrent (void)
 {
     struct tm localTm, gmTm;
+#ifndef HAVE_GMTIME_R
+    struct tm *tb = NULL;
+#endif
     time_t secs;
     int local_s, gm_s;
     exsltDateValPtr ret;
+#ifdef HAVE_ERRNO_H
+    char *source_date_epoch;
+#endif /* HAVE_ERRNO_H */
+    int override = 0;
 
     ret = exsltDateCreateDate(XS_DATETIME);
     if (ret == NULL)
         return NULL;
 
-    /* get current time */
-    secs    = time(NULL);
-#if HAVE_LOCALTIME_R
-    localtime_r(&secs, &localTm);
+#ifdef HAVE_ERRNO_H
+    /*
+     * Allow the date and time to be set externally by an exported
+     * environment variable to enable reproducible builds.
+     */
+    source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+    if (source_date_epoch) {
+        errno = 0;
+	secs = (time_t) strtol (source_date_epoch, NULL, 10);
+	if (errno == 0) {
+#if HAVE_GMTIME_R
+	    if (gmtime_r(&secs, &localTm) != NULL)
+	        override = 1;
 #else
-    localTm = *localtime(&secs);
+	    tb = gmtime(&secs);
+	    if (tb != NULL) {
+	        localTm = *tb;
+		override = 1;
+	    }
 #endif
+        }
+    }
+#endif /* HAVE_ERRNO_H */
+
+    if (override == 0) {
+    /* get current time */
+	secs    = time(NULL);
+
+#if HAVE_LOCALTIME_R
+	localtime_r(&secs, &localTm);
+#else
+	localTm = *localtime(&secs);
+#endif
+    }
 
     /* get real year, not years since 1900 */
     ret->value.date.year = localTm.tm_year + 1900;
@@ -783,7 +820,9 @@ exsltDateCurrent (void)
 #if HAVE_GMTIME_R
     gmtime_r(&secs, &gmTm);
 #else
-    gmTm = *gmtime(&secs);
+    tb = gmtime(&secs);
+    if (tb != NULL)
+        gmTm = *tb;
 #endif
     ret->value.date.tz_flag = 0;
 #if 0

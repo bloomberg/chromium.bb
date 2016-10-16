@@ -13,6 +13,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
+/* Define to 1 if you have the <errno.h> header file. */
+#define HAVE_ERRNO_H 1
+
 /* Define if fabs is there */
 /* #undef HAVE_FABS */
 
@@ -198,7 +201,7 @@
 
 
 /* Version number of package */
-#define VERSION "1.1.28"
+#define VERSION "1.1.29"
 
 /* Define if debugging support is enabled */
 /* #undef WITH_DEBUGGER */

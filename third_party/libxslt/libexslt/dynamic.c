@@ -216,7 +216,6 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
                                 xmlXPathNodeSetAddUnique(ret->nodesetval,
                                                          cur);
                             }
-			    xsltExtensionInstructionResultRegister(tctxt, ret);
                         }
                         break;
                     case XPATH_NUMBER:
@@ -239,7 +238,6 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
                                 xmlXPathNodeSetAddUnique(ret->nodesetval,
                                                          cur);
                             }
-			    xsltExtensionInstructionResultRegister(tctxt, ret);
                         }
                         break;
                     case XPATH_STRING:
@@ -257,7 +255,6 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
                                 xmlXPathNodeSetAddUnique(ret->nodesetval,
                                                          cur);
                             }
-			    xsltExtensionInstructionResultRegister(tctxt, ret);
                         }
                         break;
 		    default:

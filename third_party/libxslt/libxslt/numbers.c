@@ -616,25 +616,7 @@ xsltNumberFormatGetAnyLevel(xsltTransformContextPtr context,
 {
     int amount = 0;
     int cnt = 0;
-    xmlNodePtr cur;
-
-    /* select the starting node */
-    switch (node->type) {
-	case XML_ELEMENT_NODE:
-	    cur = node;
-	    break;
-	case XML_ATTRIBUTE_NODE:
-	    cur = ((xmlAttrPtr) node)->parent;
-	    break;
-	case XML_TEXT_NODE:
-	case XML_PI_NODE:
-	case XML_COMMENT_NODE:
-	    cur = node->parent;
-	    break;
-	default:
-	    cur = NULL;
-	    break;
-    }
+    xmlNodePtr cur = node;
 
     while (cur != NULL) {
 	/* process current node */
@@ -653,16 +635,25 @@ xsltNumberFormatGetAnyLevel(xsltTransformContextPtr context,
             (cur->type == XML_HTML_DOCUMENT_NODE))
 	    break; /* while */
 
-	while ((cur->prev != NULL) && ((cur->prev->type == XML_DTD_NODE) ||
-	       (cur->prev->type == XML_XINCLUDE_START) ||
-	       (cur->prev->type == XML_XINCLUDE_END)))
-	    cur = cur->prev;
-	if (cur->prev != NULL) {
-	    for (cur = cur->prev; cur->last != NULL; cur = cur->last);
-	} else {
-	    cur = cur->parent;
-	}
-
+        if (cur->type == XML_NAMESPACE_DECL) {
+            /*
+            * The XPath module stores the parent of a namespace node in
+            * the ns->next field.
+            */
+            cur = (xmlNodePtr) ((xmlNsPtr) cur)->next;
+        } else if (cur->type == XML_ATTRIBUTE_NODE) {
+            cur = cur->parent;
+        } else {
+            while ((cur->prev != NULL) && ((cur->prev->type == XML_DTD_NODE) ||
+                   (cur->prev->type == XML_XINCLUDE_START) ||
+                   (cur->prev->type == XML_XINCLUDE_END)))
+                cur = cur->prev;
+            if (cur->prev != NULL) {
+                for (cur = cur->prev; cur->last != NULL; cur = cur->last);
+            } else {
+                cur = cur->parent;
+            }
+        }
     }
 
     array[amount++] = (double) cnt;

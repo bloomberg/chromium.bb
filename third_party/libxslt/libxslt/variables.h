@@ -35,6 +35,15 @@ extern "C" {
     (ctxt)->xpathCtxt->extra = ctxt
 
 /*
+ * Flags for memory management of RVTs
+ */
+
+#define XSLT_RVT_LOCAL       ((void *)1)
+#define XSLT_RVT_VARIABLE    ((void *)2)
+#define XSLT_RVT_FUNC_RESULT ((void *)3)
+#define XSLT_RVT_GLOBAL      ((void *)4)
+
+/*
  * Interfaces for the variable module.
  */
 

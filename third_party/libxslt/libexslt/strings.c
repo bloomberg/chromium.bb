@@ -111,11 +111,6 @@ exsltStrTokenizeFunction(xmlXPathParserContextPtr ctxt, int nargs)
                 xmlAddChild((xmlNodePtr) container, node);
 	        xmlXPathNodeSetAddUnique(ret->nodesetval, node);
             }
-	    /*
-	     * Mark it as a function result in order to avoid garbage
-	     * collecting of tree fragments
-	     */
-	    xsltExtensionInstructionResultRegister(tctxt, ret);
         }
     }
 
@@ -222,11 +217,6 @@ exsltStrSplitFunction(xmlXPathParserContextPtr ctxt, int nargs) {
 		xmlAddChild((xmlNodePtr) container, node);
 		xmlXPathNodeSetAddUnique(ret->nodesetval, node);
 	    }
-	    /*
-	     * Mark it as a function result in order to avoid garbage
-	     * collecting of tree fragments
-	     */
-	    xsltExtensionInstructionResultRegister(tctxt, ret);
         }
     }
 
@@ -543,7 +533,6 @@ exsltStrReturnString(xmlXPathParserContextPtr ctxt, const xmlChar *str,
         return(-1);
     }
 
-    xsltExtensionInstructionResultRegister(tctxt, ret);
     valuePush(ctxt, ret);
 
     return(0);

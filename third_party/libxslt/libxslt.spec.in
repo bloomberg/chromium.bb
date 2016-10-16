@@ -1,7 +1,7 @@
 Summary: Library providing the GNOME XSLT engine
 Name: libxslt
 Version: @VERSION@
-Release: 1
+Release: 1%{?dist}%{?extra_release}
 License: MIT
 Group: Development/Libraries
 Source: ftp://xmlsoft.org/XSLT/libxslt-%{version}.tar.gz
@@ -66,8 +66,11 @@ rm -fr %{buildroot}
 
 %makeinstall
 
-rm -fr $RPM_BUILD_ROOT%{_libdir}/*.la \
-       $RPM_BUILD_ROOT%{_libdir}/python*/site-packages/libxsltmod*a
+rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
+rm -rf $RPM_BUILD_ROOT%{_datadir}/doc/%{name}{,-python}-%{version}
+
+%check
+make check
 
 %clean
 rm -fr %{buildroot}

@@ -60,12 +60,6 @@ exsltNodeSetFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	    xsltTransformError(tctxt, NULL, tctxt->inst,
 		"exsltNodeSetFunction: Failed to create a node set object.\n");
 	    tctxt->state = XSLT_STATE_STOPPED;
-	} else {
-	    /*
-	     * Mark it as a function result in order to avoid garbage
-	     * collecting of tree fragments
-	     */
-	    xsltExtensionInstructionResultRegister(tctxt, obj);
 	}
 	if (strval != NULL)
 	    xmlFree (strval);

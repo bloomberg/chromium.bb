@@ -56,6 +56,7 @@
 #ifdef WITH_XSLT_DEBUG
 #define WITH_XSLT_DEBUG_EXTRA
 #define WITH_XSLT_DEBUG_PROCESS
+#define WITH_XSLT_DEBUG_VARIABLE
 #endif
 
 #define XSLT_GENERATE_HTML_DOCTYPE
@@ -784,7 +785,7 @@ static xmlNodePtr
 xsltAddChild(xmlNodePtr parent, xmlNodePtr cur) {
    xmlNodePtr ret;
 
-   if ((cur == NULL) || (parent == NULL))
+   if (cur == NULL)
        return(NULL);
    if (parent == NULL) {
        xmlFreeNode(cur);
@@ -2020,6 +2021,9 @@ xsltDefaultProcessOneNode(xsltTransformContextPtr ctxt, xmlNodePtr node,
 
     /*
      * Handling of Elements: second pass, actual processing
+     *
+     * Note that params are passed to the next template. This matches
+     * XSLT 2.0 behavior but doesn't conform to XSLT 1.0.
      */
     oldSize = ctxt->xpathCtxt->contextSize;
     oldPos = ctxt->xpathCtxt->proximityPosition;
@@ -2299,30 +2303,28 @@ xsltReleaseLocalRVTs(xsltTransformContextPtr ctxt, xmlDocPtr base)
 {
     xmlDocPtr cur = ctxt->localRVT, tmp;
 
-    while ((cur != NULL) && (cur != base)) {
-	if (cur->psvi == (void *) ((long) 1)) {
-	    cur = (xmlDocPtr) cur->next;
-	} else {
-	    tmp = cur;
-	    cur = (xmlDocPtr) cur->next;
+    if (cur == base)
+        return;
+    if (cur->prev != NULL)
+        xsltTransformError(ctxt, NULL, NULL, "localRVT not head of list\n");
 
-	    if (tmp == ctxt->localRVT)
-		ctxt->localRVT = cur;
+    do {
+        tmp = cur;
+        cur = (xmlDocPtr) cur->next;
+        if (tmp->psvi == XSLT_RVT_LOCAL) {
+            xsltReleaseRVT(ctxt, tmp);
+        } else if (tmp->psvi == XSLT_RVT_GLOBAL) {
+            xsltRegisterPersistRVT(ctxt, tmp);
+        } else if (tmp->psvi != XSLT_RVT_FUNC_RESULT) {
+            xmlGenericError(xmlGenericErrorContext,
+                    "xsltReleaseLocalRVTs: Unexpected RVT flag %p\n",
+                    tmp->psvi);
+        }
+    } while (cur != base);
 
-	    /*
-	    * We need ctxt->localRVTBase for extension instructions
-	    * which return values (like EXSLT's function).
-	    */
-	    if (tmp == ctxt->localRVTBase)
-		ctxt->localRVTBase = cur;
-
-	    if (tmp->prev)
-		tmp->prev->next = (xmlNodePtr) cur;
-	    if (cur)
-		cur->prev = tmp->prev;
-	    xsltReleaseRVT(ctxt, tmp);
-	}
-    }
+    if (base != NULL)
+        base->prev = NULL;
+    ctxt->localRVT = base;
 }
 
 /**
@@ -2348,7 +2350,7 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
     xmlNodePtr oldInsert, oldInst, oldCurInst, oldContextNode;
     xmlNodePtr cur, insert, copy = NULL;
     int level = 0, oldVarsNr;
-    xmlDocPtr oldLocalFragmentTop, oldLocalFragmentBase;
+    xmlDocPtr oldLocalFragmentTop;
 
 #ifdef XSLT_REFACTORED
     xsltStylePreCompPtr info;
@@ -2375,6 +2377,24 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
     if (list == NULL)
         return;
     CHECK_STOPPED;
+
+    /*
+    * Check for infinite recursion: stop if the maximum of nested templates
+    * is excceeded. Adjust xsltMaxDepth if you need more.
+    */
+    if (ctxt->depth >= ctxt->maxTemplateDepth) {
+        xsltTransformError(ctxt, NULL, list,
+	    "xsltApplySequenceConstructor: A potential infinite template "
+            "recursion was detected.\n"
+	    "You can adjust xsltMaxDepth (--maxdepth) in order to "
+	    "raise the maximum number of nested template calls and "
+	    "variables/params (currently set to %d).\n",
+	    ctxt->maxTemplateDepth);
+        xsltDebug(ctxt, contextNode, list, NULL);
+	ctxt->state = XSLT_STATE_STOPPED;
+        return;
+    }
+    ctxt->depth++;
 
     oldLocalFragmentTop = ctxt->localRVT;
     oldInsert = insert = ctxt->insert;
@@ -2676,16 +2696,9 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
 			cur->name));
 #endif
 		    ctxt->insert = insert;
-		    /*
-		    * We need the fragment base for extension instructions
-		    * which return values (like EXSLT's function).
-		    */
-		    oldLocalFragmentBase = ctxt->localRVTBase;
-		    ctxt->localRVTBase = NULL;
 
 		    func(ctxt, contextNode, cur, cur->psvi);
 
-		    ctxt->localRVTBase = oldLocalFragmentBase;
 		    /*
 		    * Cleanup temporary tree fragments.
 		    */
@@ -2749,12 +2762,9 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
 		oldCurInst = ctxt->inst;
 		ctxt->inst = cur;
                 ctxt->insert = insert;
-		oldLocalFragmentBase = ctxt->localRVTBase;
-		ctxt->localRVTBase = NULL;
 
                 info->func(ctxt, contextNode, cur, (xsltElemPreCompPtr) info);
 
-		ctxt->localRVTBase = oldLocalFragmentBase;
 		/*
 		* Cleanup temporary tree fragments.
 		*/
@@ -2869,12 +2879,6 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
 #endif
 
                 ctxt->insert = insert;
-		/*
-		* We need the fragment base for extension instructions
-		* which return values (like EXSLT's function).
-		*/
-		oldLocalFragmentBase = ctxt->localRVTBase;
-		ctxt->localRVTBase = NULL;
 
                 function(ctxt, contextNode, cur, cur->psvi);
 		/*
@@ -2883,7 +2887,6 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
 		if (oldLocalFragmentTop != ctxt->localRVT)
 		    xsltReleaseLocalRVTs(ctxt, oldLocalFragmentTop);
 
-		ctxt->localRVTBase = oldLocalFragmentBase;
                 ctxt->insert = oldInsert;
 
             }
@@ -3025,6 +3028,8 @@ error:
     ctxt->inst = oldInst;
     ctxt->insert = oldInsert;
 
+    ctxt->depth--;
+
 #ifdef WITH_DEBUGGER
     if ((ctxt->debugStatus != XSLT_DEBUG_NONE) && (addCallResult)) {
         xslDropCall();
@@ -3059,7 +3064,7 @@ xsltApplyXSLTTemplate(xsltTransformContextPtr ctxt,
     long start = 0;
     xmlNodePtr cur;
     xsltStackElemPtr tmpParam = NULL;
-    xmlDocPtr oldUserFragmentTop, oldLocalFragmentTop;
+    xmlDocPtr oldUserFragmentTop;
 
 #ifdef XSLT_REFACTORED
     xsltStyleItemParamPtr iparam;
@@ -3091,23 +3096,6 @@ xsltApplyXSLTTemplate(xsltTransformContextPtr ctxt,
         return;
     CHECK_STOPPED;
 
-    /*
-    * Check for infinite recursion: stop if the maximum of nested templates
-    * is excceeded. Adjust xsltMaxDepth if you need more.
-    */
-    if (ctxt->templNr >= ctxt->maxTemplateDepth)
-    {
-        xsltTransformError(ctxt, NULL, list,
-	    "xsltApplyXSLTTemplate: A potential infinite template recursion "
-	    "was detected.\n"
-	    "You can adjust xsltMaxDepth (--maxdepth) in order to "
-	    "raise the maximum number of nested template calls and "
-	    "variables/params (currently set to %d).\n",
-	    ctxt->maxTemplateDepth);
-        xsltDebug(ctxt, contextNode, list, NULL);
-        return;
-    }
-
     if (ctxt->varsNr >= ctxt->maxTemplateVars)
 	{
         xsltTransformError(ctxt, NULL, list,
@@ -3117,12 +3105,12 @@ xsltApplyXSLTTemplate(xsltTransformContextPtr ctxt,
 	    "raise the maximum number of variables/params (currently set to %d).\n",
 	    ctxt->maxTemplateVars);
         xsltDebug(ctxt, contextNode, list, NULL);
+	ctxt->state = XSLT_STATE_STOPPED;
         return;
 	}
 
     oldUserFragmentTop = ctxt->tmpRVT;
     ctxt->tmpRVT = NULL;
-    oldLocalFragmentTop = ctxt->localRVT;
 
     /*
     * Initiate a distinct scope of local params/variables.
@@ -3222,31 +3210,6 @@ xsltApplyXSLTTemplate(xsltTransformContextPtr ctxt,
     if (ctxt->varsNr > ctxt->varsBase)
 	xsltTemplateParamsCleanup(ctxt);
     ctxt->varsBase = oldVarsBase;
-
-    /*
-    * Clean up remaining local tree fragments.
-    * This also frees fragments which are the result of
-    * extension instructions. Should normally not be hit; but
-    * just for the case xsltExtensionInstructionResultFinalize()
-    * was not called by the extension author.
-    */
-    if (oldLocalFragmentTop != ctxt->localRVT) {
-	xmlDocPtr curdoc = ctxt->localRVT, tmp;
-
-	do {
-	    tmp = curdoc;
-	    curdoc = (xmlDocPtr) curdoc->next;
-	    /* Need to housekeep localRVTBase */
-	    if (tmp == ctxt->localRVTBase)
-	        ctxt->localRVTBase = curdoc;
-	    if (tmp->prev)
-		tmp->prev->next = (xmlNodePtr) curdoc;
-	    if (curdoc)
-		curdoc->prev = tmp->prev;
-	    xsltReleaseRVT(ctxt, tmp);
-	} while (curdoc != oldLocalFragmentTop);
-    }
-    ctxt->localRVT = oldLocalFragmentTop;
 
     /*
     * Release user-created fragments stored in the scope
@@ -3853,7 +3816,6 @@ xsltDocumentElem(xsltTransformContextPtr ctxt, xmlNodePtr node,
 	xsltTransformError(ctxt, NULL, inst,
                          "xsltDocumentElem: unable to save to %s\n",
                          filename);
-	ctxt->state = XSLT_STATE_ERROR;
 #ifdef WITH_XSLT_DEBUG_EXTRA
     } else {
         xsltGenericDebug(xsltGenericDebugContext,
@@ -4717,6 +4679,10 @@ xsltApplyImports(xsltTransformContextPtr ctxt, xmlNodePtr contextNode,
 	    templ, NULL);
 
 	ctxt->currentTemplateRule = oldCurTemplRule;
+    }
+    else {
+        /* Use built-in templates. */
+        xsltDefaultProcessOneNode(ctxt, contextNode, NULL);
     }
 }
 
@@ -6040,6 +6006,9 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
 
     xsltEvalGlobalVariables(ctxt);
 
+    /* Clean up any unused RVTs. */
+    xsltReleaseLocalRVTs(ctxt, NULL);
+
     ctxt->node = (xmlNodePtr) doc;
     ctxt->output = res;
     ctxt->insert = (xmlNodePtr) res;
@@ -6184,7 +6153,7 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
     /*
      * Be pedantic.
      */
-    if ((ctxt != NULL) && (ctxt->state == XSLT_STATE_ERROR)) {
+    if ((ctxt != NULL) && (ctxt->state != XSLT_STATE_OK)) {
 	xmlFreeDoc(res);
 	res = NULL;
     }
