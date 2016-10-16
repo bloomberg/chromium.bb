@@ -53,19 +53,16 @@
     DOMMatrix translateSelf(unrestricted double tx,
                             unrestricted double ty,
                             optional unrestricted double tz = 0);
-    DOMMatrix scaleSelf(unrestricted double scale,
+    DOMMatrix scaleSelf(optional unrestricted double scaleX = 1,
+                        optional unrestricted double scaleY,
+                        optional unrestricted double scaleZ = 1,
                         optional unrestricted double originX = 0,
-                        optional unrestricted double originY = 0);
+                        optional unrestricted double originY = 0,
+                        optional unrestricted double originZ = 0);
     DOMMatrix scale3dSelf(unrestricted double scale,
                           optional unrestricted double originX = 0,
                           optional unrestricted double originY = 0,
                           optional unrestricted double originZ = 0);
-    DOMMatrix scaleNonUniformSelf(unrestricted double scaleX,
-                                  optional unrestricted double scaleY = 1,
-                                  optional unrestricted double scaleZ = 1,
-                                  optional unrestricted double originX = 0,
-                                  optional unrestricted double originY = 0,
-                                  optional unrestricted double originZ = 0);
     DOMMatrix rotateAxisAngleSelf(optional unrestricted double x = 0,
                                   optional unrestricted double y = 0,
                                   optional unrestricted double z = 0,

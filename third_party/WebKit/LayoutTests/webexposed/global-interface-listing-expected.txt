@@ -991,7 +991,6 @@ interface DOMMatrix : DOMMatrixReadOnly
     method preMultiplySelf
     method rotateAxisAngleSelf
     method scale3dSelf
-    method scaleNonUniformSelf
     method scaleSelf
     method skewXSelf
     method skewYSelf
@@ -1055,7 +1054,6 @@ interface DOMMatrixReadOnly
     method rotateAxisAngle
     method scale
     method scale3d
-    method scaleNonUniform
     method skewX
     method skewY
     method toFloat32Array

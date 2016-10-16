@@ -81,17 +81,17 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   DOMMatrix* multiplySelf(DOMMatrixInit&, ExceptionState&);
   DOMMatrix* preMultiplySelf(DOMMatrixInit&, ExceptionState&);
   DOMMatrix* translateSelf(double tx, double ty, double tz = 0);
-  DOMMatrix* scaleSelf(double scale, double ox = 0, double oy = 0);
+  DOMMatrix* scaleSelf(double sx = 1);
+  DOMMatrix* scaleSelf(double sx,
+                       double sy,
+                       double sz = 1,
+                       double ox = 0,
+                       double oy = 0,
+                       double oz = 0);
   DOMMatrix* scale3dSelf(double scale,
                          double ox = 0,
                          double oy = 0,
                          double oz = 0);
-  DOMMatrix* scaleNonUniformSelf(double sx,
-                                 double sy = 1,
-                                 double sz = 1,
-                                 double ox = 0,
-                                 double oy = 0,
-                                 double oz = 0);
   DOMMatrix* rotateAxisAngleSelf(double x = 0,
                                  double y = 0,
                                  double z = 0,

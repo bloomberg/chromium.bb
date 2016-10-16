@@ -153,8 +153,17 @@ DOMMatrix* DOMMatrixReadOnly::translate(double tx, double ty, double tz) {
   return DOMMatrix::create(this)->translateSelf(tx, ty, tz);
 }
 
-DOMMatrix* DOMMatrixReadOnly::scale(double scale, double ox, double oy) {
-  return DOMMatrix::create(this)->scaleSelf(scale, ox, oy);
+DOMMatrix* DOMMatrixReadOnly::scale(double sx) {
+  return scale(sx, sx);
+}
+
+DOMMatrix* DOMMatrixReadOnly::scale(double sx,
+                                    double sy,
+                                    double sz,
+                                    double ox,
+                                    double oy,
+                                    double oz) {
+  return DOMMatrix::create(this)->scaleSelf(sx, sy, sz, ox, oy, oz);
 }
 
 DOMMatrix* DOMMatrixReadOnly::scale3d(double scale,
@@ -162,15 +171,6 @@ DOMMatrix* DOMMatrixReadOnly::scale3d(double scale,
                                       double oy,
                                       double oz) {
   return DOMMatrix::create(this)->scale3dSelf(scale, ox, oy, oz);
-}
-
-DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx,
-                                              double sy,
-                                              double sz,
-                                              double ox,
-                                              double oy,
-                                              double oz) {
-  return DOMMatrix::create(this)->scaleNonUniformSelf(sx, sy, sz, ox, oy, oz);
 }
 
 DOMMatrix* DOMMatrixReadOnly::rotateAxisAngle(double x,

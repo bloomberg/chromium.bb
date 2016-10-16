@@ -125,23 +125,16 @@ DOMMatrix* DOMMatrix::translateSelf(double tx, double ty, double tz) {
   return this;
 }
 
-DOMMatrix* DOMMatrix::scaleSelf(double scale, double ox, double oy) {
-  return scaleNonUniformSelf(scale, scale, 1, ox, oy);
+DOMMatrix* DOMMatrix::scaleSelf(double sx) {
+  return scaleSelf(sx, sx);
 }
 
-DOMMatrix* DOMMatrix::scale3dSelf(double scale,
-                                  double ox,
-                                  double oy,
-                                  double oz) {
-  return scaleNonUniformSelf(scale, scale, scale, ox, oy, oz);
-}
-
-DOMMatrix* DOMMatrix::scaleNonUniformSelf(double sx,
-                                          double sy,
-                                          double sz,
-                                          double ox,
-                                          double oy,
-                                          double oz) {
+DOMMatrix* DOMMatrix::scaleSelf(double sx,
+                                double sy,
+                                double sz,
+                                double ox,
+                                double oy,
+                                double oz) {
   if (sz != 1 || oz)
     m_is2D = false;
 
@@ -162,6 +155,13 @@ DOMMatrix* DOMMatrix::scaleNonUniformSelf(double sx,
     translateSelf(-ox, -oy, -oz);
 
   return this;
+}
+
+DOMMatrix* DOMMatrix::scale3dSelf(double scale,
+                                  double ox,
+                                  double oy,
+                                  double oz) {
+  return scaleSelf(scale, scale, scale, ox, oy, oz);
 }
 
 DOMMatrix* DOMMatrix::rotateAxisAngleSelf(double x,

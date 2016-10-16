@@ -58,14 +58,14 @@ class CORE_EXPORT DOMMatrixReadOnly
 
   DOMMatrix* multiply(DOMMatrixInit&, ExceptionState&);
   DOMMatrix* translate(double tx, double ty, double tz = 0);
-  DOMMatrix* scale(double scale, double ox = 0, double oy = 0);
+  DOMMatrix* scale(double sx = 1);
+  DOMMatrix* scale(double sx,
+                   double sy,
+                   double sz = 1,
+                   double ox = 0,
+                   double oy = 0,
+                   double oz = 0);
   DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
-  DOMMatrix* scaleNonUniform(double sx,
-                             double sy = 1,
-                             double sz = 1,
-                             double ox = 0,
-                             double oy = 0,
-                             double oz = 0);
   DOMMatrix* rotateAxisAngle(double x = 0,
                              double y = 0,
                              double z = 0,
