@@ -104,6 +104,11 @@ class MuxerTest : public testing::Test {
   }
 
  protected:
+  virtual void TearDown() {
+    remove(filename_.c_str());
+    testing::Test::TearDown();
+  }
+
   std::unique_ptr<MkvWriter> writer_;
   bool is_writer_open_ = false;
   Segment segment_;
@@ -507,6 +512,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
   ASSERT_TRUE(HasCuePoints(parser.segment, &cues_offset));
   ASSERT_GT(cues_offset, 0);
   ASSERT_TRUE(ValidateCues(parser.segment, parser.reader));
+  remove(cues_filename.c_str());
 }
 
 TEST_F(MuxerTest, MaxClusterSize) {

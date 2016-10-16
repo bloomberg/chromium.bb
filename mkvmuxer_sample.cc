@@ -311,8 +311,9 @@ int main(int argc, char* argv[]) {
   // Set muxer header info
   mkvmuxer::MkvWriter writer;
 
-  const std::string temp_file = libwebm::GetTempFileName();
-  if (!writer.Open(cues_before_clusters ? temp_file.c_str() : output)) {
+  const std::string temp_file =
+      cues_before_clusters ? libwebm::GetTempFileName() : output;
+  if (!writer.Open(temp_file.c_str())) {
     printf("\n Filename is invalid or error while opening.\n");
     return EXIT_FAILURE;
   }
