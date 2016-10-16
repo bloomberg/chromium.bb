@@ -63,7 +63,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   WebContents* GetWebContents() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
   void ShowPastePopup(int x, int y) override;
-  void PauseOrResumeGeolocation(bool should_pause) override;
 
   void AddObserver(ContentViewCoreImplObserver* observer);
   void RemoveObserver(ContentViewCoreImplObserver* observer);

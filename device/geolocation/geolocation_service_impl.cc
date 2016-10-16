@@ -160,9 +160,6 @@ void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
   RecordGeopositionErrorCode(position.error_code);
   DCHECK(context_);
 
-  if (context_->paused())
-    return;
-
   update_callback_.Run();
 
   current_position_.valid = position.Validate();

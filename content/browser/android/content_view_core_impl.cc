@@ -402,13 +402,6 @@ jint ContentViewCoreImpl::GetBackgroundColor(JNIEnv* env, jobject obj) {
   return rwhva->GetCachedBackgroundColor();
 }
 
-void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {
-  if (should_pause)
-    web_contents_->GetGeolocationServiceContext()->PauseUpdates();
-  else
-    web_contents_->GetGeolocationServiceContext()->ResumeUpdates();
-}
-
 // All positions and sizes are in CSS pixels.
 // Note that viewport_width/height is a best effort based.
 // ContentViewCore has the actual information about the physical viewport size.

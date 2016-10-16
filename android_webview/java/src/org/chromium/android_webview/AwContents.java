@@ -1897,6 +1897,8 @@ public class AwContents implements SmartClipProvider,
         if (mIsPaused || isDestroyed(NO_WARN)) return;
         mIsPaused = true;
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
+
+        // Geolocation is paused/resumed via the page visibility mechanism.
         updateContentViewCoreVisibility();
     }
 

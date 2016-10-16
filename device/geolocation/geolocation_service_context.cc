@@ -10,7 +10,7 @@
 
 namespace device {
 
-GeolocationServiceContext::GeolocationServiceContext() : paused_(false) {}
+GeolocationServiceContext::GeolocationServiceContext() {}
 
 GeolocationServiceContext::~GeolocationServiceContext() {}
 
@@ -31,20 +31,6 @@ void GeolocationServiceContext::ServiceHadConnectionError(
   auto it = std::find(services_.begin(), services_.end(), service);
   DCHECK(it != services_.end());
   services_.erase(it);
-}
-
-void GeolocationServiceContext::PauseUpdates() {
-  paused_ = true;
-  for (auto* service : services_) {
-    service->PauseUpdates();
-  }
-}
-
-void GeolocationServiceContext::ResumeUpdates() {
-  paused_ = false;
-  for (auto* service : services_) {
-    service->ResumeUpdates();
-  }
 }
 
 void GeolocationServiceContext::SetOverride(

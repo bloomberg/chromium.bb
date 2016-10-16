@@ -33,15 +33,6 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationServiceContext {
   // longer safe to access |service|.
   void ServiceHadConnectionError(GeolocationServiceImpl* service);
 
-  // Pauses and resumes geolocation. Resuming when nothing is paused is a
-  // no-op. If a service is added while geolocation is paused, that service
-  // will not get geolocation updates until geolocation is resumed.
-  void PauseUpdates();
-  void ResumeUpdates();
-
-  // Returns whether geolocation updates are currently paused.
-  bool paused() { return paused_; }
-
   // Enables geolocation override. This method can be used to trigger possible
   // location-specific behavior in a particular context.
   void SetOverride(std::unique_ptr<Geoposition> geoposition);
@@ -51,7 +42,6 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationServiceContext {
 
  private:
   ScopedVector<GeolocationServiceImpl> services_;
-  bool paused_;
 
   std::unique_ptr<Geoposition> geoposition_override_;
 
