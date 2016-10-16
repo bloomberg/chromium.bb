@@ -196,6 +196,11 @@ def IsHashableKind(kind):
           not _current_typemap[GetFullMojomNameForKind(kind)]["hashable"]):
         return False
       return all(Check(field.kind) for field in kind.fields)
+    elif mojom.IsEnumKind(kind):
+      if (IsTypemappedKind(kind) and
+          not _current_typemap[GetFullMojomNameForKind(kind)]["hashable"]):
+        return False
+      return True
     elif mojom.IsUnionKind(kind):
       return all(Check(field.kind) for field in kind.fields)
     elif mojom.IsAnyHandleKind(kind):
