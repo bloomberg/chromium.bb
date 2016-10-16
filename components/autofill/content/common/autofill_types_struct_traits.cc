@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/content/public/cpp/autofill_types_struct_traits.h"
+#include "components/autofill/content/common/autofill_types_struct_traits.h"
 
 #include "base/i18n/rtl.h"
 #include "ipc/ipc_message_utils.h"
@@ -417,10 +417,8 @@ bool StructTraits<mojom::FormFieldDataPredictionsDataView,
 }
 
 // static
-bool StructTraits<mojom::FormDataPredictionsDataView,
-                  FormDataPredictions>::Read(mojom::FormDataPredictionsDataView
-                                                 data,
-                                             FormDataPredictions* out) {
+bool StructTraits<mojom::FormDataPredictionsDataView, FormDataPredictions>::
+    Read(mojom::FormDataPredictionsDataView data, FormDataPredictions* out) {
   if (!data.ReadData(&out->data))
     return false;
   if (!data.ReadSignature(&out->signature))
@@ -644,10 +642,8 @@ void StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
 }
 
 // static
-bool StructTraits<mojom::FormsPredictionsMapDataView,
-                  FormsPredictionsMap>::Read(mojom::FormsPredictionsMapDataView
-                                                 data,
-                                             FormsPredictionsMap* out) {
+bool StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
+    Read(mojom::FormsPredictionsMapDataView data, FormsPredictionsMap* out) {
   // Combines keys vector and values vector to the map.
   std::vector<FormData> keys;
   if (!data.ReadKeys(&keys))

@@ -4,7 +4,7 @@
 
 module autofill.mojom;
 
-import "components/autofill/content/public/interfaces/autofill_types.mojom";
+import "components/autofill/content/common/autofill_types.mojom";
 
 interface TypeTraitsTest {
   PassFormData(FormData s) => (FormData passed);

@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
+#include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"

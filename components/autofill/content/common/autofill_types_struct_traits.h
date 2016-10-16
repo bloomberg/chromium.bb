@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CONTENT_PUBLIC_INTERFACES_AUTOFILL_TYPES_STRUCT_TRAITS_H_
-#define COMPONENTS_AUTOFILL_CONTENT_PUBLIC_INTERFACES_AUTOFILL_TYPES_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
+#define COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_
 
 #include <utility>
 
 #include "base/strings/string16.h"
-#include "components/autofill/content/public/interfaces/autofill_types.mojom.h"
+#include "components/autofill/content/common/autofill_types.mojom.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -588,4 +588,4 @@ struct StructTraits<autofill::mojom::FormsPredictionsMapDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_AUTOFILL_CONTENT_PUBLIC_INTERFACES_AUTOFILL_TYPES_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_TYPES_STRUCT_TRAITS_H_

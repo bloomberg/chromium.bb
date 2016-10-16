@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/autofill/content/public/interfaces/autofill_types.mojom"
+mojom = "//components/autofill/content/common/autofill_types.mojom"
 public_headers = [
   "//components/autofill/core/common/form_data.h",
   "//components/autofill/core/common/form_data_predictions.h",
@@ -13,9 +13,10 @@ public_headers = [
   "//components/autofill/core/common/password_form_fill_data.h",
   "//components/autofill/core/common/password_form_generation_data.h",
 ]
-traits_headers = [ "//components/autofill/content/public/cpp/autofill_types_struct_traits.h" ]
+traits_headers =
+    [ "//components/autofill/content/common/autofill_types_struct_traits.h" ]
 sources = [
-  "//components/autofill/content/public/cpp/autofill_types_struct_traits.cc",
+  "//components/autofill/content/common/autofill_types_struct_traits.cc",
 ]
 deps = [
   "//base",

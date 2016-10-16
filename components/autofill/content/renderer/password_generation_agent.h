@@ -14,8 +14,8 @@
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
-#include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
+#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"

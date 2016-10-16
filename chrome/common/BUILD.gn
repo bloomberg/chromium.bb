@@ -174,7 +174,7 @@ static_library("common") {
     "//chrome/common/safe_browsing:proto",
     "//chrome/common/variations:fieldtrial_testing_config",
     "//chrome/installer/util:with_no_strings",
-    "//components/autofill/content/common",
+    "//components/autofill/content/common:ipc_traits",
     "//components/autofill/core/common",
     "//components/cast_certificate",
     "//components/cdm/common",

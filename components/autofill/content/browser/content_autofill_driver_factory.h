@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/supports_user_data.h"
-#include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
+#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 

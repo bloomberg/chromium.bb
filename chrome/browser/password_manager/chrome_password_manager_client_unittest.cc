@@ -20,7 +20,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
+#include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/log_manager.h"

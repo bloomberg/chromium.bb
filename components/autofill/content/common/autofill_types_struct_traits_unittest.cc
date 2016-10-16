@@ -5,7 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/content/public/interfaces/test_autofill_types.mojom.h"
+#include "components/autofill/content/common/test_autofill_types.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -351,8 +351,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormData(
-      input, base::Bind(&ExpectFormData, input, loop.QuitClosure()));
+  proxy->PassFormData(input,
+                      base::Bind(&ExpectFormData, input, loop.QuitClosure()));
   loop.Run();
 }
 
@@ -384,8 +384,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormDataPredictions) {
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassFormDataPredictions(
-      input,
-      base::Bind(&ExpectFormDataPredictions, input, loop.QuitClosure()));
+      input, base::Bind(&ExpectFormDataPredictions, input, loop.QuitClosure()));
   loop.Run();
 }
 

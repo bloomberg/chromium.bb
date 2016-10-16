@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
-#include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
+#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/form_data_predictions.h"
