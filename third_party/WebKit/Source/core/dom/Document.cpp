@@ -1255,8 +1255,7 @@ void Document::addNonAttachedStyle(Element& element,
 }
 
 ComputedStyle* Document::getNonAttachedStyle(Element& element) {
-  RefPtr<ComputedStyle> style = m_nonAttachedStyle.get(&element);
-  return style.get();
+  return m_nonAttachedStyle.get(&element);
 }
 
 /*
