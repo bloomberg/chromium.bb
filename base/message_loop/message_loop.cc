@@ -124,8 +124,8 @@ MessageLoop::~MessageLoop() {
   DCHECK(!did_work);
 
   // Let interested parties have one last shot at accessing this.
-  FOR_EACH_OBSERVER(DestructionObserver, destruction_observers_,
-                    WillDestroyCurrentMessageLoop());
+  for (auto& observer : destruction_observers_)
+    observer.WillDestroyCurrentMessageLoop();
 
   thread_task_runner_handle_.reset();
 
@@ -408,11 +408,11 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
 
   TRACE_TASK_EXECUTION("MessageLoop::RunTask", *pending_task);
 
-  FOR_EACH_OBSERVER(TaskObserver, task_observers_,
-                    WillProcessTask(*pending_task));
+  for (auto& observer : task_observers_)
+    observer.WillProcessTask(*pending_task);
   task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
-  FOR_EACH_OBSERVER(TaskObserver, task_observers_,
-                    DidProcessTask(*pending_task));
+  for (auto& observer : task_observers_)
+    observer.DidProcessTask(*pending_task);
 
   nestable_tasks_allowed_ = true;
 }
@@ -485,8 +485,8 @@ void MessageLoop::ScheduleWork() {
 }
 
 void MessageLoop::NotifyBeginNestedLoop() {
-  FOR_EACH_OBSERVER(NestingObserver, nesting_observers_,
-                    OnBeginNestedMessageLoop());
+  for (auto& observer : nesting_observers_)
+    observer.OnBeginNestedMessageLoop();
 }
 
 bool MessageLoop::DoWork() {
