@@ -173,6 +173,13 @@ DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx,
   return DOMMatrix::create(this)->scaleNonUniformSelf(sx, sy, sz, ox, oy, oz);
 }
 
+DOMMatrix* DOMMatrixReadOnly::rotateAxisAngle(double x,
+                                              double y,
+                                              double z,
+                                              double angle) {
+  return DOMMatrix::create(this)->rotateAxisAngleSelf(x, y, z, angle);
+}
+
 DOMMatrix* DOMMatrixReadOnly::skewX(double sx) {
   return DOMMatrix::create(this)->skewXSelf(sx);
 }

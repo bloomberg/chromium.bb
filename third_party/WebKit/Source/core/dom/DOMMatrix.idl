@@ -66,6 +66,10 @@
                                   optional unrestricted double originX = 0,
                                   optional unrestricted double originY = 0,
                                   optional unrestricted double originZ = 0);
+    DOMMatrix rotateAxisAngleSelf(optional unrestricted double x = 0,
+                                  optional unrestricted double y = 0,
+                                  optional unrestricted double z = 0,
+                                  optional unrestricted double angle = 0);
     DOMMatrix skewXSelf(optional unrestricted double sx = 0);
     DOMMatrix skewYSelf(optional unrestricted double sy = 0);
     DOMMatrix invertSelf();

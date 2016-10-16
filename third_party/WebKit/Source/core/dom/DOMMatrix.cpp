@@ -164,6 +164,18 @@ DOMMatrix* DOMMatrix::scaleNonUniformSelf(double sx,
   return this;
 }
 
+DOMMatrix* DOMMatrix::rotateAxisAngleSelf(double x,
+                                          double y,
+                                          double z,
+                                          double angle) {
+  m_matrix->rotate3d(x, y, z, angle);
+
+  if (x != 0 || y != 0)
+    m_is2D = false;
+
+  return this;
+}
+
 DOMMatrix* DOMMatrix::skewXSelf(double sx) {
   m_matrix->skewX(sx);
   return this;

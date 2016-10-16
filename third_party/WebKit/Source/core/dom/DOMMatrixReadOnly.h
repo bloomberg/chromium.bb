@@ -66,6 +66,10 @@ class CORE_EXPORT DOMMatrixReadOnly
                              double ox = 0,
                              double oy = 0,
                              double oz = 0);
+  DOMMatrix* rotateAxisAngle(double x = 0,
+                             double y = 0,
+                             double z = 0,
+                             double angle = 0);
   DOMMatrix* skewX(double sx);
   DOMMatrix* skewY(double sy);
   DOMMatrix* flipX();
