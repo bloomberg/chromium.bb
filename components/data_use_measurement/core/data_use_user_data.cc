@@ -86,6 +86,12 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "Precache";
     case NTP_TILES:
       return "NTPTiles";
+    case FEEDBACK_UPLOADER:
+      return "FeedbackUploader";
+    case TRACING_UPLOADER:
+      return "TracingUploader";
+    case DOM_DISTILLER:
+      return "DOMDistiller";
   }
   return "INVALID";
 }

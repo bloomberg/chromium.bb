@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_switches.h"
 #include "components/feedback/feedback_uploader_delegate.h"
@@ -55,7 +56,8 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
                                AsWeakPtr()),
               base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())))
           .release();
-
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher, data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
   // Tell feedback server about the variation state of this install.
   net::HttpRequestHeaders headers;
   variations::AppendVariationHeaders(

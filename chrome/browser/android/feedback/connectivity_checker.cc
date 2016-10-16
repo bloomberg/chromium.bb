@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "jni/ConnectivityChecker_jni.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -141,6 +142,9 @@ ConnectivityChecker::ConnectivityChecker(
 
 void ConnectivityChecker::StartAsyncCheck() {
   url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(),
+      data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetStopOnRedirect(true);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);

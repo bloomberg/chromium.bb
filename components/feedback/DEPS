@@ -1,5 +1,6 @@
 include_rules = [
   "-content",
+  "+components/data_use_measurement/core",
   "+components/keyed_service",
   "+components/pref_registry",
   "+components/prefs",

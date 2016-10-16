@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -48,6 +49,8 @@ std::unique_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
     const std::string& url) {
   std::unique_ptr<net::URLFetcher> fetcher =
       URLFetcher::Create(GURL(url), URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher.get(), data_use_measurement::DataUseUserData::DOM_DISTILLER);
   fetcher->SetRequestContext(context_getter);
   static const int kMaxRetries = 5;
   fetcher->SetMaxRetriesOn5xx(kMaxRetries);

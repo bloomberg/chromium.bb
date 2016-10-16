@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -310,6 +311,9 @@ void TraceCrashServiceUploader::CreateAndStartURLFetcher(
 
   url_fetcher_ =
       net::URLFetcher::Create(GURL(upload_url), net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(),
+      data_use_measurement::DataUseUserData::TRACING_UPLOADER);
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetUploadData(content_type, post_data);
   url_fetcher_->Start();
