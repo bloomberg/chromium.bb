@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -120,6 +121,7 @@ void ResourcePrefetchPredictorTables::GetAllData(
     PrefetchDataMap* host_data_map,
     RedirectDataMap* url_redirect_data_map,
     RedirectDataMap* host_redirect_data_map) {
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::GetAllData");
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (CantAccessDatabase())
     return;
@@ -144,6 +146,7 @@ void ResourcePrefetchPredictorTables::UpdateData(
     const PrefetchData& host_data,
     const RedirectData& url_redirect_data,
     const RedirectData& host_redirect_data) {
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::UpdateData");
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (CantAccessDatabase())
     return;

@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
@@ -586,6 +587,8 @@ bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
 }
 
 void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
+               url.spec());
   if (!prefetch_manager_.get())  // Prefetching not enabled.
     return;
 
@@ -602,6 +605,8 @@ void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
 }
 
 void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
+               url.spec());
   if (!prefetch_manager_.get())  // Not enabled.
     return;
 
@@ -847,6 +852,8 @@ void ResourcePrefetchPredictor::LearnNavigation(
     PrefetchDataMap* data_map,
     const std::string& key_before_redirects,
     RedirectDataMap* redirect_map) {
+  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::LearnNavigation", "key",
+               key);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the primary key is too long reject it.

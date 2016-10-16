@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -40,6 +41,7 @@ ResourcePrefetcher::ResourcePrefetcher(
 ResourcePrefetcher::~ResourcePrefetcher() {}
 
 void ResourcePrefetcher::Start() {
+  TRACE_EVENT_ASYNC_BEGIN0("browser", "ResourcePrefetcher::Prefetch", this);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CHECK_EQ(state_, INITIALIZED);
@@ -49,6 +51,7 @@ void ResourcePrefetcher::Start() {
 }
 
 void ResourcePrefetcher::Stop() {
+  TRACE_EVENT_ASYNC_END0("browser", "ResourcePrefetcher::Prefetch", this);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == FINISHED)
