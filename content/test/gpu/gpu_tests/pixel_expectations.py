@@ -39,12 +39,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=581526)
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=581526)
 
-    # TODO(xidachen) check / generate reference images
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=655333)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=655333)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=655333)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker', bug=655333)
-
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
               ['mac', ('nvidia', 0xfe9)], bug=652931)
 
