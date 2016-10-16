@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/renderer.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_details.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 
 namespace content {
 
@@ -298,6 +300,14 @@ bool MockRenderProcessHost::IsWorkerRefCountDisabled() {
 }
 
 void MockRenderProcessHost::PurgeAndSuspend() {}
+
+mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
+  if (!renderer_interface_) {
+    renderer_interface_.reset(new mojom::RendererAssociatedPtr);
+    mojo::GetDummyProxyForTesting(renderer_interface_.get());
+  }
+  return renderer_interface_->get();
+}
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);

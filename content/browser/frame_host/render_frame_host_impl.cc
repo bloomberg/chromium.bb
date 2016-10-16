@@ -931,8 +931,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
     params->widget_params->hidden = true;
   }
 
-  RenderProcessHostImpl::GetRendererInterface(GetProcess())->CreateFrame(
-      std::move(params));
+  GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
 
   // The RenderWidgetHost takes ownership of its view. It is tied to the
   // lifetime of the current RenderProcessHost for this RenderFrameHost.

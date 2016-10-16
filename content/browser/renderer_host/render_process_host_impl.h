@@ -174,10 +174,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ForceReleaseWorkerRefCounts() override;
   bool IsWorkerRefCountDisabled() override;
   void PurgeAndSuspend() override;
+  mojom::Renderer* GetRendererInterface() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
-
-  static mojom::Renderer* GetRendererInterface(RenderProcessHost* host);
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -578,6 +577,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
 
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
+  mojom::RendererAssociatedPtr renderer_interface_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.

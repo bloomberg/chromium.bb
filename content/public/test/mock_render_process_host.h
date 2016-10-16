@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 class StoragePartition;
@@ -104,6 +105,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ForceReleaseWorkerRefCounts() override;
   bool IsWorkerRefCountDisabled() override;
   void PurgeAndSuspend() override;
+  mojom::Renderer* GetRendererInterface() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -160,6 +162,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   std::unique_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
   std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
+      renderer_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

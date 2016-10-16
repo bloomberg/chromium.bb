@@ -6144,7 +6144,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Send the message to create a proxy for B's new child frame in A.  This
   // used to crash, as parent_routing_id refers to a proxy that doesn't exist
   // anymore.
-  RenderProcessHostImpl::GetRendererInterface(process_a)->CreateFrameProxy(
+  process_a->GetRendererInterface()->CreateFrameProxy(
       new_routing_id, view_routing_id, MSG_ROUTING_NONE, parent_routing_id,
       FrameReplicationState());
 
@@ -6220,8 +6220,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params->widget_params->hidden = true;
     params->replication_state.name = "name";
     params->replication_state.unique_name = "name";
-    RenderProcessHostImpl::GetRendererInterface(process)->CreateFrame(
-        std::move(params));
+    process->GetRendererInterface()->CreateFrame(std::move(params));
   }
 
   // The test must wait for the process to exit, but if there is no leak, the
@@ -6286,8 +6285,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params->widget_params->hidden = true;
     params->replication_state.name = "name";
     params->replication_state.unique_name = "name";
-    RenderProcessHostImpl::GetRendererInterface(process)->CreateFrame(
-        std::move(params));
+    process->GetRendererInterface()->CreateFrame(std::move(params));
   }
 
   // The test must wait for the process to exit, but if there is no leak, the

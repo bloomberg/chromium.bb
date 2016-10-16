@@ -249,7 +249,6 @@
 namespace content {
 namespace {
 
-const char kRendererInterfaceKeyName[] = "mojom_renderer_interface";
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
 
 #ifdef ENABLE_WEBRTC
@@ -365,21 +364,6 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
   }
   return map;
 }
-
-// Holds a Mojo associated interface proxy in an RPH's user data.
-template <typename Interface>
-class AssociatedInterfaceHolder : public base::SupportsUserData::Data {
- public:
-  AssociatedInterfaceHolder() {}
-  ~AssociatedInterfaceHolder() override {}
-
-  mojo::AssociatedInterfacePtr<Interface>& proxy() { return proxy_; }
-
- private:
-  mojo::AssociatedInterfacePtr<Interface> proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfaceHolder);
-};
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 // This static member variable holds the zygote communication information for
@@ -1032,11 +1016,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   // See OnProcessLaunched() for some additional details of this somewhat
   // surprising behavior.
   channel_->GetRemoteAssociatedInterface(&remote_route_provider_);
-
-  std::unique_ptr<AssociatedInterfaceHolder<mojom::Renderer>> holder =
-      base::MakeUnique<AssociatedInterfaceHolder<mojom::Renderer>>();
-  channel_->GetRemoteAssociatedInterface(&holder->proxy());
-  SetUserData(kRendererInterfaceKeyName, holder.release());
+  channel_->GetRemoteAssociatedInterface(&renderer_interface_);
 
   // We start the Channel in a paused state. It will be briefly unpaused again
   // in Init() if applicable, before process launch is initiated.
@@ -1433,26 +1413,12 @@ void RenderProcessHostImpl::PurgeAndSuspend() {
   Send(new ChildProcessMsg_PurgeAndSuspend());
 }
 
-mojom::RouteProvider* RenderProcessHostImpl::GetRemoteRouteProvider() {
-  return remote_route_provider_.get();
+mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
+  return renderer_interface_.get();
 }
 
-// static
-mojom::Renderer* RenderProcessHostImpl::GetRendererInterface(
-    RenderProcessHost* host) {
-  AssociatedInterfaceHolder<mojom::Renderer>* holder =
-      static_cast<AssociatedInterfaceHolder<mojom::Renderer>*>(
-          host->GetUserData(kRendererInterfaceKeyName));
-  if (!holder) {
-    // In tests, MockRenderProcessHost will not have initialized this key on its
-    // own. We do it with a dead-end endpoint so outgoing requests are silently
-    // dropped.
-    holder = new AssociatedInterfaceHolder<mojom::Renderer>;
-    host->SetUserData(kRendererInterfaceKeyName, holder);
-    mojo::GetDummyProxyForTesting(&holder->proxy());
-  }
-
-  return holder->proxy().get();
+mojom::RouteProvider* RenderProcessHostImpl::GetRemoteRouteProvider() {
+  return remote_route_provider_.get();
 }
 
 void RenderProcessHostImpl::AddRoute(int32_t routing_id,
@@ -2704,7 +2670,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // Clear all cached associated interface proxies as well, since these are
   // effectively bound to the lifetime of the Channel.
   remote_route_provider_.reset();
-  RemoveUserData(kRendererInterfaceKeyName);
+  renderer_interface_.reset();
 
   UpdateProcessPriority();
   DCHECK(!is_process_backgrounded_);

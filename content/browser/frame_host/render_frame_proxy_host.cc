@@ -186,7 +186,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
 
   int view_routing_id = frame_tree_node_->frame_tree()
       ->GetRenderViewHost(site_instance_.get())->GetRoutingID();
-  RenderProcessHostImpl::GetRendererInterface(GetProcess())->CreateFrameProxy(
+  GetProcess()->GetRendererInterface()->CreateFrameProxy(
       routing_id_, view_routing_id, opener_routing_id, parent_routing_id,
       frame_tree_node_->current_replication_state());
 

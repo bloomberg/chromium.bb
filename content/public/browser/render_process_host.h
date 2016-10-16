@@ -45,6 +45,10 @@ class RenderWidgetHost;
 class StoragePartition;
 struct GlobalRequestID;
 
+namespace mojom {
+class Renderer;
+}
+
 // Interface that represents the browser side of the browser <-> renderer
 // communication channel. There will generally be one RenderProcessHost per
 // renderer process.
@@ -315,6 +319,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Purges and suspends the renderer process.
   virtual void PurgeAndSuspend() = 0;
+
+  // Acquires the |mojom::Renderer| interface to the render process. This is for
+  // internal use only, and is only exposed here to support
+  // MockRenderProcessHost usage in tests.
+  virtual mojom::Renderer* GetRendererInterface() = 0;
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
