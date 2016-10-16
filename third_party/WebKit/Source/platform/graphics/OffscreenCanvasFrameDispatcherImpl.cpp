@@ -5,12 +5,7 @@
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 
 #include "cc/output/compositor_frame.h"
-#include "cc/output/delegated_frame_data.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/shared_quad_state.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/returned_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/Histogram.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"

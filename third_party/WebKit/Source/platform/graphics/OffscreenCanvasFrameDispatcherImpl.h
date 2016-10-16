@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "wtf/Compiler.h"
 #include <memory>
 
 namespace blink {
