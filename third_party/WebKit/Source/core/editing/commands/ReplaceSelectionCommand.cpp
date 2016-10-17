@@ -315,6 +315,8 @@ HTMLElement* ReplacementFragment::insertFragmentForTestRendering(
 
   holder->appendChild(m_fragment);
   rootEditableElement->appendChild(holder);
+
+  // TODO(editing-dev): Hoist this call to the call sites.
   m_document->updateStyleAndLayoutIgnorePendingStylesheets();
 
   return holder;

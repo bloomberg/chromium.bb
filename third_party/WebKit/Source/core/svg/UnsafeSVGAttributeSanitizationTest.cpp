@@ -57,6 +57,7 @@ String contentAfterPastingHTML(DummyPageHolder* pageHolder,
 
   // Make the body editable, and put the caret in it.
   body->setAttribute(HTMLNames::contenteditableAttr, "true");
+  frame.document()->updateStyleAndLayout();
   frame.selection().setSelection(
       VisibleSelection::selectionFromContentsOfNode(body));
   EXPECT_EQ(CaretSelection, frame.selection().getSelectionType());

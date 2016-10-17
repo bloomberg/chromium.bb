@@ -63,6 +63,8 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   // |selectionFromContentsOfNode|.
   static VisibleSelectionTemplate create(const SelectionTemplate<Strategy>&);
 
+  // TODO(editing-dev): We should get rid of this function and instead, use
+  // EphemeralRangeTemplate::rangeOfContents and SelectionTemplate::Builder.
   static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
 
   SelectionType getSelectionType() const { return m_selectionType; }

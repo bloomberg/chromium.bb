@@ -969,6 +969,10 @@ void FrameSelection::selectAll() {
       return;
   }
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   VisibleSelection newSelection(
       VisibleSelection::selectionFromContentsOfNode(root));
   setSelection(newSelection);

@@ -1953,6 +1953,9 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(
 
       result = Position::inParentAfterNode(*enclosingAnchor);
     }
+
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     // If visually just before an anchor, insert *outside* the anchor unless
     // it's the first VisiblePosition in a paragraph, to match NSTextView.
     if (visiblePos.deepEquivalent() == firstInAnchor.deepEquivalent()) {

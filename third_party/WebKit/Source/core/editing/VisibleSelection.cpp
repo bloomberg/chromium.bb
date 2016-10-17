@@ -246,11 +246,9 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>
 VisibleSelectionTemplate<Strategy>::selectionFromContentsOfNode(Node* node) {
+  DCHECK(node);
   DCHECK(!Strategy::editingIgnoresContent(node));
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+  DCHECK(!needsLayoutTreeUpdate(*node));
 
   typename SelectionTemplate<Strategy>::Builder builder;
   builder.collapse(PositionTemplate<Strategy>::firstPositionInNode(node))
