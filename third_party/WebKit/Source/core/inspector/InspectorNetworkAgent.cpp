@@ -511,6 +511,11 @@ DEFINE_TRACE(InspectorNetworkAgent) {
 }
 
 bool InspectorNetworkAgent::shouldBlockRequest(const ResourceRequest& request) {
+  if (m_state->booleanProperty(NetworkAgentState::cacheDisabled, false) &&
+      request.getCachePolicy() == WebCachePolicy::ReturnCacheDataDontLoad) {
+    return true;
+  }
+
   protocol::DictionaryValue* blockedURLs =
       m_state->getObject(NetworkAgentState::blockedURLs);
   if (!blockedURLs)
@@ -630,6 +635,10 @@ void InspectorNetworkAgent::willSendRequest(
   request.setReportRawHeaders(true);
 
   if (m_state->booleanProperty(NetworkAgentState::cacheDisabled, false)) {
+    // It shouldn't be a ReturnCacheDataDontLoad request as those are blocked
+    // in shouldBlockRequest.
+    DCHECK_NE(WebCachePolicy::ReturnCacheDataDontLoad,
+              request.getCachePolicy());
     request.setCachePolicy(WebCachePolicy::BypassingCache);
     request.setShouldResetAppCache(true);
   }

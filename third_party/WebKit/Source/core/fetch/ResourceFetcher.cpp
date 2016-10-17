@@ -491,8 +491,9 @@ Resource* ResourceFetcher::requestResource(
 
   context().populateRequestData(request.mutableResourceRequest());
   if (request.resourceRequest().httpHeaderField("Upgrade-Insecure-Requests") !=
-      AtomicString("1"))
+      AtomicString("1")) {
     context().modifyRequestForCSP(request.mutableResourceRequest());
+  }
   context().addClientHintsIfNecessary(request);
   context().addCSPHeaderIfNecessary(factory.type(), request);
 
@@ -501,6 +502,12 @@ Resource* ResourceFetcher::requestResource(
 
   if (!request.url().isValid())
     return nullptr;
+
+  unsigned long identifier = createUniqueIdentifier();
+  request.mutableResourceRequest().setPriority(computeLoadPriority(
+      factory.type(), request, ResourcePriority::NotVisible));
+  initializeResourceRequest(request.mutableResourceRequest(), factory.type(),
+                            request.defer());
 
   if (!context().canRequest(
           factory.type(), request.resourceRequest(),
@@ -511,11 +518,6 @@ Resource* ResourceFetcher::requestResource(
     return resourceForBlockedRequest(request, factory);
   }
 
-  unsigned long identifier = createUniqueIdentifier();
-  request.mutableResourceRequest().setPriority(computeLoadPriority(
-      factory.type(), request, ResourcePriority::NotVisible));
-  initializeResourceRequest(request.mutableResourceRequest(), factory.type(),
-                            request.defer());
   context().willStartLoadingResource(
       identifier, request.mutableResourceRequest(), factory.type());
   if (!request.url().isValid())
