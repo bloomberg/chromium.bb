@@ -90,7 +90,8 @@ def main():
     input_args.append('-in')
     input_args.append(f)
 
-  output_args = ['-Dreport.html.out.file', options.output]
+  output_args = ['-Dreport.html.out.file', options.output,
+                 '-Dreport.html.out.encoding', 'UTF-8']
   source_args = ['-sp', ','.join(sources)]
 
   exit_code = cmd_helper.RunCmd(
