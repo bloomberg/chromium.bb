@@ -138,20 +138,6 @@ using VisiblePosition = VisiblePositionTemplate<EditingStrategy>;
 using VisiblePositionInFlatTree =
     VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
-// |createVisiblePositionDeprecated| updates layout before creating the
-// VisiblePosition, which messes up the rendering pipeline. The callers should
-// ensure clean layout by themselves and call |createVisiblePosition| instead.
-CORE_EXPORT VisiblePosition
-createVisiblePositionDeprecated(const Position&,
-                                TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePosition
-createVisiblePositionDeprecated(const PositionWithAffinity&);
-CORE_EXPORT VisiblePositionInFlatTree
-createVisiblePositionDeprecated(const PositionInFlatTree&,
-                                TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePositionInFlatTree
-createVisiblePositionDeprecated(const PositionInFlatTreeWithAffinity&);
-
 CORE_EXPORT VisiblePosition
 createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);

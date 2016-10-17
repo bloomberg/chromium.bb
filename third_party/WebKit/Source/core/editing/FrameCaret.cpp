@@ -81,9 +81,17 @@ void FrameCaret::updateAppearance() {
   // Paint a block cursor instead of a caret in overtype mode unless the caret
   // is at the end of a line (in this case the FrameSelection will paint a
   // blinking caret as usual).
-  bool paintBlockCursor =
-      m_shouldShowBlockCursor && isActive() &&
-      !isLogicalEndOfLine(createVisiblePositionDeprecated(caretPosition()));
+  bool paintBlockCursor = m_shouldShowBlockCursor && isActive();
+  if (paintBlockCursor) {
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  see http://crbug.com/590369 for more details.
+    // In the long term, we should defer the update of the caret's appearance
+    // to prevent synchronous layout.
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    if (isLogicalEndOfLine(createVisiblePosition(caretPosition())))
+      paintBlockCursor = false;
+  }
 
   bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
