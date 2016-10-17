@@ -17,7 +17,9 @@ EXTRA_DIST =						\
 	en-ueb-09-typeforms.yaml			\
 	en-ueb-10-07-contractions.yaml			\
 	en-ueb-10-13-contractions.yaml			\
+	en-ueb-g1_backward.yaml				\
 	en-ueb-g1_harness.yaml				\
+	en-ueb-g2_backward.yaml				\
 	en-ueb-g2-dictionary_harness.yaml		\
 	en-ueb-math.yaml				\
 	en-ueb-symbols_harness.yaml			\

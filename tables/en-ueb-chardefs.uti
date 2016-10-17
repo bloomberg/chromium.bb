@@ -78,14 +78,18 @@ litdigit 9 24
 
 display ! 2346
 punctuation ! 235
+nofor postpunc ! 235
 
 #TODO:  why?!
 display " 5
-punctuation " 5
+noback punctuation " 5
 #punctuation " 236
-#punctuation " 356
-#prepunc " 236
-#postpunc " 356
+# The "?" symbol is mostly handled below,
+# but the pattern needs to be defined before prepunc and postpunc can be used.
+nofor punctuation ? 236
+nofor punctuation " 356
+nofor prepunc " 236
+nofor postpunc " 356
 match %[^_~]%<* " %[_.$]*%[a#] 236
 match %[a#]%[_.$]* " %>*%[^_~] 356
 
@@ -118,10 +122,11 @@ math / 456-34
 
 display : 156
 punctuation : 25
+postpunc : 25
 #TODO:  this is unnecessarily necessary
 display ; 56
 punctuation ; 23
-punctuation ; 56
+noback punctuation ; 56
 display < 126
 math < 4-126
 display = 123456
@@ -145,7 +150,7 @@ display ^ 457
 sign ^ 4-26
 display _ 456
 sign _ 46-36
-punctuation ` 4
+noback punctuation ` 4
 
 display } 12456
 punctuation } 456-345

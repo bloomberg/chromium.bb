@@ -135,7 +135,9 @@ dist_yaml_TESTS =					\
 	yaml/en-GB-g2_backward.yaml			\
 	yaml/en-GB-g2_harness.yaml			\
 	yaml/en-gb-g1_harness.yaml			\
+	yaml/en-ueb-g1_backward.yaml			\
 	yaml/en-ueb-g1_harness.yaml			\
+	yaml/en-ueb-g2_backward.yaml			\
 	yaml/en-ueb-g2-dictionary_harness.yaml		\
 	yaml/en-ueb-symbols_harness.yaml		\
 	yaml/en-ueb-02-stand_alone.yaml			\

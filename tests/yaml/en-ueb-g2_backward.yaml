@@ -1,0 +1,29 @@
+tables: [tables/unicode.dis, tables/en-ueb-g2.ctb]
+flags: {testmode: backward}
+tests:
+  # Patterns used for both punctuation and contractions.
+  - [⠁⠖, a!]
+  - [⠁⠖⠁, affa]
+  - [⠦, his]
+  - [⠁⠦, "a?"]
+  - [⠦⠁, '"a']
+  - [⠴, was]
+  - [⠁⠴, 'a"']
+  - [⠦⠁⠴, '"a"']
+  - [⠶, were]
+  - [⠁⠶⠁, agga]
+  - [⠆, be]
+  - [⠆⠁, bea]
+  - [⠁⠆⠁, abba]
+  - [⠁⠆, a;]
+  - [⠒, ":"]
+  - [⠒⠁, cona]
+  - [⠁⠒, "a:"]
+  - [⠁⠒⠁, acca]
+  # Contractions prefixed by an indicator which means nothing on its own.
+  # These indicators are tested by themselves with no following cell in en-ueb-g1.
+  - [⠘⠺, word]
+  - [⠸⠍, many]
+  - [⠐⠝, name]
+  - [⠰⠃, \\56/b]
+  - [⠁⠰⠝, ation]
