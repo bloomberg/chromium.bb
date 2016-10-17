@@ -107,7 +107,7 @@ class PLATFORM_EXPORT PersistentRegion final {
   PersistentRegion()
       : m_freeListHead(nullptr),
         m_slots(nullptr)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         ,
         m_persistentCount(0)
 #endif
@@ -116,7 +116,7 @@ class PLATFORM_EXPORT PersistentRegion final {
   ~PersistentRegion();
 
   PersistentNode* allocatePersistentNode(void* self, TraceCallback trace) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ++m_persistentCount;
 #endif
     if (UNLIKELY(!m_freeListHead))
@@ -133,7 +133,7 @@ class PLATFORM_EXPORT PersistentRegion final {
     ASSERT(m_persistentCount > 0);
     persistentNode->setFreeListNext(m_freeListHead);
     m_freeListHead = persistentNode;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     --m_persistentCount;
 #endif
   }
@@ -157,7 +157,7 @@ class PLATFORM_EXPORT PersistentRegion final {
 
   PersistentNode* m_freeListHead;
   PersistentNodeSlots* m_slots;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   int m_persistentCount;
 #endif
 };
@@ -223,6 +223,10 @@ class CrossThreadPersistentRegion final {
 
   NO_SANITIZE_ADDRESS
   static bool shouldTracePersistentNode(Visitor*, PersistentNode*);
+
+#if defined(ADDRESS_SANITIZER)
+  void unpoisonCrossThreadPersistents();
+#endif
 
  private:
   friend class LockScope;

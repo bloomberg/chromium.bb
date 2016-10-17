@@ -117,7 +117,9 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor,
       slots = slots->m_next;
     }
   }
-  ASSERT(persistentCount == m_persistentCount);
+#if DCHECK_IS_ON()
+  DCHECK_EQ(persistentCount, m_persistentCount);
+#endif
 }
 
 bool CrossThreadPersistentRegion::shouldTracePersistentNode(
@@ -172,5 +174,26 @@ void CrossThreadPersistentRegion::prepareForThreadStateTermination(
     slots = slots->m_next;
   }
 }
+
+#if defined(ADDRESS_SANITIZER)
+void CrossThreadPersistentRegion::unpoisonCrossThreadPersistents() {
+  MutexLocker lock(m_mutex);
+  int persistentCount = 0;
+  for (PersistentNodeSlots* slots = m_persistentRegion->m_slots; slots;
+       slots = slots->m_next) {
+    for (int i = 0; i < PersistentNodeSlots::slotCount; ++i) {
+      const PersistentNode& node = slots->m_slot[i];
+      if (!node.isUnused()) {
+        ASAN_UNPOISON_MEMORY_REGION(node.self(),
+                                    sizeof(CrossThreadPersistent<void*>));
+        ++persistentCount;
+      }
+    }
+  }
+#if DCHECK_IS_ON()
+  DCHECK_EQ(persistentCount, m_persistentRegion->m_persistentCount);
+#endif
+}
+#endif
 
 }  // namespace blink

@@ -1139,10 +1139,18 @@ void ThreadState::poisonAllHeaps() {
   // Poisoning all unmarked objects in the other arenas.
   for (int i = 1; i < BlinkGC::NumberOfArenas; i++)
     m_arenas[i]->poisonArena();
+  // CrossThreadPersistents in unmarked objects may be accessed from other
+  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
+  // that would be fine.
+  ProcessHeap::crossThreadPersistentRegion().unpoisonCrossThreadPersistents();
 }
 
 void ThreadState::poisonEagerArena() {
   m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonArena();
+  // CrossThreadPersistents in unmarked objects may be accessed from other
+  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
+  // that would be fine.
+  ProcessHeap::crossThreadPersistentRegion().unpoisonCrossThreadPersistents();
 }
 #endif
 
