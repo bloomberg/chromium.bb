@@ -1132,7 +1132,8 @@ class DemoCallback : public Callback {
 int main(int argc, char* argv[]) {
   if ((argc != 1 && argc != 2) ||
       (argc == 2 && argv[1] == std::string("--help"))) {
-    std::cerr << "Usage:\n" << argv[0] << " [path-to-webm-file]\n\n"
+    std::cerr << "Usage:\n"
+              << argv[0] << " [path-to-webm-file]\n\n"
               << "Prints info for the WebM file specified in the command line. "
                  "If no file is\n"
               << "specified, stdin is used as input.\n";

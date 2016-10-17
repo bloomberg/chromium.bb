@@ -180,7 +180,7 @@ class MasterValueParser : public ElementParser {
     // If called, OnParseStarted will be called on the parent element when this
     // particular element is encountered.
     constexpr SingleChildFactory<Parser, Value, TagUseAsStart, Tags...>
-        UseAsStartEvent() const {
+    UseAsStartEvent() const {
       return {id_, member_};
     }
 
@@ -188,7 +188,7 @@ class MasterValueParser : public ElementParser {
     // particular element is fully parsed.
     constexpr SingleChildFactory<Parser, Value, TagNotifyOnParseComplete,
                                  Tags...>
-        NotifyOnParseComplete() const {
+    NotifyOnParseComplete() const {
       return {id_, member_};
     }
 
@@ -227,7 +227,7 @@ class MasterValueParser : public ElementParser {
     // If called, OnParseStarted will be called on the parent element when this
     // particular element is encountered.
     constexpr RepeatedChildFactory<Parser, Value, TagUseAsStart, Tags...>
-        UseAsStartEvent() const {
+    UseAsStartEvent() const {
       return {id_, member_};
     }
 
@@ -235,7 +235,7 @@ class MasterValueParser : public ElementParser {
     // particular element is fully parsed.
     constexpr RepeatedChildFactory<Parser, Value, TagNotifyOnParseComplete,
                                    Tags...>
-        NotifyOnParseComplete() const {
+    NotifyOnParseComplete() const {
       return {id_, member_};
     }
 
@@ -423,7 +423,7 @@ class MasterValueParser : public ElementParser {
   template <typename Parser, typename Value, typename... Tags, typename F>
   static typename std::enable_if<!std::is_constructible<Parser, Value>::value,
                                  std::unique_ptr<ElementParser>>::type
-      MakeChildParser(MasterValueParser* parent, F consume_element_value, ...) {
+  MakeChildParser(MasterValueParser* parent, F consume_element_value, ...) {
     return std::unique_ptr<ElementParser>(new ChildParser<Parser, F, Tags...>(
         parent, std::move(consume_element_value)));
   }
@@ -433,8 +433,8 @@ class MasterValueParser : public ElementParser {
   template <typename Parser, typename Value, typename... Tags, typename F>
   static typename std::enable_if<std::is_constructible<Parser, Value>::value,
                                  std::unique_ptr<ElementParser>>::type
-      MakeChildParser(MasterValueParser* parent, F consume_element_value,
-                      const Element<Value>* default_value) {
+  MakeChildParser(MasterValueParser* parent, F consume_element_value,
+                  const Element<Value>* default_value) {
     return std::unique_ptr<ElementParser>(new ChildParser<Parser, F, Tags...>(
         parent, std::move(consume_element_value), default_value->value()));
   }
@@ -444,8 +444,8 @@ class MasterValueParser : public ElementParser {
   template <typename Parser, typename Value, typename... Tags, typename F>
   static typename std::enable_if<std::is_constructible<Parser, Value>::value,
                                  std::unique_ptr<ElementParser>>::type
-      MakeChildParser(MasterValueParser* parent, F consume_element_value,
-                      const std::vector<Element<Value>>* member) {
+  MakeChildParser(MasterValueParser* parent, F consume_element_value,
+                  const std::vector<Element<Value>>* member) {
     Value default_value{};
     if (!member->empty()) {
       default_value = member->front().value();
