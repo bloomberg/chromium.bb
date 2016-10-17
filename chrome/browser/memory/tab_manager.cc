@@ -712,6 +712,8 @@ void TabManager::PurgeAndSuspendBackgroundedTabs() {
     // timers if we want necessary and sufficient signals.
     if (tab.last_active > purge_and_suspend_time_threshold)
       continue;
+    if (!CanSuspendBackgroundedRenderer(tab.child_process_host_id))
+      continue;
     tab.render_process_host->PurgeAndSuspend();
   }
 }
