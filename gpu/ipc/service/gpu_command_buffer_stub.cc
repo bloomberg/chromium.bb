@@ -428,9 +428,8 @@ void GpuCommandBufferStub::Destroy() {
     // don't leak resources.
     have_context = decoder_->GetGLContext()->MakeCurrent(surface_.get());
   }
-  FOR_EACH_OBSERVER(DestructionObserver,
-                    destruction_observers_,
-                    OnWillDestroyStub());
+  for (auto& observer : destruction_observers_)
+    observer.OnWillDestroyStub();
 
   if (decoder_) {
     decoder_->Destroy(have_context);

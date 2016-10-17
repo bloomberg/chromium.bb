@@ -276,9 +276,8 @@ void ShaderTranslator::RemoveDestructionObserver(
 }
 
 ShaderTranslator::~ShaderTranslator() {
-  FOR_EACH_OBSERVER(DestructionObserver,
-                    destruction_observers_,
-                    OnDestruct(this));
+  for (auto& observer : destruction_observers_)
+    observer.OnDestruct(this);
 
   if (compiler_ != NULL)
     ShDestruct(compiler_);
