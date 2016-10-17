@@ -30,7 +30,8 @@ bool AutofillAssistant::CanShowCreditCardAssist(
   if (form_structures.empty() || credit_card_form_data_ != nullptr ||
       !IsAutofillCreditCardAssistEnabled() ||
       !autofill_manager_->client()->IsContextSecure(
-          form_structures.front()->source_url())) {
+          form_structures.front()->source_url()) ||
+      !form_structures.front()->target_url().SchemeIs("https")) {
     return false;
   }
 

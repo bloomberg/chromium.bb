@@ -11,9 +11,7 @@ namespace autofill {
 TestAutofillClient::TestAutofillClient()
     : token_service_(new FakeOAuth2TokenService()),
       identity_provider_(new FakeIdentityProvider(token_service_.get())),
-      rappor_service_(new rappor::TestRapporService()),
-      is_context_secure_(true) {
-}
+      rappor_service_(new rappor::TestRapporService()) {}
 
 TestAutofillClient::~TestAutofillClient() {
 }
@@ -118,7 +116,8 @@ void TestAutofillClient::OnFirstUserGestureObserved() {
 }
 
 bool TestAutofillClient::IsContextSecure(const GURL& form_origin) {
-  return is_context_secure_;
+  // Simplified secure context check for tests.
+  return form_origin.SchemeIs("https");
 }
 
 bool TestAutofillClient::ShouldShowSigninPromo() {

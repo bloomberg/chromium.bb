@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::_;
 
@@ -63,14 +64,13 @@ class AutofillAssistantTest : public testing::Test {
 
   void EnableAutofillCreditCardAssist() {
     scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardAssist);
-    autofill_client_.set_is_context_secure(true);
   }
 
-  // Returns an initialized FormStructure with credit card form data. To be
-  // owned by the caller.
-  std::unique_ptr<FormStructure> CreateValidCreditCardForm() {
-    std::unique_ptr<FormStructure> form_structure;
+  // Returns a valid credit card form.
+  FormData CreateValidCreditCardFormData() {
     FormData form;
+    form.origin = GURL("https://myform.com");
+    form.action = GURL("https://myform.com/submit");
 
     FormFieldData field;
     field.form_control_type = "text";
@@ -95,9 +95,15 @@ class AutofillAssistantTest : public testing::Test {
     field.name = base::ASCIIToUTF16("verification");
     form.fields.push_back(field);
 
-    form_structure.reset(new FormStructure(form));
-    form_structure->DetermineHeuristicTypes();
+    return form;
+  }
 
+  // Returns an initialized FormStructure with credit card form data. To be
+  // owned by the caller.
+  std::unique_ptr<FormStructure> CreateValidCreditCardForm() {
+    std::unique_ptr<FormStructure> form_structure;
+    form_structure.reset(new FormStructure(CreateValidCreditCardFormData()));
+    form_structure->DetermineHeuristicTypes();
     return form_structure;
   }
 
@@ -142,17 +148,30 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn) {
 // contexts.
 TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
   EnableAutofillCreditCardAssist();
-  std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
-  std::vector<FormStructure*> form_structures;
-  form_structures.push_back(form_structure.get());
 
-  // Cannot be shown if the context is not secure.
-  autofill_client_.set_is_context_secure(false);
-  EXPECT_FALSE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+  {
+    // Cannot be shown if the context is not secure.
+    FormData form = CreateValidCreditCardFormData();
+    form.action = GURL("http://myform.com");
+    form.action = GURL("http://myform.com/submit");
+    std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+    form_structure->DetermineHeuristicTypes();
 
-  // Can be shown if the context is secure.
-  autofill_client_.set_is_context_secure(true);
-  EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+    std::vector<FormStructure*> form_structures;
+    form_structures.push_back(form_structure.get());
+    EXPECT_FALSE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+  }
+
+  {
+    // Can be shown if the context is secure.
+    FormData form = CreateValidCreditCardFormData();
+    std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+    form_structure->DetermineHeuristicTypes();
+
+    std::vector<FormStructure*> form_structures;
+    form_structures.push_back(form_structure.get());
+    EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+  }
 }
 
 TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_CancelCvc) {

@@ -552,7 +552,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
     }
     if (!suggestions.empty()) {
       bool is_context_secure =
-          client_->IsContextSecure(form_structure->source_url());
+          client_->IsContextSecure(form_structure->source_url()) &&
+          form_structure->target_url().SchemeIs("https");
       if (is_filling_credit_card)
         AutofillMetrics::LogIsQueriedCreditCardFormSecure(is_context_secure);
 

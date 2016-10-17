@@ -71,10 +71,6 @@ class TestAutofillClient : public AutofillClient {
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
 
-  void set_is_context_secure(bool is_context_secure) {
-    is_context_secure_ = is_context_secure;
-  }
-
   void SetPrefs(std::unique_ptr<PrefService> prefs) {
     prefs_ = std::move(prefs);
   }
@@ -89,8 +85,6 @@ class TestAutofillClient : public AutofillClient {
   std::unique_ptr<FakeOAuth2TokenService> token_service_;
   std::unique_ptr<FakeIdentityProvider> identity_provider_;
   std::unique_ptr<rappor::TestRapporService> rappor_service_;
-
-  bool is_context_secure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

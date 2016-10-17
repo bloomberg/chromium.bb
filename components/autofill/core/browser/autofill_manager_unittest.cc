@@ -890,7 +890,6 @@ class AutofillManagerTest : public testing::Test {
     } else {
       form->origin = GURL("http://myform.com/form.html");
       form->action = GURL("http://myform.com/submit.html");
-      autofill_client_.set_is_context_secure(false);
     }
 
     FormFieldData field;
@@ -1554,7 +1553,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
 }
 
 // Test that we return a warning explaining that credit card profile suggestions
-// are unavailable when the form is not secure.
+// are unavailable when the page and the form target URL are not secure.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonHTTPS) {
   // Set up our form data.
   FormData form;
@@ -1571,6 +1570,34 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonHTTPS) {
       Suggestion(
           l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
           "", "", -1));
+
+  // Clear the test credit cards and try again -- we shouldn't return a warning.
+  personal_data_.ClearCreditCards();
+  GetAutofillSuggestions(form, field);
+  // Autocomplete suggestions are queried, but not Autofill.
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Test that we return a warning explaining that credit card profile suggestions
+// are unavailable when the page is secure, but the form target URL is not
+// secure.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_TargetURLNonHTTPS) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, /* is_https= */ true, false);
+  // However we set the action (target URL) to be HTTP after all.
+  form.action = GURL("http://myform.com/submit.html");
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const FormFieldData& field = form.fields[0];
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion(l10n_util::GetStringUTF8(
+                                     IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
+                                 "", "", -1));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();

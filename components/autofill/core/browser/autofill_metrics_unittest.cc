@@ -1817,8 +1817,6 @@ TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
   // Set up the form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
 
   FormFieldData field;
   std::vector<ServerFieldType> field_types;
@@ -1890,27 +1888,34 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
   form.fields.push_back(field);
   field_types.push_back(CREDIT_CARD_NUMBER);
 
-  // Simulate having seen this form on page load.
-  autofill_manager_->AddSeenForm(form, field_types, field_types);
-
   {
-    // Simulate an Autofill query on a credit card field.
-    autofill_client_.set_is_context_secure(true);
-    base::HistogramTester histogram_tester;
-    autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
-                                                gfx::RectF());
-    histogram_tester.ExpectUniqueSample(
-        "Autofill.QueriedCreditCardFormIsSecure", true, 1);
-  }
+    // Simulate having seen this insecure form on page load.
+    form.origin = GURL("http://example.com/form.html");
+    form.action = GURL("http://example.com/submit.html");
+    autofill_manager_->AddSeenForm(form, field_types, field_types);
 
-  {
-    // Simulate an Autofill query on a credit card field.
-    autofill_client_.set_is_context_secure(false);
+    // Simulate an Autofill query on a credit card field (HTTP, non-secure
+    // form).
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
                                                 gfx::RectF());
     histogram_tester.ExpectUniqueSample(
         "Autofill.QueriedCreditCardFormIsSecure", false, 1);
+  }
+
+  {
+    // Simulate having seen this secure form on page load.
+    autofill_manager_->Reset();
+    form.origin = GURL("https://example.com/form.html");
+    form.action = GURL("https://example.com/submit.html");
+    autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+    // Simulate an Autofill query on a credit card field (HTTPS form).
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
+                                                gfx::RectF());
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.QueriedCreditCardFormIsSecure", true, 1);
   }
 }
 
