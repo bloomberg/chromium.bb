@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/user_agent.h"
+#include "net/base/escape.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -45,6 +48,129 @@ const char kFallbackFrontendURL[] =
 const char kFallbackFrontendURL[] =
     "data:text/plain,Cannot load DevTools frontend from an untrusted origin";
 #endif  // defined(DEBUG_DEVTOOLS)
+
+GURL SanitizeFrontendURL(
+    const GURL& url,
+    const std::string& scheme,
+    const std::string& host,
+    const std::string& path,
+    bool allow_query);
+
+std::string SanitizeRevision(const std::string& revision) {
+  for (size_t i = 0; i < revision.length(); i++) {
+    if (!(revision[i] == '@' && i == 0)
+        && !(revision[i] >= '0' && revision[i] <= '9')
+        && !(revision[i] >= 'a' && revision[i] <= 'z')
+        && !(revision[i] >= 'A' && revision[i] <= 'Z')) {
+      return std::string();
+    }
+  }
+  return revision;
+}
+
+std::string SanitizeFrontendPath(const std::string& path) {
+  for (size_t i = 0; i < path.length(); i++) {
+    if (path[i] != '/' && path[i] != '-' && path[i] != '_'
+        && path[i] != '.' && path[i] != '@'
+        && !(path[i] >= '0' && path[i] <= '9')
+        && !(path[i] >= 'a' && path[i] <= 'z')
+        && !(path[i] >= 'A' && path[i] <= 'Z')) {
+      return std::string();
+    }
+  }
+  return path;
+}
+
+std::string SanitizeEndpoint(const std::string& value) {
+  if (value.find('&') != std::string::npos
+      || value.find('?') != std::string::npos)
+    return std::string();
+  return value;
+}
+
+std::string SanitizeRemoteBase(const std::string& value) {
+  GURL url(value);
+  std::string path = url.path();
+  std::vector<std::string> parts = base::SplitString(
+      path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string revision = parts.size() > 2 ? parts[2] : "";
+  revision = SanitizeRevision(revision);
+  path = base::StringPrintf("/%s/%s/", kRemoteFrontendPath, revision.c_str());
+  return SanitizeFrontendURL(url, url::kHttpsScheme,
+                             kRemoteFrontendDomain, path, false).spec();
+}
+
+std::string SanitizeRemoteFrontendURL(const std::string& value) {
+  GURL url(net::UnescapeURLComponent(value,
+      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+      net::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
+  std::string path = url.path();
+  std::vector<std::string> parts = base::SplitString(
+      path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string revision = parts.size() > 2 ? parts[2] : "";
+  revision = SanitizeRevision(revision);
+  std::string filename = parts.size() ? parts[parts.size() - 1] : "";
+  if (filename != "devtools.html")
+    filename = "inspector.html";
+  path = base::StringPrintf("/serve_rev/%s/%s",
+                            revision.c_str(), filename.c_str());
+  std::string sanitized = SanitizeFrontendURL(url, url::kHttpsScheme,
+      kRemoteFrontendDomain, path, true).spec();
+  return net::EscapeQueryParamValue(sanitized, false);
+}
+
+std::string SanitizeFrontendQueryParam(
+    const std::string& key,
+    const std::string& value) {
+  // Convert boolean flags to true.
+  if (key == "can_dock" || key == "debugFrontend" || key == "experiments" ||
+      key == "isSharedWorker" || key == "v8only" || key == "remoteFrontend")
+    return "true";
+
+  // Pass connection endpoints as is.
+  if (key == "ws" || key == "service-backend")
+    return SanitizeEndpoint(value);
+
+  // Only support undocked for old frontends.
+  if (key == "dockSide" && value == "undocked")
+    return value;
+
+  if (key == "remoteBase")
+    return SanitizeRemoteBase(value);
+
+  if (key == "remoteFrontendUrl")
+    return SanitizeRemoteFrontendURL(value);
+
+  return std::string();
+}
+
+GURL SanitizeFrontendURL(
+    const GURL& url,
+    const std::string& scheme,
+    const std::string& host,
+    const std::string& path,
+    bool allow_query) {
+  std::vector<std::string> query_parts;
+  if (allow_query) {
+    for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+      std::string value = SanitizeFrontendQueryParam(it.GetKey(),
+          it.GetValue());
+      if (!value.empty()) {
+        query_parts.push_back(
+            base::StringPrintf("%s=%s", it.GetKey().c_str(), value.c_str()));
+      }
+    }
+  }
+  std::string query =
+      query_parts.empty() ? "" : "?" + base::JoinString(query_parts, "&");
+  std::string constructed = base::StringPrintf("%s://%s%s%s",
+      scheme.c_str(), host.c_str(), path.c_str(), query.c_str());
+  GURL result = GURL(constructed);
+  if (!result.is_valid())
+    return GURL();
+  return result;
+}
 
 // DevToolsDataSource ---------------------------------------------------------
 
@@ -250,14 +376,23 @@ GURL DevToolsUI::GetRemoteBaseURL() {
       content::GetWebKitRevision().c_str()));
 }
 
+// static
+GURL DevToolsUI::SanitizeFrontendURL(const GURL& url) {
+  return ::SanitizeFrontendURL(url, content::kChromeDevToolsScheme,
+      chrome::kChromeUIDevToolsHost, SanitizeFrontendPath(url.path()), true);
+}
+
 DevToolsUI::DevToolsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      bindings_(web_ui->GetWebContents()) {
+    : WebUIController(web_ui) {
   web_ui->SetBindings(0);
   Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(
       profile,
       new DevToolsDataSource(profile->GetRequestContext()));
+
+  GURL url = web_ui->GetWebContents()->GetVisibleURL();
+  if (url.spec() == SanitizeFrontendURL(url).spec())
+    bindings_.reset(new DevToolsUIBindings(web_ui->GetWebContents()));
 }
 
 DevToolsUI::~DevToolsUI() {

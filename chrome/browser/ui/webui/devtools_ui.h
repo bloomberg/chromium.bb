@@ -5,23 +5,24 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DEVTOOLS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_DEVTOOLS_UI_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class Profile;
-
 class DevToolsUI : public content::WebUIController {
  public:
   static GURL GetProxyURL(const std::string& frontend_url);
   static GURL GetRemoteBaseURL();
+  static GURL SanitizeFrontendURL(const GURL& url);
 
   explicit DevToolsUI(content::WebUI* web_ui);
   ~DevToolsUI() override;
 
  private:
-  DevToolsUIBindings bindings_;
+  std::unique_ptr<DevToolsUIBindings> bindings_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsUI);
 };
 

@@ -205,10 +205,8 @@ GURL DecorateFrontendURL(const GURL& base_url) {
     url_string += "&experiments=true";
 
   if (command_line->HasSwitch(switches::kDevToolsFlags)) {
-    std::string flags = command_line->GetSwitchValueASCII(
-                            switches::kDevToolsFlags);
-    flags = net::EscapeQueryParamValue(flags, false);
-    url_string += "&flags=" + flags;
+    url_string += "&" + command_line->GetSwitchValueASCII(
+        switches::kDevToolsFlags);
   }
 
 #if defined(DEBUG_DEVTOOLS)
@@ -905,7 +903,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
   }
   if (can_dock)
     url_string += "&can_dock=true";
-  return GURL(url_string);
+  return DevToolsUI::SanitizeFrontendURL(GURL(url_string));
 }
 
 // static
