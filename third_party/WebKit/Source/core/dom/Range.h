@@ -182,6 +182,7 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
 
   void checkNodeBA(Node*, ExceptionState&) const;
   void checkExtractPrecondition(ExceptionState&);
+  bool hasSameRoot(const Node&) const;
 
   enum ActionType { DELETE_CONTENTS, EXTRACT_CONTENTS, CLONE_CONTENTS };
   DocumentFragment* processContents(ActionType, ExceptionState&);

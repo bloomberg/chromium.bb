@@ -247,6 +247,17 @@ bool Range::isNodeFullyContained(Node& node) const {
                                                // points.
 }
 
+bool Range::hasSameRoot(const Node& node) const {
+  if (node.document() != m_ownerDocument)
+    return false;
+  // commonAncestorContainer() is O(depth). We should avoid to call it in common
+  // cases.
+  if (node.isInTreeScope() && m_start.container()->isInTreeScope() &&
+      &node.treeScope() == &m_start.container()->treeScope())
+    return true;
+  return node.commonAncestor(*m_start.container(), NodeTraversal::parent);
+}
+
 bool Range::isPointInRange(Node* refNode,
                            int offset,
                            ExceptionState& exceptionState) const {
@@ -256,10 +267,8 @@ bool Range::isPointInRange(Node* refNode,
     exceptionState.throwTypeError("The node provided is null.");
     return false;
   }
-
-  if (!refNode->inActiveDocument() || refNode->document() != m_ownerDocument) {
+  if (!hasSameRoot(*refNode))
     return false;
-  }
 
   checkNodeWOffset(refNode, offset, exceptionState);
   if (exceptionState.hadException())
@@ -281,16 +290,10 @@ short Range::comparePoint(Node* refNode,
   // refNode node and an offset within the node is before, same as, or after the
   // range respectively.
 
-  if (!refNode->inActiveDocument()) {
-    exceptionState.throwDOMException(
-        WrongDocumentError, "The node provided is not in an active document.");
-    return 0;
-  }
-
-  if (refNode->document() != m_ownerDocument) {
+  if (!hasSameRoot(*refNode)) {
     exceptionState.throwDOMException(
         WrongDocumentError,
-        "The node provided is not in this Range's Document.");
+        "The node provided and the Range are not in the same tree.");
     return 0;
   }
 
@@ -405,28 +408,16 @@ void Range::deleteContents(ExceptionState& exceptionState) {
   }
 }
 
-static bool nodeValidForIntersects(Node* refNode,
-                                   Document* expectedDocument,
-                                   ExceptionState& exceptionState) {
+bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState) {
+  // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
+  // Returns a bool if the node intersects the range.
   if (!refNode) {
     // FIXME: Generated bindings code never calls with null, and neither should
     // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return false;
   }
-
-  if (!refNode->inActiveDocument() || refNode->document() != expectedDocument) {
-    // Firefox doesn't throw an exception for these cases; it returns false.
-    return false;
-  }
-
-  return true;
-}
-
-bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState) {
-  // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
-  // Returns a bool if the node intersects the range.
-  if (!nodeValidForIntersects(refNode, m_ownerDocument.get(), exceptionState))
+  if (!hasSameRoot(*refNode))
     return false;
 
   ContainerNode* parentNode = refNode->parentNode();
