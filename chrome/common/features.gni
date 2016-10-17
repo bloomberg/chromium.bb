@@ -31,8 +31,8 @@ declare_args() {
   enable_google_now = false
 
   # Hangout services is an extension that adds extra features to Hangouts.
-  # For official Chrome builds, this flag is set on the bots.
-  enable_hangout_services_extension = false
+  # It is enableable separately to facilitate testing.
+  enable_hangout_services_extension = is_chrome_branded
 
   # 'Ok Google' hotwording is disabled by default. Set to true to enable. (This
   # will download a closed-source NaCl module at startup.) Chrome-branded
@@ -71,6 +71,7 @@ chrome_grit_defines = [
   "enable_app_list=$enable_app_list",
   "enable_background=$enable_background",
   "enable_google_now=$enable_google_now",
+  "enable_hangout_services_extension=$enable_hangout_services_extension",
   "enable_hotwording=$enable_hotwording",
   "enable_service_discovery=$enable_service_discovery",
   "enable_vr_shell=$enable_vr_shell",

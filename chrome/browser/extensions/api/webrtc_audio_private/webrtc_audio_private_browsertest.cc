@@ -400,7 +400,7 @@ class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
   }
 };
 
-#if defined(GOOGLE_CHROME_BUILD) || BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
                        RunComponentExtensionTest) {
   // This runs the end-to-end JavaScript test for the Hangout Services
@@ -437,6 +437,6 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
       NULL);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD) || BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 
 }  // namespace extensions
