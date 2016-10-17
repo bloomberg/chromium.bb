@@ -456,9 +456,8 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
 
   if (!loaded_ && error == FILE_ERROR_OK) {
     loaded_ = true;
-    FOR_EACH_OBSERVER(ChangeListLoaderObserver,
-                      observers_,
-                      OnInitialLoadComplete());
+    for (auto& observer : observers_)
+      observer.OnInitialLoadComplete();
   }
 
   for (size_t i = 0; i < pending_load_callback_.size(); ++i) {
@@ -568,16 +567,14 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
                base::Int64ToString(elapsed.InMilliseconds()).c_str());
 
   if (should_notify_changed_directories) {
-    FOR_EACH_OBSERVER(ChangeListLoaderObserver,
-                      observers_,
-                      OnFileChanged(change_list_processor->changed_files()));
+    for (auto& observer : observers_)
+      observer.OnFileChanged(change_list_processor->changed_files());
   }
 
   OnChangeListLoadComplete(error);
 
-  FOR_EACH_OBSERVER(ChangeListLoaderObserver,
-                    observers_,
-                    OnLoadFromServerComplete());
+  for (auto& observer : observers_)
+    observer.OnLoadFromServerComplete();
 }
 
 }  // namespace internal

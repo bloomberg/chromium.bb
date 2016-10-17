@@ -61,8 +61,8 @@ void DriveNotificationManager::OnInvalidatorStateChange(
   } else {
     DVLOG(1) << "XMPP Notifications disabled (state=" << state << ")";
   }
-  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
-                    OnPushNotificationEnabled(push_notification_enabled_));
+  for (auto& observer : observers_)
+    observer.OnPushNotificationEnabled(push_notification_enabled_);
 }
 
 void DriveNotificationManager::OnIncomingInvalidation(
@@ -110,8 +110,8 @@ void DriveNotificationManager::RestartPollingTimer() {
 void DriveNotificationManager::NotifyObserversToUpdate(
     NotificationSource source) {
   DVLOG(1) << "Notifying observers: " << NotificationSourceToString(source);
-  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
-                    OnNotificationReceived());
+  for (auto& observer : observers_)
+    observer.OnNotificationReceived();
   if (!observers_notified_) {
     UMA_HISTOGRAM_BOOLEAN("Drive.PushNotificationInitiallyEnabled",
                           push_notification_enabled_);

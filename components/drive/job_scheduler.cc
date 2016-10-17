@@ -1160,19 +1160,21 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
 
 void JobScheduler::NotifyJobAdded(const JobInfo& job_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobAdded(job_info));
+  for (auto& observer : observer_list_)
+    observer.OnJobAdded(job_info);
 }
 
 void JobScheduler::NotifyJobDone(const JobInfo& job_info,
                                  google_apis::DriveApiErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(JobListObserver, observer_list_,
-                    OnJobDone(job_info, GDataToFileError(error)));
+  for (auto& observer : observer_list_)
+    observer.OnJobDone(job_info, GDataToFileError(error));
 }
 
 void JobScheduler::NotifyJobUpdated(const JobInfo& job_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(JobListObserver, observer_list_, OnJobUpdated(job_info));
+  for (auto& observer : observer_list_)
+    observer.OnJobUpdated(job_info);
 }
 
 std::string JobScheduler::GetQueueInfo(QueueType type) const {

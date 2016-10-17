@@ -857,11 +857,11 @@ void DriveAPIService::ClearRefreshToken() {
 void DriveAPIService::OnOAuth2RefreshTokenChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (CanSendRequest()) {
-    FOR_EACH_OBSERVER(
-        DriveServiceObserver, observers_, OnReadyToSendRequests());
+    for (auto& observer : observers_)
+      observer.OnReadyToSendRequests();
   } else if (!HasRefreshToken()) {
-    FOR_EACH_OBSERVER(
-        DriveServiceObserver, observers_, OnRefreshTokenInvalid());
+    for (auto& observer : observers_)
+      observer.OnRefreshTokenInvalid();
   }
 }
 

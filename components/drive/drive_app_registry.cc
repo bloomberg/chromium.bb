@@ -189,9 +189,8 @@ void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
     AddAppSelectorList(app.secondary_file_extensions(), id, &extension_map_);
   }
 
-  FOR_EACH_OBSERVER(DriveAppRegistryObserver,
-                    observers_,
-                    OnDriveAppRegistryUpdated());
+  for (auto& observer : observers_)
+    observer.OnDriveAppRegistryUpdated();
 }
 
 void DriveAppRegistry::AddObserver(DriveAppRegistryObserver* observer) {

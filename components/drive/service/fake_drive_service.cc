@@ -1793,7 +1793,8 @@ FakeDriveService::StartBatchRequest() {
 }
 
 void FakeDriveService::NotifyObservers() {
-  FOR_EACH_OBSERVER(ChangeObserver, change_observers_, OnNewChangeAvailable());
+  for (auto& observer : change_observers_)
+    observer.OnNewChangeAvailable();
 }
 
 }  // namespace drive
