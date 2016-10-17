@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "content/public/test/test_utils.h"
 
 MockNotificationDelegate::MockNotificationDelegate(const std::string& id)
