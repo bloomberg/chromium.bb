@@ -29,13 +29,17 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK_EQ(queue->GetTimeDomain(), this);
   UnregisterAsUpdatableTaskQueue(queue);
 
-  // If no wakeup has been requested then bail out.
-  if (queue->scheduled_time_domain_wakeup().is_null())
+  // If present remove |task_queue| from delayed_wakeup_multimap_.
+  // O(log n)
+  QueueToDelayedWakeupMultimapIteratorMap::iterator it =
+      queue_to_delayed_wakeup_multimap_iterator_map_.find(queue);
+
+  if (it == queue_to_delayed_wakeup_multimap_iterator_map_.end())
     return;
 
-  // O(log n)
-  delayed_wakeup_queue_.erase(queue->heap_handle());
-  queue->set_scheduled_time_domain_wakeup(base::TimeTicks());
+  // O(1) amortized.
+  delayed_wakeup_multimap_.erase(it->second);
+  queue_to_delayed_wakeup_multimap_iterator_map_.erase(it);
 }
 
 void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
@@ -49,17 +53,21 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
   if (UnregisterAsUpdatableTaskQueue(queue))
     destination_time_domain->updatable_queue_set_.insert(queue);
 
-  // If no wakeup has been requested then bail out.
-  if (queue->scheduled_time_domain_wakeup().is_null())
+  // If present remove |task_queue| from delayed_wakeup_multimap_.
+  // O(log n)
+  QueueToDelayedWakeupMultimapIteratorMap::iterator it =
+      queue_to_delayed_wakeup_multimap_iterator_map_.find(queue);
+
+  if (it == queue_to_delayed_wakeup_multimap_iterator_map_.end())
     return;
 
-  // O(log n)
-  delayed_wakeup_queue_.erase(queue->heap_handle());
-  queue->set_scheduled_time_domain_wakeup(base::TimeTicks());
-
   base::TimeTicks destination_now = destination_time_domain->Now();
-  destination_time_domain->ScheduleDelayedWork(
-      queue, queue->scheduled_time_domain_wakeup(), destination_now);
+  destination_time_domain->ScheduleDelayedWork(queue, it->second->first,
+                                               destination_now);
+
+  // O(1) amortized.
+  delayed_wakeup_multimap_.erase(it->second);
+  queue_to_delayed_wakeup_multimap_iterator_map_.erase(it);
 }
 
 void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
@@ -68,19 +76,27 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // We only want to store a single wakeup per queue, so we need to remove any
   // previously registered wake up for |queue|.
-  if (!queue->scheduled_time_domain_wakeup().is_null()) {
-    delayed_wakeup_queue_.erase(queue->heap_handle());
-    queue->set_scheduled_time_domain_wakeup(base::TimeTicks());
-  }
+  QueueToDelayedWakeupMultimapIteratorMap::iterator it =
+      queue_to_delayed_wakeup_multimap_iterator_map_.find(queue);
 
-  if (delayed_wakeup_queue_.empty() ||
-      delayed_run_time < delayed_wakeup_queue_.min().time) {
+  if (it != queue_to_delayed_wakeup_multimap_iterator_map_.end())
+    delayed_wakeup_multimap_.erase(it->second);
+
+  if (delayed_wakeup_multimap_.empty() ||
+      delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
     base::TimeDelta delay = std::max(base::TimeDelta(), delayed_run_time - now);
     RequestWakeup(now, delay);
   }
 
-  delayed_wakeup_queue_.insert({delayed_run_time, queue});
-  queue->set_scheduled_time_domain_wakeup(delayed_run_time);
+  if (it != queue_to_delayed_wakeup_multimap_iterator_map_.end()) {
+    // TODO(alexclarke): Use C++17 extract & insert to more efficiently modify
+    // |queue_to_delayed_wakeup_multimap_iterator_map_|.
+    it->second = delayed_wakeup_multimap_.insert({delayed_run_time, queue});
+  } else {
+    // Insert the wakeup and store the map iterator for later convenience.
+    queue_to_delayed_wakeup_multimap_iterator_map_.insert(
+        {queue, delayed_wakeup_multimap_.insert({delayed_run_time, queue})});
+  }
 
   if (observer_)
     observer_->OnTimeDomainHasDelayedWork(queue);
@@ -151,32 +167,38 @@ void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
   // Wake up any queues with pending delayed work.  Note std::multipmap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wakeup.
-  while (!delayed_wakeup_queue_.empty() &&
-         delayed_wakeup_queue_.min().time <= lazy_now->Now()) {
-    internal::TaskQueueImpl* queue = delayed_wakeup_queue_.min().queue;
-    // O(log n)
-    delayed_wakeup_queue_.pop();
+  while (!delayed_wakeup_multimap_.empty()) {
+    DelayedWakeupMultimap::iterator next_wakeup =
+        delayed_wakeup_multimap_.begin();
+    if (next_wakeup->first > lazy_now->Now())
+      break;
 
-    queue->set_scheduled_time_domain_wakeup(base::TimeTicks());
+    internal::TaskQueueImpl* queue = next_wakeup->second;
+
+    // O(1) amortized.
+    delayed_wakeup_multimap_.erase(next_wakeup);
+    // O(log n).
+    queue_to_delayed_wakeup_multimap_iterator_map_.erase(queue);
+
     queue->WakeUpForDelayedWork(lazy_now);
   }
 }
 
 bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (delayed_wakeup_queue_.empty())
+  if (delayed_wakeup_multimap_.empty())
     return false;
 
-  *out_time = delayed_wakeup_queue_.min().time;
+  *out_time = delayed_wakeup_multimap_.begin()->first;
   return true;
 }
 
 bool TimeDomain::NextScheduledTaskQueue(TaskQueue** out_task_queue) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (delayed_wakeup_queue_.empty())
+  if (delayed_wakeup_multimap_.empty())
     return false;
 
-  *out_task_queue = delayed_wakeup_queue_.min().queue;
+  *out_task_queue = delayed_wakeup_multimap_.begin()->second;
   return true;
 }
 
@@ -187,9 +209,9 @@ void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
   for (auto* queue : updatable_queue_set_)
     state->AppendString(queue->GetName());
   state->EndArray();
-  state->SetInteger("registered_delay_count", delayed_wakeup_queue_.size());
-  if (!delayed_wakeup_queue_.empty()) {
-    base::TimeDelta delay = delayed_wakeup_queue_.min().time - Now();
+  state->SetInteger("registered_delay_count", delayed_wakeup_multimap_.size());
+  if (!delayed_wakeup_multimap_.empty()) {
+    base::TimeDelta delay = delayed_wakeup_multimap_.begin()->first - Now();
     state->SetDouble("next_delay_ms", delay.InMillisecondsF());
   }
   AsValueIntoInternal(state);
