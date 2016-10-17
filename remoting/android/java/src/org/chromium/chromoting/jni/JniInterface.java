@@ -50,8 +50,12 @@ public class JniInterface {
 
     public static void setAccountForLogging(String account) {
         sAccount = account;
+        fetchAuthToken();
     }
 
+    /**
+     * Fetch the OAuth token and feed it to the native interface.
+     */
     @CalledByNative
     private static void fetchAuthToken() {
         if (sAccount == null) {
