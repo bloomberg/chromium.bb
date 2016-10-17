@@ -218,7 +218,7 @@ crbug.com/231721 svg/custom/invisible-text-after-scrolling.xhtml [ Slow ]
 crbug.com/237270 [ Win7 ] fast/css/custom-font-xheight.html [ Slow ]
 crbug.com/241576 [ Win ] http/tests/appcache/404-manifest.html [ Slow ]
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]
-crbug.com/243249 http/tests/misc/submit-post-keygen.html [ Slow ]
+crbug.com/520189 http/tests/misc/submit-post-keygen.html [ Slow ]
 crbug.com/245154 editing/selection/modify_move/move-by-character-brute-force.html [ Slow ]
 crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
 

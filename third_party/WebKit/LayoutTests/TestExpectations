@@ -298,7 +298,7 @@ crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-termi
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
-
+crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
