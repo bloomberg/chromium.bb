@@ -17,7 +17,7 @@ InterfaceRegistry::InterfaceRegistry()
 InterfaceRegistry::InterfaceRegistry(
     const Identity& local_identity,
     const Identity& remote_identity,
-    const Interfaces& allowed_interfaces)
+    const InterfaceSet& allowed_interfaces)
     : binding_(this),
       local_identity_(local_identity),
       remote_identity_(remote_identity),

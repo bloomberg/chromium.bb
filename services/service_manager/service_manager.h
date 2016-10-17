@@ -15,9 +15,9 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/native_runner.h"
-#include "services/service_manager/public/cpp/capabilities.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -131,7 +131,7 @@ class ServiceManager : public Service {
 
   Instance* CreateInstance(const Identity& source,
                            const Identity& target,
-                           const CapabilitySpec& spec);
+                           const InterfaceProviderSpec& connection_spec);
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);

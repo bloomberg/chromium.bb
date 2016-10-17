@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/capabilities.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/lib/connector_impl.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -63,9 +63,9 @@ void ServiceContext::OnStart(const service_manager::Identity& identity,
 void ServiceContext::OnConnect(
     const Identity& source,
     mojom::InterfaceProviderRequest interfaces,
-    const Interfaces& allowed_interfaces,
-    const Classes& allowed_classes) {
-  // TODO(beng): do something with |allowed_classes|.
+    const InterfaceSet& allowed_interfaces,
+    const CapabilitySet& allowed_capabilities) {
+  // TODO(beng): do something with |allowed_capabilities|.
   std::unique_ptr<InterfaceRegistry> registry(
       new InterfaceRegistry(identity_, source, allowed_interfaces));
   registry->Bind(std::move(interfaces));

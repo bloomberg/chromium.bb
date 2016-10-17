@@ -12,9 +12,9 @@
 
 #include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/capabilities.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 

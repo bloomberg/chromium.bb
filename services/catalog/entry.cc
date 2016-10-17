@@ -35,55 +35,59 @@ bool ReadStringSetFromValue(const base::Value& value,
   return ReadStringSet(*list_value, string_set);
 }
 
-bool BuildCapabilities(const base::DictionaryValue& value,
-                       service_manager::CapabilitySpec* capabilities) {
-  DCHECK(capabilities);
-  const base::DictionaryValue* provided_value = nullptr;
-  if (value.HasKey(Store::kCapabilities_ProvidedKey) &&
-      !value.GetDictionary(Store::kCapabilities_ProvidedKey,
-                           &provided_value)) {
-    LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_ProvidedKey
+bool BuildInterfaceProviderSpecs(
+    const base::DictionaryValue& value,
+    service_manager::InterfaceProviderSpec* interface_provider_specs) {
+  DCHECK(interface_provider_specs);
+  const base::DictionaryValue* provides_value = nullptr;
+  if (value.HasKey(Store::kInterfaceProviderSpecs_ProvidesKey) &&
+      !value.GetDictionary(Store::kInterfaceProviderSpecs_ProvidesKey,
+                           &provides_value)) {
+    LOG(ERROR) << "Entry::Deserialize: "
+               << Store::kInterfaceProviderSpecs_ProvidesKey
                << " must be a dictionary.";
     return false;
   }
-  if (provided_value) {
-    base::DictionaryValue::Iterator it(*provided_value);
+  if (provides_value) {
+    base::DictionaryValue::Iterator it(*provides_value);
     for(; !it.IsAtEnd(); it.Advance()) {
-      service_manager::Interfaces interfaces;
+      service_manager::InterfaceSet interfaces;
       if (!ReadStringSetFromValue(it.value(), &interfaces)) {
         LOG(ERROR) << "Entry::Deserialize: Invalid interface list in provided "
-                   << " classes dictionary";
+                   << " capabilities dictionary";
         return false;
       }
-      capabilities->provided[it.key()] = interfaces;
+      interface_provider_specs->provides[it.key()] = interfaces;
     }
   }
 
-  const base::DictionaryValue* required_value = nullptr;
-  if (value.HasKey(Store::kCapabilities_RequiredKey) &&
-      !value.GetDictionary(Store::kCapabilities_RequiredKey,
-                           &required_value)) {
-    LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_RequiredKey
+  const base::DictionaryValue* requires_value = nullptr;
+  if (value.HasKey(Store::kInterfaceProviderSpecs_RequiresKey) &&
+      !value.GetDictionary(Store::kInterfaceProviderSpecs_RequiresKey,
+                           &requires_value)) {
+    LOG(ERROR) << "Entry::Deserialize: "
+               << Store::kInterfaceProviderSpecs_RequiresKey
                << " must be a dictionary.";
     return false;
   }
-  if (required_value) {
-    base::DictionaryValue::Iterator it(*required_value);
+  if (requires_value) {
+    base::DictionaryValue::Iterator it(*requires_value);
     for (; !it.IsAtEnd(); it.Advance()) {
-      service_manager::Classes classes;
+      service_manager::CapabilitySet capabilities;
       const base::ListValue* entry_value = nullptr;
       if (!it.value().GetAsList(&entry_value)) {
-        LOG(ERROR) << "Entry::Deserialize: " << Store::kCapabilities_RequiredKey
+        LOG(ERROR) << "Entry::Deserialize: "
+                   << Store::kInterfaceProviderSpecs_RequiresKey
                    << " entry must be a list.";
         return false;
       }
-      if (!ReadStringSet(*entry_value, &classes)) {
-        LOG(ERROR) << "Entry::Deserialize: Invalid classes list in required "
-                   << "capabilities dictionary.";
+      if (!ReadStringSet(*entry_value, &capabilities)) {
+        LOG(ERROR) << "Entry::Deserialize: Invalid capabilities list in "
+                   << "requires dictionary.";
         return false;
       }
 
-      capabilities->required[it.key()] = classes;
+      interface_provider_specs->requires[it.key()] = capabilities;
     }
   }
   return true;
@@ -106,25 +110,25 @@ std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
   value->SetString(Store::kQualifierKey, qualifier_);
   std::unique_ptr<base::DictionaryValue> spec(new base::DictionaryValue);
 
-  std::unique_ptr<base::DictionaryValue> provided(new base::DictionaryValue);
-  for (const auto& i : capabilities_.provided) {
+  std::unique_ptr<base::DictionaryValue> provides(new base::DictionaryValue);
+  for (const auto& i : connection_spec_.provides) {
     std::unique_ptr<base::ListValue> interfaces(new base::ListValue);
     for (const auto& interface_name : i.second)
       interfaces->AppendString(interface_name);
-    provided->Set(i.first, std::move(interfaces));
+    provides->Set(i.first, std::move(interfaces));
   }
-  spec->Set(Store::kCapabilities_ProvidedKey, std::move(provided));
+  spec->Set(Store::kInterfaceProviderSpecs_ProvidesKey, std::move(provides));
 
-  std::unique_ptr<base::DictionaryValue> required(new base::DictionaryValue);
-  for (const auto& i : capabilities_.required) {
-    std::unique_ptr<base::ListValue> classes(new base::ListValue);
+  std::unique_ptr<base::DictionaryValue> requires(new base::DictionaryValue);
+  for (const auto& i : connection_spec_.requires) {
+    std::unique_ptr<base::ListValue> capabilities(new base::ListValue);
     for (const auto& class_name : i.second)
-      classes->AppendString(class_name);
-    required->Set(i.first, std::move(classes));
+      capabilities->AppendString(class_name);
+    requires->Set(i.first, std::move(capabilities));
   }
-  spec->Set(Store::kCapabilities_RequiredKey, std::move(required));
+  spec->Set(Store::kInterfaceProviderSpecs_RequiresKey, std::move(requires));
 
-  value->Set(Store::kCapabilitiesKey, std::move(spec));
+  value->Set(Store::kInterfaceProviderSpecsKey, std::move(spec));
   return value;
 }
 
@@ -181,21 +185,22 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
   }
   entry->set_display_name(display_name);
 
-  // Capability spec.
-  const base::DictionaryValue* capabilities = nullptr;
-  if (!value.GetDictionary(Store::kCapabilitiesKey, &capabilities)) {
+  // InterfaceProvider specs.
+  const base::DictionaryValue* interface_provider_specs = nullptr;
+  if (!value.GetDictionary(Store::kInterfaceProviderSpecsKey,
+                           &interface_provider_specs)) {
     LOG(ERROR) << "Entry::Deserialize: dictionary has no "
-               << Store::kCapabilitiesKey << " key";
+               << Store::kInterfaceProviderSpecsKey << " key";
     return nullptr;
   }
 
-  service_manager::CapabilitySpec spec;
-  if (!BuildCapabilities(*capabilities, &spec)) {
-    LOG(ERROR) << "Entry::Deserialize: failed to build capability spec for "
-               << entry->name();
+  service_manager::InterfaceProviderSpec spec;
+  if (!BuildInterfaceProviderSpecs(*interface_provider_specs, &spec)) {
+    LOG(ERROR) << "Entry::Deserialize: failed to build InterfaceProvider spec "
+               << "for " << entry->name();
     return nullptr;
   }
-  entry->set_capabilities(spec);
+  entry->set_connection_spec(spec);
 
   if (value.HasKey(Store::kServicesKey)) {
     const base::ListValue* services = nullptr;
@@ -216,19 +221,20 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
 }
 
 bool Entry::ProvidesClass(const std::string& clazz) const {
-  return capabilities_.provided.find(clazz) != capabilities_.provided.end();
+  return connection_spec_.provides.find(clazz) !=
+      connection_spec_.provides.end();
 }
 
 bool Entry::operator==(const Entry& other) const {
   return other.name_ == name_ && other.qualifier_ == qualifier_ &&
          other.display_name_ == display_name_ &&
-         other.capabilities_ == capabilities_;
+         other.connection_spec_ == connection_spec_;
 }
 
 bool Entry::operator<(const Entry& other) const {
-  return std::tie(name_, qualifier_, display_name_, capabilities_) <
+  return std::tie(name_, qualifier_, display_name_, connection_spec_) <
          std::tie(other.name_, other.qualifier_, other.display_name_,
-                  other.capabilities_);
+                  other.connection_spec_);
 }
 
 }  // catalog
@@ -245,7 +251,7 @@ TypeConverter<service_manager::mojom::ResolveResultPtr,
   const catalog::Entry& package = input.package() ? *input.package() : input;
   result->resolved_name = package.name();
   result->qualifier = input.qualifier();
-  result->capabilities = input.capabilities();
+  result->connection_spec = input.connection_spec();
   result->package_path = package.path();
   return result;
 }

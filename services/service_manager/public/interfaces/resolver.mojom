@@ -5,7 +5,7 @@
 module service_manager.mojom;
 
 import "mojo/common/common_custom_types.mojom";
-import "services/service_manager/public/interfaces/capabilities.mojom";
+import "services/service_manager/public/interfaces/interface_provider_spec.mojom";
 
 // The result of a Resolve operation via Resolver.
 struct ResolveResult {
@@ -23,7 +23,8 @@ struct ResolveResult {
   string qualifier;
 
   // The set of capabilities provided and required by |name|.
-  CapabilitySpec? capabilities;
+  // TODO(beng): Fix comment.
+  InterfaceProviderSpec? connection_spec;
 
   // A path to the package file specified by |name|.
   mojo.common.mojom.FilePath package_path;

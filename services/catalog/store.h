@@ -25,11 +25,11 @@ class Store {
   // Value is a string.
   static const char kDisplayNameKey[];
   // Value is a dictionary.
-  static const char kCapabilitiesKey[];
+  static const char kInterfaceProviderSpecsKey[];
   // Value is a dictionary.
-  static const char kCapabilities_ProvidedKey[];
+  static const char kInterfaceProviderSpecs_ProvidesKey[];
   // Value is a dictionary.
-  static const char kCapabilities_RequiredKey[];
+  static const char kInterfaceProviderSpecs_RequiresKey[];
   // Value is a list.
   static const char kServicesKey[];
 

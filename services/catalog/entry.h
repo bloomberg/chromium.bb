@@ -11,7 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/service_manager/public/cpp/capabilities.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/interfaces/resolver.mojom.h"
 
 namespace base {
@@ -49,11 +49,12 @@ class Entry {
   void set_display_name(const std::string& display_name) {
     display_name_ = display_name;
   }
-  const service_manager::CapabilitySpec& capabilities() const {
-    return capabilities_;
+  const service_manager::InterfaceProviderSpec& connection_spec() const {
+    return connection_spec_;
   }
-  void set_capabilities(const service_manager::CapabilitySpec& capabilities) {
-    capabilities_ = capabilities;
+  void set_connection_spec(
+      const service_manager::InterfaceProviderSpec& connection_spec) {
+    connection_spec_ = connection_spec;
   }
   const Entry* package() const { return package_; }
   void set_package(Entry* package) { package_ = package; }
@@ -67,7 +68,7 @@ class Entry {
   base::FilePath path_;
   std::string qualifier_;
   std::string display_name_;
-  service_manager::CapabilitySpec capabilities_;
+  service_manager::InterfaceProviderSpec connection_spec_;
   Entry* package_ = nullptr;
   std::vector<std::unique_ptr<Entry>> children_;
 };

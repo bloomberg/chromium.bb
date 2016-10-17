@@ -6,9 +6,9 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "capabilities.mojom",
     "connector.mojom",
     "interface_provider.mojom",
+    "interface_provider_spec.mojom",
     "resolver.mojom",
     "service.mojom",
     "service_factory.mojom",

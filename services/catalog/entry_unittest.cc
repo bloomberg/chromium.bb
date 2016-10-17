@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "services/service_manager/public/cpp/capabilities.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/cpp/names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,17 +67,17 @@ TEST_F(EntryTest, Instance) {
   EXPECT_EQ("Foo", entry->display_name());
 }
 
-TEST_F(EntryTest, Capabilities) {
-  std::unique_ptr<Entry> entry = ReadEntry("capabilities", nullptr);
+TEST_F(EntryTest, ConnectionSpec) {
+  std::unique_ptr<Entry> entry = ReadEntry("connection_spec", nullptr);
 
   EXPECT_EQ("service:foo", entry->name());
   EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
-  service_manager::CapabilitySpec spec;
-  service_manager::Classes classes;
-  classes.insert("bar:bar");
-  spec.required["service:bar"] = classes;
-  EXPECT_EQ(spec, entry->capabilities());
+  service_manager::InterfaceProviderSpec spec;
+  service_manager::CapabilitySet capabilities;
+  capabilities.insert("bar:bar");
+  spec.requires["service:bar"] = capabilities;
+  EXPECT_EQ(spec, entry->connection_spec());
 }
 
 TEST_F(EntryTest, Serialization) {

@@ -68,7 +68,7 @@ void Instance::ResolveMojoName(const std::string& mojo_name,
     std::unique_ptr<Entry> entry(new Entry(mojo_name));
     service_manager::mojom::ResolveResultPtr result =
         service_manager::mojom::ResolveResult::From(*entry);
-    result->capabilities = base::nullopt;
+    result->connection_spec = base::nullopt;
     callback.Run(std::move(result));
     return;
   }

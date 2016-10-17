@@ -4,9 +4,9 @@
 
 module service_manager.mojom;
 
-import "services/service_manager/public/interfaces/capabilities.mojom";
 import "services/service_manager/public/interfaces/connector.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "services/service_manager/public/interfaces/interface_provider_spec.mojom";
 
 // Implemented by any service which is known to the Service Manager, for which
 // instances may be tracked. It allows the implementor to receive lifecycle
@@ -50,14 +50,20 @@ interface Service {
   //    A request for an InterfaceProvider by which the source service may
   //    seek to bind interface implementations exported by the target.
   //
-  //  allowed_capabilities
-  //    A whitelist of interface names and capability classes that should be
-  //    made available to the source, according to the security policy described
-  //    by the source and target's manifests. Attempts to bind interfaces not in
-  //    this whitelist must not be fulfilled.
+  //  required_interfaces
+  //    A whitelist of interface names that should be made available to the
+  //    source that initiated the connection, in accordance to policy described
+  //    in the source & target's service manifests. Attempts to bind interfaces
+  //    not in this whitelist must not be fulfilled.
+  //
+  //  required_capabilities
+  //    A set of the capability names required by the source initiating the
+  //    connection. |required_interfaces| controls interface binding, so this
+  //    is useful mostly if the target wishes to control behavior based on the
+  //    presence of a value in this set.
   //
   OnConnect(Identity source,
             InterfaceProvider&? interfaces,
-            Interfaces required_interfaces,
-            Classes required_classes);
+            InterfaceSet required_interfaces,
+            CapabilitySet required_capabilities);
 };

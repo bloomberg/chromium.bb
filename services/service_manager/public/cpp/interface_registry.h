@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/capabilities.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/cpp/lib/callback_binder.h"
 #include "services/service_manager/public/cpp/lib/interface_factory_binder.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -83,7 +83,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // |allowed_interfaces| to |remote_identity|.
   InterfaceRegistry(const Identity& local_identity,
                     const Identity& remote_identity,
-                    const Interfaces& allowed_interfaces);
+                    const InterfaceSet& allowed_interfaces);
   ~InterfaceRegistry() override;
 
   // Sets a default handler for incoming interface requests which are allowed by
@@ -165,7 +165,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   mojo::Binding<mojom::InterfaceProvider> binding_;
   const Identity local_identity_;
   const Identity remote_identity_;
-  const Interfaces allowed_interfaces_;
+  const InterfaceSet allowed_interfaces_;
   const bool allow_all_interfaces_;
 
   NameToInterfaceBinderMap name_to_binder_;
