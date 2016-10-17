@@ -3064,7 +3064,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
     else:
       RunGit(['config', '--unset-all', fullname], error_ok=unset_error_ok)
 
-  SetProperty('server', 'CODE_REVIEW_SERVER')
+  if not keyvals.get('GERRIT_HOST', False):
+    SetProperty('server', 'CODE_REVIEW_SERVER')
   # Only server setting is required. Other settings can be absent.
   # In that case, we ignore errors raised during option deletion attempt.
   SetProperty('cc', 'CC_LIST', unset_error_ok=True)
