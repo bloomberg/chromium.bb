@@ -1200,6 +1200,13 @@ public class BidirectionalStreamTest extends CronetTestBase {
         }
         assertEquals(expectError, callback.mError != null);
         assertEquals(expectError, callback.mOnErrorCalled);
+        if (expectError) {
+            assertNotNull(finishedInfo.getException());
+            assertEquals(RequestFinishedInfo.FAILED, finishedInfo.getFinishedReason());
+        } else {
+            assertNull(finishedInfo.getException());
+            assertEquals(RequestFinishedInfo.CANCELED, finishedInfo.getFinishedReason());
+        }
         assertEquals(failureType == FailureType.CANCEL_SYNC
                         || failureType == FailureType.CANCEL_ASYNC
                         || failureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE,

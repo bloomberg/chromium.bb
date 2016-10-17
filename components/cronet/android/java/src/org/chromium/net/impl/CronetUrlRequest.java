@@ -712,7 +712,6 @@ public final class CronetUrlRequest implements UrlRequest {
     }
 
     private RequestFinishedInfo getRequestFinishedInfo() {
-        // TODO(mgersh): fill in real values for finishedReason and exception
         return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics, mFinishedReason,
                 mResponseInfo, mException);
     }

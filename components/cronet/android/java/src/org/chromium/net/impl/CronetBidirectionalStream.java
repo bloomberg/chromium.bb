@@ -86,6 +86,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     private final String mRequestHeaders[];
     private final boolean mDelayRequestHeadersUntilFirstFlush;
     private final Collection<Object> mRequestAnnotations;
+    private UrlRequestException mException;
 
     /*
      * Synchronizes access to mNativeStream, mReadState and mWriteState.
@@ -639,10 +640,19 @@ public class CronetBidirectionalStream extends BidirectionalStream {
                     connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
                     pushEndMs, responseStartMs, requestEndMs, socketReused, sentBytesCount,
                     receivedBytesCount);
-            // TODO(xunjieli): Fill this with real values.
-            final RequestFinishedInfo requestFinishedInfo =
-                    new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
-                            RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
+            assert mReadState == mWriteState;
+            assert (mReadState == State.SUCCESS) || (mReadState == State.ERROR)
+                    || (mReadState == State.CANCELED);
+            int finishedReason;
+            if (mReadState == State.SUCCESS) {
+                finishedReason = RequestFinishedInfo.SUCCEEDED;
+            } else if (mReadState == State.CANCELED) {
+                finishedReason = RequestFinishedInfo.CANCELED;
+            } else {
+                finishedReason = RequestFinishedInfo.FAILED;
+            }
+            final RequestFinishedInfo requestFinishedInfo = new RequestFinishedInfo(mInitialUrl,
+                    mRequestAnnotations, mMetrics, finishedReason, mResponseInfo, mException);
             mRequestContext.reportFinished(requestFinishedInfo);
         }
     }
@@ -738,6 +748,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
      * Fails the stream with an exception. Only called on the Executor.
      */
     private void failWithExceptionOnExecutor(CronetException e) {
+        mException = e;
         // Do not call into mCallback if request is complete.
         synchronized (mNativeStreamLock) {
             if (isDoneLocked()) {
