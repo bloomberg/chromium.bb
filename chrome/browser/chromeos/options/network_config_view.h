@@ -160,25 +160,16 @@ class ChildNetworkConfigView : public views::View {
 // control.
 class ControlledSettingIndicatorView : public views::View {
  public:
-  ControlledSettingIndicatorView();
   explicit ControlledSettingIndicatorView(const NetworkPropertyUIData& ui_data);
   ~ControlledSettingIndicatorView() override;
-
-  // Updates the view based on |ui_data|.
-  void Update(const NetworkPropertyUIData& ui_data);
 
  protected:
   // views::View:
   gfx::Size GetPreferredSize() const override;
-  void Layout() override;
 
  private:
-  // Initializes the view.
-  void Init();
-
   bool managed_;
   views::ImageView* image_view_;
-  const gfx::ImageSkia* image_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlledSettingIndicatorView);
 };

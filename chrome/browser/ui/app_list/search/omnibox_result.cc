@@ -12,13 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "url/gurl.h"
@@ -171,18 +168,10 @@ void OmniboxResult::UpdateIcon() {
   bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::VectorIconId icon_id = is_bookmarked ?
-        gfx::VectorIconId::OMNIBOX_STAR :
-        AutocompleteMatch::TypeToVectorIcon(match_.type);
-    SetIcon(gfx::CreateVectorIcon(icon_id, 16, app_list::kIconColor));
-    return;
-  }
-
-  int resource_id = is_bookmarked ? IDR_OMNIBOX_STAR
-                                  : AutocompleteMatch::TypeToIcon(match_.type);
-  SetIcon(
-      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
+  gfx::VectorIconId icon_id = is_bookmarked ?
+      gfx::VectorIconId::OMNIBOX_STAR :
+      AutocompleteMatch::TypeToVectorIcon(match_.type);
+  SetIcon(gfx::CreateVectorIcon(icon_id, 16, app_list::kIconColor));
 }
 
 void OmniboxResult::UpdateTitleAndDetails() {

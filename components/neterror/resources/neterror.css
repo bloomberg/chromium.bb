@@ -162,8 +162,8 @@ a {
 #search-image {
   content:
       -webkit-image-set(
-          url(../../resources/default_100_percent/omnibox/omnibox_search_button_loupe.png) 1x,
-          url(../../resources/default_200_percent/omnibox/omnibox_search_button_loupe.png) 2x);
+          url(../../resources/default_100_percent/neterror/search_glass.png) 1x,
+          url(../../resources/default_200_percent/neterror/search_glass.png) 2x);
   margin: auto;
 }
 

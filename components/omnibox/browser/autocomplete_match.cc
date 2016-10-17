@@ -20,7 +20,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
-#include "grit/components_scaled_resources.h"
 #include "ui/gfx/vector_icons_public.h"
 
 namespace {
@@ -164,66 +163,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   additional_info = match.additional_info;
   duplicate_matches = match.duplicate_matches;
   return *this;
-}
-
-// static
-int AutocompleteMatch::TypeToIcon(Type type) {
-#if !defined(OS_IOS)
-  static const int kIcons[] = {
-      IDR_OMNIBOX_HTTP,           // URL_WHAT_YOU_TYPE
-      IDR_OMNIBOX_HTTP,           // HISTORY_URL
-      IDR_OMNIBOX_HTTP,           // HISTORY_TITLE
-      IDR_OMNIBOX_HTTP,           // HISTORY_BODY
-      IDR_OMNIBOX_HTTP,           // HISTORY_KEYWORD
-      IDR_OMNIBOX_HTTP,           // NAVSUGGEST
-      IDR_OMNIBOX_SEARCH,         // SEARCH_WHAT_YOU_TYPED
-      IDR_OMNIBOX_SEARCH,         // SEARCH_HISTORY
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ENTITY
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_TAIL
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PERSONALIZED
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PROFILE
-      IDR_OMNIBOX_SEARCH,         // SEARCH_OTHER_ENGINE
-      IDR_OMNIBOX_EXTENSION_APP,  // EXTENSION_APP
-      IDR_OMNIBOX_SEARCH,         // CONTACT_DEPRECATED
-      IDR_OMNIBOX_HTTP,           // BOOKMARK_TITLE
-      IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
-      IDR_OMNIBOX_CALCULATOR,     // CALCULATOR
-      IDR_OMNIBOX_HTTP,           // CLIPBOARD
-      IDR_OMNIBOX_SEARCH,         // VOICE_SEARCH
-      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB
-      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB_OVERFLOW
-  };
-#else
-  static const int kIcons[] = {
-      IDR_OMNIBOX_HTTP,           // URL_WHAT_YOU_TYPE
-      IDR_OMNIBOX_HISTORY,        // HISTORY_URL
-      IDR_OMNIBOX_HISTORY,        // HISTORY_TITLE
-      IDR_OMNIBOX_HISTORY,        // HISTORY_BODY
-      IDR_OMNIBOX_HISTORY,        // HISTORY_KEYWORD
-      IDR_OMNIBOX_HTTP,           // NAVSUGGEST
-      IDR_OMNIBOX_SEARCH,         // SEARCH_WHAT_YOU_TYPED
-      IDR_OMNIBOX_HISTORY,        // SEARCH_HISTORY
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_ENTITY
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_TAIL
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PERSONALIZED
-      IDR_OMNIBOX_SEARCH,         // SEARCH_SUGGEST_PROFILE
-      IDR_OMNIBOX_SEARCH,         // SEARCH_OTHER_ENGINE
-      IDR_OMNIBOX_EXTENSION_APP,  // EXTENSION_APP
-      IDR_OMNIBOX_SEARCH,         // CONTACT_DEPRECATED
-      IDR_OMNIBOX_HTTP,           // BOOKMARK_TITLE
-      IDR_OMNIBOX_HTTP,           // NAVSUGGEST_PERSONALIZED
-      IDR_OMNIBOX_CALCULATOR,     // CALCULATOR
-      IDR_OMNIBOX_HTTP,           // CLIPBOARD
-      IDR_OMNIBOX_SEARCH,         // VOICE_SEARCH
-      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB
-      IDR_OMNIBOX_HTTP,           // PHYSICAL_WEB_OVERFLOW
-  };
-#endif
-  static_assert(arraysize(kIcons) == AutocompleteMatchType::NUM_TYPES,
-                "icons array must have NUM_TYPES elements");
-  return kIcons[type];
 }
 
 // static

@@ -43,7 +43,10 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace extensions {
 
@@ -327,8 +330,8 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     if (is_required_by_policy) {
       int uninstall_index = GetIndexOfCommandId(UNINSTALL);
       SetIcon(uninstall_index,
-              ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                  IDR_OMNIBOX_HTTPS_POLICY_WARNING));
+              gfx::Image(gfx::CreateVectorIcon(gfx::VectorIconId::BUSINESS, 16,
+                                               gfx::kChromeIconGrey)));
     }
   }
 
