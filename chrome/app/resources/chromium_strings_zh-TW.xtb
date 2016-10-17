@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Chromium 作業系統開放原始碼授權</translation>
 <translation id="2241627712206172106">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chromium。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
+<translation id="2264142189334629813">Chromium 作業系統無法開啟這個網頁。</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2347108572062610441">這個擴充功能已變更 Chromium 啟動時所顯示的網頁。</translation>
 <translation id="2372704305038231957">32 位元的 Chromium 已不適用於這種 Linux 系統，因此可能無法正常運作。請升級至 64 位元的 Chromium。</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium 無法讀取及寫入資料目錄：
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">太好了！Chromium 現已成為你的預設瀏覽器。</translation>
 <translation id="328888136576916638">缺少 Google API 金鑰，系統將停用 Chromium 的部分功能。</translation>
 <translation id="3289635842886789612">Chromium 版本過舊。</translation>
 <translation id="3296368748942286671">在 Chromium 關閉時繼續執行背景應用程式</translation>

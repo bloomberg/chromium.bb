@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Åpen kildekode-lisenser for Chromium OS</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="2264142189334629813">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2372704305038231957">Det kan hende 32-bit-versjonen av Chromium ikke fungerer skikkelig, fordi den ikke støttes på dette Linux-systemet lenger. Oppgrader til 64-bit-versjonen av Chromium.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium kan ikke lese og skrive til egen datakatalog:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium er standardnettleseren din. Hurra!</translation>
 <translation id="328888136576916638">API-nøkler for Google mangler. Noe funksjonalitet i Chromium blir deaktivert.</translation>
 <translation id="3289635842886789612">Chromium er utdatert.</translation>
 <translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>

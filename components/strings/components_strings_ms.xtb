@@ -243,7 +243,7 @@
 <translation id="3528171143076753409">Sijil pelayan tidak dipercayai.</translation>
 <translation id="3539171420378717834">Simpan salinan kad ini pada peranti ini</translation>
 <translation id="3542684924769048008">Gunakan kata laluan untuk:</translation>
-<translation id="3549644494707163724">Sulitkan semua data yang disegerakkan dengan frasa laluan segerak anda sendiri</translation>
+<translation id="3549644494707163724">Sulitkan semua data yang disegerakkan dengan ungkapan laluan segerak anda sendiri</translation>
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> lagi...</translation>
 <translation id="3555561725129903880">Pelayan ini tidak dapat membuktikan bahawa iitu <ph name="DOMAIN" />; sijil keselamatannya berasal daripada <ph name="DOMAIN2" />. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="3566021033012934673">Sambungan anda tidak diperibadikan</translation>
@@ -394,6 +394,7 @@
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
 <translation id="5199729219167945352">Eksperimen</translation>
 <translation id="5251803541071282808">Awan</translation>
+<translation id="5277279256032773186">Menggunakan Chrome di tempat kerja? Perniagaan boleh mengurus tetapan Chrome untuk pekerja mereka. Ketahui lebih lanjut</translation>
 <translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5308689395849655368">Pelaporan nahas dilumpuhkan.</translation>

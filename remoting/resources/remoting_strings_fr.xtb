@@ -33,7 +33,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="177096447311351977">Version de l'IP pour le client : <ph name="CLIENT_GAIA_IDENTIFIER" /> adresse IP = "<ph name="CLIENT_IP_ADDRESS_AND_PORT" />" adresse IP de l'hôte = "<ph name="HOST_IP_ADDRESS_AND_PORT" />" channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Fermer la fenêtre</translation>
 <translation id="1841799852846221389">Désactivation des connexions à distance pour cet ordinateur en cours…</translation>
-<translation id="189172778771606813">Fermer le panneau de navigation</translation>
 <translation id="1897488610212723051">Supprimer</translation>
 <translation id="195619862187186579">Dispositions de clavier</translation>
 <translation id="1996161829609978754">Le programme d'installation de l'hôte de Google Chromoting est en cours de téléchargement dans Google Chrome. Une fois le téléchargement terminé, veuillez lancer le programme d'installation avant de continuer.</translation>
@@ -114,6 +113,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Veuillez confirmer le compte et le code d'accès ci-dessous pour autoriser l'accès du Bureau à distance Google Chrome à votre compte.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Domaine propriétaire de l'hôte incorrect.</translation>
 <translation id="3908017899227008678">Ajuster à la fenêtre</translation>
 <translation id="3931191050278863510">Hôte suspendu</translation>
@@ -166,7 +166,6 @@ Google Chrome</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="507204348399810022">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME" /> ?</translation>
 <translation id="5156271271724754543">Veuillez saisir le même code d'accès dans les deux champs.</translation>
-<translation id="5168917394043976756">Ouvrir le panneau de navigation</translation>
 <translation id="5170982930780719864">ID d'hôte incorrect.</translation>
 <translation id="518094545883702183">Ces informations sont conservées 30 jours au maximum et mises à disposition uniquement de la personne chargée d'étudier votre rapport afin d'identifier le problème que vous avez relevé.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>

@@ -286,6 +286,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
 <translation id="4376501731284077108">Nenadzorovano</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Uporaba iskalnika Sogou za iskanje</translation>
 <translation id="4412992751769744546">Omogočanje piškotkov drugih spletnih mest</translation>
 <translation id="4440256989292146959">Brskajte več za manj</translation>
 <translation id="4452548195519783679">Zaznamek ustvarjen v mapi <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5919204609460789179">Posodobite izdelek <ph name="PRODUCT_NAME" />, če želite začeti sinhronizacijo</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
+<translation id="5942872142862698679">Uporaba iskalnika Google za iskanje</translation>
+<translation id="6000066717592683814">Ohrani Google</translation>
 <translation id="6010869025736512584">Dostopanje do videovhoda</translation>
 <translation id="6012342843556706400">Chrome potrebuje dostop do lokacije, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="6031101910111098835">Strnjeno – kliknite, če želite razširiti</translation>
@@ -441,6 +444,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6177390657002841081">Vklop varčevanja s podatki</translation>
+<translation id="617991007797131187">Chrome lahko za iskanje na Kitajskem uporablja Sogou. To lahko spremenite v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Dodaj izjemo za spletno mesto</translation>
 <translation id="6192792657125177640">Izjeme</translation>
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
@@ -472,6 +476,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="654446541061731451">Izberite zavihek za prenos</translation>
 <translation id="6545017243486555795">Izbris vseh podatkov</translation>
 <translation id="6550675742724504774">Možnosti</translation>
+<translation id="6560414384669816528">Iskanje z iskalnikom Sogou</translation>
 <translation id="656628257199996201">Vedno prevedi ta jezik: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Urejanje kreditne kartice</translation>
 <translation id="6573431926118603307">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>

@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Licencias de código abierto del Sistema operativo Chromium</translation>
 <translation id="2241627712206172106">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chromium según los gustos individuales.</translation>
 <translation id="225614027745146050">Bienvenido</translation>
+<translation id="2264142189334629813">El Sistema operativo Chromium no puede abrir esta página.</translation>
 <translation id="2316129865977710310">No, gracias</translation>
 <translation id="2347108572062610441">Esta extensión cambió la página que se muestra al iniciar Chromium.</translation>
 <translation id="2372704305038231957">Es posible que Chromium de 32 bits no funcione correctamente porque ya no es compatible con este sistema Linux. Actualiza a Chromium de 64 bits.</translation>
@@ -73,6 +74,7 @@
 <translation id="3190315855212034486">¡Vaya! Se ha producido un bloqueo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="3256316712990552818">Se copió en Chromium.</translation>
 <translation id="3258596308407688501">Chromium no puede leer y escribir en su directorio de datos: <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium es tu navegador predeterminado.</translation>
 <translation id="328888136576916638">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Chromium.</translation>
 <translation id="3289635842886789612">Chromium no está actualizado.</translation>
 <translation id="3296368748942286671">Continuar ejecutando aplicaciones en segundo plano cuando Chromium esté cerrado.</translation>
@@ -234,7 +236,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8134284582177628525">Si compartes esta computadora con <ph name="PROFILE_NAME" />, agrégate a Chromium para navegar de manera independiente. De lo contrario, desconecta la cuenta de Google del otro usuario.</translation>
 <translation id="81770708095080097">Chromium bloqueó este archivo porque es peligroso.</translation>
 <translation id="8269379391216269538">Ayudar a mejorar Chromium</translation>
-<translation id="8290862415967981663">Chromium bloqueó este archivo porque es posible que sea peligroso.</translation>
+<translation id="8290862415967981663">Chromium bloqueó este archivo porque podría ser peligroso.</translation>
 <translation id="8453117565092476964">El instalador está dañado o no es válido. Descarga Chromium nuevamente.</translation>
 <translation id="8493179195440786826">Chromium no actualizado</translation>
 <translation id="85843667276690461">Obtener ayuda para usar Chromium</translation>

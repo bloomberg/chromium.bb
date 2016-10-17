@@ -285,6 +285,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
 <translation id="4376501731284077108">Sem controle</translation>
 <translation id="4378154925671717803">Telefone</translation>
+<translation id="4384468725000734951">Usando o Sogou para pesquisar</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
 <translation id="4440256989292146959">Navegue mais por menos</translation>
 <translation id="4452548195519783679">Adicionado como favorito em <ph name="FOLDER_NAME" /></translation>
@@ -422,6 +423,8 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5919204609460789179">Atualize <ph name="PRODUCT_NAME" /> para iniciar a sincronização</translation>
 <translation id="5939518447894949180">Redefinir</translation>
+<translation id="5942872142862698679">Usando o Google para pesquisar</translation>
+<translation id="6000066717592683814">Continuar usando o Google</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
 <translation id="6031101910111098835">Visualização recolhida: clique para expandir</translation>
@@ -439,6 +442,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177390657002841081">Ativar a Economia de dados</translation>
+<translation id="617991007797131187">O Chrome pode usar o Sogou para fazer pesquisas na China. É possível alterar isso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192792657125177640">Exceções</translation>
 <translation id="6232535412751077445">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfego de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
@@ -470,6 +474,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
 <translation id="6545017243486555795">Limpar todos os dados</translation>
 <translation id="6550675742724504774">Opções</translation>
+<translation id="6560414384669816528">Pesquisar usando o Sogou</translation>
 <translation id="656628257199996201">Sempre traduzir <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
 <translation id="6573431926118603307">As guias que você abriu no Chrome nos seus outros dispositivos serão exibidas aqui.</translation>

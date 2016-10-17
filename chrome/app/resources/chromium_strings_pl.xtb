@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Licencje oprogramowania typu open source w Chromium OS</translation>
 <translation id="2241627712206172106">Jeśli dzielisz się komputerem ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chromium.</translation>
 <translation id="225614027745146050">Witamy</translation>
+<translation id="2264142189334629813">System operacyjny Chromium nie może otworzyć tej strony.</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="2347108572062610441">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
 <translation id="2372704305038231957">32-bitowy Chromium może działać nieprawidłowo, bo nie jest już obsługiwany w tym systemie Linux. Uaktualnij Chromium do wersji 64-bitowej.</translation>
@@ -73,6 +74,7 @@
 <translation id="3190315855212034486">O kurczę! Chromium uległ awarii. Uruchomić go teraz ponownie?</translation>
 <translation id="3256316712990552818">Skopiowana do Chromium</translation>
 <translation id="3258596308407688501">Chromium nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
+<translation id="3264279740686075150">Chromium jest domyślną przeglądarką. Hura!</translation>
 <translation id="328888136576916638">Brakuje kluczy interfejsu Google API. Niektóre funkcje Chromium będą wyłączone.</translation>
 <translation id="3289635842886789612">Chromium jest nieaktualny.</translation>
 <translation id="3296368748942286671">Kontynuuj działanie aplikacji w tle po zamknięciu Chromium</translation>

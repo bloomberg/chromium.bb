@@ -135,6 +135,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="4771048833395599659">Šis fails var būt bīstams, tāpēc Chrome to bloķēja.</translation>
 <translation id="4794050651896644714">Saglabāt informāciju pārlūkā Chrome</translation>
 <translation id="4891791193823137474">Ļaut Google Chrome darboties fonā</translation>
+<translation id="4901390485477164536">Google Chrome ir jūsu noklusējuma pārlūks.</translation>
 <translation id="4921569541910214635">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chrome atbilstoši savām vajadzībām.</translation>
 <translation id="4925019873400497719">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču tā nebija derīga.</translation>
 <translation id="4953650215774548573">Iestatīt Google Chrome kā manu noklusējuma pārlūku</translation>
@@ -259,6 +260,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8290100596633877290">Eh! Google Chrome ir avarējis. Vai restartēt to tūlīt?</translation>
 <translation id="8342675569599923794">Šis fails ir bīstams, tāpēc Chrome to bloķēja.</translation>
 <translation id="8406086379114794905">Palīdziet uzlabot Chrome</translation>
+<translation id="8410645163819739900">Problēma ar lapas atvēršanu pārlūkā Google Chrome OS</translation>
 <translation id="8455999171311319804">Neobligāti: palīdziet uzlabot Chrome OS, automātiski nosūtot Google serveriem diagnostikas un lietojuma datus.</translation>
 <translation id="853189717709780425">Jūs pierakstāties pārvaldītā kontā, kura administrators var kontrolēt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotājvārdu <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

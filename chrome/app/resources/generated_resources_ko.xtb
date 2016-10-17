@@ -18,7 +18,6 @@
 <translation id="1029317248976101138">확대</translation>
 <translation id="1029595648591494741">'<ph name="EXTENSION_NAME" />'을(를) 사용해 보시겠습니까?</translation>
 <translation id="1031362278801463162">미리보기 로드 중</translation>
-<translation id="1031460590482534116">클라이언트 인증서를 저장하는 중에 오류가 발생했습니다. 오류 <ph name="ERROR_NUMBER" />(<ph name="ERROR_NAME" />).</translation>
 <translation id="1031573127485938293">정책에 의한 요청</translation>
 <translation id="103279545524624934">Android 앱을 실행하려면 디스크 저장 공간을 확보하세요.</translation>
 <translation id="1033780634303702874">직렬 기기에 액세스</translation>
@@ -33,7 +32,7 @@
 <translation id="1045157690796831147">음역(namaskar → നമസ്കാരം)</translation>
 <translation id="1046059554679513793">이미 사용 중인 이름입니다.</translation>
 <translation id="1047431265488717055">링크 텍스트 복사(&amp;X)</translation>
-<translation id="1047726139967079566">페이지 북마크...</translation>
+<translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />개 항목 삭제 중...</translation>
 <translation id="1048286738600630630">디스플레이</translation>
 <translation id="1048597748939794622">모든 레이어에 사용하도록 강제 설정합니다.</translation>
@@ -101,6 +100,7 @@
 <translation id="1128591060186966949">검색 엔진 수정</translation>
 <translation id="1128987120443782698">저장장치 용량이 <ph name="DEVICE_CAPACITY" />입니다. 용량이 4GB 이상인 SD 카드나 USB 메모리를 삽입하세요.</translation>
 <translation id="1137135726305341424">domContentLoaded 및 모든 리소스 로드는 domContentLoaded(메인 프레임 및 동일한 원래의 iframe) 전에 시작됩니다.</translation>
+<translation id="1138663153846032155">플래시보다 HTML 선호</translation>
 <translation id="1140351953533677694">블루투스 및 직렬 기기에 액세스</translation>
 <translation id="114140604515785785">확장 프로그램 루트 디렉토리:</translation>
 <translation id="1143142264369994168">인증서 서명자</translation>
@@ -252,6 +252,7 @@
 <translation id="1351692861129622852">파일 <ph name="FILE_COUNT" />개를 가져오는 중...</translation>
 <translation id="1352103415082130575">태국어 키보드(Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
+<translation id="1353946958707294039">머티리얼 디자인 저장용량 관리자</translation>
 <translation id="1353966721814789986">시작 페이지</translation>
 <translation id="1354868058853714482">Adobe Reader가 오래되어 보안에 문제가 있을 수 있습니다.</translation>
 <translation id="1355408554203439639">3D 소프트웨어 래스터라이저</translation>
@@ -424,7 +425,6 @@
 <translation id="1533920822694388968">TV 정렬</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1543284117603151572">Edge에서 가져옴</translation>
-<translation id="1544350195767834591">{NUM_COOKIES,plural, =1{다른 사이트의 쿠키 1개}other{다른 사이트의 쿠키 #개}}</translation>
 <translation id="1545177026077493356">자동 키오스크 모드</translation>
 <translation id="1545786162090505744">URL(검색어 자리에 % 입력)</translation>
 <translation id="1546280085599573572">홈 버튼을 클릭하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
@@ -448,7 +448,6 @@
 <translation id="1559235587769913376">유니코드 문자 입력</translation>
 <translation id="1561092721008294962">UI 텍스트용 HarfBuzz</translation>
 <translation id="1566049601598938765">웹사이트</translation>
-<translation id="1566958206723629112">Flash 및 PDF</translation>
 <translation id="1567723158593978621">사용 설정하면 브라우저에 로그인할 때 새로운 비밀번호 분리형 GAIA 로그인 절차를 사용합니다.</translation>
 <translation id="1567993339577891801">자바스크립트 콘솔</translation>
 <translation id="1568323446248056064">디스플레이 기기 설정 열기</translation>
@@ -577,7 +576,6 @@
 <translation id="1723940674997333416">https 출처의 안전하지 않은 WebSocket 허용</translation>
 <translation id="1725149567830788547">컨트롤 표시(&amp;C)</translation>
 <translation id="172612876728038702">TPM이 설정하는 중입니다. 몇 분 정도 소요될 수 있습니다.</translation>
-<translation id="1727135806684246609">자료 보안 관련 상세 설명</translation>
 <translation id="1729533290416704613">또한 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="1731346223650886555">세미콜론</translation>
 <translation id="1731589410171062430">합계: <ph name="NUMBER_OF_SHEETS" /><ph name="SHEETS_LABEL" />(<ph name="NUMBER_OF_PAGES" /><ph name="PAGE_OR_PAGES_LABEL" />)</translation>
@@ -656,7 +654,7 @@
 <translation id="1842969606798536927">결제하기</translation>
 <translation id="184456654378801210">(기본)</translation>
 <translation id="1844692022597038441">이 파일은 오프라인에서 사용할 수 없습니다.</translation>
-<translation id="1846308012215045257"><ph name="PLUGIN_NAME" />을(를) 실행하려면 Control-클릭합니다.</translation>
+<translation id="1846308012215045257"><ph name="PLUGIN_NAME" />을(를) 실행하려면 Control 키를 누르고 클릭합니다.</translation>
 <translation id="184633654410729720">태국어 키보드(Kedmanee)</translation>
 <translation id="1849186935225320012">이 페이지는 MIDI 기기를 완전히 제어할 수 있습니다.</translation>
 <translation id="1850508293116537636">시계 방향으로 회전(&amp;C)</translation>
@@ -874,6 +872,7 @@
 <translation id="218492098606937156">터치 이벤트 사용</translation>
 <translation id="2187317261103489799">감지(기본값)</translation>
 <translation id="2187895286714876935">서버 인증서 가져오기 오류</translation>
+<translation id="2188881192257509750"><ph name="APPLICATION" /> 열기</translation>
 <translation id="2190069059097339078">WiFi 사용자 인증 정보 Getter</translation>
 <translation id="219008588003277019">네이티브 클라이언트 모듈: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(비어있음)</translation>
@@ -992,6 +991,7 @@
 <translation id="2326606747676847821">시크릿 탭 열기</translation>
 <translation id="2326931316514688470">앱 새로고침(&amp;R)</translation>
 <translation id="2327492829706409234">앱 사용</translation>
+<translation id="2328054044222305089"><ph name="SITE" />에서 기기에 저장한 모든 데이터가 삭제되며 실행을 위해 부여된 모든 권한이 재설정됩니다. 계속하시겠습니까?</translation>
 <translation id="2329597144923131178">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="2332131598580221120">스토어에서 보기</translation>
 <translation id="2332742915001411729">기본 설정으로 돌아가기</translation>
@@ -1267,7 +1267,6 @@
 <translation id="2675358154061544447">별도의 프로세스를 통해 교차 사이트 iframe 렌더링에 실험 단계의 지원을 제공합니다. 이 모드에서는 같은 웹사이트의 문서인 경우에만 렌더러 프로세스를 공유합니다.</translation>
 <translation id="2676946222714718093">재생 중:</translation>
 <translation id="2678063897982469759">다시 사용</translation>
-<translation id="2678246812096664977">모든 플러그인</translation>
 <translation id="2679385451463308372">시스템 대화상자를 사용하여 인쇄...</translation>
 <translation id="2680208403056680091">인터넷 연결이 제어되고 있습니다.</translation>
 <translation id="268053382412112343">내역(&amp;S)</translation>
@@ -1441,7 +1440,6 @@
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> 추가...</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="2875698561019555027">(Chrome 오류 페이지)</translation>
-<translation id="2879560882721503072"><ph name="ISSUER" />에서 발행한 클라이언트 인증서를 성공적으로 저장했습니다.</translation>
 <translation id="288024221176729610">체코어</translation>
 <translation id="288042212351694283">Universal 2nd Factor 기기에 액세스</translation>
 <translation id="2881966438216424900">마지막 액세스 날짜:</translation>
@@ -1590,6 +1588,7 @@
 <translation id="3057861065630527966">사진 및 동영상을 백업합니다.</translation>
 <translation id="3058212636943679650">컴퓨터의 운영체제를 복구해야 하는 경우, 복구 SD 카드 또는 USB 메모리가 필요합니다.</translation>
 <translation id="305932878998873762">HTTP용 단순 캐시는 새로운 캐시이며 디스크 공간 할당에 파일 시스템을 사용합니다.</translation>
+<translation id="3060251871394327123"><ph name="SITE" />에서 기기에 저장한 모든 데이터가 삭제됩니다. 계속하시겠습니까?</translation>
 <translation id="3061650404498811439">IME 선택 메뉴에서 그림 이모티콘, 손글씨, 음성 입력에 액세스할 수 있게 합니다.</translation>
 <translation id="3062606427884046423">Chrome 미디어 알림에 Android MediaStyle 알림을 사용합니다.</translation>
 <translation id="3063844757726132584">이 간편한 실행기를 사용하여 모든 앱에 액세스할 수 있습니다. 게임과 화상 채팅을 하고 음악을 들으며 문서를 수정하거나 다른 앱을 다운로드해 보세요.</translation>
@@ -1639,6 +1638,7 @@
 <translation id="3123569374670379335">(관리 대상)</translation>
 <translation id="3124111068741548686">사용자 핸들</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3127156390846601284">표시되는 모든 사이트와 관련하여 기기에 저장된 모든 데이터가 삭제됩니다. 계속하시겠습니까?</translation>
 <translation id="312759608736432009">기기 제조업체:</translation>
 <translation id="3127919023693423797">인증하는 중...</translation>
 <translation id="3128230619496333808">탭 6</translation>
@@ -1737,7 +1737,6 @@
 <translation id="3264544094376351444">Sans-serif</translation>
 <translation id="3264547943200567728">Chromebox 네트워크 설정 실패</translation>
 <translation id="3265459715026181080">창 닫기</translation>
-<translation id="3267271790328635957">PDF만 해당</translation>
 <translation id="3267726687589094446">여러 파일을 자동으로 다운로드하도록 계속 허용</translation>
 <translation id="3267998849713137817">수정 시간</translation>
 <translation id="3268451620468152448">열린 탭</translation>
@@ -1983,6 +1982,7 @@
 <translation id="3574210789297084292">로그인</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" />, <ph name="CITY" /></translation>
 <translation id="357479282490346887">리투아니아어</translation>
+<translation id="3575927481544652747">Windows 10 이후 버전에서 기본적으로 사용하도록 설정되어 있는 WebMIDI용 Windows Runtime MIDI API를 사용 중지합니다.</translation>
 <translation id="3576324189521867626">설치되었습니다.</translation>
 <translation id="3578331450833904042">기본(모든 소리 감지)</translation>
 <translation id="3578594933904494462">이 탭의 콘텐츠를 공유 중입니다.</translation>
@@ -2036,8 +2036,6 @@
 <translation id="3627320433825461852">1분 미만 남음</translation>
 <translation id="3627588569887975815">시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="3627671146180677314">Netscape Certificate Renewal Time</translation>
-<translation id="3629326610814700057">로컬 저장용량을 관리하는 저장용량 관리자를 사용합니다.</translation>
-<translation id="3630337581925712713"><ph name="PERMISSION_TYPE_LABEL" />:</translation>
 <translation id="3631337165634322335">아래 예외는 현재 시크릿 세션에만 적용됩니다.</translation>
 <translation id="3633586230741134985">앱 실행기 설정</translation>
 <translation id="3633997706330212530">아래 서비스를 사용하지 않도록 설정할 수도 있습니다.</translation>
@@ -2060,7 +2058,8 @@
 <translation id="3654045516529121250">접근성 설정 확인</translation>
 <translation id="3654092442379740616">동기화 오류: <ph name="PRODUCT_NAME" />이(가) 오래되어 업데이트해야 합니다.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{파일 1개에 영구적으로 액세스할 수 있습니다.}other{파일 #개에 영구적으로 액세스할 수 있습니다.}}</translation>
-<translation id="3657468915905674858">PPAPI Win32k 잠금 사용</translation>
+<translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />자동 백업을 사용하면 기기 및 앱 데이터가 Google 드라이브의 비공개 폴더에 주기적으로 저장됩니다. 앱 데이터는 개발자 설정에 따라 앱에서 저장한 모든 데이터를 가리키며 연락처, 메시지, 사진과 같이 잠재적으로 민감한 데이터를 포함할 수 있습니다.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />백업 데이터는 드라이브 저장용량 계산에 포함되지 않습니다. 대용량 파일이나 개발자가 서비스에서 제외하도록 선택한 파일은 백업되지 않습니다.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="3660234220361471169">신뢰할 수 없음</translation>
 <translation id="3665589677786828986">Chrome에서 다른 프로그램이 브라우저 설정을 일부 손상시키고 원래 기본값으로 재설정했음을 감지했습니다.</translation>
 <translation id="3665842570601375360">보안:</translation>
@@ -2115,6 +2114,7 @@
 <translation id="3733127536501031542">SSL 서버(Step-up 사용)</translation>
 <translation id="3736520371357197498">보안 관련 위험을 이해한다면 위험한 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />안전하지 않은 사이트<ph name="END_LINK" />에 방문해도 됩니다.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
+<translation id="3739254215541673094"><ph name="APPLICATION" />을(를) 여시겠습니까?</translation>
 <translation id="3739798227959604811">반복 전 지연:</translation>
 <translation id="3741158646617793859">이제 <ph name="DEVICE_NAME" />(이)가 관리 콘솔에 표시됩니다.</translation>
 <translation id="3741243925913727067">Google 드라이브에 미디어 기기의 사진과 동영상을 백업합니다.</translation>
@@ -2354,7 +2354,6 @@
 <translation id="4058793769387728514">지금 문서 확인</translation>
 <translation id="4059285154003114015">프레임 인쇄(&amp;P)</translation>
 <translation id="406070391919917862">백그라운드 애플리케이션</translation>
-<translation id="4061502419206152498">비보안 비애니메이션만 표시</translation>
 <translation id="4062251648694601778"><ph name="SHORT_PRODUCT_NAME" /> 기기를 마음대로 사용하세요. 상태 표시줄에서 '?' 표시를 클릭하면 언제든지 도움말을 확인할 수 있습니다.</translation>
 <translation id="4065876735068446555">사용 중인 네트워크(<ph name="NETWORK_ID" />)에서 로그인 페이지 방문을 요청할 수 있습니다.</translation>
 <translation id="4068506536726151626">이 페이지에는 사용자 위치를 추적하는 다음 사이트의 요소가 포함되어 있습니다.</translation>
@@ -2391,7 +2390,6 @@
 <translation id="4101878899871018532">비밀번호 관리자가 동기화에 사용되는 사용자 인증 정보를 저장하도록 제안하지 않습니다.</translation>
 <translation id="410351446219883937">자동재생</translation>
 <translation id="4104163789986725820">내보내기(&amp;X)...</translation>
-<translation id="4105523032910086267">머티리얼 디자인에서 보안 정보의 애니메이션과 가시성을 설정합니다.</translation>
 <translation id="4105563239298244027">Google 드라이브에서 1TB를 무료로 사용하세요.</translation>
 <translation id="4109135793348361820">창을 <ph name="USER_NAME" />(<ph name="USER_EMAIL" />)님에게로 이동</translation>
 <translation id="4110342520124362335"><ph name="DOMAIN" />의 쿠키를 차단했습니다.</translation>
@@ -2442,6 +2440,7 @@
 <translation id="418179967336296930">러시아 표음식(YaZHert) 키보드</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4187248015940562149">웹사이트에서 내 주변의 블루투스 기기에 연결하여 제어하도록 할 수 있는 웹 블루투스를 사용하도록 설정합니다.</translation>
+<translation id="4188447344915957833">머티리얼 디자인 설정에서 저장용량 관리자를 사용합니다.</translation>
 <translation id="4189406272289638749">&lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; 확장 프로그램에서 설정을 제어하고 있습니다.</translation>
 <translation id="4193154014135846272">Google 문서</translation>
 <translation id="4193182321948161343">머티리얼 디자인 사용자 관리자 사용</translation>
@@ -2649,6 +2648,7 @@
 <translation id="4508765956121923607">소스 보기(&amp;O)</translation>
 <translation id="4509017836361568632">사진 삭제</translation>
 <translation id="4509345063551561634">위치:</translation>
+<translation id="4513946894732546136">문제 신고</translation>
 <translation id="4514542542275172126">새로운 관리 대상 사용자 설정</translation>
 <translation id="4514914692061505365">모든 pexe 파일에서 PNaCl의 빠른 Subzero 변환기를 강제 사용합니다.</translation>
 <translation id="451515744433878153">제거</translation>
@@ -2747,6 +2747,7 @@
 <translation id="4656293982926141856">이 컴퓨터</translation>
 <translation id="4656631038341342120">이 기기에서 사용할 수 있는 경우 가상 현실 셸을 사용합니다.</translation>
 <translation id="4657031070957997341"><ph name="HOST" />에서 플러그인 항상 허용</translation>
+<translation id="466008749075469935">백그라운드 타이머의 CPU 사용을 1%로 제한하는 개입을 사용합니다.</translation>
 <translation id="4663254525753315077">가능한 경우 더 빠르게 스크롤할 수 있도록 오버플로 스크롤 요소의 스크롤 콘텐츠를 합성된 레이어에 놓습니다.</translation>
 <translation id="4664482161435122549">PKCS #12 내보내기 오류</translation>
 <translation id="4665014895760275686">제조업체</translation>
@@ -2815,6 +2816,7 @@
 <translation id="4749157430980974800">조지아어 키보드</translation>
 <translation id="4750394297954878236">추천</translation>
 <translation id="475088594373173692">첫 번째 사용자</translation>
+<translation id="4750892496809949692">플러그인 목록에서 플래시를 숨기고 HTML 콘텐츠를 사용합니다.</translation>
 <translation id="4750917950439032686">비밀번호나 신용카드 번호 등의 정보는 비공개 상태로 이 사이트에 전송됩니다.</translation>
 <translation id="4753602155423695878">Android 휴대전화의 페이지 로드 진행률 표시줄 애니메이션</translation>
 <translation id="4755240240651974342">핀란드어 키보드</translation>
@@ -3089,6 +3091,7 @@
 <translation id="5119450342834678097">설정 메뉴의 태블릿 사이트 요청 옵션</translation>
 <translation id="5120068803556741301">타사 입력 방식</translation>
 <translation id="5120421890733714118">웹사이트를 식별하기 위해 이 인증서를 신뢰합니다.</translation>
+<translation id="5120516977819314347">PIN 또는 비밀번호가 잘못되었습니다.</translation>
 <translation id="5121130586824819730">하드 디스크가 가득 찼습니다. 다른 위치에 저장하거나 하드 디스크에 더 많은 공간을 확보하시기 바랍니다.</translation>
 <translation id="5125751979347152379">잘못된 URL입니다.</translation>
 <translation id="5127881134400491887">네트워크 연결 관리</translation>
@@ -3096,6 +3099,7 @@
 <translation id="512903556749061217">첨부됨</translation>
 <translation id="5129301143853688736">이 사이트에 비공개로 연결하도록 설정되지 않았습니다. 공격자가 <ph name="DOMAIN" />에서 사용자의 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하려고 시도하는 중일 수 있습니다.</translation>
 <translation id="5129662217315786329">폴란드어</translation>
+<translation id="5131347545782851480">PDF 문서</translation>
 <translation id="5134856901811723984">Chrome OS 시스템 UI의 머티리얼 디자인</translation>
 <translation id="5135533361271311778">북마크 항목을 만들지 못했습니다.</translation>
 <translation id="5136529877787728692">F7</translation>
@@ -3264,6 +3268,7 @@
 <translation id="5328031682234198929">8</translation>
 <translation id="5329858601952122676">삭제(&amp;D)</translation>
 <translation id="5330145655348521461">파일이 다른 데스크톱에서 열려 있습니다. 파일을 보려면 <ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)(으)로 이동하세요.</translation>
+<translation id="5330512191124428349">정보 받기</translation>
 <translation id="5332624210073556029">표준시간대:</translation>
 <translation id="5333807720589685258">정확한 PIN 잠금해제 키를 입력하지 않으면 SIM 카드가 영구적으로
       사용 중지됩니다.</translation>
@@ -3696,7 +3701,6 @@
 <translation id="5892507820957994680">내장된 소프트웨어 렌더링 목록을 무시하고 지원되지 않는 시스템 설정에 GPU 가속 사용</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5895187275912066135">발급 날짜</translation>
-<translation id="5898154795085152510">서버에서 잘못된 클라이언트 인증서를 반환했습니다. 오류 <ph name="ERROR_NUMBER" />(<ph name="ERROR_NAME" />).</translation>
 <translation id="5900302528761731119">Google 프로필 사진</translation>
 <translation id="590253956165195626">사용 언어가 다른 페이지에 대한 번역 옵션 제공</translation>
 <translation id="5904093760909470684">프록시 설정</translation>
@@ -3751,6 +3755,8 @@
 <translation id="5984222099446776634">최근 방문</translation>
 <translation id="5984814259619230127">Smart Lock 저전력 블루투스(BLE) 검색</translation>
 <translation id="5986245990306121338">사용하도록 설정하면 설정에서 '탭 및 앱 병합' 옵션을 사용하도록 설정한 경우에도 탭 전환 도구가 표시됩니다.</translation>
+<translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />이 정보는 배터리 수준, 앱 사용 빈도, 네트워크 연결(Wi-Fi 및 블루투스 등) 품질 및 시간, 오류 발생 시 비정상 종료 보고서 등 내 기기와 기기 사용 방식에 관한 일반적인 정보입니다. 이 정보는 모든 사람을 위해 Google 제품 및 서비스를 개선하는 데 사용됩니다. 집계된 정보 중 일부는 Android 개발자 등의 파트너가 앱과 제품을 개선하는 데 유용하게 사용됩니다.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Android 앱 설정에서 이 기능을 언제든지 사용 설정하거나 사용 중지할 수 있습니다. 이 기능은 기기에서 시스템 업데이트와 보안 등 필수 서비스를 받는 데 필요한 정보를 전송하는 능력에 영향을 주지 않습니다.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990198433782424697">chrome:// URL의 확장 프로그램</translation>
 <translation id="5990814808592353318">비밀번호 직접 생성</translation>
 <translation id="5991049340509704927">확대</translation>
@@ -3764,6 +3770,7 @@
 <translation id="6005695835120147974">미디어 라우터</translation>
 <translation id="6007237601604674381">이동에 실패했습니다. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6008241731410823808">하이퍼링크 검사 ping을 전송합니다.</translation>
+<translation id="6011449291337289699">사이트 데이터 삭제</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="6016551720757758985">이전 버전으로 돌아가서 Powerwash 확인</translation>
 <translation id="6016809788585079594">마지막으로 한번 더 "Ok Google"이라고 말하세요.</translation>
@@ -3953,7 +3960,6 @@
 <translation id="6276301056778294989">기기에 동일한 코드가 표시되는지 확인하세요.</translation>
 <translation id="6277105963844135994">네트워크 시간 초과</translation>
 <translation id="6277518330158259200">스크린샷 캡쳐하기(&amp;A)</translation>
-<translation id="6278428485366576908">테마</translation>
 <translation id="6279183038361895380">|<ph name="ACCELERATOR" />|을(를) 눌러 커서 표시</translation>
 <translation id="6280215091796946657">다른 계정으로 로그인</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -4205,6 +4211,7 @@
 <translation id="6607272825297743757">파일 정보</translation>
 <translation id="6607831829715835317">도구 더보기</translation>
 <translation id="6608140561353073361">모든 쿠키 및 사이트 데이터...</translation>
+<translation id="6610183966322615106">프린터를 추가하는 도중에 오류가 발생했습니다.</translation>
 <translation id="6610610633807698299">URL 입력...</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6615455863669487791">표시</translation>
@@ -4268,7 +4275,6 @@
 <translation id="6708242697268981054">출처:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" />을(를) 사용하여 연결</translation>
 <translation id="6710213216561001401">이전</translation>
-<translation id="6712158998835983046">모두 보기(애니메이션)</translation>
 <translation id="6718273304615422081">압축 중...</translation>
 <translation id="671928215901716392">화면 잠금</translation>
 <translation id="6721972322305477112">파일(&amp;F)</translation>
@@ -4299,7 +4305,7 @@
 <translation id="6748465660675848252">계속 진행할 수 있지만 동기화된 데이터와 설정만 복원됩니다. 모든 로컬 데이터가 손실됩니다.</translation>
 <translation id="6751256176799620176">폴더 1개 선택됨</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (시크릿 모드)</translation>
-<translation id="6753714565687320504">인터넷 사용 기록 제어</translation>
+<translation id="6753714565687320504">인터넷 사용 기록 관리</translation>
 <translation id="6759193508432371551">초기화</translation>
 <translation id="6760765581316020278">베트남어 키보드(VNI)</translation>
 <translation id="6766534397406211000">알림이 삭제되면 메시지 센터가 항상 위로 스크롤되는 실험 기능을 사용합니다.</translation>
@@ -4474,7 +4480,7 @@
 <translation id="7010160495478792664">가능한 경우 하드웨어 가속을 통해 동영상을 디코딩합니다.</translation>
 <translation id="7010400591230614821">적극적인 탭 개방 전략</translation>
 <translation id="701080569351381435">소스 보기</translation>
-<translation id="7012372675181957985"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에서 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
+<translation id="7012372675181957985">Google 계정에 다른 형식의 탐색 기록이 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />에 남아있을 수 있습니다.</translation>
 <translation id="7012435537548305893">터치 보기 모드에서 전체 화면 앱 목록을 사용하도록 설정합니다.</translation>
 <translation id="7013485839273047434">더 많은 확장 프로그램 다운로드</translation>
 <translation id="7014174261166285193">설치에 실패했습니다.</translation>
@@ -4540,7 +4546,6 @@
 <translation id="7088434364990739311">업데이트 확인을 시작하지 못했습니다(오류 코드: <ph name="ERROR" />).</translation>
 <translation id="708856090370082727">OSK 오버스크롤 지원을 사용합니다. 이 플래그를 사용하도록 설정하면 OSK가 시각 표시 영역의 크기만 다시 조정합니다.</translation>
 <translation id="7088674813905715446">이 기기는 관리자에 의해 사용 중단 상태로 설정되었습니다. 기기를 등록에 사용하려면 관리자에게 기기를 대기 상태로 전환해 달라고 요청해야 합니다.</translation>
-<translation id="7089609847854449639">저장용량 관리자</translation>
 <translation id="708969677220991657">제공된 인증서가 유효하지 않은 경우에도 HTTPS를 통해 localhost로 요청을 보내도록 허용합니다.</translation>
 <translation id="7092106376816104">팝업 예외</translation>
 <translation id="7093866338626856921">이름이 <ph name="HOSTNAMES" />인 기기와 데이터 교환</translation>
@@ -4580,7 +4585,7 @@
 <translation id="715118844758971915">일반 프린터</translation>
 <translation id="7154130902455071009">다음으로 시작 페이지 변경: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">카메라 또는 파일의 기존 사진</translation>
-<translation id="715568033737470079">Win32k 잠금 샌드박스 정책 내에서 실행될 PPAPI 플러그인을 지정합니다(Windows 10 이상만 해당).</translation>
+<translation id="7155226869555939647">언제나 <ph name="APPLICATION" /> 링크 열기</translation>
 <translation id="7156235233373189579">이 파일은 Windows 소프트웨어를 사용하는 PC용으로 설계되었으며 Chrome OS를 실행하는 기기와 호환되지 않습니다. 적합한 대체 앱을 찾으려면 <ph name="BEGIN_LINK" />Chrome 웹 스토어<ph name="END_LINK" />를 검색하세요. <ph name="BEGIN_LINK_HELP" />자세히 알아보기<ph name="END_LINK_HELP" /></translation>
 <translation id="7157063064925785854">계속을 클릭하면 <ph name="LEGAL_DOC_LINK_TEXT_1" />, <ph name="LEGAL_DOC_LINK_TEXT_2" />, <ph name="LEGAL_DOC_LINK_TEXT_3" /> 및 <ph name="LEGAL_DOC_LINK_TEXT_4" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="7158238151765743968"><ph name="DEVICE_NAME" />에 연결 중입니다.</translation>
@@ -4595,6 +4600,7 @@
 <translation id="7175353351958621980">로드 위치:</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7180865173735832675">맞춤설정</translation>
+<translation id="7181387261278441780">사이트 삭제 및 재설정</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7185690883425432021">탭 스트림이 겹침 모드일 때 비활성 탭의 닫기 버튼을 숨깁니다.</translation>
 <translation id="7186088072322679094">툴바에 보관</translation>
@@ -4627,7 +4633,6 @@
 <translation id="7223775956298141902">저런, 확장 프로그램이 없군요.</translation>
 <translation id="7224023051066864079">서브넷 마스크:</translation>
 <translation id="7225179976675429563">네트워크 유형이 없습니다.</translation>
-<translation id="7230191962699768124">모두 보기(비애니메이션)</translation>
 <translation id="7230787553283372882">텍스트 크기 맞춤설정</translation>
 <translation id="7231224339346098802">숫자로 인쇄 매수를 표시하세요(1 이상).</translation>
 <translation id="7238585580608191973">SHA-256 지문</translation>
@@ -4759,7 +4764,6 @@
 <translation id="7409233648990234464">다시 실행 및 Powerwash</translation>
 <translation id="7409836189476010449">플래시 실행</translation>
 <translation id="7410344089573941623"><ph name="HOST" />에서 카메라와 마이크에 액세스하려는 경우 메시지 표시</translation>
-<translation id="7411343637221933631">{NUM_COOKIES,plural, =1{이 사이트의 쿠키 1개}other{이 사이트의 쿠키 #개}}</translation>
 <translation id="7412226954991670867">GPU 메모리</translation>
 <translation id="7416362041876611053">알려지지 않은 네트워크 오류입니다.</translation>
 <translation id="7417453074306512035">에티오피아어 키보드</translation>
@@ -4881,6 +4885,7 @@
 <translation id="756445078718366910">브라우저 창 열기</translation>
 <translation id="7564847347806291057">프로세스 종료</translation>
 <translation id="7566723889363720618">F12</translation>
+<translation id="7567314848159753396">쿠키: <ph name="NAME" /></translation>
 <translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
 <translation id="7568790562536448087">업데이트</translation>
 <translation id="7573172247376861652">배터리 충전</translation>
@@ -4921,6 +4926,7 @@
 <translation id="7626009897377900107">비밀번호 생성</translation>
 <translation id="7627262197844840899">이 사이트에서는 MasterCard를 사용할 수 없습니다.</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" />이(가) 이미 있습니다. 이름을 변경한 후 다시 시도해 주세요.</translation>
+<translation id="7628127343934101653">기본 PDF 뷰어 애플리케이션에서 PDF 파일 열기</translation>
 <translation id="762917759028004464">현재 기본 브라우저는 <ph name="BROWSER_NAME" />입니다.</translation>
 <translation id="7629536005696009600">Android 애플리케이션에 저장된 사용자 인증 정보가 관련 웹사이트에 입력되도록 허용합니다.</translation>
 <translation id="7629827748548208700">탭: <ph name="TAB_NAME" /></translation>
@@ -5149,6 +5155,7 @@
 <translation id="7957513156576779045">페어링을 허용하려면 블루투스를 사용 설정하세요.</translation>
 <translation id="7957615753207896812">키보드 기기 설정 열기</translation>
 <translation id="7959074893852789871">파일에 여러 인증서가 있지만 그 중 일부를 가져올 수 없습니다.</translation>
+<translation id="7959700692661109221"><ph name="BEGIN_PARAGRAPH" />Google의 위치 서비스를 이용하면 Wi-Fi와 같은 소스를 활용하여 현재 위치를 더 빠르고 정확하게 예측할 수 있습니다. Google의 위치 서비스를 사용하면 기기에서 Wi-Fi를 사용하여 위치 정보를 제공하게 됩니다. 언제든지 위치 설정에서 이 기능을 사용 중지할 수 있습니다.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7964089325405904043">비밀번호 가져오기와 내보내기</translation>
 <translation id="7965010376480416255">공유 메모리</translation>
@@ -5299,6 +5306,7 @@
 <translation id="8146793085009540321">로그인하지 못했습니다. 관리자에게 문의하거나 다시 시도해 보세요.</translation>
 <translation id="8148264977957212129">병음 입력 방법</translation>
 <translation id="8148913456785123871">런처에 Google Now 카드 표시</translation>
+<translation id="8150391391298684512">Windows Runtime MIDI API 사용 중지</translation>
 <translation id="8151185429379586178">개발자 도구</translation>
 <translation id="8151638057146502721">구성</translation>
 <translation id="8151639108075998630">손님으로 로그인 허용</translation>
@@ -5581,6 +5589,7 @@
 <translation id="8532294913309524834">원하는 대로 언어를 정렬하세요.</translation>
 <translation id="8535005006684281994">Netscape Certificate Renewal URL</translation>
 <translation id="8539727552378197395">허용 안함(Http만)</translation>
+<translation id="8541084862688000575">Android 앱 자동 로드</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />감지 문제를 신고<ph name="END_ERROR_LINK" />할 수 있으며, 보안에 미치는 위험을 감수한다면 <ph name="BEGIN_LINK" />이 안전하지 않은 사이트를 방문<ph name="END_LINK" />할 수 있습니다.</translation>
 <translation id="8545107379349809705">정보 숨기기</translation>
 <translation id="8545211332741562162">실험용 자바스크립트 기능을 사용하기 위해 웹페이지를 사용하도록 설정합니다.</translation>
@@ -5608,7 +5617,6 @@
 <translation id="8569764466147087991">열려는 파일 선택</translation>
 <translation id="8571032220281885258">Chrome이 'Ok Google' 다음에 말하는 내용을 검색합니다.</translation>
 <translation id="8571108619753148184">서버 4</translation>
-<translation id="8572832761467613633">Flash만 해당</translation>
 <translation id="8572981282494768930">내 카메라 및 마이크에 대한 모든 사이트의 액세스를 허용 안 함</translation>
 <translation id="8574234089711453001">미디어 url을 통해 페이지를 열 때 다운로드 버튼이 표시되도록 허용합니다.</translation>
 <translation id="857779305329188634">실험용 QUIC 프로토콜 지원을 사용하도록 설정합니다.</translation>
@@ -5630,6 +5638,7 @@
 <translation id="8600929685092827187">웨이크 온 패킷(WOP)</translation>
 <translation id="8601206103050338563">TLS WWW 클라이언트 인증</translation>
 <translation id="8602851771975208551">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 앱을 추가했습니다.</translation>
+<translation id="8603912787021349466">로그인한 뒤 Android 앱이 자동으로 시작될 수 있게 허용합니다.</translation>
 <translation id="8605428685123651449">SQLite 메모리</translation>
 <translation id="8605503133013456784">'<ph name="DEVICE_NAME" />'에서 연결을 끊고 페어링을 해제하지 못했습니다.</translation>
 <translation id="8606726445206553943">MIDI 기기를 사용합니다.</translation>
@@ -5982,6 +5991,7 @@
 <translation id="9053965862400494292">동기화를 설정하는 동안 오류가 발생했습니다.</translation>
 <translation id="9056034633062863292">Chromebox 업데이트 중</translation>
 <translation id="9056810968620647706">일치하는 항목이 없습니다.</translation>
+<translation id="9057119625587205566">주변에 프린터 없음</translation>
 <translation id="9059868303873565140">상태 메뉴</translation>
 <translation id="9064142312330104323">Google 프로필 사진(로드 중)</translation>
 <translation id="9064275926664971810">클릭 한 번으로 양식을 작성하는 자동완성 사용</translation>
@@ -5992,6 +6002,7 @@
 <translation id="9067401056540256169">이 플래그를 사용하면 Chrome의 안전성이 낮아집니다. 이 플래그의 역할을 이해한 경우에만 사용하시기 바랍니다. 이 플래그는 사전 통지 없이 삭제될 수 있습니다. 사용 설정하면 https 출처가 포함된 프레임이 안전하지 않은 URL(ws://)을 포함한 WebSockets을 사용할 수 있습니다.</translation>
 <translation id="9068931793451030927">경로:</translation>
 <translation id="9070219033670098627">사용자 전환</translation>
+<translation id="9070940116164932228">고가의 백그라운드 타이머 조정</translation>
 <translation id="907148966137935206">모든 사이트에서 팝업 표시 허용 안함(권장)</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" />에서 저장한 비밀번호를 사용하여 적합한 사이트와 앱에 자동 로그인합니다.</translation>
 <translation id="9073281213608662541">PAP</translation>
@@ -6026,6 +6037,7 @@
 <translation id="9112614144067920641">새 PIN을 선택하세요.</translation>
 <translation id="9112748030372401671">배경화면 변경</translation>
 <translation id="9112987648460918699">찾기...</translation>
+<translation id="9114663181201435112">간편한 로그인</translation>
 <translation id="9115487443206954631">Cast 기기 관리</translation>
 <translation id="9115675100829699941">북마크(&amp;B)</translation>
 <translation id="9121814364785106365">고정 탭으로 열기</translation>
@@ -6120,7 +6132,6 @@
 <translation id="952992212772159698">활성화되지 않음</translation>
 <translation id="960719561871045870">운영자 코드</translation>
 <translation id="960987915827980018">약 1시간 남음</translation>
-<translation id="962778376131245616">비보안, 애니메이션만 표시</translation>
 <translation id="96421021576709873">Wi-Fi 네트워크</translation>
 <translation id="965490406356730238">사용 가능한 경우 캡처된 프레임에 하드웨어 가속 mjpeg 디코딩을 사용합니다.</translation>
 <translation id="968174221497644223">애플리케이션 캐시</translation>

@@ -33,7 +33,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="177096447311351977">IP adresa kanálu pro klienta: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zavřít okno</translation>
 <translation id="1841799852846221389">Zakazování vzdálených připojení k tomuto počítači…</translation>
-<translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
 <translation id="1897488610212723051">Smazat</translation>
 <translation id="195619862187186579">Rozložení klávesnice</translation>
 <translation id="1996161829609978754">Chrome stahuje instalační program hostitele funkce Chromoting. Po stažení instalační program spusťte a poté pokračujte.</translation>
@@ -115,6 +114,7 @@ funkce
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">K povolení přístupu prostřednictvím Vzdálené plochy Chrome je třeba potvrdit účet a kód PIN níže.</translation>
+<translation id="3897092660631435901">Nabídka</translation>
 <translation id="3905196214175737742">Neplatná doména vlastníka hostitele.</translation>
 <translation id="3908017899227008678">Zmenšit dle místa</translation>
 <translation id="3931191050278863510">Hostitel byl zastaven.</translation>
@@ -167,7 +167,6 @@ plochy Chrome</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
 <translation id="507204348399810022">Opravdu chcete vzdálená připojení k počítači <ph name="HOSTNAME" /> zakázat?</translation>
 <translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
-<translation id="5168917394043976756">Otevřít vysouvací panel navigace</translation>
 <translation id="5170982930780719864">Neplatné ID hostitele.</translation>
 <translation id="518094545883702183">Tyto informace jsou využity pouze při diagnostikování problému, který jste nahlásili, jsou dostupné pouze osobě, která vaši zprávu prošetřuje, a nejsou uchovávány déle než 30 dní.</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>

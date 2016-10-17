@@ -39,6 +39,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2158734852934720349">Mga lisensya ng open source ng Chromium OS</translation>
 <translation id="2241627712206172106">Kung nagpapahiram ka ng computer, ang mga kaibigan at kapamilya ay maaaring mag-browse nang hiwalay at i-set up ang Chromium sa paraang gusto nila.</translation>
 <translation id="225614027745146050">Maligayang pagdating</translation>
+<translation id="2264142189334629813">Hindi mabubuksan ng Chromium OS ang page na ito.</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="2347108572062610441">Binago ng extension na ito ang ipinapakitang page kapag sinimulan mo ang Chronium.</translation>
 <translation id="2372704305038231957">Maaaring hindi gumana nang maayos ang 32-bit na Chromium dahil hindi na ito sinusuportahan sa Linux system na ito. Mangyaring mag-upgrade sa 64-bit na Chromium.</translation>
@@ -77,6 +78,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3258596308407688501">Hindi makakapag-read at makakapag-write ang Chromium sa direktoryo ng data nito:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium ang iyong default na browser. Magsaya.</translation>
 <translation id="328888136576916638">Nawawala ang mga Google API key. Madi-disable ang ilang pagpapagana ng Chromium.</translation>
 <translation id="3289635842886789612">Luma na ang Chromium.</translation>
 <translation id="3296368748942286671">Patuloy na magpatakbo ng background na apps kapag nakasara ang Chromium</translation>

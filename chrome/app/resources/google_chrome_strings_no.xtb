@@ -133,6 +133,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="4771048833395599659">Denne filen kan være farlig, så Chrome har blokkert den.</translation>
 <translation id="4794050651896644714">Lagre detaljer i Chrome</translation>
 <translation id="4891791193823137474">La Google Chrome kjøre i bakgrunnen</translation>
+<translation id="4901390485477164536">Google Chrome er standardnettleseren din. Hurra!</translation>
 <translation id="4921569541910214635">Deler du datamaskinen din med andre? Nå kan du konfigurere Chrome akkurat slik du vil.</translation>
 <translation id="4925019873400497719">Chrome bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men den var ugyldig.</translation>
 <translation id="4953650215774548573">Bruk Google Chrome som standard nettleser</translation>
@@ -255,6 +256,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8290100596633877290">Google Chrome har fått et programstopp. Vil du starte på nytt nå?</translation>
 <translation id="8342675569599923794">Denne filen er farlig, så Chrome har blokkert den.</translation>
 <translation id="8406086379114794905">Bidra til å gjøre Chrome bedre</translation>
+<translation id="8410645163819739900">Google Chrome OS kan ikke åpne denne siden.</translation>
 <translation id="8455999171311319804">Valgfritt: Bidra til å gjøre Chrome OS bedre ved å sende diagnostikk og brukerdata automatisk til Google.</translation>
 <translation id="853189717709780425">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via Google Konto-oversikten, men du kan ikke knytte disse dataene til en annen konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -286,6 +286,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4351244548802238354">Isara ang dialog</translation>
 <translation id="4376501731284077108">Hindi kinokontrol</translation>
 <translation id="4378154925671717803">Telepono</translation>
+<translation id="4384468725000734951">Ginagamit ang Sogou para sa paghahanap</translation>
 <translation id="4412992751769744546">Payagan ang third-party na cookies</translation>
 <translation id="4440256989292146959">Mag-browse pa nang mas mura</translation>
 <translation id="4452548195519783679">Na-bookmark sa <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5916664084637901428">Naka-on</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
 <translation id="5939518447894949180">I-reset</translation>
+<translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
+<translation id="6000066717592683814">Panatilihin ang Google</translation>
 <translation id="6010869025736512584">Ina-access ang input ng video</translation>
 <translation id="6012342843556706400">Kailangan ng Chrome ng access sa lokasyon upang maibahagi ito sa site na ito.</translation>
 <translation id="6031101910111098835">Naka-collapse - I-click upang palawakin</translation>
@@ -441,6 +444,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6159335304067198720"><ph name="PERCENT" /> natipid sa data</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6177390657002841081">I-on ang Data Saver</translation>
+<translation id="617991007797131187">Magagamit ng Chrome ang Sogou para sa paghahanap sa China. Maaari mo itong baguhin sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Magdagdag ng pagbubukod ng site</translation>
 <translation id="6192792657125177640">Mga Pagbubukod</translation>
 <translation id="6232535412751077445">Kapag na-enable mo ang “Huwag Subaybayan,” magsasama ng isang kahilingan sa trapiko ng iyong pagba-browse. Ang anumang magiging epekto ay dedepende sa pagtugon at pagbibigay-kahulugan ng website sa nabanggit na kahilingan.
@@ -472,6 +476,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="654446541061731451">Pumili ng tab upang mag-beam</translation>
 <translation id="6545017243486555795">I-clear ang Lahat ng Data</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
+<translation id="6560414384669816528">Maghanap gamit ang Sogou</translation>
 <translation id="656628257199996201">Palaging isalin ang <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">I-edit ang credit card</translation>
 <translation id="6573431926118603307">Dito lalabas ang mga nabuksan mong tab sa Chrome sa iba mo pang mga device.</translation>

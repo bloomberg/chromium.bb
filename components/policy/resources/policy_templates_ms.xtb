@@ -214,15 +214,6 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika dasar ini tidak dikonfigurasikan atau jika ditetapkan kepada "tls1.2" maka <ph name="PRODUCT_NAME" /> tidak lagi akan melaksanakan jatuh balik ini. Perhatian, langkah ini tidak melumpuhkan sokongan untuk versi TLS yang lebih lama, hanya sama ada <ph name="PRODUCT_NAME" /> akan membetulkan pelayan berpepijat yang tidak dapat merundingkan versi dengan betul.
 
       Sebaliknya, jika keserasian dengan pelayan berpepijat mesti dikekalkan, dasar ini mungkin ditetapkan kepada "tls1.1". Ini hanyalah langkah sementara dan pelayan harus dibetulkan dengan segera.</translation>
-<translation id="1861037019115362154">Menentukan senarai pemalam yang dilumpuhkan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan urutan aksara rawak. Aksara '*' sepadan dengan bilangan aksara rawak manakala '?' menentukan aksara pilihan tunggal iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', oleh itu untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
-
-      Jika anda mendayakan tetapan ini, senarai pemalam yang ditentukan tidak akan digunakan dalam <ph name="PRODUCT_NAME" />. Pemalam ditandakan sebagai dilumpuhkan dalam 'about:plugins' dan pengguna tidak boleh mendayakannya.
-
-      Ambil perhatian bahawa dasar ini boleh diatasi oleh EnabledPlugins dan DisabledPluginsExceptions.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh menggunakan mana-mana pemalam yang dipasang pada sistem kecuali pemalam tidak serasi yang berkod keras, sudah lapuk atau berbahaya.</translation>
 <translation id="1864269674877167562">Jika dasar ini ditetapkan kepada rentetan kosong atau tidak dikonfigurasikan, <ph name="PRODUCT_OS_NAME" /> tidak akan memaparkan pilihan autolengkap semasa aliran log masuk pengguna.
       Jika dasar ini ditetapkan kepada rentetan yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pilihan autolengkap semasa log masuk pengguna yang membolehkan pengguna menaip nama pengguna mereka sahaja tanpa sambungan nama domain.  Pengguna boleh menulis ganti sambungan nama domain ini.</translation>
 <translation id="1865417998205858223">Kebenaran Utama</translation>
@@ -864,11 +855,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
-<translation id="3715448429089775791">Memaksa Mod Keselamatan YouTube diaktifkan dan menghalang pengguna daripada menukar tetapan ini.
-
-      Jika anda mendayakan tetapan ini, Mod Keselamatan di YouTube sentiasa diaktifkan.
-
-      Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, Mod Keselamatan di YouTube tidak dikuatkuasakan.</translation>
 <translation id="3750220015372671395">Sekat penghasilan kunci pada tapak ini</translation>
 <translation id="3756011779061588474">Sekat mod pembangun</translation>
 <translation id="3758089716224084329">Membenarkan anda menetapkan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi.
@@ -2135,12 +2121,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Pengecam jenis sambungan yang diperakui ialah "ethernet", "wifi", "wimax", "bluetooth" dan "selular".</translation>
 <translation id="7763614521440615342">Tunjukkan cadangan kandungan pada halaman Tab Baharu</translation>
-<translation id="7766336524667238790">Laporkan maklumat tentang sesi kios yang aktif, seperti ID
-      dan versi aplikasi.
-
-      Jika dasar ini ditetapkan kepada palsu, maklumat sesi tidak
-      akan dilaporkan. Jika ditetapkan kepada benar atau dibiarkan
-      tanpa ditetapkan, maklumat sesi akan dilaporkan.</translation>
 <translation id="7774768074957326919">Gunakan tetapan sistem proksi</translation>
 <translation id="7775831859772431793">Anda boleh menetapkan URL pelayan proksi di sini.
 
@@ -2379,6 +2359,10 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8369602308428138533">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa AC</translation>
 <translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="838870586332499308">Dayakan perayauan data</translation>
+<translation id="8390049129576938611">Melumpuhkan pemapar PDF dalam <ph name="PRODUCT_NAME" />. Sebaliknya, dasar ini menganggapnya sebagai muat turun dan membenarkan pengguna untuk membuka fail PDF dengan aplikasi lalai.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan atau dilumpuhkan, pemalam PDF akan digunakan untuk membuka fail PDF melainkan pengguna melumpuhkannya.</translation>
+<translation id="8402079500086185021">Sentiasa buka fail PDF dari luar</translation>
 <translation id="8412312801707973447">Sama ada semakan OCSP/CRL dalam talian dilaksanakan</translation>
 <translation id="8413348101535146315">Membolehkan penamatan proses dalam Pengurus Tugas <ph name="PRODUCT_NAME" />.
 
@@ -2399,17 +2383,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Untuk melihat contoh pola, lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Lumpuhkan penyimpanan sejarah penyemakan imbas</translation>
 <translation id="8499172469244085141">Tetapan lalai (pengguna boleh mengatasi)</translation>
-<translation id="8501011084242226370">Menyatakan senarai pemalam yang boleh didayakan atau dilumpuhkan oleh pengguna dalam <ph name="PRODUCT_NAME" />.
-
-Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan urutan aksara arbitrari. '*' memadankan aksara nombor arbitrari manakala '?' menyatakan aksara tunggal pilihan, cth. memadankan kosong atau satu aksara. Aksara lepasan ialah '\', jadi untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapan aksara itu.
-
-Jika anda mendayakan tetapan ini, senarai pemalam yang dinyatakan boleh digunakan dalam <ph name="PRODUCT_NAME" />. Pengguna boleh mendayakan atau melumpuhkan pemalam, dalam 'about:plugins', walaupun jika pemalam juga sepadan dengan corak dalam DisabledPlugins. Pengguna juga boleh mendayakan dan melumpuhkan pemalam yang tidak sepadan dengan sebarang corak dalam DisabledPlugins, DisabledPluginsExceptions dan EnabledPlugins.
-
-Dasar ini bertujuan untuk membenarkan penyenaraian hitam pemalam secara tegas dengan senarai  'DisabledPlugins' mengandungi entri kad bebas seperti lumpuhkan semua pemalam '*' atau lumpuhkan semua pemalam Java'*Java*' tetapi pentadbir ingin mendayakan beberapa versi tertentu seperti 'IcedTea Java 2.3'. Versi tertentu ini boleh dinyatakan dalam dasar ini.
-
-Sila maklum bahawa kedua-dua nama pemalam dam nama kumpulan pemalam perlu dikecualikan. Setiap kumpulan pemalam ditunjukkan dalam bahagian berasingan dalam about:plugins; setiap bahagian mungkin mempunyai satu atau lebih pemalam. Sebagai contoh, pemalam "Shockwave Flash" adalah dalam kumpulam "Adobe Flash Player" dan kedua-dua nama mesti mempunyai padanan dalam senarai pengecualian jika pemalam itu ingin dikecualikan dari senarai hitam.
-
-Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan corak dalam  'DisabledPlugins' akan dikunci dan dilumpuhkan serta pengguna tidak akan dapat mendayakan pemalam itu.</translation>
 <translation id="8519264904050090490">URL pengecualian manual pengguna terurus</translation>
 <translation id="8544375438507658205">Pemapar HTML lalai untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
@@ -2446,15 +2419,6 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 
           
           Jika anda membiarkan dasar ini tanpa ditetapkan <ph name="PRODUCT_NAME" /> akan cuba mengesan jika pelayan berada di Intranet dan hanya selepas itu permintaan IWA akan dibalas.   Jika pelayan dikesan sebagai Internet, maka permintaan IWA daripadanya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Menentukan senarai pemalam yang didayakan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
-
-      Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan urutan aksara rambang. Aksara '*' sepadan dengan sebilangan aksara rambang manakala '?' menetapkan aksara tunggal pilihan, iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', oleh itu untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapan aksara tersebut.
-
-      Senarai pemalam yang ditetapkan sentiasa digunakan dalam <ph name="PRODUCT_NAME" /> jika ia dipasang. Pemalam ditandakan sebagai didayakan dalam 'about:plugins' dan pengguna tidak boleh melumpuhkannya.
-
-      Ambil perhatian bahawa dasar ini mengatasi DisabledPlugins dan juga DisabledPluginsExceptions.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh melumpuhkan sebarang pemalam yang dipasang pada sistem.</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
 <translation id="868068801094828689">Mendayakan laporan penggunaan dan data berkaitan ranap tanpa nama tentang <ph name="PRODUCT_NAME" /> kepada Google dan menghalang pengguna daripada menukar tetapan ini.
 
@@ -2562,13 +2526,6 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
       menghubungi Pelayan Quirks secara automatik dan memuat turun fail konfigurasi,
       jika ada dan menyimpannya pada peranti.  Fail sedemikian boleh
       digunakan untuk meningkatkan kualiti paparan monitor yang dipasang, sebagai contoh.</translation>
-<translation id="8905426178924715309">Dasar ini ditamatkan, sebaliknya sila gunakan ForceGoogleSafeSearch dan ForceYouTubeSafetyMode. Dasar ini akan diabaikan jika dasar ForceGoogleSafeSearch atau ForceYouTubeSafetyMode ditetapkan.
-
-      Memaksa pertanyaan dalam Carian Web Google dilakukan dengan SafeSearch ditetapkan kepada aktif dan menghalang pengguna daripada mengubah tetapan ini. Tetapan ini turut memaksa Mod Keselamatan di YouTube.
-
-      Jika anda mendayakan tetapan ini, SafeSearch dalam Carian Google dan YouTube akan sentiasa diaktifkan.
-
-      Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, SafeSearch dalam Carian Google dan YouTube tidak dikuatkuasakan.</translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>
 <translation id="8908294717014659003">Membenarkan anda menetapkan sama ada laman web dibenarkan untuk mendapatkan akses kepada peranti tangkapan media. Akses kepada peranti tangkapan media boleh dibenarkan secara lalai atau pengguna boleh ditanya setiap kali laman web ingin mendapatkan akses kepada peranti tangkapan media.
 

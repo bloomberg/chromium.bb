@@ -130,9 +130,10 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="4743926867934016338">Aceptar y buscar</translation>
 <translation id="4751441238232965030">Esta computadora pronto dejará de recibir actualizaciones de Google Chrome de 32 bits. Actualiza a Google Chrome de 64 bits.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (tráfico mDNS entrante)</translation>
-<translation id="4771048833395599659">Chrome bloqueó este archivo porque es posible que sea peligroso.</translation>
+<translation id="4771048833395599659">Chrome bloqueó este archivo porque podría ser peligroso.</translation>
 <translation id="4794050651896644714">Guardar los detalles en Google Chrome</translation>
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
+<translation id="4901390485477164536">Google Chrome es tu navegador predeterminado.</translation>
 <translation id="4921569541910214635">¿Compartes una computadora? Ahora puedes configurar Chrome como a ti te gusta.</translation>
 <translation id="4925019873400497719">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información de transparencia de certificados que no era válida.</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
@@ -255,7 +256,8 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8290100596633877290">¡Vaya! Se ha producido un bloqueo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8342675569599923794">Chrome bloqueó este archivo porque es peligroso.</translation>
 <translation id="8406086379114794905">Ayudar a mejorar Chrome</translation>
-<translation id="8455999171311319804">Opcional: Para ayudarnos a mejorar el Sistema operativo Chrome, envía datos de uso y diagnóstico a Google.</translation>
+<translation id="8410645163819739900">El Sistema operativo Google Chrome no puede abrir esta página.</translation>
+<translation id="8455999171311319804">Opcional: Para ayudarnos a mejorar el sistema operativo Chrome, envía datos de uso y diagnóstico a Google.</translation>
 <translation id="853189717709780425">Accediste con una cuenta administrada y le diste a su administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás relacionarlos con otra cuenta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Selector de aplicaciones de Google Chrome Canary</translation>

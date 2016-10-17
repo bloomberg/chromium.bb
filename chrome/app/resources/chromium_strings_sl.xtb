@@ -39,6 +39,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
 <translation id="2241627712206172106">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chromium tako, kot ga želijo.</translation>
 <translation id="225614027745146050">Pozdravljeni</translation>
+<translation id="2264142189334629813">OS Chromium ne more odpreti te strani.</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="2347108572062610441">Zaradi te razširitve se je spremenila stran, ki je prikazana, ko zaženete Chromium.</translation>
 <translation id="2372704305038231957">32-bitna različica Chromiuma morda ne bo delovala pravilno, ker ni več podprta v tem sistemu Linux. Nadgradite Chromium na 64-bitno različico.</translation>
@@ -77,6 +78,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3258596308407688501">Chromium ne more brati svojega imenika s podatki ali pisati vanj:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium je privzeti brskalnik. Super.</translation>
 <translation id="328888136576916638">Manjkajo ključi za Google API. Nekatere funkcije Chromiuma bodo onemogočene.</translation>
 <translation id="3289635842886789612">Chromium je zastarel.</translation>
 <translation id="3296368748942286671">Nadaljuj izvajanje aplikacij v ozadju, ko je Chromium zaprt</translation>

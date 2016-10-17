@@ -191,15 +191,6 @@ Tyto zásady se použijí pouze v případě, že je nainstalován hostitel Vzd
       Pokud tato zásada není nakonfigurována nebo je nastavena na hodnotu „tls1.2“, prohlížeč <ph name="PRODUCT_NAME" /> tento záložní postup neprovede. Tato zásada nedeaktivuje podporu starších verzí protokolu TLS, pouze určuje, zda se bude prohlížeč <ph name="PRODUCT_NAME" /> snažit řešit potíže s chybně fungujícími servery, které nedokážou správně vyjednávat verze.
 
       Pokud je třeba zajistit kompatibilitu s chybným serverem, lze nastavit hodnotu „tls1.1“. Jedná se však o nouzové řešení a server by měl být co nejrychleji opraven.</translation>
-<translation id="1861037019115362154">Určuje seznam deaktivovaných pluginů aplikace <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
-
-            Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro několik libovolných znaků, zatímco znak „?“ zastupuje jeden znak (může zastupovat libovolný znak nebo také žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.
-
-     Pokud toto nastavení aktivujete, pluginy uvedené v seznamu nebudou v aplikaci <ph name="PRODUCT_NAME" /> nikdy použity. Na stránce about:plugins se pluginy zobrazí jako deaktivované a uživatelé je nebudou moci aktivovat.
-
-      Tuto zásadu lze přepsat pomocí zásad EnabledPlugins a DisabledPluginsExceptions.
-
-      Pokud zásadu nenastavíte, mohou uživatelé používat všechny pluginy nainstalované v systému, kromě pluginů nekompatibilních, zastaralých nebo nebezpečných.</translation>
 <translation id="1864269674877167562">Pokud tato zásada není nastavena nebo je nastavena na prázdný textový řetězec, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení nezobrazí možnost automatického doplňování.
       Pokud je tato zásada nastavena na textový řetězec, který představuje název domény, <ph name="PRODUCT_OS_NAME" /> během procesu přihlášení zobrazí možnost automatického doplňování a uživatel bude moci zadat pouze uživatelské jméno bez přípony s názvem domény. Příponu s názvem domény uživatel bude moci přepsat.</translation>
 <translation id="1865417998205858223">Klíčová oprávnění</translation>
@@ -829,11 +820,6 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
-<translation id="3715448429089775791">Vynutí aktivaci Bezpečného režimu YouTube a brání uživatelům, aby toto nastavení změnili.
-
-Pokud toto nastavení aktivujete, Bezpečný režim na YouTube bude vždy aktivní.
-
-Pokud toto nastavení deaktivujete nebo ho ponecháte nenastavené, Bezpečný režim YouTube vynucen nebude.</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758089716224084329">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru.
@@ -2068,9 +2054,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7763479091692861127"> Typy připojení, které lze používat pro aktualizaci operačního systému. Aktualizace operačního systému může vzhledem k objemu dat velmi zatěžovat připojení a může mít za následek dodatečné poplatky. Z tohoto důvodu jsou ve výchozím nastavení zakázány pro typy připojení, které jsou považovány za nákladné, což je v současnosti mimo jiné připojení WiMax, Bluetooth nebo mobilní připojení.
       Podporované identifikátory typu připojení jsou „ethernet“, „wifi“, „wimax“, „bluetooth“ a „cellular“.</translation>
 <translation id="7763614521440615342">Zobrazovat na stránce Nová karta návrhy obsahu</translation>
-<translation id="7766336524667238790">Hlášení informací o aktivní relaci veřejného terminálu, např. ID a verze aplikace.
-
-Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit nebudou. Pokud je nastavena na hodnotu True nebo nastavena není, informace o relaci se hlásit budou.</translation>
 <translation id="7774768074957326919">Použít systémová nastavení proxy serveru</translation>
 <translation id="7775831859772431793">Zde můžete zadat adresu URL proxy serveru.
 
@@ -2294,6 +2277,10 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8369602308428138533">Prodleva vypnutí obrazovky při napájení ze sítě</translation>
 <translation id="8382184662529825177">Povolit použití vzdáleného ověření identity k ochraně obsahu v zařízení</translation>
 <translation id="838870586332499308">Povolit datový roaming</translation>
+<translation id="8390049129576938611">Zakáže v prohlížeči <ph name="PRODUCT_NAME" /> interní prohlížeč souborů PDF. Soubory PDF se budou stahovat a uživatel je bude moci otevřít ve výchozí aplikaci.
+
+      Pokud tuto zásadu ponecháte nenastavenou nebo deaktivovanou, budou se soubory PDF otevírat pomocí pluginu PDF (pokud jej uživatel nezakáže).</translation>
+<translation id="8402079500086185021">Soubory PDF otevírat vždy externě</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
 <translation id="8413348101535146315">Umožňuje ukončování procesů ve Správci úloh prohlížeče <ph name="PRODUCT_NAME" />.
 
@@ -2314,17 +2301,6 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
           Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktivovat ukládání historie prohlížeče</translation>
 <translation id="8499172469244085141">Výchozí nastavení (uživatelé mohou zásady přepsat)</translation>
-<translation id="8501011084242226370">Určuje seznam pluginů, které uživatel v <ph name="PRODUCT_NAME" /> může povolit nebo zakázat.
-
-      Zástupnými znaky „*“ a „?“ lze nahradit sekvenci libovolných znaků.Znak „*“ odpovídá libovolnému počtu znaků a znak „?“ určuje jeden volitelný znak (tj. odpovídá jednomu nebo žádnému znaku). Řídicí znak je „\“, pokud tedy chcete hledat skutečné znaky „*“ nebo „?“, musíte před ně vložit znak „\“.
-
-      Pokud toto nastavení aktivujete, specifikovaný seznam pluginů může být v <ph name="PRODUCT_NAME" /> použit. Uživatelé mohou plugin aktivovat nebo deaktivovat na stránce about:plugins i v případě, že odpovídá vzoru v seznamu DisabledPlugins. Uživatelé mohou také aktivovat a deaktivovat pluginy, které neodpovídají žádnému vzoru v seznamu DisabledPlugins, DisabledPluginsExceptions ani EnabledPlugins
-
-      Táto zásada má umožnit striktní zakázání pluginů tam, kde seznam DisabledPlugins obsahuje zástupné znaky, jako například deaktivovat všechny pluginy „*“ nebo deaktivovat všechny pluginy Java „'*Java*“, avšak správce chce určité verze povolit (například „IcedTea Java 2.3“). Tuto konkrétní verzi lze určit v této zásadě.
-
-      Upozorňujeme, že je třeba zadat výjimku pro název pluginu i pro název skupiny pluginů. Jednotlivé skupiny pluginů se na stránce about:plugins zobrazují v samostatných sekcích a každá sekce může obsahovat jeden nebo více pluginů. Plugin Shockwave Flash například patří do skupiny Adobe Flash Player. Pokud má být vyloučen ze seznamu zakázaných, musí být v seznamu výjimek uvedeny oba názvy.
-
-      Pokud tato zásada není nastavena, bude jakýkoliv plugin, který odpovídá vzoru v seznamu DisabledPlugins, uzamčen jako deaktivovaný a uživatelé jej nebudou moci aktivovat.</translation>
 <translation id="8519264904050090490">Adresy URL ručních výjimek spravovaného uživatele</translation>
 <translation id="8544375438507658205">Výchozí modul vykreslení HTML pro plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Při návštěvě webů mimo obsahové balíčky zobrazit upozornění</translation>
@@ -2349,15 +2325,6 @@ Doporučený způsob nastavení zásad ve Windows je prostřednictvím objektu z
 Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné znaky (*) jsou povoleny.
 
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
-<translation id="8668394701842594241">Určuje seznam aktivovaných pluginů aplikace <ph name="PRODUCT_NAME" /> a brání uživatelům, aby toto nastavení změnili.
-
-            Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro několik libovolných znaků, zatímco znak „?“ zastupuje jeden znak (může zastupovat libovolný znak nebo také žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.
-
-      Pokud jsou pluginy uvedené v seznamu nainstalovány, budou v aplikaci <ph name="PRODUCT_NAME" /> vždy použity. Na stránce about:plugins jsou tyto pluginy označeny jako aktivní a uživatelé je nemohou deaktivovat.
-
-      Tato zásada přepisuje zásady DisabledPlugins a DisabledPluginsExceptions.
-
-      Pokud zásadu nenastavíte, mohou uživatelé deaktivovat jakékoliv pluginy nainstalované v systému.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
 <translation id="868068801094828689">Aktivuje anonymní odesílání údajů o využití a selhání prohlížeče <ph name="PRODUCT_NAME" /> společnosti Google a brání uživatelům, aby toto nastavení změnili.
 
@@ -2440,13 +2407,6 @@ Pokud tuto zásadu nastavíte na hodnotu False, zařízení se nepokusí kontakt
 
 Pokud tuto zásadu nenakonfigurujete nebo nastavíte na hodnotu True,
 systém <ph name="PRODUCT_OS_NAME" /> bude sever Quirks automaticky kontaktovat, stahovat z něj dostupné konfigurační soubory a ukládat je do zařízení.Tyto soubory mohou sloužit například k vylepšení kvality zobrazení na připojených monitorech.</translation>
-<translation id="8905426178924715309">Podpora této zásady byla ukončena, použijte namísto ní zásady ForceGoogleSafeSearch a ForceYouTubeSafetyMode. Pokud je nastavena zásada ForceGoogleSafeSearch nebo ForceYouTubeSafetyMode, tato zásada bude ignorována.
-
-Vynutí, aby se při použití Vyhledávání Google vždy aktivovalo Bezpečné vyhledávání, a zabrání uživatelům toto nastavení změnit. Toto nastavení také vynutí bezpečný režim na YouTube.
-
-Pokud toto nastavení aktivujete, Bezpečné prohlížení ve Vyhledávání Google a na YouTube bude vždy aktivní.
-
-Pokud toto nastavení deaktivujete nebo nenastavíte žádnou hodnotu, Bezpečné vyhledávání nebude ve Vyhledávání Google a na YouTube vynucováno.</translation>
 <translation id="8906768759089290519">Aktivovat režim hosta</translation>
 <translation id="8908294717014659003">Umožňuje nastavit, zda webové stránky smějí používat zařízení pro pořizování mediálního obsahu. Přístup k zařízením pro pořizování mediálního obsahu může být povolen ve výchozím nastavení, nebo se uživateli může zobrazit dotaz pokaždé, když nějaké webové stránky budou chtít použít zařízení pro pořízení mediálního obsahu.
 

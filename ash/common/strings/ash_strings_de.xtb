@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1012876632442809908">USB-C-Gerät (Port vorne)</translation>
-<translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
+<translation id="1013923882670373915">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie folgenden PIN-Code auf dem Gerät ein: <ph name="PINCODE" />.</translation>
 <translation id="1021311941847921177">Die Tastenkombination für den Wechsel zur nächsten Eingabemethode hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="1127238861555034875">Lupenmodus</translation>
@@ -48,7 +48,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
 <translation id="2391579633712104609">180°</translation>
-<translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
+<translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Ein Fehler ist aufgetreten.</translation>
 <translation id="2509468283778169019">Feststelltaste An</translation>
 <translation id="252373100621549798">Display unbekannt</translation>
@@ -120,7 +120,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
-<translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing.</translation>
+<translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Vollständig geladen in <ph name="TIME" /> h</translation>
 <translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">Suchen</translation>
@@ -187,9 +187,9 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
-<translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
+<translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>
-<translation id="6713285437468012787">Das Pairing für das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde durchgeführt und das Gerät ist nun für alle Nutzer verfügbar. Sie können das Pairing unter "Einstellungen" entfernen.</translation>
+<translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="683971173229319003">Suche + L</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>

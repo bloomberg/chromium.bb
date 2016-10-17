@@ -137,6 +137,7 @@
 <translation id="4771048833395599659">이 파일은 위험할 수있으므로 Chrome에서 차단했습니다.</translation>
 <translation id="4794050651896644714">Chrome에 세부정보 저장</translation>
 <translation id="4891791193823137474">백그라운드에서 Chrome을 실행</translation>
+<translation id="4901390485477164536">Chrome이 기본 브라우저입니다.</translation>
 <translation id="4921569541910214635">컴퓨터를 공유하시겠습니까? 이제 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="4925019873400497719">Chrome에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, 올바르지 않았습니다.</translation>
 <translation id="4953650215774548573">Chrome을 기본 브라우저로 설정</translation>
@@ -263,6 +264,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8290100596633877290">Chrome이 다운되었습니다. 다시 시작하시겠습니까?</translation>
 <translation id="8342675569599923794">이 파일은 위험하므로 Chrome에서 차단했습니다.</translation>
 <translation id="8406086379114794905">더 나은 Chrome을 만들 수 있도록 도와주세요.</translation>
+<translation id="8410645163819739900">Chrome OS에서 이 페이지를 열 수 없음</translation>
 <translation id="8455999171311319804">선택사항: 진단 및 사용 데이터가 Google로 자동 전송되도록 선택하면 Chrome OS 개선에 도움이 됩니다.</translation>
 <translation id="853189717709780425">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 이렇게 하면 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" />에 영구적으로 연결됩니다. Google 계정 대시보드를 통해 이 데이터를 삭제할 수 있지만 다른 계정에 연결할 수는 없습니다.</translation>
 <translation id="8540666473246803645">Chrome</translation>

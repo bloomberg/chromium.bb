@@ -105,7 +105,7 @@
 <translation id="213279576345780926">Вкладку "<ph name="TAB_TITLE" />" закрито</translation>
 <translation id="2138201775715568214">Пошук веб-сторінок у сервісі "Інтернет навколо нас"</translation>
 <translation id="2139186145475833000">Додати на головний екран</translation>
-<translation id="2146738493024040262">Відкрити миттєвий додаток</translation>
+<translation id="2146738493024040262">Відкрити додаток із миттєвим запуском</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="219985413780390209">Захистіть себе та свій пристрій від небезпечних сайтів</translation>
@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
 <translation id="4376501731284077108">Без контролю</translation>
 <translation id="4378154925671717803">Телефон</translation>
+<translation id="4384468725000734951">Пошук за допомогою Sogou</translation>
 <translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
 <translation id="4440256989292146959">Більше Інтернету – менше витрат</translation>
 <translation id="4452548195519783679">Закладку збережено в папці "<ph name="FOLDER_NAME" />"</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5919204609460789179">Оновіть <ph name="PRODUCT_NAME" />, щоб почати синхронізацію</translation>
 <translation id="5939518447894949180">Скинути</translation>
+<translation id="5942872142862698679">Пошук за допомогою Google</translation>
+<translation id="6000066717592683814">Залишити Google</translation>
 <translation id="6010869025736512584">Отримання доступу до відеовходу</translation>
 <translation id="6012342843556706400">Chrome потрібен доступ до геоданих, щоб дозволити цьому сайту використовувати їх.</translation>
 <translation id="6031101910111098835">Згорнуто – натисніть, щоб розгорнути</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6177390657002841081">Увімкнути Заощадження трафіку</translation>
+<translation id="617991007797131187">Chrome може здійснювати пошук за допомогою Sogou в Китаї. Можна змінити цей параметр у <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
 <translation id="6192792657125177640">Винятки</translation>
 <translation id="6232535412751077445">Якщо ввімкнути параметр "Не відстежувати", запит додаватиметься в трафік веб-перегляду. Результат залежатиме від того, чи реагує веб-сайт на цей запит і як тлумачиться запит.
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">Виберіть вкладку для передавання даних</translation>
 <translation id="6545017243486555795">Видалити всі дані</translation>
 <translation id="6550675742724504774">Параметри</translation>
+<translation id="6560414384669816528">Шукати за допомогою Sogou</translation>
 <translation id="656628257199996201">Завжди перекладати з такої мови: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Редагувати дані кредитної картки</translation>
 <translation id="6573431926118603307">Тут відображатимуться вкладки, відкриті в Chrome на інших ваших пристроях.</translation>

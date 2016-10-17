@@ -33,15 +33,14 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="177096447311351977">Kanal-IP für Client: <ph name="CLIENT_GAIA_IDENTIFIER" /> IP="<ph name="CLIENT_IP_ADDRESS_AND_PORT" />" Host-IP="<ph name="HOST_IP_ADDRESS_AND_PORT" />" Kanal="<ph name="CHANNEL_TYPE" />" Verbindung="<ph name="CONNECTION_TYPE" />"</translation>
 <translation id="1779766957982586368">Fenster schließen</translation>
 <translation id="1841799852846221389">Remote-Verbindungen für diesen Computer werden deaktiviert…</translation>
-<translation id="189172778771606813">Navigationsleiste schließen</translation>
 <translation id="1897488610212723051">Löschen</translation>
 <translation id="195619862187186579">Tastaturlayouts</translation>
 <translation id="1996161829609978754">Chrome lädt das Installationsprogramm für den Chromoting-Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="2009755455353575666">Fehler beim Herstellen der Verbindung</translation>
 <translation id="2013884659108657024">Chrome lädt das Installationsprogramm für den Chrome Remote Desktop-Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
-<translation id="2013996867038862849">Alle Clients mit Pairing wurden gelöscht.</translation>
+<translation id="2013996867038862849">Alle gekoppelten Clients wurden gelöscht.</translation>
 <translation id="2038229918502634450">Der Host wird neu gestartet, um eine Richtlinienänderung zu übernehmen.</translation>
-<translation id="2046651113449445291">Für die folgenden Clients wurde ein Pairing mit diesem Computer durchgeführt. Die Clients können ohne PIN eine Verbindung herstellen. Sie können diese Berechtigung jederzeit aufheben, entweder einzeln oder für alle Clients.</translation>
+<translation id="2046651113449445291">Die folgenden Clients wurden mit diesem Computer gekoppelt. Die Clients können ohne PIN eine Verbindung herstellen. Sie können diese Berechtigung jederzeit aufheben, entweder einzeln oder für alle Clients.</translation>
 <translation id="2078880767960296260">Host-Prozess</translation>
 <translation id="20876857123010370">Touchpadmodus</translation>
 <translation id="2089514346391228378">Die Remote-Verbindungen für diesen Computer wurden aktiviert.</translation>
@@ -114,6 +113,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bestätigen Sie unten Ihr Konto und Ihre PIN, um Zugriff über Chrome Remote Desktop zu gewähren.</translation>
+<translation id="3897092660631435901">Menü</translation>
 <translation id="3905196214175737742">Ungültige Hostinhaberdomain</translation>
 <translation id="3908017899227008678">Größe anpassen</translation>
 <translation id="3931191050278863510">Host angehalten</translation>
@@ -166,7 +166,6 @@ Desktop Host</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="507204348399810022">Möchten Sie die Remote-Verbindungen zu <ph name="HOSTNAME" /> wirklich deaktivieren?</translation>
 <translation id="5156271271724754543">Die PIN muss in beiden Feldern identisch sein.</translation>
-<translation id="5168917394043976756">Navigationsleiste öffnen</translation>
 <translation id="5170982930780719864">Ungültige Host-ID</translation>
 <translation id="518094545883702183">Diese Informationen werden nur zur Diagnose des gemeldeten Problems verwendet. Dabei kann nur die Person auf sie zugreifen, die Ihren Bericht untersucht. Die Informationen werden nach spätestens 30 Tagen gelöscht.</translation>
 <translation id="5222676887888702881">Abmelden</translation>
@@ -186,7 +185,7 @@ Desktop Host</translation>
 <translation id="5625493749705183369">Greifen Sie sicher über das Internet auf andere Computer zu oder gewähren Sie anderen Nutzern Zugriff auf Ihren Computer.</translation>
 <translation id="5702987232842159181">Verbunden:</translation>
 <translation id="5708869785009007625">Ihr Desktop ist zurzeit für <ph name="USER" /> freigegeben.</translation>
-<translation id="5773590752998175013">Pairing-Datum</translation>
+<translation id="5773590752998175013">Datum der Kopplung</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
 <translation id="5843054235973879827">Warum ist dieser Vorgang sicher?</translation>
 <translation id="5859141382851488196">Neues Fenster...</translation>

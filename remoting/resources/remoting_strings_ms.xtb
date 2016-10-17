@@ -33,7 +33,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="177096447311351977">IP Saluran untuk klien: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Tutup tetingkap</translation>
 <translation id="1841799852846221389">Melumpuhkan sambungan jauh untuk komputer ini…</translation>
-<translation id="189172778771606813">Tutup laci navigasi</translation>
 <translation id="1897488610212723051">Padam</translation>
 <translation id="195619862187186579">Reka letak papan kekunci</translation>
 <translation id="1996161829609978754">Chrome sedang memuat turun pemasang Hos Chromoting.  Setelah muat turun selesai, sila jalankan pemasang sebelum meneruskan.</translation>
@@ -114,6 +113,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Sila sahkan akaun dan PIN anda di bawah untuk membenarkan akses melalui Desktop Jauh Chrome.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Domain pemilik hos tidak sah.</translation>
 <translation id="3908017899227008678">Kecilkan supaya muat</translation>
 <translation id="3931191050278863510">Hos dihentikan.</translation>
@@ -166,7 +166,6 @@ Jauh Chrome</translation>
 <translation id="5070121137485264635">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Desktop Jauh Chrome kebenaran tambahan untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh ke <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Sila masukkan PIN yang sama dalam kedua-dua kotak.</translation>
-<translation id="5168917394043976756">Buka laci navigasi</translation>
 <translation id="5170982930780719864">Id hos tidak sah.</translation>
 <translation id="518094545883702183">Maklumat ini hanya digunakan untuk mendiagnosis masalah yang anda laporkan, hanya tersedia kepada seseorang yang menyiasat laporan anda dan dikekalkan selama tidak lebih daripada 30 hari.</translation>
 <translation id="5222676887888702881">Log keluar</translation>

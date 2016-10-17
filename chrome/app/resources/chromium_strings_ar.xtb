@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
+<translation id="2264142189334629813">‏يتعذر على نظام التشغيل Chromium فتح هذه الصفحة.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2347108572062610441">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء Chromium.</translation>
 <translation id="2372704305038231957">‏قد لا يعمل Chromium إصدار 32 بت على نحو صحيح لأنه لم يعد مدعومًا على نظام Linux هذا. الرجاء الترقية إلى Chromium إصدار 64 بت.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">‏يتعذر على Chromium القراءة والكتابة في دليل البيانات الخاص به:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">‏Chromium هو متصفحك الافتراضي. مع أطيب التمنيات.</translation>
 <translation id="328888136576916638">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Chromium عن العمل.</translation>
 <translation id="3289635842886789612">‏إصدار Chromium قديم.</translation>
 <translation id="3296368748942286671">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Chromium</translation>

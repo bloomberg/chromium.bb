@@ -211,15 +211,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
       Si cette règle n'est pas configurée ou si elle est définie sur "tls1.2", <ph name="PRODUCT_NAME" /> n'effectue plus ce traitement de secours. Notez que cela ne désactive pas la compatibilité avec les versions TLS antérieures, mais n'affecte que la façon dont <ph name="PRODUCT_NAME" /> contournera les serveurs qui comportent des bugs et qui sont incapables de procéder correctement à la négociation de version.
 
       Sinon, si la compatibilité avec un serveur comportant des bugs doit être maintenue, cette règle peut être définie sur "tls1.1". Il s'agit là d'une solution provisoire qui exige parallèlement de dépanner le serveur rapidement.</translation>
-<translation id="1861037019115362154">Spécifie une liste de plug-ins désactivés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Les caractères génériques "*" et "?" peuvent être utilisés pour représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères tandis que "?" représente un caractère unique facultatif. Ce dernier correspond soit à un seul caractère, soit à aucun caractère. Pour représenter les caractères "*", "?" ou "\" eux-mêmes, le caractère d'échappement "\" doit être placé devant eux.
-
-      En cas d'activation de ce paramètre, la liste de plug-ins définie n'est jamais utilisée dans <ph name="PRODUCT_NAME" />. Les plug-ins sont marqués comme désactivés dans "about:plugins", et les utilisateurs n'ont pas la possibilité de les activer.
-
-      Notez que cette règle peut être remplacée par EnabledPlugins et DisabledPluginsExceptions.
-
-      En cas de non-configuration de ce paramètre, l'utilisateur peut utiliser n'importe quel plug-in installé sur le système, à l'exception des plug-ins codés en dur incompatibles, et des plug-ins obsolètes ou dangereux.</translation>
 <translation id="1864269674877167562">Si cette règle est définie sur une chaîne vide ou n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> n'affichera pas d'option de saisie semi-automatique lors de la procédure de connexion de l'utilisateur.
       Si cette règle est définie sur une chaîne représentant un nom de domaine, <ph name="PRODUCT_OS_NAME" /> affichera une option de saisie semi-automatique lors de la procédure de connexion. Ceci permettra à l'utilisateur de ne saisir que son nom d'utilisateur sans préciser l'extension du nom de domaine. L'utilisateur sera autorisé à modifier cette extension du nom de domaine.</translation>
 <translation id="1865417998205858223">Autorisations de clés</translation>
@@ -866,11 +857,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3660562134618097814">Transférer des cookies de fournisseurs d'identité SAML lors de la connexion</translation>
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
 <translation id="3711895659073496551">Arrêter</translation>
-<translation id="3715448429089775791">Force l'activation du mode sécurisé de YouTube et empêche les utilisateurs de modifier ce paramètre.
-
-      Si vous activez ce paramètre, le mode sécurisé de YouTube est toujours actif.
-
-      Si vous le désactivez ou ne définissez aucune valeur, le mode sécurisé de YouTube n'est pas appliqué.</translation>
 <translation id="3750220015372671395">Bloquer la génération de clé sur ces sites</translation>
 <translation id="3756011779061588474">Bloquer le mode développeur</translation>
 <translation id="3758089716224084329">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
@@ -2143,12 +2129,6 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 
       Les identifiants des types de connexion reconnus sont "ethernet", "wifi", "wimax", "bluetooth" et "cellular".</translation>
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
-<translation id="7766336524667238790">Transmettre des informations sur la session kiosque active,
-      telles que l'ID et la version de l'application.
-
-      Si la règle est définie sur "False", les informations sur la session ne seront
-      pas transmises. Si elle est définie sur "True" ou si elle n'est pas configurée,
-      les informations sur la session seront transmises.</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>
 <translation id="7775831859772431793">Vous pouvez indiquer ici l'URL du serveur proxy.
 
@@ -2387,6 +2367,10 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8369602308428138533">Délai d'arrêt de l'écran (secteur)</translation>
 <translation id="8382184662529825177">Autoriser l'utilisation de l'attestation à distance pour assurer la protection du contenu de l'appareil</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
+<translation id="8390049129576938611">Désactive la visionneuse de documents PDF intégrée dans <ph name="PRODUCT_NAME" />. Les fichiers PDF sont alors traités comme des téléchargements que l'utilisateur peut ouvrir avec l'application par défaut.
+
+      Si cette règle n'est pas définie ou si elle est désactivée, le plug-in PDF est utilisé pour ouvrir les fichiers PDF, sauf si l'utilisateur le désactive.</translation>
+<translation id="8402079500086185021">Toujours ouvrir les fichiers PDF en externe</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="8413348101535146315">Permet de mettre fin aux processus dans le gestionnaire des tâches de <ph name="PRODUCT_NAME" />.
 
@@ -2407,17 +2391,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
-<translation id="8501011084242226370">Indique une liste de plug-ins que l'utilisateur peut activer ou désactiver dans <ph name="PRODUCT_NAME" />.
-
-      Les caractères génériques "*" et "?" permettent de représenter des séquences de caractères arbitraires. "*" représente un nombre arbitraire de caractères, tandis que "?" désigne un seul caractère ou pas de caractère du tout. "\" est le caractère d'échappement que vous devez utiliser devant "*", "?" ou "\" pour que ces caractères soient pris en compte tels quels.
-
-      Si vous activez ce paramètre, la liste spécifiée de plug-ins peut être utilisée dans <ph name="PRODUCT_NAME" />. Les utilisateurs peuvent les activer ou les désactiver via l'attribut "about:plugins", même s'ils correspondent à un schéma dans "DisabledPlugins". Les utilisateurs peuvent également activer et désactiver les plug-ins qui ne correspondent à aucun schéma dans "DisabledPlugins", "DisabledPluginsExceptions" et "EnabledPlugins".
-
-      Cette règle a pour but de permettre l'ajout strict de plug-ins à une liste noire lorsque la liste "DisabledPlugins" contient des entrées comportant des caractères génériques tels que "*" pour la désactivation de tous les plug-ins ou "*Java*" pour la désactivation de tous les plug-ins Java, mais que l'administrateur souhaite activer une version spécifique telle que "IcedTea Java 2.3". Dans ce cas, il peut spécifier cette version spécifique dans cette règle.
-
-      Sachez que le nom du plug-in et son nom de groupe doivent tous les deux être exemptés. Chaque groupe de plug-ins s'affiche dans une section séparée dans "about:plugins", et chaque section peut contenir un plug-in ou plus. Par exemple, le plug-in "Shockwave Flash" fait partie du groupe "Adobe Flash Player". Ces deux noms doivent donc être indiqués dans la liste d'exceptions pour que le plug-in soit exclu de la liste noire.
-
-      Si vous ne définissez pas cette règle, tout plug-in correspondant à un schéma dans "DisabledPlugins" est désactivé et verrouillé, et l'utilisateur ne peut pas l'activer.</translation>
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
@@ -2453,15 +2426,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
           Si vous utilisez plusieurs serveurs, séparez leur nom par une virgule. Les caractères génériques (*) sont autorisés.
 
           Si vous ne définissez pas cette règle, <ph name="PRODUCT_NAME" /> tente d'identifier si le serveur est sur l'Intranet, auquel cas il répond aux requêtes IWA. Si le serveur est sur Internet, les requêtes IWA sont ignorées par <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Répertorie les plug-ins activés dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre. 
-
-Les caractères génériques "*" et "?" remplacent des séquences de caractères arbitraires. "*" correspond à un nombre aléatoire de caractères, tandis que "?" représente un caractère unique facultatif, c'est-à-dire qu'il remplace zéro ou un caractère. Placé devant les caractères "*", "?" ou "\", le caractère d'échappement "\" permet de rechercher ces caractères eux-mêmes.
-
-La liste de plug-ins indiquée est toujours utilisée dans <ph name="PRODUCT_NAME" /> si ceux-ci sont installés. Les plug-ins sont marqués comme activés dans "about:plugins" et les utilisateurs ne peuvent pas les désactiver. 
-
-Notez que cette règle remplace à la fois "DisabledPlugins" et "DisabledPluginsExceptions". 
-
-Si cette règle n'est pas configurée, l'utilisateur peut désactiver n'importe quel plug-in installé sur le système.</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="868068801094828689">Permet d'envoyer des rapports anonymes sur les données relatives à l'utilisation et aux erreurs concernant <ph name="PRODUCT_NAME" /> à Google, et empêche les utilisateurs de modifier ce paramètre.
 
@@ -2569,13 +2533,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       automatiquement contacter Quirks Server et télécharger les fichiers de configuration,
       s'ils sont disponibles, et les enregistrer sur l'appareil.  Ces fichiers pourront, par
       exemple, être utilisés pour améliorer la qualité d'affichage des moniteurs connectés.</translation>
-<translation id="8905426178924715309">Cette règle est abandonnée. Veuillez utiliser ForceGoogleSafeSearch et ForceYouTubeSafetyMode de préférence. Cette règle sera ignorée si des règles ForceGoogleSafeSearch ou ForceYouTubeSafetyMode sont configurées.
-
-      Cette règle entraîne l'activation obligatoire de SafeSearch pour les recherches sur le Web Google. Ce paramètre ne peut pas être modifié par l'utilisateur. Le mode sécurisé de YouTube est également activé.
-
-      Si vous activez ce paramètre, SafeSearch est toujours actif dans la recherche Google et sur YouTube.
-
-      Si vous désactivez ce paramètre ou si vous ne le configurez pas, SafeSearch ne s'appliquera pas à la recherche Google ni à YouTube.</translation>
 <translation id="8906768759089290519">Activer le mode invité</translation>
 <translation id="8908294717014659003">Vous permet de définir si les sites Web sont autorisés à accéder aux périphériques de capture multimédia. L'accès aux périphériques de capture multimédia peut être autorisé par défaut, ou l'utilisateur doit confirmer son autorisation chaque fois qu'un site Web souhaite accéder à ceux-ci.
 

@@ -214,15 +214,6 @@
       Om den här principen inte är konfigurerad eller om den är inställd på tls1.2 använder <ph name="PRODUCT_NAME" /> inte längre den alternativa versionen. Tänk på att detta inte inaktiverar stöd för äldre TLS-versioner. Det avgör bara om <ph name="PRODUCT_NAME" /> kringgår servrar med fel som inte kan förhandla versioner korrekt.
 
       Om kompatibiliteten med en server med fel måste upprätthållas kan den ställas in på tls1.1. Det här är en nödlösning och servern bör snabbt åtgärdas.</translation>
-<translation id="1861037019115362154">Policyn anger en lista med plugin-program som inaktiveras i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
-
-      Jokertecknen * och ? kan användas för att matcha sekvenser med arbiträra tecken. * matchar ett arbiträrt antal tecken medan ? anger ett valfritt enstaka tecken, dvs. noll eller ett tecken. Escape-tecknet är \, så om du vill matcha det faktiska tecknet *, ? eller \ kan du skriva \ framför dem.
-
-      Om du aktiverar inställningen används aldrig den angivna listan med plugin-program i <ph name="PRODUCT_NAME" />. Plugin-programmen markeras som inaktiverade i about:plugins och kan inte aktiveras av användare.
-
-      Observera att den här policyn kan åsidosättas av EnabledPlugins och DisabledPluginsExceptions.
-
-      Om den här policyn inte anges kan användaren använda alla plugin-program som är installerade på datorn förutom hårdkodade inkompatibla, föråldrade eller farliga plugin-program.</translation>
 <translation id="1864269674877167562">Om policyn anges som en tom sträng eller inte har konfigurerats visar inte <ph name="PRODUCT_OS_NAME" /> alternativet för autoslutförande under användarens inloggningsflöde.
       Om policyn är inställd på en sträng som motsvarar ett domännamn visar <ph name="PRODUCT_OS_NAME" /> ett alternativ för autoslutförande under användarens inloggning så att användaren bara kan skriva sitt användarnamn utan domännamnstillägget. Användaren kan skriva över detta domännamnstillägg.</translation>
 <translation id="1865417998205858223">Nyckelbehörigheter</translation>
@@ -867,11 +858,6 @@
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
-<translation id="3715448429089775791">Tvingar fram aktivering av Säkert läge på YouTube och förhindrar att användare ändrar inställningen.
-
-      Om du aktiverar den här inställningen är funktionen Säkert läge på YouTube alltid aktiv.
-
-      Om du inaktiverar den här inställningen eller inte anger något värde tvingas inte användningen av Säkert läge på YouTube fram.</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
 <translation id="3756011779061588474">Blockera utvecklarläget</translation>
 <translation id="3758089716224084329">Med den här principen kan du ange vilken proxyserver som används av <ph name="PRODUCT_NAME" /> och förhindra att användare ändrar sina proxyinställningar.
@@ -2139,11 +2125,6 @@
 
       Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>
 <translation id="7763614521440615342">Visa förslag på innehåll på sidan Ny flik</translation>
-<translation id="7766336524667238790">Rapporterar information om den aktiva kiosksessionen, bland annat
-      app-id och appversion.
-
-      Om principen är inställd på falskt rapporteras inte den här sessionsinformationen.
-      Om principen är inställd på sant eller inte har angetts rapporteras sessionsinformation.</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
 <translation id="7775831859772431793">Här kan du ange proxyserverns webbadress.
 
@@ -2382,6 +2363,10 @@
 <translation id="8369602308428138533">Skärmavstängningstid när enheten är ansluten till elnätet</translation>
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
+<translation id="8390049129576938611">Inaktiverar den interna PDF-läsaren i <ph name="PRODUCT_NAME" />. PDF-filer behandlas i stället som nedladdningar så att användaren kan öppna dem med standardappen.
+
+      Om den här principen inte anges eller är inaktiverad öppnas PDF-filer med PDF-pluginprogrammet såvida användaren inte inaktiverar det.</translation>
+<translation id="8402079500086185021">Öppna alltid PDF-filer med en extern app</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
 <translation id="8413348101535146315">Gör det möjligt att avsluta aktiviteter i Aktivitetshanteraren i <ph name="PRODUCT_NAME" />.
 
@@ -2402,17 +2387,6 @@
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
 <translation id="8499172469244085141">Standardinställningar (kan åsidosättas av användare)</translation>
-<translation id="8501011084242226370">Anger en lista med plugin-program som användaren kan aktivera eller inaktivera i <ph name="PRODUCT_NAME" />.
-
-      Jokertecknen * och ? kan användas för att matcha följder med vilka tecken som helst. * matchar hur många tecken som helst medan ? matchar vilket enstaka tecken som helst, det vill säga 0 eller 1 tecken. Avkodningstecknet är \, så om du vill matcha just tecknen *, ? eller \ kan du sätta ett \ framför dem.
-
-      Om du aktiverar den här inställningen kan den angivna listan med plugin-program användas i <ph name="PRODUCT_NAME" />. Användare kan aktivera eller inaktivera dem i about:plugins även om plugin-programmet också matchar ett mönster i DisabledPlugins. Användare kan också aktivera och inaktivera plugin-program som inte matchar några fönster i DisabledPlugins, DisabledPluginsExceptions och EnabledPlugins.
-
-      Syftet med den här policyn är att möjliggöra strikt svartlistning av plugin-program om listan DisabledPlugins innehåller jokerposter som disable all plugins '*' eller disable all Java plugins *Java* men administratören vill aktivera en viss version som IcedTea Java 2.3. Den specifika versionen kan anges i den här policyn.
-
-      Observera att både plugin-programmets namn och grupp måste undantas. Varje plugin-grupp visas i en separat del i about:plugins. Varje del kan innehålla ett eller flera plugin-program. Plugin-programmet Shockwave Flash tillhör gruppen Adobe Flash Player och båda namnen måste matcha något i undantagslistan om det plugin-programmet ska undantas från svartlistan.
-
-      Om den här policyn inte ställs in inaktiveras alla plugin-program som matchar mönstren i DisabledPlugins och de kan inte aktiveras av användaren.</translation>
 <translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
@@ -2449,15 +2423,6 @@
           Avgränsa flera servernamn med kommatecken. Jokertecken (*) tillåts.
 
           Om du inte ställer in den här principen kommer <ph name="PRODUCT_NAME" /> att försöka identifiera om en server finns i intranätet och endast då kommer den att svara på IWA-förfrågningar. Om en server identifieras som internet kommer IWA-förfrågningar därifrån att ignoreras av <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Policyn anger en lista med plugin-program som är aktiverade i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
-
-      Jokertecknen * och ? kan användas för att matcha sekvenser av arbiträra tecken. * matchar ett arbiträrt antal tecken medan ? specificerar ett enda valfritt tecken, det vill säga matchar noll till ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? eller \ anger du \ framför dem.
-
-      Den angivna listan med plugin-program används alltid i <ph name="PRODUCT_NAME" /> om de finns installerade. plugin-programmen aktiveras i about:plugins och kan inte inaktiveras av användarna.
-
-      Observera att den här policyn åsidosätter både DisabledPlugins och DisabledPluginsExceptions.
-
-      Om den här policyn inte ställs in kan användaren inaktivera alla plugin-program som finns på datorn.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
 <translation id="868068801094828689">Aktiverar anonym rapportering av användning och kraschrelaterad data om <ph name="PRODUCT_NAME" /> till Google och förhindrar att användarna ändrar inställningen.
 
@@ -2566,13 +2531,6 @@
       automatiskt att kontakta Quirks-servern och ladda ned konfigurationsfiler
       (i mån av tillgång) och spara dem på enheten. Sådana filer kan till
       exempel användas för att förbättra visningskvaliteten på anslutna skärmar.</translation>
-<translation id="8905426178924715309">Den här principen har fasats ut. Använd ForceGoogleSafeSearch och ForceYouTubeSafetyMode i stället. Principen ignoreras om antingen ForceGoogleSafeSearch eller ForceYouTubeSafetyMode har angetts.
-
-      Sökfrågor i Googles webbsökning görs obligatoriskt med SafeSearch aktiverat och användarna förhindras att ändra inställningen. Med den här inställningen blir även Säkert läge obligatoriskt på YouTube.
-
-      Om du aktiverar den här inställningen är funktionen SafeSearch i Sök på Google och YouTube alltid aktiv.
-
-      Om du inaktiverar inställningen eller inte anger något värde blir det inte obligatoriskt att använda SafeSearch i Sök på Google eller på YouTube.</translation>
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 

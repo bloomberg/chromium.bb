@@ -207,15 +207,6 @@ Når TLS-dataudveksling mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere pr
 Hvis denne politik ikke konfigureres, eller hvis den indstilles til "tls1.2", udfører <ph name="PRODUCT_NAME" /> ikke længere dette fallback. Bemærk, at dette ikke deaktiverer understøttelse af ældre TLS-versioner, kun hvorvidt <ph name="PRODUCT_NAME" /> vil løse problemet med fejlbehæftede servere, som ikke kan forhandle versioner korrekt.
 
 Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne politik indstilles til "tls1.1". Dette er en midlertidig løsning, og problemet med serveren bør snarest udbedres.</translation>
-<translation id="1861037019115362154">Angiver en liste over plugins, der er deaktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
-
-      Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. tegnene 0 eller 1. Afslutningstegnet er "\", så for at angive de faktiske tegn "*", "?" eller "\" kan du sætte "\" foran dem.
-
-      Hvis du aktiverer denne indstilling, anvendes den angivne liste over plugins aldrig i <ph name="PRODUCT_NAME" />. Plugins er markeret som deaktiveret i "about:plugins", og brugerne kan ikke aktivere dem.
-
-      Bemærk, at denne politik kan tilsidesættes af EnabledPlugins og DisabledPluginsExceptions.
-
-      Hvis denne politik ikke angives, kan brugeren bruge alle de plugins, der er installeret i systemet, med undtagelse af hardcodede inkompatible, forældede eller farlige plugins.</translation>
 <translation id="1864269674877167562">Hvis denne politik er angivet med en tom streng, eller hvis den ikke er konfigureret, viser <ph name="PRODUCT_OS_NAME" /> ikke et forslag til autofuldførelse under loginflowet.
       Hvis denne politik er angivet med en streng, der repræsenterer et domænenavn, viser <ph name="PRODUCT_OS_NAME" /> et forslag til autofuldførelse under loginflowet. Dette giver brugeren mulighed for kun at skulle angive sit brugernavn uden hele domænenavnet. Brugeren kan overskrive dette domænenavn.</translation>
 <translation id="1865417998205858223">Vigtige tilladelser</translation>
@@ -822,11 +813,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3660562134618097814">Overfør SAML-IdP-cookies ved login</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3715448429089775791">Gennemtvinger aktivering af Beskyttet tilstand på YouTube og forhindrer, at brugerne kan ændre denne indstilling.
-
-      Hvis du aktiverer denne indstilling, er Beskyttet tilstand på YouTube altid aktiveret.
-
-      Hvis du deaktiverer denne indstilling eller ikke indstiller en værdi, gennemtvinges Beskyttet tilstand på YouTube ikke.</translation>
 <translation id="3750220015372671395">Bloker nøglegenerering på disse websites</translation>
 <translation id="3756011779061588474">Bloker udviklertilstand</translation>
 <translation id="3758089716224084329">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
@@ -1998,12 +1984,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       De genkendte forbindelsestype-id'er er "ethernet", "wifi", "wimax", "bluetooth" og "mobil".</translation>
 <translation id="7763614521440615342">Vis forslag til indhold på siden Ny fane</translation>
-<translation id="7766336524667238790">Rapportér oplysninger om aktive terminalsessioner, f.eks.
-      applikations-id og -version.
-
-      Hvis politikken er sat til falsk, rapporteres terminaloplysningerne
-      ikke. Hvis den angives til sand eller ikke angives, rapporteres 
-      terminaloplysningerne.</translation>
 <translation id="7774768074957326919">Brug systemets proxyindstillinger</translation>
 <translation id="7775831859772431793">Du kan angive webadressen til proxyserveren her.
 
@@ -2220,6 +2200,10 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8369602308428138533">Skærmslukforsinkelse, når strømforsyning er tilsluttet</translation>
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
+<translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.
+
+      Hvis politikken ikke angives, eller hvis den deaktiveres, anvendes PDF-pluginnet til at åbne PDF-filer, medmindre brugeren deaktiverer pluginnet.</translation>
+<translation id="8402079500086185021">Åbn altid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="8413348101535146315">Aktiverer mulighed for at afslutte processer i Jobliste for <ph name="PRODUCT_NAME" />.
 
@@ -2240,17 +2224,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktiver lagring af browserhistorik</translation>
 <translation id="8499172469244085141">Standardindstillinger (brugere kan tilsidesætte)</translation>
-<translation id="8501011084242226370">Angiver en liste over plugins, som brugeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
-
-      Jokertegnene "*" og "?" kan bruges til at matche sekvenser af vilkårlige tegn. "*" matcher et vilkårligt antal tegn, mens "?" angiver et enkelt vilkårligt tegn, dvs. det matcher nuller og ettaller. Escape-tegnet er "\". Hvis du vil matche de egentlige "*"-, "?" eller "\"-tegn, skal du angive et "\" foran dem.
-
-      Hvis du aktiverer denne indstilling, kan den angivne liste over plugins anvendes i <ph name="PRODUCT_NAME" />. Brugerne kan aktivere eller deaktivere dem i "about:plugins", selv hvis pluginnet også matcher DisabledPlugins. Brugerne kan også aktivere og deaktivere plugins, der ikke matcher nogen mønstre i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
-
-      Denne politik har til formål at tillade, at plugins sortlistes konsekvent, hvis listen "DisabledPlugins" indeholder poster med jokertegn, f.eks. deaktiver alle plugins "*" eller deaktiver alle Java-plugins "*Java*", men administratoren ønsker at aktivere nogle bestemte versioner som f.eks. "IcedTea Java 2.3". Disse specifikke versioner kan angives i denne politik.
-
-      Bemærk, at både pluginnavnet og gruppenavnet for pluginnet skal fritages. De enkelte plugingrupper er angivet i en særskilt sektion i about:plugins, og hver enkel sektion kan indeholde ét eller flere plugins. Pluginnet "Shockwave Flash" tilhører f.eks. gruppen "Adobe Flash Player", og begge navne skal matche en angivelse på listen over fritagelser, hvis det pågældende plugin skal fritages fra sortlisten.
-
-      Hvis denne politik ikke er indstillet, vil de plugins, der matcher mønstrene i "DisabledPlugins", blive låst som deaktiveret, og brugeren vil ikke være i stand til at aktivere dem.</translation>
 <translation id="8519264904050090490">Webadresser for manuel undtagelse af administreret bruger</translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
@@ -2287,15 +2260,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Adskil servernavne med kommaer. Jokertegn (*) er tilladt.
 
           Hvis denne politik ikke indstilles, prøver <ph name="PRODUCT_NAME" /> at registrere, om der er en server på intranettet, og kun i det tilfælde reageres der på IWA-anmodninger. Hvis en server registreres som internet, ignoreres IWA-anmodninger af <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Angiver en liste over plugins, som er aktiveret i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre indstillingen.
-
-      Jokertegnene "*" og "?" kan bruges til at matche sekvenser af vilkårlige tegn. "*" kan matche et vilkårligt antal tegn, mens "?" angiver en et bestemt tegn efter eget valg, f.eks. tegnene 0 eller 1. Flugttegnet er "\", så du kan matche tegnene "*", "?" eller "\" ved at sætte "\" foran dem.
-
-      Den angivne liste over plugins anvendes altid i <ph name="PRODUCT_NAME" />, hvis dette er installeret. Plugins er markeret som aktiveret i "about:plugins", og brugerne kan ikke deaktivere dem.
-
-      Bemærk, at denne politik tilsidesætter både DisabledPlugins og DisabledPluginsExceptions.
-
-      Hvis denne politik ikke er angivet, kan brugeren deaktivere alle plugins, der er installeret i systemet.</translation>
 <translation id="8672321184841719703">Målversion for automatiske opdateringer</translation>
 <translation id="868068801094828689">Aktiverer anonym rapportering af brugs- og nedbrudsrelaterede data om <ph name="PRODUCT_NAME" /> til Google og forhindrer brugerne i at ændre denne indstilling.
 
@@ -2385,13 +2349,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       automatisk Quirks Server og downloader konfigurationsfiler,
       hvis de er tilgængelige, som derefter gemmes på enheden.  Sådanne filer
       kan f.eks. anvendes til at forbedre kvaliteten af visningen af tilsluttede skærme.</translation>
-<translation id="8905426178924715309">Denne politik er udfaset. Brug ForceGoogleSafeSearch og ForceYouTubeSafetyMode i stedet. Denne politik ignoreres, hvis en af politikkerne ForceGoogleSafeSearch eller ForceYouTubeSafetyMode er angivet.
-
-      Gennemtvinger, at forespørgsler i Google Websøgning udføres med Beskyttet søgning slået til, og forhindrer brugere i at ændre denne indstilling. Denne indstilling gennemtvinger også Beskyttet tilstand på YouTube.
-
-      Hvis du aktiverer denne indstilling, vil Beskyttet søgning i Google Søgning og på YouTube altid være aktiv.
-
-      Hvis du deaktiverer denne indstilling eller ikke angiver en værdi, håndhæves Beskyttet søgning i Google Søgning og på YouTube ikke.</translation>
 <translation id="8906768759089290519">Aktivér gæstetilstand</translation>
 <translation id="8908294717014659003">Giver dig mulighed for at angive, om websites skal have adgang til optageenheder. Der kan gives adgang til optageenheder som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at få adgang til optageenheder.
 

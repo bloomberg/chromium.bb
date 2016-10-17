@@ -207,15 +207,6 @@
       Kung hindi naka-configure ang patakarang ito o kung ito ay nakatakda sa "tls1.2," hindi na isasagawa ng <ph name="PRODUCT_NAME" /> ang fallback na ito. Tandaang hindi nito dini-disable ang suporta para sa mga mas lumang bersyon ng TLS, kung gagana lang ang <ph name="PRODUCT_NAME" /> sa mga server na may maraming bug na hindi makakahanap ng kompromiso sa mga bersyon nang tama.
 
       Kung hindi, kung kailangang panatilihin ang compatibility sa isang server na maraming bug, maaaring itakda ang patakarang ito sa "tls1.1". Isa itong pansamantalang solusyon at dapat na maayos kaagad ang server.</translation>
-<translation id="1861037019115362154">Tumutukoy ng listahan ng mga plugin na hindi pinapagana sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
-
-      Maaaring gamitin ang mga wildcard na character na '*' at '?' upang itugma ang mga pagkakasunud-sunod ng mga arbitrary na character. Itinutugma ng '*' ang isang arbitrary na dami ng character habang tinutukoy ng '?' ang isang opsyonal na isahang character, hal. itinutugma ang zero o isang character. Ang escape character ay '\', kaya upang tumugma sa aktwal na '*', '?', o '\' na mga character, makakapaglagay ka ng '\' sa unahan ng mga ito.
-
-      Kung pinagana mo ang setting na ito, hindi kailanman gagamitin sa <ph name="PRODUCT_NAME" /> ang tinukoy na listahan ng mga plugin. Nilalagyan ng marka ang mga plugin bilang hindi pinapagana sa 'about:plugins' at hindi mapapagana ng mga user ang mga ito.
-
-      Tandaan na maaaring i-override ng EnabledPlugins at DisabledPluginsExceptions ang patakarang ito.
-
-      Kung hinayaang hindi nakatakda ang patakarang ito, magagamit ng user ang anumang plugin na naka-install sa system maliban sa mga naka-hard-code na plugin na hindi tugma, luma o mapanganib.</translation>
 <translation id="1864269674877167562">Kung nakatakda sa isang blangkong string o hindi naka-configure ang patakaran na ito, hindi magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng isang opsyon sa pag-autocomplete sa flow ng pag-sign in ng user.
       Kung ang patakaran na ito ay nakatakda sa isang string na kumakatawan sa isang domain name, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng opsyon sa pag-autocomplete sa pag-sign in ng user na nagbibigay-daan sa user na i-type lang ang kanyang user name nang wala ang extension ng domain name. Magagawa ng user na i-overwrite ang extension ng domain name na ito.</translation>
 <translation id="1865417998205858223">Mga Pangunahing Pahintulot</translation>
@@ -857,11 +848,6 @@
 <translation id="3660562134618097814">Ilipat ang cookies ng SAML IdP sa pag-log in</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
 <translation id="3711895659073496551">Suspendihin</translation>
-<translation id="3715448429089775791">Pinupuwersang maging aktibo ang YouTube Safety Mode at pinipigilan ang mga user sa pagbabago sa setting na ito.
-
-      Kung i-enable mo ang setting na ito, palaging aktibo ang Safety Mode sa YouTube.
-
-      Kung i-disable mo ang setting na ito o hindi nagtakda ng value, hindi ipapatupad ang Safety Mode sa YouTube.</translation>
 <translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
 <translation id="3756011779061588474">I-block ang mode ng developer</translation>
 <translation id="3758089716224084329">Binibigyang-daan kang tukuyin ang proxy server na ginamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
@@ -2122,12 +2108,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Ang mga kilalang identifier ng uri ng koneksyon ay "ethernet," "wifi," "wimax," "bluetooth" at "cellular."</translation>
 <translation id="7763614521440615342">Ipakita ang mga suhestyon sa content sa page ng Bagong Tab</translation>
-<translation id="7766336524667238790">Nag-uulat ng impormasyon tungkol sa aktibong session sa kiosk, gaya ng
-      application ID at bersyon.
-
-      Kung itatakda ang patakaran sa false, hindi iuulat ang impormasyon ng
-      session. Kung itatakda sa true o kung sadyang hindi itatakda, iuulat ang impormasyon
-      ng session.</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="7775831859772431793">Maaari mong itakda rito ang URL ng proxy server.
 
@@ -2364,6 +2344,10 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8369602308428138533">Delay ng pag-off ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
+<translation id="8390049129576938611">Dini-disable ang internal PDF viewer sa <ph name="PRODUCT_NAME" />. Sa halip, itinuturing nito ito bilang download at pinapayagan ang user na magbukas ng mga PDF na file gamit ang default na application.
+
+      Kung iiwanang hindi nakatakda o naka-disable ang patakarang ito, gagamitin ang PDF plugin upang magbukas ng mga PDF file maliban na lang kung idi-disable ito ng user.</translation>
+<translation id="8402079500086185021">Palaging Magbukas ng mga PDF file nang external</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="8413348101535146315">Ine-enable ang pagwawakas ng mga proseso sa Task Manager ng <ph name="PRODUCT_NAME" />.
 
@@ -2384,17 +2368,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Huwag paganahin ang pag-save ng kasaysayan ng browser</translation>
 <translation id="8499172469244085141">Mga Default na Setting (maaaring i-override ng mga user)</translation>
-<translation id="8501011084242226370">Tumutukoy ng listahan ng mga plugin na maaaring i-enable o i-disable ng user sa <ph name="PRODUCT_NAME" />.
-
-      Maaaring gamitin ang mga wildcard character na '*' at '?' upang itugma sa mga sequence ng mga arbitrary character. Tumutugma ang '*' sa isang arbitrary na bilang ng mga character habang tinutukoy ng '?' ang isang opsyonal na iisang character, na tumutugma sa mga character na zero o one. Ang escape character ay '\', kaya upang itugma ang mga aktwal na character na '*', '?', o '\', maaari kang maglagay ng '\' sa harap ng mga ito.
-
-      Kung i-e-enable mo ang setting na ito, magagamit ang mga natukoy na listahan ng mga plugin sa <ph name="PRODUCT_NAME" />. Maaaring i-enable o i-disable ng mga user ang mga iyon sa 'about:plugins,' kahit na tumutugma rin ang plugin sa isang pattern sa DisabledPlugins. Maaari ding mag-enable at mag-disable ang mga user ng mga plugin na hindi tumutugma sa anumang mga pattern sa DisabledPlugins, DisabledPluginsExceptions at EnabledPlugins.
-
-      Nakalaan ang patakarang ito upang payagan ang mahigpit na pag-blacklist ng plugin kung saan naglalaman ang listahan ng 'DisabledPlugins' ng mga naka-wildcard na entry tulad ng i-disable ang lahat ng plugin na '*' o i-disable ang lahat ng Java plugin na '*Java*' ngunit hinihiling ng administrator na i-enable ang ilang partikular na bersyon tulad ng 'IcedTea Java 2.3.' Matutukoy ang mga partikular na bersyong ito sa patakarang ito.
-
-      Tandaan na hindi dapat kasama ang parehong pangalan ng plugin at ang pangalan ng pangkat ng plugin. Ipinapakita ang bawat pangkat ng plugin sa isang hiwalay na seksyon sa about:plugins; maaaring may isa o higit pang mga plug-in ang bawat seksyon. Halimbawa, nabibilang ang plugin na "Shockwave Flash" sa pangkat na "Adobe Flash Player," at kailangan may katugma ang parehong pangalan sa listahan ng mga exception kung hindi isasama ang plugin na iyon sa blacklist.
-
-      Kung iniwang hindi nakatakda ang patakarang ito, ila-lock nang naka-disable ang anumang plugin na tumutugma sa mga pattern sa 'DisabledPlugins' at hindi ma-e-enable ng user ang mga iyon.</translation>
 <translation id="8519264904050090490">Mga pinapamahalaang URL ng manu-manong exception ng user</translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
@@ -2435,15 +2408,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Paghiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).
 
           Kung iiwanan mong hindi nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na i-detect kung nasa Intranet ang server, at kung oo ay doon lang ito tutugon sa mga kahilingan ng IWA.  Kung na-detect ang server bilang Internet, babalewalain ng <ph name="PRODUCT_NAME" /> ang mga kahilingan ng IWA mula dito.</translation>
-<translation id="8668394701842594241">Tumutukoy ng isang listahan ng mga plugin na pinagana sa <ph name="PRODUCT_NAME" /> at pumipigil sa mga user na baguhin ang setting na ito.
-
-      Magagamit ang mga wildcard na character na '*' at '?' upang itugma ang mga pagkakasunud-sunod ng mga arbitrary na character. Itinutugma ng '*' ang isang arbitrary na numero ng mga character habang tinutukoy ng '?' ang isang opsyonal na isahang character, hal. itinutugma ang zero o isang character. Ang escape na character ay '\', kaya upang tumugma sa aktwal na '*', '?', o '\' na mga character, maaari kang maglagay ng isang '\' sa harap ng mga ito.
-
-      Palaging ginagamit sa <ph name="PRODUCT_NAME" /> ang tinukoy na listahan ng mga plugin kung naka-install ang mga ito. Ang mga plugin ay minamarkahan bilang pinagana sa 'about:plugins' at hindi magagawa ng mga user na hindi paganahin ang mga ito.
-
-      Tandaang ino-override ng patakarang ito ang parehong DisabledPlugins at DisabledPluginsExceptions.
-
-      Kung hinayaang hindi nakatakda ang patakarang ito maaaring hindi paganahin ng user ang anumang plugin na naka-install sa system.</translation>
 <translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="868068801094828689">Ine-enable ang anonymous na pag-uulat sa Google ng data ng paggamit at nauugnay sa pag-crash ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago sa setting na ito.
 
@@ -2542,13 +2506,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       sa Quirks Server at ida-download nito ang mga configuration file,
       kung available, at iiimbak ang mga ito sa device.  Ang mga naturang file, halimbawa,
       ay maaaring gamitin upang pagandahin ang kalidad ng display ng mga naka-attach na monitor.</translation>
-<translation id="8905426178924715309">Hindi na ginagamit ang patakarang ito, pakigamit na lang ang ForceGoogleSafeSearch at ForceYouTubeSafetyMode. Babalewalain ang patakarang ito kung itatakda ang alinman sa mga patakarang ForceGoogleSafeSearch o ForceYouTubeSafetyMode.
-
-      Pinupuwersang isagawa ang mga query sa Google Web Search nang nakatakda ang SafeSearch sa aktibo at pinipigilan ang mga user na baguhin ang setting na ito. Ipinapatupad din ng setting na ito ang Safety Mode sa YouTube.
-
-      Kung ie-enable mo ang setting na ito, palaging aktibo ang SafeSearch sa Google Search at YouTube.
-
-      Kung idi-disable mo ang setting na ito o kung hindi ka magtatakda ng value, hindi ipapatupad ang SafeSearch sa Google Search at YouTube.</translation>
 <translation id="8906768759089290519">Payagan ang mode ng bisita</translation>
 <translation id="8908294717014659003">Binibigyang-daan kang itakda kung papayagan ang mga website na makakuha ng access sa mga media capture na device. Maaaring payagan bilang default ang access sa mga media capture na device, o maaaring tanungin ang user sa tuwing may website na nagnanais na mag-access sa mga media capture na device.
 

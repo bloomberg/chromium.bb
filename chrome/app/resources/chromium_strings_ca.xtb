@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
 <translation id="2241627712206172106">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chromium com vulguin.</translation>
 <translation id="225614027745146050">Benvingut</translation>
+<translation id="2264142189334629813">Chromium OS no pot obrir aquesta pàgina.</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
 <translation id="2347108572062610441">Aquesta extensió ha canviat la pàgina que es mostra quan inicieu Chromium.</translation>
 <translation id="2372704305038231957">Pot ser que Chromium de 32 bits no funcioni correctament perquè ja no és compatible amb aquest sistema Linux. Feu l'actualització a Chromium de 64 bits.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium no pot llegir ni escriure en el directori de dades:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium és el navegador predeterminat. Gaudeix-ne.</translation>
 <translation id="328888136576916638">Falten les claus de l'API de Google. Es desactivaran algunes de les funcions de Chromium.</translation>
 <translation id="3289635842886789612">Chromium no està actualitzat.</translation>
 <translation id="3296368748942286671">Continua executant les aplicacions en segon pla quan es tanqui Chromium</translation>

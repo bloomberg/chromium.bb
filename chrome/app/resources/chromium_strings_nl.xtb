@@ -39,6 +39,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2158734852934720349">Open-sourcelicenties van Chromium OS</translation>
 <translation id="2241627712206172106">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chromium configureren zoals zij dat willen.</translation>
 <translation id="225614027745146050">Welkom</translation>
+<translation id="2264142189334629813">Chromium OS kan deze pagina niet openen.</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
 <translation id="2347108572062610441">Deze extensie heeft gewijzigd welke pagina wordt weergegeven wanneer je Chromium start.</translation>
 <translation id="2372704305038231957">De 32-bits versie van Chromium werkt mogelijk niet correct omdat deze niet meer wordt ondersteund op dit Linux-systeem. Upgrade naar de 64-bits versie van Chromium.</translation>
@@ -77,6 +78,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3258596308407688501">Chrome kan niet lezen van en schrijven naar de eigen gegevensdirectory :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium is je standaardbrowser.</translation>
 <translation id="328888136576916638">Google API-sleutels ontbreken. Sommige functies van Chromium worden uitgeschakeld.</translation>
 <translation id="3289635842886789612">Chromium is verouderd.</translation>
 <translation id="3296368748942286671">Achtergrondapps ingeschakeld houden als Chromium is gesloten</translation>

@@ -33,7 +33,6 @@
 <translation id="177096447311351977">‏عنوان IP للقناة التابع للعميل: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">إغلاق النافذة</translation>
 <translation id="1841799852846221389">جارٍ تعطيل الاتصالات عن بُعد لهذا الكمبيوتر...</translation>
-<translation id="189172778771606813">إغلاق لائحة التنقل</translation>
 <translation id="1897488610212723051">حذف</translation>
 <translation id="195619862187186579">تخطيطات لوحة المفاتيح</translation>
 <translation id="1996161829609978754">‏يجري Chrome تنزيلاً لأداة تثبيت مضيف تطبيق التوافق مع نظام التشغيل Chrome. بعد اكتمال التنزيل، يرجى تشغيل أداة التثبيت قبل المتابعة.</translation>
@@ -114,6 +113,7 @@
 التوافق مع نظام التشغيل</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3884839335308961732">‏يُرجى التأكيد على حسابك ورقم تعريفك الشخصي أدناه للسماح بالدخول من خلال سطح المكتب البعيد من Chrome.</translation>
+<translation id="3897092660631435901">قائمة</translation>
 <translation id="3905196214175737742">نطاق مالك المضيف غير صالح.</translation>
 <translation id="3908017899227008678">تقليص للملاءمة</translation>
 <translation id="3931191050278863510">المضيف توقف.</translation>
@@ -167,7 +167,6 @@
 <translation id="5070121137485264635">‏يتطلب منك المضيف البعيد مصادقة موقع ويب لجهة خارجية. للمتابعة، يجب منح تطبيق سطح المكتب البعيد من Chrome أذونات إضافية للدخول إلى هذا العنوان:</translation>
 <translation id="507204348399810022">هل تريد بالتأكيد تعطيل الاتصالات عن بُعد بـ <ph name="HOSTNAME" />؟</translation>
 <translation id="5156271271724754543">الرجاء إدخال رقم التعريف الشخصي نفسه في كلا المربعين.</translation>
-<translation id="5168917394043976756">فتح لائحة التنقل</translation>
 <translation id="5170982930780719864">رقم تعريف المضيف غير صالح.</translation>
 <translation id="518094545883702183">ولا تستخدم هذه المعلومات سوى لتشخيص المشكلة التي قدمت عنها التقرير، كما أنها غير متاحة إلا للشخص الذي يحقق في تقريرك، ويتم الاحتفاظ بها لمدة لا تتجاوز 30 يومًا.</translation>
 <translation id="5222676887888702881">الخروج</translation>

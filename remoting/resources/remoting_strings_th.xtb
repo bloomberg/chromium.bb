@@ -33,7 +33,6 @@
 <translation id="177096447311351977">IP ช่องสำหรับไคลเอ็นต์: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">ปิดหน้าต่าง</translation>
 <translation id="1841799852846221389">กำลังปิดใช้งานการเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้…</translation>
-<translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
 <translation id="1897488610212723051">ลบ</translation>
 <translation id="195619862187186579">การจัดวางแป้นพิมพ์</translation>
 <translation id="1996161829609978754">Chrome กำลังดาวน์โหลดตัวติดตั้ง Chromoting Host เมื่อดาวน์โหลดเสร็จแล้ว โปรดเรียกใช้โปรแกรมติดตั้งก่อนดำเนินการต่อ</translation>
@@ -114,6 +113,7 @@
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่ออนุญาตให้ Chrome Remote Desktop สามารถเข้าถึง</translation>
+<translation id="3897092660631435901">เมนู</translation>
 <translation id="3905196214175737742">โดเมนเจ้าของโฮสต์ไม่ถูกต้อง</translation>
 <translation id="3908017899227008678">ลดขนาดให้พอดี</translation>
 <translation id="3931191050278863510">หยุดโฮสต์แล้ว</translation>
@@ -166,7 +166,6 @@ Desktop Host</translation>
 <translation id="5070121137485264635">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chrome Remote Desktop เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="507204348399810022">คุณแน่ใจไหมว่าต้องการปิดใช้การเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME" /></translation>
 <translation id="5156271271724754543">โปรดป้อน PIN เดียวกันลงในทั้งสองช่อง</translation>
-<translation id="5168917394043976756">เปิดลิ้นชักการนำทาง</translation>
 <translation id="5170982930780719864">รหัสโฮสต์ไม่ถูกต้อง</translation>
 <translation id="518094545883702183">ข้อมูลนี้จะใช้เพื่อวินิจฉัยปัญหาที่คุณรายงานเท่านั้น โดยจะมีเพียงผู้ตรวจสอบรายงานเท่านั้นที่ใช้งานได้ และจะมีการเก็บรักษาไว้ไม่เกิน 30 วัน</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>

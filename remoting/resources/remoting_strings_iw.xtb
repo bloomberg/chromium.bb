@@ -33,7 +33,6 @@
 <translation id="177096447311351977">‏IP הערוץ של הלקוח: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' ערוץ='<ph name="CHANNEL_TYPE" />' חיבור='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">סגור חלון</translation>
 <translation id="1841799852846221389">משבית חיבורים מרוחקים למחשב זה...</translation>
-<translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
 <translation id="1897488610212723051">מחק</translation>
 <translation id="195619862187186579">פריסות מקלדת</translation>
 <translation id="1996161829609978754">‏Chrome מוריד את מתקין המארח של Chromoting. בסיום ההורדה, הפעל את המתקין לפני שתמשיך.</translation>
@@ -114,6 +113,7 @@
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה כדי לאפשר גישה באמצעות שולחן העבודה המרוחק של Chrome.</translation>
+<translation id="3897092660631435901">תפריט</translation>
 <translation id="3905196214175737742">דומיין לא חוקי של בעל המארח.</translation>
 <translation id="3908017899227008678">הקטן להתאמה</translation>
 <translation id="3931191050278863510">המארח הופסק.</translation>
@@ -166,7 +166,6 @@ Chromoting</translation>
 <translation id="5070121137485264635">‏המארח המרוחק דורש שתבצע אימות מול אתר של צד שלישי. כדי להמשיך, עליך להעניק לשולחן העבודה המרוחק של Chrome הרשאות נוספות כדי לגשת לכתובת זו:</translation>
 <translation id="507204348399810022">האם אתה בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">‏הזן את אותו PIN בשתי התיבות.</translation>
-<translation id="5168917394043976756">פתח את חלונית ההזזה לניווט</translation>
 <translation id="5170982930780719864">מזהה מארח לא חוקי.</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>
 <translation id="5222676887888702881">יציאה</translation>

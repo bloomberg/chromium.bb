@@ -33,7 +33,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="177096447311351977">IP de canal para cliente: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Cerrar ventana</translation>
 <translation id="1841799852846221389">Inhabilitando conexiones remotas con esta computadora…</translation>
-<translation id="189172778771606813">Cerrar panel lateral de navegación</translation>
 <translation id="1897488610212723051">Borrar</translation>
 <translation id="195619862187186579">Diseños de teclado</translation>
 <translation id="1996161829609978754">Chrome está descargando el instalador del host de  Chromoting. Cuando termine la descarga, abre el instalador antes de continuar.</translation>
@@ -114,6 +113,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso del Escritorio remoto de Chrome.</translation>
+<translation id="3897092660631435901">Menú</translation>
 <translation id="3905196214175737742">Dominio del propietario del host no válido</translation>
 <translation id="3908017899227008678">Ajustar tamaño a ventana de navegador</translation>
 <translation id="3931191050278863510">Se detuvo el host.</translation>
@@ -166,7 +166,6 @@ remoto de Chrome</translation>
 <translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="507204348399810022">¿Seguro que deseas inhabilitar las conexiones remotas a <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Ingresa el mismo PIN en ambos cuadros.</translation>
-<translation id="5168917394043976756">Abrir panel lateral de navegación</translation>
 <translation id="5170982930780719864">ID de host no válido</translation>
 <translation id="518094545883702183">Esta información solo se usa con el fin de diagnosticar el problema informado, solo está disponible para la persona que investiga el informe y se guarda por no más de 30 días.</translation>
 <translation id="5222676887888702881">Salir</translation>

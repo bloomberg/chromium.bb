@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4376501731284077108">不限</translation>
 <translation id="4378154925671717803">电话</translation>
+<translation id="4384468725000734951">使用搜狗进行搜索</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4440256989292146959">加载更快，流量更省</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">启用</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
 <translation id="5939518447894949180">重置</translation>
+<translation id="5942872142862698679">使用 Google 进行搜索</translation>
+<translation id="6000066717592683814">默认使用 Google</translation>
 <translation id="6010869025736512584">正在存取视频输入</translation>
 <translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
 <translation id="6031101910111098835">已折叠 - 点击即可展开</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
+<translation id="617991007797131187">Chrome 可以使用搜狗在中国境内进行搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中更改此设置。</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">选择要传输的标签页</translation>
 <translation id="6545017243486555795">清除所有数据</translation>
 <translation id="6550675742724504774">选项</translation>
+<translation id="6560414384669816528">使用搜狗进行搜索</translation>
 <translation id="656628257199996201">一律翻译<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">修改信用卡</translation>
 <translation id="6573431926118603307">您在其他设备上的 Chrome 中打开的标签页将列在此处。</translation>

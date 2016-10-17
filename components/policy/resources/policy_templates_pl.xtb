@@ -207,7 +207,6 @@
       Jeśli ta zasada nie jest skonfigurowana lub jest ustawiona na „tls1.2”, <ph name="PRODUCT_NAME" /> nie stosuje już tego rozwiązania zastępczego. Pamiętaj, że nie wyłącza to obsługi starszych wersji protokołu TLS, tylko określa, czy <ph name="PRODUCT_NAME" /> będzie mieć możliwość obejścia wadliwie działających serwerów, które nie są w stanie przeprowadzić prawidłowego negocjowania wersji.
 
       Jeśli utrzymanie zgodności z wadliwie działającym serwerem jest konieczne, można wybrać „tls1.1”. To jednak tylko rozwiązanie tymczasowe – serwer trzeba jak najszybciej naprawić.</translation>
-<translation id="1861037019115362154">Pozwala określić listę wtyczek wyłączonych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego by wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w <ph name="PRODUCT_NAME" />. Wtyczki są oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie mogą ich włączyć. Pamiętaj, że ta zasada jest zastępowana przez zasady EnabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
 <translation id="1864269674877167562">Jeśli ta zasada jest pusta lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać opcji autouzupełniania podczas logowania użytkownika.
       Jeśli zasada jest ustawiona na nazwę domeny, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać opcję autouzupełniania podczas logowania użytkownika, umożliwiając mu wpisanie tylko jego nazwy, bez konieczności podawania rozszerzenia nazwy domeny. Użytkownik będzie mógł zastąpić rozszerzenie nazwy domeny.</translation>
 <translation id="1865417998205858223">Uprawnienia klucza</translation>
@@ -814,11 +813,6 @@
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
-<translation id="3715448429089775791">Wymusza włączenie trybu bezpiecznego w YouTube i uniemożliwia zmianę tego ustawienia przez użytkowników.
-
-      Jeśli włączysz to ustawienie, tryb bezpieczny w YouTube będzie zawsze aktywny.
-
-      Jeśli wyłączysz to ustawienie lub nie ustawisz wartości, tryb bezpieczny w YouTube nie będzie wymuszany.</translation>
 <translation id="3750220015372671395">Blokuj generowanie kluczy w tych witrynach</translation>
 <translation id="3756011779061588474">Zablokuj tryb programisty</translation>
 <translation id="3758089716224084329">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
@@ -1974,12 +1968,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
 <translation id="7763614521440615342">Pokazuj polecane treści na stronie Nowa karta</translation>
-<translation id="7766336524667238790">Przesyłaj informacje o aktywnej sesji publicznej, np.
-      dotyczące identyfikatora i wersji aplikacji.
-
-      Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane.
-      Jeśli zasada jest włączona lub nieustawiona, informacje o sesji
-      będą przesyłane.</translation>
 <translation id="7774768074957326919">Używaj systemowych ustawień serwera proxy</translation>
 <translation id="7775831859772431793">W tym miejscu możesz podać URL serwera proxy.
 
@@ -2205,6 +2193,10 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
+<translation id="8390049129576938611">Wyłącza wewnętrzną przeglądarkę plików PDF w <ph name="PRODUCT_NAME" />. Pliki PDF będą traktowane jako pobrane i użytkownik będzie mógł je otwierać w aplikacji domyślnej.
+
+      Jeśli ta zasada nie zostanie ustawiona lub zostanie wyłączona, do otwierania plików PDF będzie używana wtyczka PDF, chyba że użytkownik ją wyłączy.</translation>
+<translation id="8402079500086185021">Zawsze otwieraj pliki PDF zewnętrznie</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
 <translation id="8413348101535146315">Umożliwia kończenie procesów w Menedżerze zadań <ph name="PRODUCT_NAME" />.
 
@@ -2225,17 +2217,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
 <translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
-<translation id="8501011084242226370">Określa listę wtyczek, które użytkownik może włączyć lub wyłączyć w <ph name="PRODUCT_NAME" />.
-
-      W celu odwzorowania sekwencji dowolnych znaków można użyć symboli wieloznacznych „*” i „?”. Symbol „*” odpowiada dowolnej liczbie znaków, a „?” określa opcjonalny pojedynczy znak, czyli oznacza jeden znak lub brak znaku. Znak ucieczki – „\” – umieszczony przed znakami „*”, „?” lub „\” pozwala określić ich podstawowe znaczenie.
-
-      Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie możliwe użycie określonej listy wtyczek. Użytkownicy będą mogli je włączać i wyłączać w „about:plugins”, nawet jeśli dana wtyczka będzie też pasowała do wzorca określonego w DisabledPlugins. Użytkownicy będą mogli też włączać i wyłączać wtyczki, które nie pasują do żadnego wzorca w DisabledPlugins, DisabledPluginsExceptions ani EnabledPlugins.
-
-      Celem tej zasady jest umożliwienie utworzenia ścisłej czarnej listy wtyczek, w przypadku gdy lista „DisabledPlugins” zawiera wpisy z symbolami wieloznacznymi, takie jak wyłączające wszystkie wtyczki „*” czy wyłączające wszystkie wtyczki Javy „*Java*”, ale administrator chce włączyć pewne określone wersje, na przykład „IcedTea Java 2.3”. Te konkretne wersje można określić w tej zasadzie.
-
-      Pamiętaj, że musisz wykluczyć zarówno nazwę wtyczki, jak i nazwę grupy wtyczek. Każdą grupę wtyczek widać w oddzielnej sekcji w about:plugins, a do każdej sekcji może należeć co najmniej jedna wtyczka. Na przykład wtyczka „Shockwave Flash” należy do grupy „Adobe Flash Player” i jeśli ma być wykluczona z czarnej listy, obie te nazwy muszą mieć swoje odpowiedniki na liście wyjątków.
-
-      Jeśli nie skonfigurujesz tej zasady, wszystkie wtyczki pasujące do wzorca w „DisabledPlugins” będą blokowane i użytkownik nie będzie mógł ich włączyć.</translation>
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
@@ -2274,7 +2255,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           Nazwy serwerów należy rozdzielić przecinkami. Można używać symboli wieloznacznych (*).
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> próbuje wykryć, czy serwer jest w intranecie, i tylko wtedy odpowiada na żądania IWA. W przypadku serwera internetowego <ph name="PRODUCT_NAME" /> ignoruje żądania IWA.</translation>
-<translation id="8668394701842594241">Określa listę wtyczek włączonych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, które zastąpią sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego aby wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Wtyczki wymienione na liście są zawsze używane w <ph name="PRODUCT_NAME" />, jeśli zostały zainstalowane. Wtyczki są oznaczone jako włączone na stronie „about:plugins”, a użytkownicy nie mogą ich wyłączyć. Pamiętaj, że ta zasada zastępuje zasady DisabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie skonfigurowana, użytkownik będzie mógł wyłączyć każdą wtyczkę zainstalowaną w systemie.</translation>
 <translation id="8672321184841719703">Wersja docelowa automatycznych aktualizacji</translation>
 <translation id="868068801094828689">Włącza anonimowe przesyłanie do Google raportów o użytkowaniu i danych o awariach <ph name="PRODUCT_NAME" /> oraz blokuje możliwość zmiany tego ustawienia przez użytkowników.
 
@@ -2361,13 +2341,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       automatycznie pobierać pliki konfiguracyjne z Quirks Server
       (jeśli będą dostępne) i zapisywać je na urządzeniu. Takie pliki mogą
       na przykład poprawiać jakość obrazu na podłączonych monitorach.</translation>
-<translation id="8905426178924715309">Ta zasada została wycofana. Zamiast niej użyj ForceGoogleSafeSearch lub ForceYouTubeSafetyMode. Zasada zostanie zignorowana, jeśli ustawiona zostanie zasada ForceGoogleSafeSearch lub ForceYouTubeSafetyMode.
-
-      Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtra SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie Trybu bezpiecznego w YouTube.
-
-      Jeśli włączysz to ustawienie, filtr SafeSearch w wyszukiwarce Google i YouTube będzie zawsze aktywny.
-
-      Jeśli je wyłączysz albo nie podasz wartości, stosowanie filtra SafeSearch w wyszukiwarce Google i YouTube nie będzie wymuszane.</translation>
 <translation id="8906768759089290519">Włącz tryb gościa</translation>
 <translation id="8908294717014659003">Pozwala określić, czy strony mogą korzystać z urządzeń do rejestrowania multimediów. Dostęp do tych urządzeń może być dozwolony domyślnie lub użytkownik może być pytany za każdym razem, gdy strona chce użyć urządzenia do rejestrowania multimediów.
 

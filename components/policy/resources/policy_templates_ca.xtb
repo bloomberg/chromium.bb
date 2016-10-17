@@ -203,15 +203,6 @@
       Si aquesta política no es configura o s'hi estableix el valor "tls1.2", <ph name="PRODUCT_NAME" /> ja no segueix el procés alternatiu. Tingueu en compte que aquesta configuració no desactiva la compatibilitat amb versions anteriors de TLS, sinó que només defineix si <ph name="PRODUCT_NAME" /> evita els servidors amb errors que no puguin negociar correctament les versions.
 
       Si cal mantenir la compatibilitat amb un servidor amb errors, es pot establir el valor "tls1.1" a la política. És un recurs temporal que no treu la necessitat de reparar el servidor ràpidament.</translation>
-<translation id="1861037019115362154">Especifica una llista de connectors que estan desactivats a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris puguin canviar aquesta configuració.
-
-      Els caràcters comodí "*" i "?" es poden utilitzar per fer coincidir les seqüències de caràcters arbitraris. "*" coincideix amb un nombre arbitrari de caràcters, mentre que "?" especifica un sol caràcter opcional (per exemple, coincideix amb els caràcters zero o un). El caràcter d'escapada és "\", de manera que, per tal que coincideixi amb els caràcters "*", "?" o "\" reals, podeu col·locar el caràcter "\" al davant.
-
-      Si activeu aquest paràmetre, la llista de connectors especificada no s'utilitzarà mai a <ph name="PRODUCT_NAME" />. Els connectors estaran marcats com a desactivats a "about:plugins" i els usuaris no podran activar-los.
-
-      Tingueu en compte que aquesta política es pot substituir per EnabledPlugins i DisabledPluginsExceptions.
-
-      Si no definiu aquesta política, l'usuari no podrà utilitzar cap connector instal·lat al sistema, excepte en el cas de connectors codificats incompatibles, obsolets o perillosos.</translation>
 <translation id="1864269674877167562">Si aquesta política s'estableix en una cadena en blanc o no està configurada, <ph name="PRODUCT_OS_NAME" /> no mostrarà una opció d'emplenament automàtic durant el flux d'inici de sessió de l'usuari.
       Si aquesta política s'estableix en una cadena que representa un nom de domini, <ph name="PRODUCT_OS_NAME" /> mostrarà una opció de compleció automàtica durant l'inici de sessió de l'usuari que li permetrà escriure només el nom d'usuari, sense l'extensió del nom del domini. L'usuari podrà substituir aquesta extensió del nom del domini.</translation>
 <translation id="1865417998205858223">Permisos clau</translation>
@@ -816,11 +807,6 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
-<translation id="3715448429089775791">Força l'activació del mode de seguretat de YouTube i impedeix que els usuaris canviïn aquesta opció de configuració.
-
-      Si activeu aquesta opció, el mode de seguretat de YouTube està sempre activat.
-
-      Si la desactiveu o no hi establiu cap valor, el mode de seguretat de YouTube no s'aplica.</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758089716224084329">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
@@ -1976,12 +1962,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Els identificadors de tipus de connexió reconeguts són "ethernet", "wifi", "wimax", "bluetooth" i "xarxes mòbils".</translation>
 <translation id="7763614521440615342">Mostra suggeriments de contingut a la pàgina Pestanya nova</translation>
-<translation id="7766336524667238790">Ofereix informació de la sessió de quiosc activa, com ara
-      l'identificador i la versió de l'aplicació.
-
-      Si la política s'estableix en "false", no s'ofereix informació
-      de la sessió. Si s'estableix en "true" o no s'estableix, s'ofereix informació
-      de la sessió.</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
 <translation id="7775831859772431793">Permet especificar l'URL del servidor intermediari.
 
@@ -2204,6 +2184,10 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8369602308428138533">Retard de la desactivació de pantalla quan s'utilitza alimentació</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
+<translation id="8390049129576938611">Desactiva el lector de PDF intern a <ph name="PRODUCT_NAME" />. En el seu lloc, tracta els fitxers PDF com una baixada i permet que l'usuari els obri amb l'aplicació predeterminada.
+
+      Si aquesta política es deixa sense establir o es desactiva, s'utilitzarà el connector de PDF per obrir aquest tipus de fitxers (tret que l'usuari el desactivi).</translation>
+<translation id="8402079500086185021">Obre sempre els fitxers PDF amb una altra aplicació</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
 <translation id="8413348101535146315">Permet finalitzar processos al gestor de tasques de <ph name="PRODUCT_NAME" />.
 
@@ -2226,17 +2210,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
           Per veure exemples de patrons, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Desactiva el desament de l'historial de navegació</translation>
 <translation id="8499172469244085141">Configuració predeterminada (els usuaris la poden sobreescriure)</translation>
-<translation id="8501011084242226370">Especifica una llista de connectors que l'usuari pot activar o desactivar a <ph name="PRODUCT_NAME" />.
-
-      Els caràcters comodí "*" i "?" es poden utilitzar per cercar coincidències amb seqüències de caràcters arbitraris. "*" equival a un nombre arbitrari de caràcters, mentre que "?" especifica un sol caràcter opcional, és a dir, coincideix amb un caràcter o no coincideix amb cap caràcter. El caràcter d'escapada és "\". Per tant, per coincidir amb els caràcters "*", "?" o "\", podeu col·locar-hi "\" al davant.
-
-      Si activeu aquesta configuració, la llista de connectors especificada es pot utilitzar a <ph name="PRODUCT_NAME" />. Els usuaris els poden activar o desactivar a "about:plugins", encara que el connector també coincideixi amb un patró de DisabledPlugins. Els usuaris també poden activar i desactivar connectors que no coincideixin amb cap patró de DisabledPlugins, de DisabledPluginsExceptions i d'EnabledPlugins.
-
-      La finalitat d'aquesta política és permetre crear llistes negres estrictes de connectors en què la llista "DisabledPlugins" contingui entrades amb comodins, com ara desactivar tots els connectors ("*") o desactivar tots els connectors Java ("*Java*"), però on l'administrador vulgui activar-ne una versió concreta, com ara "IcedTea Java 2.3". Aquesta versió concreta es pot especificar en aquesta política.
-
-      Tingueu en compte que cal eximir tant el nom del connector com el nom del grup del connector. Cada grup de connectors es mostra en una secció independent a "about:plugins"; cada secció pot tenir un o més connectors. Per exemple, el connector "Shockwave Flash" pertany al grup "Adobe Flash Player" i tots dos noms han de tenir una coincidència a la llista d'excepcions si cal eximir el connector de la llista negra.
-
-      Si aquesta política es deixa sense configurar, els connectors que coincideixin amb els patrons de "DisabledPlugins" es bloquejaran i es desactivaran i l'usuari no podrà activar-los.</translation>
 <translation id="8519264904050090490">URL d'excepcions manuals d'usuari gestionat</translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
@@ -2271,15 +2244,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
           Separeu els diversos noms de servidor amb comes. Es permet l'ús de comodins (*).
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> provarà de detectar si un servidor es troba a la intranet i, en aquest cas, respondrà a les sol·licituds IWA. Si es detecta un servidor com a Internet, aleshores <ph name="PRODUCT_NAME" /> ometrà les sol·licituds IWA que enviï.</translation>
-<translation id="8668394701842594241">Especifica una llista de connectors que s'activen a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta configuració.
-
-      Els caràcters comodí "*" i "?" es poden utilitzar per fer que coincideixin amb seqüències de caràcters arbitraris. "*" coincideix amb un nombre arbitrari de caràcters mentre que "?" especifica un únic caràcter opcional, és a dir, coincideix amb els caràcters zero i un. El caràcter d'escapada és "\", de manera que per tal que coincideixi amb els caràcters "*", "?", o "\" reals, podeu col·locar el caràcter "\" a davant.
-
-      La llista determinada de connectors sempre s'utilitza a <ph name="PRODUCT_NAME" /> si estan instal·lats. Els connectors es marquen com a activats a "about:plugins" i els usuaris no els poden desactivar.
-
-      Tingueu en compte que aquesta política substitueix tant DisabledPlugins com DisabledPluginsExceptions.
-
-      Si no es defineix aquesta política, l'usuari podrà desactivar qualsevol connector instal·lat al sistema.</translation>
 <translation id="8672321184841719703">Versió objectiu de l'actualització automàtica</translation>
 <translation id="868068801094828689">Permet l'enviament d'informes anònims a Google sobre dades d'errors i d'ús relacionades amb <ph name="PRODUCT_NAME" /> i impedeix que els usuaris modifiquin aquesta opció.
 
@@ -2351,13 +2315,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si aquesta política s'estableix en "false", el dispositiu no prova de contactar amb Quirks Server per baixar els fitxers de configuració.
 
       Si s'estableix en "true" o no s'estableix, <ph name="PRODUCT_OS_NAME" /> contacta automàticament amb el Quirks Server, baixa els fitxers de configuració, si estan disponibles, i els emmagatzema al dispositiu. Aquests fitxers es poden utilitzar, per exemple, per millorar la qualitat dels monitors connectats.</translation>
-<translation id="8905426178924715309">Aquesta política està obsoleta; substituïu-la per ForceGoogleSafeSearch i per ForceYouTubeSafetyMode. S'ignorarà si ForceGoogleSafeSearch o ForceYouTubeSafetyMode estan establertes.
-
-      Força que les consultes de la Cerca web de Google es facin amb la funció SafeSearch activada i impedeix que els usuaris canviïn aquesta opció de configuració. Aquesta opció també força el mode de seguretat a YouTube.
-
-      Si activeu aquesta opció, SafeSearch estarà sempre activa a la Cerca de Google i a YouTube.
-
-      Si desactiveu aquesta opció o si no hi establiu cap valor, SafeSearch no s'aplicarà a la Cerca de Google ni a YouTube.</translation>
 <translation id="8906768759089290519">Activa el mode de convidat</translation>
 <translation id="8908294717014659003">Us permet decidir si els llocs web poden accedir als vostres dispositius de captura multimèdia. Es pot proporcionar accés als dispositius de captura multimèdia de manera predeterminada o demanar permís a l'usuari cada vegada que un lloc web vol accedir als dispositius de captura multimèdia.
 

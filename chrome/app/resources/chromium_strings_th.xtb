@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">ใบอนุญาตโอเพนซอร์สของ Chromium OS</translation>
 <translation id="2241627712206172106">ถ้าคุณให้ผู้อื่นใช้คอมพิวเตอร์ร่วมด้วย เพื่อนๆ และครอบครัวของคุณสามารถท่องเว็บแยกกันได้และตั้งค่า Chromium ได้ตามที่พวกเขาต้องการ</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
+<translation id="2264142189334629813">Chromium OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
 <translation id="2347108572062610441">ส่วนขยายนี้ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chromium</translation>
 <translation id="2372704305038231957">Chromium แบบ 32 บิตอาจทำงานได้ไม่ถูกต้องเนื่องจากระบบ Linux นี้ไม่รองรับอีกต่อไป โปรดอัปเกรดเป็น Chromium แบบ 64 บิต</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium เป็นเบราว์เซอร์เริ่มต้นของคุณ ไชโย</translation>
 <translation id="328888136576916638">คีย์ API ของ Google หายไป การทำงานบางอย่างของ Chromium จะถูกปิดใช้งาน</translation>
 <translation id="3289635842886789612">Chromium ล้าสมัย</translation>
 <translation id="3296368748942286671">เรียกใช้แอปพลิเคชันพื้นหลังต่อไปเมื่อปิด Chromium</translation>

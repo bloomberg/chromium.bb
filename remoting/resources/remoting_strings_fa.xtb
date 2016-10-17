@@ -33,7 +33,6 @@
 <translation id="177096447311351977">‏IP کانال برای کلاینت: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip=«<ph name="CLIENT_IP_ADDRESS_AND_PORT" />» host_ip=«<ph name="HOST_IP_ADDRESS_AND_PORT" />» کانال=«<ph name="CHANNEL_TYPE" />» اتصال=«<ph name="CONNECTION_TYPE" />».</translation>
 <translation id="1779766957982586368">بستن پنجره</translation>
 <translation id="1841799852846221389">در حال غیرفعال کردن اتصالات راه دور برای این رایانه…</translation>
-<translation id="189172778771606813">بستن کشوی پیمایش</translation>
 <translation id="1897488610212723051">حذف</translation>
 <translation id="195619862187186579">چیدمان‌های صفحه‌کلید</translation>
 <translation id="1996161829609978754">‏Chrome در حال بارگیری نصب‌‌کننده میزبان کار با Chrome است. بعد از اینکه بارگیری انجام شد٬ قبل از ادامه٬ نصب‌کننده را اجرا کنید.</translation>
@@ -113,6 +112,7 @@
 <translation id="3785447812627779171">‏میزبان کار با Chrome</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">‏برای اجازه دسترسی توسط برنامه کنترل دسک‌تاپ از راه دور Chrome، لطفاً حساب و پین خود را در زیر تأیید کنید.</translation>
+<translation id="3897092660631435901">منو</translation>
 <translation id="3905196214175737742">دامنه مالک میزبان نامعتبر است.</translation>
 <translation id="3908017899227008678">کاهش اندازه</translation>
 <translation id="3931191050278863510">میزبان متوقف شد.</translation>
@@ -165,7 +165,6 @@
 <translation id="5070121137485264635">‏میزبان راه دور از شما می‌خواهد که در وب سایت شخص ثالثی تأیید هویت شوید. برای ادامه، باید با مجوزهای اضافی «‏‫کنترل کامپیوتر از راه دور Chrome‬» برای دستیابی به این آدرس موافقت کنید:</translation>
 <translation id="507204348399810022">مطمئنید می‌خواهید اتصالات راه دور به <ph name="HOSTNAME" /> را غیرفعال کنید؟</translation>
 <translation id="5156271271724754543">لطفاً یک پین یکسان را در هر دو کادر وارد کنید.</translation>
-<translation id="5168917394043976756">بازکردن کشوی پیمایش</translation>
 <translation id="5170982930780719864">شناسه میزبان نامعتبر است.</translation>
 <translation id="518094545883702183">این اطلاعات فقط برای عیب‌یابی مشکل گزارش شده به کار می‌روند و فقط برای فردی که گزارش را بررسی می‌کند قابل دسترس هستند، و بیش از ۳۰ روز نگهداری نمی‌شوند.</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>

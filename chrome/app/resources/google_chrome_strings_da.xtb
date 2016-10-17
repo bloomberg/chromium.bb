@@ -133,6 +133,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="4771048833395599659">Denne fil kan være farlig, så Chrome har blokeret den.</translation>
 <translation id="4794050651896644714">Gem oplysninger i Chrome</translation>
 <translation id="4891791193823137474">Lad Google Chrome køre i baggrunden</translation>
+<translation id="4901390485477164536">Google Chrome er din standardbrowser.</translation>
 <translation id="4921569541910214635">Deler du computer med andre? Nu kan du konfigurere Chrome, præcist som du vil.</translation>
 <translation id="4925019873400497719">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede Certificate Transparency-oplysninger, men de var ugyldige.</translation>
 <translation id="4953650215774548573">Angiv Google Chrome som din standardbrowser</translation>
@@ -255,6 +256,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="8290100596633877290">Hovsa! Google Chrome er gået ned. Vil du genstarte nu?</translation>
 <translation id="8342675569599923794">Denne fil er farlig, så Chrome har blokeret den.</translation>
 <translation id="8406086379114794905">Hjælp med at forbedre Chrome</translation>
+<translation id="8410645163819739900">Google Chrome OS kan ikke åbne denne side.</translation>
 <translation id="8455999171311319804">Valgfrit: Hjælp med at gøre Chrome OS bedre ved automatisk at sende diagnostik og brugsdata til Google.</translation>
 <translation id="853189717709780425">Du er ved at logge ind med en administreret konto og give dens administrator kontrol over din Google Chrome-profil. Dine Chrome-data, som f.eks. dine apps, bogmærker, historik, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via Betjeningspanelet for Google Konti, men du kan ikke knytte disse data sammen med en anden konto.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

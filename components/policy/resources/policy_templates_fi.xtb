@@ -203,15 +203,6 @@
       Jos tätä käytäntöä ei ole määritetty tai sen arvo on tls1.2, <ph name="PRODUCT_NAME" /> ei enää suorita tätä varatoimenpidettä. Huomaa, että tämä ei poista käytöstä vanhempien TLS-versioiden tukea, vaan se määrittää vain, voiko <ph name="PRODUCT_NAME" /> kiertää palvelimien virheitä silloin, kun versioneuvottelua ei suoriteta oikein.
 
       Jos yhteensopivuus virheitä sisältävän palvelimen kanssa täytyy säilyttää, tämän käytännön arvoksi voidaan määrittää tls1.1. Tämä on kuitenkin tilapäinen toimenpide, ja palvelin tulee korjata mahdollisimman pian.</translation>
-<translation id="1861037019115362154">Määrittää laajennukset, jotka eivät ole käytössä tuotteessa <ph name="PRODUCT_NAME" />, ja estää käyttäjiä muuttamasta tätä asetusta.
-
-      Jokerimerkkejä * ja ? voidaan käyttää vastaamaan satunnaisten merkkien jaksoja. * vastaa satunnaista merkkien lukumäärää ja ? määrittää yhden valinnaisen merkin, eli se vastaa nollaa tai yhtä merkkiä. Vaihtomerkki on \. Jos haluat käyttää merkkejä *, ? tai \ muussa kuin jokerimerkki- tai vaihtomerkityksessä, niiden eteen täytyy lisätä merkki \.
-
-      Jos otat asetuksen käyttöön, määritettyjä laajennuksia ei koskaan käytetä tuotteessa <ph name="PRODUCT_NAME" />. Laajennukset merkitään pois käytöstä oleviksi about:plugins-kohdassa, eivätkä käyttäjät voi ottaa niitä käyttöön.
-
-      Huomaa, että tämä käytäntö voidaan ohittaa EnabledPlugins- ja DisabledPluginsExceptions-käytännöillä.
-
-      Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat käyttää mitä tahansa järjestelmään asennettuja laajennuksia, paitsi laajennuksia, jotka on määritetty epäyhteensopiviksi, vanhentuneiksi tai vaarallisiksi.</translation>
 <translation id="1864269674877167562">Jos tämän käytännön arvoksi asetetaan tyhjä merkkijono tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> ei näytä automaattisesti täydennettyä verkkotunnusta kirjautumisen yhteydessä.
       Jos tämän käytännön arvoksi asetetaan verkkotunnusta vastaava merkkijono, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisen yhteydessä automaattisesti täydennetyn verkkotunnuksen, jolloin käyttäjän tarvitsee kirjoittaa vain käyttäjänimi ilman verkkotunnusta. Käyttäjä voi myös korvata automaattisesti täydennetyn osan muulla verkkotunnuksella.</translation>
 <translation id="1865417998205858223">Tärkeimmät käyttöoikeudet</translation>
@@ -814,11 +805,6 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
 <translation id="3660562134618097814">SAML-tunnistuspalvelun evästeiden siirto kirjautumisen aikana</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
 <translation id="3711895659073496551">Keskeytä</translation>
-<translation id="3715448429089775791">Pakottaa YouTuben rajoitetun tilan käyttöön ja estää käyttäjiä muokkaamasta tätä asetusta.
-
-      Jos tämä asetus on käytössä, YouTuben rajoitettu tila on aina aktiivisena.
-
-      Jos tämä asetus on pois käytöstä tai sille ei aseteta arvoa, YouTuben rajoitettua tilaa ei pakoteta käyttöön.</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758089716224084329">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
@@ -1981,12 +1967,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Tunnistettuja yhteystyypin tunnuksia ovat ethernet, wifi, wimax, bluetooth ja cellular.</translation>
 <translation id="7763614521440615342">Näytä sisältöehdotuksia Uusi välilehti ‑sivulla</translation>
-<translation id="7766336524667238790">Raportoi aktiivisen kioskikäyttökerran tietoja, kuten
-      sovellustunnuksen ja -version.
-
-      Jos käytännön arvo on Epätosi, käyttökertatietoja ei
-      raportoida. Jos arvo on Tosi tai sitä ei aseteta, käyttökertatiedot
-      raportoidaan.</translation>
 <translation id="7774768074957326919">Käytä järjestelmän välityspalvelimen asetuksia</translation>
 <translation id="7775831859772431793">Voit määrittää välityspalvelimen URL-osoitteen tässä.
 
@@ -2208,6 +2188,10 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8369602308428138533">Ruudun sammutuksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
+<translation id="8390049129576938611">Poista käytöstä tuotteen <ph name="PRODUCT_NAME" /> sisäinen PDF-katseluohjelma. Tuote kohtelee PDF-tiedostoja latauksina ja sallii niiden avaamisen käyttäjän valitsemalla oletussovelluksella.
+
+      Jos tätä käytäntöä ei määritetä tai se poistetaan käytöstä, PDF-tiedostot avataan käyttämällä PDF-laajennusta, ellei käyttäjä poista laajennusta käytöstä.</translation>
+<translation id="8402079500086185021">Avaa PDF-tiedostot aina ulkoisella sovelluksella</translation>
 <translation id="8412312801707973447">OCSP-/CRL-tarkistusten suorittaminen</translation>
 <translation id="8413348101535146315">Tämä käytäntö sallii prosessien lopettamisen <ph name="PRODUCT_NAME" />n tehtävänhallinnassa.
 
@@ -2228,17 +2212,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Esimerkkimalleja on osoitteessa http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Poista selainhistorian tallentaminen käytöstä</translation>
 <translation id="8499172469244085141">Oletusasetukset (käyttäjät voivat ohittaa)</translation>
-<translation id="8501011084242226370">Määrittää laajennukset, jotka käyttäjä voi ottaa käyttöön tai poistaa käytöstä tuotteessa <ph name="PRODUCT_NAME" />.
-
-      Jokerimerkeillä * ja ? voidaan korvata satunnaisten merkkien jonoja. * vastaa satunnaista merkkien lukumäärää ja ? määrittää yhden valinnaisen merkin, eli se vastaa yhtä tai nollaa merkkiä. Koodinvaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden lisämerkitystä, niiden eteen täytyy lisätä merkki \.
-
-      Jos otat tämän asetuksen käyttöön, luettelossa määritettyjä laajennuksia voi käyttää tuotteessa <ph name="PRODUCT_NAME" />. Käyttäjät voivat ottaa laajennuksia käyttöön tai poistaa niitä käytöstä sivulla about:plugins, vaikka laajennus vastaisi myös DisabledPlugins-luettelon mallia. Käyttäjät voivat myös ottaa käyttöön tai poistaa käytöstä laajennuksia, jotka eivät vastaa DisabledPlugins-, DisabledPluginsExceptions- ja EnabledPlugins-luetteloiden malleja.
-
-      Tämän käytännön avulla voit määrittää tarkan kiellettyjen laajennuksien DisabledPlugins-luettelon, joka sisältää jokerimerkilliset kohteet, kuten kaikki laajennukset käytöstä poistava * tai kaikki Java-laajennukset käytöstä poistava Java*. Järjestelmänvalvoja voi kuitenkin sallia tiettyjä laajennuksien versioita, kuten IcedTea Java 2.3. Sallitut versiot voi määrittää tämän käytännön avulla.
-
-      Huomaa, että sekä laajennuksen että laajennuksen ryhmän nimi täytyy lisätä poikkeusluetteloon. Kaikki laajennusryhmät näkyvät erillisissä osioissa sivulla about:plugins, ja kussakin osiossa voi olla yksi tai useampia laajennuksia. Esimerkiksi Shockwave Flash -laajennus kuuluu Adobe Flash Player -ryhmään, ja molemmat nimet täytyy lisätä poikkeusluetteloon, jos haluat sallia kyseisen laajennuksen käytön.
-
-      Jos tätä käytäntöä ei ole määritetty, mitään DisabledPlugins-luettelon malleja vastaavia laajennuksia ei voi käyttää eikä käyttäjä voi muuttaa asetusta.</translation>
 <translation id="8519264904050090490">Hallinnoidun käyttäjän manuaalisten poikkeuksien URL-osoitteet</translation>
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
@@ -2275,7 +2248,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Erota palvelinten nimet pilkulla. Jokerimerkit (*) sallitaan.
 
           Jos et aseta käytäntöä, <ph name="PRODUCT_NAME" /> pyrkii tarkistamaan, onko palvelin sisäverkossa, ja vastaa vasta sitten IWA-pyyntöihin. Jos palvelimen todetaan sijaitsevan sisäverkossa, <ph name="PRODUCT_NAME" /> ohittaa sen IWA-pyynnöt.</translation>
-<translation id="8668394701842594241">Määrittää laajennukset, joita voi käyttää tuotteessa <ph name="PRODUCT_NAME" />, ja estää käyttäjiä muuttamasta tätä asetusta. Jokerimerkeillä * ja ? voidaan korvata mitä tahansa merkkejä. * korvaa rajoittamattoman määrän merkkejä, kun taas ? korvaa yksittäisen valinnaisen merkin, eli nolla merkkiä tai yhden merkin. Vaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden jokerimerkkimerkitystä, lisää niiden eteen merkki \. Luettelossa olevia laajennuksia käytetään aina tuotteessa <ph name="PRODUCT_NAME" />, jos ne on asennettu. Laajennukset merkitään käytössä oleviksi kohdassa about:plugins, eivätkä käyttäjät voi poistaa niitä käytöstä. Huomaa, että tämä käytäntö ohittaa sekä käytännön DisabledPlugins että DisabledPluginsExceptions. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi poistaa käytöstä minkä tahansa järjestelmään asennetun laajennuksen.</translation>
 <translation id="8672321184841719703">Automaattisen päivityksen version määrittäminen</translation>
 <translation id="868068801094828689">Määrittää, voiko <ph name="PRODUCT_NAME" /> lähettää Googlelle anonyymejä käyttö- ja virhetietoja, ja estää käyttäjiä muokkaamasta tätä asetusta.
 
@@ -2367,13 +2339,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
       automaattisesti yhteyttä Quirks Serveriin ja lataa määritystiedostot,
       jos ne ovat saatavilla, ja tallentaa ne laitteelle. Näitä tiedostoja voidaan 
       käyttää esimerkiksi liitettyjen näyttöjen laadun parantamiseen.</translation>
-<translation id="8905426178924715309">Tämä käytäntö on vanhentunut, ja sen tilalla tulee käyttää käytäntöjä ForceGoogleSafeSearch ja ForceYouTubeSafetyMode. Tämä käytäntö ohitetaan, jos joko ForceGoogleSafeSearch tai ForceYouTubeSafetyMode on asetettu.
-
-      Pakottaa SafeSearch-tilan käyttöön Google-haun kyselyissä ja estää käyttäjiä muuttamasta asetusta. Lisäksi tämä käytäntö pakottaa rajoitetun tilan käyttöön YouTubessa.
-
-      Jos tämä asetus on käytössä, Google-haun SafeSearch ja YouTuben rajoitettu tila ovat aina käytössä.
-
-      Jos tämä asetus poistetaan käytöstä tai jos sille ei aseteta mitään arvoa, Google-haun SafeSearchia ja YouTuben rajoitettua tilaa ei pakoteta käyttöön.</translation>
 <translation id="8906768759089290519">Ota vierastila käyttöön</translation>
 <translation id="8908294717014659003">Voit määrittää, mitkä sivut saavat käyttää mediantallennuslaitteita. Mediantallennuslaitteiden käyttö voidaan sallia oletuksena, tai käyttäjältä voidaan kysyä aina, kun sivusto haluaa käyttää tallennuslaitteita.
 

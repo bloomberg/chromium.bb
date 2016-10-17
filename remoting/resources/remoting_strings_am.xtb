@@ -33,7 +33,6 @@
 <translation id="177096447311351977">የሰርጥ አይ ፒ ለደንበኛ፦ <ph name="CLIENT_GAIA_IDENTIFIER" /> አይ ፒ=«<ph name="CLIENT_IP_ADDRESS_AND_PORT" />» የአስተናጋጅ አይ ፒ=«<ph name="HOST_IP_ADDRESS_AND_PORT" />» ሰርጥ=«<ph name="CHANNEL_TYPE" />» ግንኙነት=«<ph name="CONNECTION_TYPE" />»።</translation>
 <translation id="1779766957982586368">መስኮት ዝጋ</translation>
 <translation id="1841799852846221389">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማሰናከል ላይ…</translation>
-<translation id="189172778771606813">የአሰሳ መሳቢያ ዝጋ</translation>
 <translation id="1897488610212723051">ሰርዝ</translation>
 <translation id="195619862187186579">የቁልፍ ሰሌዳ አቀማመጦች</translation>
 <translation id="1996161829609978754">Chrome የChromoting አስተናጋጅ ጫኚውን እያወረደ ነው። ውርዱ አንዴ ከተጠናቀቀ በኋላ እባክዎ ከመቀጠልዎ በፊት ጫኚውን ያሂዱት።</translation>
@@ -114,6 +113,7 @@
 አስተናጋጅ</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">እባክዎ በChrome የርቀት ዴስክቶፕ መዳረሻ ለመፍቀድ መለያዎን እና ፒንዎን ከዚህ በታች ያረጋግጡ።</translation>
+<translation id="3897092660631435901">ምናሌ</translation>
 <translation id="3905196214175737742">ልክ ያልሆነ የአስተናጋጅ ባለቤት ጎራ።</translation>
 <translation id="3908017899227008678">ለማመጣጠን አሳንስ</translation>
 <translation id="3931191050278863510">አስተናጋጅ ቆሟል።</translation>
@@ -166,7 +166,6 @@
 <translation id="5070121137485264635">የርቀት አስተናጋጁ ለሶስተኛ ወገን ድር ጣቢያ እንዲያረጋግጡ ይፈልጋል። ለመቀጠል Chrome የርቀት ዴስክቶፕ ይህን አድራሻ እንዲደርስበት ተጨማሪ ፍቃዶችን መስጠት አለብዎት፦</translation>
 <translation id="507204348399810022">ከ<ph name="HOSTNAME" /> ጋር ያሉ የርቀት ግንኙነቶችን ማሰናከል ይፈልጋሉ?</translation>
 <translation id="5156271271724754543">እባክዎ ተመሳሳዩን ፒን በሁለቱም ሳጥኖች ውስጥ ያስገቡ።</translation>
-<translation id="5168917394043976756">የአሰሳ መሳቢያ ክፈት</translation>
 <translation id="5170982930780719864">ልክ ያልሆነ የአስተናጋጅ መታወቂያ።</translation>
 <translation id="518094545883702183">ይህ መረጃ ጥቅም ላይ የሚውለው ሪፖርት የሚያደርጉትን ችግር ለመመርመር ብቻ ነው፣ የሚገኘው ሪፖርትዎን ለሚመረምረው ሰው ብቻ ነው፣ እና ከ30 ቀኖች በላይ አይቆይም።</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>

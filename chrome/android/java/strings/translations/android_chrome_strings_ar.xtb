@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4376501731284077108">غير مُتحكم فيه</translation>
 <translation id="4378154925671717803">الهاتف</translation>
+<translation id="4384468725000734951">‏استخدام محرك Sogou للبحث</translation>
 <translation id="4412992751769744546">السماح لملفات تعريف ارتباط الجهات الخارجية</translation>
 <translation id="4440256989292146959">تصفح المزيد بتكلفة أقل</translation>
 <translation id="4452548195519783679">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_NAME" /></translation>
@@ -425,6 +426,8 @@
 <translation id="5916664084637901428">تشغيل</translation>
 <translation id="5919204609460789179">تحديث <ph name="PRODUCT_NAME" /> لبدء المزامنة</translation>
 <translation id="5939518447894949180">إعادة</translation>
+<translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
+<translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6010869025736512584">جارٍ الوصول إلى إدخال الفيديو</translation>
 <translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
 <translation id="6031101910111098835">تم التصغير - انقر للتوسيع</translation>
@@ -442,6 +445,7 @@
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
+<translation id="617991007797131187">‏يمكن أن يستخدم Chrome محرك Sogou للبحث في الصين. يمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
 <translation id="6232535412751077445">يعني تمكين ميزة "عدم التعقب" تضمين الطلب مع عدد زيارات التصفح. ويعتمد أي تأثير على استجابة موقع الويب للطلب من عدمه، بالإضافة إلى كيفية تفسير الطلب.
@@ -473,6 +477,7 @@
 <translation id="654446541061731451">حدد علامة تبويب لإرسالها باستخدام الشعاع</translation>
 <translation id="6545017243486555795">مسح جميع البيانات</translation>
 <translation id="6550675742724504774">خيارات</translation>
+<translation id="6560414384669816528">‏البحث باستخدام Sogou</translation>
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE" /> دائمًا</translation>
 <translation id="6571070086367343653">تعديل بطاقة الائتمان</translation>
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>

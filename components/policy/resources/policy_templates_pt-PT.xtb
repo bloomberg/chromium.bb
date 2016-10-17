@@ -207,15 +207,6 @@
       Se esta política não estiver configurada ou estiver definida para "tls1.2", o <ph name="PRODUCT_NAME" /> já não executa este processo alternativo. Tenha em atenção que esta operação não desativa o suporte para versões mais antigas do TLS, mas determina apenas se o <ph name="PRODUCT_NAME" /> deve contornar servidores com erros que não consigam negociar versões corretamente.
 
       Caso contrário, se for necessário manter a compatibilidade com um servidor com erros, é possível definir esta política para "tls1.1". Esta é uma medida temporária e o servidor deve ser reparado rapidamente.</translation>
-<translation id="1861037019115362154">Especifica uma lista de plug-ins desativados no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
-
-      Os caracteres universais "*" e "?" podem ser utilizados para estabelecer correspondência com sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, ao passo que "?" indica um carácter único opcional, ou seja, corresponde aos caracteres zero ou um. O carácter de escape é "\", pelo que, para fazer corresponder os caracteres reais "*", "?" ou "\", pode colocar um "\" à frente deles.
-
-      Se ativar esta definição, a lista de plug-ins especificada nunca será utilizada no <ph name="PRODUCT_NAME" />. Os plug-ins estão marcados como desativados em "about:plugins" e os utilizadores não poderão ativá-los.
-
-      Tenha presente que esta política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
-
-      Se deixar esta política por definir, o utilizador poderá utilizar qualquer plug-in instalado no sistema, com exceção de plug-ins incompatíveis, desatualizados ou perigosos determinados pelo hardware.</translation>
 <translation id="1864269674877167562">Se esta política for definida para uma string em branco ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> não apresenta uma opção de preenchimento automático durante o fluxo de início de sessão do utilizador.
       Se esta política for definida para uma string que represente um nome de domínio, o <ph name="PRODUCT_OS_NAME" /> apresenta uma opção de preenchimento automático durante o início de sessão do utilizador, o que permite ao utilizador escrever apenas o seu nome de utilizador sem a extensão do nome do domínio. O utilizador pode substituir esta extensão do nome do domínio.</translation>
 <translation id="1865417998205858223">Autorizações principais</translation>
@@ -818,11 +809,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
-<translation id="3715448429089775791">Força a ativação do Modo de segurança do YouTube e impede os utilizadores de alterar esta definição.
-
-      Se ativar esta definição, o Modo de segurança do YouTube está sempre ativo.
-
-      Se desativar esta definição ou não definir um valor, o Modo de segurança do YouTube não é aplicado.</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758089716224084329">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
@@ -1986,12 +1972,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Os identificadores dos tipos de ligação reconhecidos são "ethernet", "wifi", "wimax", "bluetooth" e "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página Novo separador</translation>
-<translation id="7766336524667238790">Comunica informações acerca da sessão ativa do quiosque, como
-      o ID e a versão da aplicação.
-
-      Se a política for definida como falsa, as informações da sessão não são
-      comunicadas. Se for definida como verdadeira ou deixada por definir, as informações da sessão são
-      comunicadas.</translation>
 <translation id="7774768074957326919">Utilizar definições de proxy do sistema</translation>
 <translation id="7775831859772431793">Pode especificar o URL do servidor proxy aqui.
 
@@ -2214,6 +2194,10 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8369602308428138533">Atraso para desligar o ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="8382184662529825177">Ativar a utilização da comprovação remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativar roaming de dados</translation>
+<translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, trata-o como uma transferência e permite ao utilizador abrir ficheiros PDF com a aplicação predefinida.
+
+      Se esta política não for definida ou for desativada, é utilizado o plug-in de PDF para abrir ficheiros PDF, a menos que o utilizador o desative.</translation>
+<translation id="8402079500086185021">Abrir sempre ficheiros PDF externamente</translation>
 <translation id="8412312801707973447">Se são ou não efetuadas verificações OCSP/CRL on-line</translation>
 <translation id="8413348101535146315">Ativa a conclusão de processos no Gestor de tarefas do <ph name="PRODUCT_NAME" />.
 
@@ -2234,17 +2218,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Para obter exemplos de padrões, consulte https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Desativar armazenamento do histórico de navegação</translation>
 <translation id="8499172469244085141">Predefinições (os utilizadores podem substituir)</translation>
-<translation id="8501011084242226370">Especifica uma lista de plug-ins que o utilizador pode ativar ou desativar em <ph name="PRODUCT_NAME" />.
-
-      É possível utilizar os carateres universais "*" e "?" para corresponder a sequências de carateres arbitrários. "*" corresponde a um número arbitrário de carateres, enquanto "?" especifica um caráter único opcional, por exemplo, corresponde aos carateres zero ou um. O caráter de escape é "\", por isso, para corresponder aos carateres "*", "?" ou "\" propriamente ditos, pode colocar "\" à frente dos mesmos.
-
-      Se ativar esta definição, é possível utilizar a lista de plug-ins no <ph name="PRODUCT_NAME" />. Os utilizadores podem ativá-los ou desativá-los em "acerca de plug-ins", mesmo que o plug-in também corresponda a um padrão em DisabledPlugins. Os utilizadores também podem ativar e desativar plug-ins que não correspondem a quaisquer padrões em DisabledPlugins, DisabledPluginsExceptions e EnabledPlugins.
-
-      Esta política tem como objetivo permitir uma lista negra de plug-ins rígida, em que a lista "DisabledPlugins" contém entradas de carateres universais como desativar todos os plug-ins "*" ou desativar todos os plug-ins Java "*Java*", mas o administrador pretende ativar alguma versão particular como "IcedTea Java 2.3". É possível especificar estas versões particulares nesta política.
-
-      Tenha em atenção que tanto o nome do plug-in como o nome de grupo do plug-in têm de estar isentos. Cada grupo de plug-in é apresentado numa secção separada em acerca de: plug-ins; cada secção pode ter um ou mais plug-ins. Por exemplo, o plug-in "Shockwave Flash" pertence ao grupo "Adobe Flash Player" e ambos os nomes têm de ter uma correspondência na lista de exceções se esse plug-in for isento da lista negra.
-
-      Se esta política não for definida, qualquer plug-in correspondente aos padrões em "DisabledPlugins" será bloqueado como desativado e o utilizador não o poderá ativar.</translation>
 <translation id="8519264904050090490">URLs de exceção no manual do utilizador gerido</translation>
 <translation id="8544375438507658205">Processador de HTML predefinido para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
@@ -2280,7 +2253,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Separe os vários nomes de servidor por vírgulas. Os carateres universais (*) são permitidos.
 
           Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> tentará detetar se um servidor está na Intranet e só nesse momento irá responder a pedidos IWA. Se um servidor for detetado como Internet, os pedidos IWA serão ignorados pelo <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Especifica uma lista de plug-ins ativados no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição. Os caracteres universais "*" e "?" podem ser utilizados para estabelecer correspondência com sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, ao passo que "?" indica um carácter único opcional, ou seja, corresponde aos caracteres zero ou um. O carácter de escape é "\", pelo que, para corresponder aos caracteres reais "*", "?" ou "\", pode colocar um "\" à frente daqueles. A lista de plug-ins especificada é sempre utilizada no <ph name="PRODUCT_NAME" /> se os plug-ins estiverem instalados. Os plug-ins estão marcados como ativados em "about:plugins" e os utilizadores não podem desativá-los. Tenha presente que esta política substitui DisabledPlugins e DisabledPluginsExceptions. Se esta política não for definida, o utilizador pode desativar qualquer plug-in instalado no sistema.</translation>
 <translation id="8672321184841719703">Versão de Atualização Automática de Destino</translation>
 <translation id="868068801094828689">Ativa o envio de relatórios anónimos com dados relativos à utilização e às falhas de sistema do <ph name="PRODUCT_NAME" /> para a Google e impede que os utilizadores alterem esta definição.
 
@@ -2373,13 +2345,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       contacta automaticamente o Quirks Server, transfere os ficheiros de configuração,
       se estiverem disponíveis, e armazena-os no dispositivo. Estes ficheiros podem
       ser utilizados, por exemplo, para melhorar a qualidade de visualização dos monitores ligados.</translation>
-<translation id="8905426178924715309">Esta política foi descontinuada. Utilize ForceGoogleSafeSearch e ForceYouTubeSafetyMode em alternativa. Esta política é ignorada se as políticas ForceGoogleSafeSearch ou ForceYouTubeSafetyMode forem definidas.
-
-      Força a execução de consultas na Pesquisa Web do Google através da Pesquisa segura definida como ativa e impede os utilizadores de alterar esta definição. Esta definição também força o Modo de segurança no YouTube.
-
-      Se ativar esta definição, a Pesquisa segura na Pesquisa Google está sempre ativa.
-
-      Se desativar esta definição ou não definir um valor, a Pesquisa segura na Pesquisa Google e no YouTube não é aplicada.</translation>
 <translation id="8906768759089290519">Ativar o modo de convidado</translation>
 <translation id="8908294717014659003">Permite-lhe definir se os Websites podem aceder a dispositivos de captura de multimédia. O acesso a dispositivos de captura de multimédia pode ser autorizado por predefinição ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos de captura de multimédia.
 

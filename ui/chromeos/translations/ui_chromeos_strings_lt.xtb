@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1119447706177454957">Vidinė klaida</translation>
-<translation id="153454903766751181">Inicijuojamas korinio ryšio modemas...</translation>
+<translation id="153454903766751181">Inicijuojamas mobiliojo ryšio modemas...</translation>
 <translation id="158849752021629804">Reikalingas namų tinklas</translation>
 <translation id="1661867754829461514">Trūksta PIN kodo</translation>
 <translation id="1773212559869067373">Autentifikavimo sertifikatas atmestas vietiniu mastu</translation>
@@ -47,7 +47,7 @@
 <translation id="6312403991423642364">Nežinoma tinklo klaida</translation>
 <translation id="6490455614072479501">Nepavyko prisijungti prie „<ph name="NAME" />“: <ph name="DETAILS" />
         Serverio pranešimas: <ph name="SERVER_MSG" /></translation>
-<translation id="6549021752953852991">Nėra jokių pasiekiamų korinio ryšio tinklų</translation>
+<translation id="6549021752953852991">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
 <translation id="6732801395666424405">Sertifikatai neįkelti</translation>
 <translation id="6857811139397017780">Suaktyvinti „<ph name="NETWORKSERVICE" />“</translation>
 <translation id="6935521024859866267">Aukštyn kojomis</translation>
@@ -59,7 +59,7 @@
 <translation id="7256405249507348194">Neatpažinta klaida: <ph name="DESC" /></translation>
 <translation id="7297443947353982503">Naudotojo vardas / slaptažodis netinkamas arba EAP autentifikavimas nepavyko</translation>
 <translation id="735745346212279324">VPN atjungtas</translation>
-<translation id="7874779702599364982">Ieškoma korinio ryšio tinklų...</translation>
+<translation id="7874779702599364982">Ieškoma mobiliojo ryšio tinklų...</translation>
 <translation id="7925247922861151263">AAA patikra nepavyko</translation>
 <translation id="7973962044839454485">Nepavyko autentifikuoti PGP dėl netinkamo naudotojo vardo ar slaptažodžio</translation>
 <translation id="8000066093800657092">Tinklo nėra</translation>

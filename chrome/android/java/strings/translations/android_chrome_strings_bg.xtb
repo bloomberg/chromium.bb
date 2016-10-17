@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
 <translation id="4376501731284077108">Без контрол</translation>
 <translation id="4378154925671717803">Телефон</translation>
+<translation id="4384468725000734951">За търсене ще се използва Sogou</translation>
 <translation id="4412992751769744546">Разрешаване на „бисквитките“ на трети страни</translation>
 <translation id="4440256989292146959">Сърфирайте повече за по-малко</translation>
 <translation id="4452548195519783679">Отметката бе запазена в/ъв „<ph name="FOLDER_NAME" />“</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
 <translation id="5939518447894949180">Нулиране</translation>
+<translation id="5942872142862698679">Използване на Google за търсене</translation>
+<translation id="6000066717592683814">Запазване на Google</translation>
 <translation id="6010869025736512584">Осъществява се достъп до видеовхода</translation>
 <translation id="6012342843556706400">Chrome се нуждае от достъп до местоположението, за да го сподели с този сайт.</translation>
 <translation id="6031101910111098835">Свито – Кликнете за разгъване</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> икономия на данни</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6177390657002841081">Включване на Икономия на данни</translation>
+<translation id="617991007797131187">Chrome може да използва Sogou за търсене в Китай. Можете да промените това в <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Добавяне на изключение за сайт</translation>
 <translation id="6192792657125177640">Изключения</translation>
 <translation id="6232535412751077445">Активирането на „Do Not Track“ означава, че с трафика ви на сърфиране ще се подава заявка. Ефектите зависят от това, дали уебсайтът ще отговори на нея и как ще я изтълкува.
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
 <translation id="6545017243486555795">Изчистване на всички данни</translation>
 <translation id="6550675742724504774">Опции</translation>
+<translation id="6560414384669816528">Търсене със Sogou</translation>
 <translation id="656628257199996201">Винаги да се превежда от <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Редактиране на кредитната карта</translation>
 <translation id="6573431926118603307">Тук ще се показват разделите, които сте отворили в Chrome на другите си устройства.</translation>

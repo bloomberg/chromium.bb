@@ -286,6 +286,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4351244548802238354">Tanca el quadre de diàleg</translation>
 <translation id="4376501731284077108">No controlats</translation>
 <translation id="4378154925671717803">Telèfon</translation>
+<translation id="4384468725000734951">S'utilitza Sogou per a la cerca</translation>
 <translation id="4412992751769744546">Permet les galetes de tercers</translation>
 <translation id="4440256989292146959">Navegueu més per menys</translation>
 <translation id="4452548195519783679">Adreça d'interès afegida a <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5919204609460789179">Actualitza <ph name="PRODUCT_NAME" /> per iniciar la sincronització</translation>
 <translation id="5939518447894949180">Restableix</translation>
+<translation id="5942872142862698679">S'utilitza Google per a la cerca</translation>
+<translation id="6000066717592683814">Continua amb Google</translation>
 <translation id="6010869025736512584">S'està accedint a l'entrada de vídeo</translation>
 <translation id="6012342843556706400">Chrome necessita accés a la ubicació per compartir-la amb aquest lloc web.</translation>
 <translation id="6031101910111098835">Vista replegada (feu clic per desplegar-la)</translation>
@@ -441,6 +444,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6159335304067198720"><ph name="PERCENT" /> de reducció de dades</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6177390657002841081">Activa l'Economitzador de dades</translation>
+<translation id="617991007797131187">Chrome pot utilitzar Sogou per fer cerques a la Xina. Per canviar-ho, vés a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Afegeix una excepció per a un lloc</translation>
 <translation id="6192792657125177640">Excepcions</translation>
 <translation id="6232535412751077445">Si activeu l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
@@ -472,6 +476,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
 <translation id="6545017243486555795">Esborra totes les dades</translation>
 <translation id="6550675742724504774">Opcions</translation>
+<translation id="6560414384669816528">Cerca amb Sogou</translation>
 <translation id="656628257199996201">Tradueix sempre de: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edita la targeta de crèdit</translation>
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>

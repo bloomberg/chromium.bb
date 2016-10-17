@@ -286,6 +286,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4351244548802238354">Uždaryti dialogo langą</translation>
 <translation id="4376501731284077108">Nevaldoma</translation>
 <translation id="4378154925671717803">Telefonas</translation>
+<translation id="4384468725000734951">Atliekant paiešką naudojama „Sogou“</translation>
 <translation id="4412992751769744546">Leisti trečiųjų šalių slapukus</translation>
 <translation id="4440256989292146959">Naršykite daugiau ir mokėkite mažiau</translation>
 <translation id="4452548195519783679">Sukurta „<ph name="FOLDER_NAME" />“ žymė</translation>
@@ -424,6 +425,8 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5919204609460789179">Atnaujinkite „<ph name="PRODUCT_NAME" />“, kad galėtumėte pradėti sinchronizuoti</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
+<translation id="5942872142862698679">Atliekant paiešką naudojama „Google“</translation>
+<translation id="6000066717592683814">Palikti „Google“</translation>
 <translation id="6010869025736512584">Pasiekiama vaizdo įrašų įvestis</translation>
 <translation id="6012342843556706400">„Chrome“ reikia galimybės pasiekti vietovės informaciją, kad ją būtų galima bendrinti su šia svetaine.</translation>
 <translation id="6031101910111098835">Sutraukta – spustelėkite, kad išskleistumėte</translation>
@@ -441,6 +444,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="6159335304067198720">Sutaupyta duomenų: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6177390657002841081">Duomenų taupymo priemonės įjungimas</translation>
+<translation id="617991007797131187">Atlikdama paiešką „Chrome“ Kinijoje gali naudoti „Sogou“. Tai galite pakeisti apsilankę <ph name="BEGIN_LINK" />Nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Pridėti svetainės išimtį</translation>
 <translation id="6192792657125177640">Išimtys</translation>
 <translation id="6232535412751077445">Įgalinus funkciją „Nestebėti“, užklausa bus įtraukta į naršymo srautą. Poveikis priklauso nuo to, ar svetainė atsako į užklausą ir kaip užklausa interpretuojama.
@@ -472,6 +476,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="654446541061731451">Kad perduotumėte, pasirinkite skirtuką</translation>
 <translation id="6545017243486555795">Išvalyti visus duomenis</translation>
 <translation id="6550675742724504774">Parinktys</translation>
+<translation id="6560414384669816528">Atlikti paiešką naudojant „Sogou“</translation>
 <translation id="656628257199996201">Visada versti iš <ph name="SOURCE_LANGUAGE" /> k.</translation>
 <translation id="6571070086367343653">Kredito kortelės redagavimas</translation>
 <translation id="6573431926118603307">Čia bus rodomi kituose įrenginiuose atidaryti „Chrome“ skirtukai.</translation>

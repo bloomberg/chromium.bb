@@ -286,6 +286,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
 <translation id="4376501731284077108">Non controllati</translation>
 <translation id="4378154925671717803">Telefono</translation>
+<translation id="4384468725000734951">Sogou in uso per la ricerca</translation>
 <translation id="4412992751769744546">Consenti cookie di terze parti</translation>
 <translation id="4440256989292146959">Naviga di più e consuma meno dati</translation>
 <translation id="4452548195519783679">Preferito aggiunto in: <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Aggiorna <ph name="PRODUCT_NAME" /> per avviare la sincronizzazione</translation>
 <translation id="5939518447894949180">Ripristina</translation>
+<translation id="5942872142862698679">Google in uso per la ricerca</translation>
+<translation id="6000066717592683814">Mantieni Google</translation>
 <translation id="6010869025736512584">Accesso all'input video in corso</translation>
 <translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
 <translation id="6031101910111098835">Visualizzazione compressa. Fai clic per espandere</translation>
@@ -441,6 +444,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6177390657002841081">Attiva Risparmio dati</translation>
+<translation id="617991007797131187">Chrome può utilizzare Sogou per le ricerche in Cina. Puoi modificare questa opzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
@@ -472,6 +476,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="654446541061731451">Seleziona una scheda da trasmettere</translation>
 <translation id="6545017243486555795">Cancella tutti i dati</translation>
 <translation id="6550675742724504774">Opzioni</translation>
+<translation id="6560414384669816528">Ricerche con Sogou</translation>
 <translation id="656628257199996201">Traduci sempre da <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Modifica carta di credito</translation>
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>

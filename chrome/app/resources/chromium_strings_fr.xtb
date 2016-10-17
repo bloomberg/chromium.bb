@@ -38,6 +38,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chromium comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="225614027745146050">Bienvenue</translation>
+<translation id="2264142189334629813">Impossible d'ouvrir cette page dans Chromium OS</translation>
 <translation id="2316129865977710310">Non merci</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche lorsque vous démarrez Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bits risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur ce système Linux. Veuillez passer à Chromium 64 bits.</translation>
@@ -76,6 +77,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3258596308407688501">Chromium ne peut ni lire, ni écrire dans son répertoire de données :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium est votre navigateur par défaut. Félicitations !</translation>
 <translation id="328888136576916638">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Chromium vont être désactivées.</translation>
 <translation id="3289635842886789612">Version de Chromium obsolète.</translation>
 <translation id="3296368748942286671">Poursuivre l'exécution des applications en arrière-plan après la fermeture de Chromium</translation>

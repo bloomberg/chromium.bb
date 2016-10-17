@@ -33,7 +33,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="177096447311351977">Channel IP for client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Close window</translation>
 <translation id="1841799852846221389">Disabling remote connections for this computer…</translation>
-<translation id="189172778771606813">Close navigation drawer</translation>
 <translation id="1897488610212723051">Delete</translation>
 <translation id="195619862187186579">Keyboard layouts</translation>
 <translation id="1996161829609978754">Chrome is downloading the Chromoting Host installer.  Once the download is complete, please run the installer before continuing.</translation>
@@ -114,6 +113,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Please confirm your account and PIN below to allow access by Chrome Remote Desktop.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Invalid host owner domain.</translation>
 <translation id="3908017899227008678">Shrink to fit</translation>
 <translation id="3931191050278863510">Host stopped.</translation>
@@ -166,7 +166,6 @@ Desktop Host</translation>
 <translation id="5070121137485264635">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:</translation>
 <translation id="507204348399810022">Are you sure that you want to disable remote connections to <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Please enter the same PIN in both boxes.</translation>
-<translation id="5168917394043976756">Open navigation drawer</translation>
 <translation id="5170982930780719864">Invalid host id.</translation>
 <translation id="518094545883702183">This information is used only for diagnosing the problem that you are reporting, is available only to someone investigating your report, and is retained for no more than 30 days.</translation>
 <translation id="5222676887888702881">Sign out</translation>

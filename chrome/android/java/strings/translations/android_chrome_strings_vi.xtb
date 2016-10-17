@@ -286,6 +286,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
 <translation id="4376501731284077108">Không bị hạn chế</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
+<translation id="4384468725000734951">Sử dụng Sogou để tìm kiếm</translation>
 <translation id="4412992751769744546">Cho phép cookie của bên thứ ba</translation>
 <translation id="4440256989292146959">Duyệt nhiều hơn với ít chi phí hơn</translation>
 <translation id="4452548195519783679">Đã đánh dấu trang vào <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
+<translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
+<translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
 <translation id="6010869025736512584">Đang truy cập thiết bị đầu vào video</translation>
 <translation id="6012342843556706400">Chrome cần quyền truy cập vị trí để chia sẻ vị trí với trang web này.</translation>
 <translation id="6031101910111098835">Đã thu gọn - Nhấp để mở rộng</translation>
@@ -441,6 +444,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
+<translation id="617991007797131187">Chrome có thể sử dụng Sogou để tìm kiếm ở Trung Quốc. Bạn có thể thay đổi tùy chọn này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
@@ -472,6 +476,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="654446541061731451">Chọn một tab để chiếu</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
+<translation id="6560414384669816528">Tìm kiếm với Sogou</translation>
 <translation id="656628257199996201">Luôn dịch <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Chỉnh sửa thẻ tín dụng</translation>
 <translation id="6573431926118603307">Các tab bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>

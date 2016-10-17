@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4376501731284077108">अनियंत्रित</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
+<translation id="4384468725000734951">खोजने के लिए Sogou का उपयोग करना</translation>
 <translation id="4412992751769744546">तृतीय-पक्ष कुकी को अनुमति दें</translation>
 <translation id="4440256989292146959">कम से अधिक ब्राउज़ करें</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> में बुकमार्क किया गया</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5919204609460789179">समन्वयन प्रारंभ करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
+<translation id="5942872142862698679">खोजने के लिए Google का उपयोग करना</translation>
+<translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
 <translation id="6010869025736512584">वीडियो इनपुट ऐक्सेस हो रहा है</translation>
 <translation id="6012342843556706400">Chrome को स्थान ऐक्सेस की आवश्यकता है ताकि स्थान को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="6031101910111098835">संक्षिप्त - विस्तृत करने के लिए क्लिक करें</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6177390657002841081">डेटा बचाने का साधन चालू करना</translation>
+<translation id="617991007797131187">Chrome चीन में खोज करने के लिए Sogou का उपयोग कर सकता है. आप <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में इसे बदल सकते हैं.</translation>
 <translation id="6181444274883918285">साइट का अपवाद जोड़ें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6232535412751077445">“नज़र न रखें” सक्षम करने का अर्थ है कि आपके ब्राउज़िंग ट्रैफ़िक के साथ एक अनुरोध शामिल किया जाएगा. कोई भी प्रभाव इस बात पर निर्भर करता है कि वेबसाइट अनुरोध का प्रतिसाद देती है या नहीं और अनुरोध को किस तरह समझा जाता है.
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">बीम के लिए टैब को चुनें</translation>
 <translation id="6545017243486555795">सभी डेटा साफ़ करें</translation>
 <translation id="6550675742724504774">विकल्प</translation>
+<translation id="6560414384669816528">Sogou से खोजें</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE" /> का हमेशा अनुवाद करें</translation>
 <translation id="6571070086367343653">क्रेडिट कार्ड संपादित करें</translation>
 <translation id="6573431926118603307">आपके द्वारा अपने अन्य डिवाइस पर खोले गए टैब यहां दिखाई देंगे.</translation>

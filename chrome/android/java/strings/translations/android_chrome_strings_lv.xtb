@@ -286,6 +286,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4351244548802238354">Aizvērt dialoglodziņu</translation>
 <translation id="4376501731284077108">Netiek kontrolēts</translation>
 <translation id="4378154925671717803">Tālrunis</translation>
+<translation id="4384468725000734951">Tiek izmantota meklētājprogramma Sogou</translation>
 <translation id="4412992751769744546">Atļaut trešo pušu sīkfailus</translation>
 <translation id="4440256989292146959">Pārlūkojiet vairāk, tērējot mazāk datu!</translation>
 <translation id="4452548195519783679">Grāmatzīme saglabāta mapē <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
+<translation id="5942872142862698679">Tiek izmantota meklētājprogramma Google</translation>
+<translation id="6000066717592683814">Arī turpmāk izmantot Google</translation>
 <translation id="6010869025736512584">Notiek piekļūšana video ievadei</translation>
 <translation id="6012342843556706400">Pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai, lai kopīgotu to ar šo vietni.</translation>
 <translation id="6031101910111098835">Sakļauts — noklikšķiniet, lai izvērstu</translation>
@@ -441,6 +444,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6177390657002841081">Ieslēgt Datu lietojuma samazinātāju</translation>
+<translation id="617991007797131187">Ķīnā varat pārlūkā Chrome izmantot meklētājprogrammu Sogou. Šo iestatījumu varat mainīt sadaļā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Pievienot vietnes izņēmumu</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
 <translation id="6232535412751077445">Iespējojot funkciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
@@ -472,6 +476,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="654446541061731451">Atlasiet cilni, ko kopīgot.</translation>
 <translation id="6545017243486555795">Notīrīt visus datus</translation>
 <translation id="6550675742724504774">Opcijas</translation>
+<translation id="6560414384669816528">Meklēšana, izmantojot Sogou</translation>
 <translation id="656628257199996201">Vienmēr tulkot no šādas valodas: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Rediģēt kredītkarti</translation>
 <translation id="6573431926118603307">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chrome citās ierīcēs.</translation>

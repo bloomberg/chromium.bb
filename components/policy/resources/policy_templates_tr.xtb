@@ -216,15 +216,6 @@
       Bu politika yapılandırılmazsa veya "tls1.2" değerine ayarlanırsa <ph name="PRODUCT_NAME" />, bu yedek sürümü kullanma işlemini gerçekleştirmez. Bunun daha eski TLS sürümlerine yönelik desteği devre dışı bırakmadığını, yalnızca <ph name="PRODUCT_NAME" /> ürününün, sürümlerle ilgili pazarlığı doğru şekilde yapamayan hatalı sunuculardan kaçınmaya çalışıp çalışmayacağını belirlediğini unutmayın.
 
       Yapılandırılması durumunda, hatalı bir sunucuyla uyumluluğun korunması gerekiyorsa bu politika, "tls1.1" değerine ayarlanabilir. Bu geçici bir tedbirdir ve sunucudaki sorun kısa sürede çözülmelidir.</translation>
-<translation id="1861037019115362154"><ph name="PRODUCT_NAME" /> ürününde devre dışı bırakılan eklentilerin bir listesini belirtir ve kullanıcıların bu ayarı değiştirmesini önler.
-
-      '*' ve '?' joker karakterleri, rastgele karakter sıralarıyla eşleştirme için kullanılabilir. '*' karakteri, rastgele sayıda karakterle eşleşirken '?' karakteri isteğe bağlı tek bir karakterle (sıfır veya bir karakter) eşleşir. '\' kaçış karakteridir; dolayısıyla, gerçek '*', '?' veya '\' karakterleriyle eşleştirme yapmak için bu karakterlerin önüne bir '\' koyabilirsiniz.
-
-      Bu ayarı etkinleştirirseniz, belirtilen eklentilerin listesi <ph name="PRODUCT_NAME" /> ürününde hiçbir zaman kullanılmaz. Eklentiler, 'about:plugins' içinde devre dışı olarak işaretlenir ve kullanıcılar bunları etkinleştiremez.
-
-      Bu politikanın EnabledPlugins ve DisabledPluginsExceptions tarafından geçersiz kılınabileceğini unutmayın.
-
-      Bu politika ayarlanmadan bırakılırsa, kullanıcı sabit kodlu uyumsuz, eski veya tehlikeli olan eklentiler dışında, sistemde yüklü olan tüm eklentileri kullanabilir.</translation>
 <translation id="1864269674877167562">Bu politika için boş bir dize ayarlanırsa veya politika hiç yapılandırılmazsa <ph name="PRODUCT_OS_NAME" />, kullanıcı oturum açma akışında bir otomatik tamamlama seçeneği görüntülemez.
       Bu politika için bir alan adına karşılık gelen dize ayarlanırsa <ph name="PRODUCT_OS_NAME" />, kullanıcı oturum açma akışı sırasında bir otomatik tamamlama seçeneği görüntüleyerek kullanıcının sadece kullanıcı adını (alan adı uzantısı olmadan) yazmasına olanak verir. Kullanıcı bu alan adı uzantısının üzerine yazabilir.</translation>
 <translation id="1865417998205858223">Temel İzinler</translation>
@@ -867,11 +858,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
-<translation id="3715448429089775791">YouTube Güvenlik Modu'nu etkin olmaya zorlar ve kullanıcıların bu ayarı değiştirmesini önler.
-
-      Bu ayarı etkinleştirirseniz YouTube'da Güvenlik Modu her zaman etkin olur.
-
-      Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız YouTube'da Güvenlik Modu zorlanmaz.</translation>
 <translation id="3750220015372671395">Bu sitelerde anahtar oluşturmayı engelle</translation>
 <translation id="3756011779061588474">Geliştirici modunu engelle</translation>
 <translation id="3758089716224084329"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
@@ -2131,11 +2117,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Tanınan bağlantı türü tanıtıcıları şunlardır: "ethernet", "wifi", "wimax", "bluetooth" ve "cellular".</translation>
 <translation id="7763614521440615342">Yeni Sekme sayfasında içerik önerileri göster</translation>
-<translation id="7766336524667238790">Uygulama kimliği ve sürümü gibi aktif kiosk oturumuyla ilgili bilgileri rapor edin.
-
-      Bu politika yanlış seçeneğine ayarlanırsa, oturum bilgileri rapor
-      edilmez. Doğru seçeneğine ayarlanırsa veya ayarlanmadan
-      bırakılırsa oturum bilgileri rapor edilir.</translation>
 <translation id="7774768074957326919">Sistem proxy ayarlarını kullan</translation>
 <translation id="7775831859772431793">Proxy sunucunun URL'sini burada belirtebilirsiniz.
 
@@ -2373,6 +2354,10 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8369602308428138533">AC güçle çalışırken ekran kapatma gecikmesi</translation>
 <translation id="8382184662529825177">Cihazda içerik koruma için uzak onay kullanımını etkinleştir</translation>
 <translation id="838870586332499308">Veri dolaşımını etkinleştir</translation>
+<translation id="8390049129576938611"><ph name="PRODUCT_NAME" /> içindeki dahili PDF görüntüleyiciyi devre dışı bırakır. Bunun yerine, dosyayı indirilecek dosya olarak ele alır ve kullanıcının PDF dosyalarını varsayılan uygulamayla açmasına olanak tanır.
+
+      Bu politika ayarlanmaz veya devre dışı bırakılırsa, kullanıcı devre dışı bırakmadıkça PDF dosyalarını açmak için PDF eklentisi kullanılır.</translation>
+<translation id="8402079500086185021">PDF dosyalarını her zaman harici olarak aç</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
 <translation id="8413348101535146315"><ph name="PRODUCT_NAME" /> Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini sağlar.
 
@@ -2393,17 +2378,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started sayfasına bakın.</translation>
 <translation id="8493645415242333585">Tarayıcı geçmişini kaydetmeyi devre dışı bırak</translation>
 <translation id="8499172469244085141">Varsayılan Ayarlar (kullanıcılar geçersiz kılabilir)</translation>
-<translation id="8501011084242226370">Kullanıcının <ph name="PRODUCT_NAME" /> uygulamasında etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirtir.
-
-      Rastgele karakter dizileriyle eşleştirmek için "*" ve "?" joker karakterleri kullanılabilir. "*" karakteri, rastgele sayıda karakterleri eşleştirir, "?" karakteri ise isteğe bağlı tek bir karakteri belirtir (yani, sıfır veya tek bir karakter). "\" çıkış karakteridir, dolayısıyla asıl "*", "?" veya "\" karakterlerini eşleştirmek için bunlardan önce bir "\" karakteri koyabilirsiniz.
-
-      Bu ayarı etkinleştirirseniz belirtilen eklenti listesi <ph name="PRODUCT_NAME" /> uygulamasında kullanılabilir. Kullanıcılar bunları (eklenti DisabledPlugins'te bir kalıpla eşleşiyor olsa dahi) "about:plugins" bölümünden etkinleştirebilir veya devre dışı bırakabilirler. Kullanıcılar DisabledPlugins, DisabledPluginsExceptions ve EnabledPlugins'te herhangi bir kalıpla eşleşmeyen eklentileri de etkinleştirebilir veya devre dışı bırakabilirler.
-
-      Bu politika, eklentilerin kesin şekilde kara listeye eklenmesine izin vermek içindir. Bu yöntemle "DisabledPlugins" listesinde tüm eklentileri devre dışı bırakmak için "*" veya tüm Java eklentilerini devre dışı bırakmak için "*Java*" gibi joker karakterli girişler kullanılabilir. Ancak yönetici, "IcedTea Java 2.3" gibi belirli sürümleri etkinleştirmek de isteyebilir. Bu tür belirli sürümler bu politikada belirtilebilir.
-
-      Hem eklenti adının hem de eklenti grup adının muaf tutulması gerektiğini unutmayın. Her bir eklenti grubu, about:plugins sayfasında ayrı bir bölümde gösterilir. Her bölümde bir veya daha fazla eklenti bulunabilir. Örneğin, "Shockwave Flash" eklentisi "Adobe Flash Player" grubuna aittir ve söz konusu eklenti kara listeden muaf tutulacaksa her iki adın da istisnalar listesinde bir eşlemesi olması gerekir.
-
-      Bu politika ayarlanmadan bırakılırsa "DisabledPlugins"teki kalıplarla eşleşen eklentiler kilitlenip devre dışı bırakılır ve kullanıcı bunları etkinleştiremez.</translation>
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
@@ -2442,15 +2416,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Birden fazla sunucu adını virgülle ayırın. Joker karakterlere (*) izin verilir.
 
           Bu politikayı ayarlanmamış olarak bırakırsanız, <ph name="PRODUCT_NAME" /> sunucunun İntranet'te olup olmadığını saptamaya çalışır ve buna göre IWA taleplerini yanıtlar. Sunucunun İnternet'te olduğu saptanırsa, sunucudan gelen IWA talepleri <ph name="PRODUCT_NAME" /> tarafından yoksayılır.</translation>
-<translation id="8668394701842594241"><ph name="PRODUCT_NAME" /> içinde etkinleştirilmiş olan eklentilerin bir listesini belirtir ve kullanıcıların bu ayarı değiştirmelerini önler. 
-
-      '*' ve '?' joker karakterleri herhangi bir karakter dizesine uyacak şekilde kullanılabilir. '*' herhangi bir sayıda karakter ile eşleşirken '?' isteğe bağlı tek bir karakteri belirtir, yani sıfır veya bir karakterle eşleşir. Çıkış karakteri '\' olduğundan gerçek '*', '?' veya '\' joker karakterleri ile eşleştirmek için bu karakterlerin önüne '\' getirebilirsiniz. 
-
-      Eklentiler yüklendiyse, belirtilen eklentiler listesi <ph name="PRODUCT_NAME" /> içinde her zaman kullanılır. Eklentiler 'about:plugins' içinde etkinleştirilmiş olarak işaretlenir ve kullanıcılar bu eklentileri devre dışı bırakamaz. 
-
-      Bu politikanın DisabledPlugins ve DisabledPluginsExceptions politikalarını geçersiz kıldığını unutmayın.
-
-      Bu politika ayarlanmadan bırakılırsa, kullanıcı sistemde yüklü herhangi bir eklentiyi devre dışı bırakabilir.</translation>
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
 <translation id="868068801094828689"><ph name="PRODUCT_NAME" /> ile ilgili kullanım ve kilitlenme verilerinin anonim olarak Google'a raporlanmasını etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler.
 
@@ -2547,13 +2512,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       <ph name="PRODUCT_OS_NAME" />, Quirks Server ile otomatik olarak iletişim kurar
       ve varsa yapılandırma dosyalarını indirip cihaza kaydeder. Bu tür dosyalar,
       örneğin bağlı monitörlerin görüntü kalitesini iyileştirmek için kullanılabilir.</translation>
-<translation id="8905426178924715309">Bu politika kullanımdan kaldırılmıştır. Bunun yerine lütfen ForceGoogleSafeSearch'ü ve ForceYouTubeSafetyMode'u kullanın. ForceGoogleSafeSearch veya ForceYouTubeSafetyMode politikası ayarlanırsa bu politika yoksayılır.
-
-      Google Web Araması'ndaki sorguların Güvenli Arama etkin olarak ayarlanmış halde yapılmasını sağlar ve kullanıcıların bu ayarı değiştirmesini önler. Bu ayar aynı zamanda YouTube'da da Güvenli Mod'un kullanılmasını sağlar.
-
-      Bu ayarı etkinleştirirseniz, Google Arama'da ve YouTube'da Güvenli Arama her zaman etkin olur.
-
-      Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız, Google Arama'da ve YouTube'da Güvenli Arama uygulanmaz.</translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>
 <translation id="8908294717014659003">Web sitelerinin medya yakalama cihazlarına erişmelerine izin verilip verilmeyeceğini ayarlamanıza olanak sağlar. Medya yakalama cihazlarına erişime varsayılan olarak izin verilebilir veya bir web sitesinin medya yakalama cihazlarına erişmek istediği her defasında kullanıcıya sorulabilir.
 

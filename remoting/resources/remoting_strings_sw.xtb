@@ -33,7 +33,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="177096447311351977">IP ya Kituo cha kiteja: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' ip ya mpangishi='<ph name="HOST_IP_ADDRESS_AND_PORT" />' kituo='<ph name="CHANNEL_TYPE" />' muunganisho='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Funga dirisha</translation>
 <translation id="1841799852846221389">Inafunga miunganisho ya mbali ya kompyuta hii...</translation>
-<translation id="189172778771606813">Funga droo ya kusogeza</translation>
 <translation id="1897488610212723051">Futa</translation>
 <translation id="195619862187186579">Mipangilio ya kibodi</translation>
 <translation id="1996161829609978754">Chrome inapakua kisakinishi cha Seva pangishi cha Eneo-kazi la Chromoting. Mara tu upakuaji unapokamilika, tafadhali endesha kisakinishi kabla ya kuendelea.</translation>
@@ -114,6 +113,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Tafadhali thibitisha akaunti yako na PIN hapa chini ili kuruhusu ufikiaji kwa Kompyuta ya Mbali ya Chrome</translation>
+<translation id="3897092660631435901">Menyu</translation>
 <translation id="3905196214175737742">Kikoa cha mmiliki wa seva pangishi si sahihi.</translation>
 <translation id="3908017899227008678">Punguza ili itoshe</translation>
 <translation id="3931191050278863510">Mpangishi amesimamishwa.</translation>
@@ -166,7 +166,6 @@ ya Mbali ya Chrome</translation>
 <translation id="5070121137485264635">Seva pangishi ya mbali inakuhitaji uhalalishe hadi kwenye tovuti nyingine. Ili kuendelea, sharti uipe Chrome Remote Desktop idhini za ziada ili ifikie anwani hii:</translation>
 <translation id="507204348399810022">Una uhakika ungependa kuzima miunganisho ya mbali kwenye <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Tafadhali ingiza PIN ile ile katika vikasha vyote viwili.</translation>
-<translation id="5168917394043976756">Fungua droo ya kusogeza</translation>
 <translation id="5170982930780719864">Kitambulisho cha seva pangishi si sahihi.</translation>
 <translation id="518094545883702183">Maelezo haya yanatumika tu kwa kutambua tatizo unaloripoti, yanapatikana tu kwa mtu anayechunguza ripoti yako, na yanahifadhiwa kwa siku zisizozidi 30.</translation>
 <translation id="5222676887888702881">Ondoka</translation>

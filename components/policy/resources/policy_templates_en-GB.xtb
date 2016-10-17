@@ -209,15 +209,6 @@
       If this policy is not configured or if it is set to "tls1.2" then <ph name="PRODUCT_NAME" /> no longer performs this fallback. Note that this does not disable support for older TLS versions, only whether <ph name="PRODUCT_NAME" /> will work around buggy servers which cannot negotiate versions correctly.
 
       Otherwise, if compatibility with a buggy server must be maintained, this policy may be set to "tls1.1". This is a stopgap measure and the server should be rapidly fixed.</translation>
-<translation id="1861037019115362154">Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
-
-      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?', or '\' characters, you can put a '\' in front of them.
-
-      If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME" />. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
-
-      Note that this policy can be overridden by EnabledPlugins and DisabledPluginsExceptions.
-
-      If this policy is left not set the user can use any plugin installed on the system except for hard-coded incompatible, outdated or dangerous plugins.</translation>
 <translation id="1864269674877167562">If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME" /> will not show an auto-complete option during user sign-in flow.
       If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME" /> will show an auto-complete option during user sign-in allowing the user to type in only their user name without the domain name extension. The user will be able to overwrite this domain name extension.</translation>
 <translation id="1865417998205858223">Key Permissions</translation>
@@ -860,11 +851,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
-<translation id="3715448429089775791">Forces YouTube Safety Mode to active and prevents users from changing this setting.
-
-      If you enable this setting, Safety Mode on YouTube is always active.
-
-      If you disable this setting or do not set a value, Safety Mode on YouTube is not enforced.</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758089716224084329">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
@@ -2130,12 +2116,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
 <translation id="7763614521440615342">Show content suggestions on the New Tab page</translation>
-<translation id="7766336524667238790">Report information about the active kiosk session, such as
-      application ID and version.
-
-      If the policy is set to false, the session information will not be
-      reported. If set to true or left unset, session information will be
-      reported.</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="7775831859772431793">You can specify the URL of the proxy server here.
 
@@ -2374,6 +2354,10 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8369602308428138533">Screen off delay when running on AC power</translation>
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
+<translation id="8390049129576938611">Disables the internal PDF viewer in <ph name="PRODUCT_NAME" />. Instead, it treats it as download and allows the user to open PDF files with the default application.
+
+      If this policy is left not set or disabled the PDF plug-in will be used to open PDF files, unless the user disables it.</translation>
+<translation id="8402079500086185021">Always Open PDF files externally</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="8413348101535146315">Enables ending processes in <ph name="PRODUCT_NAME" />'s Task Manager.
 
@@ -2394,17 +2378,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disable saving browser history</translation>
 <translation id="8499172469244085141">Default Settings (users can override)</translation>
-<translation id="8501011084242226370">Specifies a list of plug-ins that user can enable or disable in <ph name="PRODUCT_NAME" />.
-
-      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?', or '\' characters, you can put a '\' in front of them.
-
-      If you enable this setting, the specified list of plug-ins can be used in <ph name="PRODUCT_NAME" />. Users can enable or disable them in 'about:plugins', even if the plug-in also matches a pattern in DisabledPlugins. Users can also enable and disable plug-ins that don't match any patterns in DisabledPlugins, DisabledPluginsExceptions and EnabledPlugins.
-
-      This policy is meant to allow for strict plug-in blacklisting where the 'DisabledPlugins' list contains wildcarded entries like disable all plug-ins '*' or disable all Java plug-ins '*Java*' but the administrator wishes to enable some particular version like 'IcedTea Java 2.3'. This particular versions can be specified in this policy.
-
-      Note that both the plug-in name and the plug-in's group name have to be exempted. Each plug-in group is shown in a separate section in about:plug-ins; each section may have one or more plug-ins. For example, the "Shockwave Flash" plug-in belongs to the "Adobe Flash Player" group, and both names have to have a match in the exceptions list if that plug-in is to be exempted from the blacklist.
-
-      If this policy is left not set, any plug-in that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.</translation>
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
@@ -2440,15 +2413,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Specifies a list of plug-ins that are enabled in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
-
-      The wild card characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?' or '\' characters, you can put a '\' in front of them.
-
-      The specified list of plug-ins is always used in <ph name="PRODUCT_NAME" /> if they are installed. The plug-ins are marked as enabled in 'about:plug-ins' and users cannot disable them.
-
-      Note that this policy overrides both DisabledPlug-ins and DisabledPlug-insExceptions.
-
-      If this policy is left unset, the user can disable any plug-in installed on the system.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="868068801094828689">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME" /> to Google and prevents users from changing this setting.
 
@@ -2540,13 +2504,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store "update"
       URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">The Quirks Server provides hardware-specific configuration files, like ICC display profiles to adjust monitor calibration. When this policy is set to false, the device will not attempt to contact the Quirks Server to download configuration files. If this policy is true or not configured then <ph name="PRODUCT_OS_NAME" /> will automatically contact the Quirks Server and download configuration files, if available, and store them on the device. Such files might, for example, be used to improve display quality of attached monitors.</translation>
-<translation id="8905426178924715309">This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead. This policy will be ignored if either the ForceGoogleSafeSearch or ForceYouTubeSafetyMode policies are set.
-
-      Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Safety Mode on YouTube.
-
-      If you enable this setting, SafeSearch in Google Search and YouTube is always active.
-
-      If you disable this setting or do not set a value, SafeSearch in Google Search and YouTube is not enforced.</translation>
 <translation id="8906768759089290519">Enable guest mode</translation>
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 

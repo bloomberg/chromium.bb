@@ -208,15 +208,6 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si no se configura esta política o si se le asigna el valor tls1.2, <ph name="PRODUCT_NAME" /> ya no utiliza esta alternativa. Ten en cuenta que esto no inhabilita la compatibilidad con versiones más antiguas de TLS, solo determina si <ph name="PRODUCT_NAME" /> evita el uso de servidores con errores que no puedan negociar las versiones correctamente.
 
       De lo contrario, el valor tls 1.1 puede asignarse a la política si se debe mantener la compatibilidad con un servidor con errores. Esta es una medida provisional y el servidor debería arreglarse rápidamente.</translation>
-<translation id="1861037019115362154">Permite especificar una lista de complementos inhabilitados en <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
-
-      Se pueden utilizar los caracteres comodín "*" y "?" para obtener coincidencias con secuencias de caracteres arbitrarios. El carácter "*" permite obtener coincidencias con un número arbitrario de caracteres y "?" especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape ("\") delante de los caracteres "*", "?" o "\" para obtener coincidencias con los propios caracteres.
-
-      Si habilitas esta opción, <ph name="PRODUCT_NAME" /> nunca utilizará la lista de complementos especificada. Los complementos se marcan como inhabilitados en "about:plugins" y los usuarios no pueden habilitarlos.
-
-      Ten en cuenta que las políticas EnabledPlugins y DisabledPluginsExceptions pueden anular esta política.
-
-      Si no se establece esta política, el usuario podrá utilizar cualquier complemento que esté instalado en el sistema, salvo complementos codificados incompatibles, obsoletos o peligrosos.</translation>
 <translation id="1864269674877167562">Si se ha asignado una cadena en blanco a la política o si esta no se configura, <ph name="PRODUCT_OS_NAME" /> no mostrará una opción para autocompletar los datos durante el flujo de inicio de sesión del usuario.
       Si se ha asignado una cadena que representa un nombre de dominio a esta política, <ph name="PRODUCT_OS_NAME" /> mostrará dicha opción durante el inicio de sesión del usuario, por lo que este podrá introducir solo su nombre de usuario sin la extensión de nombre de dominio. El usuario podrá anular esta extensión de nombre de dominio.</translation>
 <translation id="1865417998205858223">Permisos clave</translation>
@@ -862,11 +853,6 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3660562134618097814">Transferir las cookies del proveedor de identidad SAML durante el inicio de sesión</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3715448429089775791">Activa el modo de seguridad de YouTube y evita que los usuarios modifiquen esta opción.
-
-      Si habilitas esta opción, el modo de seguridad de YouTube siempre estará activado.
-
-      Si la inhabilitas o no se le asigna ningún valor, no se aplicará el modo de seguridad de YouTube.</translation>
 <translation id="3750220015372671395">Bloquear la generación de claves en estos sitios web</translation>
 <translation id="3756011779061588474">Bloquear el modo de desarrollador</translation>
 <translation id="3758089716224084329">Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy.
@@ -2118,9 +2104,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Los identificadores de tipos de conexiones reconocidos son Ethernet, Wi-Fi, WiMAX, Bluetooth y redes móviles.</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
-<translation id="7766336524667238790">Proporciona información sobre la sesión del kiosco activa, como el ID de la aplicación y la versión.
-      
-Si se asigna el valor false a la política, no se proporcionará información sobre la sesión. Si se asigna el valor true o si la política no se configura, sí se proporcionará información sobre la sesión.</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>
 <translation id="7775831859772431793">Permite especificar la URL del servidor proxy.
 
@@ -2358,6 +2341,10 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8369602308428138533">Retraso de desconexión de la pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
+<translation id="8390049129576938611">Inhabilita el visor de PDF interno en <ph name="PRODUCT_NAME" />. En su lugar, trata el archivo PDF como una descarga y permite al usuario abrir archivos PDF con la aplicación predeterminada.
+
+      Si esta política no se establece o se inhabilita, el complemento de PDF se usará para abrir archivos PDF a menos que el usuario lo inhabilite.</translation>
+<translation id="8402079500086185021">Abrir siempre los archivos PDF de forma externa</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás online</translation>
 <translation id="8413348101535146315">Permite finalizar procesos en el administrador de tareas de <ph name="PRODUCT_NAME" />.
 
@@ -2378,17 +2365,6 @@ Si la política está establecida en False, no se informará sobre la lista de i
           Puedes consultar ejemplos de patrones en la página https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Inhabilitar almacenamiento del historial de navegación</translation>
 <translation id="8499172469244085141">Configuración predeterminada (los usuarios pueden modificarla)</translation>
-<translation id="8501011084242226370">Especifica una lista de complementos que el usuario puede habilitar o inhabilitar en <ph name="PRODUCT_NAME" />.
-
-Los caracteres comodín "*" y "?" se pueden utilizar para buscar coincidencias con secuencias de caracteres arbitrarios. El comodín "*" coincide con cualquier número de caracteres, mientras que "?" especifica un único carácter opcional, es decir, coincide con uno o con ningún carácter. El carácter de escape es "\", por lo que para que coincida con los caracteres "*", "?" o "\" debes colocar el carácter "\" delante de ellos.
-
-Si habilitas esta opción, podrás utilizar la lista especificada de complementos en <ph name="PRODUCT_NAME" />. Los usuarios pueden habilitarlos o inhabilitarlos en la página about:plugins, aunque el complemento también coincida con un patrón de DisabledPlugins. Los usuarios también pueden habilitar o inhabilitar complementos que no coincidan con ningún patrón de DisabledPlugins, DisabledPluginsExceptions y EnabledPlugins.
-
-Esta política se puede utilizar para incluir complementos en una lista negra estricta si la lista DisabledPlugins contiene entradas con comodines, como inhabilitar todos los complementos "*" o inhabilitar todos los complementos de Java "*Java*", pero el administrador quiere habilitar alguna versión concreta (por ejemplo, IcedTea Java 2.3). Estas versiones concretas se pueden especificar en esta política.
-
-Ten en cuenta que no se debe incluir ni el nombre del complemento ni el nombre de grupo del complemento. Cada grupo de complementos se muestra en una sección independiente en la página about:plugins, y cada sección puede tener uno o varios complementos. Por ejemplo, el complemento Shockwave Flash pertenece al grupo Adobe Flash Player, y ambos nombres deben coincidir con un elemento de la lista de excepciones si ese complemento se debe excluir de la lista negra.
-
-Si no se establece esta política, cualquier complemento que coincida con los patrones de DisabledPlugins se bloqueará e inhabilitará, y el usuario no podrá habilitarlo.</translation>
 <translation id="8519264904050090490">URLs de excepción manual de usuario administrado</translation>
 <translation id="8544375438507658205">Procesador de HTML predeterminado de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
@@ -2424,15 +2400,6 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
           Los distintos nombres de servidor se deben separar con comas. Se permite el uso de caracteres comodín (*).
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> intentará detectar si un servidor se encuentra en la intranet y solo entonces responderá a las solicitudes de IWA. Si se detecta Internet como servidor, <ph name="PRODUCT_NAME" /> ignorará las solicitudes de IWA que procedan de él.</translation>
-<translation id="8668394701842594241">Permite especificar una lista de complementos habilitados en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
-
-      Se pueden utilizar los caracteres comodín "*" y "?" para obtener coincidencias de secuencias de caracteres arbitrarios. "*" puede coincidir con un número arbitrario de caracteres y "?" especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape ("\") delante de "*", de "?" o de "\" para obtener coincidencias con esos caracteres.
-
-      <ph name="PRODUCT_NAME" /> usará la lista de complementos especificada siempre que estos estén instalados. Los complementos se marcan como habilitados en "about:plugins" y los usuarios no los pueden inhabilitar.
-
-      Ten en cuenta que esta política anula las políticas DisabledPlugins y DisabledPluginsExceptions.
-
-      Si no se establece esta política, el usuario podrá inhabilitar todos los complementos que se instalen en el sistema.</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="868068801094828689">Habilita el envío de informes anónimos a Google sobre datos de fallos y de uso relacionados con <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta opción.
 
@@ -2540,13 +2507,6 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
       automáticamente con Quirks Server, descargará los archivos de configuración
       si están disponibles y los almacenará en el dispositivo. Estos archivos
       pueden utilizarse, por ejemplo, para mejorar la calidad de la pantalla de los monitores conectados.</translation>
-<translation id="8905426178924715309">Esta política está obsoleta, utiliza ForceGoogleSafeSearch y ForceYouTubeSafetyMode en su lugar. Esta política se ignorará si están establecidas ForceGoogleSafeSearch o ForceYouTubeSafetyMode.
-
-      Fuerza las consultas en la Búsqueda web de Google para que se realicen con SafeSearch activado e impide que los usuarios modifiquen esta configuración. Además, esta opción fuerza el modo de seguridad en YouTube.
-
-      Si habilitas esta opción, SafeSearch estará siempre activo en la Búsqueda de Google y en YouTube.
-
-      Si esta opción se inhabilita o no se establece un valor, SafeSearch no se aplicará en la Búsqueda de Google ni en YouTube.</translation>
 <translation id="8906768759089290519">Habilitar el modo de invitado</translation>
 <translation id="8908294717014659003">Te permite establecer si los sitios web pueden acceder a los dispositivos de captura multimedia. El acceso a los dispositivos de captura multimedia se puede establecer de forma predeterminada o se puede configurar para que el usuario reciba un mensaje cada vez que un sitio web quiera acceder a estos dispositivos.
 

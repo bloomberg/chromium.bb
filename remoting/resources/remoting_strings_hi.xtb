@@ -33,7 +33,6 @@
 <translation id="177096447311351977">क्लाइंट के लिए चैनल IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">विंडो बंद करें</translation>
 <translation id="1841799852846221389">इस कंप्‍यूटर के लिए दूरस्‍थ कनेक्‍शन अक्षम किए जा रहे हैं…</translation>
-<translation id="189172778771606813">मार्गदर्शक ड्रॉवर बंद करें</translation>
 <translation id="1897488610212723051">हटाएं</translation>
 <translation id="195619862187186579">कीबोर्ड लेआउट</translation>
 <translation id="1996161829609978754">Chrome, Chromoting होस्ट इंस्टॉलर को डाउनलोड कर रहा है. डाउनलोड पूरा हो जाने पर, कृपया आगे बढ़ने से पहले इंस्टॉलर चलाएं.</translation>
@@ -113,6 +112,7 @@
 <translation id="3785447812627779171">Chromoting होस्ट</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome दूरस्थ डेस्कटॉप द्वारा एक्सेस की अनुमति देने के लिए कृपया नीचे अपने खाते और PIN की दुबारा पूछें.</translation>
+<translation id="3897092660631435901">मेनू</translation>
 <translation id="3905196214175737742">अमान्‍य होस्‍ट मालिक डोमेन.</translation>
 <translation id="3908017899227008678">‍फ़िट करने के लिए सिकोड़ें</translation>
 <translation id="3931191050278863510">होस्‍ट बंद हो गया है.</translation>
@@ -165,7 +165,6 @@
 <translation id="5070121137485264635">दूरस्थ होस्ट के लिए आवश्यक है कि आप किसी तृतीय-पक्ष की वेबसाइट प्रमाणीकृत करें. जारी रखने के लिए, आपको Chrome दूरस्थ डेस्कटॉप को इस पते को एक्सेस करने के लिए अतिरिक्त अनुमतियां देनी होंगी:</translation>
 <translation id="507204348399810022">क्या आप वाकई <ph name="HOSTNAME" /> के दूरस्थ कनेक्शन अक्षम करना चाहते हैं?</translation>
 <translation id="5156271271724754543">कृपया दोनों बॉक्‍स में समान पिन दर्ज करें.</translation>
-<translation id="5168917394043976756">मार्गदर्शक ड्रॉवर खोलें</translation>
 <translation id="5170982930780719864">अमान्‍य होस्‍ट आईडी.</translation>
 <translation id="518094545883702183">इस जानकारी का उपयोग आपके द्वारा रिपोर्ट की जा रही समस्‍या का निदान करने के लिए ही किया जाता है, यह आपकी रिपोर्ट की जांच कर रहे व्‍यक्‍ति के लिए ही उपलब्‍ध होती है, और इसे 30 दिन से अधिक समय तक नहीं रखा जाता.</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>

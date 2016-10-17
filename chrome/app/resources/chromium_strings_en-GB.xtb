@@ -39,6 +39,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2158734852934720349">Chromium OS open source licences</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="225614027745146050">Welcome</translation>
+<translation id="2264142189334629813">Chromium OS cannot open this page.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="2347108572062610441">This extension has changed the page that is shown when you start Chromium.</translation>
 <translation id="2372704305038231957">32-bit Chromium may not function correctly because it is no longer supported on this Linux system. Please upgrade to 64-bit Chromium.</translation>
@@ -77,6 +78,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3258596308407688501">Chromium cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium is your default browser. Cheers.</translation>
 <translation id="328888136576916638">Google API keys are missing. Some functionality of Chromium will be disabled.</translation>
 <translation id="3289635842886789612">Chromium is out of date.</translation>
 <translation id="3296368748942286671">Continue running background apps when Chromium is closed</translation>

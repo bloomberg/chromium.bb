@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Chromium OS মুক্ত উৎসে লাইসেন্সগুলি</translation>
 <translation id="2241627712206172106">যদি আপনি একটি কম্পিউটার ভাগ করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chromium এর সেট আপ করতে পারবেন৷</translation>
 <translation id="225614027745146050">স্বাগতম</translation>
+<translation id="2264142189334629813">Chromium OS এই পৃষ্ঠাটি খুলতে পারবে না।</translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="2347108572062610441">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশানটি পরিবর্তন করেছে।</translation>
 <translation id="2372704305038231957">৩২-বিট Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর এই Linux সিস্টেমে সমর্থিত নয়। দয়া করে ৬৪-বিট Chromium এ আপগ্রেড করুন।</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium তার ডেটা ডিরেক্টরিতে পড়তে এবং লিখতে পারে না:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium আপনার ডিফল্ট ব্রাউজার। ধন্যবাদ।</translation>
 <translation id="328888136576916638">Google API কীগুলি অনুপস্থিত৷ Chromium এর কিছু বৈশিষ্ট্য নিষ্ক্রিয় হয়ে যাবে৷</translation>
 <translation id="3289635842886789612">Chromium পুরানো হয়ে গেছে।</translation>
 <translation id="3296368748942286671"> Chromium বন্ধ হলে পটভূমির অ্যাপ্লিকেশন চালু রাখুন</translation>

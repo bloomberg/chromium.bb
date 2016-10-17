@@ -33,7 +33,6 @@
 <translation id="177096447311351977">IP-адрес канала для клиента: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Закрыть окно</translation>
 <translation id="1841799852846221389">Блокировка удаленных подключений…</translation>
-<translation id="189172778771606813">Закрыть панель навигации</translation>
 <translation id="1897488610212723051">Удалить</translation>
 <translation id="195619862187186579">Раскладка клавиатуры</translation>
 <translation id="1996161829609978754">Программа установки хоста для Пульта Chrome скачивается. Запустите ее после скачивания.</translation>
@@ -114,6 +113,7 @@
 Пульта Chrome</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Для доступа через Удаленный рабочий стол Chrome подтвердите свой аккаунт и PIN-код.</translation>
+<translation id="3897092660631435901">Меню</translation>
 <translation id="3905196214175737742">Владелец хоста использует недопустимый домен</translation>
 <translation id="3908017899227008678">Уменьшить до размера окна</translation>
 <translation id="3931191050278863510">Хост остановлен.</translation>
@@ -166,7 +166,6 @@
 <translation id="5070121137485264635">Для удаленного доступа к сайту требуется пройти аутентификацию. Дайте Удаленному рабочему столу Chrome дополнительные разрешения для доступа к следующему адресу:</translation>
 <translation id="507204348399810022">Заблокировать удаленные подключения к "<ph name="HOSTNAME" />"?</translation>
 <translation id="5156271271724754543">Введите в обоих полях одинаковый PIN-код.</translation>
-<translation id="5168917394043976756">Открыть панель навигации</translation>
 <translation id="5170982930780719864">Недопустимый идентификатор хоста</translation>
 <translation id="518094545883702183">Эти сведения помогут диагностировать возникшую проблему. Они будут доступны только специалисту, работающему над ее решением, на срок не более 30 дней.</translation>
 <translation id="5222676887888702881">Выйти</translation>

@@ -33,7 +33,6 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="177096447311351977">Kliento kanalo IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Uždaryti langą</translation>
 <translation id="1841799852846221389">Neleidžiamas nuotolinis ryšys šiame kompiuteryje…</translation>
-<translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
 <translation id="1897488610212723051">Ištrinti</translation>
 <translation id="195619862187186579">Klaviatūros išdėstymai</translation>
 <translation id="1996161829609978754">„Chrome“ atsisiunčiama „Chrome“ nuotolinio ryšio prieglobos diegimo programa. Kai atsisiuntimas bus baigtas, prieš tęsdami paleiskite ją.</translation>
@@ -114,6 +113,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 priegloba</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
 <translation id="3884839335308961732">Kad leistumėte prieigą naudojant „Chrome“ nuotolinį kompiuterio valdymą, toliau patvirtinkite savo paskyrą ir PIN kodą.</translation>
+<translation id="3897092660631435901">Meniu</translation>
 <translation id="3905196214175737742">Netinkamas prieglobos savininko domenas.</translation>
 <translation id="3908017899227008678">Sumažinti, kad tilptų</translation>
 <translation id="3931191050278863510">Priegloba sustabdyta.</translation>
@@ -166,7 +166,6 @@ valdymo priegloba</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="507204348399810022">Ar tikrai norite išjungti nuotolinį ryšį su „<ph name="HOSTNAME" />“?</translation>
 <translation id="5156271271724754543">Įveskite tą patį PIN kodą abiejuose laukeliuose.</translation>
-<translation id="5168917394043976756">Atidaryti naršymo skydelį</translation>
 <translation id="5170982930780719864">Netinkamas prieglobos ID.</translation>
 <translation id="518094545883702183">Ši informacija naudojama tik problemos, apie kurią pranešate, diagnozavimo tikslais, ji pasiekiama tik ataskaitą nagrinėjančiam asmeniui ir saugoma ne ilgiau nei 30 dienų.</translation>
 <translation id="5222676887888702881">Atsijungti</translation>

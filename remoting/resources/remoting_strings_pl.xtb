@@ -33,7 +33,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="177096447311351977">Adres IP kanału dla klienta: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zamknij okno</translation>
 <translation id="1841799852846221389">Wyłączam połączenia zdalne z tym komputerem…</translation>
-<translation id="189172778771606813">Zamknij panel nawigacji</translation>
 <translation id="1897488610212723051">Usuń</translation>
 <translation id="195619862187186579">Układy klawiatury</translation>
 <translation id="1996161829609978754">Chrome pobiera instalatora hosta Chromoting. Po zakończeniu pobierania uruchom instalatora.</translation>
@@ -114,6 +113,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Potwierdź poniżej swoje konto i kod PIN, by pozwolić na dostęp przez Pulpit zdalny Chrome.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Nieprawidłowa domena właściciela hosta.</translation>
 <translation id="3908017899227008678">Zmniejsz, by dopasować</translation>
 <translation id="3931191050278863510">Host został zatrzymany.</translation>
@@ -166,7 +166,6 @@ zdalnego Chrome</translation>
 <translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
 <translation id="507204348399810022">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Wpisz ten sam PIN w obu polach.</translation>
-<translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="5170982930780719864">Nieprawidłowy identyfikator hosta.</translation>
 <translation id="518094545883702183">Użyjemy tych informacji jedynie do zdiagnozowania zgłoszonego problemu, udostępnimy je tylko osobie sprawdzającej zgłoszenie i usuniemy w ciągu 30 dni.</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>

@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
 <translation id="4376501731284077108">管理対象外</translation>
 <translation id="4378154925671717803">電話番号</translation>
+<translation id="4384468725000734951">検索に Sogou を使用します</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
 <translation id="4440256989292146959">データ使用量を抑えながら快適にブラウジング</translation>
 <translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」にブックマークしました</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">オン</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
 <translation id="5939518447894949180">リセット</translation>
+<translation id="5942872142862698679">検索に Google を使用します</translation>
+<translation id="6000066717592683814">Google のままにする</translation>
 <translation id="6010869025736512584">ビデオ入力にアクセスしています</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
 <translation id="6031101910111098835">折りたたみ状態 - クリックして展開</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6177390657002841081">データセーバーをオンにする</translation>
+<translation id="617991007797131187">中国のユーザーは、Chrome での検索に Sogou を使用できます。この設定は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更できます。</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">ビームするにはタブを選択してください</translation>
 <translation id="6545017243486555795">すべてのデータを消去</translation>
 <translation id="6550675742724504774">オプション</translation>
+<translation id="6560414384669816528">Sogou で検索します</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE" />を常に翻訳</translation>
 <translation id="6571070086367343653">クレジットカードの編集</translation>
 <translation id="6573431926118603307">他の端末の Chrome で開いているタブがここに表示されます。</translation>

@@ -39,6 +39,7 @@
 <translation id="2158734852934720349">Chromium OS 오픈소스 라이선스</translation>
 <translation id="2241627712206172106">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="225614027745146050">환영합니다.</translation>
+<translation id="2264142189334629813">Chromium OS에서 이 페이지를 열 수 없음</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="2372704305038231957">이 Linux 시스템에서 더 이상 32비트 Chromium이 지원되지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다. 64비트 Chromium으로 업그레이드하세요.</translation>
@@ -77,6 +78,7 @@
 <translation id="3258596308407688501">Chromium에서 데이터 디렉토리를 읽고 쓸 수 없습니다.
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium이 기본 브라우저입니다.</translation>
 <translation id="328888136576916638">Google API 키가 누락되었습니다. Chromium의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="3289635842886789612">Chromium이 이전 버전임</translation>
 <translation id="3296368748942286671">Chromium 종료 후에도 백그라운드 앱을 계속 실행</translation>

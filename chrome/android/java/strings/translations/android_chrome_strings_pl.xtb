@@ -286,6 +286,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4376501731284077108">Brak kontroli</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Korzystam z wyszukiwarki Sogou</translation>
 <translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
 <translation id="4440256989292146959">Przeglądaj więcej za mniej</translation>
 <translation id="4452548195519783679">Utworzono zakładkę w folderze <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5919204609460789179">Zaktualizuj przeglądarkę <ph name="PRODUCT_NAME" />, by rozpocząć synchronizację</translation>
 <translation id="5939518447894949180">Resetuj</translation>
+<translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
+<translation id="6000066717592683814">Zachowaj Google</translation>
 <translation id="6010869025736512584">Otwieram wejście wideo</translation>
 <translation id="6012342843556706400">Aby zezwolić stronie na wykorzystanie danych o lokalizacji, Chrome musi mieć do nich dostęp.</translation>
 <translation id="6031101910111098835">Zwinięty – kliknij, by rozwinąć</translation>
@@ -441,6 +444,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6177390657002841081">Włącz Oszczędzanie danych</translation>
+<translation id="617991007797131187">Do wyszukiwania w Chinach Chrome może używać Sogou. Tę opcje możesz zmienić w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
@@ -472,6 +476,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="654446541061731451">Wybierz kartę do przesłania</translation>
 <translation id="6545017243486555795">Wyczyść wszystkie dane</translation>
 <translation id="6550675742724504774">Opcje</translation>
+<translation id="6560414384669816528">Szukaj w Sogou</translation>
 <translation id="656628257199996201">Zawsze tłumacz z języka: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edytuj kartę kredytową</translation>
 <translation id="6573431926118603307">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>

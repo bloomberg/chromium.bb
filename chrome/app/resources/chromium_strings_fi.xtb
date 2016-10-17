@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Chromium-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
 <translation id="2241627712206172106">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromiumista juuri itselleen sopivan.</translation>
 <translation id="225614027745146050">Tervetuloa</translation>
+<translation id="2264142189334629813">Chromium-käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="2347108572062610441">Tämä laajennus on vaihtanut Chromiumin aloitussivun.</translation>
 <translation id="2372704305038231957">32-bittinen Chromium ei ehkä toimi oikein, koska sen käyttöä tällä Linux-järjestelmällä ei enää tueta. Päivitä Chromium 64-bittiseen versioon.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium ei voi lukea tietohakemistoaan ja kirjoittaa siihen:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Hienoa! Chromium on nyt oletusselaimesi.</translation>
 <translation id="328888136576916638">Googlen sovellusliittymän avaimet puuttuvat. Jotkin Chromiumin toiminnoista poistetaan käytöstä.</translation>
 <translation id="3289635842886789612">Chromium on vanhentunut.</translation>
 <translation id="3296368748942286671">Jätä taustasovellukset käyntiin, kun Chromium suljetaan</translation>

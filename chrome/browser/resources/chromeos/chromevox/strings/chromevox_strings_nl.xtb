@@ -50,7 +50,7 @@
 <translation id="1506187449813838456">Toonhoogte verhogen</translation>
 <translation id="151784044608172266">Volgende zin</translation>
 <translation id="1524531499102321782">Volgende brailleregel</translation>
-<translation id="1546370775711804143">Schuifbalk</translation>
+<translation id="1546370775711804143">Scrollbar</translation>
 <translation id="1559739829547075274">Terug navigeren</translation>
 <translation id="1571643229714746283">ChromeVox gereed</translation>
 <translation id="158493514907962286">december</translation>
@@ -108,7 +108,7 @@
 <translation id="2223693656926968778">Actie ondernemen voor huidig item</translation>
 <translation id="225732394367814946">Spreeksnelheid verhogen</translation>
 <translation id="2267945578749931355">Volgend teken</translation>
-<translation id="2281234842553884450">Vorige schuifbalk</translation>
+<translation id="2281234842553884450">Vorige scrollbar</translation>
 <translation id="2318372665160196757">Hoofd</translation>
 <translation id="2329324941084714723">Deelvenster met tabblad</translation>
 <translation id="2344193891939537199">Bedieningselement voor datum/tijd</translation>
@@ -333,7 +333,7 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="4188530942454211480">Vorige zin</translation>
 <translation id="4202186506458631436">Naar rechts verplaatsen</translation>
 <translation id="4206289001967551965">In tabel</translation>
-<translation id="4215733775853809057">Volgende schuifbalk</translation>
+<translation id="4215733775853809057">Volgende scrollbar</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{streepje}other{# streepjes}}</translation>
 <translation id="421884353938374759">kleurkiezer</translation>
 <translation id="4229646983878045487">datum tijd</translation>
@@ -657,7 +657,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="7492049978501397201">Geopend dialoogvenster</translation>
 <translation id="7518543783849163354">Druk op de Ctrl-toets om de spraakfunctie van ChromeVox tijdelijk uit te schakelen.</translation>
 <translation id="7532613204005497612">juni</translation>
-<translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, schuifbalk</translation>
+<translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, scrollbar</translation>
 <translation id="7552432549459840808">Handige Chrome-snelkoppelingen</translation>
 <translation id="7596919493010894443">selectie gewist</translation>
 <translation id="7604026522577407655">Naar het begin van de huidige kolom gaan</translation>
@@ -781,7 +781,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="9027462562263121875">Geen tabellen.</translation>
 <translation id="9040132695316389094">Kop 1</translation>
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
-<translation id="9061915073547935367">Zoekwidget in-/uitschakelen</translation>
 <translation id="9065283790526219006">+pop-up</translation>
 <translation id="9077213568694924680">uit selectie verwijderd</translation>
 <translation id="9082874451376019682">Geen vorige schuifregelaar.</translation>

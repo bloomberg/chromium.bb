@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Лицензи за отворен код за Chromium OS</translation>
 <translation id="2241627712206172106">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chromium точно така, както искат.</translation>
 <translation id="225614027745146050">Добре дошли</translation>
+<translation id="2264142189334629813">Chromium OS не може да отвори тази страница.</translation>
 <translation id="2316129865977710310">Не, благодаря</translation>
 <translation id="2347108572062610441">Това разширение промени страницата, която се показва при стартиране на Chromium.</translation>
 <translation id="2372704305038231957">32-битовата версия на Chromium може да не функционира правилно, защото вече не се поддържа за тази система Linux. Моля, надстройте до 64-битовата версия на браузъра.</translation>
@@ -73,6 +74,7 @@
 <translation id="3190315855212034486">О, не! Chromium претърпя срив. Да се стартира ли отново сега?</translation>
 <translation id="3256316712990552818">Копирано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чете и записва в директорията си за данни: <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium е браузърът ви по подразбиране. Браво.</translation>
 <translation id="328888136576916638">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Chromium ще бъдат деактивирани.</translation>
 <translation id="3289635842886789612">Chromium не е актуален.</translation>
 <translation id="3296368748942286671">Да продължават да се изпълняват приложения на заден план, когато Chromium е затворен</translation>

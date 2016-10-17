@@ -33,7 +33,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="177096447311351977">IP-adress för kanal för klient: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Stäng fönstret</translation>
 <translation id="1841799852846221389">Fjärranslutningar inaktiveras för den här datorn ...</translation>
-<translation id="189172778771606813">Stäng navigeringspanelen</translation>
 <translation id="1897488610212723051">Radera</translation>
 <translation id="195619862187186579">Tangentbordslayouter</translation>
 <translation id="1996161829609978754">Chrome laddar ned installationsprogrammet för fjärranslutningsvärden Chromoting Host. Kör installationsprogrammet när nedladdningen är klar.</translation>
@@ -114,6 +113,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekräfta ditt konto och pinkoden nedan för att tillåta åtkomst via Chrome Remote Desktop.</translation>
+<translation id="3897092660631435901">Meny</translation>
 <translation id="3905196214175737742">Ogiltig domän för värdens ägare.</translation>
 <translation id="3908017899227008678">Krymp den så att den passar in</translation>
 <translation id="3931191050278863510">Värden stoppades.</translation>
@@ -166,7 +166,6 @@ Desktop Host</translation>
 <translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="507204348399810022">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Ange samma PIN-kod i båda rutorna.</translation>
-<translation id="5168917394043976756">Öppna navigeringspanelen</translation>
 <translation id="5170982930780719864">Ogiltigt värd-id.</translation>
 <translation id="518094545883702183">Den här informationen används bara för att diagnostisera det som felrapporten gäller. Bara den som arbetar med ärendet kan se den och den sparas i högst 30 dagar.</translation>
 <translation id="5222676887888702881">Logga ut</translation>

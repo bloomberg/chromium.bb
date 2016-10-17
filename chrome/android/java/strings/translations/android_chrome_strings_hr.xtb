@@ -286,6 +286,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4351244548802238354">Zatvori dijaloški okvir</translation>
 <translation id="4376501731284077108">Nenadzirani</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Za pretraživanje se upotrebljava Sogou</translation>
 <translation id="4412992751769744546">Dopusti kolačiće trećih strana</translation>
 <translation id="4440256989292146959">Brže pregledavanje</translation>
 <translation id="4452548195519783679">Oznaka dodana u mapu <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="5919204609460789179">Ažurirajte <ph name="PRODUCT_NAME" /> za pokretanje sinkronizacije</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
+<translation id="5942872142862698679">Za pretraživanje se upotrebljava Google</translation>
+<translation id="6000066717592683814">Zadrži Google</translation>
 <translation id="6010869025736512584">Pristupanje videoulazu</translation>
 <translation id="6012342843556706400">Chrome treba imati pristup lokaciji da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="6031101910111098835">Sažeto – kliknite za proširivanje</translation>
@@ -441,6 +444,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="6159335304067198720"><ph name="PERCENT" /> manji podatkovni promet</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6177390657002841081">Uključi uštedu podataka</translation>
+<translation id="617991007797131187">Chrome može upotrebljavati Sogou za pretraživanje u Kini. To možete promijeniti u <ph name="BEGIN_LINK" />postavkama<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Dodaj iznimku za web-lokaciju</translation>
 <translation id="6192792657125177640">Iznimke</translation>
 <translation id="6232535412751077445">Omogućivanje opcije "Nemoj pratiti" znači da će se u promet pregledavanja uključiti zahtjev. Učinak ovisi o tome odgovara li web-lokacija na taj zahtjev i kako se zahtjev tumači.
@@ -472,6 +476,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="654446541061731451">Odaberite karticu za emitiranje</translation>
 <translation id="6545017243486555795">Izbriši sve podatke</translation>
 <translation id="6550675742724504774">Opcije</translation>
+<translation id="6560414384669816528">Pretražujte na usluzi Sogou</translation>
 <translation id="656628257199996201">Uvijek prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Uređivanje kreditne kartice</translation>
 <translation id="6573431926118603307">Ovdje će se prikazati kartice koje ste otvorili u Chromeu na svojim ostalim uređajima.</translation>

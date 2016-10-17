@@ -33,7 +33,6 @@
 <translation id="177096447311351977">க்ளையன்ட்டிற்கான சேனல் IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">சாளரத்தை மூடுக</translation>
 <translation id="1841799852846221389">இந்தக் கணினிக்கான தொலைநிலை இணைப்புகளை முடக்குகிறது...</translation>
-<translation id="189172778771606813">வழிசெலுத்தல் டிராயரை மூடும்</translation>
 <translation id="1897488610212723051">நீக்கு</translation>
 <translation id="195619862187186579">விசைப்பலகைத் தளவமைப்புகள்</translation>
 <translation id="1996161829609978754">Chrome ஆனது குரோமோட்டிங் ஹோஸ்ட் நிறுவியைப் பதிவிறக்குகிறது. பதிவிறக்கம் முடிந்ததும், தொடர்வதற்கு முன் நிறுவியை இயக்கவும்.</translation>
@@ -114,6 +113,7 @@
 புரவன்</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome தொலைநிலை டெஸ்க்டாப் மூலம் அணுகலை அனுமதிக்க, கீழே உங்கள் கணக்கையும், PIN ஐயும் உறுதிப்படுத்தவும்.</translation>
+<translation id="3897092660631435901">மெனு</translation>
 <translation id="3905196214175737742">தவறான ஹோஸ்ட் உரிமையாளர் டொமைன்.</translation>
 <translation id="3908017899227008678">பொருத்தமாகச் சுருக்கு</translation>
 <translation id="3931191050278863510">ஹோஸ்ட் நிறுத்தப்பட்டது.</translation>
@@ -166,7 +166,6 @@
 <translation id="5070121137485264635">ஒரு மூன்றாம் தரப்பு இணையதளத்தை நீங்கள் அங்கீகரிக்க வேண்டும் என்று தொலைநிலை ஹோஸ்ட் கேட்கிறது. தொடர்வதற்கு, இந்த முகவரியை அணுக Chrome தொலைநிலை டெஸ்க்டாப்பிற்கு கூடுதல் அனுமதிகளை நீங்கள் வழங்க வேண்டும்:</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" />க்கான ரிமோட் இணைப்புகளை முடக்க விரும்புகிறீர்களா?</translation>
 <translation id="5156271271724754543">இரண்டு பெட்டிகளிலும் ஒரே PIN ஐ உள்ளிடுக.</translation>
-<translation id="5168917394043976756">வழிசெலுத்தல் டிராயரைத் திறக்கும்</translation>
 <translation id="5170982930780719864">ஹோஸ்ட் ஐடி தவறு.</translation>
 <translation id="518094545883702183">இந்தத் தகவல் நீங்கள் புகாரளித்த சிக்கலைக் கண்டறிவதற்காக மட்டுமே பயன்படுத்தப்படும், உங்கள் புகாரை விசாரணை செய்பவர் மட்டுமே இந்தத் தகவலை பார்க்க முடியும் மற்றும் இந்தத் தகவல் 30 நாட்களுக்கு மேல் வைத்துக்கொள்ளப்படாது.</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>

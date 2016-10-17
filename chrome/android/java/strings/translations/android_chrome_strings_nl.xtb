@@ -286,6 +286,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
 <translation id="4376501731284077108">Niet-beheerd</translation>
 <translation id="4378154925671717803">Telefoon</translation>
+<translation id="4384468725000734951">Sogou wordt gebruikt om te zoeken</translation>
 <translation id="4412992751769744546">Cookies van derden toestaan</translation>
 <translation id="4440256989292146959">Meer internet voor minder</translation>
 <translation id="4452548195519783679">Bladwijzer gemaakt in <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> om de synchronisatie te starten</translation>
 <translation id="5939518447894949180">Resetten</translation>
+<translation id="5942872142862698679">Google wordt gebruikt om te zoeken</translation>
+<translation id="6000066717592683814">Google blijven gebruiken</translation>
 <translation id="6010869025736512584">Video-invoer openen</translation>
 <translation id="6012342843556706400">Chrome heeft locatietoegang nodig om het item te delen met deze site.</translation>
 <translation id="6031101910111098835">Samengevouwen; klik om uit te vouwen</translation>
@@ -441,6 +444,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6159335304067198720"><ph name="PERCENT" /> besparing van data</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6177390657002841081">Databesparing inschakelen</translation>
+<translation id="617991007797131187">Chrome kan Sogou gebruiken om te zoeken in China. Je kunt dit wijzigen via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
@@ -472,6 +476,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="654446541061731451">Selecteer een tabblad om te beamen</translation>
 <translation id="6545017243486555795">Alle gegevens wissen</translation>
 <translation id="6550675742724504774">Opties</translation>
+<translation id="6560414384669816528">Zoeken met Sogou</translation>
 <translation id="656628257199996201">Altijd <ph name="SOURCE_LANGUAGE" /> vertalen</translation>
 <translation id="6571070086367343653">Creditcard bewerken</translation>
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>

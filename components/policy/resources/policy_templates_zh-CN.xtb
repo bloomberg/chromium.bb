@@ -190,15 +190,6 @@
       如果此政策未配置或设为“tls1.2”，<ph name="PRODUCT_NAME" /> 将不再执行此回退。请注意，这并不会导致停止支持旧版 TLS，只是用于指定 <ph name="PRODUCT_NAME" /> 是否忽略存在错误且无法正确协商版本的服务器。
 
       在其他情况下，如果必须与存在错误的服务器保持兼容，则可将此政策设为“tls1.1”。这是一种权宜之计，服务器中的错误应该很快会得到解决。</translation>
-<translation id="1861037019115362154">指定在 <ph name="PRODUCT_NAME" />中停用的插件列表，并禁止用户更改此设置。
-
-      可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。
-
-      如果您启用此设置，那么指定列表中的插件就从不会在 <ph name="PRODUCT_NAME" />中使用。这些插件在“about:plugins”中标记为“已停用”，而且用户无法启用它们。
-
-      请注意，此策略可由 EnabledPlugins 和 DisabledPluginsExceptions 覆盖。
-
-      如果未设置此策略，那么用户就可以使用系统中安装的任何插件（硬编码的不兼容、过期或危险插件除外）。</translation>
 <translation id="1864269674877167562">如果此政策设为空字符串或未设置，<ph name="PRODUCT_OS_NAME" />将不会在用户登录期间显示自动填充选项。
       如果此政策设为表示域名的字符串，<ph name="PRODUCT_OS_NAME" />将在用户登录期间显示自动填充选项，以便用户只输入自己的用户名，而无需输入网域扩展名。用户可以覆盖此网域扩展名。</translation>
 <translation id="1865417998205858223">密钥使用权限</translation>
@@ -791,11 +782,6 @@
 <translation id="3660562134618097814">在用户登录期间转移 SAML IdP Cookie</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="3711895659073496551">暂停</translation>
-<translation id="3715448429089775791">强制启用 YouTube 安全模式，并禁止用户更改此设置。
-
-      如果您启用了此设置，YouTube 中将始终启用安全模式。
-
-      如果您停用了此设置或未指定值，YouTube 中将不会强制启用安全模式。</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>
 <translation id="3756011779061588474">禁止开发者模式</translation>
 <translation id="3758089716224084329">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
@@ -1931,9 +1917,6 @@
 
       已识别的连接类型标识符包括“以太网”、“Wi-Fi”、“WiMax”、“蓝牙”和“移动”网络。</translation>
 <translation id="7763614521440615342">在“打开新的标签页”页面上显示内容建议</translation>
-<translation id="7766336524667238790">报告当前自助服务终端的相关信息，例如应用 ID 和版本。
-
-      如果此政策设为 false，系统将不会报告会话信息。如果此政策设为 true 或未设置，系统将报告会话信息。</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
 <translation id="7775831859772431793">您可以在此指定代理服务器的网址。
 
@@ -2144,6 +2127,10 @@
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
+<translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。否则，Google Chrome 会将其视为下载内容并允许用户使用默认应用打开 PDF 文件。
+
+      如果此政策未设置或已停用，系统将使用 PDF 插件打开 PDF 文件，除非用户已停用此插件。</translation>
+<translation id="8402079500086185021">始终使用外部应用打开 PDF 文件</translation>
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
 <translation id="8413348101535146315">允许在 <ph name="PRODUCT_NAME" /> 的任务管理器中结束进程。
 
@@ -2164,17 +2151,6 @@
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
 <translation id="8499172469244085141">默认设置（用户可以覆盖）</translation>
-<translation id="8501011084242226370">指定用户可在<ph name="PRODUCT_NAME" />中启用或停用的一系列插件。
-
-      通配符“*”和“?”可用于匹配一串任意字符。“*”可匹配任意多个字符，而“?”可指定单个可选字符，即匹配0个或1个字符。转义字符为“\”，因此如果要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。
-
-      如果您启用了此设置，用户将可以在<ph name="PRODUCT_NAME" />中使用指定的一系列插件。即使相应插件还与“DisabledPlugins”中的格式匹配，用户也可以在“about:plugins”中将其启用或停用。用户还可以启用和停用与“DisabledPlugins”、“DisabledPluginsExceptions”和“EnabledPlugins”中的任何格式均不匹配的插件。
-
-      此政策用于在以下情况下实现严格的插件黑名单设置：“DisabledPlugins”列表包含带通配符的条目，例如禁用所有插件(*)或禁用所有Java插件(*Java*)，但管理员希望启用某些特定版本（例如“IcedTea Java 2.3”）。这些版本可在此政策中指定。
-
-      请注意，相应插件的名称和组名称都需要予以排除。在“about:plugins”中，每个插件组都会显示在一个单独的部分内；每个部分可以包含一个或多个插件。例如：“Shockwave Flash”插件属于“Adobe Flash Player”组，如果要从黑名单中排除该插件，那么例外列表中必须有这两个名称的匹配项。
-
-      如果此政策未设置，那么与“DisabledPlugins”中的格式匹配的所有插件都将被锁定为停用状态，并且用户无法启用这些插件。</translation>
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
@@ -2199,7 +2175,6 @@
           如果有多个服务器名称，要使用英文逗号分隔。允许使用通配符 (*)。
 
           如果此政策未设置，<ph name="PRODUCT_NAME" /> 将会尝试检测某个服务器是否在内网上，只有当该服务器在内网上时，该浏览器才会回应 IWA 请求。如果检测到某个服务器在互联网上，<ph name="PRODUCT_NAME" /> 将忽略来自它的 IWA 请求。</translation>
-<translation id="8668394701842594241">指定在 <ph name="PRODUCT_NAME" />中启用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。列表中指定的插件如果已安装，就会始终在 <ph name="PRODUCT_NAME" />中使用。这些插件在“about:plugins”中标记为“已启用”，而且用户无法停用它们。请注意，此政策可替换 DisabledPlugins 和 DisabledPluginsExceptions 这两者。如果未设置此政策，用户就可以停用系统中安装的任何插件。</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="868068801094828689">允许向 Google 匿名报告 <ph name="PRODUCT_NAME" /> 的使用情况和崩溃数据，并禁止用户更改此设置。
 
@@ -2265,13 +2240,6 @@
       如果此政策设为 false，设备将不会尝试联系 Quirks Server 来下载配置文件。
 
      如果此政策设为 true 或未设置，<ph name="PRODUCT_OS_NAME" />将自动联系 Quirks Server 并下载配置文件（如果有），然后将这些文件存储在设备上。此类文件可能会用于多种目的，例如改善所连接的显示器的显示质量。</translation>
-<translation id="8905426178924715309">此政策已弃用，请改用 ForceGoogleSafeSearch 和 ForceYouTubeSafetyMode。如果设置了 ForceGoogleSafeSearch 或 ForceYouTubeSafetyMode 政策，此政策将被忽略。
-
-      强制启用安全搜索功能来处理 Google 网页搜索中的查询，并禁止用户更改此设置。此设置还会强制在 YouTube 中启用安全模式。
-
-      如果您启用了此设置，Google 搜索和 YouTube 中的安全搜索功能将始终处于启用状态。
-
-      如果您停用了此设置或未设置值，系统将不会在 Google 搜索和 YouTube 中强制启用安全搜索功能。</translation>
 <translation id="8906768759089290519">启用访客模式</translation>
 <translation id="8908294717014659003">允许您设置是否允许网站访问媒体捕获设备。系统默认为允许访问媒体捕获设备，否则，每次有网站要访问媒体捕获设备时都要征询用户同意。
 

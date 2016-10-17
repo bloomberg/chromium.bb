@@ -18,7 +18,6 @@
 <translation id="1029317248976101138">تكبير/تصغير</translation>
 <translation id="1029595648591494741">هل تريد تجربة "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="1031362278801463162">تحميل المعاينة</translation>
-<translation id="1031460590482534116">حدث خطأ أثناء محاولة تخزين شهادة العميل. خطأ <ph name="ERROR_NUMBER" /> (<ph name="ERROR_NAME" />).</translation>
 <translation id="1031573127485938293">الطلب (وفقًا للسياسة)</translation>
 <translation id="103279545524624934">‏احرص على تفريغ مساحة على القرص لتشغيل تطبيقات Android.</translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
@@ -101,6 +100,7 @@
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
 <translation id="1128987120443782698">‏تبلغ سعة جهاز التخزين <ph name="DEVICE_CAPACITY" />. الرجاء إدخال بطاقة SD أو رقاقة ذاكرة USB بسعة 4 غيغابايت.</translation>
 <translation id="1137135726305341424">‏domContentLoaded وعمليات تحميل كل الموارد بدأت قبل domContentLoaded (الإطار الرئيسي ونفس إطارات iframe الأصلية).</translation>
+<translation id="1138663153846032155">‏تفضيل HTML على Flash</translation>
 <translation id="1140351953533677694">الوصول إلى بلوتوث والأجهزة التسلسلية</translation>
 <translation id="114140604515785785">الدليل الجذر للإضافة:</translation>
 <translation id="1143142264369994168">الموقّع على الشهادات</translation>
@@ -252,6 +252,7 @@
 <translation id="1351692861129622852">جار استيراد ملفات <ph name="FILE_COUNT" /> ...</translation>
 <translation id="1352103415082130575">‏لوحة المفاتيح التايلاندية (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
+<translation id="1353946958707294039">مدير سعة تخزين التصميم متعدد الأبعاد</translation>
 <translation id="1353966721814789986">صفحات بدء التشغيل</translation>
 <translation id="1354868058853714482">‏برنامج Adobe Reader غير محدث وقد يكون غير آمن.</translation>
 <translation id="1355408554203439639">أداة تحويل البرنامج ثلاثي الأبعاد</translation>
@@ -424,7 +425,6 @@
 <translation id="1533920822694388968">محاذاة التليفزيون</translation>
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1543284117603151572">‏تم الاستيراد من شبكة Edge</translation>
-<translation id="1544350195767834591">{NUM_COOKIES,plural, =1{1 من المواقع الأخرى}zero{# من المواقع الأخرى}two{# من المواقع الأخرى}few{# من المواقع الأخرى}many{# من المواقع الأخرى}other{# من المواقع الأخرى}}</translation>
 <translation id="1545177026077493356">وضع الكشك التلقائي</translation>
 <translation id="1545786162090505744">‏عنوان URL الذي يحتوي على % بدلاً من طلب البحث</translation>
 <translation id="1546280085599573572">غيّرت هذه الإضافة الصفحة التي تظهر عند النقر على زر الصفحة الرئيسية.</translation>
@@ -448,7 +448,6 @@
 <translation id="1559235587769913376">‏إدخال أحرف Unicode</translation>
 <translation id="1561092721008294962">‏HarfBuzz لنص واجهة المستخدم</translation>
 <translation id="1566049601598938765">موقع ويب</translation>
-<translation id="1566958206723629112">‏Flash وPDF</translation>
 <translation id="1567723158593978621">‏في حالة التمكين، سيستخدم تسجيل الدخول إلى المتصفح تدفق تسجيل الدخول الجديد المفصول بكلمة مرور GAIA.</translation>
 <translation id="1567993339577891801">وحدة تحكم جافا سكريبت</translation>
 <translation id="1568323446248056064">فتح إعدادات الجهاز للعرض</translation>
@@ -577,7 +576,6 @@
 <translation id="1723940674997333416">‏السماح بـ WebSocket غير آمن من أصل https</translation>
 <translation id="1725149567830788547">إظهار &amp;عناصر التحكم</translation>
 <translation id="172612876728038702">‏يتم حاليًا إعداد TPM. الرجاء الانتظار؛ حيث قد يستغرق ذلك بضع دقائق.</translation>
-<translation id="1727135806684246609">تفاصيل الأمان المادي</translation>
 <translation id="1729533290416704613">كما أنها تتحكم في الصفحة التي تظهر عند إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="1731346223650886555">فاصلة منقوطة</translation>
 <translation id="1731589410171062430">الإجمالي: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
@@ -873,6 +871,7 @@
 <translation id="218492098606937156">تمكين أحداث اللمس</translation>
 <translation id="2187317261103489799">اكتشاف (افتراضي)</translation>
 <translation id="2187895286714876935">خط استيراد شهادة الخادم</translation>
+<translation id="2188881192257509750">فتح <ph name="APPLICATION" /></translation>
 <translation id="2190069059097339078">‏أداة الحصول على بيانات اعتماد WiFi</translation>
 <translation id="219008588003277019">وحدة البرنامج العميل الأصلي: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(فارغ)</translation>
@@ -991,6 +990,7 @@
 <translation id="2326606747676847821">الانتقال إلى وضع التصفُّح المتخفّي</translation>
 <translation id="2326931316514688470">&amp;إعادة تحميل التطبيق</translation>
 <translation id="2327492829706409234">تمكين التطبيق</translation>
+<translation id="2328054044222305089">سيؤدي هذا إلى حذف أي بيانات لـ <ph name="SITE" /> مخزنة على الجهاز وإعادة تعيين أي أذونات منحتها للتشغيل. هل ترغب في المتابعة؟</translation>
 <translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2332131598580221120">عرض في المتجر</translation>
 <translation id="2332742915001411729">إعادة تعيين على الإعدادات الافتراضية</translation>
@@ -1265,7 +1265,6 @@
 <translation id="2675358154061544447">دعم تجريبي ممتاز لعرض نوافذ الأطر المدمجة عبر المواقع من خلال عمليات معالجة منفصلة. في هذا الوضع، سوف تشترك المستندات في عملية معالجة العارض إذا كانت تنتمي إلى نفس موقع الويب فقط.</translation>
 <translation id="2676946222714718093">التشغيل بواسطة</translation>
 <translation id="2678063897982469759">إعادة تمكين</translation>
-<translation id="2678246812096664977">جميع المكونات الإضافية</translation>
 <translation id="2679385451463308372">مربع حوار الطباعة باستخدام النظام…</translation>
 <translation id="2680208403056680091">يتم التحكم في اتصال الإنترنت التابع لك</translation>
 <translation id="268053382412112343">ال&amp;سجل</translation>
@@ -1439,7 +1438,6 @@
 <translation id="287286579981869940">جارٍ إضافة <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
 <translation id="2875698561019555027">‏(صفحات الخطأ في Chrome)</translation>
-<translation id="2879560882721503072">تم تخزين شهادة العميل الصادرة من <ph name="ISSUER" /> بنجاح.</translation>
 <translation id="288024221176729610">التشيكية</translation>
 <translation id="288042212351694283">الوصول إلى أجهزة العامل الثاني العالمي</translation>
 <translation id="2881966438216424900">تاريخ آخر دخول:</translation>
@@ -1588,6 +1586,7 @@
 <translation id="3057861065630527966">نسخ الصور ومقاطع الفيديو احتياطيًا</translation>
 <translation id="3058212636943679650">‏إذا احتجت يومًا لاسترداد نظام تشغيل الكمبيوتر، فسيتطلب ذلك توفر إما بطاقة SD أو رقاقة ذاكرة USB للاستعادة.</translation>
 <translation id="305932878998873762">‏ذاكرة التخزين المؤقت البسيطة لبروتوكول HTTP هي ذاكرة تخزين مؤقتة جديدة، حيث تعتمد على نظام الملفات لتوزيع مساحة القرص.</translation>
+<translation id="3060251871394327123">سيؤدي هذا إلى حذف أي بيانات لـ <ph name="SITE" /> مخزنة على الجهاز. هل ترغب في المتابعة؟</translation>
 <translation id="3061650404498811439">‏يمكنك تمكين الوصول إلى الرموز التعبيرية والكتابة اليدوية ونموذج الإدخال الصوتي في قائمة تمكين محرِّر أسلوب الإدخال (IME).</translation>
 <translation id="3062606427884046423">‏استخدام إشعارات نمط الوسائط لنظام التشغيل Android لإشعارات الوسائط لمتصفح Chrome.</translation>
 <translation id="3063844757726132584">يمكنك الدخول إلى جميع تطبيقاتك من هذا المشغِّل المفيد. كما يمكنك تشغيل الألعاب ودردشة الفيديو والاستماع إلى الموسيقى وتعديل المستندات والحصول على مزيد من التطبيقات.</translation>
@@ -1637,6 +1636,7 @@
 <translation id="3123569374670379335">(خاضع للإشراف)</translation>
 <translation id="3124111068741548686">معالجات المستخدم</translation>
 <translation id="3126026824346185272">Ctrl</translation>
+<translation id="3127156390846601284">سيؤدي هذا إلى حذف أي بيانات مخزنة على الجهاز لجميع المواقع المعروضة. هل ترغب في المتابعة؟</translation>
 <translation id="312759608736432009">مصنّع الجهاز:</translation>
 <translation id="3127919023693423797">جارٍ المصادقة...</translation>
 <translation id="3128230619496333808">علامة التبويب 6</translation>
@@ -1735,7 +1735,6 @@
 <translation id="3264544094376351444">‏خط Sans-serif</translation>
 <translation id="3264547943200567728">‏أخفق إعداد شبكة Chromebox</translation>
 <translation id="3265459715026181080">إغلاق الإطار</translation>
-<translation id="3267271790328635957">‏PDF فقط</translation>
 <translation id="3267726687589094446">متابعة السماح بالتنزيلات التلقائية لعدة ملفات</translation>
 <translation id="3267998849713137817">الوقت المُعدل</translation>
 <translation id="3268451620468152448">علامات التبويب المفتوحة</translation>
@@ -1979,6 +1978,7 @@
 <translation id="3574210789297084292">تسجيل الدخول</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="357479282490346887">الليتوانية</translation>
+<translation id="3575927481544652747">‏تعطيل واجهة برمجة تطبيقات MIDI لوقت التشغيل في نظام التشغيل Windows لـ WebMIDI، التي يتم تمكينها افتراضيًا على نظام التشغيل Windows الإصدار 10 أو الأحدث.</translation>
 <translation id="3576324189521867626">تم التثبيت بنجاح</translation>
 <translation id="3578331450833904042">افتراضي (اختيار كل شيء)</translation>
 <translation id="3578594933904494462">تجري مشاركة محتوى علامة التبويب هذه.</translation>
@@ -2032,8 +2032,6 @@
 <translation id="3627320433825461852">تتبقى أقل من دقيقة واحدة</translation>
 <translation id="3627588569887975815">فتح الرّابط في نافذة للتصفّح المتخ&amp;فّي</translation>
 <translation id="3627671146180677314">‏وقت تجديد شهادة Netscape</translation>
-<translation id="3629326610814700057">تُمكّن مدير سعة التخزين لإدارة سعة التخزين المحلية.</translation>
-<translation id="3630337581925712713"><ph name="PERMISSION_TYPE_LABEL" />:</translation>
 <translation id="3631337165634322335">تنطبق الاستثناءات الواردة أدناه على جلسة التصفح المتخفي الحالية فقط.</translation>
 <translation id="3633586230741134985">إعدادات مشغّل التطبيقات</translation>
 <translation id="3633997706330212530">يمكنك تعطيل هذه الخدمات بشكل اختياري.</translation>
@@ -2056,7 +2054,8 @@
 <translation id="3654045516529121250">الاطلاع على إعدادات إمكانية الوصول</translation>
 <translation id="3654092442379740616">خطأ في المزامنة: <ph name="PRODUCT_NAME" /> قديم ويجب تحديثه.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{لديه حق الوصول الدائم إلى ملف واحد.}zero{لديه حق الوصول الدائم إلى # من الملفات.}two{لديه حق الوصول الدائم إلى ملفين (#).}few{ لديه حق الوصول الدائم إلى # ملفات.}many{لديه حق الوصول الدائم إلى # ملفًا.}other{لديه حق الوصول الدائم إلى # من الملفات.}}</translation>
-<translation id="3657468915905674858">‏تمكين إغلاق PPAPI Win32k.</translation>
+<translation id="365793796291733849">‏<ph name="BEGIN_PARAGRAPH1" />عند تشغيل خدمة النسْخ الاحتياطي التلقائي، يتم حفظ بيانات الجهاز والتطبيق بشكل دوري في مجلد خاص في Google Drive. ويمكن أن تكون بيانات التطبيق هي أي بيانات حفظها هذا التطبيق (استنادًا إلى إعدادات مطوّر البرامج)، بما في ذلك البيانات التي يمكن أن تكون حساسة مثل جهات الاتصال والرسائل والصور.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />لن تحتسب بيانات النسْخ الاحتياطي ضمن حصتك في تخزين Drive. ولن يتم الاحتفاظ بنُسخ احتياطية من الملفات كبيرة الحجم أو الملفات التي اختار مطوّرو البرامج استبعادها من الخدمة.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="3660234220361471169">غير موثوق بها</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة الافتراضية الأصلية.</translation>
 <translation id="3665842570601375360">الأمان:</translation>
@@ -2111,6 +2110,7 @@
 <translation id="3733127536501031542">‏خادم بروتوكول SSL (طبقة المقابس الآمنة) مع الترقية</translation>
 <translation id="3736520371357197498">إذا كنت على دراية بالمخاطر على أمنك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الخطيرة.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
+<translation id="3739254215541673094">هل ترغب في فتح <ph name="APPLICATION" />؟</translation>
 <translation id="3739798227959604811">التأخير قبل التكرار:</translation>
 <translation id="3741158646617793859">سيظهر <ph name="DEVICE_NAME" /> الآن في وحدة تحكم المشرف</translation>
 <translation id="3741243925913727067">‏يمكنك نسخ الصور ومقاطع الفيديو بجهاز الوسائط احتياطيًا على Google Drive.</translation>
@@ -2346,7 +2346,6 @@
 <translation id="4058793769387728514">فحص المستند الآن</translation>
 <translation id="4059285154003114015">&amp;طباعة الإطار...</translation>
 <translation id="406070391919917862">تطبيقات الخلفية</translation>
-<translation id="4061502419206152498">عرض غير الآمنة، غير المتحركة فقط</translation>
 <translation id="4062251648694601778">نتمنى لك الاستمتاع بجهاز <ph name="SHORT_PRODUCT_NAME" />. وإذا كانت لديك أسئلة، فيمكنك دائمًا الحصول على المساعدة من خلال النقر على الرمز "؟" في شريط الحالة.</translation>
 <translation id="4065876735068446555">قد تتطلب الشبكة التي تستخدمها <ph name="NETWORK_ID" /> زيارة صفحة تسجيل الدخول التابعة لها.</translation>
 <translation id="4068506536726151626">تحتوي هذه الصفحة على عناصر من المواقع التالية والتي تتتبع موقعك:</translation>
@@ -2385,7 +2384,6 @@
 <translation id="4101878899871018532">لن يوفر مدير كلمات المرور إمكانية حفظ بيانات الاعتماد المستخدمة في المزامنة.</translation>
 <translation id="410351446219883937">تشغيل تلقائي</translation>
 <translation id="4104163789986725820">ت&amp;صدير...</translation>
-<translation id="4105523032910086267">تُعين الصور المتحركة ومستوى الرؤية لتفاصيل الأمان في التصميم متعدد الأبعاد.</translation>
 <translation id="4105563239298244027">‏احصل على 1 تيرابايت مجانًا مع Google Drive</translation>
 <translation id="4109135793348361820">نقل النافذة إلى <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110342520124362335">تم منع ملفات تعريف الارتباط الواردة من <ph name="DOMAIN" />.</translation>
@@ -2436,6 +2434,7 @@
 <translation id="418179967336296930">‏لوحة المفاتيح الروسية الصوتية (YaZHert)</translation>
 <translation id="4181841719683918333">اللغات</translation>
 <translation id="4187248015940562149">تمكين بلوتوث الويب الذي يمكن أن يسمح لمواقع الويب بالاتصال بأجهزة البلوتوث الموجودة حولك والتحكم بها.</translation>
+<translation id="4188447344915957833">تمكين مدير سعة التخزين في إعدادات التصميم متعدد الأبعاد.</translation>
 <translation id="4189406272289638749">‏هناك إضافة، &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;، تتحكم في هذا الإعداد.</translation>
 <translation id="4193154014135846272">‏مستند Google</translation>
 <translation id="4193182321948161343">تمكين مدير مستخدم "تصميم المادة"</translation>
@@ -2643,6 +2642,7 @@
 <translation id="4508765956121923607">عرض الم&amp;صدر</translation>
 <translation id="4509017836361568632">إلغاء الصورة</translation>
 <translation id="4509345063551561634">المجلد:</translation>
+<translation id="4513946894732546136">تعليقات</translation>
 <translation id="4514542542275172126">إعداد مستخدم جديد تحت الإشراف</translation>
 <translation id="4514914692061505365">‏فرض استخدام أداة الترجمة السريعة Subzero لـ PNaCl لجميع ملفات pexe.</translation>
 <translation id="451515744433878153">إزالة</translation>
@@ -2741,6 +2741,7 @@
 <translation id="4656293982926141856">هذا الكمبيوتر</translation>
 <translation id="4656631038341342120">‏تمكين VR shell إذا كان متوفرًا لهذا الجهاز.</translation>
 <translation id="4657031070957997341">السماح باستخدام المكونات الإضافية على <ph name="HOST" /> دومًا</translation>
+<translation id="466008749075469935">‏تمكين التدخل لتقييد استخدام وحدة المعالجة المركزية (CPU) لمؤقتات الخلفية إلى 1%.</translation>
 <translation id="4663254525753315077">إن أمكن، تعمل هذه الميزة الاختبارية على وضع محتويات التمرير لعنصر تمرير  في نص متجاوز لسعة الشاشة على طبقة مركّبة للتمرير الأسرع.</translation>
 <translation id="4664482161435122549">‏خطأ في تصدير PKCS #12</translation>
 <translation id="4665014895760275686">جهة التصنيع</translation>
@@ -2809,6 +2810,7 @@
 <translation id="4749157430980974800">لوحة المفاتيح الجورجية</translation>
 <translation id="4750394297954878236">الاقتراحات</translation>
 <translation id="475088594373173692">المستخدم الأول</translation>
+<translation id="4750892496809949692">‏تفضيل محتوى HTML بإخفاء Flash من قائمة المكوّنات الإضافية.</translation>
 <translation id="4750917950439032686">إن معلوماتك (على سبيل المثال، كلمات المرور أو أرقام بطاقة الائتمان) تكون خاصة عندما يتم إرسالها إلى هذا الموقع.</translation>
 <translation id="4753602155423695878">‏الصور المتحركة لشريط تقدم تحميل الصفحة للهاتف الذي يعمل بنظام Android</translation>
 <translation id="4755240240651974342">لوحة المفاتيح الفنلندية</translation>
@@ -3082,6 +3084,7 @@
 <translation id="5119450342834678097">خيار طلب موقع الجهاز اللوحي في قائمة الإعدادات</translation>
 <translation id="5120068803556741301">طريقة إدخال من جهة خارجية</translation>
 <translation id="5120421890733714118">الوثوق بهذه الشهادة لتحديد هوية مواقع الويب.</translation>
+<translation id="5120516977819314347">رقم التعريف الشخصي أو كلمة المرور غير صحيحة.</translation>
 <translation id="5121130586824819730">القرص الصلب ممتلئ. الرجاء الحفظ في مكان آخر أو توفير مساحة أكبر على القرص الصلب.</translation>
 <translation id="5125751979347152379">‏عنوان URL غير صالح.</translation>
 <translation id="5127881134400491887">إدارة اتصالات الشبكة</translation>
@@ -3089,6 +3092,7 @@
 <translation id="512903556749061217">متصل</translation>
 <translation id="5129301143853688736">اتصالك بهذا الموقع ليس له خصوصية. قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور وكلمات المرور والرسائل وبطاقات الائتمان) من <ph name="DOMAIN" />.</translation>
 <translation id="5129662217315786329">البولندية</translation>
+<translation id="5131347545782851480">‏مستندات PDF</translation>
 <translation id="5134856901811723984">‏التصميم متعدد الأبعاد في واجهة المستخدم لنظام التشغيل Chrome</translation>
 <translation id="5135533361271311778">تعذر إنشاء عنصر إشارة.</translation>
 <translation id="5136529877787728692">F7</translation>
@@ -3257,6 +3261,7 @@
 <translation id="5328031682234198929">8</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="5330145655348521461">تم فتح هذه الملفات على جهاز سطح مكتب آخر. يمكنك الانتقال إلى <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) للاطلاع عليها.</translation>
+<translation id="5330512191124428349">الحصول على معلومات</translation>
 <translation id="5332624210073556029">المنطقة الزمنية:</translation>
 <translation id="5333807720589685258">‏سيتم تعطيل شريحة SIM نهائيًا إذا لم تتمكن من إدخال
       مفتاح إلغاء تأمين رقم التعريف الشخصي الصحيح.</translation>
@@ -3689,7 +3694,6 @@
 <translation id="5892507820957994680">لتجاوز قائمة عرض البرامج المضمنة وتمكين التسارع عبر وحدة معالجة الرسومات في تهيئات غير متوافقة.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5895187275912066135">تاريخ الإصدار</translation>
-<translation id="5898154795085152510">عرض الخادم شهادة عميل غير صالحة. خطأ <ph name="ERROR_NUMBER" /> (<ph name="ERROR_NAME" />).</translation>
 <translation id="5900302528761731119">‏صورة الملف الشخصي في Google</translation>
 <translation id="590253956165195626">عرض ترجمة الصفحات المكتوبة بلغة بخلاف لغتك.</translation>
 <translation id="5904093760909470684">تهيئة الخادم الوكيل</translation>
@@ -3744,6 +3748,8 @@
 <translation id="5984222099446776634">تم الانتقال إليها مؤخرًا</translation>
 <translation id="5984814259619230127">‏Smart Lock لاكتشاف الهواتف عبر بلوتوث منخفض الطاقة</translation>
 <translation id="5986245990306121338">في حالة التمكين، سيظهر مبدّل علامات التبويب حتى عند تشغيل خيار "دمج علامات التبويب والتطبيقات" في الإعدادات.</translation>
+<translation id="5989712527536636369">‏<ph name="BEGIN_PARAGRAPH1" />هذه معلومات عامة حول جهازك وكيفية استخدامه، مثل مستوى البطارية وعدد المرات التي تستخدم فيها التطبيقات وجودة اتصالات الشبكة ومدتها (مثل Wi-Fi والبلوتوث) وتقارير الأعطال عندما لا تسير الأمور كما ينبغي. وسوف يتم استخدام هذه المعلومات لتحسين منتجات Google وخدماتها للجميع. كما ستساعد بعض المعلومات المجمّعة الشركاء، مثل مطوّري برامج Android على تحسين تطبيقاتهم ومنتجاتهم أيضًا.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />يمكنك تشغيل هذا أو إيقاف تشغيله في أي وقت في إعدادات تطبيقات Android. ولن يؤثر ذلك في قدرة الجهاز على إرسال المعلومات اللازمة له لتلقّي الخدمات الضرورية مثل تحديثات النظام والأمان.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990198433782424697">‏الإضافات في عناوين chrome:// URL</translation>
 <translation id="5990814808592353318">إنشاء كلمات المرور اليدوي.</translation>
 <translation id="5991049340509704927">تكبير</translation>
@@ -3757,6 +3763,7 @@
 <translation id="6005695835120147974">موجّه الوسائط</translation>
 <translation id="6007237601604674381">أخفق النقل. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6008241731410823808">يرسل أدوات فحص الاتصال لتدقيق الروابط التشعبية.</translation>
+<translation id="6011449291337289699">محو بيانات الموقع</translation>
 <translation id="6015796118275082299">عام</translation>
 <translation id="6016551720757758985">‏تأكيد Powerwash بالعودة إلى الإصدار السابق</translation>
 <translation id="6016809788585079594">‏قل "Ok Google" للمرة الأخيرة</translation>
@@ -3947,7 +3954,6 @@
 <translation id="6276301056778294989">تأكد أن الجهاز يعرض الرمز نفسه.</translation>
 <translation id="6277105963844135994">انتهاء مهلة الشبكة</translation>
 <translation id="6277518330158259200">الت&amp;قاط لقطة شاشة</translation>
-<translation id="6278428485366576908">مظهر</translation>
 <translation id="6279183038361895380">اضغط على |<ph name="ACCELERATOR" />| لعرض المؤشر</translation>
 <translation id="6280215091796946657">تسجيل الدخول باستخدام حساب مختلف</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -4199,6 +4205,7 @@
 <translation id="6607272825297743757">معلومات الملف</translation>
 <translation id="6607831829715835317">المزيد من &amp;الأدوات</translation>
 <translation id="6608140561353073361">جميع ملفات تعريف الارتباط وبيانات الموقع...</translation>
+<translation id="6610183966322615106">حدث خطأ أثناء إضافة طابعة</translation>
 <translation id="6610610633807698299">‏إدخال عنوان URL...</translation>
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6615455863669487791">عرضه</translation>
@@ -4262,7 +4269,6 @@
 <translation id="6708242697268981054">المصدر:</translation>
 <translation id="6709357832553498500">الاتصال باستخدام <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">السابق</translation>
-<translation id="6712158998835983046">عرض الكل، المتحركة</translation>
 <translation id="6718273304615422081">جارٍ الضغط...</translation>
 <translation id="671928215901716392">قفل الشاشة</translation>
 <translation id="6721972322305477112">&amp;ملف</translation>
@@ -4535,7 +4541,6 @@
 <translation id="7088434364990739311">أخفق بدء التحقق من التحديثات (رمز الخطأ <ph name="ERROR" />).</translation>
 <translation id="708856090370082727">‏تمكين دعم التمرير الزائد OSK. عند تشغيل هذه العلامة، سيغيّر OSK حجم إطار العرض المرئي فقط.</translation>
 <translation id="7088674813905715446">ألغى المشرف إدارة الحسابات لهذا الجهاز. لتمكينه من التسجيل، يُرجى أن تطلب من المشرف وضع الجهاز في حالة في انتظار المراجعة.</translation>
-<translation id="7089609847854449639">مدير سعة التخزين</translation>
 <translation id="708969677220991657">‏السماح بإرسال الطلبات إلى المضيف المحلي عبر HTTP حتى في حالة تقديم شهادة غير صالحة.</translation>
 <translation id="7092106376816104">استثناءات النوافذ المنبثقة</translation>
 <translation id="7093866338626856921">تبادل البيانات مع الأجهزة المسماه: <ph name="HOSTNAMES" /></translation>
@@ -4575,7 +4580,7 @@
 <translation id="715118844758971915">الطابعات التقليدية</translation>
 <translation id="7154130902455071009">تغيير الصفحة الرئيسية إلى: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">صورة حالية من الكاميرا أو الملف</translation>
-<translation id="715568033737470079">‏تحديد المكونات الإضافية لـ PPAPI التي سيتم تشغيلها بموجب سياسة وضع الحماية لإغلاق Win32k (إصدار Windows 10 والإصدارات الأحدث فقط).</translation>
+<translation id="7155226869555939647">فتح الروابط دائمًا لـ <ph name="APPLICATION" /></translation>
 <translation id="7156235233373189579">‏تم تصميم هذا الملف لجهاز كمبيوتر يستخدم برنامج Windows. وهذا البرنامج غير متوافق مع جهازك الذي يعمل بنظام تشغيل Chrome. يُرجى البحث في <ph name="BEGIN_LINK" />سوق Chrome الإلكتروني<ph name="END_LINK" /> للحصول على تطبيق بديل مناسب.<ph name="BEGIN_LINK_HELP" />مزيد من المعلومات<ph name="END_LINK_HELP" /></translation>
 <translation id="7157063064925785854">يُعد النقر على "متابعة" بمثابة موافقة منك على <ph name="LEGAL_DOC_LINK_TEXT_1" />، و<ph name="LEGAL_DOC_LINK_TEXT_2" />، و<ph name="LEGAL_DOC_LINK_TEXT_3" />، و<ph name="LEGAL_DOC_LINK_TEXT_4" />.</translation>
 <translation id="7158238151765743968">لا يزال الاتصال  بالجهاز "<ph name="DEVICE_NAME" />" قيد التقدم.</translation>
@@ -4590,6 +4595,7 @@
 <translation id="7175353351958621980">تم التحميل من:</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="7180865173735832675">تخصيص</translation>
+<translation id="7181387261278441780">محو الموقع وإعادة تعيينه</translation>
 <translation id="7185078796915954712">طبقة النقل الآمنة 1.3</translation>
 <translation id="7185690883425432021">يخفي أزرار الإغلاق لعلامات التبويب غير النشطة عندما يكون شريط علامات التبويب في وضع الحزمة.</translation>
 <translation id="7186088072322679094">البقاء مثبتًا في شريط الأدوات</translation>
@@ -4622,7 +4628,6 @@
 <translation id="7223775956298141902">عفوًا... ليست لديك أية إضافات :-(</translation>
 <translation id="7224023051066864079">قناع الشبكة الفرعية:</translation>
 <translation id="7225179976675429563">نوع الشبكة مفقود</translation>
-<translation id="7230191962699768124">عرض الكل، غير المتحركة</translation>
 <translation id="7230787553283372882">تخصيص حجم النَّص</translation>
 <translation id="7231224339346098802">استخدم رقمًا للإشارة إلى عدد النُسخ المطلوب طباعتها (1 أو أكثر).</translation>
 <translation id="7238585580608191973">‏بصمة أصبع SHA-256</translation>
@@ -4754,7 +4759,6 @@
 <translation id="7409233648990234464">‏إعادة تشغيل وإجراء Powerwash</translation>
 <translation id="7409836189476010449">‏تشغيل Flash</translation>
 <translation id="7410344089573941623">السؤال عند رغبة <ph name="HOST" /> في الدخول إلى الكاميرا والميكروفون التابعين لك</translation>
-<translation id="7411343637221933631">{NUM_COOKIES,plural, =1{1 من هذا الموقع}zero{# من هذا الموقع}two{# من هذا الموقع}few{# من هذا الموقع}many{# من هذا الموقع}other{# من هذا الموقع}}</translation>
 <translation id="7412226954991670867">‏ذاكرة GPU</translation>
 <translation id="7416362041876611053">خطأ غير معروف في الشبكة.</translation>
 <translation id="7417453074306512035">لوحة المفاتيح الإثيوبية</translation>
@@ -4876,6 +4880,7 @@
 <translation id="756445078718366910">فتح نافذة المتصفح</translation>
 <translation id="7564847347806291057">إنهاء العملية</translation>
 <translation id="7566723889363720618">F12</translation>
+<translation id="7567314848159753396">ملف تعريف الارتباط: <ph name="NAME" /></translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
 <translation id="7568790562536448087">تحديث</translation>
 <translation id="7573172247376861652">شحن البطارية</translation>
@@ -4916,6 +4921,7 @@
 <translation id="7626009897377900107">إنشاء كلمات المرور</translation>
 <translation id="7627262197844840899">‏هذا الموقع لا يقبل بطاقة MasterCard.</translation>
 <translation id="7627790789328695202">عذرًا، <ph name="FILE_NAME" /> موجود من قبل. يمكنك إعادة تسميته وإعادة المحاولة.</translation>
+<translation id="7628127343934101653">‏فتح ملفات PDF في تطبيق عارض PDF الافتراضي.</translation>
 <translation id="762917759028004464">المتصفح الافتراضي هو حاليًا <ph name="BROWSER_NAME" />.</translation>
 <translation id="7629536005696009600">‏السماح بملء بيانات الاعتماد المخزنة لتطبيقات Android في مواقع الويب المقابلة</translation>
 <translation id="7629827748548208700">علامة التبويب: <ph name="TAB_NAME" /></translation>
@@ -5144,6 +5150,7 @@
 <translation id="7957513156576779045">تشغيل بلوتوث للسماح بالإقران</translation>
 <translation id="7957615753207896812">فتح إعدادات الجهاز للوحة المفاتيح</translation>
 <translation id="7959074893852789871">احتوى الملف على شهادات متعددة، لم يتم استيراد بعضها:</translation>
+<translation id="7959700692661109221">‏<ph name="BEGIN_PARAGRAPH" />تستخدم خدمة الموقع من Google مصادر مثل شبكة Wi‑Fi للمساعدة في تقدير موقع جهازك بشكلٍ أسرع وأكثر دقة. عند تشغيل خدمات الموقع من Google، يدخل الجهاز إلى وضع يتم فيه استخدام شبكة Wi‑Fi لتقديم معلومات الموقع. ويمكنك إيقاف تشغيل هذا في إعدادات الموقع في أي وقت.<ph name="END_PARAGRAPH" /></translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7964089325405904043">استيراد كلمات المرور وتصديرها</translation>
 <translation id="7965010376480416255">الذاكرة المشتركة</translation>
@@ -5294,6 +5301,7 @@
 <translation id="8146793085009540321">أخفق تسجيل الدخول، يُرجى الاتصال بالمشرف أو إعادة المحاولة.</translation>
 <translation id="8148264977957212129">‏أسلوب الإدخال لنظام Pinyin</translation>
 <translation id="8148913456785123871">‏إظهار بطاقات المساعد الفوري من Google في launcher</translation>
+<translation id="8150391391298684512">‏تعطيل واجهة برمجة تطبيقات MIDI لوقت التشغيل في نظام التشغيل Windows</translation>
 <translation id="8151185429379586178">أدوات مطوري البرامج</translation>
 <translation id="8151638057146502721">تهيئة</translation>
 <translation id="8151639108075998630">تمكين تصفح الضيف</translation>
@@ -5575,6 +5583,7 @@
 <translation id="8532294913309524834">ترتيب اللغات حسب تفضيلك.</translation>
 <translation id="8535005006684281994">‏عنوان URL لتجديد شهادة Netscape</translation>
 <translation id="8539727552378197395">‏لا (HttpOnly)</translation>
+<translation id="8541084862688000575">‏تحميل تطبيقات Android تلقائيًا</translation>
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="8545107379349809705">إخفاء المعلومات...</translation>
 <translation id="8545211332741562162">تمكين صفحات الويب من استخدام ميزات جافا سكريبت التجريبية.</translation>
@@ -5602,7 +5611,6 @@
 <translation id="8569764466147087991">تحديد ملف لفتحه</translation>
 <translation id="8571032220281885258">‏عندما تقول "Ok Google" سيبحث Chrome عن ما تقوله بعد ذلك.</translation>
 <translation id="8571108619753148184">Server 4</translation>
-<translation id="8572832761467613633">‏Flash فقط</translation>
 <translation id="8572981282494768930">عدم السماح بدخول مواقع الويب إلى الكاميرا والميكروفون</translation>
 <translation id="8574234089711453001">‏السماح بعرض زر التنزيل عند فتح صفحة باستخدام عنوان URL للوسائط.</translation>
 <translation id="857779305329188634">‏تمكين التوافق مع بروتوكول QUIC التجريبي.</translation>
@@ -5624,6 +5632,7 @@
 <translation id="8600929685092827187">تنشيط لدى وصول الحزم</translation>
 <translation id="8601206103050338563">‏مصادقة TLS (بروتوكول أمان طبقة النقل) لشبكة الإنترنت العالمية (WWW)</translation>
 <translation id="8602851771975208551">‏أضاف برنامج آخر بجهاز الكمبيوتر تطبيقًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
+<translation id="8603912787021349466">‏السماح لتطبيقات Android بالبدء تلقائيًا بعد تسجيل الدخول.</translation>
 <translation id="8605428685123651449">‏ذاكرة SQLite</translation>
 <translation id="8605503133013456784">أخفق قطع الاتصال وإلغاء الاقتران بـ "<ph name="DEVICE_NAME" />".</translation>
 <translation id="8606726445206553943">‏استخدام أجهزة MIDI</translation>
@@ -5976,6 +5985,7 @@
 <translation id="9053965862400494292">حدث خطأ أثناء محاولة إعداد المزامنة.</translation>
 <translation id="9056034633062863292">‏جارٍ تحديث جهاز Chromebox...</translation>
 <translation id="9056810968620647706">لم يتم العثور على نتائج مطابقة.</translation>
+<translation id="9057119625587205566">لم يتم العثور على طابعات مجاورة</translation>
 <translation id="9059868303873565140">قائمة الحالة</translation>
 <translation id="9064142312330104323">‏صورة الملف الشخصي في Google (جارٍ التحميل)</translation>
 <translation id="9064275926664971810">تمكين الملء التلقائي لملء النماذج بنقرة واحدة</translation>
@@ -5986,6 +5996,7 @@
 <translation id="9067401056540256169">‏هذا العلم يجعل Chrome غير آمن، استخدمه فقط عند معرفة استخداماته. لاحظ أنه قد تتم إزالة هذا العلم دون أية إشعارات. إذا تم تمكينه، فقد تتمكن إطارات ذات أصل https من استخدام WebSockets بعنوان URL غير آمن (ws://).</translation>
 <translation id="9068931793451030927">المسار:</translation>
 <translation id="9070219033670098627">تبديل شخص</translation>
+<translation id="9070940116164932228">تعطيل مؤقتات الخلفية غالية الثمن</translation>
 <translation id="907148966137935206">عدم السماح لأي موقع بعرض النوافذ المنبثقة (مستحسن)</translation>
 <translation id="9072550133391925347">يعمل <ph name="PASSWORD_MANAGER_BRAND" /> على تسجيل دخولك تلقائيًا إلى المواقع والتطبيقات المؤهلة باستخدام كلمات المرور التي حفظتها.</translation>
 <translation id="9073281213608662541">‏بروتوكول مصادقة كلمات المرور (PAP)</translation>
@@ -6020,6 +6031,7 @@
 <translation id="9112614144067920641">الرجاء اختيار رقم تعريف شخصي جديد.</translation>
 <translation id="9112748030372401671">تغيير الخلفية</translation>
 <translation id="9112987648460918699">بحث...</translation>
+<translation id="9114663181201435112">تسجيل الدخول بسهولة</translation>
 <translation id="9115487443206954631">إدارة أجهزة الإرسال</translation>
 <translation id="9115675100829699941">إ&amp;شارات مرجعية</translation>
 <translation id="9121814364785106365">فتح كعلامة تبويب مثبتة</translation>
@@ -6114,7 +6126,6 @@
 <translation id="952992212772159698">غير نشطة</translation>
 <translation id="960719561871045870">رمز مشغل شبكة الجوال</translation>
 <translation id="960987915827980018">تتبقى ساعة واحدة تقريبًا</translation>
-<translation id="962778376131245616">عرض غير الآمنة، المتحركة فقط</translation>
 <translation id="96421021576709873">‏شبكة Wi-Fi</translation>
 <translation id="965490406356730238">‏تمكين فك تشفير mjpeg للأجهزة المسرّعة وذلك للإطار الذي تم التقاطه حيثما توفر ذلك.</translation>
 <translation id="968174221497644223">ذاكرة التخزين المؤقت للتطبيق</translation>

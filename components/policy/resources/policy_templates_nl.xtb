@@ -205,15 +205,6 @@
       Als dit beleid niet is geconfigureerd of als het is ingesteld op 'tls1.2', voert <ph name="PRODUCT_NAME" /> deze fallback niet meer uit. Let op: Hiermee wordt de ondersteuning voor oudere TLS-versies niet uitgeschakeld, maar alleen het proces van <ph name="PRODUCT_NAME" /> om servers met bugs te omzeilen die versieonderhandelingen niet correct kunnen uitvoeren.
 
       Als de compatibiliteit met een server met bugs moet worden behouden, kan dit beleid worden ingesteld op 'tls1.1'. Dit is slechts een noodoplossing. De server moet snel worden gerepareerd.</translation>
-<translation id="1861037019115362154">Hiermee geef je een lijst met plug-ins op die zijn uitgeschakeld <ph name="PRODUCT_NAME" /> en voorkom je dat gebruikers deze instelling kunnen wijzigen.
-
-      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten met willekeurige tekens te zoeken. '*' komt overeen met een willekeurig aantal tekens terwijl '?' één optioneel teken aangeeft (dat wil zeggen, overeenkomsten met nul of één teken). Het escape-teken '\' kan worden gebruikt om deze tekens te escapen, dus als je overeenkomsten voor de letterlijke tekens '*', '?' of '\' wilt zoeken, kun je een '\' vóór deze tekens plaatsen.
-
-      Als je deze instelling inschakelt, wordt de lijst met opgegeven plug-ins nooit gebruikt in <ph name="PRODUCT_NAME" />. De plug-ins zijn gemarkeerd als 'uitgeschakeld' in 'about:plugins' en gebruikers kunnen deze niet inschakelen.
-
-      Houd er rekening mee dat dit beleid kan worden overschreven door EnabledPlugins en DisabledPluginsExceptions.
-
-      Als dit beleid niet is ingesteld, kan de gebruiker alle plug-ins gebruiken die op het systeem zijn geïnstalleerd, met uitzondering van plug-ins die hardcoded incompatibel, verouderd of gevaarlijk zijn.</translation>
 <translation id="1864269674877167562">Als dit beleid is ingesteld op een lege tekenreeks of niet is geconfigureerd, geeft <ph name="PRODUCT_OS_NAME" /> geen optie voor Automatisch aanvullen weer tijdens het inlogproces van de gebruiker.
       Als dit beleid is ingesteld op een tekenreeks die een domeinnaam vertegenwoordigt, geeft <ph name="PRODUCT_OS_NAME" /> een optie voor Automatisch aanvullen weer tijdens het inlogproces van de gebruiker, waarbij de gebruiker alleen zijn gebruikersnaam hoeft te typen zonder de domeinnaamextensie. De gebruiker kan deze domeinnaamextensie overschrijven.</translation>
 <translation id="1865417998205858223">Rechten voor sleutels</translation>
@@ -857,11 +848,6 @@
 <translation id="3660562134618097814">SAML IdP-cookies overdragen tijdens het inloggen</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
 <translation id="3711895659073496551">Onderbreken</translation>
-<translation id="3715448429089775791">Hiermee wordt afgedwongen dat de beperkte modus van YouTube wordt ingesteld op 'actief' en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-      Als je deze instelling inschakelt, is de beperkte modus op YouTube altijd actief.
-
-      Als je deze instelling uitschakelt of geen waarde instelt, wordt de beperkte modus op YouTube niet afgedwongen.</translation>
 <translation id="3750220015372671395">Het genereren van sleutels op deze sites blokkeren</translation>
 <translation id="3756011779061588474">Ontwikkelaarsmodus blokkeren</translation>
 <translation id="3758089716224084329">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
@@ -2115,12 +2101,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       De herkende verbindingstypen zijn 'ethernet', 'wifi', 'wimax', 'bluetooth' en 'mobiel'.</translation>
 <translation id="7763614521440615342">Contentsuggesties weergeven op de nieuwe tabbladpagina</translation>
-<translation id="7766336524667238790">Informatie rapporteren over de actie kiosksessie, zoals
-      de ID en versie van de app.
-
-      Als het beleid is ingesteld op 'onwaar', worden er geen sessiegegevens
-      gerapporteerd. Als het beleid is ingesteld op 'waar' of als er geen beleid is
-      ingesteld, worden de sessiegegevens gerapporteerd.</translation>
 <translation id="7774768074957326919">Proxyinstellingen van het systeem gebruiken</translation>
 <translation id="7775831859772431793">Je kunt de URL van de proxyserver hier opgeven.
 
@@ -2358,6 +2338,10 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8369602308428138533">Vertraging van scherm uitschakelen wanneer op netstroom wordt gewerkt</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="838870586332499308">Gegevensroaming inschakelen</translation>
+<translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
+
+      Als dit beleid niet wordt ingesteld of wordt uitgeschakeld, wordt de pdf-plug-in gebruikt om pdf-bestanden te openen, tenzij de gebruiker deze uitschakelt.</translation>
+<translation id="8402079500086185021">Pdf-bestanden altijd extern openen</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
 <translation id="8413348101535146315">Hiermee wordt het beëindigen van processen in Taakbeheer van <ph name="PRODUCT_NAME" /> mogelijk gemaakt.
 
@@ -2378,17 +2362,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Opslaan van browsegeschiedenis uitschakelen</translation>
 <translation id="8499172469244085141">Standaardinstellingen (gebruikers kunnen overschrijven)</translation>
-<translation id="8501011084242226370">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen in <ph name="PRODUCT_NAME" />.
-
-      De jokertekens '*' en '?' kunnen worden gebruikt om te zoeken op reeksen arbitraire tekens. '*' komt overeen met meerdere tekens, terwijl met '?' een optioneel enkel teken wordt gespecificeerd dat overeenkomt met nul tekens of één teken. Het escapeteken is '\'. Als je dus wilt zoeken naar de letterlijke tekens '*', '?' of '\', kun je er een '\' voor zetten.
-
-      Als je deze instelling inschakelt, kan de opgegeven lijst met plug-ins in <ph name="PRODUCT_NAME" /> worden gebruikt. Gebruikers kunnen plug-ins in- of uitschakelen in 'about:plugins', zelfs als de plug-in ook overeenkomt met een patroon in DisabledPlugins. Gebruikers kunnen ook plug-ins in- en uitschakelen die niet overeenkomen met een patroon in DisabledPlugins, DisabledPluginsExceptions en EnabledPlugins.
-
-      Dit beleid is bedoeld om een streng beleid voor een zwarte lijst met plug-ins mogelijk te maken, waarbij de lijst 'DisabledPlugins' items met jokertekens bevat. Bijvoorbeeld 'schakel alle plug-ins met '*' uit' of 'schakel alle Java-plug-ins met '*Java*' uit', terwijl de beheerder een bepaalde versie wil inschakelen, zoals 'IcedTea Java 2.3'. Deze specifieke versies kunnen worden gespecificeerd in dit beleid.
-
-      Zowel de naam van de plug-in als de groepsnaam van de plug-in moeten worden uitgesloten. Elke groep plug-ins wordt in een afzonderlijk gedeelte in 'about:plugins' weergegeven. Elk gedeelte kan een of meer plug-ins bevatten. De plug-in 'Shockwave Flash' hoort bijvoorbeeld bij de groep 'Adobe Flash Player' en beide namen moeten een overeenkomst hebben in de lijst met uitzonderingen als die plug-in moet worden uitgesloten van de zwarte lijst.
-
-      Als dit beleid niet is ingesteld, wordt elke plug-in uitgeschakeld die overeenkomt met de patronen in 'DisabledPlugins', en kan de gebruiker deze niet inschakelen.</translation>
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
@@ -2424,15 +2397,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.
 
           Als je dit beleid niet instelt, probeert <ph name="PRODUCT_NAME" /> te detecteren of een server zich in het intranet bevindt en wordt daarna pas gereageerd op IWA-verzoeken. Als een server wordt gedetecteerd als intranet, worden IWA-verzoeken van de server genegeerd door <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Hiermee wordt een lijst met plug-ins gespecificeerd die zijn ingeschakeld in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-      De jokertekens '*' en '?' kunnen worden gebruikt om overeenkomsten met willekeurige tekens te zoeken. '*' komt overeen met een willekeurig aantal tekens terwijl '?' één optioneel teken specificeert en dus kan overeenkomen met één of nul tekens. Het teken '\' kan worden gebruikt om deze tekens te escapen, dus als je overeenkomsten voor de letterlijke tekens '*', '?' of '\' wilt zoeken, moet je er een '\' vóór plaatsen.
-
-      De gespecificeerde lijst met plug-ins wordt altijd gebruikt in <ph name="PRODUCT_NAME" /> als deze plug-ins zijn geïnstalleerd. De plug-ins zijn gemarkeerd als ingeschakeld in 'about:plugins' en gebruikers kunnen ze niet uitschakelen.
-
-      Houd er rekening mee dat dit beleid voorrang heeft op zowel DisabledPlugins als DisabledPluginsExceptions.
-
-      Als dit beleid niet wordt ingesteld, kan de gebruiker alle plug-ins verwijderen die op het systeem zijn geïnstalleerd.</translation>
 <translation id="8672321184841719703">Doelversie voor automatische updates</translation>
 <translation id="868068801094828689">Hiermee wordt anonieme rapportage van gebruiks- en crashgegevens voor <ph name="PRODUCT_NAME" /> aan Google ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -2519,13 +2483,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is ingesteld op 'false', maakt het apparaat geen verbinding met de Quirks Server om configuratiebestanden te downloaden.
 
       Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, maakt <ph name="PRODUCT_OS_NAME" /> automatisch verbinding met de Quirks Server en worden configuratiebestanden (indien beschikbaar) gedownload en opslagen op het apparaat. Dergelijke bestanden kunnen bijvoorbeeld worden gebruikt om de weergavekwaliteit van aangesloten beeldschermen te verbeteren.</translation>
-<translation id="8905426178924715309">Dit beleid is verouderd. Gebruik in plaats hiervan ForceGoogleSafeSearch en ForceYouTubeSafetyMode. Dit beleid wordt genegeerd als het beleid ForceGoogleSafeSearch of ForceYouTubeSafetyMode is ingesteld.
-
-      Hiermee wordt afgedwongen dat zoekopdrachten in Google Zoeken worden uitgevoerd wanneer SafeSearch is ingesteld op 'actief', en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. Met deze instelling wordt ook de Beperkte modus op YouTube afgedwongen.
-
-      Als je deze instelling inschakelt, is SafeSearch in Google Zoeken en YouTube altijd actief.
-
-      Als je deze instelling uitschakelt of er geen waarde voor instelt, wordt SafeSearch niet afgedwongen in Google Zoeken en YouTube.</translation>
 <translation id="8906768759089290519">Gastmodus inschakelen</translation>
 <translation id="8908294717014659003">Hiermee kun je instellen of websites toegang mogen krijgen tot media-opnameapparaten. Toegang tot media-opnameapparaten kan standaard worden toegestaan of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot media-opnameapparaten.
 

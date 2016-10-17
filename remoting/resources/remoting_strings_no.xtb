@@ -33,7 +33,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="177096447311351977">Kanal-IP for klienten: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Lukk vindu</translation>
 <translation id="1841799852846221389">Slår av eksterne tilkoblinger for denne datamaskinen …</translation>
-<translation id="189172778771606813">Lukk uttrekksmenyen</translation>
 <translation id="1897488610212723051">Slett</translation>
 <translation id="195619862187186579">Tastaturoppsett</translation>
 <translation id="1996161829609978754">Chrome laster ned installasjonsprogrammet for Chromoting-verten. Når nedlastingen er ferdig, må du kjøre installasjonsprogrammet før du fortsetter.</translation>
@@ -114,6 +113,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 Vert</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekreft kontoen og PIN-koden din nedenfor for å tillate tilgang via Chrome Eksternt skrivebord.</translation>
+<translation id="3897092660631435901">Meny</translation>
 <translation id="3905196214175737742">Ugyldig domene for vertseieren.</translation>
 <translation id="3908017899227008678">Forminsk til den passer</translation>
 <translation id="3931191050278863510">Verten stoppet.</translation>
@@ -166,7 +166,6 @@ skrivebord-vert</translation>
 <translation id="5070121137485264635">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chrome Eksternt skrivebord ytterligere tillatelser til å åpne denne adressen:</translation>
 <translation id="507204348399810022">Er du sikker på at du vil deaktivere eksterne forbindelser til <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Skriv inn samme PIN-kode i begge feltene.</translation>
-<translation id="5168917394043976756">Åpne uttrekksmenyen</translation>
 <translation id="5170982930780719864">Ugyldig verts-ID.</translation>
 <translation id="518094545883702183">Denne informasjonen brukes bare til å diagnostisere problemet du rapporterer om. Informasjonen er bare tilgjengelig for personer som går gjennom rapporten, og den slettes etter maksimalt 30 dager.</translation>
 <translation id="5222676887888702881">Logg av</translation>

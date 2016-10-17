@@ -207,15 +207,6 @@
       Jika kebijakan ini tidak dikonfigurasi atau jika disetel ke "tls1.2", <ph name="PRODUCT_NAME" /> akan berhenti menjalankan fallback ini. Perhatikan bahwa tindakan ini tidak menonaktifkan dukungan untuk TLS versi lebih lama, hanya jika <ph name="PRODUCT_NAME" /> akan memperbaiki server berisi bug yang tidak dapat melakukan negosiasi versi dengan tepat.
 
       Sebaliknya, jika kompatibilitas dengan server berisi bug harus dipertahankan, kebijakan ini akan disetel ke "tls1.1". Hal ini merupakan ukuran sementara dan server harus segera diperbaiki.</translation>
-<translation id="1861037019115362154">Menentukan daftar plugin yang dinonaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
-
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan urutan karakter sembarang. '*' cocok dengan sembarang jumlah karakter sedangkan '?' menentukan karakter tunggal opsional, yaitu yang cocok dengan nol atau satu karakter. Karakter hindar adalah '\', jadi untuk mencocokkan dengan karakter '*', '?', atau '\', jadi '\' di depannya.
-
-      Jika Anda mengaktifkan setelan ini, daftar plugin tertentu tidak akan pernah digunakan di <ph name="PRODUCT_NAME" />. Plugin ditandai sebagai nonaktif di 'about:plugins' dan pengguna tidak dapat mengaktifkannya.
-
-      Perhatikan bahwa kebijakan ini dapat ditimpa oleh EnabledPlugins dan DisabledPluginsExceptions.
-
-      Jika kebijakan ini tidak disetel, pengguna dapat menggunakan plugin apa pun yang dipasang pada sistem kecuali untuk plugin berbahaya, usang, atau tidak kompatibel yang sulit dikodekan.</translation>
 <translation id="1864269674877167562">Jika kebijakan ini disetel sebagai string kosong atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> tidak akan menampilkan opsi pelengkapan otomatis selama alur proses masuk pengguna.
       Jika kebijakan ini disetel sebagai string yang mewakili nama domain, <ph name="PRODUCT_OS_NAME" /> akan menampilkan opsi pelengkapan otomatis selama proses masuk pengguna, sehingga pengguna dapat mengetikkan nama penggunanya tanpa ekstensi nama domain. Pengguna dapat mengganti ekstensi nama domain ini.</translation>
 <translation id="1865417998205858223">Izin Kunci</translation>
@@ -819,11 +810,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
-<translation id="3715448429089775791">Memaksakan Mode Perlindungan YouTube untuk mengaktifkan dan mencegah pengguna mengubah setelan ini.
-
-      Jika Anda mengaktifkan setelan ini, Mode Perlindungan di YouTube selalu aktif.
-
-      Jika Anda menonaktifkan setelan ini atau tidak menyetel nilai, Mode Perlindungan di YouTube tidak akan diterapkan.</translation>
 <translation id="3750220015372671395">Blokir pembuatan kunci di situs ini</translation>
 <translation id="3756011779061588474">Blokir mode pengembang</translation>
 <translation id="3758089716224084329">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy.
@@ -1988,12 +1974,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Pengenal jenis koneksi yang diketahui saat ini adalah "ethernet", "wifi", "wimax", "bluetooth", dan "cellular".</translation>
 <translation id="7763614521440615342">Tampilkan saran konten di laman Tab Baru</translation>
-<translation id="7766336524667238790">Laporkan informasi tentang sesi kios aktif, misalnya
-      ID dan versi aplikasi
-
-      Jika kebijakan disetel ke False, informasi sesi tidak akan dilaporkan.
-      Jika disetel ke True atau tidak disetel, informasi sesi akan
-     dilaporkan.</translation>
 <translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>
 <translation id="7775831859772431793">Anda dapat menetapkan URL server proxy di sini.
 
@@ -2215,6 +2195,10 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8369602308428138533">Penundaan mematikan layar saat menggunakan daya AC</translation>
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
+<translation id="8390049129576938611">Menonaktifkan penampil PDF internal di <ph name="PRODUCT_NAME" />. Bukan memperlakukannya sebagai download dan mengizinkan membuka file PDF menggunakan aplikasi default.
+
+      Jika kebijakan ini tidak disetel atau dinonaktifkan, plugin PDF akan digunakan untuk membuka file PDF kecuali pengguna menonaktifkannya.</translation>
+<translation id="8402079500086185021">Selalu Buka file PDF menggunakan secara eksternal</translation>
 <translation id="8412312801707973447">Apakah pemeriksaan OCSP/CRL online dilakukan atau tidak</translation>
 <translation id="8413348101535146315">Memungkinkan proses diakhiri di Pengelola Tugas <ph name="PRODUCT_NAME" />.
 
@@ -2235,17 +2219,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Untuk melihat contoh pola, buka https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Menonaktifkan penyimpanan riwayat browser</translation>
 <translation id="8499172469244085141">Setelan Default (pengguna dapat menggantinya)</translation>
-<translation id="8501011084242226370">Menentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan oleh pengguna di <ph name="PRODUCT_NAME" />.
-
-      Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan rangkaian karakter acak. '*' mencocokkan sejumlah karakter acak sedangkan '?' menentukan karakter tunggal opsional, yaitu mencocokkan karakter nol atau satu. Karakter lepasan adalah '\', sehingga untuk mencocokkan karakter '*', '?', atau '\' aktual, Anda dapat meletakkan '\' di depannya.
-
-      Jika Anda mengaktifkan setelan ini, daftar plugin yang ditentukan dapat digunakan di <ph name="PRODUCT_NAME" />. Pengguna dapat mengaktifkan atau menonaktifkannya dalam 'about:plugins', walaupun plugin juga mencocokkan pola di DisabledPlugins. Pengguna juga dapat mengaktifkan dan menonaktifkan plugin yang tidak mencocokkan dengan pola apa pun di DisabledPlugins, DisabledPluginsExceptions, dan EnabledPlugins.
-
-      Kebijakan ini ditujukan agar pencantuman plugin ke daftar hitam secara ketat dapat dilakukan apabila daftar 'DisabledPlugins' berisi entri berkarakter pengganti seperti menonaktifkan semua plugin '*' atau menonaktifkan semua plugin Java '*Java*', namun administrator ingin mengaktifkan beberapa versi tertentu misalnya 'IcedTea Java 2.3'. Versi tertentu ini dapat ditentukan dalam kebijakan ini.
-
-      Harap diingat bahwa baik nama plugin dan nama grup plugin perlu dibebaskan. Setiap grup plugin ditampilkan dalam bagian yang terpisah di about:plugins; masing-masing bagian dapat memiliki satu plugin atau lebih. Misalnya, plugin "Shockwave Flash" adalah milik grup "Adobe Flash Player", dan kedua nama tersebut perlu memiliki kecocokan dalam daftar pengecualian apabila plugin tersebut akan dibebaskan dari daftar hitam.
-
-      Jika kebijakan ini tidak disetel, plugin apa pun yang mencocokan pola di 'DisabledPlugins' akan terus dinonaktifkan dan pengguna tidak akan dapat mengaktifkannya.</translation>
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
@@ -2281,7 +2254,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Pisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendeteksi apakah server ada di internet dan akan menanggapi permintaan IWA setelahnya.  Jika server terdeteksi sebagai internet, permintaan IWA darinya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Menentukan daftar plugin yang diaktifkan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini. Karakter pengganti '*' dan '?' dapat digunakan untuk mencocokkan rangkaian karakter sembarang. '*' mencocokkan jumlah sembarang dari karakter, sedangkan '?' menentukan karakter tunggal opsional, yaitu mencocokkan dengan nol atau satu karakter. Karakter hindar adalah '\', jadi untuk mencocokkan '*', '?', atau karakter '\' yang sebenarnya, Anda dapat menempatkan sebuah '\' di depannya. Daftar plugin tertentu selalu digunakan di <ph name="PRODUCT_NAME" /> jika dipasang. Plugin ditandai sebagai diaktifkan pada 'about:plugins' dan pengguna tidak dapat menonaktifkannya. Perhatikan bahwa kebijakan ini menimpa DisabledPlugins dan DisabledPluginsExceptions. Jika kebijakan ini dibiarkan tidak disetel, pengguna dapat menonaktifkan plugin apa pun yang dipasang di dalam sistem.</translation>
 <translation id="8672321184841719703">Versi Pembaruan Otomatis Target</translation>
 <translation id="868068801094828689">Memungkinkan pelaporan penggunaan anonim dan data mogok <ph name="PRODUCT_NAME" /> ke Google dan mencegah pengguna mengubah setelan ini.
 
@@ -2374,13 +2346,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       otomatis menghubungi Quirks Server dan mengunduh file konfigurasi,
       jika tersedia, dan menyimpannya di perangkat.  File tersebut dapat,
       misalnya, digunakan untuk meningkatkan kualitas tampilan monitor yang terpasang.</translation>
-<translation id="8905426178924715309">Kebijakan ini tidak digunakan lagi, gunakan ForceGoogleSafeSearch dan ForceYouTubeSafetyMode sebagai gantinya. Kebijakan ini akan diabaikan jika kebijakan ForceGoogleSafeSearch atau ForceYouTubeSafetyMode disetel.
-
-      Memaksa kueri di Google Penelusuran Web untuk dilakukan dengan TelusurAman yang diaktifkan, dan mencegah pengguna mengubah setelan ini. Setelan ini juga memaksa Mode Perlindungan di YouTube.
-
-      Jika Anda mengaktifkan setelan ini, TelusurAman di Google Penelusuran dan YouTube akan selalu aktif.
-
-      Jika Anda menonaktifkan setelan ini atau tidak menyetel nilai, TelusurAman di Google Penelusuran dan YouTube tidak akan diberlakukan.</translation>
 <translation id="8906768759089290519">Aktifkan mode tamu</translation>
 <translation id="8908294717014659003">Memungkinkan Anda menyetel apakah situs web diizinkan untuk mengakses perangkat tangkap media. Akses ke perangkat tangkap media dapat diizinkan secara default, atau dapat ditanyakan pada pengguna setiap saat situs web ingin mendapatkan akses ke perangkat tangkap media.
 

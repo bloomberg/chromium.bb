@@ -134,6 +134,7 @@
 <translation id="4771048833395599659">ไฟล์นี้อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="4794050651896644714">บันทึกรายละเอียดใน Chrome</translation>
 <translation id="4891791193823137474">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
+<translation id="4901390485477164536">Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ ไชโย</translation>
 <translation id="4921569541910214635">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chrome ในแบบที่คุณชอบได้แล้ว</translation>
 <translation id="4925019873400497719">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้ เซิร์ฟเวอร์ได้ให้ข้อมูลความโปร่งใสของใบรับรองแล้ว แต่ข้อมูลไม่ถูกต้อง</translation>
 <translation id="4953650215774548573">ตั้ง Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
@@ -256,6 +257,7 @@
 <translation id="8290100596633877290">อ๊ะ! Google Chrome ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
 <translation id="8342675569599923794">ไฟล์นี้อันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="8406086379114794905">ช่วยปรับปรุง Chrome ให้ดีขึ้น</translation>
+<translation id="8410645163819739900">Google Chrome OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="8455999171311319804">ไม่บังคับ: ช่วยทำให้ Chrome OS ดียิ่งขึ้นโดยการส่งข้อมูลการวินิจฉัยและการใช้งานไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="853189717709780425">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีการจัดการ และให้อำนาจผู้ดูแลระบบของบัญชีดังกล่าวในการควบคุมโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะถูกผูกติดกับ <ph name="USER_NAME" /> อย่างถาวร คุณจะสามารถลบข้อมูลนี้ผ่านแดชบอร์ด Google Accounts ได้ แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่นได้</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -207,15 +207,6 @@
       Ako se to pravilo ne konfigurira ili se postavi na "tls1.2", <ph name="PRODUCT_NAME" /> više neće izvršavati rezervni postupak. Time se ne onemogućuje podrška za starije verzije TLS-a, već se samo određuje hoće li <ph name="PRODUCT_NAME" /> zaobilaziti poslužitelje s pogreškama koji ne mogu ispravno dogovoriti verzije.
 
       No ako se mora održati kompatibilnost s poslužiteljem koji sadrži pogreške, pravilo se može postaviti na "tls1.1". To je samo privremena mjera i problem na poslužitelju potrebno je brzo riješiti.</translation>
-<translation id="1861037019115362154">Određuje popis dodataka koji su onemogućeni u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
-
-      Zamjenski znakovi "*" i "?" mogu se upotrijebiti za podudarne nizove proizvoljnih znakova. "*" odgovara proizvoljnom broju znakova, dok "?" određuje izborni pojedinačni znak, tj. ne odgovara nijednom ili odgovara jednom znaku. Prespojni je znak "\", tako da za podudaranje sa stvarnim znakovima "*", "?" ili "\" ispred njih morate staviti znak "\".
-
-      Ako omogućite tu postavku, određeni popis dodataka nikada se neće upotrebljavati u proizvodu <ph name="PRODUCT_NAME" />. Dodaci su označeni kao onemogućeni u stavci "about:plugins" i korisnici ih ne mogu omogućiti.
-
-      Uzmite u obzir da ovo pravilo može biti nadjačano pravilima EnabledPlugins i DisabledPluginsExceptions.
-
-      Ako to pravilo nije postavljeno, korisnik može upotrijebiti bilo koji dodatak koji je instaliran na sustavu, osim ukodiranih nekompatibilnih, zastarjelih ili opasnih dodataka.</translation>
 <translation id="1864269674877167562">Ako se to pravilo postavi na prazan niz ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> neće prikazivati opciju samodovršavanja prilikom tijeka korisničke prijave.
       Ako se to pravilo postavi na niz koji predstavlja naziv domene, <ph name="PRODUCT_OS_NAME" /> prikazivat će opciju samodovršavanja prilikom korisničke prijave koja omogućuje korisniku da unese samo svoje korisničko ime bez proširenja s nazivom domene. Korisnik će moći unijeti neko drugo proširenje s nazivom domene.</translation>
 <translation id="1865417998205858223">Glavna dopuštenja</translation>
@@ -814,11 +805,6 @@
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
-<translation id="3715448429089775791">Nameće aktiviranje Sigurnog načina rada na YouTubeu i korisnicima onemogućuje promjenu te postavke.
-
-      Ako omogućite tu postavku, Siguran način rada na YouTubeu uvijek je aktivan.
-
-      Ako onemogućite tu postavku ili ne postavite vrijednost, Siguran način rada na YouTubeu neće se primijeniti.</translation>
 <translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="3756011779061588474">Blokiraj način rada razvojnog programera</translation>
 <translation id="3758089716224084329">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
@@ -1982,12 +1968,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Prepoznati identifikatori vrste veze jesu "ethernet", "wifi", "wimax", "bluetooth" i "mobilna".</translation>
 <translation id="7763614521440615342">Prikaz prijedloga sadržaja na web-stranici nove kartice</translation>
-<translation id="7766336524667238790">Prijavljuje informacije o aktivnoj sesiji kioska, primjerice,
-      ID aplikacije i verziju.
-
-      Ako se pravilo postavi na "False", informacije sesije neće se
-      prijavljivati. Ako se postavi na "True" ili se ne postavi, prijavljivat
-      će se informacije sesije.</translation>
 <translation id="7774768074957326919">Upotrijebi proxy postavke sustava</translation>
 <translation id="7775831859772431793">Ovdje možete navesti URL proxy poslužitelja.
 
@@ -2208,6 +2188,10 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8369602308428138533">Odgoda isključivanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="8382184662529825177">Omogući upotrebu daljinske ovjere za zaštitu sadržaja za uređaj</translation>
 <translation id="838870586332499308">Omogući roaming podataka</translation>
+<translation id="8390049129576938611">Onemogućuje interni preglednik PDF-ova na usluzi <ph name="PRODUCT_NAME" />. Tretira ga kao preuzimanje i omogućuje uređaju da otvara PDF datoteke zadanom aplikacijom.
+
+      Ako se to pravilo ne postavi ili se onemogući, a korisnik nije onemogućio dodatak za PDF-ove, za otvaranje PDF datoteka upotrebljavat će se dodatak za PDF-ove.</translation>
+<translation id="8402079500086185021">Uvijek otvaraj PDF datoteke vanjski</translation>
 <translation id="8412312801707973447">Izvršavaju li se mrežne provjere OCSP/CRL</translation>
 <translation id="8413348101535146315">Omogućuje završavanje postupaka u Upravitelju zadataka usluge <ph name="PRODUCT_NAME" />.
 
@@ -2228,17 +2212,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Primjere uzoraka pogledajte na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Onemogući pohranjivanje povijesti preglednika</translation>
 <translation id="8499172469244085141">Zadane postavke (korisnici ih mogu prebrisati)</translation>
-<translation id="8501011084242226370">Navodi popis dodataka koje korisnik može omogućiti ili onemogućiti na usluzi <ph name="PRODUCT_NAME" />.
-
-      Zamjenski znakovi "*" i "?" mogu se upotrijebiti za podudaranje nizova proizvoljnih znakova. Znak "*" odgovara arbitrarnom broju znakova, dok znak "?" označava opcionalan jedan znak, na primjer odgovara nultom ili jednom znaku. Znak za izlazak jest "\", pa da biste dobili podudaranja sa stvarnim znakovima "*", "?" ili "\", možete staviti znak "\" ispred njih.
-
-      Ako omogućite ovu postavku, na usluzi <ph name="PRODUCT_NAME" /> moguće je upotrijebiti određeni popis dodataka. Korisnici ih mogu omogućiti ili onemogućiti u dijelu "'about:plugins", čak i ako dodatak također odgovara uzorku u DisabledPlugins. Korisnici također mogu omogućiti i onemogućiti dodatke koji ne odgovaraju nijednom uzorku u DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
-
-      Namjena je ovog pravila dopustiti strogu crnu listu dodataka, gdje popis "DisabledPlugins" sadrži unose zamjenskih znakova kao što su "onemogući sve dodatke "*" ili onemogući sve Java dodatke "*Java*", dok administrator želi omogućiti neke određene verzije, poput "IcedTea Java 2.3". Te određene verzije moguće je navesti u ovom pravilu.
-
-      Imajte na umu da je potrebno izuzeti i naziv dodatka i naziv grupe dodataka. Svaka grupa dodataka prikazana je u zasebnom odjeljku u about:plugins; svaki odjeljak može imati jedan dodatak ili više njih. Na primjer, dodatak "Shockwave Flash" pripada grupi "Adobe Flash Player", a oba naziva moraju imati svoje podudaranje na popisu iznimki ako se taj dodatak planira izuzeti s crne liste.
-
-      Ako se pravilo ne postavi, svaki dodatak koji odgovara uzorcima u "DisabledPlugins" bit će zaključano onemogućen i korisnik ga neće moći omogućiti.</translation>
 <translation id="8519264904050090490">URL-ovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
@@ -2274,7 +2247,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Razdvojite više poslužitelja zarezima. Zamjenski su znakovi (*) dopušteni.
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> pokušat će otkriti je li poslužitelj na intranetu te će jedino tada odgovoriti na IWA zahtjeve. Ako otkrije da se radi o poslužitelju na internetu, <ph name="PRODUCT_NAME" /> zanemarit će njegove IWA zahtjeve.</translation>
-<translation id="8668394701842594241">Određuje popis dodataka koji su omogućeni u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene ovu postavku. Zamjenski znakovi "*" i "?" mogu se upotrijebiti za podudarne nizove proizvoljnih znakova. "*" odgovara proizvoljnom broju znakova, dok "?" određuje izborni pojedinačni znak, tj. odgovara znaku nula ili jedan. Prespojni znak je "\", tako da za podudaranje sa stvarnim znakovima "*", "?" ili "\" ispred njih stavite znak "\". Navedeni popis dodataka uvijek se upotrebljava u proizvodu <ph name="PRODUCT_NAME" /> ako je instaliran. Dodaci su označeni kao omogućeni u stavci "about:plugins" i korisnici ih ne mogu onemogućiti. Uzmite u obzir da ovo pravilo nadjačava pravila "DisabledPlugins" i "DisabledPluginsExceptions".</translation>
 <translation id="8672321184841719703">Ciljna verzija automatskog ažuriranja</translation>
 <translation id="868068801094828689">Omogućuje anonimno slanje izvješća o upotrebi i podataka u vezi s rušenjima preglednika <ph name="PRODUCT_NAME" /> Googleu i korisnicima onemogućuje promjenu te postavke.
 
@@ -2359,13 +2331,6 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
       automatski će kontaktirati Quirks Server i preuzeti konfiguracijske datoteke
       ako su dostupne i pohraniti ih na uređaj. Pomoću tih se datoteka, na primjer,
       može poboljšati kvaliteta prikaza priključenih monitora.</translation>
-<translation id="8905426178924715309">To je pravilo obustavljeno, pa umjesto njega upotrijebite "ForceGoogleSafeSearch" i "ForceYouTubeSafetyMode". Pravilo će se zanemariti ako se postave pravila "ForceGoogleSafeSearch" ili "ForceYouTubeSafetyMode".
-
-      Nameće da se upiti u Google pretraživanju weba provode uz aktivirano Sigurno pretraživanje i korisnicima sprječava promjenu te postavke. Ta postavka nameće i Siguran način rada na YouTubeu.
-
-      Ako omogućite tu postavku, Sigurno pretraživanje u Google pretraživanju i na YouTubeu uvijek će biti aktivno.
-
-      Ako onemogućite tu postavku ili ne postavite neku vrijednost, Sigurno pretraživanje u Google pretraživanju i na YouTubeu neće se primjenjivati.</translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
 <translation id="8908294717014659003">Omogućuje vam da postavite hoće li web-lokacijama biti dopušten pristup medijskim uređajima za snimanje. Pristup medijskim uređajima za snimanje može biti dopušten prema zadanim postavkama ili se korisniku može postaviti pitanje svaki put kada web-lokacija želi pristupiti tim uređajima.
 

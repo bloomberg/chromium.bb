@@ -209,15 +209,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če ta pravilnik ni konfiguriran ali če je nastavljen na »tls1.2«, <ph name="PRODUCT_NAME" /> ne izvede več tega preklopa. S tem ni onemogočena podpora za starejše različice TLS-ja, temveč je zgolj določeno, ali <ph name="PRODUCT_NAME" /> ne bo upošteval strežnikov z napakami, ki ne morejo pravilno izvesti pogajanj glede različice.
 
       Če je treba ohraniti združljivost s strežnikom z napakami, je pravilnik lahko nastavljen na »tls1«. To je začasen ukrep in napake v strežniku je treba hitro odpraviti.</translation>
-<translation id="1861037019115362154">Določi seznam vtičnikov, ki so omogočeni v brskalniku <ph name="PRODUCT_NAME" />, in prepreči uporabnikom spreminjanje te nastavitve.
-
-      Nadomestna znaka * in ? je mogoče uporabiti za nadomeščanje zaporedij poljubnih znakov. Znak * nadomešča poljubno število znakov, znak ? pa izbirni posamezen znak, tj. nadomešča nič znakov ali en znak. Ubežni znak je \; če torej želite nadomestiti dejanske znake *, ? ali \, lahko postavite prednje znak \.
-
-      Če to nastavitev omogočite, določen seznam vtičnikov v brskalniku <ph name="PRODUCT_NAME" /> ni nikoli uporabljen. Vtičniki so v »about:plugins« označeni kot onemogočeni in uporabniki jih ne morejo omogočiti.
-
-      Ta pravilnik lahko preglasita pravilnika »EnabledPlugins« in »DisabledPluginsExceptions«.
-
-      Če ta pravilnik ni nastavljen, lahko uporabnik uporabi kateri koli vtičnik, nameščen v sistemu, razen vtičnikov, ki so vdelani neposredno v izvorno kodo, nezdružljivi, zastareli ali nevarni.</translation>
 <translation id="1864269674877167562">Če je ta pravilnik nastavljen na prazen niz ali ni nastavljen, sistem <ph name="PRODUCT_OS_NAME" /> med potekom prijave uporabnika ne bo prikazal možnosti samodokončanja.
       Če je ta pravilnik nastavljen na niz, ki predstavlja ime domene, bo <ph name="PRODUCT_OS_NAME" /> pri prijavi uporabnika prikazal možnost samodokončanja, s čimer bo uporabniku omogočeno, da vnese samo uporabniško ime brez končnice imena domene. Uporabnik bo lahko prepisal končnico tega imena domene.</translation>
 <translation id="1865417998205858223">Glavna dovoljenja</translation>
@@ -862,11 +853,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3660562134618097814">Prenesi piškotke SAML IdP pri prijavi</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="3711895659073496551">Prekinitev</translation>
-<translation id="3715448429089775791">Vsili izvajanje varnega načina v YouTubu in uporabnikom prepreči spreminjanje te nastavitve.
-
-      Če to nastavitev omogočite, je varni način v YouTubu vedno aktiven.
-
-      Če to nastavitev onemogočite ali ne nastavite vrednosti, varni način v YouTubu ni uveljavljen.</translation>
 <translation id="3750220015372671395">Blokiraj ustvarjanje ključev na teh spletnih mestih</translation>
 <translation id="3756011779061588474">Blokiranje načina za razvijalce</translation>
 <translation id="3758089716224084329">Omogoča nastavitev strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME" />, in preprečuje uporabnikom spreminjanje nastavitev strežnika proxy.
@@ -2133,12 +2119,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Prepoznani identifikatorji vrste povezav so »ethernet«, »wifi«, »wimax«, »bluetooth« in »cellular«.</translation>
 <translation id="7763614521440615342">Prikaz predlogov vsebine na strani »Nov zavihek«</translation>
-<translation id="7766336524667238790">Poročanje podatkov o aktivni seji kioska, na primer
-      ID-ja in različice aplikacije.
-
-      Če je pravilnik onemogočen, se podatki o seji ne
-      poročajo. Če je omogočen ali ni nastavljen, se podatki o seji
-      poročajo.</translation>
 <translation id="7774768074957326919">Uporaba sistemskih nastavitev proxyja</translation>
 <translation id="7775831859772431793">Tu lahko določite URL strežnika proxy.
 
@@ -2374,6 +2354,10 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8369602308428138533">Časovni zamik izklopa zaslona, če se napaja iz električnega omrežja</translation>
 <translation id="8382184662529825177">Omogoči uporabo oddaljenega potrjevanja za zaščito vsebine za napravo</translation>
 <translation id="838870586332499308">Omogoči podatkovno gostovanje</translation>
+<translation id="8390049129576938611">V brskalniku <ph name="PRODUCT_NAME" /> onemogoči notranji pregledovalnik PDF-jev. Namesto tega ga obravnava kot prenos in uporabniku omogoča odpiranje datotek PDF s privzeto aplikacijo.
+
+      Če ta pravilnik ni nastavljen ali je onemogočen, se bo za odpiranje datotek PDF uporabljal vtičnik za PDF-je, razen če ga uporabnik onemogoči.</translation>
+<translation id="8402079500086185021">Vedno odpri datoteke PDF na zunanjem mestu</translation>
 <translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
 <translation id="8413348101535146315">Omogoča procese prekinitve v upravitelju opravil izdelka <ph name="PRODUCT_NAME" />.
 
@@ -2394,17 +2378,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Onemogoči shranjevanje zgodovine brskalnika</translation>
 <translation id="8499172469244085141">Privzete nastavitve (uporabniki jih lahko preglasijo)</translation>
-<translation id="8501011084242226370">Določi seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči v brskalniku <ph name="PRODUCT_NAME" />.
-
-      Nadomestna znaka »*« in »?« lahko uporabite za ujemanje z zaporedji poljubnih znakov. Znak »*« uporabite za ujemanje s poljubnim številom znakov, znak »?« pa za izbiren posamezni znak, tj. za ujemanja z nič ali enim znakom. Ubežni znak je »\«, zato morate za ujemanje z dejanskimi znaki »*«, »?« ali »\« pred njih dati »\«.
-
-      Če omogočite to nastavitev, je mogoče navedeni seznam vtičnikov uporabiti v brskalniku <ph name="PRODUCT_NAME" />. Uporabniki jih lahko omogočijo ali onemogočijo v polju »about:plugins«, tudi če se vtičnik ujema tudi z vzorcem na seznamu »DisabledPlugins«. Uporabniki lahko prav tako omogočijo in onemogočijo vtičnike, ki se ne ujemajo z vzorci na seznamih »DisabledPlugins«, »DisabledPluginsExceptions« in »EnabledPlugins«.
-
-      Ta pravilnik je namenjen omogočanju strogega seznama blokiranih vtičnikov, pri čemer so na seznamu »DisabledPlugins« vnosi z nadomestnimi znaki, na primer »onemogoči vse vtičnike« (*) ali »onemogoči vse vtičnike Java« (*Java*), vendar želi skrbnik omogočiti določeno različico, na primer »IcedTea Java 2.3«. Te različice je mogoče navesti v tem pravilniku.
-
-      Ime vtičnika in skupinsko ime vtičnika morata biti izvzeta. Vsaka skupina vtičnikov je v polju »about:plugins« prikazana v ločenem razdelku; v vsakem razdelku je morda več vtičnikov. Vtičnik »Shockwave Flash« na primer spada v skupino »Adobe Flash Player« in obe imeni morata biti navedeni na seznamu izjem, če želite, da je ta vtičnik izvzet s seznama blokiranih vtičnikov.
-
-      Če ta pravilnik ni nastavljen, bodo vsi vtičniki, ki se ujemajo z vzorci na seznamu »DisabledPlugins«, onemogočeni z zaklepanjem in uporabnik jih ne bo mogel omogočiti.</translation>
 <translation id="8519264904050090490">URL-ji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
@@ -2440,15 +2413,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Imena strežnikov ločite z vejicami. Nadomestni znaki (*) so dovoljeni.
 
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> poskuša zaznati, ali je strežnik v intranetu, in se šele potem odzove na zahteve IWA. Če je strežnik zaznan kot internet, <ph name="PRODUCT_NAME" /> prezre zahteve IWA, poslane iz tega strežnika.</translation>
-<translation id="8668394701842594241">Določa seznam vtičnikov, ki so omogočeni v brskalniku <ph name="PRODUCT_NAME" />, in prepreči uporabnikom spreminjanje te nastavitve.
-
-      Nadomestna znaka * in ? je mogoče uporabiti za nadomeščanje zaporedij poljubnih znakov. Znak * nadomešča poljubno število znakov, znak ? pa izbirni posamezen znak, tj. nadomešča nič znakov ali en znak. Ubežni znak je \; če torej želite nadomestiti dejanske znake *, ? ali \, lahko postavite prednje znak \.
-
-      Določen seznam vtičnikov je v brskalniku <ph name="PRODUCT_NAME" /> vedno uporabljen, če so nameščeni. Vtičniki so v »about:plugins« označeni kot omogočeni in uporabniki jih ne morejo onemogočiti.
-
-      Ta pravilnik preglasi pravilnika »DisabledPlugins« in »DisabledPluginsExceptions«.
-
-      Če ta pravilnik ni nastavljen, lahko uporabnik onemogoči kateri koli vtičnik, nameščen v sistemu.</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="868068801094828689">Omogoča anonimno pošiljanje podatkov o uporabi in zrušitvah programa <ph name="PRODUCT_NAME" /> Googlu in uporabnikom preprečuje spreminjanje te nastavitve.
 
@@ -2557,13 +2521,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       samodejno vzpostavil stik s strežnikom Quirks Server in prenesel konfiguracijske
       datoteke, če so na voljo, ter jih shranil v napravi. Te datoteke je mogoče
       na primer uporabiti za izboljšanje kakovosti prikaza priključenih monitorjev.</translation>
-<translation id="8905426178924715309">Ta pravilnik je zastarel, uporabite ForceGoogleSafeSearch in ForceYouTubeSafetyMode. Ta pravilnik bo prezrt, če je nastavljen pravilnik ForceGoogleSafeSearch ali ForceYouTubeSafetyMode.
-
-      Uveljavi izvajanje poizvedb v Google Spletnem iskanju z aktiviranim Varnim iskanjem in uporabnikom prepreči spreminjanje te nastavitve. Ta nastavitev uveljavi tudi varni način v YouTubu.
-
-      Če to nastavitev omogočite, je Google Varno iskanje v Iskanju Google in YouTubu vedno aktivno.
-
-      Če to nastavitev onemogočite ali ne nastavite vrednosti, Varno iskanje v Iskanju Google in YouTubu ni uveljavljeno.</translation>
 <translation id="8906768759089290519">Omogoči način gosta</translation>
 <translation id="8908294717014659003">Omogoča nastavitev, ali je spletnim mestom dovoljen dostop do naprav za snemanje predstavnosti. Dostop do naprav za snemanje predstavnosti je lahko privzeto dovoljen ali pa uporabnik dobi poziv, kadar koli spletno mesto želi dostop do naprav za snemanje predstavnosti.
 

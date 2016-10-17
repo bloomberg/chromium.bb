@@ -286,6 +286,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="4376501731284077108">Ukontrolleret</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Søgning via Sogou</translation>
 <translation id="4412992751769744546">Tillad tredjepartscookies</translation>
 <translation id="4440256989292146959">Flere data for færre penge</translation>
 <translation id="4452548195519783679">Bogmærket er gemt i <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5916664084637901428">Til</translation>
 <translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
 <translation id="5939518447894949180">Nulstil</translation>
+<translation id="5942872142862698679">Søgning via Google</translation>
+<translation id="6000066717592683814">Behold Google</translation>
 <translation id="6010869025736512584">Åbner videoinput</translation>
 <translation id="6012342843556706400">Chrome skal have adgang til din placering for at kunne dele den med dette website.</translation>
 <translation id="6031101910111098835">Skjult – klik for at udvide</translation>
@@ -441,6 +444,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6159335304067198720"><ph name="PERCENT" /> sparet data</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6177390657002841081">Slå Datasparefunktion til</translation>
+<translation id="617991007797131187">Chrome kan bruge Sogou til søgning i Kina. Du kan ændre dette i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
 <translation id="6232535412751077445">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
@@ -472,6 +476,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="654446541061731451">Vælg en fane, der skal overføres</translation>
 <translation id="6545017243486555795">Ryd alle data</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
+<translation id="6560414384669816528">Søg via Sogou</translation>
 <translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Rediger kreditkort</translation>
 <translation id="6573431926118603307">Faner, du har åbnet i Chrome på dine andre enheder, vises her.</translation>

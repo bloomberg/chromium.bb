@@ -209,15 +209,6 @@
       Hvis denne regelen ikke er konfigurert, eller hvis den er satt til «tls1.2», gjennomfører ikke <ph name="PRODUCT_NAME" /> denne reserveprosessen lenger. Vær oppmerksom på at dette ikke slår av støtten for eldre TLS-versjoner – det avgjør bare om <ph name="PRODUCT_NAME" /> omgår problemer med tjenere som ikke kan forhandle versjoner riktig.
 
       Hvis det er nødvendig å beholde kompatibiliteten med en tjener med feil, kan denne regelen settes til «tls1.1». Dette er en midlertidig løsning, og tjeneren må fikses så fort som mulig.</translation>
-<translation id="1861037019115362154">Angir en liste over programtillegg deaktivert på <ph name="PRODUCT_NAME" />, og forhindrer brukere fra å endre denne innstillingen.
-
-      Du kan bruke jokertegnene «*» og «?» til å matche sekvenser av vilkårlige tegn. «*» matcher et vilkårlig antall tegn, mens  «?» spesifiserer et valgfritt enkelttegn – det matcher med andre ord null eller ett tegn. Escape-tegnet er «\», så om du vil matche tegnene «*», «?», eller «\», kan du plassere «\» foran dem.
-
-      Hvis du aktiverer denne innstillingen, blir den angitte listen over programtillegg aldri brukt på <ph name="PRODUCT_NAME" />. Programtilleggene er angitt som deaktiverte i «about:plugins»-delen, og brukere kan ikke aktivere dem.
-
-      Vær oppmerksom på at denne retningslinjen kan overstyres av EnabledPlugins og DisabledPluginsExceptions.
-
-      Hvis denne innstillingen ikke angis med et valg, betyr dette at brukeren kan bruke et hvilket som helst programtillegg installert på systemet, bortsett fra hardkodede programtillegg som enten er ikke-kompatible, foreldede eller farlige.</translation>
 <translation id="1864269674877167562">Hvis denne regelen settes til en tom streng eller ikke konfigureres, ser ikke brukerne noe alternativ for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen.
       Hvis denne regelen settes til en streng som representerer et domenenavn, ser brukeren alternativet for autofullføring i <ph name="PRODUCT_OS_NAME" /> under påloggingsprosessen, slik at vedkommende kan skrive inn bare brukernavnet sitt uten domenenavnutvidelsen. Brukeren kan overskrive denne domenenavnutvidelsen.</translation>
 <translation id="1865417998205858223">Nøkkeltillatelser</translation>
@@ -839,11 +830,6 @@
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3715448429089775791">Tvinger gjennom bruk av sikkerhetsmodusen for YouTube og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis du slår på denne innstillingen, er sikkerhetsmodusen for YouTube alltid på.
-
-      Hvis du slår av denne innstillingen eller ikke spesifiserer noen verdi, blir ikke sikkerhetsmodusen for YouTube slått på ved tvang.</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="3758089716224084329">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
@@ -2077,11 +2063,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Identifikatorene som gjenkjennes for tilkoblingstyper er "ethernet", "wifi", "wimax", "bluetooth" og "cellular".</translation>
 <translation id="7763614521440615342">Vis innholdsforslag på nye faner</translation>
-<translation id="7766336524667238790">Rapportér informasjon om den aktive kioskøkten, for eksempel
-      app-ID og -versjon.
-
-      Hvis regelen settes til false (usann), rapporteres ikke øktinformasjonen.
-      Hvis den settes til true (sann) eller ikke angis, rapporteres øktinformasjonen.</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
 <translation id="7775831859772431793">Du kan spesifisere nettadressen til proxy-tjeneren her.
 
@@ -2315,6 +2296,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
+<translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer på <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.
+    Hvis disse retningslinjene slås av eller ikke angis, åpnes PDF-filer i PDF-programtillegget frem til brukeren eventuelt slår det av.</translation>
+<translation id="8402079500086185021">Åpne alltid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
 <translation id="8413348101535146315">Slår på muligheten for å avslutte prosesser i oppgavebehandlingen i <ph name="PRODUCT_NAME" />.
 
@@ -2335,20 +2319,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
 <translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
-<translation id="8501011084242226370">Angir en liste over programtillegg som brukeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME" />.
-
-      Jokertegn som stjerne (*) og spørsmålstegn (?) kan brukes til å samsvare sekvenser av vilkårlige tegn. Stjerne (*) samsvarer med et vilkårlig antall tegn, mens spørsmålstegn angir et valgfritt enkelt tegn, f.eks. samsvarer den med ingen eller ett tegn. Skiftetegnet er en backslash (\), så hvis du vil samsvare faktiske tegn som *, ?, eller \, kan du sette inn en backslash (\) før dem.
-
-      Hvis du aktiverer denne innstillingen, kan den angitte listen over programtillegg brukes i <ph name="PRODUCT_NAME" />. Brukere kan aktivere eller deaktivere dem i about:plugins, selv om programtillegget også samsvarer med et mønster i DisabledPlugins. Brukere kan også aktivere og deaktivere programtillegg som ikke samsvarer med noen mønstre i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
-
-      Denne innstillingen er ment å tillate streng svartelisting av programtillegg når DisabledPlugins-listen inneholder jokertegnoppføringer som deaktiver alle programtillegg * eller
-deaktiver alle Java-programtillegg *Java*, men administratoren ønsker å aktivere bestemte versjoner som IcedTea Java 2.3. Disse
-bestemte versjonene kan angis i denne innstillingen.
-
-      Merk at både programtilleggsnavnet og programtilleggets gruppenavn må fritas. Hver programtilleggsgruppe vises i et eget avsnitt i about:plugins. Hvert avsnitt kan ha én eller flere
-programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Flash Player-gruppen, og begge navnene må ha en match i unntakslisten hvis det programtillegget skal fritas fra svartelisten.
-
-      Hvis denne innstillingen ikke angis, blir alle programtillegg som samsvarer med mønstrene i DisabledPlugins låst som deaktivert, og brukeren vil ikke være i stand til å aktivere dem.</translation>
 <translation id="8519264904050090490">Nettadresser med manuelle unntak for administrerte brukere</translation>
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
@@ -2386,11 +2356,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
           Adskill tjenernavn med komma. Jokertegn (*) er tillatt.
 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
-<translation id="8668394701842594241">Angir en liste over programtillegg som er aktivert i <ph name="PRODUCT_NAME" />, og forhindrer brukerne i å endre denne innstillingen.
-
-      Jokertegnene * og ? kan brukes til å samsvare sekvenser av vilkårlige tegn. Tegnet * samsvarer med et vilkårlig antall tegn, mens tegnet ? angir et valgfritt enkeltstående tegn, dvs. ingen tegn eller ett tegn. Nødutgangtegnet er \, så for å matche tegn som faktisk er et * eller et ?, setter du en \ foran dem.
-
-      Den angitte listen over programtillegg brukes alltid i <ph name="PRODUCT_NAME" /> hvis programtilleggene har blitt installert. Programtilleggene er merket som aktivert i about:plugins, og brukerne kan ikke deaktivere dem. Vær oppmerksom på at denne retningslinjen overstyrer både DisabledPlugins og DisabledPluginsExceptions. Hvis denne retningslinjen ikke angis, kan brukeren deaktivere alle programtillegg som er installert i systemet.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="868068801094828689">Slår på anonym rapportering av bruks- og krasjrelaterte data om <ph name="PRODUCT_NAME" /> til Google og hindrer at brukerne kan endre denne innstillingen.
 
@@ -2493,13 +2458,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
       Quirks Server automatisk, laster ned eventuelle tilgjengelige
       konfigurasjonsfiler og lagrer dem på enheten. Slike filer kan for eksempel
       brukes for å forbedre visningskvaliteten på tilkoblede skjermer.</translation>
-<translation id="8905426178924715309">Denne regelen er avviklet. Bruk ForceGoogleSafeSearch og ForceYouTubeSafetyMode i stedet. Denne regelen ignoreres hvis ForceGoogleSafeSearch eller ForceYouTubeSafetyMode er spesifisert.
-
-      Tvinger søkene i Google Nettsøk til å gjøres med Sikkert Søk slått på, og hindrer brukerne i å endre denne innstillingen. Denne regelen tvinger også frem bruk av sikkerhetsmodus i YouTube.
-
-      Hvis du slår på denne regelen, er Sikkert Søk i Google Søk og YouTube alltid aktivt.
-
-      Hvis du slår av denne regelen eller ikke angir noen verdi, er Sikkert Søk valgfritt i Google Søk og YouTube.</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 

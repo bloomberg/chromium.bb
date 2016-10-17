@@ -393,6 +393,7 @@
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5199729219167945352">Experiments</translation>
 <translation id="5251803541071282808">Núvol</translation>
+<translation id="5277279256032773186">Fas servir Chrome a la feina? Les empreses poden gestionar la configuració de Chrome dels empleats. Més informació</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
@@ -528,7 +529,7 @@
 <translation id="7000990526846637657">No s'ha trobat cap entrada a l'historial</translation>
 <translation id="7009986207543992532">Has provat d'accedir a <ph name="DOMAIN" />, però el servidor ha presentat un certificat amb un període de validesa massa llarg per poder confiar-hi. <ph name="BEGIN_LEARN_MORE_LINK" />Obtén més informació<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">És possible que el teu compte de Google tingui altres formes de l'historial de navegació a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="7012372675181957985">És possible que el teu compte de Google tingui altres formes de l'historial de navegació a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="7087282848513945231">Comptat</translation>
 <translation id="7088615885725309056">Més antic</translation>

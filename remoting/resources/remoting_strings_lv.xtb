@@ -33,7 +33,6 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="177096447311351977">Klienta kanāla IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Aizvērt logu</translation>
 <translation id="1841799852846221389">Notiek attālo savienojumu atspējošana šim datoram…</translation>
-<translation id="189172778771606813">Aizvērt navigācijas atvilktni</translation>
 <translation id="1897488610212723051">Dzēst</translation>
 <translation id="195619862187186579">Tastatūras izkārtojumi</translation>
 <translation id="1996161829609978754">No pārlūka Chrome tiek lejupielādēta Chrome saites saimniekdatoram paredzētā instalēšanas programma. Kad lejupielāde būs pabeigta, lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
@@ -114,6 +113,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 saimniekdators</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Lai atļautu piekļuvi, izmantojot Chrome attālo darbvirsmu, lūdzu, apstipriniet kontu un PIN kodu.</translation>
+<translation id="3897092660631435901">Izvēlne</translation>
 <translation id="3905196214175737742">Saimniekdatora īpašnieka domēns nav derīgs.</translation>
 <translation id="3908017899227008678">Samazināt, lai ietilptu</translation>
 <translation id="3931191050278863510">Saimniekdatora darbība ir apturēta.</translation>
@@ -166,7 +166,6 @@ darbvirsmas saimniekdators</translation>
 <translation id="5070121137485264635">Attālajā saimniekdatorā tiek pieprasīts, lai veicat autentificēšanu trešās puses vietnē. Lai turpinātu, jums jāpiešķir Chrome attālajai darbvirsmai papildu atļaujas piekļūt šai adresei:</translation>
 <translation id="507204348399810022">Vai tiešām vēlaties atspējot attālos savienojumus ar saimniekdatoru <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Lūdzu, ievadiet vienu un to pašu PIN abos lodziņos.</translation>
-<translation id="5168917394043976756">Atvērt navigācijas atvilktni</translation>
 <translation id="5170982930780719864">Saimniekdatora ID nav derīgs.</translation>
 <translation id="518094545883702183">Šī informācija tiek izmantota tikai tās problēmas diagnosticēšanai, par kuru ziņojat, un tā ir pieejama tikai personai, kura izskata jūsu ziņojumu, kā arī tiek saglabāta ne ilgāk kā 30 dienas.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>

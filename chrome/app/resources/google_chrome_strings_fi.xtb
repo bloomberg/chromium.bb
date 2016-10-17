@@ -134,6 +134,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="4771048833395599659">Tämä tiedosto voi olla vaarallinen, joten Chrome on estänyt sen.</translation>
 <translation id="4794050651896644714">Tallenna tiedot Chromeen</translation>
 <translation id="4891791193823137474">Jätä Google Chrome käyntiin taustalle</translation>
+<translation id="4901390485477164536">Hienoa! Google Chrome on nyt oletusselaimesi.</translation>
 <translation id="4921569541910214635">Jaatko tietokoneen jonkun kanssa? Nyt voit määrittää Chromen juuri sellaiseksi kuin haluat.</translation>
 <translation id="4925019873400497719">Chrome vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta ne eivät pidä paikkaansa.</translation>
 <translation id="4953650215774548573">Aseta Google Chrome oletusselaimeksi</translation>
@@ -256,6 +257,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="8290100596633877290">Hups! Google Chrome kaatui. Käynnistetäänkö uudelleen?</translation>
 <translation id="8342675569599923794">Tämä tiedosto on vaarallinen, joten Chrome on estänyt sen.</translation>
 <translation id="8406086379114794905">Auta parantamaan Chromea</translation>
+<translation id="8410645163819739900">Google Chrome ‑käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="8455999171311319804">Valinnainen: Lähetä automaattisesti diagnostiikka- ja käyttötietoja Googlelle Chrome-käyttöjärjestelmän kehittämiseksi.</translation>
 <translation id="853189717709780425">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

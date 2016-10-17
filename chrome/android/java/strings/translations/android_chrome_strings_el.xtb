@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">Κλείσιμο παραθύρου διαλόγου</translation>
 <translation id="4376501731284077108">Χωρίς έλεγχο</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
+<translation id="4384468725000734951">Χρήση του Sogou για αναζήτηση</translation>
 <translation id="4412992751769744546">Αποδοχή cookie τρίτου μέρους</translation>
 <translation id="4440256989292146959">Περισσότερη περιήγηση με λιγότερα δεδομένα</translation>
 <translation id="4452548195519783679">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_NAME" />"</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5919204609460789179">Ενημερώστε το <ph name="PRODUCT_NAME" /> για να ξεκινήσει ο συγχρονισμός</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
+<translation id="5942872142862698679">Χρήση του Google για αναζήτηση</translation>
+<translation id="6000066717592683814">Διατήρηση του Google</translation>
 <translation id="6010869025736512584">Πρόσβαση στην είσοδο βίντεο</translation>
 <translation id="6012342843556706400">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία προκειμένου να την μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="6031101910111098835">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720">Εξοικονόμηση δεδομένων κατά <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6177390657002841081">Ενεργοποίηση Εξοικονόμησης δεδομένων</translation>
+<translation id="617991007797131187">Το Chrome μπορεί να χρησιμοποιεί το Sogou για αναζητήσεις στην Κίνα. Μπορείτε να αλλάξετε αυτήν την επιλογή από τις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Προσθήκη εξαίρεσης ιστότοπου</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
 <translation id="6232535412751077445">Η ενεργοποίηση της επιλογής "Να μην γίνεται εντοπισμός" σημαίνει ότι θα συμπεριληφθεί ένα αίτημα με την επισκεψιμότητα της περιήγησής σας. Τυχόν αποτελέσματα εξαρτώνται από το κατά πόσο ένας ιστότοπος ανταποκρίνεται στο αίτημα, καθώς και από τον τρόπο με τον οποίο ερμηνεύεται το αίτημα.
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
 <translation id="6545017243486555795">Διαγραφή όλων των δεδομένων</translation>
 <translation id="6550675742724504774">Επιλογές</translation>
+<translation id="6560414384669816528">Αναζήτηση με το Sogou</translation>
 <translation id="656628257199996201">Να γίνεται πάντα μετάφραση των <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Επεξεργασία πιστωτικής κάρτας</translation>
 <translation id="6573431926118603307">Οι καρτέλες που έχετε ανοίξει στο Chrome στις άλλες συσκευές σας θα εμφανίζονται εδώ.</translation>

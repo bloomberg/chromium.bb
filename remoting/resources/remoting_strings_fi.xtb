@@ -33,7 +33,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="177096447311351977">Asiakkaan kanavan IP-osoite: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Sulje ikkuna</translation>
 <translation id="1841799852846221389">Poistetaan tietokoneen etäyhteyksiä käytöstä…</translation>
-<translation id="189172778771606813">Sulje navigoinnin vetopaneeli</translation>
 <translation id="1897488610212723051">Poista</translation>
 <translation id="195619862187186579">Näppäinasettelut</translation>
 <translation id="1996161829609978754">Chrome lataa Chromoting-isäntäsovelluksen asennusohjelmaa. Suorita asennusohjelma, kun lataus on valmis.</translation>
@@ -114,6 +113,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 isäntä</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Myönnä käyttöoikeus Chrome-etäkäytön kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
+<translation id="3897092660631435901">Valikko</translation>
 <translation id="3905196214175737742">Isännän omistajan verkkotunnus on virheellinen.</translation>
 <translation id="3908017899227008678">Sovita ikkunaan</translation>
 <translation id="3931191050278863510">Isäntä pysähtyi.</translation>
@@ -166,7 +166,6 @@ isäntä</translation>
 <translation id="5070121137485264635">Etäisäntä edellyttää todennusta kolmannen osapuolen sivustossa. Jos haluat jatkaa, anna Chrome-etäkäytölle lisäkäyttölupia tämän osoitteen avaamiseksi:</translation>
 <translation id="507204348399810022">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Kirjoita sama PIN-koodi molempiin ruutuihin.</translation>
-<translation id="5168917394043976756">Avaa navigoinnin vetopaneeli</translation>
 <translation id="5170982930780719864">Isännän tunnus on virheellinen.</translation>
 <translation id="518094545883702183">Näitä tietoja käytetään vain ilmoittamasi ongelman diagnosointiin, näytetään vain ongelmaasi selvittävälle henkilölle ja säilytetään korkeintaan 30 päivää.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>

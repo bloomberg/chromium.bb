@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Chromium OS open source-licenser</translation>
 <translation id="2241627712206172106">Hvis du deler en computer, kan venner og familie browse individuelt og konfigurere Chromium, som de ønsker hver især.</translation>
 <translation id="225614027745146050">Velkommen</translation>
+<translation id="2264142189334629813">Chromium OS kan ikke åbne denne side.</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="2347108572062610441">Denne udvidelse har ændret din startside i Chromium.</translation>
 <translation id="2372704305038231957">32-bit Chromium fungerer muligvis ikke korrekt på grund af manglende understøttelse i dette Linux-system. Opgrader til 64-bit Chromium.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium kan ikke læse og skrive til sin datamappe:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium er din standardbrowser.</translation>
 <translation id="328888136576916638">Der mangler Google API-nøgler. Nogle funktioner i Chromium deaktiveres.</translation>
 <translation id="3289635842886789612">Chromium er forældet.</translation>
 <translation id="3296368748942286671">Fortsæt med at køre baggrundsapps, når Chromium er lukket</translation>

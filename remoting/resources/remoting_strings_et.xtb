@@ -33,7 +33,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="177096447311351977">Kanali IP kliendi jaoks: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Sulgeb akna</translation>
 <translation id="1841799852846221389">Arvuti kaugühenduste keelamine …</translation>
-<translation id="189172778771606813">Sule navigeerimissahtel</translation>
 <translation id="1897488610212723051">Kustuta</translation>
 <translation id="195619862187186579">Klaviatuuri paigutused</translation>
 <translation id="1996161829609978754">Chrome laadib alla rakenduse Chromoting Host installerit. Kui allalaadimine on lõppenud, käitage enne jätkamist installerit.</translation>
@@ -114,6 +113,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome Remote Desktopi abil juurdepääsu lubamiseks kinnitage allpool oma konto ja PIN-kood.</translation>
+<translation id="3897092660631435901">Menüü</translation>
 <translation id="3905196214175737742">Sobimatu hosti omaniku domeen.</translation>
 <translation id="3908017899227008678">Vähenda parajaks</translation>
 <translation id="3931191050278863510">Hostimine peatati.</translation>
@@ -166,7 +166,6 @@ Desktopi host</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="507204348399810022">Kas soovite kindlasti keelata kaugühendused hostiga <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Sisestage mõlemale väljale sama PIN-kood.</translation>
-<translation id="5168917394043976756">Ava navigeerimissahtel</translation>
 <translation id="5170982930780719864">Sobimatu hosti ID.</translation>
 <translation id="518094545883702183">Seda teavet kasutatakse ainult teavitatud probleemi diagnoosimiseks, see on saadaval ainult probleemiga tegelejale ja seda ei säilitata üle 30 päeva.</translation>
 <translation id="5222676887888702881">Logi välja</translation>

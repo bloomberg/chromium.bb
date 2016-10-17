@@ -39,6 +39,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2158734852934720349">Licencie open source systému OS Chromium</translation>
 <translation id="2241627712206172106">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chromium prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
 <translation id="225614027745146050">Vitajte</translation>
+<translation id="2264142189334629813">Chromium OS nedokáže túto stránku otvoriť.</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="2347108572062610441">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chromium.</translation>
 <translation id="2372704305038231957">32-bitová verzia prehliadača Chromium nemusí fungovať správne, pretože v tejto verzii systému Linux už nie je podporovaná. Inovujte Chromium na 64-bitovú verziu.</translation>
@@ -77,6 +78,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3258596308407688501">Prehliadač Chromium nemôže čítať ani zapisovať do adresára s údajmi:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium je vaším predvoleným prehliadačom. Skvelé!</translation>
 <translation id="328888136576916638">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chromium budú zakázané.</translation>
 <translation id="3289635842886789612">Prehliadač Chromium je zastaraný.</translation>
 <translation id="3296368748942286671">Po zatvorení prehliadača Chromium ponechať spustené aplikácie na pozadí</translation>

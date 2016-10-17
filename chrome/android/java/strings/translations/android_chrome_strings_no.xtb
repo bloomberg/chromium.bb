@@ -286,6 +286,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4351244548802238354">Lukk dialogboks</translation>
 <translation id="4376501731284077108">Ukontrollert</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Bruker Sogou til å søke</translation>
 <translation id="4412992751769744546">Tillat informasjonskapsler fra tredjeparter</translation>
 <translation id="4440256989292146959">Mer surfing for mindre penger</translation>
 <translation id="4452548195519783679">Satt som bokmerke i <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5916664084637901428">På</translation>
 <translation id="5919204609460789179">Oppdater <ph name="PRODUCT_NAME" /> for å starte synkroniseringen</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
+<translation id="5942872142862698679">Bruker Google til å søke</translation>
+<translation id="6000066717592683814">Behold Google</translation>
 <translation id="6010869025736512584">Åpner videoinngang</translation>
 <translation id="6012342843556706400">Chrome må ha tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6031101910111098835">Skjult – klikk for å vise</translation>
@@ -441,6 +444,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6177390657002841081">Slå på Datasparing</translation>
+<translation id="617991007797131187">Chrome kan bruke Sogou for søk i Kina. Du kan endre dette i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192792657125177640">Unntak</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
@@ -472,6 +476,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="6545017243486555795">Slett alle data</translation>
 <translation id="6550675742724504774">Alternativer</translation>
+<translation id="6560414384669816528">Søk med Sogou</translation>
 <translation id="656628257199996201">Oversett alltid <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Rediger kredittkort</translation>
 <translation id="6573431926118603307">Faner du har åpnet i Chrome på de andre enhetene dine, vises her.</translation>

@@ -33,7 +33,6 @@
 <translation id="177096447311351977">এই ক্লায়েন্টের জন্য চ্যানেল IP: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">উইন্ডো বন্ধ করুন</translation>
 <translation id="1841799852846221389">এই কম্পিউটারটিতে দূরবর্তী সংযোগ অক্ষম করা হচ্ছে...</translation>
-<translation id="189172778771606813">নেভিগেশান ড্রয়ার বন্ধ করুন</translation>
 <translation id="1897488610212723051">মুছুন</translation>
 <translation id="195619862187186579">কীবোর্ড লেআউট</translation>
 <translation id="1996161829609978754">Chrome, Chromoting হোস্ট ইনস্টলার ডাউনলোড করছে৷ একবার ডাউনলোড সম্পন্ন হয়ে গেলে, অব্যাহত রাখার আগে দয়া করে ইনস্টলার চালনা করুন৷</translation>
@@ -114,6 +113,7 @@
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome দূরবর্তী ডেস্কটপের মাধ্যমে অ্যাক্সেসের মঞ্জুরি দিতে দয়া করে নীচে আপনার অ্যাকাউন্ট এবং পিন নিশ্চিত করুন৷</translation>
+<translation id="3897092660631435901">মেনু</translation>
 <translation id="3905196214175737742">অবৈধ হোস্ট মালিক ডোমেইন।</translation>
 <translation id="3908017899227008678">মানানসই করতে সঙ্কুচিত করুন</translation>
 <translation id="3931191050278863510">হোস্ট থেমে গেছে।</translation>
@@ -166,7 +166,6 @@ Host</translation>
 <translation id="5070121137485264635">একটি তৃতীয়-পক্ষ ওয়েবসাইট প্রমাণীকরণ করতে রিমোট হোস্টটির আপনাকে প্রয়োজন। অবিরত রাখতে, এই ওয়েবসাইট অ্যাক্সেস করতে আপনাকে অবশ্যই Chrome দূরবর্তী ডেস্কটপ অতিরিক্ত অনুমতির মঞ্জুরি দিতে হবে:</translation>
 <translation id="507204348399810022">আপনি কি নিশ্চিত যে আপনি <ph name="HOSTNAME" /> এর সাথে দূরবর্তী সংযোগ অক্ষম করতে চান?</translation>
 <translation id="5156271271724754543">উভয় বক্সে দয়া করে একই পিন লিখুন৷</translation>
-<translation id="5168917394043976756">নেভিগেশান ড্রয়ার খুলুন</translation>
 <translation id="5170982930780719864">অবৈধ হোস্ট আইডি।</translation>
 <translation id="518094545883702183">আপনার রিপোর্ট করা সমস্যার নির্ণয়ের জন্য এই তথ্য ব্যবহার করা হয়, যা কেবল আপনার রিপোর্ট অনুসন্ধান চালান এমন একজনের কাছে উপলব্ধ, এবং 30 দিনের বেশী রাখা হয় না।</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>

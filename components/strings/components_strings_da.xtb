@@ -134,7 +134,7 @@
 <translation id="2396249848217231973">&amp;Fortryd sletning</translation>
 <translation id="2455981314101692989">Denne webside har deaktiveret automatisk udfyldning af denne formular.</translation>
 <translation id="2463739503403862330">Udfyld</translation>
-<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Kører Netværksdiagnosticering<ph name="END_LINK" /></translation>
+<translation id="2467694685043708798"><ph name="BEGIN_LINK" />Køre Netværksdiagnosticering<ph name="END_LINK" /></translation>
 <translation id="2479410451996844060">Ugyldig søgewebadresse.</translation>
 <translation id="2491120439723279231">Serverens certifikat indeholder fejl.</translation>
 <translation id="2495083838625180221">Værktøj til parsing af JSON-filer</translation>
@@ -164,7 +164,7 @@
 <translation id="2712173769900027643">Spørg om tilladelse</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
-<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kører Diagnosticering af forbindelse<ph name="END_LINK" /></translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Køre Diagnosticering af forbindelse<ph name="END_LINK" /></translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
 <translation id="277499241957683684">Manglende enhedsregistrering</translation>
 <translation id="2778107779445548489">Denne meddelelse vises, fordi en af dine forældre har blokeret dette website.</translation>
@@ -347,7 +347,7 @@
 <translation id="4670097147947922288">Du er i øjeblikket på en udvidelsesside.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Din forbindelse blev afbrudt</translation>
-<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Kører Windows Netværksdiagnosticering<ph name="END_LINK" /></translation>
+<translation id="4722547256916164131"><ph name="BEGIN_LINK" />Køre Windows Netværksdiagnosticering<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Opdater politikker</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
@@ -393,6 +393,7 @@
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5251803541071282808">Skyen</translation>
+<translation id="5277279256032773186">Bruger du Chrome på arbejdet? Virksomheder kan administrere Chrome-indstillinger for deres medarbejdere. Få flere oplysninger</translation>
 <translation id="5299298092464848405">Der opstod en fejl ved parsing af politik</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
@@ -632,7 +633,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
 <translation id="8129262335948759431">ukendt mængde</translation>
 <translation id="8131740175452115882">Bekræft</translation>
-<translation id="8134994873729925007"><ph name="BEGIN_ABBR" />DNS-adressen<ph name="END_ABBR" /> for <ph name="HOST_NAME" />'s server blev ikke fundet.</translation>
+<translation id="8134994873729925007"><ph name="BEGIN_ABBR" />DNS-adressen<ph name="END_ABBR" /> for <ph name="HOST_NAME" />s server blev ikke fundet.</translation>
 <translation id="8149426793427495338">Din computer gik i dvale.</translation>
 <translation id="8150722005171944719">Filen i <ph name="URL" /> kan ikke læses. Den kan være blevet fjernet, flyttet, eller også forhindrer filtilladelser muligvis adgangen.</translation>
 <translation id="8194797478851900357">&amp;Fortryd flytning</translation>

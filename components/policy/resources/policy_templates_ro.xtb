@@ -212,15 +212,6 @@
       Dacă această politică nu este configurată sau este setată la „tls1.2”, atunci <ph name="PRODUCT_NAME" /> nu mai efectuează această revenire. Reține că astfel nu se dezactivează compatibilitatea pentru versiunile TLS mai vechi, ci doar se stabilește dacă <ph name="PRODUCT_NAME" /> va ocoli serverele cu erori care nu pot negocia corect versiunile.
 
       În caz contrar, dacă trebuie menținută compatibilitatea cu un server cu erori, politica poate fi setată la „tls1”. Aceasta este o măsură temporară, iar problemele de pe server trebuie să fie remediate rapid.</translation>
-<translation id="1861037019115362154">Specifică o listă de pluginuri dezactivate în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
-
-      Pentru a găsi secvențe de caractere arbitrare, pot fi folosite metacaracterele „*” și „?”. „*” corespunde unui număr arbitrar de caractere, în timp ce „?” specifică un caracter opțional unic, adică înlocuiește zero caractere sau un singur caracter. Caracterul escape este „\”, astfel încât pentru a obține caracterele „*”, „?” și „\” în sine, puteți adăuga caracterul „\” în fața acestora.
-
-      Dacă activați această setare, lista specificată de pluginuri nu este niciodată utilizată în <ph name="PRODUCT_NAME" />. Pluginurile sunt marcate ca dezactivate în „about:plugins”, iar utilizatorii nu le pot activa.
-
-      Rețineți că această politică poate fi înlocuită de EnabledPlugins și DisabledPluginsExceptions.
-
-      Dacă această politică este lăsată nesetată, utilizatorul poate folosi orice plugin instalat în sistem, cu excepția pluginurilor codificate incompatibile, învechite sau periculoase.</translation>
 <translation id="1864269674877167562">Dacă această politică este configurată ca un șir necompletat sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> nu va afișa opțiunea de completare automată în timpul procesului de conectare a utilizatorului.
       Dacă această politică este configurată ca un șir care reprezintă un nume de domeniu, <ph name="PRODUCT_OS_NAME" /> va afișa opțiunea de completare automată în timp ce utilizatorul se conectează. Astfel, utilizatorul poate introduce doar numele său de utilizator, fără extensia numelui de domeniu. Utilizatorul va putea să suprascrie extensia numelui de domeniu.</translation>
 <translation id="1865417998205858223">Permisiunile privind certificatele</translation>
@@ -825,11 +816,6 @@
 <translation id="3660562134618097814">Transferă cookie-urile unui furnizor de identitate SAML în timpul conectării</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
-<translation id="3715448429089775791">Forțează activarea Modului sigur pe YouTube și împiedică utilizatorii să schimbe această setare.
-
-      Dacă activezi această setare, Modul sigur pe YouTube este activ întotdeauna.
-
-      Dacă această setare este dezactivată sau nu este configurată, nu se impune Modul sigur pe YouTube.</translation>
 <translation id="3750220015372671395">Blochează generarea cheilor pe aceste site-uri</translation>
 <translation id="3756011779061588474">Blocați modul pentru dezvoltatori</translation>
 <translation id="3758089716224084329">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy.
@@ -2004,12 +1990,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Identificatorii recunoscuți pentru tipurile de conexiune sunt „ethernet”, „wifi”, „wimax”, „bluetooth” și „cellular”.</translation>
 <translation id="7763614521440615342">Afișează sugestii privind conținutul pe pagina Filă nouă</translation>
-<translation id="7766336524667238790">Raportează informații privind sesiunea chioșc activă, cum ar fi
-      ID-ul și versiunea aplicației.
-
-      Dacă politica este dezactivată, informațiile privind sesiunea nu vor fi 
-      raportate. Dacă politica este activată sau nu este configurată, informațiile privind sesiunea vor fi 
-      reportate.</translation>
 <translation id="7774768074957326919">Utilizează setările proxy-ului pentru sistem</translation>
 <translation id="7775831859772431793">Poți specifica adresa URL a serverului proxy aici.
 
@@ -2232,6 +2212,10 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8369602308428138533">Interval până la oprirea ecranului la funcționarea pe c.a.</translation>
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
+<translation id="8390049129576938611">Dezactivează vizualizatorul PDF intern în <ph name="PRODUCT_NAME" />. Îl tratează ca pe o descărcare și permite utilizatorului să deschidă fișierele PDF folosind aplicația prestabilită.
+
+      Dacă această politică nu este configurată sau este dezactivată, pluginul PDF va fi folosit pentru a deschide fișierele PDF, dacă utilizatorul nu îl dezactivează.</translation>
+<translation id="8402079500086185021">Deschide întotdeauna fișierele PDF extern</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
 <translation id="8413348101535146315">Activează oprirea proceselor în Managerul de activități din <ph name="PRODUCT_NAME" />.
 
@@ -2252,17 +2236,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           Pentru exemple de șabloane, accesează https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Dezactivează salvarea istoricului browserului</translation>
 <translation id="8499172469244085141">Setări prestabilite (utilizatorii le pot ignora)</translation>
-<translation id="8501011084242226370">Specifică o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva în <ph name="PRODUCT_NAME" />.
-
-      Metacaracterele „*” și „?” pot fi folosite pentru a corespunde unor secvențe de caractere arbitrare. „*” corespunde unui număr arbitrar de caractere, iar „?” corespunde unui singur caracter opțional, adică unui caracter sau niciunuia. Pentru a folosi chiar caracterele „*”, „?” sau „\”, puteți insera un caracter „\” în fața lor, numit și caracter escape.
-
-      Dacă activați această setare, pluginurile din lista specificată pot fi folosite în <ph name="PRODUCT_NAME" />. Utilizatorii pot activa sau dezactiva pluginurile în „about:plugins”, chiar dacă pluginul corespunde și unui șablon din DisabledPlugins. Utilizatorii pot activa și dezactiva și pluginurile care nu corespund niciunui șablon din DisabledPlugins, DisabledPluginsExceptions și EnabledPlugins.
-
-      Scopul acestei politici este să permită trecerea strictă a pluginurilor în lista neagră, în cazul în care lista „DisabledPlugins” conține intrări cu metacaractere, cum ar fi „*” pentru dezactivarea tuturor pluginurilor sau „*Java*” pentru dezactivarea tuturor pluginurilor Java, dar administratorul dorește să activeze anumite versiuni, cum ar fi „IcedTea Java 2.3”. Aceste versiuni pot fi specificate în această politică.
-
-      Rețineți că atât numele pluginului, cât și numele grupului de pluginuri trebuie să fie excluse. Fiecare grup de pluginuri este afișat într-o secțiune separată în about:plugins; fiecare secțiune poate avea unul sau mai multe pluginuri. De exemplu, pluginul „Shockwave Flash” aparține grupului „Adobe Flash Player” și ambele nume trebuie să corespundă cu intrări din lista de excepții, dacă acel plugin trebuie exclus din lista neagră.
-
-      Dacă politica nu este configurată, pluginurile care corespund șabloanelor din „DisabledPlugins” vor fi dezactivate și blocate, iar utilizatorul nu le va putea activa.</translation>
 <translation id="8519264904050090490">Adrese URL pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
@@ -2297,7 +2270,6 @@ nu poate fi stabilit de utilizator din setările browserului.
           Separă numele serverelor prin virgulă. Sunt permise metacaracterele (*).
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> va încerca să detecteze dacă un anumit server se află în intranet și numai după aceea va răspunde la solicitările IWA. Dacă un server este detectat ca fiind pe internet, <ph name="PRODUCT_NAME" /> va ignora solicitările IWA trimise de acesta.</translation>
-<translation id="8668394701842594241">Specifică o listă de pluginuri care sunt activate în <ph name="PRODUCT_NAME" /> și împiedică modificarea acestei setări de către utilizatori. Pentru a crea corespondențe între secvențe de caractere arbitrare pot fi folosite metacaracterele „*” și „?”. „*” corespunde unui număr arbitrar de caractere, în timp ce „?” specifică un caracter opțional unic, adică înlocuiește zero caractere sau un singur caracter. Caracterul escape este „\”, astfel încât pentru a realiza corespondența cu caracterele „*”, „?” și „\” în sine, puteți plasa caracterul „\” în fața acestora. Lista specificată de pluginuri este întotdeauna utilizată în <ph name="PRODUCT_NAME" /> în cazul în care acestea sunt instalate. Pluginurile sunt marcate ca activate în „about:plugins”, iar utilizatorii nu le pot dezactiva. Rețineți că această politică are prioritate atât față de DisabledPlugins, cât și față de DisabledPluginsExceptions. Dacă această politică rămâne nesetată, utilizatorul poate dezactiva toate pluginurile instalate în sistem.</translation>
 <translation id="8672321184841719703">Versiune țintă pentru actualizări automate</translation>
 <translation id="868068801094828689">Activează raportarea anonimă la Google a datelor privind utilizarea și blocările produsului <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
 
@@ -2396,13 +2368,6 @@ nu poate fi stabilit de utilizator din setările browserului.
       contacta automat Quirks Server și va descărca fișierele de configurare,
       dacă sunt disponibile, apoi le va stoca pe dispozitiv. Astfel de fișiere pot, de
       exemplu, să fie folosite pentru a îmbunătăți calitatea afișării de pe monitoarele atașate.</translation>
-<translation id="8905426178924715309">Această politică este învechită. Folosește ForceGoogleSafeSearch și ForceYouTubeSafetyMode. Această politică va fi ignorată dacă sunt configurate politicile ForceGoogleSafeSearch sau ForceYouTubeSafetyMode.
-
-      Forțează activarea Căutării sigure pentru interogările de pe Căutarea Google pe web și nu permite utilizatorilor să modifice această setare. De asemenea, această setare impune Modul sigur pe YouTube.
-
-      Dacă activezi această setare, Căutarea sigură va fi întotdeauna activă pentru Căutarea Google și YouTube.
-
-      Dacă dezactivezi această setare sau nu configurezi nicio valoare, nu se va impune Căutarea sigură pentru Căutarea Google și YouTube.</translation>
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>
 <translation id="8908294717014659003">Vă permite să stabiliți dacă site-urile web au acces la dispozitivele de captură media. Accesul la dispozitivele de captură media poate fi permis în mod prestabilit sau se poate solicita confirmarea utilizatorului de fiecare dată când un site web dorește acces la dispozitivele de captură media.
 

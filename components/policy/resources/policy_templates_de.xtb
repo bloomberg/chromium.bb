@@ -191,15 +191,6 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
       Ist diese Richtlinie nicht konfiguriert oder auf "tls1.2" eingestellt, führt <ph name="PRODUCT_NAME" /> diesen Fallback nicht mehr durch. Die Unterstützung älterer TLS-Versionen wird dadurch nicht deaktiviert, es wird lediglich festgelegt, ob <ph name="PRODUCT_NAME" /> fehlerträchtige Server umgeht, die keine korrekten Versionsaushandlungen durchführen können.
 
       Wenn die Kompatibilität mit einem fehlerträchtigen Server aufrechterhalten werden muss, kann "tls1.1" eingestellt werden. Hierbei handelt es sich um einen provisorischen Wert und der Server sollte schnell repariert werden.</translation>
-<translation id="1861037019115362154">Gibt eine Liste von Plug-ins an, die in <ph name="PRODUCT_NAME" /> deaktiviert sind, und verhindert, dass Nutzer diese Einstellung ändern können.
-
-      Die Platzhalterzeichen "*" und "?" können verwendet werden, um Übereinstimmungen mit beliebigen Zeichenfolgen herbeizuführen. "*" ergibt Übereinstimmungen mit einer beliebigen Anzahl von Zeichen, während "?" für ein einziges optionales Zeichen steht, also keinem oder einem Zeichen entspricht. Das Escape-Zeichen ist "\", um also wirkliche Übereinstimmungen mit den Zeichen "*", "?" und "\" zu finden, können Sie das "\"-Zeichen davor platzieren.
-
-      Wenn Sie diese Einstellung aktivieren, werden die Plug-ins der angegebenen Liste in <ph name="PRODUCT_NAME" /> nicht verwendet. Die Plug-ins sind in "about:plugins" als deaktiviert markiert und können von Nutzern nicht aktiviert werden.
-
-      Beachten Sie, dass diese Richtlinie sowohl von "EnabledPlugins" als auch "DisabledPluginsExceptions" außer Kraft gesetzt werden kann.
-
-      Ist die Richtlinie nicht konfiguriert, können Nutzer beliebige auf dem System installierte Plug-ins verwenden. Ausnahmen sind hartcodierte, inkompatible, veraltete und gefährliche Plug-ins.</translation>
 <translation id="1864269674877167562">Wenn diese Richtlinie nicht konfiguriert ist oder ein leerer String dafür festgelegt ist, zeigt <ph name="PRODUCT_OS_NAME" /> keine Option für die automatische Vervollständigung beim Anmeldevorgang an.
       Wenn die Richtlinie für einen String festgelegt ist, der einen Domainnamen darstellt, zeigt <ph name="PRODUCT_OS_NAME" /> eine Option für die automatische Vervollständigung beim Anmeldevorgang des Nutzers an, sodass er seinen Namen ohne die Domain-Namenserweiterung eingeben kann. Der Nutzer kann diese Domain-Namenserweiterung überschreiben.</translation>
 <translation id="1865417998205858223">Hauptberechtigungen</translation>
@@ -802,11 +793,6 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
-<translation id="3715448429089775791">Erzwingt die Aktivierung des YouTube-Sicherheitsmodus und verhindert, dass diese Einstellung von den Nutzern geändert werden kann
-
-      Wenn Sie diese Einstellung aktivieren, ist der Sicherheitsmodus auf YouTube immer aktiv.
-
-      Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, wird der Sicherheitsmodus auf YouTube nicht erzwungen.</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
 <translation id="3756011779061588474">Entwicklermodus blockieren</translation>
 <translation id="3758089716224084329">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxy-Server anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
@@ -1807,7 +1793,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7260277299188117560">P2P für automatische Updates aktivieren</translation>
 <translation id="7267809745244694722">Medientasten standardmäßig als Funktionstasten verwenden</translation>
 <translation id="7271085005502526897">Startseite bei erster Ausführung aus Standardbrowser importieren</translation>
-<translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung ein Pairing von Clients und Hosts durchführen. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
+<translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung Clients und Hosts koppeln. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
 
           Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
@@ -1967,12 +1953,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Zu den erkannten Verbindungstypkennungen gehören "ethernet", "wifi", "wimax", "bluetooth" und "cellular".</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
-<translation id="7766336524667238790">Durch diese Richtlinie werden Informationen zur aktiven Kiosksitzung gesendet, etwa
-      Anwendungs-ID und -version.
-
-      Wenn für die Richtlinie "false" festgelegt wird, werden die Sitzungsinformationen
-      nicht gesendet. Wird für die Richtlinie "true" festgelegt oder wird sie nicht konfiguriert,
-      werden Sitzungsinformationen gesendet.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
 <translation id="7775831859772431793">Hier können Sie die URL des Proxyservers angeben.
 
@@ -2184,6 +2164,10 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8369602308428138533">Verzögerung für die Bildschirmabschaltung im Netzbetrieb</translation>
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
+<translation id="8390049129576938611">Deaktiviert den internen PDF-Viewer in <ph name="PRODUCT_NAME" />. Stattdessen werden PDF-Dateien als Download behandelt und der Nutzer kann sie mit der Standard-Anwendung öffnen.
+
+      Wenn diese Richtlinie deaktiviert oder nicht eingestellt ist, wird zum Öffnen von PDF-Dateien das PDF-Plug-in genutzt, sofern der Nutzer es nicht deaktiviert.</translation>
+<translation id="8402079500086185021">PDF-Dateien immer extern öffnen</translation>
 <translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
 <translation id="8413348101535146315">Ermöglicht das Beenden von Prozessen im Task-Manager von <ph name="PRODUCT_NAME" />.
 
@@ -2204,17 +2188,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
           Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Speichern des Browserverlaufs deaktivieren</translation>
 <translation id="8499172469244085141">Standardeinstellungen (können vom Nutzer überschrieben werden)</translation>
-<translation id="8501011084242226370">Gibt eine Liste von Plug-ins an, die der Nutzer in <ph name="PRODUCT_NAME" /> aktivieren oder deaktivieren kann.
-
-      Die Platzhalterzeichen "*" und "?" können verwendet werden, um beliebige Zeichenfolgen zuzuordnen. "*" entspricht einer beliebigen Anzahl von Zeichen, während "?" ein optionales einzelnes Zeichen darstellt (kein oder ein Zeichen). Als Escape-Zeichen wird "\" verwendet. Dieses können Sie vor "*" oder "?" setzen, um nach diesen Zeichen (Sternchen bzw. Fragezeichen) zu suchen.
-
-      Wenn Sie diese Einstellung aktivieren, kann die angegebene Liste von Plug-ins in <ph name="PRODUCT_NAME" /> verwendet werden. Nutzer können diese in "about:plugins" aktivieren oder deaktivieren, selbst wenn das Plug-in auch mit einem Muster in DisabledPlugins übereinstimmt. Zudem können Nutzer Plug-ins aktivieren oder deaktivieren, die mit keinen Mustern in DisabledPlugins, DisabledPluginsExceptions und EnabledPlugins übereinstimmen.
-
-      Diese Richtlinie soll einen strengen Ausschluss von Plug-ins ermöglichen. Dabei enthält die Liste "DisabledPlugins" Platzhaltereinträge wie "*" zur Deaktivierung aller Plug-ins oder "*Java*" zur Deaktivierung aller Java-Plug-ins. Der Administrator kann jedoch bestimmte Versionen wie "IcedTea Java 2.3" aktivieren. Diese spezifischen Versionen können in dieser Richtlinie festgelegt werden.
-
-      Beachten Sie, dass sowohl der Plug-in-Name als auch der Plug-in-Gruppenname ausgenommen werden müssen. Jede Plug-in-Gruppe wird in einem separaten Abschnitt unter "about:plugins" angezeigt. Jeder Abschnitt kann ein oder mehrere Plug-ins enthalten. So gehört beispielsweise das Plug-in "Shockwave Flash" der Gruppe "Adobe Flash Player" an. Wenn dieses Plug-in von der schwarzen Liste ausgenommen werden soll, muss in der Ausnahmeliste für beide Namen eine Übereinstimmung vorhanden sein.
-
-      Wird diese Richtlinie nicht konfiguriert, werden alle Plug-ins, die mit den Mustern in "DisabledPlugins" übereinstimmen, als deaktiviert gesperrt. Sie können dann nicht vom Nutzer aktiviert werden.</translation>
 <translation id="8519264904050090490">Manuell festgelegte Ausnahme-URLs für verwalteten Nutzer</translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
@@ -2250,7 +2223,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
           Fügen Sie zwischen den verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind zulässig.
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
-<translation id="8668394701842594241">Gibt eine Liste von Plug-ins an, die in <ph name="PRODUCT_NAME" /> aktiviert sind, und verhindert, dass Nutzer diese Einstellung ändern. Die Platzhalterzeichen "*" und "?" können verwendet werden, um Übereinstimmungen mit beliebigen Zeichenfolgen herbeizuführen. "*" ergibt Übereinstimmungen mit einer beliebigen Anzahl von Zeichen, während "?" für ein einziges optionales Zeichen steht, also keinem oder einem Zeichen entspricht. Das Escape-Zeichen ist "\", um also wirkliche Übereinstimmungen mit den Zeichen "*", "?" und "\" zu finden, können Sie das "\"-Zeichen davor platzieren. Die angegebene Liste der Plug-ins wird in <ph name="PRODUCT_NAME" /> immer verwendet, wenn sie installiert sind. Die Plug-ins sind in "about:plugins" als aktiv markiert und können von Nutzern nicht deaktiviert werden. Beachten Sie, dass diese Richtlinie sowohl "DisabledPlugins" als auch "DisabledPluginsExceptions" außer Kraft setzt. Wenn die Richtlinie nicht konfiguriert ist, können Nutzer beliebige auf dem System installierte Plug-ins deaktivieren.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="868068801094828689">Ermöglicht die anonyme Meldung von Nutzungs- und Systemabsturzdaten zu <ph name="PRODUCT_NAME" /> an Google und verhindert, dass diese Einstellung von Nutzern geändert werden kann.
 
@@ -2343,13 +2315,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       automatisch den Quirks-Server und lädt Konfigurationsdateien herunter,
       sofern welche vorhanden sind, und speichert sie auf dem Gerät. Solche Dateien können beispielsweise verwendet werden,
       um die Displayqualität angeschlossener Monitore zu verbessern.</translation>
-<translation id="8905426178924715309">Diese Richtlinie wird nicht mehr angeboten. Verwenden Sie stattdessen "ForceGoogleSafeSearch" und "ForceYouTubeSafetyMode". Die Richtlinie wird ignoriert, wenn entweder "ForceGoogleSafeSearch" oder "ForceYouTubeSafetyMode" festgelegt ist.
-
-      Durch diese Richtlinie wird die Ausführung der Google Websuche mit aktivierter SafeSearch-Funktion erzwungen und verhindert, dass Nutzer die Einstellung ändern. Darüber hinaus wird die Verwendung des sicheren Modus bei YouTube erzwungen.
-
-      Wenn diese Einstellung aktiviert ist, ist SafeSearch in der Google-Suche und bei YouTube immer aktiviert.
-
-      Wenn diese Einstellung deaktiviert ist oder kein Wert festgelegt wurde, wird SafeSearch in der Google-Suche und bei YouTube nicht erzwungen.</translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="8908294717014659003">Hier können Sie festlegen, ob Websites der Zugriff auf Medienaufnahmegeräte erlaubt werden soll. Der Zugriff auf Medienaufnahmegeräte kann standardmäßig zugelassen werden oder Sie können einstellen, dass der Nutzer jedes Mal gefragt wird, wenn eine Website auf Medienaufnahmegeräte zugreifen möchte.
 

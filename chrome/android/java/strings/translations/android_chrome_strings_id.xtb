@@ -286,6 +286,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4376501731284077108">Tidak terkontrol</translation>
 <translation id="4378154925671717803">Telepon</translation>
+<translation id="4384468725000734951">Menggunakan Sogou untuk penelusuran</translation>
 <translation id="4412992751769744546">Izinkan cookie pihak ketiga</translation>
 <translation id="4440256989292146959">Jelajahi lebih banyak dengan lebih hemat</translation>
 <translation id="4452548195519783679">Dibookmark ke <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
+<translation id="5942872142862698679">Menggunakan Google untuk penelusuran</translation>
+<translation id="6000066717592683814">Tetap menggunakan Google</translation>
 <translation id="6010869025736512584">Mengakses masukan video</translation>
 <translation id="6012342843556706400">Chrome memerlukan akses lokasi untuk berbagi dengan situs ini.</translation>
 <translation id="6031101910111098835">Diciutkan - Klik untuk memperluas</translation>
@@ -441,6 +444,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6159335304067198720">Penghematan data <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6177390657002841081">Mengaktifkan Penghemat Data</translation>
+<translation id="617991007797131187">Chrome dapat menggunakan Sogou untuk penelusuran di China. Anda dapat mengubah ini di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6232535412751077445">Jika ‘Jangan Lacak’ diaktifkan, permintaan akan disertakan dengan lalu lintas penjelajahan Anda. Dampak apa pun yang muncul bergantung pada apakah situs web menanggapi permintaan, dan bagaimana permintaan diinterpretasikan.
@@ -472,6 +476,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
 <translation id="6545017243486555795">Hapus Semua Data</translation>
 <translation id="6550675742724504774">Opsi</translation>
+<translation id="6560414384669816528">Menelusuri menggunakan Sogou</translation>
 <translation id="656628257199996201">Selalu terjemahkan bahasa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edit kartu kredit</translation>
 <translation id="6573431926118603307">Tab yang telah dibuka di Chrome pada perangkat lainnya akan muncul di sini.</translation>

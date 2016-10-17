@@ -209,15 +209,6 @@
       Kui seda reeglit ei seadistata või see kasutab väärtust „tls1.2”, siis ei taanda teenus <ph name="PRODUCT_NAME" /> enam versiooni. Pange tähele, et see ei keela TLS-i vanemate versioonide tuge, vaid määrab, kas teenus <ph name="PRODUCT_NAME" /> väldib vigadega servereid, milles versioonide läbirääkimine ei õnnestu.
 
       Kui ühilduvus vigadega serveriga peab säilima, võib valida väärtuse „tls1.1”. See on ajutine abinõu ja server tuleb kiiresti parandada.</translation>
-<translation id="1861037019115362154">Määrab rakenduses <ph name="PRODUCT_NAME" /> keelatud pistikprogrammide loendi ja takistab kasutajatel selle seade muutmist.
-
-      Metamärke „*” ja „?” saab kasutada määramata märgijadade vastendamiseks. Metamärk „*” vastendab suvalise arvu märke ja metamärk „?” määrab valikulise üksiku tähemärgi, st see vastab ühele või mitte ühelegi tähemärgile. Paomärk on „\”, seetõttu saate märkide „*”, „?” ja „\” vastendamiseks lisada nende ette paomärgi „\”.
-
-      Seade lubamisel ei kasutata rakenduses <ph name="PRODUCT_NAME" /> kunagi loendis olevaid pistikprogramme. Pistikprogrammid on jaotises „about:plugins” märgitud keelatuks ja kasutajad ei saa neid lubada.
-
-      Pidage meeles, et seda reeglit saab alistada reeglitega „EnabledPlugins” ja „DisabledPluginsExceptions”.
-
-      Kui jätate selle reegli määramata, siis on võimalik kasutada kõiki süsteemi installitud pistikprogramme, v.a püsiprogrammeeritud ühildumatud, aegunud ja ohtlikud pistikprogrammid.</translation>
 <translation id="1864269674877167562">Kui selle reegli jaoks valitakse tühi string või jäetakse reegel seadistamata, ei näita <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisvoos automaatse täitmise valikut.
       Kui selleks reegliks on määratud string, mis esindab domeeni nime, kuvab <ph name="PRODUCT_OS_NAME" /> kasutaja sisselogimisel automaatse täitmise valiku, võimaldades kasutajal sisestada ainult oma kasutajanime ilma domeeninime laiendita. Kasutaja saab selle domeeninime laiendi alistada.</translation>
 <translation id="1865417998205858223">Võtmeload</translation>
@@ -853,11 +844,6 @@
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
 <translation id="3711895659073496551">Peata</translation>
-<translation id="3715448429089775791">Jõustab YouTube’i ohutu režiimi ja takistab kasutajaid seadet muutmast.
-
-      Kui lubate seade, on YouTube’i ohutu režiim alati aktiivne.
-
-      Kui keelate seade või jätate väärtuse määramata, ei jõustata YouTube’i ohutut režiimi.</translation>
 <translation id="3750220015372671395">Blokeeri võtmete loomine nendel saitidel</translation>
 <translation id="3756011779061588474">Arendaja režiimi blokeerimine</translation>
 <translation id="3758089716224084329">Võimaldab määrata rakenduse <ph name="PRODUCT_NAME" /> kasutatava puhverserveri ega lase kasutajatel puhverserveri seadeid muuta.
@@ -2117,11 +2103,6 @@
 
       Tunnustatud ühendustüübi identifikaatorid on „ethernet”, „wifi”, „wimax”, „bluetooth” ja „cellular”.</translation>
 <translation id="7763614521440615342">Kuva uuel vahelehel sisu soovitused</translation>
-<translation id="7766336524667238790">Saadab teavet kioski aktiivse seansi kohta (nt
-      rakenduse ID ja versioon).
-
-      Kui selle reegli väärtuseks määratakse Väär, siis teavet seansi kohta ei
-      saadeta. Kui väärtuseks määratakse Tõene või seda ei määrata, saadetakse      teavet seansi kohta.</translation>
 <translation id="7774768074957326919">Kasuta süsteemi puhverserveri seadeid</translation>
 <translation id="7775831859772431793">Siin saate määrata puhverserveri URL-i.
 
@@ -2361,6 +2342,10 @@
 <translation id="8369602308428138533">Ekraani väljalülitamise viiteaeg võrgutoite kasutamisel</translation>
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
+<translation id="8390049129576938611">Keelab sisemise PDF-vaaturi rakenduses <ph name="PRODUCT_NAME" />. Selle asemel koheldakse seda allalaadimisena ja kasutaja saab PDF-faile vaikerakendusega avada.
+
+      Kui keelate reegli või jätate selle määramata, kasutatakse PDF-failide avamiseks PDF-i pistikprogrammi, välja arvatud juhul, kui kasutaja selle keelab.</translation>
+<translation id="8402079500086185021">Ava PDF-failid alati väliselt</translation>
 <translation id="8412312801707973447">Kontrolli võrgus OCSP-d/CRL-i</translation>
 <translation id="8413348101535146315">Lubab protsessid brauseri <ph name="PRODUCT_NAME" /> tegumihalduris lõpetada.
 
@@ -2381,17 +2366,6 @@
           Vaadake näidismustreid aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Keela brauseri ajaloo salvestamine</translation>
 <translation id="8499172469244085141">Vaikeseaded (kasutajad saavad alistada)</translation>
-<translation id="8501011084242226370">Määrab pistikprogrammide loendi, mille kasutaja saab rakenduses <ph name="PRODUCT_NAME" /> lubada või keelata.
-
-      Juhuslike märkide jadade vastendamiseks võib kasutada metamärke „*” ja „?”. „*” vastab mis tahes märkide arvule, „?” vastab ühele valikulisele tähemärgile, st nullile või ühele tähemärgile. Paomärk on „\”. See tähendab, et tegelike märkide „*”, „?” või „\” vastendamiseks võite nende ette lisada märgi „\”.
-
-      Kui lubate sätte, tohib määratud pistikprogrammide loendit rakenduses <ph name="PRODUCT_NAME" /> kasutada. Kasutajad saavad neid jaotises „about:plugins” lubada ja keelata isegi juhul, kui pistikprogramm vastab atribuudis DisabledPlugins olevale mustrile. Kasutajad saavad ka lubada ja keelata pistikprogramme, mis ei vasta ühelegi mustrile atribuutides DisabledPlugins, DisabledPluginsExceptions ja EnabledPlugins.
-
-      Reegli eesmärk on lubada pistikprogrammide ranget keelatud loendisse määramist ja loend „DisabledPlugins” sisaldab metamärkidega kirjeid, näiteks kõikide pistikprogrammide keelamine „*” või kõikide Java pistikprogrammide keelamine „*Java*”, kuid administraator soovib lubada kindla versiooni, näiteks „IcedTea Java 2.3”. Reegel võimaldab määrata konkreetsed versioonid.
-
-      Pange tähele, et keelatud loendist tuleb välistada nii pistikprogrammi nimi kui ka pistikprogrammi grupi nimi. Iga pistikprogrammi grupp kuvatakse lehel about:plugins eraldi jaotises ja igas jaotises võib olla üks või mitu pistikprogrammi. Näiteks pistikprogramm „Shockwave Flash” kuulub gruppi „Adobe Flash Player” ja mõlemal nimel peab olema erandite loendis vaste, kui soovite pistikprogrammi keelatud loendist välistada.
-
-      Kui jätate reegli määramata, keelatakse kõik pistikprogrammid, mis vastavad atribuudis „DisabledPlugins” olevatele mustritele ja kasutaja ei saa neid lubada.</translation>
 <translation id="8519264904050090490">Kasutaja käsitsi sisestatavate URL-ide erandite haldamine</translation>
 <translation id="8544375438507658205">Rakenduse <ph name="PRODUCT_FRAME_NAME" /> HTML-i vaikerenderdaja</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
@@ -2427,15 +2401,6 @@
           Eraldage serveri nimed komadega. Metamärgid (*) on lubatud.
 
           Kui jätate selle reegli määramata, üritab <ph name="PRODUCT_NAME" /> tuvastada, kas server on intranetis, ja alles siis vastab IWA taotlustele. Kui server tuvastatakse Internetis, siis eirab <ph name="PRODUCT_NAME" /> sealt tulevaid IWA taotlusi.</translation>
-<translation id="8668394701842594241">Määrab pistikprogrammide loendi, mis on rakenduses <ph name="PRODUCT_NAME" /> lubatud, ja takistab kasutajatel selle seade muutmist.
-
-      Metamärke „*” ja „?” saab kasutada määramata märgijadade vastendamiseks. Metamärk „*” vastendab suvalise arvu märke ja metamärk „?” määrab valikulise üksiku tähemärgi, st see vastab ühele või mitte ühelegi tähemärgile. Paomärk on „\”, seetõttu saate märkide „*”, „?” ja „\” vastendamiseks lisada nende ette paomärgi „\”.
-
-      Määratud pistikprogramme kasutatakse alati rakenduses <ph name="PRODUCT_NAME" />, kui need on installitud. Pistikprogrammid on jaotises „about:plugins” lubatuks märgitud ja kasutajad ei saa neid keelata.
-
-      Pidage meeles, et need see reegel alistab reeglid DisabledPlugins ja DisabledPluginsExceptions.
-
-      Kui reeglit ei määrata, siis saab kasutaja keelata kõik süsteemi installitud pistikprogrammid.</translation>
 <translation id="8672321184841719703">Automaatse värskendamise sihtversioon</translation>
 <translation id="868068801094828689">Lubab rakenduse <ph name="PRODUCT_NAME" /> kasutamise ja kokkujooksmisega seotud andmete anonüümse edastamise Google’ile ning takistab kasutajaid seadet muutmast.
 
@@ -2535,13 +2500,6 @@
       Quirks Serveriga automaatselt ühendust, laadib konfiguratsioonifailid alla,
       kui need on saadaval, ja salvestab need seadmesse. Neid faile võib
       näiteks kasutada ühendatud monitoride pildikvaliteedi parandamiseks.</translation>
-<translation id="8905426178924715309">Selle reegli tugi on katkestatud, kasutage selle asemel reegleid ForceGoogleSafeSearch ja ForceYouTubeSafetyMode. Seda reeglit eiratakse, kui reegel ForceGoogleSafeSearch või ForceYouTubeSafetyMode on määratud.
-
-      Sunnib Google'i veebiotsingute tegemisel kasutama SafeSearchi ja takistab kasutajatel seade muutmist. See seade jõustab turvarežiimi ka YouTube'is.
-
-      Seade lubamisel on funktsioon SafeSearch Google'i otsingus ja YouTube'is alati aktiivne.
-
-      Kui keelate seade või ei määra väärtust, ei jõustata Google'i otsingus ja YouTube'is SafeSearchi kasutamist.</translation>
 <translation id="8906768759089290519">Luba külastajarežiim</translation>
 <translation id="8908294717014659003">Võimaldab määrata veebisaitidele juurdepääsu meediahõiveseadmetele. Juurdepääsu meediahõiveseadmetele saab lubada vaikimisi või lasta iga kord kasutajalt küsida, kui mõni veebisait neile juurdepääsu soovib.
 

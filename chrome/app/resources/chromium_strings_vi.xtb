@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Giấy phép nguồn mở Chromium OS</translation>
 <translation id="2241627712206172106">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chromium theo ý của họ.</translation>
 <translation id="225614027745146050">Chào mừng</translation>
+<translation id="2264142189334629813">Chromium OS không mở được trang này.</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2347108572062610441">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32 bit có thể không hoạt động đúng do không được hỗ trợ trên hệ thống Linux này nữa. Vui lòng nâng cấp lên Chromium 64 bit.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium không thể đọc và ghi vào thư mục dữ liệu:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium là trình duyệt mặc định của bạn. Xin chúc mừng!</translation>
 <translation id="328888136576916638">Khóa API của Google bị thiếu. Một số chức năng của Chromium sẽ bị tắt.</translation>
 <translation id="3289635842886789612">Chromium đã lỗi thời.</translation>
 <translation id="3296368748942286671">Tiếp tục chạy các ứng dụng dưới nền khi Chromium bị đóng</translation>

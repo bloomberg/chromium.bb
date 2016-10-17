@@ -207,15 +207,6 @@
       Ha ez a házirend nincs beállítva, illetve a beállítása „tls1.2”, akkor a <ph name="PRODUCT_NAME" /> a továbbiakban nem hajtja végre ezt a tartalékfolyamatot. Lényeges, hogy ez nem kapcsolja ki a TLS korábbi verzióinak támogatását, hanem csupán azt, hogy a <ph name="PRODUCT_NAME" /> keressen-e megoldást azoknál a hibásan működő szervereknél, amelyek nem tudják helyesen egyeztetni a verziókat.
 
       Ha fenn kell tartani a kompatibilitást a hibásan működő szerverrel, akkor a házirend a „tls1.1” értékre állítható. Ez átmeneti intézkedés, és a szervert mielőbb meg kell javítani.</translation>
-<translation id="1861037019115362154">Megadja a(z) <ph name="PRODUCT_NAME" /> számára tiltott bővítmények listáját, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
-
-      A „*” és a „?” helyettesítő karakterek használata megengedett tetszőleges karaktersorozatok helyettesítésére. A „*” tetszőleges számú karaktert helyettesít, míg a „?” egyetlen opcionális karaktert határoz meg, azaz nullát vagy egy karaktert. Az escape-karakter a „\”, így a tényleges „*”, „?” vagy „\” karakterek beírásához azok elé „\” karaktert kell tenni.
-
-      Ha engedélyezi ezt a beállítást, a megadott listán szereplő bővítményt a(z) <ph name="PRODUCT_NAME" /> sosem fogja használni. A bővítmények kikapcsolt állapotúnak vannak jelölve az „about:plugins” részben, és a felhasználók nem tudják bekapcsolni őket.
-
-      Ne feledje, hogy ezt a házirendet felülírhatják a DisabledPlugins és a DisabledPluginsExceptions értékei.
-
-      Ha a házirend beállítatlanul marad, a felhasználó a nem változtatható inkompatibilis, elavult vagy veszélyes bővítmények kivételével a rendszerre telepített valamennyi bővítményt használhatja.</translation>
 <translation id="1864269674877167562">Ha a házirend értéke üres karakterlánc, vagy ha nincs beállítva, a <ph name="PRODUCT_OS_NAME" /> nem jelenít meg automatikus kiegészítési lehetőséget a felhasználói bejelentkezési folyamat során.
       Ha a házirend beállítása egy domainnevet jelképező karakterlánc, a <ph name="PRODUCT_OS_NAME" /> megjeleníti az automatikus kiegészítési lehetőséget a felhasználó bejelentkezése során, így annak csak a felhasználónevét kell beírnia (a domainnév nélkül). A felhasználó felülírhatja a domainnév-kiegészítést.</translation>
 <translation id="1865417998205858223">Kulcsengedélyek</translation>
@@ -818,11 +809,6 @@
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
 <translation id="3711895659073496551">Felfüggesztés</translation>
-<translation id="3715448429089775791">Aktív állapotúra kényszeríti a YouTube Biztonságos módot, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
-
-      Ha engedélyezi ezt a beállítást, a YouTube-on mindig aktív lesz a Biztonságos mód.
-
-      Ha kikapcsolja a beállítást, illetve nem ad meg neki értéket, a rendszer nem kényszeríti a Biztonságos módot a YouTube-on.</translation>
 <translation id="3750220015372671395">Kulcslétrehozás letiltása a következő webhelyeken</translation>
 <translation id="3756011779061588474">Fejlesztői mód letiltása</translation>
 <translation id="3758089716224084329">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
@@ -1986,12 +1972,6 @@
 
       A felismert kapcsolattípus-azonosítók a következők: Ethernet, Wi-Fi, WiMax, Bluetooth és mobil.</translation>
 <translation id="7763614521440615342">Tartalomjavaslatok az Új lap oldalon</translation>
-<translation id="7766336524667238790">Információk (például alkalmazásazonosító és -verzió) jelentése
-      az aktív kioszkmunkamenetről.
-
-      Ha a házirend értéke hamis, a böngésző nem jelenti a munkamenet
-      információit. Ha igaz, illetve ha nincs beállítva, a böngésző jelenti
-      ezeket az információkat.</translation>
 <translation id="7774768074957326919">A rendszer proxybeállításainak használata</translation>
 <translation id="7775831859772431793">Itt határozhatja meg a proxyszerver URL-jét.
 
@@ -2213,6 +2193,10 @@
 <translation id="8369602308428138533">Képernyő kikapcsolásának késleltetése hálózati áramról való működés során</translation>
 <translation id="8382184662529825177">Távoli hitelesítés engedélyezése az eszközön lévő tartalmak védelme érdekében</translation>
 <translation id="838870586332499308">Adatbarangolás engedélyezése</translation>
+<translation id="8390049129576938611">Kikapcsolja a belső PDF-olvasót a(z) <ph name="PRODUCT_NAME" /> termékben. Ehelyett letöltésként kezeli, és engedélyezi a felhasználó számára PDF-fájlok megnyitását az alapértelmezett alkalmazással.
+
+      Ha a házirend nincs megadva vagy ki van kapcsolva, a rendszer a PDF beépülő modult használja a PDF-fájlok megnyitásához, kivéve, ha a felhasználó letiltja ezt.</translation>
+<translation id="8402079500086185021">A PDF-fájlok megnyitása mindig külsőleg történjen</translation>
 <translation id="8412312801707973447">Végbemenjenek-e online OCSP-/CRL-ellenőrzések</translation>
 <translation id="8413348101535146315">Lehetővé teszi a folyamatok befejezését a <ph name="PRODUCT_NAME" /> Folyamatkezelőjében.
 
@@ -2233,17 +2217,6 @@
           Példamintákat a következő helyen talál: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Böngészési előzmények mentésének tiltása</translation>
 <translation id="8499172469244085141">Alapértelmezett beállítások (a felhasználók felülbírálhatják)</translation>
-<translation id="8501011084242226370">Megadja azon plug-inek listáját, amelyeket a felhasználó engedélyezhet vagy letilthat a <ph name="PRODUCT_NAME" /> böngészőben.
-
-      A „*” és „?” helyettesítő karakterek használatával adhat meg egyezést tetszőleges karakterláncokra. A „*” tetszőleges számú karakternek felel meg, míg a „?” egyetlen karaktert határoz meg (azaz nulla vagy egy karakternek felel meg). A feloldó karakter a „\”, ezért tényleges „*”, „?” vagy „\” karakterek egyeztetéséhez beírhat eléjük egy „\” jelet.
-
-      Ha engedélyezi ezt a beállítást, akkor a listában megadott plug-inek használhatók a <ph name="PRODUCT_NAME" /> böngészőben. A felhasználók az „about:plugins” oldalon engedélyezhetik vagy tilthatják le ezeket, még akkor is, ha a plug-in egyezést mutat a DisabledPlugins egyik mintájával. A felhasználók ezenkívül engedélyezhetik vagy letilthatják azokat a plug-ineket is, amelyek nem egyeznek a DisabledPlugins, a DisabledPluginsExceptions és az EnabledPlugins listák egyik mintájával sem.
-
-      Ez a házirend a plug-inek szigorú tiltólistázására szolgál, amennyiben a „DisabledPlugins” listán szerepelnek helyettesítő karaktert tartalmazó bejegyzések, például az összes plug-in („*”) vagy az összes Java plug-in („*Java*”) letiltása, ám a rendszergazda engedélyezne konkrét verziókat (pl. „IcedTea Java 2.3”). Ezeket a konkrét verziókat lehet megadni ebben a házirendben.
-
-      Felhívjuk figyelmét, hogy mind a plug-in nevét, mind a plug-in csoportjának nevét fel kell venni a kivételek közé. Az egyes plug-in csoportok az about:plugins oldal külön szakaszaiban láthatók; minden szakaszban egy vagy több plug-in szerepelhet. A „Shockwave Flash” plug-in például az „Adobe Flash Player” csoportba tartozik, és mindkét névnek szerepelnie kell a kivétellistán, ha a plug-in kivételt képez a tiltott lista elemei között.
-
-      Ha a házirend nincs beállítva, akkor a „DisabledPlugins” mintáinak megfelelő összes plug-in le lesz tiltva, és a felhasználó nem engedélyezheti őket.</translation>
 <translation id="8519264904050090490">Felügyelt felhasználó manuális kivételi URL-jei</translation>
 <translation id="8544375438507658205">Alapértelmezett HTML-megjelenítő a <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
 <translation id="8549772397068118889">Figyelmeztetés tartalomcsomagokon kívüli webhelyek felkeresése esetén</translation>
@@ -2279,7 +2252,6 @@
           Több szervernév megadása esetén azokat vesszővel kell elválasztani. A helyettesítő karakterek (*) engedélyezettek.
 
           Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> megpróbálja érzékelni, hogy egy szerver az intraneten van-e, és csak akkor válaszol az IWA-kérésekre. Ha a szervert az interneten lévőnek észleli, a <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja annak IWA-kéréseit.</translation>
-<translation id="8668394701842594241">Megadja a(z) <ph name="PRODUCT_NAME" /> számára engedélyezett bővítmények listáját, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást. A "*" és a "?" karakterekkel bármilyen karaktersorozatokat helyettesíthet. A "*" tetszőleges számú karaktert helyettesít, míg a "?" nulla vagy egy karaktert. Az escape karakter a "\", ezért ha a tényleges "*", "?" vagy "\" karaktert szeretné beírni, elé kell tennie egy "\" karaktert. A(z) <ph name="PRODUCT_NAME" /> mindig használja a megadott bővítménylistát, ha telepítve van. A bővítmények bekapcsolt állapotúnak vannak jelölve az "about: plugins" részben, és a felhasználók nem tudják kikapcsolni őket. Ne feledje, hogy ez a házirend felülírja a DisabledPlugins és DisabledPluginsExceptions értékeket. Ha ez a házirend beállítatlanul marad, a felhasználó a rendszerre telepített valamennyi bővítményt le tudja tiltani.</translation>
 <translation id="8672321184841719703">Cél automatikus frissítési verziója</translation>
 <translation id="868068801094828689">Lehetővé teszi a használati és az összeomlással kapcsolatos adatok névtelen jelentését a <ph name="PRODUCT_NAME" /> termékről a Google-nak, és megakadályozza, hogy a felhasználók módosítsák a beállítást.
 
@@ -2374,13 +2346,6 @@
       a kapcsolatot a Quirks Serverrel, és letölti a konfigurációs fájlokat
       (ha rendelkezésre állnak), majd az eszközön tárolja őket. Az ilyen fájlok
       használhatók például arra, hogy javítsák a csatlakozó monitorok képminőségét.</translation>
-<translation id="8905426178924715309">Ez a házirend elavult, kérjük, használja helyette a ForceGoogleSafeSearch és a ForceYouTubeSafetyMode házirendet. Ha a ForceGoogleSafeSearch vagy a ForceYouTubeSafetyMode be van állítva, akkor ezt a házirendet figyelmen kívül hagyja a böngésző.
-
-      Hatására a Google Internetes Kereső bekapcsolt Biztonságos Keresés mellett végez lekérdezéseket, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást. Ezenkívül a YouTube-on is aktiválja a Biztonságos módot.
-
-      Ha engedélyezi a beállítást, akkor a Google Keresésben és a YouTube-on a Biztonságos Keresés mindig aktív.
-
-      Ha letiltja ezt a beállítást, vagy ha nem állít be hozzá értéket, akkor a Biztonságos Keresést sem a Google Keresésben, sem a YouTube-on nem kényszeríti ki a böngésző.</translation>
 <translation id="8906768759089290519">Vendég mód bekapcsolása</translation>
 <translation id="8908294717014659003">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a felvevőeszközökhöz. A felvevőeszközökhöz való hozzáférés engedélyezhető alapértelmezés szerint, vagy a rendszer rákérdezhet minden alkalommal, amikor egy webhely megpróbál hozzájuk férni.
 

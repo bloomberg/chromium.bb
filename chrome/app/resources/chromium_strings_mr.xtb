@@ -38,6 +38,7 @@
 <translation id="2158734852934720349">Chromium OS खुला स्त्रोत परवाने</translation>
 <translation id="2241627712206172106">आपण संगणक सामायिक केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
 <translation id="225614027745146050">सुस्वागतम</translation>
+<translation id="2264142189334629813">Chromium OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="2316129865977710310">नाही, धन्यवाद</translation>
 <translation id="2347108572062610441">आपण Chromium प्रारंभ करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
 <translation id="2372704305038231957">32-बिट Chromium यापुढे या Linux सिस्टीमवर समर्थित नसल्याने कदाचित तो योग्यरितीने कार्य करू शकत नाही. कृपया 64-बिट Chromium वर श्रेणीसुधारित करा.</translation>
@@ -76,6 +77,7 @@
 <translation id="3258596308407688501">Chromium त्याची डेटा निर्देशिका वाचू किंवा लिहू शकत नाही:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium आपला डीफॉल्ट ब्राउझर आहे. आनंद घ्या.</translation>
 <translation id="328888136576916638">Google API की गहाळ आहेत. Chromium ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="3289635842886789612">Chromium कालबाह्य झाले आहे.</translation>
 <translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी अनुप्रयोग चालवणे सुरू ठेवा</translation>

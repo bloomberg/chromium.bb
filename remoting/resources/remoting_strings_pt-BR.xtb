@@ -33,7 +33,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="177096447311351977">IP do canal do cliente: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' ip_host='<ph name="HOST_IP_ADDRESS_AND_PORT" />' canal='<ph name="CHANNEL_TYPE" />' conexão='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Fechar janela</translation>
 <translation id="1841799852846221389">Desativando conexões remotas para este computador...</translation>
-<translation id="189172778771606813">Fechar gaveta de navegação</translation>
 <translation id="1897488610212723051">Excluir</translation>
 <translation id="195619862187186579">Layouts de teclado</translation>
 <translation id="1996161829609978754">O Google Chrome está fazendo download do instalador do host do Chromoting. Quando o download estiver concluído, execute o instalador antes de continuar.</translation>
@@ -114,6 +113,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirme sua conta e seu PIN abaixo para permitir acesso pela Área de trabalho remota do Google Chrome.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Domínio de proprietário de host inválido.</translation>
 <translation id="3908017899227008678">Reduzir para ajustar</translation>
 <translation id="3931191050278863510">O host parou.</translation>
@@ -166,7 +166,6 @@ remota do Google Chrome</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
 <translation id="507204348399810022">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
-<translation id="5168917394043976756">Abrir gaveta de navegação</translation>
 <translation id="5170982930780719864">ID de host inválido.</translation>
 <translation id="518094545883702183">Essa informação é usada apenas para diagnosticar o problema que você está relatando, está disponível apenas para as pessoas que estão investigando seu relatório e só fica retida por até 30 dias.</translation>
 <translation id="5222676887888702881">Sair</translation>

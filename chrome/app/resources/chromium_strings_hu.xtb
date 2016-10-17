@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
 <translation id="2241627712206172106">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chromiumot.</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
+<translation id="2264142189334629813">A Chromium OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="2347108572062610441">Ez a bővítmény módosította, hogy melyik oldal jelenjen meg a Chromium indításakor.</translation>
 <translation id="2372704305038231957">Előfordulhat, hogy a 32 bites Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja ezt a Linux rendszert. Kérjük, frissítsen a Chromium 64 bites változatára.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">A Chromium nem tudja olvasni és írni az adatkönyvtárát:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">A Chromium az alapértelmezett böngésző. Hurrá!</translation>
 <translation id="328888136576916638">Hiányoznak Google API-kulcsok. A Chromium egyes funkciói kikapcsolnak.</translation>
 <translation id="3289635842886789612">A Chromium elavult.</translation>
 <translation id="3296368748942286671">A háttéralkalmazások továbbfuttatása, ha a Chromiumot bezárják</translation>

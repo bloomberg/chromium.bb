@@ -286,6 +286,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4376501731284077108">Uncontrolled</translation>
 <translation id="4378154925671717803">Phone</translation>
+<translation id="4384468725000734951">Using Sogou for search</translation>
 <translation id="4412992751769744546">Allow third-party cookies</translation>
 <translation id="4440256989292146959">Browse more for less</translation>
 <translation id="4452548195519783679">Bookmarked to <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
 <translation id="5939518447894949180">Reset</translation>
+<translation id="5942872142862698679">Using Google for search</translation>
+<translation id="6000066717592683814">Keep Google</translation>
 <translation id="6010869025736512584">Accessing video input</translation>
 <translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
 <translation id="6031101910111098835">Collapsed – Click to expand</translation>
@@ -441,6 +444,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6177390657002841081">Turn on Data Saver</translation>
+<translation id="617991007797131187">Chrome can use Sogou for search in China. You can change this in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
@@ -472,6 +476,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="654446541061731451">Select a tab to beam</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6550675742724504774">Options</translation>
+<translation id="6560414384669816528">Search with Sogou</translation>
 <translation id="656628257199996201">Always translate <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edit credit card</translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>

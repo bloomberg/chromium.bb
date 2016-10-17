@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Chromium OS atklātā pirmkoda licences</translation>
 <translation id="2241627712206172106">Ja jūsu datoru izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chromium atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos kontos.</translation>
 <translation id="225614027745146050">Laipni lūdzam!</translation>
+<translation id="2264142189334629813">Problēma ar lapas atvēršanu pārlūkā Chromium OS</translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
 <translation id="2347108572062610441">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chromium.</translation>
 <translation id="2372704305038231957">Iespējams, Chromium 32 bitu versija nedarbosies pareizi, jo tā vairs netiek atbalstīta šajā Linux sistēmā. Lūdzu, jauniniet uz Chromium 64 bitu versiju.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium nevar nolasīt savu datu direktoriju un ierakstīt tajā:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium ir jūsu noklusējuma pārlūks.</translation>
 <translation id="328888136576916638">Trūkst Google API atslēgu. Tiks atspējotas dažas Chromium funkcijas.</translation>
 <translation id="3289635842886789612">Chromium versija ir novecojusi.</translation>
 <translation id="3296368748942286671">Turpināt lietotņu izpildi fonā, kad Chromium ir aizvērts</translation>

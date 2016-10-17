@@ -213,15 +213,6 @@
      Nếu chính sách này không được định cấu hình hoặc được đặt thành "tls1.2" thì <ph name="PRODUCT_NAME" /> không còn thực hiện bản dự phòng này nữa. Xin lưu ý rằng điều này không tắt hỗ trợ dành cho các phiên bản TLS cũ hơn, chỉ khi <ph name="PRODUCT_NAME" /> giải quyết các máy chủ bị lỗi mà không thể dàn xếp phiên bản đúng cách.
 
        Ngoài ra, nếu phải duy trì khả năng tương thích với máy chủ bị lỗi thì chính sách này có thể được đặt thành "tls1.1". Đây là một giải pháp tạm thời và máy chủ cần được khắc phục nhanh chóng.</translation>
-<translation id="1861037019115362154">Chỉ định danh sách các plugin bị tắt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-      Các ký tự đại diện '*' và '?' có thể được sử dụng để khớp với chuỗi các ký tự ngẫu nhiên. '*' khớp với một số ngẫu nhiên các ký tự còn '?' chỉ định ký tự đơn tùy chọn, tức là khớp với ký tự 0 hoặc 1. Ký tự thoát là '\', vì vậy để khớp với các ký tự '*', '?' hoặc '\' thực, bạn có thể đặt '\' trước các ký tự này.
-
-      Nếu bạn bật cài đặt này, danh sách plugin đã chỉ định sẽ không bao giờ được sử dụng trong <ph name="PRODUCT_NAME" />. Các plugin này được đánh dấu là bị tắt trong 'about:plugins' và người dùng không thể bật chúng.
-
-      Xin lưu ý rằng chính sách này có thể bị EnabledPlugins và DisabledPluginsExceptions ghi đè.
-
-      Nếu không đặt chính sách này, người dùng có thể sử dụng bất kỳ plugin nào được cài đặt trên hệ thống ngoại trừ các plugin không tương thích, lỗi thời hoặc nguy hiểm đã được mã hóa cứng.</translation>
 <translation id="1864269674877167562">Nếu chính sách này được đặt thành chuỗi trống hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị tùy chọn tự động hoàn thành trong luồng đăng nhập của người dùng.
       Nếu chính sách này được đặt thành chuỗi đại diện cho tên miền, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị tùy chọn tự động hoàn thành trong lần đăng nhập của người dùng nhằm cho phép người dùng chỉ nhập tên người dùng của mình mà không có phần mở rộng tên miền. Người dùng có thể ghi đè phần mở rộng tên miền này.</translation>
 <translation id="1865417998205858223">Quyền khóa</translation>
@@ -857,11 +848,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3660562134618097814">Chuyển cookie SAML IdP trong khi đăng nhập</translation>
 <translation id="3709266154059827597">Định cấu hình danh sách đen cài đặt tiện ích</translation>
 <translation id="3711895659073496551">Tạm ngừng</translation>
-<translation id="3715448429089775791">Bắt buộc bật Chế độ an toàn trên YouTube và ngăn người dùng thay đổi cài đặt này.
-
-      Nếu bạn bật cài đặt này, Chế độ an toàn trên YouTube sẽ luôn bật.
-
-      Nếu bạn tắt cài đặt này hoặc không đặt giá trị, Chế độ an toàn trên YouTube sẽ không được thực thi.</translation>
 <translation id="3750220015372671395">Chặn tạo khóa trên các trang web này</translation>
 <translation id="3756011779061588474">Chặn chế độ của nhà phát triển</translation>
 <translation id="3758089716224084329">Cho phép bạn chỉ định máy chủ proxy mà <ph name="PRODUCT_NAME" /> sử dụng và không cho người dùng thay đổi cài đặt proxy.
@@ -2105,12 +2091,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Các mã định danh loại kết nối được nhận dạng là "ethernet", "wifi", "wimax", "bluetooth" và "cellular".</translation>
 <translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
-<translation id="7766336524667238790">Báo cáo thông tin về phiên kiosk hiện hoạt, chẳng hạn như
-      ID và phiên bản ứng dụng.
-
-      Nếu chính sách này được đặt thành false, thông tin về phiên sẽ không
-      được báo cáo. Nếu chính sách này được đặt thành true hoặc không được
-      đặt, thông tin về phiên sẽ được báo cáo.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
 <translation id="7775831859772431793">Bạn có thể chỉ định URL của máy chủ proxy ở đây.
 
@@ -2347,6 +2327,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8369602308428138533">Độ trễ tắt màn hình khi chạy trên nguồn AC</translation>
 <translation id="8382184662529825177">Cho phép sử dụng chứng thực từ xa để bảo vệ nội dung cho thiết bị</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
+<translation id="8390049129576938611">Tắt trình xem PDF nội bộ trong <ph name="PRODUCT_NAME" />. Thay vào đó, thiết bị sẽ coi các tệp PDF là nội dung tải xuống và cho phép người dùng mở các tệp PDF này bằng ứng dụng mặc định.
+
+      Nếu chính sách này không được đặt hoặc đã bị tắt, plugin PDF sẽ được sử dụng để mở các tệp PDF trừ khi người dùng tắt plugin này.</translation>
+<translation id="8402079500086185021">Luôn mở các tệp PDF từ bên ngoài</translation>
 <translation id="8412312801707973447">Liệu các kiểm tra OCSP/CRL trực tuyến có được thực hiện hay không</translation>
 <translation id="8413348101535146315">Bật kết thúc quá trình trong Trình quản lý tác vụ của <ph name="PRODUCT_NAME" />.
 
@@ -2367,17 +2351,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
 <translation id="8499172469244085141">Cài đặt mặc định (người dùng có thể ghi đè)</translation>
-<translation id="8501011084242226370">Chỉ định danh sách plugin mà người dùng có thể bật hoặc tắt trong <ph name="PRODUCT_NAME" />.
-
-      Ký tự đại diện '*' và '?' có thể được sử dụng để khớp chuỗi ký tự bất kỳ. '*' khớp với số ký tự bất kỳ trong khi '?' chỉ định ký tự đơn tùy chọn tức là khớp các ký tự 0 hoặc 1. Ký tự thoát là '\', do vậy để khớp với ký tự '*', '?' hoặc '\' thực sự, bạn có thể đặt '\' ở trước các ký tự đó.
-
-      Nếu bạn bật cài đặt này, danh sách plugin được chỉ định có thể được sử dụng trong <ph name="PRODUCT_NAME" />. Người dùng có thể bật hoặc tắt plugin trong 'about:plugins', ngay cả khi plugin cũng khớp một mẫu trong DisabledPlugins. Người dùng cũng có thể bật và tắt plugin không khớp với bất kỳ mẫu nào trong DisabledPlugins, DisabledPluginsExceptions và EnabledPlugins.
-
-      Chính sách này nghĩa là cho phép danh sách cấm plugin nghiêm ngặt nếu danh sách 'DisabledPlugins' chứa mục nhập có ký tự đại diện như tắt tất cả plugin '*' hoặc tắt tất cả plugin Java '*Java*' nhưng quản trị viên muốn bật phiên bản cụ thể nào đó như 'IcedTea Java 2.3'. Các phiên bản cụ thể này có thể được chỉ định trong chính sách này.
-
-      Lưu ý rằng cả tên plugin và tên nhóm của plugin đều phải được miễn. Mỗi nhóm plugin được hiển thị trong phần riêng trong about:plugins; mỗi phần có thể có một hoặc nhiều plugin. Ví dụ: plugin "Shockwave Flash" thuộc về nhóm "Adobe Flash Player" và cả hai tên phải có tên trùng khớp trong danh sách ngoại lệ nếu plugin đó được miễn khỏi danh sách cấm.
-
-      Nếu chính sách này không được đặt, bất kỳ plugin nào khớp với mẫu trong 'DisabledPlugins' sẽ bị khóa ở trạng thái tắt và người dùng sẽ không thể bật chúng.</translation>
 <translation id="8519264904050090490">URL ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
@@ -2413,15 +2386,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phân tách tên của nhiều máy chủ bằng dấu phẩy. Cho phép ký tự đại diện (*).
 
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
-<translation id="8668394701842594241">Chỉ định danh sách các plugin được bật trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-      Các ký tự đại diện '*' và '?' có thể được sử dụng để khớp với chuỗi các ký tự ngẫu nhiên. '*' khớp với một số ngẫu nhiên các ký tự còn '?' chỉ định ký tự đơn tùy chọn, tức là khớp với 0 hoặc 1 ký tự. Ký tự thoát là '\', vì vậy để khớp với các ký tự '*', '?' hoặc '\' thực, bạn có thể đặt '\' trước các ký tự này.
-
-      Danh sách plugin được chỉ định luôn được sử dụng trong <ph name="PRODUCT_NAME" /> nếu chúng được cài đặt. Các plugin này được đánh dấu là được bật trong  'about:plugins' và người dùng không thể tắt các plugin này. 
-
-      Xin lưu ý rằng chính sách này ghi đè cả DisabledPlugins và DisabledPluginsExceptions.
-
-      Nếu không thiết lập chính sách này, người dùng có thể tắt bất kỳ plugin nào được cài đặt trên hệ thống.</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="868068801094828689">Cho phép báo cáo ẩn danh về việc sử dụng và dữ liệu liên quan đến sự cố với <ph name="PRODUCT_NAME" /> tới Google và ngăn người dùng thay đổi cài đặt này.
 
@@ -2520,13 +2484,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       tự động liên hệ với Máy chủ Quirks và tải xuống các tệp cấu hình,
       nếu có, rồi lưu trữ các tệp này trên thiết bị. Các tệp này có thể
       được sử dụng để cải thiện chất lượng hiển thị của màn hình gắn vào chẳng hạn.</translation>
-<translation id="8905426178924715309">Chính sách này không được dùng nữa, vui lòng sử dụng ForceGoogleSafeSearch và ForceYouTubeSafetyMode. Chính sách này sẽ bị bỏ qua nếu bạn đặt chính sách ForceGoogleSafeSearch hoặc ForceYouTubeSafetyMode.
-
-      Buộc hoàn tất các truy vấn trong Google Web Search bằng cách đặt Tìm kiếm an toàn thành hiện hoạt và ngăn người dùng thay đổi cài đặt này. Cài đặt này cũng bắt buộc bật Chế độ an toàn trên YouTube.
-
-      Nếu bạn bật cài đặt này, Tìm kiếm an toàn trong Google Tìm kiếm và YouTube luôn hoạt động.
-
-      Nếu bạn tắt cài đặt này hoặc không đặt một giá trị, Tìm kiếm an toàn trong Google Tìm kiếm và YouTube sẽ không hoạt động.</translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>
 <translation id="8908294717014659003">Cho phép bạn đặt liệu trang web có được phép truy cập vào thiết bị thu dữ liệu truyền thông hay không. Quyền truy cập vào thiết bị thu dữ liệu truyền thông có thể được phép theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn có quyền truy cập vào thiết bị thu dữ liệu truyền thông.
 

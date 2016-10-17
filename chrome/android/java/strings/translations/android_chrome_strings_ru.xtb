@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">Закрыть</translation>
 <translation id="4376501731284077108">Не контролируется</translation>
 <translation id="4378154925671717803">Телефон</translation>
+<translation id="4384468725000734951">Sogou используется как поисковая система по умолчанию</translation>
 <translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
 <translation id="4440256989292146959">Разумная экономия</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5919204609460789179">Обновите <ph name="PRODUCT_NAME" />, чтобы начать синхронизацию</translation>
 <translation id="5939518447894949180">Сбросить</translation>
+<translation id="5942872142862698679">Google используется как поисковая система по умолчанию</translation>
+<translation id="6000066717592683814">Использовать Google</translation>
 <translation id="6010869025736512584">Доступ к видеовходу</translation>
 <translation id="6012342843556706400">Предоставьте браузеру Chrome доступ к геоданным, чтобы продолжить работу на этом сайте.</translation>
 <translation id="6031101910111098835">Свернуто. Нажмите, чтобы развернуть.</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6177390657002841081">Включить режим экономии трафика</translation>
+<translation id="617991007797131187">В Китае Chrome может использовать поисковую систему Sogou. Включить или отключить ее можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Добавить исключение</translation>
 <translation id="6192792657125177640">Исключения</translation>
 <translation id="6232535412751077445">Если вы запретите отслеживание, в запросы браузера будет включена специальная команда. Сайты могут интерпретировать ее и отвечать на нее по-разному.
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
 <translation id="6545017243486555795">Удалить все данные</translation>
 <translation id="6550675742724504774">Параметры</translation>
+<translation id="6560414384669816528">Поиск в Sogou</translation>
 <translation id="656628257199996201">Всегда переводить <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Изменить данные карты</translation>
 <translation id="6573431926118603307">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>

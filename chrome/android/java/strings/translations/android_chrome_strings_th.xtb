@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
 <translation id="4376501731284077108">ไม่มีการควบคุม</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
+<translation id="4384468725000734951">กำลังใช้ Sogou ในการค้นหา</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
 <translation id="4440256989292146959">ท่องเว็บได้มากขึ้นแต่ใช้อินเทอร์เน็ตน้อยลง</translation>
 <translation id="4452548195519783679">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_NAME" /> แล้ว</translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
+<translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
+<translation id="6000066717592683814">ใช้ Google ต่อ</translation>
 <translation id="6010869025736512584">กำลังเข้าถึงอินพุตวิดีโอ</translation>
 <translation id="6012342843556706400">Chrome ต้องการเข้าถึงตำแหน่งเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="6031101910111098835">ยุบ - คลิกเพื่อขยาย</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
+<translation id="617991007797131187">Chrome สามารถใช้ Sogou สำหรับการค้นหาในประเทศจีน คุณสามารถเปลี่ยนการตั้งค่านี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
 <translation id="6232535412751077445">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="6545017243486555795">ล้างข้อมูลทั้งหมด</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
+<translation id="6560414384669816528">ค้นหาด้วย Sogou</translation>
 <translation id="656628257199996201">แปลภาษา<ph name="SOURCE_LANGUAGE" />เสมอ</translation>
 <translation id="6571070086367343653">แก้ไขบัตรเครดิต</translation>
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>

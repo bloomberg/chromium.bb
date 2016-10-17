@@ -203,15 +203,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não for configurada ou for definida como "tls1.2", o <ph name="PRODUCT_NAME" /> não realizará mais essa substituição. Isso não desativa a compatibilidade com versões de TLS mais antigas, apenas controla se o <ph name="PRODUCT_NAME" /> evitará servidores com bugs que não conseguem negociar versões corretamente.
 
       Caso contrário, se for necessário manter a compatibilidade com um servidor com bugs, esta política pode ser definida como "tls1.1". Esta é uma medida temporária, e o servidor deve ser corrigido rapidamente.</translation>
-<translation id="1861037019115362154">Especifica uma lista de plug-ins desativados no <ph name="PRODUCT_NAME" /> e impede os usuários de alterar essa definição.
-
-          Os caracteres curinga "*" e "?" podem ser usados para associar sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, enquanto "?" especifica um único caractere opcional; ou seja, corresponde a zero ou um caractere. O caractere de escape é "\"; portanto, para associar os caracteres "*", "?" ou "\" propriamente ditos, você pode adicionar "\" na frente deles.
-
-          Se você ativar esta configuração, a lista especificada de plug-ins nunca será usada no <ph name="PRODUCT_NAME" />. Os plug-ins serão marcados como desativados em "about:plugins", e os usuários não poderão ativá-los.
-
-          Esta política pode ser substituída por EnabledPlugins e DisabledPluginsExceptions.
-
-          Se esta política não for definida, o usuário poderá usar qualquer plug-in instalado no sistema, com exceção de plug-ins codificados incompatíveis, desatualizados ou perigosos.</translation>
 <translation id="1864269674877167562">Se esta política for definida como uma string em branco ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> não mostrará uma opção de preenchimento automático durante o fluxo de login.
       Se esta política for definida como uma string representando um nome de domínio, o <ph name="PRODUCT_OS_NAME" /> mostrará uma opção de preenchimento automático durante o login do usuário, permitindo que o mesmo digite apenas seu nome de usuário sem a extensão de nome de domínio. O usuário poderá substituir essa extensão de nome de domínio.</translation>
 <translation id="1865417998205858223">Principais permissões</translation>
@@ -808,11 +799,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3715448429089775791">Força o modo de segurança do YouTube a ser ativado e impede que os usuários mudem esta configuração.
-
-      Se esta configuração é ativada, o modo de segurança do YouTube fica sempre ativo.
-
-      Se esta configuração é desativada ou se nenhum valor é definido, o modo de segurança do YouTube não é aplicado.</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nesses sites</translation>
 <translation id="3756011779061588474">Bloquear modo de desenvolvedor</translation>
 <translation id="3758089716224084329">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
@@ -1963,12 +1949,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Os identificadores de tipos de conexão reconhecidos são "ethernet", "wifi", "WiMAX", "bluetooth" e "celular".</translation>
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página "Nova guia"</translation>
-<translation id="7766336524667238790">Informar detalhes sobre a sessão de quiosque ativa, por exemplo,
-      versão e código do aplicativo.
-
-      Se a política é definida como "false", as informações da sessão não são
-      comunicadas. Se definida como "true" ou não configurada, as informações da sessão são 
-      comunicadas.</translation>
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
 <translation id="7775831859772431793">É possível especificar o URL do servidor proxy aqui.
 
@@ -2185,6 +2165,10 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8369602308428138533">Intervalo de desligamento da tela no funcionamento com alimentação CA</translation>
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
+<translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, ela o trata como um download e permite que o usuário abra os arquivos em PDF com o aplicativo padrão.
+
+      Se esta política for deixada sem definição ou for desativada, o plug-in de PDF será usado para abrir arquivos em PDF, a menos que o usuário o desative.</translation>
+<translation id="8402079500086185021">Sempre abrir arquivos em PDF externamente</translation>
 <translation id="8412312801707973447">Define se as verificações on-line de OCSP/CRL devem ser executadas</translation>
 <translation id="8413348101535146315">Permite o encerramento de processos no Gerenciador de tarefas do <ph name="PRODUCT_NAME" />.
 
@@ -2205,17 +2189,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Para ver exemplos de padrões, acesse http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
 <translation id="8493645415242333585">Desativar o salvamento do histórico do navegador</translation>
 <translation id="8499172469244085141">Configurações padrão (podem ser substituídas pelos usuários)</translation>
-<translation id="8501011084242226370">Especifica uma lista de plug-ins que o usuário pode ativar ou desativar no <ph name="PRODUCT_NAME" />.
-
-      Os caracteres curinga "*" e "?" podem ser usados para corresponder a sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, enquanto "?" especifica um caractere único opcional, isto é, corresponde a zero ou um caractere. O caractere de escape é "\". Dessa forma, para corresponder aos caracteres "*", "?" ou "\" em si, é possível colocar um "\" na frente deles.
-
-      Se você ativar essa configuração, a lista de plug-ins especificada poderá ser usada no <ph name="PRODUCT_NAME" />. Os usuários também podem ativá-los ou desativá-los em "about:plugins", mesmo que o plug-in também corresponda a um padrão em "DisabledPlugins". Além disso, é possível ativar e desativar plug-ins que não correspondam a nenhum padrão em "DisabledPlugins", "DisabledPluginsExceptions" e "EnabledPlugins".
-
-      Essa política permite a criação de uma lista negra de plug-ins estrita, em que a lista "DisabledPlugins" contém entradas com caracteres curinga, como "Desativar todos os plug-ins "*"" ou 'Desativar todos os plug-ins Java "*Java*"", mas o administrador deseja ativar alguma versão específica, como "IcedTea Java 2.3". Essas versões específicas podem ser indicadas nessa política.
-
-      Observe que tanto o nome do plug-in como o nome do grupo do plug-in devem ser isentados. Cada grupo de plug-ins é exibido em uma seção separada em "about:plugins". Cada seção pode ter um ou mais plug-ins. Por exemplo, o plug-in "Shockwave Flash" pertence ao grupo "Adobe Flash Player", e os dois nomes devem ter uma correspondência na lista de exceções, se esse plug-in tiver que ser isentado da lista negra.
-
-      Se essa política não for definida, qualquer plug-in que corresponder aos padrões em "DisabledPlugins" será bloqueado, e o usuário não poderá ativá-lo.</translation>
 <translation id="8519264904050090490">URLs de exceção manual do usuário gerenciado</translation>
 <translation id="8544375438507658205">Renderizador padrão de HTML para o <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
@@ -2251,7 +2224,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Separe vários nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos.
 
           Se esta política não é definida, o <ph name="PRODUCT_NAME" /> tenta detectar se um servidor está na Intranet e, só então, responde às solicitações IWA. Se um servidor é detectado como Internet, as solicitações IWA que partem dele são ignoradas pelo <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Especifica uma lista de plug-ins ativados em <ph name="PRODUCT_NAME" /> e impede que os usuários modifiquem esta configuração. Os caracteres curinga "*" e "?" podem ser utilizados para combinar seqüências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres enquanto "?" especifica um único caractere opcional, ou seja, corresponde a zero ou um caractere. O caractere de escape é "\", ou seja, para fazer uma busca que inclua os caracteres "*", "?", ou "\", você pode adicionar um "\" à frente. A lista de plug-ins especificados será sempre utilizada em <ph name="PRODUCT_NAME" />, caso eles tenham sido instalados. Os plug-ins são marcados como ativados em "about: plugins" e os usuários não podem desativá-los. Esta política se sobrepõe tanto a DisabledPlugins como a DisabledPluginsExceptions. Se esta política for deixada sem definição, o usuário pode desativar qualquer plug-in instalado no sistema.</translation>
 <translation id="8672321184841719703">Versão de atualização automática de destino</translation>
 <translation id="868068801094828689">Ativa a denúncia anônima de uso e dados relacionados a falhas sobre <ph name="PRODUCT_NAME" /> para o Google e impede que os usuários mudem esta configuração.
 
@@ -2343,13 +2315,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       em contato com o Servidor Quirks automaticamente e faz o download dos arquivos de configuração,
       se eles estão disponíveis, e os armazena no dispositivo. Esses arquivos podem ser usados,
       por exemplo, para melhorar a qualidade de exibição dos monitores acoplados.</translation>
-<translation id="8905426178924715309">O uso desta política está suspenso. Use ForceGoogleSafeSearch e ForceYouTubeSafetyMode em vez dela. Esta política é ignorada se a política ForceGoogleSafeSearch ou a ForceYouTubeSafetyMode estão configuradas.
-
-      Força as consultas no Google Web Search a serem feitas com o SafeSearch ativado e impede que os usuários alterem essa configuração, a qual também força o Modo de segurança do YouTube.
-
-      Se você ativa esta configuração, o SafeSearch fica sempre ativo na Pesquisa Google e no YouTube.
-
-      Se você desativa esta configuração ou não define nenhum valor, o SafeSearch não é aplicado na Pesquisa Google e no YouTube.</translation>
 <translation id="8906768759089290519">Ativa o modo de visitante</translation>
 <translation id="8908294717014659003">Permite definir se os sites podem ter acesso a dispositivos de captura de mídia. O acesso a dispositivos de captura de mídia pode ser permitido por padrão, ou uma pergunta será feita ao usuário cada vez que um site quiser ter acesso a dispositivos de captura de mídia.
 

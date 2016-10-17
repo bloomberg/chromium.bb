@@ -33,7 +33,6 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="177096447311351977">IP kanala za odjemalca: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zapre okno</translation>
 <translation id="1841799852846221389">Onemogočanje oddaljenih povezav za ta računalnik ...</translation>
-<translation id="189172778771606813">Zapri predal za krmarjenje</translation>
 <translation id="1897488610212723051">Izbriši</translation>
 <translation id="195619862187186579">Postavitve tipkovnice</translation>
 <translation id="1996161829609978754">Chrome prenaša namestitveni program za gostitelja Oddaljenega povezovanja s Chromom. Po končanem prenosu zaženite namestitveni program, preden nadaljujete.</translation>
@@ -114,6 +113,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 povezovanje s Chromom</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Če želite dovoliti dostop prek Oddaljenega namizja za Chrome, spodaj potrdite račun in PIN.</translation>
+<translation id="3897092660631435901">Meni</translation>
 <translation id="3905196214175737742">Neveljavna domena lastnika gostitelja.</translation>
 <translation id="3908017899227008678">Skrči na ustrezno velikost</translation>
 <translation id="3931191050278863510">Gostitelj se je ustavil.</translation>
@@ -166,7 +166,6 @@ namizje za Chrome</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="507204348399810022">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">V polji vnesite isto kodo PIN.</translation>
-<translation id="5168917394043976756">Odpri predal za krmarjenje</translation>
 <translation id="5170982930780719864">Neveljaven ID gostitelja.</translation>
 <translation id="518094545883702183">Te informacije uporabljamo samo za diagnosticiranje težave, ki ste jo prijavili, na voljo so samo osebi, ki preučuje vašo prijavo, in hranimo jih največ 30 dni.</translation>
 <translation id="5222676887888702881">Odjava</translation>

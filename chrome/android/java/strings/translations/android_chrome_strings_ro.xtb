@@ -286,6 +286,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4351244548802238354">Închide caseta de dialog</translation>
 <translation id="4376501731284077108">Necontrolat</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Pentru căutare se folosește Sogou</translation>
 <translation id="4412992751769744546">Permite cookie-urile terță parte</translation>
 <translation id="4440256989292146959">Navighează mai mult plătind mai puțin</translation>
 <translation id="4452548195519783679">Marcaj adăugat în <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5919204609460789179">Actualizează <ph name="PRODUCT_NAME" /> pentru a începe sincronizarea</translation>
 <translation id="5939518447894949180">Resetează</translation>
+<translation id="5942872142862698679">Pentru căutare se folosește Google</translation>
+<translation id="6000066717592683814">Păstrează Google</translation>
 <translation id="6010869025736512584">Se accesează intrarea video</translation>
 <translation id="6012342843556706400">Chrome are nevoie de acces la locație pentru a-l acorda acestui site.</translation>
 <translation id="6031101910111098835">Afișare restrânsă – dă clic pentru a extinde</translation>
@@ -441,6 +444,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6159335304067198720">Economie de date de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6177390657002841081">Activează Economizorul de date</translation>
+<translation id="617991007797131187">Chrome poate folosi Sogou pentru căutare în China. Poți modifica această opțiune din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
 <translation id="6192792657125177640">Excepții</translation>
 <translation id="6232535412751077445">Dacă activezi opțiunea „Nu urmări”, o solicitare va fi inclusă împreună cu traficul de navigare. Efectul variază în funcție de răspunsul site-ului la solicitare și în funcție de modul în care este interpretată solicitarea.
@@ -472,6 +476,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="654446541061731451">Selectează o filă pentru transmitere</translation>
 <translation id="6545017243486555795">Șterge toate datele</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
+<translation id="6560414384669816528">Caută cu Sogou</translation>
 <translation id="656628257199996201">Tradu întotdeauna din <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Editează cardul de credit</translation>
 <translation id="6573431926118603307">Filele deschise în Chrome pe alte dispozitive vor apărea aici.</translation>

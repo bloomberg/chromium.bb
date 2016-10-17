@@ -137,6 +137,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4771048833395599659">Es posible que este archivo sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="4794050651896644714">Guardar detalles en Chrome</translation>
 <translation id="4891791193823137474">Permitir que Google Chrome se ejecute en segundo plano</translation>
+<translation id="4901390485477164536">Google Chrome es tu navegador predeterminado.</translation>
 <translation id="4921569541910214635">Si compartes un ordenador, ahora puedes configurar Chrome como quieras.</translation>
 <translation id="4925019873400497719">Chrome ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados, pero no era válida.</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
@@ -263,6 +264,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un fallo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>
 <translation id="8342675569599923794">Este archivo es peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="8406086379114794905">Ayuda a mejorar Chrome</translation>
+<translation id="8410645163819739900">Google Chrome OS no puede abrir esta página.</translation>
 <translation id="8455999171311319804">Opcional: Envía datos de uso y diagnóstico automáticamente a Google para ayudarnos a mejorar Chrome OS.</translation>
 <translation id="853189717709780425">Estas iniciando sesión con una cuenta administrada, por lo que concedes a su administrador el control sobre tu perfil de Google Chrome. Tus datos de Chrome, como aplicaciones, marcadores, historial, contraseñas y otras opciones quedarán vinculados de forma permanente a <ph name="USER_NAME" />. Podrás eliminar estos datos mediante el panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

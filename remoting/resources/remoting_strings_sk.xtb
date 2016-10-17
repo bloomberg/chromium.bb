@@ -33,7 +33,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="177096447311351977">Adresa IP kanála pre klient: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Zavrieť okno</translation>
 <translation id="1841799852846221389">Prebieha zakazovanie vzdialených pripojení pre tento počítač...</translation>
-<translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
 <translation id="1897488610212723051">Odstrániť</translation>
 <translation id="195619862187186579">Rozloženia klávesnice</translation>
 <translation id="1996161829609978754">Chrome sťahuje inštalátor hostiteľa Vzdialenej plochy Chrome. Inštalátor po stiahnutí najprv spustite a pokračujte až potom.</translation>
@@ -114,6 +113,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 Hostiteľ</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="3884839335308961732">Ak chcete povoliť prístup k Vzdialenej ploche Chrome, potvrďte svoj účet a kód PIN nižšie.</translation>
+<translation id="3897092660631435901">Ponuka</translation>
 <translation id="3905196214175737742">Neplatná doména vlastníka hostiteľa</translation>
 <translation id="3908017899227008678">Zmenšiť a prispôsobiť</translation>
 <translation id="3931191050278863510">Hostenie bolo zastavené.</translation>
@@ -166,7 +166,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="5070121137485264635">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte vzdialenej ploche Chrome udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
 <translation id="507204348399810022">Naozaj chcete zakázať vzdialené pripojenia k zariadeniu <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Do obidvoch polí zadajte rovnaký kód PIN.</translation>
-<translation id="5168917394043976756">Otvoriť navigačný vysúvací panel</translation>
 <translation id="5170982930780719864">Neplatný identifikátor hostiteľa</translation>
 <translation id="518094545883702183">K týmto informáciám, ktoré sa používajú iba na diagnostiku vami nahláseného problému, má prístup výhradne osoba prešetrujúca vaše hlásenie. Tieto informácie budú uchovávané maximálne 30 dní.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>

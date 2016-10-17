@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Lisensi sumber terbuka Chromium OS</translation>
 <translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
+<translation id="2264142189334629813">Chromium OS tidak dapat membuka laman ini.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2347108572062610441">Ekstensi ini telah mengubah apa yang ditampilkan oleh laman saat Anda memulai Chromium.</translation>
 <translation id="2372704305038231957">Chromium 32-bit mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di sistem Linux ini. Tingkatkan versi ke Chromium 64-bit.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium tidak dapat membaca dan menulis ke direktori datanya:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium adalah browser default Anda. Hore!</translation>
 <translation id="328888136576916638">Kunci API Google tidak ada. Beberapa fungsi Chromium tidak akan berfungsi.</translation>
 <translation id="3289635842886789612">Chromium sudah usang.</translation>
 <translation id="3296368748942286671">Lanjutkan aplikasi yang berjalan di latar belakang jika Chromium ditutup</translation>

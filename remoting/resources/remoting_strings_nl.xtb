@@ -33,7 +33,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="177096447311351977">Kanaal-IP voor client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Venster sluiten</translation>
 <translation id="1841799852846221389">Externe verbindingen voor deze computer uitschakelen…</translation>
-<translation id="189172778771606813">Zijmenu sluiten</translation>
 <translation id="1897488610212723051">Verwijderen</translation>
 <translation id="195619862187186579">Toetsenbordindeling</translation>
 <translation id="1996161829609978754">Chrome downloadt het installatieprogramma voor de Chromoting-host. Zodra het downloaden is voltooid, voer je het installatieprogramma uit voordat je doorgaat.</translation>
@@ -114,6 +113,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bevestig je account en pincode hieronder om toegang door Chrome Remote Desktop toe te staan.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Ongeldig domein voor hosteigenaar.</translation>
 <translation id="3908017899227008678">Aanpassen aan venster</translation>
 <translation id="3931191050278863510">Host is gestopt.</translation>
@@ -166,7 +166,6 @@ Desktop-host</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="507204348399810022">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitschakelen?</translation>
 <translation id="5156271271724754543">Geef dezelfde pincode in beide vakken op.</translation>
-<translation id="5168917394043976756">Zijmenu openen</translation>
 <translation id="5170982930780719864">Ongeldige host-ID.</translation>
 <translation id="518094545883702183">Deze informatie wordt alleen gebruikt voor een diagnose van het probleem dat je meldt, is alleen beschikbaar voor iemand die je melding onderzoekt en wordt maximaal 30 dagen bewaard.</translation>
 <translation id="5222676887888702881">Uitloggen</translation>

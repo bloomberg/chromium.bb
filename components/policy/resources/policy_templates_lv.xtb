@@ -211,15 +211,6 @@
       Ja šī politika nav konfigurēta vai ir iestatīta uz “tls1.2”, pārlūkā <ph name="PRODUCT_NAME" /> vairs netiek veikts šis atkāpšanās process. Ņemiet vērā, ka šādi netiek atspējots vecāku TLS versiju atbalsts, bet tikai tas, vai <ph name="PRODUCT_NAME" /> apies kļūdainos serverus, kuri nevar pareizi saskaņot versijas.
 
       Pretējā gadījumā, ja ir jāuztur saderība ar kļūdainu serveri, šo politiku var iestatīt uz “tls1.1”. Tas ir pagaidu risinājums, un serveris ir steidzami jālabo.</translation>
-<translation id="1861037019115362154">Norāda atspējoto spraudņu sarakstu pārlūkā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem mainīt šo iestatījumu.
-
-      Var lietot aizstājējzīmes “*” un “?”, lai aizstātu dažādas rakstzīmes. Rakstzīme “*” atbilst vairāku rakstzīmju virknei, bet rakstzīme “?” var norādīt vienu noteiktu rakstzīmi, t.i., var atbilst vienai rakstzīmei vai neatbilst nevienai. Atsoļa rakstzīme ir “\”, tādējādi, lai veidotu atbilstību faktiskajām rakstzīmēm “*”, “?” un “\”, pirms tām jāievieto rakstzīme “\”.
-
-      Ja šis iestatījums ir iespējots, pārlūkā <ph name="PRODUCT_NAME" /> nekad netiek lietoti sarakstā iekļautie spraudņi. Lapā “about:plugins” norādītie spraudņi tiek atzīmēti kā atspējoti, un lietotāji nevar tos iespējot.
-
-      Ņemiet vērā, ka šo politiku var ignorēt, iestatot politikas EnabledPlugins un DisabledPluginsExceptions.
-
-      Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru datorā instalēto spraudni, izņemot nesaderīgus, novecojušus vai bīstamus spraudņus.</translation>
 <translation id="1864269674877167562">Ja kā šīs politikas vērtība tiek iestatīta tukša virkne vai ja politika nav konfigurēta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā netiks rādīta automātiskās pabeigšanas opcija.
       Ja kā šīs politikas vērtība tiek iestatīta virkne ar domēna nosaukumu, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> lietotāja pierakstīšanās plūsmā tiks parādīta automātiskās pabeigšanas opcija, ļaujot lietotājam ievadīt tikai lietotājvārdu bez domēna nosaukuma paplašinājuma. Lietotājs varēs pārrakstīt šo domēna nosaukuma paplašinājumu.</translation>
 <translation id="1865417998205858223">Atslēgu atļaujas</translation>
@@ -865,11 +856,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="3660562134618097814">SAML identitātes nodrošinātāja sīkfailu pārsūtīšana pieteikšanās laikā</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
 <translation id="3711895659073496551">Darbības apturēšana</translation>
-<translation id="3715448429089775791">Šī politika tiek izmantota, lai piespiedu kārtā iestatītu YouTube drošības režīmu kā aktīvu un neļautu lietotājiem mainīt šo iestatījumu.
-
-      Ja iespējojat šo iestatījumu, drošības režīms pakalpojumā YouTube vienmēr ir aktīvs.
-
-      Ja atspējojat šo iestatījumu vai neiestatāt vērtību, drošības režīms pakalpojumā YouTube netiek izmantots piespiedu kārtā.</translation>
 <translation id="3750220015372671395">Bloķēt atslēgu ģenerēšanu šajās vietnēs</translation>
 <translation id="3756011779061588474">Bloķēt izstrādātāja režīmu</translation>
 <translation id="3758089716224084329">Ļauj norādīt <ph name="PRODUCT_NAME" /> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
@@ -2125,12 +2111,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 
       Atpazītie savienojumu veidu identifikatori ir “ethernet”, “wifi”, “wimax”, “bluetooth” un “cellular”.</translation>
 <translation id="7763614521440615342">Rādīt satura ieteikumus lapā “Jauna cilne”</translation>
-<translation id="7766336524667238790">Tiek sniegta informācija par aktīvo kioska režīma sesiju,
-      piemēram, lietojumprogrammas ID un versiju.
-
-      Ja šai politikai ir iestatīta vērtība Nepatiesa, netiek sniegta
-      informācija par sesiju. Ja ir iestatīta vērtība Patiesa
-      vai nav iestatīta nekāda vērtība, informācija tiek sniegta.</translation>
 <translation id="7774768074957326919">Izmantot sistēmas starpniekservera iestatījumus</translation>
 <translation id="7775831859772431793">Šeit varat norādīt starpniekservera URL.
 
@@ -2369,6 +2349,10 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
 <translation id="8369602308428138533">Aizkave līdz ekrāna izslēgšanai, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="8382184662529825177">Iespējot attālās apstiprināšanas lietošanu ierīces satura aizsardzībai</translation>
 <translation id="838870586332499308">Iespējot datu viesabonēšanu</translation>
+<translation id="8390049129576938611">Atspējo <ph name="PRODUCT_NAME" /> iekšējo PDF skatītāju. Tā vietā PDF faili tiek apstrādāti kā lejupielādes, un lietotājs tos var atvērt noklusējuma lietojumprogrammā.
+
+      Ja šī politika nav iestatīta vai ir atspējota, PDF failu atvēršanai tiek lietots PDF spraudnis, ja vien lietotājs to neatspējo.</translation>
+<translation id="8402079500086185021">Vienmēr atvērt PDF failus ārēji</translation>
 <translation id="8412312801707973447">Vai tiek veiktas OCSP/CRL pārbaudes tiešsaistē</translation>
 <translation id="8413348101535146315">Iespējo procesu beigšanu <ph name="PRODUCT_NAME" /> uzdevumu pārvaldniekā.
 
@@ -2389,17 +2373,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
           Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Atspējo pārlūkošanas vēstures saglabāšanu</translation>
 <translation id="8499172469244085141">Noklusējuma iestatījumi (lietotāji var ignorēt)</translation>
-<translation id="8501011084242226370">Tiek norādīts saraksts ar spraudņiem, kurus lietotājs var iespējot vai atspējot pārlūkā <ph name="PRODUCT_NAME" />.
-
-      Aizstājējzīmes “*” un “?” var tikt izmantotas, lai meklētu atbilstības brīvi noteiktām rakstzīmēm. Aizstājējzīme “*” atbilst brīvi noteiktam rakstzīmju skaitam, turpretī “?” norāda vienu izvēles rakstzīmi, t.i., atbilst vienai rakstzīmei vai neatbilst nevienai. “\” ir atsoļa rakstzīme. Lai tiktu atrasta atbilstība rakstzīmēm “*”, “?” vai “\”, varat pirms tām ievietot rakstzīmi “\”.
-
-      Iespējojot šo iestatījumu, norādītos spraudņus var izmantot pārlūkā <ph name="PRODUCT_NAME" />. Lietotāji var iespējot vai atspējojot šos spraudņus, dodoties uz about:plugins, pat ja spraudnis atbilst arī saraksta DisabledPlugins rakstiem. Turklāt lietotāji var iespējot un atspējot spraudņus, kas neatbilst nevienam sarakstu DisabledPlugins, DisabledPluginsExceptions un EnabledPlugins rakstam.
-
-      Šī politika tiek izmantota, lai atļautu spraudņu melnos sarakstus gadījumos, kad sarakstā DisabledPlugins ir ieraksti ar aizstājējzīmēm, piemēram, “*” (atspējot visus spraudņus) vai “*Java*” (atspējot visus Java spraudņus), taču administrators vēlas iespējot konkrētu spraudņa versiju, piemēram, “IcedTea Java 2.3”. Šīs konkrētās versijas var norādīt šajā politikā.
-
-      Ņemiet vērā, ka ir jāizslēdz gan spraudņa nosaukums, gan spraudņa grupas nosaukums. Katra spraudņu grupa tiek attēlota atsevišķā about:plugins sadaļā. Katrā sadaļā var būt viens vai vairāki spraudņi. Piemēram, spraudnis Shockwave Flash ir ietverts grupā Adobe Flash Player, tāpēc, lai šis spraudnis tiktu izslēgts no melnā saraksta, abiem nosaukumiem ir jāatbilst ierakstiem izņēmumu sarakstā.
-
-      Ja šī politika netiek iestatīta, jebkurš spraudnis, kas atbildīs saraksta DisabledPlugins rakstiem, tiks atspējots un lietotājs nevarēs to iespējot.</translation>
 <translation id="8519264904050090490">Pārvaldīto lietotāju manuālo izņēmumu vietrāži URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> noklusējuma HTML renderētājs</translation>
 <translation id="8549772397068118889">Brīdināt, kad tiek apmeklētas satura pakotnēs neiekļautas vietnes.</translation>
@@ -2435,15 +2408,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
           Serveru nosaukumus atdaliet ar komatu. Ir atļautas aizstājējzīmes (*).
 
           Ja neiestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> mēģinās noteikt, vai serveris darbojas iekštīklā, un tikai pēc tam atbildēs IWA pieprasījumiem. Ja serveris ir atzīts par iekštīklu, <ph name="PRODUCT_NAME" /> ignorēs no tā nosūtītos IWA pieprasījumus.</translation>
-<translation id="8668394701842594241">Norāda produktā <ph name="PRODUCT_NAME" /> iespējoto spraudņu sarakstu un neļauj lietotājiem mainīt šo iestatījumu.
-
-      Var lietot aizstājējzīmes * un ?, lai veidotu atbilstību mainīgām rakstzīmēm. * atbilst mainīgu rakstzīmju virknei, bet ? norāda vienu noteiktu rakstzīmi, piemēram, atbilst nullei vai vienai rakstzīmei. Atsoļa rakstzīme ir \, tādējādi, lai veidotu atbilstību faktiskajām rakstzīmēm *, ? un \, to sākumā var ievadīt \.
-
-      Produktā <ph name="PRODUCT_NAME" /> vienmēr tiek lietoti sarakstā iekļautie spraudņi, ja tie ir instalēti. Politikā about:plugins norādītie spraudņi tiek atzīmēti kā iespējoti, un lietotāji tos nevar atspējot.
-
-      Ņemiet vērā, ka šī politika ignorē gan politiku DisabledPlugins, gan DisabledPluginsExceptions.
-
-      Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru datorā instalēto spraudni.</translation>
 <translation id="8672321184841719703">Automātiskā atjauninājuma vēlamā versija</translation>
 <translation id="868068801094828689">Iespējo anonīmu pārskatu sūtīšanu Google serveriem ar lietojuma un avāriju datiem pārlūkā <ph name="PRODUCT_NAME" />, kā arī neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -2552,13 +2516,6 @@ Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lieto
       automātiski sazināsies ar Quirks serveri, lejupielādēs konfigurācijas failus
       (ja pieejami) un saglabās tos ierīcē. Šādi faili, piemēram, var tikt izmantoti
       pievienoto monitoru attēlojuma kvalitātes uzlabošanai.</translation>
-<translation id="8905426178924715309">Šī politika ir novecojusi. Lūdzu, tās vietā izmantojiet politikas ForceGoogleSafeSearch un ForceYouTubeSafetyMode. Ja ir iestatīta politika ForceGoogleSafeSearch vai ForceYouTubeSafetyMode, šī politika tiek ignorēta.
-
-      Ja ir iestatīta šī politika, pakalpojumā “Google meklēšana tīmeklī” ievadītajiem vaicājumiem vienmēr tiek aktivizēts filtrs Droša meklēšana un lietotāji nevar mainīt šo iestatījumu, savukārt pakalpojumā YouTube tiek veikta drošā režīma piespiedu iespējošana.
-
-      Ja iespējosiet šo iestatījumu, pakalpojumos “Google meklēšana” un YouTube vienmēr būs aktīvs filtrs Droša meklēšana.
-
-      Ja atspējosiet šo iestatījumu vai neiestatīsiet nekādu vērtību, filtrs Droša meklēšana netiks izmantots piespiedu kārtā pakalpojumā “Google meklēšana” un YouTube.</translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
 <translation id="8908294717014659003">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi multivides tveršanas ierīcēm. Piekļuve multivides tveršanas ierīcēm var būt atļauta pēc noklusējuma, vai lietotājam var tikt parādīts atbilstošs jautājums katru reizi, kad vietne vēlas iegūt piekļuvi multivides tveršanas ierīcēm.
 

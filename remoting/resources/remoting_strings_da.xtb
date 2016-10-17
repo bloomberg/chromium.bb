@@ -33,7 +33,6 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="177096447311351977">Kanal-IP for klient: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Luk vindue</translation>
 <translation id="1841799852846221389">Deaktiverer fjernforbindelserne for denne computer…</translation>
-<translation id="189172778771606813">Luk sidemenuen</translation>
 <translation id="1897488610212723051">Slet</translation>
 <translation id="195619862187186579">Tastaturlayout</translation>
 <translation id="1996161829609978754">Chrome downloader installationsprogrammet Chromoting Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
@@ -114,6 +113,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekræft din konto og pinkode nedenfor for at tillade adgang via Chrome Fjernskrivebord.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Ejerdomænet for hosten er ugyldigt.</translation>
 <translation id="3908017899227008678">Tilpas til vinduet</translation>
 <translation id="3931191050278863510">Hosten er stoppet.</translation>
@@ -166,7 +166,6 @@ Fjernskrivebord</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="507204348399810022">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
-<translation id="5168917394043976756">Åbn sidemenuen</translation>
 <translation id="5170982930780719864">Ugyldigt host-id.</translation>
 <translation id="518094545883702183">Disse oplysninger bruges kun til diagnosticering af det problem, du rapporterer, de er kun tilgængelige for personer, der undersøger din rapport, og de tilbageholdes i højst 30 dage.</translation>
 <translation id="5222676887888702881">Log ud</translation>

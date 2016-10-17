@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Open-Source-Lizenzen für Chromium OS</translation>
 <translation id="2241627712206172106">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chromium jeweils nach ihren Wünschen einrichten.</translation>
 <translation id="225614027745146050">Willkommen</translation>
+<translation id="2264142189334629813">Chromium OS kann diese Seite nicht öffnen.</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2347108572062610441">Die beim Start von Chromium angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
 <translation id="2372704305038231957">Die 32-Bit-Version von Chromium funktioniert unter Umständen nicht ordnungsgemäß, da sie unter diesem Linux-System nicht mehr unterstützt wird. Aktualisieren Sie bitte auf die 64-Bit-Version von Chromium.</translation>
@@ -75,6 +76,7 @@
 <translation id="3258596308407688501">Chromium kann im folgenden Datenverzeichnis weder lesen noch schreiben:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium ist Ihr Standardbrowser. Super!</translation>
 <translation id="328888136576916638">Google API-Schlüssel fehlen. Einige Funktionen von Chromium sind deaktiviert.</translation>
 <translation id="3289635842886789612">Chromium ist veraltet.</translation>
 <translation id="3296368748942286671">Apps weiter im Hintergrund ausführen, wenn Chromium geschlossen wird</translation>

@@ -326,7 +326,7 @@
 <translation id="4394049700291259645">Onemogući</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> – <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">rezultati pretraživanja</translation>
-<translation id="4432688616882109544">Host <ph name="HOST_NAME" /> nije prihvatio vaš certifikat za prijavu ili certifikat nije pružen.</translation>
+<translation id="4432688616882109544">Host <ph name="HOST_NAME" /> nije prihvatio vaš certifikat za prijavu ili certifikat nije poslan.</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Ova ti se poruka prikazuje zato što je omogućen Google SafeSites.</translation>
@@ -392,6 +392,7 @@
 <translation id="5190835502935405962">Traka oznaka</translation>
 <translation id="5199729219167945352">Eksperimenti</translation>
 <translation id="5251803541071282808">Oblak</translation>
+<translation id="5277279256032773186">Upotrebljavate li Chrome na poslu? Tvrtke mogu upravljati Chromeovim postavkama za svoje zaposlenike. Saznajte više</translation>
 <translation id="5299298092464848405">Pogreška u pravilu analize</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5308689395849655368">Onemogućeno je izvješćivanje o padu.</translation>

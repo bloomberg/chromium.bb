@@ -393,6 +393,7 @@
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5199729219167945352">Експерименти</translation>
 <translation id="5251803541071282808">Хмара</translation>
+<translation id="5277279256032773186">Користуєтеся Chrome на роботі? Компанії можуть налаштовувати Chrome для своїх працівників. Докладніше</translation>
 <translation id="5299298092464848405">Помилка аналізу правила</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5308689395849655368">Повідомлення про аварійне завершення роботи вимкнено.</translation>
@@ -528,7 +529,7 @@
 <translation id="7000990526846637657">Немає записів в історії</translation>
 <translation id="7009986207543992532">Ви намагалися зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав сертифікат із задовгим терміном дії. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7012372675181957985">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду</translation>
+<translation id="7012372675181957985">Історія веб-перегляду також може зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="7029809446516969842">Паролі</translation>
 <translation id="7087282848513945231">Округ або графство</translation>
 <translation id="7088615885725309056">Давніше</translation>

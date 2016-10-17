@@ -37,6 +37,7 @@
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
 <translation id="2241627712206172106">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Chromium da maneira que desejarem.</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
+<translation id="2264142189334629813">O Chromium OS não pode abrir essa página.</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página que é exibida quando você inicia o Chromium.</translation>
 <translation id="2372704305038231957">É possível que o Chromium de 32 bits não funcione corretamente, porque ele não é mais compatível com esse sistema Linux. Faça upgrade para o Chromium de 64 bits.</translation>
@@ -73,6 +74,7 @@
 <translation id="3190315855212034486">O Chromium travou. Reiniciar agora?</translation>
 <translation id="3256316712990552818">Copiado no Chromium</translation>
 <translation id="3258596308407688501">O Chromium não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Parabéns! O Chromium é seu navegador padrão.</translation>
 <translation id="328888136576916638">As chaves da API do Google não foram encontradas. Algumas funcionalidades do Chromium serão desativadas.</translation>
 <translation id="3289635842886789612">O Chromium está desatualizado.</translation>
 <translation id="3296368748942286671">Continuar executando os aplicativos em segundo plano quando o Chromium for fechado</translation>

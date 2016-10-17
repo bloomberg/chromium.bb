@@ -33,7 +33,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="177096447311351977">Kliens csatorna-IP-je: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' connection='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Ablak bezárása</translation>
 <translation id="1841799852846221389">Távoli kapcsolatok letiltása ezen a számítógépen...</translation>
-<translation id="189172778771606813">Navigációs fiók bezárása</translation>
 <translation id="1897488610212723051">Törlés</translation>
 <translation id="195619862187186579">Billentyűzetkiosztások</translation>
 <translation id="1996161829609978754">A Chrome letölti a Chromoting gazdagépekhez való telepítőjét. Miután a letöltés befejeződött, futtassa a telepítőt a folytatás előtt.</translation>
@@ -114,6 +113,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 gazdagép</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Kérjük, erősítse meg a fiókot és a PIN kódot alább a Chrome távoliasztal-szolgáltatás hozzáférésének engedélyezéséhez.</translation>
+<translation id="3897092660631435901">Menü</translation>
 <translation id="3905196214175737742">A gazdagép tulajdonosi domainje érvénytelen.</translation>
 <translation id="3908017899227008678">Méretre igazítás</translation>
 <translation id="3931191050278863510">Gazdagép leállítva.</translation>
@@ -166,7 +166,6 @@ gazdagép</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
 <translation id="507204348399810022">Biztosan szeretné letiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel?</translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
-<translation id="5168917394043976756">Navigációs fiók megnyitása</translation>
 <translation id="5170982930780719864">Érvénytelen gazdagép-azonosító</translation>
 <translation id="518094545883702183">Ezt az információt csak az Ön által jelentett probléma diagnosztizálására használjuk. Az adatok csak a jelentés vizsgálója számára érhetők el, és a rendszerünk nem őrzi meg őket 30 napnál tovább.</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>

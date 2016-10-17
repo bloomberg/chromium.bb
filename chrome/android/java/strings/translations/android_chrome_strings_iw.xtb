@@ -286,6 +286,7 @@
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
 <translation id="4376501731284077108">לא מבוקר</translation>
 <translation id="4378154925671717803">טלפון</translation>
+<translation id="4384468725000734951">‏שימוש ב-Sogou לחיפוש</translation>
 <translation id="4412992751769744546">‏התר קובצי Cookie של צד שלישי</translation>
 <translation id="4440256989292146959">לגלוש יותר, לשלם פחות</translation>
 <translation id="4452548195519783679">התווסף לסימניות ב-<ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5919204609460789179">עדכן את <ph name="PRODUCT_NAME" /> כדי להתחיל סנכרון</translation>
 <translation id="5939518447894949180">אפס</translation>
+<translation id="5942872142862698679">‏שימוש ב-Google לחיפוש</translation>
+<translation id="6000066717592683814">‏המשך להשתמש ב-Google</translation>
 <translation id="6010869025736512584">גישה לפלט אודיו</translation>
 <translation id="6012342843556706400">‏Chrome זקוק לגישה אל המיקום כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6031101910111098835">מכווץ - לחץ כדי להרחיב</translation>
@@ -441,6 +444,7 @@
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6177390657002841081">‏הפעל את חוסך הנתונים (Data Saver)</translation>
+<translation id="617991007797131187">‏Chrome יכול להשתמש ב-Sogou לחיפוש בסין. ניתן לשנות את הבחירה דרך <ph name="BEGIN_LINK" /> הגדרות <ph name="END_LINK" /> .</translation>
 <translation id="6181444274883918285">הוסף חריג של אתר</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
 <translation id="6232535412751077445">אם תפעיל את התכונה 'אל תעקוב', בקשה זו תיכלל בתנועת הגלישה שלך. השפעת הבקשה תלויה באופן הפעולה של כל אתר - אם הוא מגיב לבקשה או לא, וכיצד הוא מפרש אותה.
@@ -472,6 +476,7 @@
 <translation id="654446541061731451">בחר כרטיסייה להעברת התוכן שלה</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
+<translation id="6560414384669816528">‏השתמש ב-Sogou לחפוש</translation>
 <translation id="656628257199996201">תרגם <ph name="SOURCE_LANGUAGE" /> תמיד</translation>
 <translation id="6571070086367343653">ערוך כרטיס אשראי</translation>
 <translation id="6573431926118603307">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>

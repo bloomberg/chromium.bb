@@ -207,15 +207,6 @@
       如果未設定這項政策，或是將這項政策的值設為「tls1.2」，<ph name="PRODUCT_NAME" /> 就不會再執行這項遞補程序。請注意，這只會影響 <ph name="PRODUCT_NAME" /> 是否略過發生錯誤的伺服器 (無法正確交涉版本)，系統並不會因此停止支援較舊的 TLS 版本。
 
       如果實際狀況與上述情形皆不相符，而必須與發生錯誤的伺服器維持相容，系統可能會將這項政策的值設為「tls1.1」。這種方法是權宜之計，伺服器錯誤應該很快就會解決。</translation>
-<translation id="1861037019115362154">指定在 <ph name="PRODUCT_NAME" /> 中停用的外掛程式清單，並且防止使用者變更這項設定。
-
-      萬用字元「*」和「?」可與任意字元序列比對。「*」可與任意數量的字元比對，但「?」只能指定選擇性的單一字元，例如與零或一個字元比對。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
-
-      如果您啟用這項設定，<ph name="PRODUCT_NAME" /> 就不會使用指定的外掛程式清單。系統會在「about:plugins」中將外掛程式標示為已停用，並且禁止使用者啟用這些外掛程式。
-
-      注意，EnabledPlugins 和 DisabledPluginsExceptions 可能會覆寫這項政策。
-
-      如果您未設定這項政策，使用者即可使用系統上安裝的任何外掛程式，但採用固定性程式、不相容、過舊或危險的外掛程式除外。</translation>
 <translation id="1864269674877167562">如果將這項政策設為空白字串或不予設定，<ph name="PRODUCT_OS_NAME" /> 將不會在使用者登入過程中顯示自動完成選項。
       如果將這項政策設為代表網域名稱的字串，<ph name="PRODUCT_OS_NAME" /> 則會在使用者登入過程中顯示自動完成選項，讓使用者輸入自己的使用者名稱 (不含網域名稱)。不過，使用者可以覆寫您在這裡指定的網域名稱。</translation>
 <translation id="1865417998205858223">金鑰權限</translation>
@@ -815,11 +806,6 @@
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
-<translation id="3715448429089775791">強制啟用 YouTube 安全模式，並禁止使用者變更這項設定。
-
-      如果啟用這項設定，系統一律會啟用 YouTube 安全模式。
-
-      如果停用這項設定或未指定設定值，則不會強制啟用 YouTube 安全模式。</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
 <translation id="3758089716224084329">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
@@ -1979,11 +1965,6 @@
 
       系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
-<translation id="7766336524667238790">回報執行中資訊站工作階段的相關資訊，例如
-      應用程式 ID 和版本。
-
-      如果將這項政策設為 False，系統不會回報工作階段資訊。
-      如果設為 True 或未設定，則會回報工作階段資訊。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
 <translation id="7775831859772431793">您可以在這裡指定 Proxy 伺服器的網址。
 
@@ -2194,6 +2175,10 @@
 <translation id="8369602308428138533">在 AC 供電環境下執行時的螢幕關閉延遲時間</translation>
 <translation id="8382184662529825177">啟用可用於保護裝置內容的遠端認證機制</translation>
 <translation id="838870586332499308">啟用數據漫遊</translation>
+<translation id="8390049129576938611">停用 <ph name="PRODUCT_NAME" /> 的內部 PDF 檢視器。改為將 PDF 檔案視為下載項目，允許使用者使用預設的應用程式開啟。
+
+      如果未設定或停用這項政策，則會使用 PDF 外掛程式開啟 PDF 檔案 (除非遭到使用者停用)。</translation>
+<translation id="8402079500086185021">一律使用外部應用程式開啟 PDF 檔案</translation>
 <translation id="8412312801707973447">不論線上 OCSP/CRL 檢查是否執行</translation>
 <translation id="8413348101535146315">允許在「<ph name="PRODUCT_NAME" />」的工作管理員中結束處理程序。
 
@@ -2214,17 +2199,6 @@
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8493645415242333585">停用儲存瀏覽紀錄功能</translation>
 <translation id="8499172469244085141">預設設定 (使用者可覆寫)</translation>
-<translation id="8501011084242226370">指定使用者可以在 <ph name="PRODUCT_NAME" /> 中啟用或停用的外掛程式清單。
-
-      萬用字元「*」和「?」可與任意字元序列比對。「*」可與任意數量的字元相配，但「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
-
-      如果您啟用這項設定，就可以在 <ph name="PRODUCT_NAME" /> 中使用指定的外掛程式清單。使用者可在「about:plugins」中啟用或停用這些外掛程式，即使該外掛程式也與 DisabledPlugins 中的模式相符亦然。此外，使用者也可啟用或停用與 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 中任何模式不相符的外掛程式。
-
-      這項政策的目的是為了在以下情況中產生嚴格的外掛程式黑名單設定：如果「DisabledPlugins」清單中以萬用字元設定了某些黑名單項目 (例如以「*」停用所有外掛程式、以「*Java*」停用所有 Java 外掛程式) ，但管理員希望啟用某些特定的版本 (例如「IcedTea Java 2.3」)，就能在這項政策中指定要允許的版本。
-
-      請注意，外掛程式名稱與其群組名稱必需同時受到豁免。about:plugins 中會分部列出各個外掛程式群組，每部分包含一或多個外掛程式。例如，假設有一個「Shockwave Flash」外掛程式屬於「Adobe Flash Player」群組，若這個外掛程式已為黑名單豁免，例外清單即應包含這兩個名稱。
-
-      如果這項政策未設定符合「DisabledPlugins」中模式的外掛程式，這項政策將鎖定為停用，且使用者無法再啟用。</translation>
 <translation id="8519264904050090490">管理化環境下使用者手動建立的例外網址</translation>
 <translation id="8544375438507658205">預設 <ph name="PRODUCT_FRAME_NAME" /> 的 HTML 轉譯器</translation>
 <translation id="8549772397068118889">瀏覽內容套件以外的網站時顯示警告</translation>
@@ -2250,7 +2224,6 @@
           請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。
 
           如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，<ph name="PRODUCT_NAME" /> 就會忽略伺服器傳來的 IWA 要求。</translation>
-<translation id="8668394701842594241">指定在「<ph name="PRODUCT_NAME" />」中啟用的外掛程式清單並禁止使用者變更這項設定。萬用字元「*」和「?」可與任意字元序列相配。「*」可與任意數量的字元相配，但「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。如果已安裝指定清單上的外掛程式，這些指定清單的外掛程式會一律在「<ph name="PRODUCT_NAME" />」中使用。這些外掛程式會在「about:plugins」中標示為已啟用，且使用者無法停用這些外掛程式。請注意，本政策會同時覆寫 DisabledPlugins 和 DisabledPluginsExceptions。如果未設定這項政策，使用者可以停用系統上安裝的任何外掛程式。</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="868068801094828689">允許以匿名方式向 Google 回報 <ph name="PRODUCT_NAME" /> 使用情形和當機相關資料，並禁止使用者變更這項設定。
 
@@ -2329,13 +2302,6 @@
       自動連線至 Quirks Server，將可用的設定檔
       下載並儲存到裝置上。這類檔案可能用於
       改善連接螢幕的顯示品質。</translation>
-<translation id="8905426178924715309">這項政策已不適用，請改用 ForceGoogleSafeSearch 和 ForceYouTubeSafetyMode。如果設定 ForceGoogleSafeSearch 或 ForceYouTubeSafetyMode 政策，系統將會忽略這項政策。
-
-      強制啟用安全搜尋服務，處理 Google 網頁搜尋中的查詢，並且防止使用者變更這項設定。這項設定也會強制執行 YouTube 安全模式。
-
-      如果您啟用這項設定，系統一律會啟用 Google 搜尋和 YouTube 中的安全搜尋服務。
-
-      如果您停用這項設定或尚未設定值，就不會在 Google 搜尋和 YouTube 中強制執行安全搜尋服務。</translation>
 <translation id="8906768759089290519">啟用訪客模式</translation>
 <translation id="8908294717014659003">讓您設定網站是否允許網站存取媒體擷取裝置。根據預設，系統允許網站存取媒體擷取裝置，您也可設為每當網站要存取媒體擷取裝置時詢問使用者。
 

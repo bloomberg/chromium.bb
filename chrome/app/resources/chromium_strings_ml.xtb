@@ -39,6 +39,7 @@
 <translation id="2158734852934720349">Chromium OS ഓപ്പൺ സോഴ്‌സ് ലൈസൻസുകൾ</translation>
 <translation id="2241627712206172106">നിങ്ങളൊരു കമ്പ്യൂട്ടർ പങ്കിടുകയാണെങ്കിൽ, സുഹൃത്തുക്കൾക്കും കുടുബാംഗങ്ങൾക്കും വെവ്വേറെ ബ്രൗസുചെയ്യാനും അവർക്ക് ആവശ്യമുള്ള രീതിയിൽ Chromium സജ്ജീകരിക്കാനുമാകും.</translation>
 <translation id="225614027745146050">സ്വാഗതം</translation>
+<translation id="2264142189334629813">Chromium OS-ന് ഈ പേജ് തുറക്കാനാവില്ല.</translation>
 <translation id="2316129865977710310">വേണ്ട, നന്ദി</translation>
 <translation id="2347108572062610441">നിങ്ങൾ Chromium ആരംഭിക്കുമ്പോൾ ദൃശ്യമാകുന്ന പേജിനെ ഈ വിപുലീകരണം മാറ്റി.</translation>
 <translation id="2372704305038231957">32-ബിറ്റ് Chromium, ഈ Linux സിസ്‌‌റ്റത്തെ പിന്തുണയ്‌ക്കാത്തതിനാൽ അത് ശരിയായി പ്രവർത്തിക്കാനിടയില്ല. 64-ബിറ്റ് Chromium-ത്തിലേക്ക് അപ്‌ഗ്രേഡുചെയ്യുക.</translation>
@@ -77,6 +78,7 @@
 <translation id="3258596308407688501">Chromium-ത്തിന് ഇതിന്റെ ഡാറ്റാ ഡയറക്‌ടറി വായിക്കാനും അതിൽ എഴുതാനും കഴിയില്ല:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
+<translation id="3264279740686075150">Chromium നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസറാണ്. കൊള്ളാം.</translation>
 <translation id="328888136576916638">Google API കീകൾ നഷ്‌ടമായി. Chromium-ന്റെ ചില പ്രവർത്തനങ്ങൾ പ്രവർത്തനരഹിതമാകും.</translation>
 <translation id="3289635842886789612">Chromium കാലഹരണപ്പെട്ടു.</translation>
 <translation id="3296368748942286671">Chromium അടയ്‌ക്കുമ്പോൾ അപ്ലിക്കേഷനുകൾ പശ്ചാത്തലത്തിൽ പ്രവർത്തിക്കുന്നത് തുടരുക</translation>

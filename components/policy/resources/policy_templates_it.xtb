@@ -192,15 +192,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma non è configurata o se viene impostata su "tls1.2", <ph name="PRODUCT_NAME" /> non eseguirà più il fallback. Il supporto per le versioni precedenti di TLS non viene disattivato, solo se <ph name="PRODUCT_NAME" /> eviterà i server che presentano errori e che non sono in grado di trattare correttamente le versioni.
 
       In caso contrario, se è necessario mantenere la compatibilità con un server con errori, è possibile impostare la norma su "tls1.1". Si tratta di una misura temporanea ed è necessario correggere rapidamente il server.</translation>
-<translation id="1861037019115362154">Consente di specificare un elenco di plug-in non attivi in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
-
-      È possibile utilizzare i caratteri jolly "*" e "?" in corrispondenza delle sequenze di caratteri arbitrari. Il carattere "*" corrisponde a un numero arbitrario di caratteri, mentre "?" indica un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è "\" e quindi, per indicare i caratteri "*", "?" e "\" effettivi, puoi inserire prima di tali caratteri un simbolo "\".
-
-      Se attivi questa impostazione, l'elenco di plug-in specificato non verrà mai utilizzato in <ph name="PRODUCT_NAME" />. I plug-in vengono contrassegnati come non attivi in "about:plugins" e gli utenti non possono attivarli.
-
-      Tieni presente che questa norma può essere sostituita dalle norme EnabledPlugins e DisabledPluginsExceptions.
-
-      Se questa norma non viene impostata, gli utenti potranno utilizzare qualsiasi plug-in installato sul sistema, tranne i plug-in hard-coded, non compatibili, obsoleti o pericolosi.</translation>
 <translation id="1864269674877167562">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
       Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio. L'utente potrà sovrascrivere l'estensione del nome di dominio.</translation>
 <translation id="1865417998205858223">Autorizzazioni chiave</translation>
@@ -797,11 +788,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="3711895659073496551">Sospensione</translation>
-<translation id="3715448429089775791">Forza l'attivazione della Modalità di protezione di YouTube e impedisce agli utenti di cambiare questa impostazione.
-
-      Se viene attivata questa impostazione, la Modalità di protezione di YouTube è sempre attiva.
-
-      Se viene disattivata questa impostazione o se non viene impostato un valore, non viene applicata la Modalità di protezione di YouTube.</translation>
 <translation id="3750220015372671395">Blocca la generazione di chiavi su questi siti</translation>
 <translation id="3756011779061588474">Blocca modalità sviluppatore</translation>
 <translation id="3758089716224084329">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
@@ -1931,9 +1917,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
       Gli identificatori dei tipi di connessione riconosciuti sono "ethernet", "wifi", "wimax", "bluetooth" e "cellulare".</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
-<translation id="7766336524667238790">Consente di segnalare informazioni sulla sessione kiosk attiva, ad esempio l'ID e la versione dell'applicazione.
-
-      Se la norma viene impostata su false, le informazioni relative alla sessione non vengono segnalate. Se viene impostata su true o non viene impostata, tali informazioni vengono segnalate.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
 <translation id="7775831859772431793">Qui puoi specificare l'URL del server proxy.
 
@@ -2143,6 +2126,10 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8369602308428138533">Ritardo disattivazione schermo in caso di utilizzo di CA</translation>
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
+<translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.
+
+      Se questa norma non viene impostata o viene disattivata, per aprire i file PDF verrà utilizzato il plug-in di PDF, se l'utente non lo disattiva.</translation>
+<translation id="8402079500086185021">Apri sempre file PDF esternamente</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
 <translation id="8413348101535146315">Consente di terminare i processi nella funzione Task Manager di <ph name="PRODUCT_NAME" />.
 
@@ -2163,17 +2150,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
-<translation id="8501011084242226370">Specifica un elenco di plug-in che l'utente può attivare o disattivare in <ph name="PRODUCT_NAME" />.
-
-      I caratteri jolly "*" e "?" corrispondono a sequenze di caratteri arbitrari. "*" corrisponde a un numero di caratteri arbitrario, mentre "?" specifica un carattere singolo opzionale, ad esempio, caratteri zero o uno. Il carattere di escape è "\" e viene anteposto ai caratteri "*" e "?" per ricercarli come valori letterali.
-
-      Se questa impostazione viene attivata, l'elenco di plug-in specificato può essere utilizzato in <ph name="PRODUCT_NAME" />. Gli utenti possono attivarli o disattivarli in "about:plugins", anche se il plug-in corrisponde a un pattern in DisabledPlugins. Gli utenti possono anche attivare e disattivare i plug-in che non corrispondono ad alcun pattern in DisabledPlugins, DisabledPluginsExceptions e EnabledPlugins.
-
-      Questa norma consente di creare una lista nera rigida dei plug-in, in cui l'elenco "DisabledPlugins" contiene voci con caratteri jolly come disattiva tutti i plug-in "*" o disattiva tutti i plug-in Java "*Java*", ma l'amministratore desidera attivare alcune versioni specifiche come "IcedTea Java 2.3". Queste versioni specifiche possono essere definite in questa norma.
-
-      Nota che devono essere esclusi sia il nome del plug-in sia il nome del gruppo del plug-in. Ogni gruppo di plug-in viene visualizzato in una sezione distinta in about:plugins. Ogni sezione può contenere uno o più plug-in. Ad esempio, il plug-in "Shockwave Flash" fa parte del gruppo "Adobe Flash Player" ed entrambi i nomi devono avere una corrispondenza nell'elenco delle eccezioni, se quel determinato plug-in deve essere escluso dalla lista nera.
-
-      Se questa norma non viene impostata, i plug-in che corrispondono a pattern in "DisabledPlugins" vengono bloccati e l'utente non può attivarli.</translation>
 <translation id="8519264904050090490">URL delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="8544375438507658205">Renderer HTML predefinito per <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti</translation>
@@ -2198,7 +2174,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
 
           Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8668394701842594241">Consente di specificare un elenco di plug-in attivi in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione. È possibile utilizzare i caratteri jolly "*" e "?" in corrispondenza delle sequenze di caratteri arbitrari. Il carattere "*" corrisponde a un numero arbitrario di caratteri, mentre "?" indica un singolo carattere facoltativo, cioè corrisponde a zero caratteri o a uno solo. Il carattere di escape è "\" quindi, per indicare i caratteri "*", "?" e "\" effettivi, puoi inserire prima di tali caratteri un simbolo "\". L'elenco di plug-in specificato verrà utilizzato sempre in <ph name="PRODUCT_NAME" /> se i plug-in sono installati. I plug-in verranno contrassegnati come attivi in "about:plugins" e gli utenti non potranno disattivarli. Tieni presente che questa norma ha la precedenza sulle norme DisabledPlugins e DisabledPluginsExceptions. Se questa norma non viene impostata, gli utenti potranno disattivare qualsiasi plug-in installato sul sistema.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="868068801094828689">Consente di attivare la segnalazione anonima a Google dei dati sull'utilizzo e sugli arresti anomali di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
 
@@ -2271,13 +2246,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se questa norma viene impostata su false, il dispositivo non tenterà di contattare Quirks Server per scaricare i file di configurazione.
 
       Se la norma viene impostata su true o non viene configurata, <ph name="PRODUCT_OS_NAME" /> contatterà automaticamente Quirks Server, scaricherà i file di configurazione, se disponibili, e li memorizzerà sul dispositivo. Tali file potrebbero essere utilizzati, ad esempio, per migliorare la qualità del display dei monitor collegati.</translation>
-<translation id="8905426178924715309">Questa norma è stata ritirata; utilizzare le norme ForceGoogleSafeSearch e ForceYouTubeSafetyMode. Questa norma viene ignorata se viene impostata la norma ForceGoogleSafeSearch o ForceYouTubeSafetyMode.
-
-      Consente di forzare l'esecuzione delle query nella Ricerca Google con l'opzione SafeSearch attiva e di impedire agli utenti di modificare l'impostazione. Questa impostazione forza inoltre l'attivazione della Modalità di protezione su YouTube.
-
-      Se questa impostazione viene attivata, il filtro SafeSearch nella Ricerca Google e su YouTube è sempre attivo.
-
-      Se l'impostazione viene disattivata o non viene impostato un valore, il filtro SafeSearch nella Ricerca Google e su YouTube non viene applicato.</translation>
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
 <translation id="8908294717014659003">Consente di stabilire se i siti web possono accedere ai dispositivi di acquisizione dei contenuti multimediali. L'accesso ai dispositivi di acquisizione dei contenuti multimediali può essere consentito per impostazione predefinita oppure l'utente può visualizzare una richiesta ogni volta che un sito web vuole accedere ai dispositivi di acquisizione dei contenuti multimediali.
 

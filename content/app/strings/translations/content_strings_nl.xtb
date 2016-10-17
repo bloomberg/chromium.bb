@@ -68,13 +68,13 @@
 <translation id="3632707345189162177">aantal seconden van resterende film</translation>
 <translation id="3706100364254443312">schakelaar</translation>
 <translation id="3732799496749320381">mm</translation>
-<translation id="3785482301506746191">schuifbalk met tijd van de film</translation>
+<translation id="3785482301506746191">scrollbar met tijd van de film</translation>
 <translation id="3808586225841795776">term</translation>
 <translation id="3822383571486410024">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel <ph name="CURRENT_LENGTH" /> tekens).</translation>
 <translation id="383465348367842624">Het naamgedeelte vóór '<ph name="ATSIGN" />' mag niet het teken '<ph name="INVALIDCHARACTER" />' bevatten.</translation>
 <translation id="3846214748874656680">Volledig scherm sluiten</translation>
 <translation id="3924558731517983934">app</translation>
-<translation id="3960700977367013758">schuifbalk</translation>
+<translation id="3960700977367013758">scrollbar</translation>
 <translation id="4103419683916926126">Milliseconden</translation>
 <translation id="4151657705144244502">afbeelding</translation>
 <translation id="4201051445878709314">Vorige maand weergeven</translation>
@@ -128,9 +128,9 @@
 <translation id="6119846243427417423">Activeren</translation>
 <translation id="6164829606128959761">meter</translation>
 <translation id="6270583010843788609">miniatuur van tijdlijn van film</translation>
-<translation id="6359256949422175976">miniatuur van schuifbalk met tijd van de film</translation>
+<translation id="6359256949422175976">miniatuur van scrollbar met tijd van de film</translation>
 <translation id="6398862346408813489">Deelvenster voor maandselectie weergeven</translation>
-<translation id="6404546809543547843">schuifbalk met audiotijd</translation>
+<translation id="6404546809543547843">scrollbar met audiotijd</translation>
 <translation id="648732519525291180">tijdkiezer</translation>
 <translation id="658823671542763450">volledig scherm openen</translation>
 <translation id="6637586476836377253">logboek</translation>
@@ -158,7 +158,6 @@
 <translation id="7514365320538308">Downloaden</translation>
 <translation id="7673697353781729403">Uur</translation>
 <translation id="7720026100085573005">resterende tijd</translation>
-<translation id="772727223731580981">Overloopmenu</translation>
 <translation id="7740016676195725605">het weergeven van ondertiteling stoppen</translation>
 <translation id="7740050170769002709">HTML-content</translation>
 <translation id="7789962463072032349">onderbreken</translation>

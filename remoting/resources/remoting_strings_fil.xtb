@@ -33,7 +33,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="177096447311351977">Channel IP para sa client: <ph name="CLIENT_GAIA_IDENTIFIER" /> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT" />' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT" />' channel='<ph name="CHANNEL_TYPE" />' koneksyon='<ph name="CONNECTION_TYPE" />'.</translation>
 <translation id="1779766957982586368">Isara ang window</translation>
 <translation id="1841799852846221389">Hindi pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
-<translation id="189172778771606813">Isara ang navigation drawer</translation>
 <translation id="1897488610212723051">I-delete</translation>
 <translation id="195619862187186579">Mga layout ng keyboard</translation>
 <translation id="1996161829609978754">Dina-download ng Chrome ang installer ng Host ng Chromoting.  Sa sandaling makumpleto ang pag-download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
@@ -114,6 +113,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 Host</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Remote na Desktop ng Chrome.</translation>
+<translation id="3897092660631435901">Menu</translation>
 <translation id="3905196214175737742">Di-wastong domain ng may-ari ng host.</translation>
 <translation id="3908017899227008678">Paliitin upang magkasya</translation>
 <translation id="3931191050278863510">Huminto ang host.</translation>
@@ -166,7 +166,6 @@ Desktop ng Chrome</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="507204348399810022">Sigurado ka bang gusto mong i-disable ang mga malayuang koneksyon sa <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong kahon.</translation>
-<translation id="5168917394043976756">Buksan ang navigation drawer</translation>
 <translation id="5170982930780719864">Di-wastong host id.</translation>
 <translation id="518094545883702183">Ang impormasyong ito ay ginagamit lang para sa pagda-diagnose sa problemang inuulat mo, available lang sa isang taong nagsisiyasat ng iyong ulat, at pinapanatili sa loob ng hindi hihigit sa 30 araw.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>

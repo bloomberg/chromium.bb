@@ -193,7 +193,7 @@
 <translation id="3040955737384246924">{COUNT,plural, =0{cel puțin un element pe dispozitivele sincronizate}=1{un element (și mai multe pe dispozitivele sincronizate)}few{# elemente (și mai multe pe dispozitivele sincronizate)}other{# de elemente (și mai multe pe dispozitivele sincronizate)}}</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
 <translation id="3063697135517575841">Momentan, Chrome nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
-<translation id="3093245981617870298">Sunteți offline.</translation>
+<translation id="3093245981617870298">Ești offline.</translation>
 <translation id="3105172416063519923">ID articol:</translation>
 <translation id="3109728660330352905">Nu ești autorizat(ă) să vezi această pagină.</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Rulează Diagnostice conectivitate<ph name="END_LINK" />.</translation>
@@ -393,6 +393,7 @@
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5199729219167945352">Experimente</translation>
 <translation id="5251803541071282808">Cloud</translation>
+<translation id="5277279256032773186">Folosești Chrome la serviciu? Companiile pot gestiona setările Chrome pentru angajații lor. Află mai multe</translation>
 <translation id="5299298092464848405">Eroare la analizarea politicii</translation>
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5308689395849655368">Raportarea blocărilor este dezactivată.</translation>

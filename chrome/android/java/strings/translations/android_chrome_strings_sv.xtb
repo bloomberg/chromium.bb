@@ -286,6 +286,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4376501731284077108">Inte styrda</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4384468725000734951">Du söker med Sogou</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
 <translation id="4440256989292146959">Surfa mer för mindre</translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
@@ -424,6 +425,8 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5916664084637901428">På</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
 <translation id="5939518447894949180">Återställ</translation>
+<translation id="5942872142862698679">Du söker med Google</translation>
+<translation id="6000066717592683814">Behåll Google</translation>
 <translation id="6010869025736512584">Får åtkomst till videoindata</translation>
 <translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
 <translation id="6031101910111098835">Gruppvyn har komprimerats. Expandera vyn genom att klicka.</translation>
@@ -441,6 +444,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6177390657002841081">Aktivera Databesparing</translation>
+<translation id="617991007797131187">I Kina kan du söka med Sogou i Chrome. Du kan ändra detta i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
 <translation id="6192792657125177640">Undantag</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
@@ -472,6 +476,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
 <translation id="6550675742724504774">Alternativ</translation>
+<translation id="6560414384669816528">Sök med Sogou</translation>
 <translation id="656628257199996201">Översätt alltid <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Redigera kreditkort</translation>
 <translation id="6573431926118603307">Här visas flikar som du har öppnat i Chrome på andra enheter.</translation>
