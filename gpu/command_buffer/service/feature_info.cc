@@ -215,8 +215,6 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   // Default context_type_ to a GLES2 Context.
   context_type_ = CONTEXT_TYPE_OPENGLES2;
 
-  chromium_color_buffer_float_rgba_available_ = false;
-  chromium_color_buffer_float_rgb_available_ = false;
   ext_color_buffer_float_available_ = false;
   oes_texture_float_linear_available_ = false;
   oes_texture_half_float_linear_available_ = false;
@@ -300,7 +298,7 @@ void FeatureInfo::EnableEXTColorBufferFloat() {
 }
 
 void FeatureInfo::EnableCHROMIUMColorBufferFloatRGBA() {
-  if (!chromium_color_buffer_float_rgba_available_)
+  if (!feature_flags_.chromium_color_buffer_float_rgba)
     return;
   validators_.texture_internal_format.AddValue(GL_RGBA32F);
   validators_.texture_sized_color_renderable_internal_format.AddValue(
@@ -309,7 +307,7 @@ void FeatureInfo::EnableCHROMIUMColorBufferFloatRGBA() {
 }
 
 void FeatureInfo::EnableCHROMIUMColorBufferFloatRGB() {
-  if (!chromium_color_buffer_float_rgb_available_)
+  if (!feature_flags_.chromium_color_buffer_float_rgb)
     return;
   validators_.texture_internal_format.AddValue(GL_RGB32F);
   validators_.texture_sized_color_renderable_internal_format.AddValue(
@@ -651,7 +649,8 @@ void FeatureInfo::InitializeFeatures() {
   // disable BGRA if we have to.
   bool has_apple_bgra = extensions.Contains("GL_APPLE_texture_format_BGRA8888");
   bool has_ext_bgra = extensions.Contains("GL_EXT_texture_format_BGRA8888");
-  bool has_bgra = has_ext_bgra || has_apple_bgra || !gl_version_info_->is_es;
+  bool enable_texture_format_bgra8888 =
+      has_ext_bgra || has_apple_bgra || !gl_version_info_->is_es;
 
   bool has_ext_texture_storage = extensions.Contains("GL_EXT_texture_storage");
   bool has_arb_texture_storage = extensions.Contains("GL_ARB_texture_storage");
@@ -660,7 +659,6 @@ void FeatureInfo::InitializeFeatures() {
       (has_ext_texture_storage || has_arb_texture_storage ||
        gl_version_info_->is_es3 || gl_version_info_->IsAtLeastGL(4, 2));
 
-  bool enable_texture_format_bgra8888 = has_bgra;
   bool enable_texture_storage = has_texture_storage;
 
   bool texture_storage_incompatible_with_bgra =
@@ -895,12 +893,12 @@ void FeatureInfo::InitializeFeatures() {
     DCHECK(glGetError() == GL_NO_ERROR);
 
     if (status_rgba == GL_FRAMEBUFFER_COMPLETE) {
-      chromium_color_buffer_float_rgba_available_ = true;
+      feature_flags_.chromium_color_buffer_float_rgba = true;
       if (!disallowed_features_.chromium_color_buffer_float_rgba)
         EnableCHROMIUMColorBufferFloatRGBA();
     }
     if (status_rgb == GL_FRAMEBUFFER_COMPLETE) {
-      chromium_color_buffer_float_rgb_available_ = true;
+      feature_flags_.chromium_color_buffer_float_rgb = true;
       if (!disallowed_features_.chromium_color_buffer_float_rgb)
         EnableCHROMIUMColorBufferFloatRGB();
     }
@@ -1104,8 +1102,13 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_texture_storage = true;
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
-    if (enable_texture_format_bgra8888)
-        validators_.texture_internal_format_storage.AddValue(GL_BGRA8_EXT);
+    if (enable_texture_format_bgra8888) {
+      validators_.texture_internal_format_storage.AddValue(GL_BGRA8_EXT);
+      validators_.texture_sized_color_renderable_internal_format.AddValue(
+          GL_BGRA8_EXT);
+      validators_.texture_sized_texture_filterable_internal_format.AddValue(
+          GL_BGRA8_EXT);
+    }
     if (enable_texture_float) {
         validators_.texture_internal_format_storage.AddValue(GL_RGBA32F_EXT);
         validators_.texture_internal_format_storage.AddValue(GL_RGB32F_EXT);
@@ -1475,6 +1478,14 @@ void FeatureInfo::EnableES3Validators() {
     validators_.g_l_state.RemoveValues(
         kDrawBuffers + max_draw_buffers,
         kTotalDrawBufferEnums - max_draw_buffers);
+  }
+
+  if (feature_flags_.ext_texture_format_bgra8888) {
+    validators_.texture_internal_format.AddValue(GL_BGRA8_EXT);
+    validators_.texture_sized_color_renderable_internal_format.AddValue(
+        GL_BGRA8_EXT);
+    validators_.texture_sized_texture_filterable_internal_format.AddValue(
+        GL_BGRA8_EXT);
   }
 
   unsafe_es3_apis_enabled_ = true;
