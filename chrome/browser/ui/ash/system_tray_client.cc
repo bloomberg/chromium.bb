@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
+#include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -22,6 +24,8 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
@@ -29,6 +33,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using chromeos::DBusThreadManager;
 using chromeos::LoginState;
 
 namespace {
@@ -64,6 +69,57 @@ SystemTrayClient::~SystemTrayClient() {
 // static
 SystemTrayClient* SystemTrayClient::Get() {
   return g_instance;
+}
+
+// static
+ash::LoginStatus SystemTrayClient::GetUserLoginStatus() {
+  if (!LoginState::Get()->IsUserLoggedIn())
+    return ash::LoginStatus::NOT_LOGGED_IN;
+
+  // Session manager client owns screen lock status.
+  if (DBusThreadManager::Get()->GetSessionManagerClient()->IsScreenLocked())
+    return ash::LoginStatus::LOCKED;
+
+  LoginState::LoggedInUserType user_type =
+      LoginState::Get()->GetLoggedInUserType();
+  switch (user_type) {
+    case LoginState::LOGGED_IN_USER_NONE:
+      return ash::LoginStatus::NOT_LOGGED_IN;
+    case LoginState::LOGGED_IN_USER_REGULAR:
+      return ash::LoginStatus::USER;
+    case LoginState::LOGGED_IN_USER_OWNER:
+      return ash::LoginStatus::OWNER;
+    case LoginState::LOGGED_IN_USER_GUEST:
+      return ash::LoginStatus::GUEST;
+    case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
+      return ash::LoginStatus::PUBLIC;
+    case LoginState::LOGGED_IN_USER_SUPERVISED:
+      return ash::LoginStatus::SUPERVISED;
+    case LoginState::LOGGED_IN_USER_KIOSK_APP:
+      return ash::LoginStatus::KIOSK_APP;
+  }
+  NOTREACHED();
+  return ash::LoginStatus::NOT_LOGGED_IN;
+}
+
+// static
+int SystemTrayClient::GetDialogParentContainerId() {
+  // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
+  if (chrome::IsRunningInMash())
+    return ash::kShellWindowId_SystemModalContainer;
+
+  ash::WmShell* wm_shell = ash::WmShell::Get();
+  const bool session_started =
+      wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted();
+  const ash::LoginStatus login_status = GetUserLoginStatus();
+  const bool is_in_secondary_login_screen =
+      wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+
+  if (!session_started || login_status == ash::LoginStatus::NOT_LOGGED_IN ||
+      login_status == ash::LoginStatus::LOCKED || is_in_secondary_login_screen)
+    return ash::kShellWindowId_LockSystemModalContainer;
+
+  return ash::kShellWindowId_SystemModalContainer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

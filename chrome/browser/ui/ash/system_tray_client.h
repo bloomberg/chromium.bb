@@ -10,6 +10,10 @@
 #include "chrome/browser/chromeos/system/system_clock_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace ash {
+enum class LoginStatus;
+}
+
 // Handles method calls delegated back to chrome from ash. Also notifies ash of
 // relevant state changes in chrome.
 // TODO: Consider renaming this to SystemTrayClientChromeOS.
@@ -20,6 +24,13 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   ~SystemTrayClient() override;
 
   static SystemTrayClient* Get();
+
+  // Returns the login state based on the user type, lock screen status, etc.
+  static ash::LoginStatus GetUserLoginStatus();
+
+  // Returns the container id for the parent window for new dialogs. The parent
+  // varies based on the current login and lock screen state.
+  static int GetDialogParentContainerId();
 
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;

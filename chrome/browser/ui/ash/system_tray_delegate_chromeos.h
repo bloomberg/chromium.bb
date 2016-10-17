@@ -261,7 +261,6 @@ class SystemTrayDelegateChromeOS
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
   Profile* user_profile_;
   int search_key_mapped_to_;
-  bool screen_locked_;
   bool have_session_start_time_;
   base::TimeTicks session_start_time_;
   bool have_session_length_limit_;
