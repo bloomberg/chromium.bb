@@ -49,7 +49,7 @@ config("libvpx_config") {
     "$root_gen_dir/third_party/libvpx",  # Provides vpx_rtcd.h.
   ]
 
-  if (current_cpu == "arm" && is_clang) {
+  if (current_cpu == "arm" && is_clang && !is_ios) {
     # TODO(hans) Enable integrated-as (crbug.com/124610).
     asmflags = [ "-fno-integrated-as" ]
     if (is_android) {
