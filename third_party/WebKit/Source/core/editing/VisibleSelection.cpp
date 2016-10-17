@@ -134,17 +134,6 @@ VisibleSelectionInFlatTree createVisibleSelection(
   return VisibleSelectionInFlatTree::create(selection);
 }
 
-VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree& pos,
-                                                  TextAffinity affinity,
-                                                  bool isDirectional) {
-  DCHECK(!needsLayoutTreeUpdate(pos));
-  SelectionInFlatTree::Builder builder;
-  builder.setAffinity(affinity).setIsDirectional(isDirectional);
-  if (pos.isNotNull())
-    builder.collapse(pos);
-  return createVisibleSelection(builder.build());
-}
-
 VisibleSelectionInFlatTree createVisibleSelection(
     const PositionInFlatTree& base,
     const PositionInFlatTree& extent,
@@ -165,8 +154,8 @@ VisibleSelectionInFlatTree createVisibleSelection(
     const VisiblePositionInFlatTree& pos,
     bool isDirectional) {
   DCHECK(pos.isValid());
-  return createVisibleSelection(pos.deepEquivalent(), pos.affinity(),
-                                isDirectional);
+  return createVisibleSelection(pos.deepEquivalent(), pos.deepEquivalent(),
+                                pos.affinity(), isDirectional);
 }
 
 VisibleSelectionInFlatTree createVisibleSelection(
