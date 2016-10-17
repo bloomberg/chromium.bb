@@ -49,11 +49,11 @@ Example:
 
 In the example above, we need to create a whitespace layout object to separate
 the A and B in the rendering. However, we only need to create a layout object
-for one of the whitespace nodes as whitespaces collapse.
+for one of the whitespace nodes as whitespace collapse.
 
 ### Preformatted text and editing
 
-Some values of the CSS white-space property will cause whitespace not to
+Some values of the CSS white-space property will cause whitespace to not
 collapse and affect layout and rendering also in block layout. In those cases
 we always create layout objects for whitespace nodes.
 
@@ -77,19 +77,19 @@ Important methods:
 
 ### Layout object re-attachment
 
-During style recalculation, elements whose computed value for display change
+During style recalculation, elements whose computed value for display changes
 will have its layout sub-tree re-attached. Attachment of the descendant layout
-objects happens the same way as for inital layout tree attachment, but the
+objects happens the same way as for initial layout tree attachment, but the
 interesting part for whitespace layout objects is how they are affected by
 re-attachment of sibling elements. Sibling nodes may or may not be re-attached
 during the same style recalc traversal depending on whether they change their
-computed display value or not.
+computed display values or not.
 
 #### Style recalc traversal
 
-An important pre-requisite for how whitespace layout objects are re-attached
+An important prerequisite for how whitespace layout objects are re-attached
 is the traversal order we use for style recalc. The current traversal order
-makes it hard or costly to implement whitespace re-attachement without bugs in
+makes it hard or costly to implement whitespace re-attachment without bugs in
 the presence of shadow trees, but let's describe what we do here.
 
 Style recalc happens in the shadow-including tree order with the exception that
@@ -141,8 +141,8 @@ Example:
 Initially, the whitespace before the B span above does not get a layout object.
 If we change the absolute positioned span in the shadow tree to static, we need
 to have a layout object for that whitespace node. However, since we traverse
-traverse the light-tree children of #host after the shadow tree, we do not see
-the text node before re-attaching the absolute positioned span.
+the light-tree children of #host after the shadow tree, we do not see the text
+node before re-attaching the absolute positioned span.
 
 Likewise we currently have issues with ::before and ::after elements because we
 do not keep track of text nodes and pass them to ::before/::after element
