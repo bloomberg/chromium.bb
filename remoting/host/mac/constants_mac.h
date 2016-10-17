@@ -16,9 +16,8 @@ extern const char kServiceName[];
 // These are #defines because they are used with CFSTR macro, which requires
 // string literals.
 #define UPDATE_SUCCEEDED_NOTIFICATION_NAME \
-    "org.chromium.chromoting.update_succeeded"
+  "org.chromium.chromoting.update_succeeded"
 #define UPDATE_FAILED_NOTIFICATION_NAME "org.chromium.chromoting.update_failed"
-
 
 // Chromoting's preference pane file.
 extern const char kPrefPaneFileName[];

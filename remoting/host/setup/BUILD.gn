@@ -43,6 +43,10 @@ source_set("setup") {
     "//remoting/host/native_messaging",
   ]
 
+  if (is_mac || is_ios) {
+    deps += [ "//remoting/host/mac:constants" ]
+  }
+
   if (is_win) {
     deps += [ "//remoting/host/win:remoting_lib_idl" ]
   }

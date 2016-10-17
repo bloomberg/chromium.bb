@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/constants_mac.h"
+#include "remoting/host/mac/constants_mac.h"
 
 #if defined(GN_BUILD)
 #include "remoting/host/version.h"
@@ -40,9 +40,9 @@ const char kNativeMessagingManifestPath[] =
     "/Library/Google/Chrome/NativeMessagingHosts/"
     "com.google.chrome.remote_desktop.json";
 
-const char kBrandedUninstallerPath[] = APPLICATIONS_DIR
-    "Chrome Remote Desktop Host Uninstaller.app";
-const char kUnbrandedUninstallerPath[] = APPLICATIONS_DIR
-    "Chromoting Host Uninstaller.app";
+const char kBrandedUninstallerPath[] =
+    APPLICATIONS_DIR "Chrome Remote Desktop Host Uninstaller.app";
+const char kUnbrandedUninstallerPath[] =
+    APPLICATIONS_DIR "Chromoting Host Uninstaller.app";
 
 }  // namespace remoting

@@ -8,8 +8,7 @@
 
 #include "base/mac/authorization_util.h"
 #include "base/mac/scoped_authorizationref.h"
-#include "remoting/host/constants_mac.h"
-
+#include "remoting/host/mac/constants_mac.h"
 
 void logOutput(FILE* pipe) {
   char readBuffer[128];

@@ -26,8 +26,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "remoting/host/constants_mac.h"
 #include "remoting/host/host_config.h"
+#include "remoting/host/mac/constants_mac.h"
 #include "remoting/host/usage_stats_consent.h"
 
 namespace remoting {
