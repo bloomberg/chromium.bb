@@ -392,8 +392,8 @@ ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetProfileLabelsToSuggest(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
-    jboolean include_name) {
-  return GetProfileLabels(env, true, include_name,
+    jboolean include_name_in_label) {
+  return GetProfileLabels(env, true, include_name_in_label,
                           personal_data_manager_->GetProfilesToSuggest());
 }
 
@@ -752,13 +752,13 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetCreditCardGUIDs(
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     JNIEnv* env,
     bool address_only,
-    bool include_name,
+    bool include_name_in_label,
     std::vector<AutofillProfile*> profiles) {
   std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
   size_t minimal_fields_shown = 2;
   if (address_only) {
     suggested_fields.reset(new std::vector<ServerFieldType>);
-    if (include_name)
+    if (include_name_in_label)
       suggested_fields->push_back(NAME_FULL);
     suggested_fields->push_back(COMPANY_NAME);
     suggested_fields->push_back(ADDRESS_HOME_LINE1);
@@ -772,7 +772,8 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     minimal_fields_shown = suggested_fields->size();
   }
 
-  ServerFieldType excluded_field = include_name ? UNKNOWN_TYPE : NAME_FULL;
+  ServerFieldType excluded_field =
+      include_name_in_label ? UNKNOWN_TYPE : NAME_FULL;
 
   std::vector<base::string16> labels;
   AutofillProfile::CreateInferredLabels(

@@ -79,12 +79,12 @@ class PersonalDataManagerAndroid
   // useful for distinguishing the profiles from one another.
   //
   // The labels never contain the email address, or phone numbers. The
-  // |include_name| argument controls whether the name is included. All other
-  // fields are included in the label.
+  // |include_name_in_label| argument controls whether the name is included.
+  // All other fields are included in the label.
   base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabelsToSuggest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
-      jboolean include_name);
+      jboolean include_name_in_label);
 
   // Returns the label of the given profile for PaymentRequest. This label does
   // not contain the full name or the email address. All other fields are
@@ -328,7 +328,7 @@ class PersonalDataManagerAndroid
   base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
       JNIEnv* env,
       bool address_only,
-      bool include_name,
+      bool include_name_in_label,
       std::vector<AutofillProfile*> profiles);
 
   // Pointer to the java counterpart.

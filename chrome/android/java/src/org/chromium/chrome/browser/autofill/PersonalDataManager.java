@@ -548,14 +548,14 @@ public class PersonalDataManager {
      * Gets the profiles to suggest when filling a form or completing a transaction. The profiles
      * will have been processed to be more relevant to the user.
      *
-     * @param includeName Whether to include the name in the profile's label.
+     * @param includeNameInLabel Whether to include the name in the profile's label.
      * @return The list of profiles to suggest to the user.
      */
-    public List<AutofillProfile> getProfilesToSuggest(boolean includeName) {
+    public List<AutofillProfile> getProfilesToSuggest(boolean includeNameInLabel) {
         ThreadUtils.assertOnUiThread();
         return getProfilesWithLabels(
                 nativeGetProfileLabelsToSuggest(
-                        mPersonalDataManagerAndroid, includeName),
+                        mPersonalDataManagerAndroid, includeNameInLabel),
                 nativeGetProfileGUIDsToSuggest(mPersonalDataManagerAndroid));
     }
 
@@ -823,7 +823,7 @@ public class PersonalDataManager {
     private native String[] nativeGetProfileLabelsForSettings(
             long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileLabelsToSuggest(long nativePersonalDataManagerAndroid,
-            boolean includeName);
+            boolean includeNameInLabel);
     private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,
             String guid);
     private native String nativeSetProfile(long nativePersonalDataManagerAndroid,

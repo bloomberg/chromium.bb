@@ -325,7 +325,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
         // a bigger use count that the first profile. It should be second.
         mHelper.setProfileUseStatsForTesting(guid3, 6, 5000);
 
-        List<AutofillProfile> profiles = mHelper.getProfilesToSuggest(false /* includeName */);
+        List<AutofillProfile> profiles =
+                mHelper.getProfilesToSuggest(false /* includeNameInLabel */);
         assertEquals(3, profiles.size());
         assertTrue("Profile2 should be ranked first", guid2.equals(profiles.get(0).getGUID()));
         assertTrue("Profile3 should be ranked second", guid3.equals(profiles.get(1).getGUID()));
@@ -499,7 +500,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
             TimeoutException {
         mHelper.setProfile(createTestProfile());
 
-        List<AutofillProfile> profiles = mHelper.getProfilesToSuggest(false /* includeName */);
+        List<AutofillProfile> profiles =
+                mHelper.getProfilesToSuggest(false /* includeNameInLabel */);
         assertEquals("Acme Inc., 123 Main, Los Angeles, California 90210, United States",
                 profiles.get(0).getLabel());
     }
@@ -511,7 +513,8 @@ public class PersonalDataManagerTest extends NativeLibraryTestBase {
             TimeoutException {
         mHelper.setProfile(createTestProfile());
 
-        List<AutofillProfile> profiles = mHelper.getProfilesToSuggest(true /* includeName */);
+        List<AutofillProfile> profiles =
+                mHelper.getProfilesToSuggest(true /* includeNameInLabel */);
         assertEquals("John Major, Acme Inc., 123 Main, Los Angeles, California 90210, "
                 + "United States", profiles.get(0).getLabel());
     }
