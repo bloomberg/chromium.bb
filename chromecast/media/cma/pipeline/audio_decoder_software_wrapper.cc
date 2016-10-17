@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/pipeline/audio_decoder_software_wrapper.h"
 
+#include <ostream>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -11,6 +13,39 @@
 
 namespace chromecast {
 namespace media {
+
+namespace {
+
+std::ostream& operator<<(std::ostream& stream, AudioCodec codec) {
+  switch (codec) {
+    case kAudioCodecUnknown:
+      return stream << "unknown codec";
+    case kCodecAAC:
+      return stream << "AAC";
+    case kCodecMP3:
+      return stream << "MP3";
+    case kCodecPCM:
+      return stream << "PCM";
+    case kCodecPCM_S16BE:
+      return stream << "PCM_S16BE";
+    case kCodecVorbis:
+      return stream << "Vorbis";
+    case kCodecOpus:
+      return stream << "Opus";
+    case kCodecEAC3:
+      return stream << "EAC3";
+    case kCodecAC3:
+      return stream << "AC3";
+    case kCodecDTS:
+      return stream << "DTS";
+    case kCodecFLAC:
+      return stream << "FLAC";
+  }
+  NOTREACHED();
+  return stream << "UNKNOWN";
+}
+
+}  // namespace
 
 AudioDecoderSoftwareWrapper::AudioDecoderSoftwareWrapper(
     MediaPipelineBackend::AudioDecoder* backend_decoder)
@@ -54,13 +89,18 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
   DCHECK(IsValidConfig(config));
 
   if (backend_decoder_->SetConfig(config)) {
+    LOG(INFO) << "Using backend decoder for " << config.codec;
     software_decoder_.reset();
     output_config_ = config;
     return true;
   }
 
-  if (!CreateSoftwareDecoder(config))
+  if (!CreateSoftwareDecoder(config)) {
+    LOG(INFO) << "Failed to create software decoder";
     return false;
+  }
+
+  LOG(INFO) << "Using software decoder for " << config.codec;
 
   output_config_.codec = media::kCodecPCM;
   output_config_.sample_format = media::kSampleFormatS16;

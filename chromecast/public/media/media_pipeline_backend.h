@@ -57,7 +57,7 @@ class MediaPipelineBackend {
       virtual void OnEndOfStream() = 0;
 
       // May be called if a decoder error occurs. No more calls to PushBuffer()
-      // will be made after this is called.
+      // should be made after this is called.
       virtual void OnDecoderError() = 0;
 
       // Must be called when a decryption key status changes.
