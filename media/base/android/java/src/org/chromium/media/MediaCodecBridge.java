@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  */
 @JNINamespace("media")
 class MediaCodecBridge {
-    private static final String TAG = "cr_media";
+    private static final String TAG = "cr_MediaCodecBridge";
 
     // Error code for MediaCodecBridge. Keep this value in sync with
     // MediaCodecStatus in media_codec_bridge.h.
@@ -202,8 +202,7 @@ class MediaCodecBridge {
         MediaCodecUtil.CodecCreationInfo info = new MediaCodecUtil.CodecCreationInfo();
         try {
             if (direction == MediaCodecUtil.MEDIA_CODEC_ENCODER) {
-                info.mediaCodec = MediaCodec.createEncoderByType(mime);
-                info.supportsAdaptivePlayback = false;
+                info = MediaCodecUtil.createEncoder(mime);
             } else {
                 // |isSecure| only applies to video decoders.
                 info = MediaCodecUtil.createDecoder(mime, isSecure, requireSoftwareCodec);
@@ -358,6 +357,7 @@ class MediaCodecBridge {
         Bundle b = new Bundle();
         b.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, bps);
         mMediaCodec.setParameters(b);
+        Log.v(TAG, "setVideoBitrate " + bps);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -545,6 +545,7 @@ class MediaCodecBridge {
         format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, iFrameInterval);
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
+        Log.d(TAG, "video encoder format: " + format);
         return format;
     }
 

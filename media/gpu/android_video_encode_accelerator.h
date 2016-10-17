@@ -55,7 +55,9 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
   enum {
     // Arbitrary choice.
     INITIAL_FRAMERATE = 30,
-    // Until there are non-realtime users, no need for unrequested I-frames.
+    // Default I-Frame interval in seconds.
+    IFRAME_INTERVAL_H264 = 20,
+    IFRAME_INTERVAL_VPX = 100,
     IFRAME_INTERVAL = INT32_MAX,
   };
 
@@ -93,9 +95,8 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
   // The difference between number of buffers queued & dequeued at the codec.
   int32_t num_buffers_at_codec_;
 
-  // A monotonically-growing value, used as a fake timestamp just to keep things
-  // appearing to move forward.
-  base::TimeDelta fake_input_timestamp_;
+  // A monotonically-growing value.
+  base::TimeDelta input_timestamp_;
 
   // Resolution of input stream. Set once in initialization and not allowed to
   // change after.

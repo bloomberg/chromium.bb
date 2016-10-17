@@ -77,6 +77,9 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Indicates if the vp9 decoder is available on this device.
   static bool IsVp9DecoderAvailable();
 
+  // Indicates if the h264 encoder is available on this device.
+  static bool IsH264EncoderAvailable();
+
   // Indicates if SurfaceView and MediaCodec work well together on this device.
   static bool IsSurfaceViewOutputSupported();
 

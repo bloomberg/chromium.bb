@@ -45,7 +45,9 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 #endif
 #if defined(ENABLE_WEBRTC)
   gpu_preferences.disable_web_rtc_hw_encoding =
-      command_line->HasSwitch(switches::kDisableWebRtcHWEncoding);
+      command_line->HasSwitch(switches::kDisableWebRtcHWEncoding) &&
+      command_line->GetSwitchValueASCII(switches::kDisableWebRtcHWEncoding)
+          .empty();
 #endif
 #if defined(OS_WIN)
   uint32_t enable_accelerated_vpx_decode_val =

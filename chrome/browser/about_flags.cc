@@ -600,6 +600,19 @@ const FeatureEntry::Choice kSecurityChipAnimationChoices[] = {
      switches::kSecurityChipAnimationAll},
 };
 
+#if defined(ENABLE_WEBRTC)
+const FeatureEntry::Choice kDisableWebRtcHWEncodingChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_WEBRTC_HW_ENCODING_ALL, switches::kDisableWebRtcHWEncoding, ""},
+    {IDS_FLAGS_WEBRTC_HW_ENCODING_VPX, switches::kDisableWebRtcHWEncoding,
+     switches::kDisableWebRtcHWEncodingVPx},
+    {IDS_FLAGS_WEBRTC_HW_ENCODING_H264, switches::kDisableWebRtcHWEncoding,
+     switches::kDisableWebRtcHWEncodingH264},
+    {IDS_FLAGS_WEBRTC_HW_ENCODING_NONE, switches::kDisableWebRtcHWEncoding,
+     switches::kDisableWebRtcHWEncodingNone},
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -656,7 +669,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWDecoding)},
     {"disable-webrtc-hw-encoding", IDS_FLAGS_WEBRTC_HW_ENCODING_NAME,
      IDS_FLAGS_WEBRTC_HW_ENCODING_DESCRIPTION, kOsAndroid | kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)},
+     MULTI_VALUE_TYPE(kDisableWebRtcHWEncodingChoices)},
     {"enable-webrtc-stun-origin", IDS_FLAGS_WEBRTC_STUN_ORIGIN_NAME,
      IDS_FLAGS_WEBRTC_STUN_ORIGIN_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)},

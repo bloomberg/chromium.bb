@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.16",
+  "version": "11.17",
   "entries": [
     {
       "id": 1,
@@ -688,6 +688,17 @@ LONG_STRING_CONST(
       },
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 82,
+      "description": "MediaCodec is still too buggy to use for encoding (b/11536167)",
+      "cr_bugs": [615108],
+      "os": {
+        "type": "android"
+      },
+      "features": [
+        "accelerated_video_encode"
       ]
     },
     {

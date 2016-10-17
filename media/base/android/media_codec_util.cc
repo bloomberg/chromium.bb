@@ -87,6 +87,14 @@ static bool IsDecoderSupportedByDevice(const std::string& android_mime_type) {
   return Java_MediaCodecUtil_isDecoderSupportedForDevice(env, j_mime);
 }
 
+static bool IsEncoderSupportedByDevice(const std::string& android_mime_type) {
+  DCHECK(MediaCodecUtil::IsMediaCodecAvailable());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_mime =
+      ConvertUTF8ToJavaString(env, android_mime_type);
+  return Java_MediaCodecUtil_isEncoderSupportedByDevice(env, j_mime);
+}
+
 // static
 bool MediaCodecUtil::IsMediaCodecAvailable() {
   // Blacklist some devices on Jellybean as MediaCodec is buggy.
@@ -209,6 +217,11 @@ bool MediaCodecUtil::IsVp8EncoderAvailable() {
 // static
 bool MediaCodecUtil::IsVp9DecoderAvailable() {
   return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp9MimeType);
+}
+
+// static
+bool MediaCodecUtil::IsH264EncoderAvailable() {
+  return IsMediaCodecAvailable() && IsEncoderSupportedByDevice(kAvcMimeType);
 }
 
 // static

@@ -15,6 +15,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -22,7 +24,7 @@ import java.util.Locale;
  */
 @JNINamespace("media")
 class MediaCodecUtil {
-    private static final String TAG = "MediaCodecUtil";
+    private static final String TAG = "cr_MediaCodecUtil";
 
     // Codec direction.  Keep this in sync with media_codec_direction.h.
     static final int MEDIA_CODEC_DECODER = 0;
@@ -354,6 +356,125 @@ class MediaCodecUtil {
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Cannot retrieve codec information", e);
         }
+        return false;
+    }
+
+    // List of supported HW encoders.
+    private static enum HWEncoderProperties {
+        QcomVp8(MimeTypes.VIDEO_VP8, "OMX.qcom.", Build.VERSION_CODES.KITKAT),
+        QcomH264(MimeTypes.VIDEO_H264, "OMX.qcom.", Build.VERSION_CODES.KITKAT),
+        ExynosVp8(MimeTypes.VIDEO_VP8, "OMX.Exynos.", Build.VERSION_CODES.M),
+        ExynosH264(MimeTypes.VIDEO_H264, "OMX.Exynos.", Build.VERSION_CODES.LOLLIPOP);
+
+        private final String mMime;
+        private final String mPrefix;
+        private final int mMinSDK;
+
+        private HWEncoderProperties(String mime, String prefix, int minSDK) {
+            this.mMime = mime;
+            this.mPrefix = prefix;
+            this.mMinSDK = minSDK;
+        }
+
+        public String getMime() {
+            return mMime;
+        }
+
+        public String getPrefix() {
+            return mPrefix;
+        }
+
+        public int getMinSDK() {
+            return mMinSDK;
+        }
+    }
+
+    // List of devices with poor H.264 encoder quality.
+    private static final String[] H264_ENCODER_MODEL_BLACKLIST = new String[] {
+            // HW H.264 encoder on below devices has poor bitrate control - actual bitrates deviates
+            // a lot from the target value.
+            "SAMSUNG-SGH-I337", "Nexus 7", "Nexus 4"};
+
+    /**
+     * Creates MediaCodec encoder.
+     * @param mime MIME type of the media.
+     * @return CodecCreationInfo object
+     */
+    static CodecCreationInfo createEncoder(String mime) {
+        // Always return a valid CodecCreationInfo, its |mediaCodec| field will be null
+        // if we cannot create the codec.
+        CodecCreationInfo result = new CodecCreationInfo();
+
+        if (!isEncoderSupportedByDevice(mime)) return result;
+
+        try {
+            result.mediaCodec = MediaCodec.createEncoderByType(mime);
+            result.supportsAdaptivePlayback = false;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create MediaCodec: %s", mime, e);
+        }
+        return result;
+    }
+
+    /**
+     * This is a way to blacklist misbehaving devices.
+     * @param mime MIME type as passed to mediaCodec.createEncoderByType(mime).
+     * @return true if this codec is supported for encoder on this device.
+     */
+    @CalledByNative
+    static boolean isEncoderSupportedByDevice(String mime) {
+        // MediaCodec.setParameters is missing for JB and below, so bitrate
+        // can not be adjusted dynamically.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            return false;
+        }
+
+        // Check if this is supported HW encoder.
+        if (mime.equals(MimeTypes.VIDEO_H264)) {
+            // Check if device is in H.264 exception list.
+            List<String> exceptionModels = Arrays.asList(H264_ENCODER_MODEL_BLACKLIST);
+            if (exceptionModels.contains(Build.MODEL)) {
+                Log.w(TAG, "Model: " + Build.MODEL + " has blacklisted H.264 encoder.");
+                return false;
+            }
+        }
+
+        MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
+        int codecCount = codecListHelper.getCodecCount();
+        for (int i = 0; i < codecCount; ++i) {
+            MediaCodecInfo info = codecListHelper.getCodecInfoAt(i);
+
+            if (!info.isEncoder() || isSoftwareCodec(info.getName())) continue;
+
+            String encoderName = null;
+            for (String mimeType : info.getSupportedTypes()) {
+                if (mimeType.equalsIgnoreCase(mime)) {
+                    encoderName = info.getName();
+                    break;
+                }
+            }
+
+            if (encoderName == null) {
+                continue; // No HW support in this codec; try the next one.
+            }
+
+            // Check if this is supported HW encoder.
+            for (HWEncoderProperties codecProperties : HWEncoderProperties.values()) {
+                if (!mime.equalsIgnoreCase(codecProperties.getMime())) continue;
+
+                if (encoderName.startsWith(codecProperties.getPrefix())) {
+                    if (Build.VERSION.SDK_INT < codecProperties.getMinSDK()) {
+                        Log.w(TAG, "Codec " + encoderName + " is disabled due to SDK version "
+                                        + Build.VERSION.SDK_INT);
+                        continue;
+                    }
+                    Log.d(TAG, "Found target encoder for mime " + mime + " : " + encoderName);
+                    return true;
+                }
+            }
+        }
+
+        Log.w(TAG, "HW encoder for " + mime + " is not available on this device.");
         return false;
     }
 }

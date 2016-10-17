@@ -15,6 +15,15 @@
 namespace content {
 
 namespace {
+bool IsCodecDisabledByCommandLine(const base::CommandLine* cmd_line,
+                                  const std::string codec_name) {
+  if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
+    return false;
+
+  const std::string codec_filter =
+      cmd_line->GetSwitchValueASCII(switches::kDisableWebRtcHWEncoding);
+  return codec_filter.empty() || codec_filter == codec_name;
+}
 
 // Translate from media::VideoEncodeAccelerator::SupportedProfile to
 // one or more instances of cricket::WebRtcVideoEncoderFactory::VideoCodec
@@ -29,8 +38,11 @@ void VEAToWebRTCCodecs(
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (profile.profile >= media::VP8PROFILE_MIN &&
       profile.profile <= media::VP8PROFILE_MAX) {
-    codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-        webrtc::kVideoCodecVP8, "VP8", width, height, fps));
+    if (!IsCodecDisabledByCommandLine(cmd_line,
+                                      switches::kDisableWebRtcHWEncodingVPx)) {
+      codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
+          webrtc::kVideoCodecVP8, "VP8", width, height, fps));
+    }
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
     // Enable H264 HW encode for WebRTC when SW fallback is available, which is
@@ -44,7 +56,9 @@ void VEAToWebRTCCodecs(
         base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg);
 #endif  // BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
     if (cmd_line->HasSwitch(switches::kEnableWebRtcHWH264Encoding) ||
-        webrtc_h264_sw_enabled) {
+        webrtc_h264_sw_enabled ||
+        !IsCodecDisabledByCommandLine(cmd_line,
+                                      switches::kDisableWebRtcHWEncodingH264)) {
       codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
           webrtc::kVideoCodecH264, "H264", width, height, fps));
     }

@@ -909,6 +909,9 @@ const char kDisableWebRtcEncryption[]      = "disable-webrtc-encryption";
 
 // Disables HW encode acceleration for WebRTC.
 const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
+const char kDisableWebRtcHWEncodingVPx[] = "vpx";
+const char kDisableWebRtcHWEncodingH264[] = "h264";
+const char kDisableWebRtcHWEncodingNone[] = "none";
 
 // Enables H264 HW encode acceleration for WebRTC.
 const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";

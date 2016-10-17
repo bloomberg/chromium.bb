@@ -238,8 +238,11 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
     if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding))
       decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
 
-    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
+    if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding) ||
+        !cmd_line->GetSwitchValueASCII(switches::kDisableWebRtcHWEncoding)
+             .empty()) {
       encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
+    }
   }
 
 #if defined(OS_ANDROID)
