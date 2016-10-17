@@ -191,7 +191,8 @@ void VideoDetector::UpdateState() {
 
   if (state_ != new_state) {
     state_ = new_state;
-    FOR_EACH_OBSERVER(Observer, observers_, OnVideoStateChanged(state_));
+    for (auto& observer : observers_)
+      observer.OnVideoStateChanged(state_);
   }
 }
 

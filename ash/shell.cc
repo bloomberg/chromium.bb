@@ -270,8 +270,8 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
 }
 
 void Shell::OnLoginStateChanged(LoginStatus status) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnLoginStateChanged(status));
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnLoginStateChanged(status);
 }
 
 void Shell::OnLoginUserProfilePrepared() {
@@ -280,13 +280,13 @@ void Shell::OnLoginUserProfilePrepared() {
 }
 
 void Shell::OnAppTerminating() {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnAppTerminating());
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnAppTerminating();
 }
 
 void Shell::OnLockStateChanged(bool locked) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnLockStateChanged(locked));
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnLockStateChanged(locked);
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
   if (!locked) {
@@ -301,14 +301,14 @@ void Shell::OnLockStateChanged(bool locked) {
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
 #if defined(OS_CHROMEOS)
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnCastingSessionStartedOrStopped(started));
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnCastingSessionStartedOrStopped(started);
 #endif
 }
 
 void Shell::OnRootWindowAdded(WmWindow* root_window) {
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnRootWindowAdded(root_window));
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnRootWindowAdded(root_window);
 }
 
 void Shell::CreateKeyboard() {
@@ -364,8 +364,8 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
     return;
 
   is_touch_hud_projection_enabled_ = enabled;
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnTouchHudProjectionToggled(enabled));
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnTouchHudProjectionToggled(enabled);
 }
 
 #if defined(OS_CHROMEOS)
@@ -828,8 +828,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
-  FOR_EACH_OBSERVER(ShellObserver, *wm_shell_->shell_observers(),
-                    OnShellInitialized());
+  for (auto& observer : *wm_shell_->shell_observers())
+    observer.OnShellInitialized();
 
   user_metrics_recorder_->OnShellInitialized();
 }

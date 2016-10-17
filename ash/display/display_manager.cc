@@ -1409,18 +1409,18 @@ void DisplayManager::RunPendingTasksForTest() {
 
 void DisplayManager::NotifyMetricsChanged(const display::Display& display,
                                           uint32_t metrics) {
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayMetricsChanged(display, metrics));
+  for (auto& observer : observers_)
+    observer.OnDisplayMetricsChanged(display, metrics);
 }
 
 void DisplayManager::NotifyDisplayAdded(const display::Display& display) {
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayAdded(display));
+  for (auto& observer : observers_)
+    observer.OnDisplayAdded(display);
 }
 
 void DisplayManager::NotifyDisplayRemoved(const display::Display& display) {
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayRemoved(display));
+  for (auto& observer : observers_)
+    observer.OnDisplayRemoved(display);
 }
 
 void DisplayManager::AddObserver(display::DisplayObserver* observer) {

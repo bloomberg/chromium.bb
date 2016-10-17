@@ -380,12 +380,13 @@ std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
 }
 
 void WmShellMus::OnOverviewModeStarting() {
-  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(),
-                    OnOverviewModeStarting());
+  for (auto& observer : *shell_observers())
+    observer.OnOverviewModeStarting();
 }
 
 void WmShellMus::OnOverviewModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(), OnOverviewModeEnded());
+  for (auto& observer : *shell_observers())
+    observer.OnOverviewModeEnded();
 }
 
 SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {
@@ -457,8 +458,8 @@ void WmShellMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
   if (gained_active == lost_active)
     return;
 
-  FOR_EACH_OBSERVER(WmActivationObserver, activation_observers_,
-                    OnWindowActivated(gained_active, lost_active));
+  for (auto& observer : activation_observers_)
+    observer.OnWindowActivated(gained_active, lost_active);
 }
 
 void WmShellMus::OnDidDestroyClient(ui::WindowTreeClient* client) {

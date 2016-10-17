@@ -46,8 +46,8 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
       return;
 
     enabled_ = enabled;
-    FOR_EACH_OBSERVER(KeyboardUIObserver, *observers(),
-                      OnKeyboardEnabledStateChanged(enabled));
+    for (auto& observer : *observers())
+      observer.OnKeyboardEnabledStateChanged(enabled);
   }
 
  private:

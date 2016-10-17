@@ -239,12 +239,13 @@ std::unique_ptr<KeyEventWatcher> WmShellAura::CreateKeyEventWatcher() {
 }
 
 void WmShellAura::OnOverviewModeStarting() {
-  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(),
-                    OnOverviewModeStarting());
+  for (auto& observer : *shell_observers())
+    observer.OnOverviewModeStarting();
 }
 
 void WmShellAura::OnOverviewModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, *shell_observers(), OnOverviewModeEnded());
+  for (auto& observer : *shell_observers())
+    observer.OnOverviewModeEnded();
 }
 
 SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {

@@ -132,8 +132,8 @@ void ScreenOrientationController::SetRotationLocked(bool rotation_locked) {
   rotation_locked_ = rotation_locked;
   if (!rotation_locked_)
     rotation_locked_orientation_ = blink::WebScreenOrientationLockAny;
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnRotationLockChanged(rotation_locked_));
+  for (auto& observer : observers_)
+    observer.OnRotationLockChanged(rotation_locked_);
   if (!display::Display::HasInternalDisplay())
     return;
   base::AutoReset<bool> auto_ignore_display_configuration_updates(

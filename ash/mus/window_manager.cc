@@ -164,12 +164,11 @@ RootWindowController* WindowManager::CreateRootWindowController(
   // TODO: this should be called when logged in. See http://crbug.com/654606.
   root_window_controller->wm_root_window_controller()->CreateShelf();
 
-  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                    OnRootWindowControllerAdded(root_window_controller));
+  for (auto& observer : observers_)
+    observer.OnRootWindowControllerAdded(root_window_controller);
 
-  FOR_EACH_OBSERVER(display::DisplayObserver,
-                    *screen_->display_list()->observers(),
-                    OnDisplayAdded(root_window_controller->display()));
+  for (auto& observer : *screen_->display_list()->observers())
+    observer.OnDisplayAdded(root_window_controller->display());
 
   return root_window_controller;
 }
@@ -199,8 +198,8 @@ void WindowManager::Shutdown() {
 
   // Observers can rely on WmShell from the callback. So notify the observers
   // before destroying it.
-  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                    OnWindowTreeClientDestroyed());
+  for (auto& observer : observers_)
+    observer.OnWindowTreeClientDestroyed();
 
   // Primary RootWindowController must be destroyed last.
   RootWindowController* primary_root_window_controller =

@@ -47,8 +47,8 @@ void KeyboardUIMus::OnKeyboardStateChanged(bool is_enabled,
     return;
 
   is_enabled_ = is_enabled;
-  FOR_EACH_OBSERVER(KeyboardUIObserver, *observers(),
-                    OnKeyboardEnabledStateChanged(is_enabled));
+  for (auto& observer : *observers())
+    observer.OnKeyboardEnabledStateChanged(is_enabled);
 }
 
 }  // namespace ash

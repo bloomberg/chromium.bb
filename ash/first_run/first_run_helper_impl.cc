@@ -62,7 +62,8 @@ gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
 }
 
 void FirstRunHelperImpl::Cancel() {
-  FOR_EACH_OBSERVER(Observer, observers(), OnCancelled());
+  for (auto& observer : observers())
+    observer.OnCancelled();
 }
 
 bool FirstRunHelperImpl::IsCancelingKeyEvent(ui::KeyEvent* event) {

@@ -253,7 +253,8 @@ void WindowTreeHostManager::Start() {
 }
 
 void WindowTreeHostManager::Shutdown() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnWindowTreeHostManagerShutdown());
+  for (auto& observer : observers_)
+    observer.OnWindowTreeHostManagerShutdown();
 
   // Unset the display manager's delegate here because
   // DisplayManager outlives WindowTreeHostManager.
@@ -309,7 +310,8 @@ void WindowTreeHostManager::InitHosts() {
     }
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnDisplaysInitialized());
+  for (auto& observer : observers_)
+    observer.OnDisplaysInitialized();
 }
 
 void WindowTreeHostManager::AddObserver(Observer* observer) {
@@ -747,7 +749,8 @@ void WindowTreeHostManager::CloseMirroringDisplayIfNotNecessary() {
 }
 
 void WindowTreeHostManager::PreDisplayConfigurationChange(bool clear_focus) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
+  for (auto& observer : observers_)
+    observer.OnDisplayConfigurationChanging();
   focus_activation_store_->Store(clear_focus);
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Point point_in_screen = screen->GetCursorScreenPoint();
@@ -792,7 +795,8 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
         ->SetOutputIsSecure(output_is_secure);
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
+  for (auto& observer : observers_)
+    observer.OnDisplayConfigurationChanged();
   UpdateMouseLocationAfterDisplayChange();
 }
 
