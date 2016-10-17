@@ -19,7 +19,7 @@ namespace {
 const char kLanguageModelCounters[] = "language_model_counters";
 
 const int kMaxCountersSum = 1000;
-const int kMinCountersSum = 100;
+const int kMinCountersSum = 10;
 const float kCutoffRatio = 0.005f;
 const float kDiscountFactor = 0.75f;
 
