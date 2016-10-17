@@ -51,8 +51,6 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
                      double viewportWidth,
                      double viewportHeight);
 
-  // This raw ptr is safe, as MediaValues would not outlive MediaQueryEvaluator,
-  // and MediaQueryEvaluator is reset on |Document::detachLayoutTree|.
   Member<LocalFrame> m_frame;
   bool m_viewportDimensionsOverridden;
   double m_viewportWidthOverride;
