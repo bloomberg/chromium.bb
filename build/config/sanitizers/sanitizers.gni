@@ -155,6 +155,12 @@ assert(!using_sanitizer || is_clang,
 prebuilt_instrumented_libraries_available =
     is_msan && (msan_track_origins == 0 || msan_track_origins == 2)
 
+if (use_libfuzzer && is_asan && is_linux) {
+  # We do leak checking with libFuzzer on Linux. Set is_lsan for code that
+  # relies on LEAK_SANITIZER define to avoid false positives.
+  is_lsan = true
+}
+
 # MSan only links Chrome properly in release builds (brettw -- 9/1/2015). The
 # same is possibly true for the other non-ASan sanitizers. But regardless of
 # whether it links, one would normally never run a sanitizer in debug mode.
