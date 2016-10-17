@@ -254,6 +254,9 @@ void ResetSettingsHandler::ResetProfile(
                  request_origin));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ProfileReset.ResetRequestOrigin", request_origin,
+      reset_report::ChromeResetReport::ResetRequestOrigin_MAX + 1);
 }
 
 ProfileResetter* ResetSettingsHandler::GetResetter() {

@@ -62,7 +62,9 @@ message ChromeResetReport {
   // Full command line (executable and parameters) of shotcuts to start Chrome.
   repeated string shortcuts = 18;
 
-  // Specifies where the request for the settings reset came from.
+  // Specifies where the request for the settings reset came from. If
+  // you add new enumerators, also update
+  // "ProfileResetRequestOriginEnum" in tools/metrics/histograms/histograms.xml.
   enum ResetRequestOrigin {
     RESET_REQUEST_ORIGIN_UNSPECIFIED = 0;
     // None of the other cases. Possibly by navigating to

@@ -16,7 +16,6 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
-#include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/profiles/profile.h"
@@ -154,27 +153,30 @@ void ResetProfileSettingsHandler::RegisterMessages() {
 void ResetProfileSettingsHandler::HandleResetProfileSettings(
     const base::ListValue* value) {
   bool send_settings = false;
-  std::string reset_request_origin;
+  std::string request_origin_string;
   bool success = value->GetBoolean(0, &send_settings) &&
-                 value->GetString(1, &reset_request_origin);
+                 value->GetString(1, &request_origin_string);
   DCHECK(success);
 
   DCHECK(brandcode_.empty() || config_fetcher_);
+  reset_report::ChromeResetReport::ResetRequestOrigin request_origin =
+      ResetRequestOriginFromString(request_origin_string);
   if (config_fetcher_ && config_fetcher_->IsActive()) {
     // Reset once the prefs are fetched.
     config_fetcher_->SetCallback(
         base::Bind(&ResetProfileSettingsHandler::ResetProfile, Unretained(this),
-                   send_settings, reset_request_origin));
+                   send_settings, request_origin));
   } else {
-    ResetProfile(send_settings, reset_request_origin);
+    ResetProfile(send_settings, request_origin);
   }
 }
 
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
     bool send_feedback,
-    const std::string& reset_request_origin) {
+    reset_report::ChromeResetReport::ResetRequestOrigin request_origin) {
   web_ui()->CallJavascriptFunctionUnsafe(
       "ResetProfileSettingsOverlay.doneResetting");
+
   if (send_feedback && setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
     ResettableSettingsSnapshot current_snapshot(profile);
@@ -184,8 +186,7 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
       std::unique_ptr<reset_report::ChromeResetReport> report_proto =
           SerializeSettingsReportToProto(*setting_snapshot_, difference);
       if (report_proto) {
-        report_proto->set_reset_request_origin(
-            ResetRequestOriginFromString(reset_request_origin));
+        report_proto->set_reset_request_origin(request_origin);
         SendSettingsFeedbackProto(*report_proto, profile);
       }
     }
@@ -226,7 +227,7 @@ void ResetProfileSettingsHandler::OnSettingsFetched() {
 
 void ResetProfileSettingsHandler::ResetProfile(
     bool send_settings,
-    const std::string& reset_request_origin) {
+    reset_report::ChromeResetReport::ResetRequestOrigin request_origin) {
   DCHECK(resetter_);
   DCHECK(!resetter_->IsActive());
 
@@ -246,9 +247,12 @@ void ResetProfileSettingsHandler::ResetProfile(
   resetter_->Reset(
       ProfileResetter::ALL, std::move(default_settings),
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
-                 AsWeakPtr(), send_settings, reset_request_origin));
+                 AsWeakPtr(), send_settings, request_origin));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ProfileReset.ResetRequestOrigin", request_origin,
+      reset_report::ChromeResetReport::ResetRequestOrigin_MAX + 1);
 }
 
 void ResetProfileSettingsHandler::UpdateFeedbackUI() {
