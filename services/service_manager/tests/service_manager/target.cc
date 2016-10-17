@@ -10,7 +10,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/runner/child/test_native_main.h"
 #include "services/service_manager/runner/init.h"
-#include "services/service_manager/tests/shell/shell_unittest.mojom.h"
+#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
 
 using service_manager::test::mojom::CreateInstanceTestPtr;
 
@@ -25,7 +25,8 @@ class Target : public service_manager::Service {
   // service_manager::Service:
   void OnStart(const service_manager::Identity& identity) override {
     CreateInstanceTestPtr service;
-    connector()->ConnectToInterface("service:shell_unittest", &service);
+    connector()->ConnectToInterface("service:service_manager_unittest",
+                                    &service);
     service->SetTargetIdentity(identity);
   }
 

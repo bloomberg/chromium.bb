@@ -7,7 +7,7 @@
       "connect_unittests:connect_test_service": [
         "service_manager::test::mojom::ConnectTestService"
       ],
-      "shell:service_factory": [
+      "service_manager:service_factory": [
         "service_manager::mojom::ServiceFactory"
       ]
     }

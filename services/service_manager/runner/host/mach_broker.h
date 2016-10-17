@@ -13,15 +13,16 @@ template <typename T> struct DefaultSingletonTraits;
 
 namespace service_manager {
 
-// A global singleton |MachBroker| is used by the shell to provide access to
-// Mach task ports for shell out-of-process applications.
+// A global singleton |MachBroker| is used by the service manager to provide
+// access to
+// Mach task ports for service manager out-of-process applications.
 class MachBroker {
  public:
   // Sends the task port of the current process to the parent over Mach IPC.
   // For use in child processes.
   static void SendTaskPortToParent();
 
-  // Returns the global |MachBroker|. For use in the shell.
+  // Returns the global |MachBroker|. For use in the service manager.
   static MachBroker* GetInstance();
 
   // Registers |pid| with a MACH_PORT_NULL task port in the port provider. A

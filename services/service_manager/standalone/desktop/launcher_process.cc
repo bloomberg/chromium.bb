@@ -36,20 +36,20 @@ int LauncherProcessMain() {
 
   // We want the Context to outlive the MessageLoop so that pipes are all
   // gracefully closed / error-out before we try to shut the Context down.
-  Context shell_context;
+  Context service_manager_context;
   {
     base::MessageLoop message_loop;
     CHECK(base::i18n::InitializeICU());
-    shell_context.Init(nullptr);
+    service_manager_context.Init(nullptr);
 
     message_loop.task_runner()->PostTask(
         FROM_HERE, base::Bind(&Context::RunCommandLineApplication,
-                              base::Unretained(&shell_context)));
+                              base::Unretained(&service_manager_context)));
 
     base::RunLoop().Run();
 
     // Must be called before |message_loop| is destroyed.
-    shell_context.Shutdown();
+    service_manager_context.Shutdown();
   }
 
   return 0;

@@ -75,7 +75,7 @@ test("leveldb_service_unittests") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp:sources",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//third_party/leveldatabase",
   ]
 

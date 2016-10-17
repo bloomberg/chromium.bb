@@ -43,10 +43,10 @@ class ServiceRunner {
   // Iff |init_base| is true, the runner will perform some initialization of
   // base globals (e.g. CommandLine and AtExitManager) before starting the
   // service.
-  MojoResult Run(MojoHandle shell_handle, bool init_base);
+  MojoResult Run(MojoHandle service_manager_handle, bool init_base);
 
   // Calls Run above with |init_base| set to |true|.
-  MojoResult Run(MojoHandle shell_handle);
+  MojoResult Run(MojoHandle service_manager_handle);
 
   // Allows the caller to shut down the connection with the Service Manager.
   // After the Service Manager notices the pipe has closed, it will no longer

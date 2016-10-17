@@ -19,7 +19,7 @@ class MessageLoop;
 
 namespace service_manager {
 
-class BackgroundShell;
+class BackgroundServiceManager;
 
 namespace test {
 
@@ -87,7 +87,7 @@ class ServiceTest : public testing::Test {
   std::unique_ptr<Service> service_;
 
   std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<BackgroundShell> background_shell_;
+  std::unique_ptr<BackgroundServiceManager> background_service_manager_;
   std::unique_ptr<ServiceContext> service_context_;
 
   // See constructor.

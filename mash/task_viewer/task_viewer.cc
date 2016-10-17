@@ -308,7 +308,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   service_manager::mojom::ServiceManagerPtr service_manager;
-  connector()->ConnectToInterface("service:shell", &service_manager);
+  connector()->ConnectToInterface("service:service_manager", &service_manager);
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
   service_manager::mojom::ServiceManagerListenerRequest request =

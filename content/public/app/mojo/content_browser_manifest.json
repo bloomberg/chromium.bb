@@ -32,7 +32,7 @@
         "media::mojom::ImageCapture",
         "memory_coordinator::mojom::MemoryCoordinatorHandle"
       ],
-      "shell:service_factory": [
+      "service_manager:service_factory": [
         "service_manager::mojom::ServiceFactory"
       ]
     },
@@ -44,9 +44,11 @@
       "service:content_plugin": [ "browser" ],
       "service:content_renderer": [ "browser" ],
       "service:content_utility": [ "browser" ],
-      "service:shell": [ "shell:client_process",
-                         "shell:instance_name",
-                         "shell:user_id" ],
+      "service:service_manager": [
+        "service_manager:client_process",
+        "service_manager:instance_name",
+        "service_manager:user_id"
+      ],
       "service:file": [ "file:filesystem", "file:leveldb" ],
       "service:media": [ "media:media" ]
     }

@@ -474,9 +474,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The globally-unique identifier for this RPH.
   const int id_;
 
-  // A secondary ID used by the Mojo shell to distinguish different incarnations
-  // of the same RPH from each other. Unlike |id_| this is not globally unique,
-  // but it is guaranteed to change every time Init() is called.
+  // A secondary ID used by the Service Manager to distinguish different
+  // incarnations of the same RPH from each other. Unlike |id_| this is not
+  // globally unique, but it is guaranteed to change every time ProcessDied() is
+  // called.
   int instance_id_ = 1;
 
   BrowserContext* browser_context_;

@@ -38,11 +38,11 @@ source_set("mus_common") {
   ]
 }
 
-source_set("run_all_shelltests") {
+source_set("run_all_service_tests") {
   testonly = true
 
   sources = [
-    "run_all_shelltests.cc",
+    "run_all_service_tests.cc",
   ]
 
   deps = [

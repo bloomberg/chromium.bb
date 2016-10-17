@@ -5,7 +5,7 @@
   "capabilities": {
     "provided": {
       "browser": [ "IPC::mojom::ChannelBootstrap" ],
-      "shell:service_factory": [
+      "service_manager:service_factory": [
         "service_manager::mojom::ServiceFactory"
       ]
     },

@@ -21,7 +21,8 @@ namespace test {
 
 // Starts the process @ |target_exe_name| and connects to it as |target| using
 // |connector|, returning the connection & the process.
-// This blocks until the connection is established/rejected by the shell.
+// This blocks until the connection is established/rejected by the service
+// manager.
 std::unique_ptr<Connection> LaunchAndConnectToProcess(
     const std::string& target_exe_name,
     const Identity target,

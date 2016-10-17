@@ -1,0 +1,16 @@
+{
+  "manifest_version": 1,
+  "name": "exe:service_manager_unittest_driver",
+  "display_name": "Service Manager Unittest: Driver",
+  "capabilities": {
+    "provided": {
+      "service_manager_unittest:driver": [
+        "service_manager::test::mojom::Driver"
+      ]
+    },
+    "required": {
+      "exe:service_manager_unittest_target": [ ],
+      "service:service_manager": [ "service_manager:client_process" ]
+    }
+  }
+}

@@ -5,7 +5,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/service_manager/background/background_shell_main.h"
+#include "services/service_manager/background/background_service_manager_main.h"
 
 int MasterProcessMain(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);

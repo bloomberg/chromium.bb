@@ -148,7 +148,7 @@ test("media_mojo_shell_unittests") {
     "//media/mojo/common",
     "//media/mojo/interfaces",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -175,7 +175,7 @@ test("media_pipeline_integration_unittests") {
 
   deps = [
     "//media/test:mojo_pipeline_integration_tests",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
   ]
 
   data_deps = [

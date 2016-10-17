@@ -21,7 +21,8 @@ class ShutdownTest : public test::ServiceTest {
 
 TEST_F(ShutdownTest, ConnectRace) {
   // This test exercises a number of potential shutdown races that can lead to
-  // client deadlock if any of various parts of the EDK or shell service are not
+  // client deadlock if any of various parts of the EDK or service manager are
+  // not
   // working as intended.
 
   mojom::ShutdownTestClientControllerPtr control;

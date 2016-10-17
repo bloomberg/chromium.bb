@@ -129,7 +129,8 @@ void Session::StartRestartableService(
   //             to avoid infinite crash-restart loops.
   std::unique_ptr<service_manager::Connection> connection =
       connector()->Connect(url);
-  // Note: |connection| may be null if we've lost our connection to the shell.
+  // Note: |connection| may be null if we've lost our connection to the service
+  // manager.
   if (connection) {
     connection->SetConnectionLostClosure(
         base::Bind(&LogAndCallServiceRestartCallback, url, restart_callback));

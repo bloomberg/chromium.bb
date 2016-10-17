@@ -92,7 +92,7 @@ test("video_capture_unittests") {
     "//media/mojo/common:common",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//services/video_capture/public/interfaces",
     "//testing/gmock",
     "//testing/gtest",

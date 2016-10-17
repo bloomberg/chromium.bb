@@ -66,7 +66,7 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
 };
 
 #if defined(OS_ANDROID)
-// TODO(qsr): Multiprocess shell tests are not supported on android.
+// TODO(qsr): Multiprocess service manager tests are not supported on android.
 #define MAYBE_StartJoin DISABLED_StartJoin
 #else
 #define MAYBE_StartJoin StartJoin
@@ -74,8 +74,8 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
 // Just tests starting the child process and joining it (without starting an
 // app).
 TEST(ChildProcessHostTest, MAYBE_StartJoin) {
-  base::FilePath shell_dir;
-  PathService::Get(base::DIR_MODULE, &shell_dir);
+  base::FilePath service_manager_dir;
+  PathService::Get(base::DIR_MODULE, &service_manager_dir);
   base::MessageLoop message_loop;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool(
       new base::SequencedWorkerPool(3, "blocking_pool",

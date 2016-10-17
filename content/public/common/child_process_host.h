@@ -89,7 +89,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   virtual std::string CreateChannelMojo(const std::string& child_token) = 0;
 
   // Creates the IPC channel over a Mojo message pipe. The pipe connection is
-  // brokered through the shell like any other service connection.
+  // brokered through the Service Manager like any other service connection.
   virtual void CreateChannelMojo() = 0;
 
   // Returns true iff the IPC channel is currently being opened;

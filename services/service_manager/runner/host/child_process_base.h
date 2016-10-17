@@ -10,7 +10,8 @@
 
 namespace service_manager {
 
-// Child processes call this to establish the connection to the shell and obtain
+// Child processes call this to establish the connection to the service manager
+// and obtain
 // the ServiceRequest. Once the connection has been established |callback|
 // is run. ChildProcessMainWithCallback() returns once the the callback
 // completes.

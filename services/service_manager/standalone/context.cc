@@ -130,7 +130,7 @@ void Context::EnsureEmbedderIsInitialized() {
 }
 
 void Context::Init(std::unique_ptr<InitParams> init_params) {
-  TRACE_EVENT0("mojo_shell", "Context::Init");
+  TRACE_EVENT0("service_manager", "Context::Init");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -222,7 +222,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
     tracer_.StartCollectingFromTracingService(std::move(coordinator));
   }
 
-  // Record the shell startup metrics used for performance testing.
+  // Record the service manager startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     tracing::mojom::StartupPerformanceDataCollectorPtr collector;
@@ -232,14 +232,17 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
     // CurrentProcessInfo::CreationTime is only defined on some platforms.
     const base::Time creation_time = base::CurrentProcessInfo::CreationTime();
-    collector->SetShellProcessCreationTime(creation_time.ToInternalValue());
+    collector->SetServiceManagerProcessCreationTime(
+        creation_time.ToInternalValue());
 #endif
-    collector->SetShellMainEntryPointTime(main_entry_time_.ToInternalValue());
+    collector->SetServiceManagerMainEntryPointTime(
+        main_entry_time_.ToInternalValue());
   }
 }
 
 void Context::Shutdown() {
-  // Actions triggered by Shell's destructor may require a current message loop,
+  // Actions triggered by Service Manager's destructor may require a current
+  // message loop,
   // so we should destruct it explicitly now as ~Context() occurs post message
   // loop shutdown.
   service_manager_.reset();
@@ -250,7 +253,7 @@ void Context::Shutdown() {
   if (!init_edk_)
     return;
 
-  TRACE_EVENT0("mojo_shell", "Context::Shutdown");
+  TRACE_EVENT0("service_manager", "Context::Shutdown");
   // Post a task in case OnShutdownComplete is called synchronously.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(mojo::edk::ShutdownIPCSupport));

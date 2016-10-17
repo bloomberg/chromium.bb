@@ -28,7 +28,7 @@ class Store;
 namespace service_manager {
 class NativeRunnerDelegate;
 
-// The "global" context for the shell's main process.
+// The "global" context for the service manager's main process.
 class Context : public mojo::edk::ProcessDelegate {
  public:
   struct InitParams {

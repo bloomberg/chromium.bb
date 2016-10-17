@@ -6,7 +6,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/service_manager/background/background_shell_main.h"
+#include "services/service_manager/background/background_service_manager_main.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"

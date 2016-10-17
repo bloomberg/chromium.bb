@@ -35,8 +35,8 @@ interface Collector {
 // https://goo.gl/vZ8dZW).
 struct StartupPerformanceTimes {
   // TODO(msw): Rename to match "BrowserMainEntryTimeAbsolute" metric?
-  int64 shell_process_creation_time;
-  int64 shell_main_entry_point_time;
+  int64 service_manager_process_creation_time;
+  int64 service_manager_main_entry_point_time;
   int64 browser_message_loop_start_ticks;
   int64 browser_window_display_ticks;
   int64 browser_open_tabs_time_delta;
@@ -49,8 +49,8 @@ struct StartupPerformanceTimes {
 // This interface accepts startup performance timing from a variety of sources.
 interface StartupPerformanceDataCollector {
   // These setters may be called many times, only the first time is recorded.
-  SetShellProcessCreationTime(int64 time);
-  SetShellMainEntryPointTime(int64 time);
+  SetServiceManagerProcessCreationTime(int64 time);
+  SetServiceManagerMainEntryPointTime(int64 time);
   SetBrowserMessageLoopStartTicks(int64 ticks);
   SetBrowserWindowDisplayTicks(int64 ticks);
   SetBrowserOpenTabsTimeDelta(int64 delta);

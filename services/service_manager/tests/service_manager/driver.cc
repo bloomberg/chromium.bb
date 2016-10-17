@@ -32,7 +32,7 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/init.h"
-#include "services/service_manager/tests/shell/shell_unittest.mojom.h"
+#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
 
 namespace {
 
@@ -49,13 +49,13 @@ class Driver : public service_manager::Service,
   void OnStart(const service_manager::Identity& identity) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
-  #if defined(OS_WIN)
+#if defined(OS_WIN)
     target_path = target_path.Append(
-        FILE_PATH_LITERAL("shell_unittest_target.exe"));
-  #else
+        FILE_PATH_LITERAL("service_manager_unittest_target.exe"));
+#else
     target_path = target_path.Append(
-        FILE_PATH_LITERAL("shell_unittest_target"));
-  #endif
+        FILE_PATH_LITERAL("service_manager_unittest_target"));
+#endif
 
     base::CommandLine child_command_line(target_path);
     // Forward the wait-for-debugger flag but nothing else - we don't want to
@@ -78,7 +78,7 @@ class Driver : public service_manager::Service,
                                                          child_token);
     service_manager::mojom::PIDReceiverPtr receiver;
 
-    service_manager::Identity target("exe:shell_unittest_target",
+    service_manager::Identity target("exe:service_manager_unittest_target",
                                      service_manager::mojom::kInheritUserID);
     service_manager::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(client),
@@ -89,11 +89,11 @@ class Driver : public service_manager::Service,
         base::Bind(&Driver::OnConnectionCompleted, base::Unretained(this)));
 
     base::LaunchOptions options;
-  #if defined(OS_WIN)
+#if defined(OS_WIN)
     options.handles_to_inherit = &handle_passing_info;
-  #elif defined(OS_POSIX)
+#elif defined(OS_POSIX)
     options.fds_to_remap = &handle_passing_info;
-  #endif
+#endif
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
     receiver->SetPID(target_.Pid());

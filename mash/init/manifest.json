@@ -9,7 +9,10 @@
     "required": {
       "*": [],
       "service:login": [ "login:login" ],
-      "service:shell": [ "shell:user_id", "shell:all_users" ]
+      "service:service_manager": [
+        "service_manager:user_id",
+        "service_manager:all_users"
+      ]
     }
   }
 }

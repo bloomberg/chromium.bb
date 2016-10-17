@@ -8,9 +8,11 @@
     },
     "required": {
       "*": [ "app" ],
-      "service:shell": [ "shell:client_process",
-                         "shell:user_id",
-                         "shell:instance_name" ]
+      "service:service_manager": [
+        "service_manager:client_process",
+        "service_manager:user_id",
+        "service_manager:instance_name"
+      ]
     }
   }
 }

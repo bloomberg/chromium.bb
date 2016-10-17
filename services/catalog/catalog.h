@@ -41,7 +41,7 @@ class Reader;
 class Store;
 
 // Creates and owns an instance of the catalog. Exposes a ServicePtr that
-// can be passed to the Shell, potentially in a different process.
+// can be passed to the service manager, potentially in a different process.
 class Catalog
     : public service_manager::Service,
       public service_manager::InterfaceFactory<mojom::Catalog>,

@@ -19,7 +19,7 @@
         "connect_unittests:class",
         "connect_unittests:connect_test_service"
       ],
-      "service:shell": [ "shell:user_id" ]
+      "service:service_manager": [ "service_manager:user_id" ]
     }
   }
 }

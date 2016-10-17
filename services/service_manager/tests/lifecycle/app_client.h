@@ -49,7 +49,7 @@ class AppClient : public Service,
   void Ping(const PingCallback& callback) override;
   void GracefulQuit() override;
   void Crash() override;
-  void CloseShellConnection() override;
+  void CloseServiceManagerConnection() override;
 
  private:
   void BindingLost();

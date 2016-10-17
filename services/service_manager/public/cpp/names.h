@@ -16,7 +16,8 @@ extern const char kNameType_Exe[];
 //
 //    type:path.
 //
-// The type field tells the shell how to load the service. Two types are
+// The type field tells the service manager how to load the service. Two types
+// are
 // recognized:
 //
 //  service
@@ -36,7 +37,7 @@ extern const char kNameType_Exe[];
 // NativeRunners, and as such custom loaders must be specified for such names.
 //
 // Any name type may serve as an alias for any other name type. Aliasing is
-// resolved implicitly by the Shell.
+// resolved implicitly by the Service Manager.
 
 // Returns true if the name is a valid form, i.e. type:path. path cannot start
 // with a "//" sequence. These are _not_ urls.

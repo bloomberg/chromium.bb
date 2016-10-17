@@ -27,7 +27,7 @@
 
 namespace service_manager {
 
-int StandaloneShellMain(int argc, char** argv) {
+int StandaloneServiceManagerMain(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

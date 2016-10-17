@@ -191,7 +191,8 @@ class LifecycleTest : public test::ServiceTest {
  private:
   std::unique_ptr<InstanceState> TrackInstances() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface("service:shell", &service_manager);
+    connector()->ConnectToInterface("service:service_manager",
+                                    &service_manager);
     mojom::ServiceManagerListenerPtr listener;
     base::RunLoop loop;
     InstanceState* state = new InstanceState(GetProxy(&listener), &loop);
@@ -242,7 +243,7 @@ TEST_F(LifecycleTest, Standalone_Crash) {
   EXPECT_EQ(0u, instances()->GetNewInstanceCount());
 }
 
-TEST_F(LifecycleTest, Standalone_CloseShellConnection) {
+TEST_F(LifecycleTest, Standalone_CloseServiceManagerConnection) {
   test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestAppName);
 
   EXPECT_TRUE(instances()->HasInstanceForName(kTestAppName));
@@ -250,7 +251,7 @@ TEST_F(LifecycleTest, Standalone_CloseShellConnection) {
 
   base::RunLoop loop;
   lifecycle.set_connection_error_handler(base::Bind(&QuitLoop, &loop));
-  lifecycle->CloseShellConnection();
+  lifecycle->CloseServiceManagerConnection();
 
   WaitForInstanceDestruction();
 

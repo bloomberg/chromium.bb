@@ -41,7 +41,7 @@ void AppClient::Crash() {
   exit(1);
 }
 
-void AppClient::CloseShellConnection() {
+void AppClient::CloseServiceManagerConnection() {
   DCHECK(runner_);
   runner_->DestroyServiceContext();
   // Quit the app once the caller goes away.

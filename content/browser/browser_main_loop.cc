@@ -1055,7 +1055,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   device_monitor_mac_.reset();
 #endif
 
-  // Shutdown Mojo shell and IPC.
+  // Shutdown the Service Manager and IPC.
   service_manager_context_.reset();
   mojo_ipc_support_.reset();
 
@@ -1194,9 +1194,9 @@ void BrowserMainLoop::InitializeMainThread() {
 int BrowserMainLoop::BrowserThreadsStarted() {
   TRACE_EVENT0("startup", "BrowserMainLoop::BrowserThreadsStarted");
 
-  // Bring up Mojo IPC and shell as early as possible. Initializaing mojo
-  // requires the IO thread to have been initialized first. So this cannot
-  // happen any earlier than this.
+  // Bring up Mojo IPC and the embedded Service Manager as early as possible.
+  // Initializaing mojo requires the IO thread to have been initialized first,
+  // so this cannot happen any earlier than now.
   InitializeMojo();
 
 #if defined(USE_AURA)

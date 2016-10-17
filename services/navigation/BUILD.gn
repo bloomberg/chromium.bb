@@ -88,7 +88,7 @@ test("navigation_unittests") {
     "//services/navigation/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//testing/gtest",
   ]
 

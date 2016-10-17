@@ -61,8 +61,8 @@ class Service : public service_manager::Service,
   void StopAndFlush() override;
 
   // mojom::StartupPerformanceDataCollector:
-  void SetShellProcessCreationTime(int64_t time) override;
-  void SetShellMainEntryPointTime(int64_t time) override;
+  void SetServiceManagerProcessCreationTime(int64_t time) override;
+  void SetServiceManagerMainEntryPointTime(int64_t time) override;
   void SetBrowserMessageLoopStartTicks(int64_t ticks) override;
   void SetBrowserWindowDisplayTicks(int64_t ticks) override;
   void SetBrowserOpenTabsTimeDelta(int64_t delta) override;

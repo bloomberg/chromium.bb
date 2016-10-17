@@ -34,13 +34,14 @@ namespace service_manager {
 namespace {
 
 const char kCatalogName[] = "service:catalog";
-const char kServiceManagerName[] = "service:shell";
-const char kCapabilityClass_UserID[] = "shell:user_id";
-const char kCapabilityClass_ClientProcess[] = "shell:client_process";
-const char kCapabilityClass_InstanceName[] = "shell:instance_name";
-const char kCapabilityClass_AllUsers[] = "shell:all_users";
-const char kCapabilityClass_ExplicitClass[] = "shell:explicit_class";
-const char kCapabilityClass_ServiceManager[] = "shell:service_manager";
+const char kServiceManagerName[] = "service:service_manager";
+const char kCapabilityClass_UserID[] = "service_manager:user_id";
+const char kCapabilityClass_ClientProcess[] = "service_manager:client_process";
+const char kCapabilityClass_InstanceName[] = "service_manager:instance_name";
+const char kCapabilityClass_AllUsers[] = "service_manager:all_users";
+const char kCapabilityClass_ExplicitClass[] = "service_manager:explicit_class";
+const char kCapabilityClass_ServiceManager[] =
+    "service_manager:service_manager";
 
 }  // namespace
 
@@ -334,7 +335,8 @@ class ServiceManager::Instance
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
-                   << "service:shell{client_process} capability class.";
+                   << "service:service_manager{client_process} capability "
+                   << "class.";
         callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                      mojom::kInheritUserID);
         return false;
@@ -369,10 +371,11 @@ class ServiceManager::Instance
     if (target.user_id() != identity_.user_id() &&
         target.user_id() != mojom::kRootUserID &&
         !HasClass(capability_spec_, kCapabilityClass_UserID)) {
-      LOG(ERROR) << "Instance: " << identity_.name() << " running as: "
-                  << identity_.user_id() << " attempting to connect to: "
-                  << target.name() << " as: " << target.user_id() << " without "
-                  << " the service:shell{user_id} capability class.";
+      LOG(ERROR) << "Instance: " << identity_.name()
+                 << " running as: " << identity_.user_id()
+                 << " attempting to connect to: " << target.name()
+                 << " as: " << target.user_id() << " without "
+                 << " the service:service_manager{user_id} capability class.";
       callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                    mojom::kInheritUserID);
       return false;
@@ -381,9 +384,10 @@ class ServiceManager::Instance
         target.instance() != GetNamePath(target.name()) &&
         !HasClass(capability_spec_, kCapabilityClass_InstanceName)) {
       LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
-                  << "connect to " << target.name() << " using Instance name: "
-                  << target.instance() << " without the "
-                  << "service:shell{instance_name} capability class.";
+                 << "connect to " << target.name()
+                 << " using Instance name: " << target.instance()
+                 << " without the "
+                 << "service:service_manager{instance_name} capability class.";
       callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
       return false;
 
@@ -501,8 +505,8 @@ ServiceManager::ServiceManager(
   CapabilitySpec spec;
   spec.provided[kCapabilityClass_ServiceManager].insert(
       "service_manager::mojom::ServiceManager");
-  spec.required["*"].insert("shell:service_factory");
-  spec.required["service:catalog"].insert("shell:resolver");
+  spec.required["*"].insert("service_manager:service_factory");
+  spec.required["service:catalog"].insert("service_manager:resolver");
 
   service_manager_instance_ =
       CreateInstance(Identity(), CreateServiceManagerIdentity(), spec);
@@ -584,7 +588,8 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   CapabilitySpec spec;
   spec.provided["app"].insert("filesystem::mojom::Directory");
   spec.provided["catalog:catalog"].insert("catalog::mojom::Catalog");
-  spec.provided["shell:resolver"].insert("service_manager::mojom::Resolver");
+  spec.provided["service_manager:resolver"].insert(
+      "service_manager::mojom::Resolver");
   spec.provided["control"].insert("catalog::mojom::CatalogControl");
   Instance* instance = CreateInstance(
       CreateServiceManagerIdentity(), CreateCatalogIdentity(), spec);
@@ -642,7 +647,7 @@ void ServiceManager::OnInstanceStopped(const Identity& identity) {
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
                              mojom::ServicePtr service,
                              base::WeakPtr<Instance> source_instance) {
-  TRACE_EVENT_INSTANT1("mojo_shell", "ServiceManager::Connect",
+  TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
   DCHECK(IsValidName(params->target().name()));

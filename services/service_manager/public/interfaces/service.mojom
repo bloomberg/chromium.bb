@@ -8,9 +8,9 @@ import "services/service_manager/public/interfaces/capabilities.mojom";
 import "services/service_manager/public/interfaces/connector.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 
-// Implemented by something "known to" the Mojo Shell (e.g. an application or
-// service), for which an instance is tracked. It allows the implementor to
-// receive lifecycle events and service inbound connection attempts.
+// Implemented by any service which is known to the Service Manager, for which
+// instances may be tracked. It allows the implementor to receive lifecycle
+// events and service inbound connection attempts.
 interface Service {
   // Called by the service manager once an instance for this service has been
   // created. This method will be called exactly once before any other method is
@@ -34,10 +34,10 @@ interface Service {
   //
   OnStart(Identity identity) => (Connector&? connector_request);
 
-  // Called when another application attempts to open a connection to this
-  // application. An application implements this method to complete the exchange
-  // of interface implementations with the remote application. See also
-  // documentation in service_manager.mojom for Connect(). The application
+  // Called when another service attempts to open a connection to this
+  // service. A service implements this method to complete the exchange
+  // of interface implementations with the remote service. See also
+  // documentation in service_manager.mojom for Connect(). The service
   // originating the request is referred to as the "source" and the one
   // receiving the "target".
   //
@@ -47,7 +47,7 @@ interface Service {
   //    The identity of the instance originating the connection.
   //
   //  interfaces
-  //    A request for an InterfaceProvider by which the source application may
+  //    A request for an InterfaceProvider by which the source service may
   //    seek to bind interface implementations exported by the target.
   //
   //  allowed_capabilities

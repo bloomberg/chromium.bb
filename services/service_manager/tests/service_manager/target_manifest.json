@@ -1,0 +1,12 @@
+{
+  "manifest_version":  1,
+  "name": "exe:service_manager_unittest_target",
+  "display_name": "Service Manager Unittest: Target",
+  "capabilities": {
+    "required": {
+      "service:service_manager_unittest": [
+        "service_manager_unittest:create_instance_test"
+      ]
+    }
+  }
+}

@@ -7,8 +7,8 @@
 
 namespace service_manager {
 
-// Helper method to start Mojo standalone shell code.
-int StandaloneShellMain(int argc, char** argv);
+// Helper method to start standalone service manager code.
+int StandaloneServiceManagerMain(int argc, char** argv);
 
 }  // namespace service_manager
 

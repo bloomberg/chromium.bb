@@ -7,7 +7,7 @@
       "tests": ["*"]
     },
     "required": {
-      "service:shell": [ "shell:all_users" ]
+      "service:service_manager": [ "service_manager:all_users" ]
     }
   }
 }

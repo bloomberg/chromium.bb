@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SHELL_H_
-#define SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SHELL_H_
+#ifndef SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_
+#define SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_
 
 #include <memory>
 #include <vector>
@@ -22,11 +22,12 @@ namespace service_manager {
 class NativeRunnerDelegate;
 class ServiceManager;
 
-// BackgroundShell starts up the mojo shell on a background thread, and
+// BackgroundServiceManager starts up a Service Manager on a background thread,
+// and
 // destroys the thread in the destructor. Once created use CreateApplication()
 // to obtain an InterfaceRequest for the Application. The InterfaceRequest can
 // then be bound to an ApplicationImpl.
-class BackgroundShell {
+class BackgroundServiceManager {
  public:
   struct InitParams {
     InitParams();
@@ -38,16 +39,16 @@ class BackgroundShell {
     bool init_edk = true;
   };
 
-  BackgroundShell();
-  ~BackgroundShell();
+  BackgroundServiceManager();
+  ~BackgroundServiceManager();
 
-  // Starts the background shell. |command_line_switches| are additional
+  // Starts the background service manager. |command_line_switches| are
+  // additional
   // switches applied to any processes spawned by this call.
   void Init(std::unique_ptr<InitParams> init_params);
 
   // Obtains an InterfaceRequest for the specified name.
-  mojom::ServiceRequest CreateServiceRequest(
-      const std::string& name);
+  mojom::ServiceRequest CreateServiceRequest(const std::string& name);
 
   // Use to do processing on the thread running the Service Manager. The
   // callback is supplied a pointer to the Service Manager. The callback does
@@ -61,9 +62,9 @@ class BackgroundShell {
 
   std::unique_ptr<MojoThread> thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackgroundShell);
+  DISALLOW_COPY_AND_ASSIGN(BackgroundServiceManager);
 };
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SHELL_H_
+#endif  // SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_

@@ -67,10 +67,11 @@ class PackagedApp : public service_manager::Service,
     // will cause all instances to be quit.
     exit(1);
   }
-  void CloseShellConnection() override {
+  void CloseServiceManagerConnection() override {
     service_manager_connection_closed_callback_.Run(this);
     connection_.reset();
-    // This only closed our relationship with the shell, existing |bindings_|
+    // This only closed our relationship with the service manager, existing
+    // |bindings_|
     // remain active.
   }
 
@@ -81,7 +82,7 @@ class PackagedApp : public service_manager::Service,
 
   std::unique_ptr<service_manager::ServiceContext> connection_;
   mojo::BindingSet<LifecycleControl> bindings_;
-  // Run when this object's connection to the shell is closed.
+  // Run when this object's connection to the service manager is closed.
   DestructCallback service_manager_connection_closed_callback_;
   // Run when this object is destructed.
   DestructCallback destruct_callback_;
@@ -119,17 +120,16 @@ class Package : public service_manager::Service,
   void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override {
     ++service_manager_connection_refcount_;
-    apps_.push_back(
-        new PackagedApp(std::move(request),
-                        base::Bind(&Package::AppShellConnectionClosed,
-                                   base::Unretained(this)),
-                        base::Bind(&Package::AppDestructed,
-                                   base::Unretained(this))));
+    apps_.push_back(new PackagedApp(
+        std::move(request),
+        base::Bind(&Package::AppServiceManagerConnectionClosed,
+                   base::Unretained(this)),
+        base::Bind(&Package::AppDestructed, base::Unretained(this))));
   }
 
-  void AppShellConnectionClosed(PackagedApp* app) {
+  void AppServiceManagerConnectionClosed(PackagedApp* app) {
     if (!--service_manager_connection_refcount_)
-      app_client_.CloseShellConnection();
+      app_client_.CloseServiceManagerConnection();
   }
 
   void AppDestructed(PackagedApp* app) {

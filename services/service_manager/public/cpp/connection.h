@@ -21,15 +21,15 @@ class Connection {
   virtual ~Connection() {}
 
   enum class State {
-    // The shell has not yet processed the connection.
+    // The service manager has not yet processed the connection.
     PENDING,
 
-    // The shell processed the connection and it was established. GetResult()
-    // returns mojom::ConnectionResult::SUCCESS.
+    // The service manager processed the connection and it was established.
+    // GetResult() returns mojom::ConnectionResult::SUCCESS.
     CONNECTED,
 
-    // The shell processed the connection and establishment was prevented by
-    // an error, call GetResult().
+    // The service manager processed the connection and establishment was
+    // prevented by an error, call GetResult().
     DISCONNECTED
   };
 
@@ -58,9 +58,9 @@ class Connection {
 
   // Returns the remote identity. While the connection is in the pending state,
   // the user_id() field will be the value passed via Connect(). After the
-  // connection is completed, it will change to the value assigned by the shell.
-  // Call AddConnectionCompletedClosure() to schedule a closure to be run when
-  // the resolved user id is available.
+  // connection is completed, it will change to the value assigned by the
+  // service manager. Call AddConnectionCompletedClosure() to schedule a closure
+  // to be run when the resolved user id is available.
   virtual const Identity& GetRemoteIdentity() const = 0;
 
   // Register a handler to receive an error notification on the pipe to the
@@ -70,14 +70,16 @@ class Connection {
   // Returns the result of the connection. This function should only be called
   // when the connection state is not pending. Call
   // AddConnectionCompletedClosure() to schedule a closure to be run when the
-  // connection is processed by the shell.
+  // connection is processed by the service manager.
   virtual mojom::ConnectResult GetResult() const = 0;
 
-  // Returns true if the connection has not yet been processed by the shell.
+  // Returns true if the connection has not yet been processed by the service
+  // manager.
   virtual bool IsPending() const = 0;
 
   // Register a closure to be run when the connection has been completed by the
-  // shell and remote metadata is available. Useful only for connections created
+  // service manager and remote metadata is available. Useful only for
+  // connections created
   // via Connector::Connect(). Once the connection is complete, metadata is
   // available immediately.
   virtual void AddConnectionCompletedClosure(const base::Closure& callback) = 0;

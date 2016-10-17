@@ -19,15 +19,15 @@ class FilePath;
 namespace service_manager {
 class Identity;
 
-// Shell requires implementations of NativeRunner and NativeRunnerFactory to run
-// native applications.
+// Service Manager requires implementations of NativeRunner and
+// NativeRunnerFactory to run native applications.
 class NativeRunner {
  public:
   virtual ~NativeRunner() {}
 
   // Loads the app in the file at |app_path| and runs it on some other
-  // thread/process. Returns a Service handle the shell can use to connect
-  // to the the app.
+  // thread/process. Returns a Service handle the service manager can use to
+  // connect to the the app.
   virtual mojom::ServicePtr Start(
       const base::FilePath& app_path,
       const Identity& target,

@@ -22,7 +22,7 @@
 #include "mash/package/mash_packaged_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
-#include "services/service_manager/background/background_shell.h"
+#include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/native_runner_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -123,13 +123,13 @@ void MashRunner::Run() {
 }
 
 void MashRunner::RunMain() {
-  // TODO(sky): refactor backgroundshell so can supply own context, we
+  // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
   NativeRunnerDelegateImpl native_runner_delegate;
-  service_manager::BackgroundShell background_service_manager;
-  std::unique_ptr<service_manager::BackgroundShell::InitParams> init_params(
-      new service_manager::BackgroundShell::InitParams);
+  service_manager::BackgroundServiceManager background_service_manager;
+  std::unique_ptr<service_manager::BackgroundServiceManager::InitParams>
+      init_params(new service_manager::BackgroundServiceManager::InitParams);
   init_params->native_runner_delegate = &native_runner_delegate;
   background_service_manager.Init(std::move(init_params));
   service_.reset(new mash::MashPackagedService);

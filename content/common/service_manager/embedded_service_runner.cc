@@ -83,7 +83,7 @@ class EmbeddedServiceRunner::Instance
 
     service_manager::ServiceContext* new_connection =
         new service_manager::ServiceContext(service_.get(), std::move(request));
-    shell_connections_.push_back(base::WrapUnique(new_connection));
+    service_manager_connections_.push_back(base::WrapUnique(new_connection));
     new_connection->SetConnectionLostClosure(
         base::Bind(&Instance::OnStop, base::Unretained(this),
                    new_connection));
@@ -92,10 +92,10 @@ class EmbeddedServiceRunner::Instance
   void OnStop(service_manager::ServiceContext* connection) {
     DCHECK(task_runner_->BelongsToCurrentThread());
 
-    for (auto it = shell_connections_.begin(); it != shell_connections_.end();
-         ++it) {
+    for (auto it = service_manager_connections_.begin();
+         it != service_manager_connections_.end(); ++it) {
       if (it->get() == connection) {
-        shell_connections_.erase(it);
+        service_manager_connections_.erase(it);
         break;
       }
     }
@@ -104,7 +104,7 @@ class EmbeddedServiceRunner::Instance
   void Quit() {
     DCHECK(task_runner_->BelongsToCurrentThread());
 
-    shell_connections_.clear();
+    service_manager_connections_.clear();
     service_.reset();
     if (quit_task_runner_->BelongsToCurrentThread()) {
       QuitOnRunnerThread();
@@ -142,7 +142,7 @@ class EmbeddedServiceRunner::Instance
   // thread.
   std::unique_ptr<service_manager::Service> service_;
   std::vector<std::unique_ptr<service_manager::ServiceContext>>
-      shell_connections_;
+      service_manager_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };

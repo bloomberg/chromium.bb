@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "services/service_manager/background/background_shell.h"
+#include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/service.h"
 
 namespace service_manager {
@@ -51,10 +51,11 @@ void ServiceTest::OnStartCalled(Connector* connector,
 void ServiceTest::SetUp() {
   service_ = CreateService();
   message_loop_ = CreateMessageLoop();
-  background_shell_.reset(new service_manager::BackgroundShell);
-  background_shell_->Init(nullptr);
+  background_service_manager_.reset(
+      new service_manager::BackgroundServiceManager);
+  background_service_manager_->Init(nullptr);
 
-  // Create the shell connection. We don't proceed until we get our
+  // Create the service manager connection. We don't proceed until we get our
   // Service's OnStart() method is called.
   base::RunLoop run_loop;
   base::MessageLoop::ScopedNestableTaskAllower allow(
@@ -62,14 +63,15 @@ void ServiceTest::SetUp() {
   initialize_called_ = run_loop.QuitClosure();
 
   service_->set_context(base::MakeUnique<ServiceContext>(
-      service_.get(), background_shell_->CreateServiceRequest(test_name_)));
+      service_.get(),
+      background_service_manager_->CreateServiceRequest(test_name_)));
   connector_ = service_->connector();
 
   run_loop.Run();
 }
 
 void ServiceTest::TearDown() {
-  background_shell_.reset();
+  background_service_manager_.reset();
   message_loop_.reset();
   service_.reset();
 }

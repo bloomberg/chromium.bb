@@ -395,8 +395,8 @@ void ChildThreadImpl::ConnectChannel() {
 
   if (!channel_token.empty()) {
     // TODO(rockot): Remove all paths which lead to this branch. The Channel
-    // connection should always be established by a shell connection from the
-    // browser. http://crbug.com/623396.
+    // connection should always be established by a service manager connection
+    // from the browser. http://crbug.com/623396.
     handle = mojo::edk::CreateChildMessagePipe(channel_token);
   } else {
     DCHECK(service_manager_connection_);

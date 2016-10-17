@@ -43,7 +43,10 @@
     },
     "required": {
       "*": [ "app" ],
-      "service:shell": [ "shell:all_users", "shell:explicit_class" ],
+      "service:service_manager": [
+        "service_manager:all_users",
+        "service_manager:explicit_class"
+      ],
       "service:ui": [ "ozone" ]
     }
   }

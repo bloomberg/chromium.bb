@@ -49,7 +49,7 @@ test("mus_gpu_unittests") {
     ":gpu",
     "//base",
     "//ipc",
-    "//services/ui/common:run_all_shelltests",
+    "//services/ui/common:run_all_service_tests",
     "//testing/gtest",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",

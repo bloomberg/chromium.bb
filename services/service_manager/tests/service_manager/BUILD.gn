@@ -7,10 +7,10 @@ import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-source_set("shell") {
+source_set("service_manager") {
   testonly = true
   sources = [
-    "shell_unittest.cc",
+    "service_manager_unittest.cc",
   ]
 
   deps = [
@@ -25,14 +25,14 @@ source_set("shell") {
 
   data_deps = [
     ":manifest",
-    ":shell_unittest_driver",
-    ":shell_unittest_target",
+    ":service_manager_unittest_driver",
+    ":service_manager_unittest_target",
   ]
 }
 
 mojom("interfaces") {
   sources = [
-    "shell_unittest.mojom",
+    "service_manager_unittest.mojom",
   ]
 
   deps = [
@@ -41,11 +41,11 @@ mojom("interfaces") {
 }
 
 service_manifest("manifest") {
-  name = "shell_unittest"
-  source = "shell_unittest_manifest.json"
+  name = "service_manager_unittest"
+  source = "service_manager_unittest_manifest.json"
 }
 
-executable("shell_unittest_driver") {
+executable("service_manager_unittest_driver") {
   testonly = true
 
   sources = [
@@ -71,11 +71,11 @@ executable("shell_unittest_driver") {
 
 service_manifest("driver_manifest") {
   type = "exe"
-  name = "shell_unittest_driver"
+  name = "service_manager_unittest_driver"
   source = "driver_manifest.json"
 }
 
-executable("shell_unittest_target") {
+executable("service_manager_unittest_target") {
   testonly = true
 
   sources = [
@@ -97,6 +97,6 @@ executable("shell_unittest_target") {
 
 service_manifest("target_manifest") {
   type = "exe"
-  name = "shell_unittest_target"
+  name = "service_manager_unittest_target"
   source = "target_manifest.json"
 }

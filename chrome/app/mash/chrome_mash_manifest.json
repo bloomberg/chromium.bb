@@ -11,7 +11,9 @@
   "display_name": "Chrome Mash Packaged Services",
   "capabilities": {
     "provided": {
-      "shell:service_factory": [ "service_manager::mojom::ServiceFactory" ]
+      "service_manager:service_factory": [
+        "service_manager::mojom::ServiceFactory"
+      ]
     },
     "required": {
       "service:mash_session": [ "app" ],

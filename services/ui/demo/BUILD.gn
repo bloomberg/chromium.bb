@@ -56,7 +56,7 @@ test("mus_demo_unittests") {
     "//base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/ui/common:run_all_shelltests",
+    "//services/ui/common:run_all_service_tests",
     "//services/ui/public/interfaces",
     "//testing/gtest",
   ]

@@ -14,7 +14,7 @@
         "visitedlink::mojom::VisitedLinkNotificationSink",
         "web_cache::mojom::WebCache"
       ],
-      "shell:service_factory": [
+      "service_manager:service_factory": [
         "service_manager::mojom::ServiceFactory"
       ]
     },

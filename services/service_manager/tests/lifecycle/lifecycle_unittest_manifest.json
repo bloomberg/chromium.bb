@@ -6,10 +6,10 @@
     "required": {
       "*": [ "lifecycle_unittest:lifecycle_control" ],
       "service:lifecycle_unittest_parent": [ "lifecycle_unittest:parent" ],
-      "service:shell": [
-        "shell:service_manager",
-        "shell:instance_name",
-        "shell:client_process"
+      "service:service_manager": [
+        "service_manager:service_manager",
+        "service_manager:instance_name",
+        "service_manager:client_process"
       ]
     }
   }

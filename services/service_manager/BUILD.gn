@@ -54,6 +54,6 @@ source_set("service_manager") {
 }
 
 service_manifest("manifest") {
-  name = "shell"
+  name = "service_manager"
   source = "manifest.json"
 }

@@ -4,8 +4,8 @@
 
 module service_manager.test.mojom;
 
-// An interface implemented by an application exposing different ways for the
-// application to "shut down" from the caller and shell's perspective.
+// An interface implemented by a service exposing different ways for the
+// service to "shut down" from the caller and service manager's perspective.
 interface LifecycleControl {
   // Method for ping-pong acknowledgement.
   Ping() => ();
@@ -13,20 +13,20 @@ interface LifecycleControl {
   // Perform any normal cleanup and shut down normally.
   GracefulQuit();
 
-  // Crash immediately and leave the shell and clients to deal with the
-  // consequences.
+  // Crash immediately and leave the service manager and clients to deal with
+  // the consequences.
   Crash();
 
-  // Not actually a shutdown from the client's perspective, but the Shell is no
-  // longer tracking this application.
-  CloseShellConnection();
+  // Not actually a shutdown from the client's perspective, but the Service
+  // Manager is no longer tracking this service.
+  CloseServiceManagerConnection();
 };
 
-// Implemented by an app that connects to another app, thereby creating an
-// instance for it in the shell.
+// Implemented by a service that connects to another service, thereby creating
+// an instance for it in the service manager.
 interface Parent {
-  // Connects to another app and runs the callback when that app has acked a
-  // Ping.
+  // Connects to another service and runs the callback when that service has
+  // acked a Ping.
   ConnectToChild() => ();
   Quit();
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/background/background_shell.h"
+#include "services/service_manager/background/background_service_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -46,16 +46,17 @@ class MojoMessageLoop : public base::MessageLoop {
 }  // namespace
 
 // Manages the thread to startup mojo.
-class BackgroundShell::MojoThread : public base::SimpleThread {
+class BackgroundServiceManager::MojoThread : public base::SimpleThread {
  public:
-  explicit MojoThread(std::unique_ptr<BackgroundShell::InitParams> init_params)
-      : SimpleThread("mojo-background-shell"),
+  explicit MojoThread(
+      std::unique_ptr<BackgroundServiceManager::InitParams> init_params)
+      : SimpleThread("background-service-manager"),
         init_params_(std::move(init_params)) {}
   ~MojoThread() override {}
 
   void CreateServiceRequest(base::WaitableEvent* signal,
-                                const std::string& name,
-                                mojom::ServiceRequest* request) {
+                            const std::string& name,
+                            mojom::ServiceRequest* request) {
     // Only valid to call this on the background thread.
     DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
     *request = context_->service_manager()->StartEmbedderService(name);
@@ -77,7 +78,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   }
 
   void RunServiceManagerCallback(
-      const BackgroundShell::ServiceManagerThreadCallback& callback) {
+      const BackgroundServiceManager::ServiceManagerThreadCallback& callback) {
     DCHECK(message_loop_->task_runner()->BelongsToCurrentThread());
     callback.Run(context_->service_manager());
   }
@@ -128,27 +129,27 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   // Created in Run() on the background thread.
   Context* context_ = nullptr;
 
-  std::unique_ptr<BackgroundShell::InitParams> init_params_;
+  std::unique_ptr<BackgroundServiceManager::InitParams> init_params_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoThread);
 };
 
-BackgroundShell::InitParams::InitParams() {}
-BackgroundShell::InitParams::~InitParams() {}
+BackgroundServiceManager::InitParams::InitParams() {}
+BackgroundServiceManager::InitParams::~InitParams() {}
 
-BackgroundShell::BackgroundShell() {}
+BackgroundServiceManager::BackgroundServiceManager() {}
 
-BackgroundShell::~BackgroundShell() {
+BackgroundServiceManager::~BackgroundServiceManager() {
   thread_->Stop();
 }
 
-void BackgroundShell::Init(std::unique_ptr<InitParams> init_params) {
+void BackgroundServiceManager::Init(std::unique_ptr<InitParams> init_params) {
   DCHECK(!thread_);
   thread_.reset(new MojoThread(std::move(init_params)));
   thread_->Start();
 }
 
-mojom::ServiceRequest BackgroundShell::CreateServiceRequest(
+mojom::ServiceRequest BackgroundServiceManager::CreateServiceRequest(
     const std::string& name) {
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateServiceManagerIdentity());
@@ -168,7 +169,7 @@ mojom::ServiceRequest BackgroundShell::CreateServiceRequest(
   return request;
 }
 
-void BackgroundShell::ExecuteOnServiceManagerThread(
+void BackgroundServiceManager::ExecuteOnServiceManagerThread(
     const ServiceManagerThreadCallback& callback) {
   thread_->message_loop()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&MojoThread::RunServiceManagerCallback,

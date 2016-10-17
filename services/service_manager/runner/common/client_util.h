@@ -27,7 +27,8 @@ mojom::ServicePtr PassServiceRequestOnCommandLine(
 // PassServiceRequestOnCommandLine().
 mojom::ServiceRequest GetServiceRequestFromCommandLine();
 
-// Returns true if the ServiceRequest came via the command line from a shell
+// Returns true if the ServiceRequest came via the command line from a service
+// manager
 // instance in another process.
 bool ServiceManagerIsRemote();
 

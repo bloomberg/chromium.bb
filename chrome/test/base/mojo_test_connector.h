@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/test/launcher/test_launcher.h"
-#include "services/service_manager/background/background_shell.h"
+#include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace base {
@@ -37,7 +37,7 @@ class MojoTestConnector {
   MojoTestConnector();
   ~MojoTestConnector();
 
-  // Initializes the background thread the Shell runs on.
+  // Initializes the background thread the ServiceManager runs on.
   service_manager::mojom::ServiceRequest Init();
 
   std::unique_ptr<content::TestState> PrepareForTest(
@@ -49,7 +49,7 @@ class MojoTestConnector {
 
   std::unique_ptr<NativeRunnerDelegateImpl> native_runner_delegate_;
 
-  service_manager::BackgroundShell background_shell_;
+  service_manager::BackgroundServiceManager background_service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestConnector);
 };

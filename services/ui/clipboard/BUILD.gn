@@ -39,7 +39,7 @@ test("mus_clipboard_unittests") {
     "//mojo/common",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp:sources",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//services/ui/public/interfaces",
   ]
 

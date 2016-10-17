@@ -113,9 +113,8 @@ void ScanDir(
     // build (e.g. for applications that are packaged into others) and are not
     // valid standalone packages.
     base::FilePath package_path = GetExecutablePath(package_dir, entry->name());
-    if (entry->name() != "service:shell" &&
-        entry->name() != "service:catalog" &&
-        !base::PathExists(package_path)) {
+    if (entry->name() != "service:service_manager" &&
+        entry->name() != "service:catalog" && !base::PathExists(package_path)) {
       continue;
     }
 

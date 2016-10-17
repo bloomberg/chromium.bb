@@ -99,7 +99,8 @@ bool ConnectorImpl::BindIfNecessary() {
   // connect.
   if (!connector_.is_bound()) {
     if (!unbound_state_.is_valid()) {
-      // It's possible to get here when the link to the shell has been severed
+      // It's possible to get here when the link to the service manager has been
+      // severed
       // (and so the connector pipe has been closed) but the app has chosen not
       // to quit.
       return false;

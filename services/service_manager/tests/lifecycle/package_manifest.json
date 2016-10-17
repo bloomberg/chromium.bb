@@ -8,7 +8,7 @@
       "lifecycle_unittest:lifecycle_control": [
         "service_manager::test::mojom::LifecycleControl"
       ],
-      "shell:service_factory": [
+      "service_manager:service_factory": [
         "service_manager::mojom::ServiceFactory"
       ]
     }

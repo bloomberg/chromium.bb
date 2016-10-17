@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/background/background_shell.h"
+#include "services/service_manager/background/background_service_manager.h"
 
 #include <memory>
 
@@ -17,8 +17,8 @@
 namespace service_manager {
 namespace {
 
-const char kTestName[] = "service:background_shell_unittest";
-const char kAppName[] = "service:background_shell_test_service";
+const char kTestName[] = "service:background_service_manager_unittest";
+const char kAppName[] = "service:background_service_manager_test_service";
 
 class ServiceImpl : public Service {
  public:
@@ -36,8 +36,9 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 
 }  // namespace
 
-// Uses BackgroundShell to start the shell in the background and connects to
-// background_shell_test_app, verifying we can send a message to the app.
+// Uses BackgroundServiceManager to start the service manager in the background
+// and connects to background_service_manager_test_service, verifying we can
+// send a message to the service.
 #if defined(OS_ANDROID)
 // TODO(crbug.com/589784): This test is disabled, as it fails
 // on the Android GN bot.
@@ -45,19 +46,19 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 #else
 #define MAYBE_Basic Basic
 #endif
-TEST(BackgroundShellTest, MAYBE_Basic) {
+TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
+  BackgroundServiceManager background_service_manager;
   base::MessageLoop message_loop;
-  BackgroundShell background_shell;
-  background_shell.Init(nullptr);
+  background_service_manager.Init(nullptr);
   ServiceImpl service;
   ServiceContext service_context(
-      &service, background_shell.CreateServiceRequest(kTestName));
+      &service, background_service_manager.CreateServiceRequest(kTestName));
   mojom::TestServicePtr test_service;
   service_context.connector()->ConnectToInterface(kAppName, &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
-  test_service->Test(base::Bind(&SetFlagAndRunClosure, &got_result,
-                                run_loop.QuitClosure()));
+  test_service->Test(
+      base::Bind(&SetFlagAndRunClosure, &got_result, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(got_result);
 }

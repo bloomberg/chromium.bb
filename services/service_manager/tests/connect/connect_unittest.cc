@@ -121,7 +121,8 @@ class ConnectTest : public test::ServiceTest,
   // test::ServiceTest:
   void SetUp() override {
     test::ServiceTest::SetUp();
-    // We need to connect to the package first to force the shell to read the
+    // We need to connect to the package first to force the service manager to
+    // read the
     // package app's manifest and register aliases for the applications it
     // provides.
     test::mojom::ConnectTestServicePtr root_service;
@@ -364,7 +365,8 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
   EXPECT_FALSE(target == result_identity);
 }
 
-// There are various other tests (shell, lifecycle) that test valid client
+// There are various other tests (service manager, lifecycle) that test valid
+// client
 // process specifications. This is the only one for blocking.
 TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
   std::unique_ptr<Connection> connection =
@@ -386,7 +388,8 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
 // connections from clients run as other users.
 TEST_F(ConnectTest, AllUsersSingleton) {
   // Connect to an instance with an explicitly different user_id. This supplied
-  // user id should be ignored by the shell (which will generate its own
+  // user id should be ignored by the service manager (which will generate its
+  // own
   // synthetic user id for all-user singleton instances).
   const std::string singleton_userid = base::GenerateGUID();
   Connector::ConnectParams params(
@@ -399,7 +402,8 @@ TEST_F(ConnectTest, AllUsersSingleton) {
     EXPECT_NE(connection->GetRemoteIdentity().user_id(), singleton_userid);
   }
   // This connects using the current client's user_id. It should be bound to the
-  // same service started above, with the same shell-generated user id.
+  // same service started above, with the same service manager-generated user
+  // id.
   std::unique_ptr<Connection> inherit_connection =
       connector()->Connect(kTestSingletonAppName);
   {

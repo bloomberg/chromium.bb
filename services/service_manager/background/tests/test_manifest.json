@@ -1,11 +1,11 @@
 {
   "manifest_version": 1,
-  "name": "service:background_shell_unittest",
-  "display_name": "Background Shell Unittest",
+  "name": "service:background_service_manager_unittest",
+  "display_name": "Background Service Manager Unittest",
   "capabilities": {
     "required": {
-      "service:background_shell_test_service": [
-        "background_shell_unittest:test_service"
+      "service:background_service_manager_test_service": [
+        "background_service_manager_unittest:test_service"
       ]
     }
   }

@@ -12,8 +12,8 @@ group("background") {
 
 source_set("lib") {
   sources = [
-    "background_shell.cc",
-    "background_shell.h",
+    "background_service_manager.cc",
+    "background_service_manager.h",
   ]
   deps = [
     "//base",
@@ -27,8 +27,8 @@ source_set("lib") {
 
 source_set("main") {
   sources = [
-    "background_shell_main.cc",
-    "background_shell_main.h",
+    "background_service_manager_main.cc",
+    "background_service_manager_main.h",
   ]
   deps = [
     "//base",

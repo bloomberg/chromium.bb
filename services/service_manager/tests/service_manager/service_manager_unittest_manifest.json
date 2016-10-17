@@ -1,0 +1,18 @@
+{
+  "manifest_version":  1,
+  "name": "service:service_manager_unittest",
+  "display_name": "Service Manager Unittest",
+  "capabilities": {
+    "provided": {
+      "service_manager_unittest:create_instance_test": [
+        "service_manager::test::mojom::CreateInstanceTest"
+      ]
+    },
+    "required": {
+      "service:service_manager": [ "service_manager:service_manager" ],
+      "exe:service_manager_unittest_driver": [
+        "service_manager_unittest:driver"
+      ]
+    }
+  }
+}

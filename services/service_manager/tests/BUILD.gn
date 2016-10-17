@@ -26,11 +26,11 @@ test("service_manager_unittests") {
     "//services/service_manager/background:main",
     "//services/service_manager/background/tests:unittests",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:run_all_shelltests",
+    "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/tests/connect",
     "//services/service_manager/tests/lifecycle",
-    "//services/service_manager/tests/shell",
+    "//services/service_manager/tests/service_manager",
     "//services/service_manager/tests/shutdown",
     "//testing/gtest",
   ]

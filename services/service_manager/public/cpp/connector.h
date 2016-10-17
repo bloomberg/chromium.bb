@@ -15,18 +15,21 @@
 
 namespace service_manager {
 
-// An interface that encapsulates the Mojo Shell's broker interface by which
-// connections between applications are established. Once Connect() is called,
+// An interface that encapsulates the Service Manager's brokering interface, by
+// which
+// connections between services are established. Once Connect() is called,
 // this class is bound to the thread the call was made on and it cannot be
 // passed to another thread without calling Clone().
+//
 // An instance of this class is created internally by ServiceContext for use
-// on the thread ServiceContext is instantiated on, and this interface is
-// wrapped by the Shell interface.
-// To use this interface on other threads, call Shell::CloneConnector() and
-// pass the result to another thread. To pass to subsequent threads, call
-// Clone() on instances of this object.
+// on the thread ServiceContext is instantiated on.
+//
+// To use this interface on another thread, call Clone() and pass the new
+// instance to the desired thread before calling Connect().
+//
 // While instances of this object are owned by the caller, the underlying
-// connection with the shell is bound to the lifetime of the instance that
+// connection with the service manager is bound to the lifetime of the instance
+// that
 // created it, i.e. when the application is terminated the Connector pipe is
 // closed.
 class Connector {

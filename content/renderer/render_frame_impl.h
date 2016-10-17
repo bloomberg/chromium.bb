@@ -1242,7 +1242,7 @@ class CONTENT_EXPORT RenderFrameImpl
   service_manager::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
 
-  // The shell proxy used to connect to services.
+  // The Connector proxy used to connect to services.
   service_manager::mojom::ConnectorPtr connector_;
 
   // The screen orientation dispatcher attached to the frame, lazily

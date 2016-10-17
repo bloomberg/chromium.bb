@@ -231,8 +231,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
                  service_manager::InterfaceRegistry* registry) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     std::string remote_service = remote_identity.name();
-    if (remote_service == "service:shell") {
-      // Only expose the SCF interface to the shell.
+    if (remote_service == "service:service_manager") {
+      // Only expose the ServiceFactory interface to the Service Manager.
       registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
       return true;
     }

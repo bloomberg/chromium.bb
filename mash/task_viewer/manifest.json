@@ -7,7 +7,7 @@
     "required": {
       "*": [ "app" ],
       "service:catalog": [ "catalog:catalog" ],
-      "service:shell": [ "shell:service_manager" ]
+      "service:service_manager": [ "service_manager:service_manager" ]
     }
   }
 }

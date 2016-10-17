@@ -1,10 +1,10 @@
 {
   "manifest_version": 1,
-  "name": "service:background_shell_test_service",
-  "display_name": "Background Shell Test Service",
+  "name": "service:background_service_manager_test_service",
+  "display_name": "Background Service Manager Test Service",
   "capabilities": {
     "provided": {
-      "background_shell_unittest:test_service": [
+      "background_service_manager_unittest:test_service": [
         "service_manager::mojom::TestService"
       ]
     }

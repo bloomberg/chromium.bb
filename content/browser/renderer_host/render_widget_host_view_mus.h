@@ -24,9 +24,9 @@ struct TextInputState;
 
 // See comments in render_widget_host_view.h about this class and its members.
 // This version of RenderWidgetHostView is for builds of Chrome that run through
-// the mojo shell and use the Mandoline UI Service (Mus). Mus is responsible for
-// windowing, compositing, and input event dispatch. The purpose of
-// RenderWidgetHostViewMus is to manage the ui::Window owned by the content
+// the standalone service runner and use the Mandoline UI Service (Mus). Mus is
+// responsible for windowing, compositing, and input event dispatch. The purpose
+// of RenderWidgetHostViewMus is to manage the ui::Window owned by the content
 // embedder. The browser is the owner of the ui::Window, controlling properties
 // such as visibility, and bounds. Some aspects such as input, focus, and cursor
 // are managed by Mus directly. Input event routing will be plumbed directly to

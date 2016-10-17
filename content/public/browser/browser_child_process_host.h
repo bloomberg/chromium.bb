@@ -47,9 +47,9 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
       content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate);
 
-  // Used to create a child process host, connecting the process to the shell
-  // as a new service instance identified by |service_name| and (optional)
-  // |instance_id|.
+  // Used to create a child process host, connecting the process to the
+  // Service Manager as a new service instance identified by |service_name| and
+  // (optional) |instance_id|.
   static BrowserChildProcessHost* Create(
       content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate,

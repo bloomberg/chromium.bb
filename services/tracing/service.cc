@@ -30,7 +30,7 @@ bool Service::OnConnect(const service_manager::Identity& remote_identity,
 bool Service::OnStop() {
   // TODO(beng): This is only required because Service isn't run by
   // ServiceRunner - instead it's launched automatically by the standalone
-  // shell. It shouldn't be.
+  // service manager. It shouldn't be.
   base::MessageLoop::current()->QuitWhenIdle();
   return false;
 }
@@ -138,14 +138,14 @@ void Service::StopAndFlush() {
   AllDataCollected();
 }
 
-void Service::SetShellProcessCreationTime(int64_t time) {
-  if (startup_performance_times_.shell_process_creation_time == 0)
-    startup_performance_times_.shell_process_creation_time = time;
+void Service::SetServiceManagerProcessCreationTime(int64_t time) {
+  if (startup_performance_times_.service_manager_process_creation_time == 0)
+    startup_performance_times_.service_manager_process_creation_time = time;
 }
 
-void Service::SetShellMainEntryPointTime(int64_t time) {
-  if (startup_performance_times_.shell_main_entry_point_time == 0)
-    startup_performance_times_.shell_main_entry_point_time = time;
+void Service::SetServiceManagerMainEntryPointTime(int64_t time) {
+  if (startup_performance_times_.service_manager_main_entry_point_time == 0)
+    startup_performance_times_.service_manager_main_entry_point_time = time;
 }
 
 void Service::SetBrowserMessageLoopStartTicks(int64_t ticks) {

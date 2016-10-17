@@ -19,21 +19,20 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
-#include "services/service_manager/tests/shell/shell_unittest.mojom.h"
+#include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
 
 namespace service_manager {
 
 namespace {
 
-class ShellTestClient
+class ServiceManagerTestClient
     : public test::ServiceTestClient,
       public InterfaceFactory<test::mojom::CreateInstanceTest>,
       public test::mojom::CreateInstanceTest {
  public:
-  explicit ShellTestClient(test::ServiceTest* test)
-      : test::ServiceTestClient(test),
-        binding_(this) {}
-  ~ShellTestClient() override {}
+  explicit ServiceManagerTestClient(test::ServiceTest* test)
+      : test::ServiceTestClient(test), binding_(this) {}
+  ~ServiceManagerTestClient() override {}
 
   const Identity& target_identity() const { return target_identity_; }
 
@@ -46,9 +45,8 @@ class ShellTestClient
   }
 
   // InterfaceFactory<test::mojom::CreateInstanceTest>:
-  void Create(
-      const Identity& remote_identity,
-      test::mojom::CreateInstanceTestRequest request) override {
+  void Create(const Identity& remote_identity,
+              test::mojom::CreateInstanceTestRequest request) override {
     binding_.Bind(std::move(request));
   }
 
@@ -62,23 +60,21 @@ class ShellTestClient
 
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
+  DISALLOW_COPY_AND_ASSIGN(ServiceManagerTestClient);
 };
 
 }  // namespace
 
-class ShellTest : public test::ServiceTest,
-                  public mojom::ServiceManagerListener {
+class ServiceManagerTest : public test::ServiceTest,
+                           public mojom::ServiceManagerListener {
  public:
-  ShellTest()
-      : test::ServiceTest("service:shell_unittest"),
+  ServiceManagerTest()
+      : test::ServiceTest("service:service_manager_unittest"),
         service_(nullptr),
         binding_(this) {}
-  ~ShellTest() override {}
+  ~ServiceManagerTest() override {}
 
-  void OnDriverQuit() {
-    base::MessageLoop::current()->QuitNow();
-  }
+  void OnDriverQuit() { base::MessageLoop::current()->QuitNow(); }
 
  protected:
   struct InstanceInfo {
@@ -91,7 +87,8 @@ class ShellTest : public test::ServiceTest,
 
   void AddListenerAndWaitForApplications() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface("service:shell", &service_manager);
+    connector()->ConnectToInterface("service:service_manager",
+                                    &service_manager);
 
     service_manager->AddListener(binding_.CreateInterfacePtrAndBind());
 
@@ -116,14 +113,12 @@ class ShellTest : public test::ServiceTest,
     return service_->target_identity();
   }
 
-  const std::vector<InstanceInfo>& instances() const {
-    return instances_;
-  }
+  const std::vector<InstanceInfo>& instances() const { return instances_; }
 
  private:
   // test::ServiceTest:
   std::unique_ptr<Service> CreateService() override {
-    service_ = new ShellTestClient(this);
+    service_ = new ServiceManagerTestClient(this);
     return base::WrapUnique(service_);
   }
 
@@ -157,27 +152,27 @@ class ShellTest : public test::ServiceTest,
     }
   }
 
-  ShellTestClient* service_;
+  ServiceManagerTestClient* service_;
   mojo::Binding<mojom::ServiceManagerListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceManagerTest);
 };
 
-TEST_F(ShellTest, CreateInstance) {
+TEST_F(ServiceManagerTest, CreateInstance) {
   AddListenerAndWaitForApplications();
 
   // 1. Launch a process. (Actually, have the runner launch a process that
   //    launches a process.)
   test::mojom::DriverPtr driver;
   std::unique_ptr<Connection> connection =
-      connector()->Connect("exe:shell_unittest_driver");
+      connector()->Connect("exe:service_manager_unittest_driver");
   connection->GetInterface(&driver);
 
   // 2. Wait for the target to connect to us. (via
-  //    mojo:shell_unittest)
+  //    service:service_manager_unittest)
   base::RunLoop().Run();
 
   EXPECT_FALSE(connection->IsPending());
@@ -185,7 +180,7 @@ TEST_F(ShellTest, CreateInstance) {
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
-  EXPECT_TRUE(ContainsInstanceWithName("service:shell_unittest"));
+  EXPECT_TRUE(ContainsInstanceWithName("service:service_manager_unittest"));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are
@@ -194,20 +189,19 @@ TEST_F(ShellTest, CreateInstance) {
   {
     auto& instance = instances().front();
     EXPECT_EQ(remote_identity, instance.identity);
-    EXPECT_EQ("exe:shell_unittest_driver", instance.identity.name());
+    EXPECT_EQ("exe:service_manager_unittest_driver", instance.identity.name());
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
   {
     auto& instance = instances().back();
     // We learn about the target process id via a ping from it.
     EXPECT_EQ(target_identity(), instance.identity);
-    EXPECT_EQ("exe:shell_unittest_target", instance.identity.name());
+    EXPECT_EQ("exe:service_manager_unittest_target", instance.identity.name());
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
 
   driver.set_connection_error_handler(
-      base::Bind(&ShellTest::OnDriverQuit,
-                 base::Unretained(this)));
+      base::Bind(&ServiceManagerTest::OnDriverQuit, base::Unretained(this)));
   driver->QuitDriver();
   base::RunLoop().Run();
 }

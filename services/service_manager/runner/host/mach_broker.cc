@@ -10,7 +10,7 @@
 namespace service_manager {
 
 namespace {
-const char kBootstrapPortName[] = "mojo_shell";
+const char kBootstrapPortName[] = "mojo_service_manager";
 }
 
 // static

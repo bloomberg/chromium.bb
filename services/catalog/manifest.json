@@ -7,13 +7,16 @@
     // capability spec is defined inline in the ServiceManager implementation.
     //
     // TODO(rockot): Fix this. We can bake this file into ServiceManager at
-    // build time or something. Same with service:shell.
+    // build time or something. Same with service:service_manager.
     "provided": {
       "app": [ "filesystem::mojom::Directory" ],
       "control": [ "catalog::mojom::CatalogControl" ]
     },
     "required": {
-      "service:shell": [ "shell:all_users", "shell:explicit_class" ]
+      "service:service_manager": [
+        "service_manager:all_users",
+        "service_manager:explicit_class"
+      ]
     }
   }
 }

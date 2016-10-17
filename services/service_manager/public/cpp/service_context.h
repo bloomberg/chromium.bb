@@ -58,7 +58,8 @@ class ServiceContext : public mojom::Service {
   Connector* connector() { return connector_.get(); }
   const Identity& identity() { return identity_; }
 
-  // Specify a function to be called when the connection to the shell is lost.
+  // Specify a function to be called when the connection to the service manager
+  // is lost.
   // Note that if connection has already been lost, then |closure| is called
   // immediately.
   void SetConnectionLostClosure(const base::Closure& closure);

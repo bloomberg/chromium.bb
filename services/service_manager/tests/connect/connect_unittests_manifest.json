@@ -25,7 +25,10 @@
         "connect_unittests:standalone_app",
         "connect_unittests:user_id_test"
       ],
-      "service:shell": [ "shell:instance_name", "shell:user_id" ]
+      "service:service_manager": [
+        "service_manager:instance_name",
+        "service_manager:user_id"
+      ]
     }
   }
 }

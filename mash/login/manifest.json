@@ -10,7 +10,7 @@
       "*": [ "app" ],
       "service:mash_init": [ "mash_init:init" ],
       "service:ui": [ "ui:user_access_manager" ],
-      "service:shell": [ "shell:all_users" ]
+      "service:service_manager": [ "service_manager:all_users" ]
     }
   }
 }
