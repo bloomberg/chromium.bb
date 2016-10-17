@@ -197,16 +197,16 @@ void TestChromotingClient::OnConnectionState(
   connection_error_code_ = error_code;
   connection_to_host_state_ = state;
 
-  FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
-                    ConnectionStateChanged(state, error_code));
+  for (auto& observer : connection_observers_)
+    observer.ConnectionStateChanged(state, error_code);
 }
 
 void TestChromotingClient::OnConnectionReady(bool ready) {
   VLOG(1) << "TestChromotingClient::OnConnectionReady("
           << "ready:" << ready << ") Called";
 
-  FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
-                    ConnectionReady(ready));
+  for (auto& observer : connection_observers_)
+    observer.ConnectionReady(ready);
 }
 
 void TestChromotingClient::OnRouteChanged(
@@ -217,16 +217,16 @@ void TestChromotingClient::OnRouteChanged(
           << "route:" << protocol::TransportRoute::GetTypeString(route.type)
           << ") Called";
 
-  FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
-                    RouteChanged(channel_name, route));
+  for (auto& observer : connection_observers_)
+    observer.RouteChanged(channel_name, route);
 }
 
 void TestChromotingClient::SetCapabilities(const std::string& capabilities) {
   VLOG(1) << "TestChromotingClient::SetCapabilities("
           << "capabilities: " << capabilities << ") Called";
 
-  FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
-                    CapabilitiesSet(capabilities));
+  for (auto& observer : connection_observers_)
+    observer.CapabilitiesSet(capabilities);
 }
 
 void TestChromotingClient::SetPairingResponse(
@@ -236,8 +236,8 @@ void TestChromotingClient::SetPairingResponse(
           << "shared_secret: " << pairing_response.shared_secret()
           << ") Called";
 
-  FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
-                    PairingResponseSet(pairing_response));
+  for (auto& observer : connection_observers_)
+    observer.PairingResponseSet(pairing_response);
 }
 
 void TestChromotingClient::DeliverHostMessage(
@@ -246,8 +246,8 @@ void TestChromotingClient::DeliverHostMessage(
           << "type: " << message.type() << ", "
           << "data: " << message.data() << ") Called";
 
-  FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
-                    HostMessageReceived(message));
+  for (auto& observer : connection_observers_)
+    observer.HostMessageReceived(message);
 }
 
 void TestChromotingClient::SetDesktopSize(const webrtc::DesktopSize& size,

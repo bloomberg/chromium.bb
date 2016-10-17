@@ -125,15 +125,17 @@ void WebrtcAudioSourceAdapter::Core::OnAudioPacket(
     // Here |partial_frame_| always contains a full frame.
     DCHECK_EQ(partial_frame_.size(), bytes_per_frame);
 
-    FOR_EACH_OBSERVER(webrtc::AudioTrackSinkInterface, audio_sinks_,
-                      OnData(&partial_frame_.front(), kBytesPerSample * 8,
-                             sampling_rate_, kChannels, samples_per_frame));
+    for (auto& observer : audio_sinks_) {
+      observer.OnData(&partial_frame_.front(), kBytesPerSample * 8,
+                      sampling_rate_, kChannels, samples_per_frame);
+    }
   }
 
   while (position + bytes_per_frame <= data.size()) {
-    FOR_EACH_OBSERVER(webrtc::AudioTrackSinkInterface, audio_sinks_,
-                      OnData(data.data() + position, kBytesPerSample * 8,
-                             sampling_rate_, kChannels, samples_per_frame));
+    for (auto& observer : audio_sinks_) {
+      observer.OnData(data.data() + position, kBytesPerSample * 8,
+                      sampling_rate_, kChannels, samples_per_frame);
+    }
     position += bytes_per_frame;
   }
 

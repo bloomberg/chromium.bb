@@ -65,14 +65,14 @@ void FakeSignalStrategy::SetLocalJid(const std::string& jid) {
 
 void FakeSignalStrategy::Connect() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnSignalStrategyStateChange(CONNECTED));
+  for (auto& observer : listeners_)
+    observer.OnSignalStrategyStateChange(CONNECTED);
 }
 
 void FakeSignalStrategy::Disconnect() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnSignalStrategyStateChange(DISCONNECTED));
+  for (auto& observer : listeners_)
+    observer.OnSignalStrategyStateChange(DISCONNECTED);
 }
 
 SignalStrategy::State FakeSignalStrategy::GetState() const {

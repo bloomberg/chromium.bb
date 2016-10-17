@@ -174,8 +174,8 @@ void XmppSignalStrategy::Core::Connect() {
 
   error_ = OK;
 
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnSignalStrategyStateChange(CONNECTING));
+  for (auto& observer : listeners_)
+    observer.OnSignalStrategyStateChange(CONNECTING);
 
   socket_.reset(new jingle_glue::ProxyResolvingClientSocket(
       socket_factory_, request_context_getter_, net::SSLConfig(),
@@ -203,8 +203,8 @@ void XmppSignalStrategy::Core::Disconnect() {
     tls_state_ = TlsState::NOT_REQUESTED;
     read_pending_ = false;
 
-    FOR_EACH_OBSERVER(Listener, listeners_,
-                      OnSignalStrategyStateChange(DISCONNECTED));
+    for (auto& observer : listeners_)
+      observer.OnSignalStrategyStateChange(DISCONNECTED);
   }
 }
 
@@ -336,8 +336,8 @@ void XmppSignalStrategy::Core::OnHandshakeDone(
   // Don't need |login_handler_| anymore.
   login_handler_.reset();
 
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnSignalStrategyStateChange(CONNECTED));
+  for (auto& observer : listeners_)
+    observer.OnSignalStrategyStateChange(CONNECTED);
 }
 
 void XmppSignalStrategy::Core::OnLoginHandlerError(

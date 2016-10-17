@@ -46,8 +46,8 @@ void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
 
 void DelegatingSignalStrategy::Connect() {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnSignalStrategyStateChange(CONNECTED));
+  for (auto& observer : listeners_)
+    observer.OnSignalStrategyStateChange(CONNECTED);
 }
 
 void DelegatingSignalStrategy::Disconnect() {

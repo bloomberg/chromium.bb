@@ -94,8 +94,10 @@ ChromotingHost::~ChromotingHost() {
   session_manager_.reset();
 
   // Notify observers.
-  if (started_)
-    FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnShutdown());
+  if (started_) {
+    for (auto& observer : status_observers_)
+      observer.OnShutdown();
+  }
 }
 
 void ChromotingHost::Start(const std::string& host_owner_email) {
@@ -104,8 +106,8 @@ void ChromotingHost::Start(const std::string& host_owner_email) {
 
   HOST_LOG << "Starting host";
   started_ = true;
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnStart(host_owner_email));
+  for (auto& observer : status_observers_)
+    observer.OnStart(host_owner_email);
 
   session_manager_->AcceptIncoming(
       base::Bind(&ChromotingHost::OnIncomingSession, base::Unretained(this)));
@@ -197,24 +199,24 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   // Notify observers that there is at least one authenticated client.
   const std::string& jid = client->client_jid();
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientAuthenticated(jid));
+  for (auto& observer : status_observers_)
+    observer.OnClientAuthenticated(jid);
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
   // Notify observers.
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientConnected(client->client_jid()));
+  for (auto& observer : status_observers_)
+    observer.OnClientConnected(client->client_jid());
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
   // Notify observers.
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnAccessDenied(client->client_jid()));
+  for (auto& observer : status_observers_)
+    observer.OnAccessDenied(client->client_jid());
 }
 
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
@@ -229,8 +231,8 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
   delete client;
 
   if (was_authenticated) {
-    FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                      OnClientDisconnected(jid));
+    for (auto& observer : status_observers_)
+      observer.OnClientDisconnected(jid);
   }
 }
 
@@ -239,9 +241,8 @@ void ChromotingHost::OnSessionRouteChange(
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientRouteChange(session->client_jid(), channel_name,
-                                        route));
+  for (auto& observer : status_observers_)
+    observer.OnClientRouteChange(session->client_jid(), channel_name, route);
 }
 
 void ChromotingHost::OnIncomingSession(

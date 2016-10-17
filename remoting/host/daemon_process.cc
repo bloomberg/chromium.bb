@@ -303,28 +303,29 @@ bool DaemonProcess::WasTerminalIdAllocated(int terminal_id) {
 void DaemonProcess::OnAccessDenied(const std::string& jid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnAccessDenied(jid));
+  for (auto& observer : status_observers_)
+    observer.OnAccessDenied(jid);
 }
 
 void DaemonProcess::OnClientAuthenticated(const std::string& jid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientAuthenticated(jid));
+  for (auto& observer : status_observers_)
+    observer.OnClientAuthenticated(jid);
 }
 
 void DaemonProcess::OnClientConnected(const std::string& jid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientConnected(jid));
+  for (auto& observer : status_observers_)
+    observer.OnClientConnected(jid);
 }
 
 void DaemonProcess::OnClientDisconnected(const std::string& jid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientDisconnected(jid));
+  for (auto& observer : status_observers_)
+    observer.OnClientDisconnected(jid);
 }
 
 void DaemonProcess::OnClientRouteChange(const std::string& jid,
@@ -343,20 +344,22 @@ void DaemonProcess::OnClientRouteChange(const std::string& jid,
   CHECK(local_ip.empty() || local_ip.IsValid());
   parsed_route.local_address = net::IPEndPoint(local_ip, route.local_port);
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientRouteChange(jid, channel_name, parsed_route));
+  for (auto& observer : status_observers_)
+    observer.OnClientRouteChange(jid, channel_name, parsed_route);
 }
 
 void DaemonProcess::OnHostStarted(const std::string& xmpp_login) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnStart(xmpp_login));
+  for (auto& observer : status_observers_)
+    observer.OnStart(xmpp_login);
 }
 
 void DaemonProcess::OnHostShutdown() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnShutdown());
+  for (auto& observer : status_observers_)
+    observer.OnShutdown();
 }
 
 void DaemonProcess::DeleteAllDesktopSessions() {
