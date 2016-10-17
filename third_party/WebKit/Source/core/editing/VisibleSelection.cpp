@@ -862,7 +862,7 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded() {
   Document* document = m_base.document();
   if (!document)
     return;
-  document->updateStyleAndLayoutIgnorePendingStylesheets();
+  DCHECK(!document->needsLayoutTreeUpdate());
   const bool hasTrailingWhitespace = m_hasTrailingWhitespace;
   validate(m_granularity);
   if (!hasTrailingWhitespace)
@@ -870,16 +870,6 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded() {
   appendTrailingWhitespace();
 }
 
-// TODO(yosin): Since |validatePositionsIfNeeded()| is called just one place,
-// we should move it to the call site.
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::validatePositionsIfNeeded() {
-  if (!m_base.isConnected() || !m_extent.isConnected()) {
-    *this = VisibleSelectionTemplate();
-    return;
-  }
-  updateIfNeeded();
-}
 
 template <typename Strategy>
 static bool equalSelectionsAlgorithm(

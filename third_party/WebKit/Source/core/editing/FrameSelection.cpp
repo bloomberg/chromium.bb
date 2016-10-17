@@ -1443,6 +1443,10 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
 }
 
 void FrameSelection::updateIfNeeded() {
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   m_selectionEditor->updateIfNeeded();
 }
 

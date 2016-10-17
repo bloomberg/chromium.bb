@@ -846,6 +846,17 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   respondToChangedContents(newSelection);
 }
 
+static VisibleSelection correctedVisibleSelection(
+    const VisibleSelection& passedSelection) {
+  if (!passedSelection.base().isConnected() ||
+      !passedSelection.extent().isConnected())
+    return VisibleSelection();
+  DCHECK(!passedSelection.base().document()->needsLayoutTreeUpdate());
+  VisibleSelection correctedSelection = passedSelection;
+  correctedSelection.updateIfNeeded();
+  return correctedSelection;
+}
+
 void Editor::unappliedEditing(EditCommandComposition* cmd) {
   EventQueueScope scope;
   frame().document()->updateStyleAndLayout();
@@ -857,8 +868,14 @@ void Editor::unappliedEditing(EditCommandComposition* cmd) {
       InputEvent::InputType::Undo, nullAtom,
       InputEvent::EventIsComposing::NotComposing);
 
-  VisibleSelection newSelection(cmd->startingSelection());
-  newSelection.validatePositionsIfNeeded();
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should stop editing commands from storing
+  // VisibleSelections as starting and ending selections.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  VisibleSelection newSelection =
+      correctedVisibleSelection(cmd->startingSelection());
   if (newSelection.start().document() == frame().document() &&
       newSelection.end().document() == frame().document())
     changeSelectionAfterCommand(

@@ -403,7 +403,7 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
 
 // This is for crbug.com/627783, simulating restoring selection
 // in undo stack.
-TEST_F(VisibleSelectionTest, validatePositionsIfNeededWithShadowHost) {
+TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
   setBodyContent("<div id=host></div><div id=sample>foo</div>");
   setShadowContent("<content>", "host");
   Element* sample = document().getElementById("sample");
@@ -416,9 +416,10 @@ TEST_F(VisibleSelectionTest, validatePositionsIfNeededWithShadowHost) {
   // Simulates modifying DOM tree to invalidate distribution.
   Element* host = document().getElementById("host");
   host->appendChild(sample);
+  document().updateStyleAndLayout();
 
   // Simulates to restore selection from undo stack.
-  selection.validatePositionsIfNeeded();
+  selection.updateIfNeeded();
   EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
 
   VisibleSelectionInFlatTree selectionInFlatTree;

@@ -152,7 +152,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   }
 
   void updateIfNeeded();
-  void validatePositionsIfNeeded();
 
 #ifndef NDEBUG
   void showTreeForThis() const;
