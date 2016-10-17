@@ -1,6 +1,14 @@
 Tests js cpu profile in timeline.
 
 Main Thread
+EvaluateScript Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "EvaluateScript"
+}
 DedicatedWorker Thread
 DedicatedWorker Thread
 EvaluateScript Properties:

@@ -4,6 +4,14 @@ Tests the Timeline API instrumentation of a script tag with an external script.
 EvaluateScript Properties:
 {
     data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "EvaluateScript"
+}
+EvaluateScript Properties:
+{
+    data : {
         columnNumber : <number>
         frame : <string>
         lineNumber : <number>

@@ -113,6 +113,15 @@ FunctionCall Properties:
 EvaluateScript Properties:
 {
     data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "EvaluateScript"
+}
+Text details for EvaluateScript: undefined
+EvaluateScript Properties:
+{
+    data : {
         columnNumber : <number>
         frame : <string>
         lineNumber : <number>

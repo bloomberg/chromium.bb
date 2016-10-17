@@ -3,6 +3,15 @@ Tests the Timeline API instrumentation of an HTML script tag.
 
 
 EvaluateScript
+EvaluateScript Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "EvaluateScript"
+}
+EvaluateScript
 ----> Timestamp: SCRIPT TAG
 EvaluateScript Properties:
 {
