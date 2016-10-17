@@ -32,6 +32,7 @@
 #define CryptoKey_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCryptoKey.h"
@@ -42,8 +43,9 @@ namespace blink {
 
 class CryptoResult;
 
-class CryptoKey final : public GarbageCollectedFinalized<CryptoKey>,
-                        public ScriptWrappable {
+class MODULES_EXPORT CryptoKey final
+    : public GarbageCollectedFinalized<CryptoKey>,
+      public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -53,7 +53,7 @@ MODULES_EXPORT ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
 //    another thread.
 //  * One of the completeWith***() functions must be called, or the
 //    m_resolver will be leaked until the ExecutionContext is destroyed.
-class CryptoResultImpl final : public CryptoResult {
+class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
  public:
   static CryptoResultImpl* create(ScriptState*);
 

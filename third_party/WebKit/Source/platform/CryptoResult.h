@@ -31,6 +31,7 @@
 #ifndef CryptoResult_h
 #define CryptoResult_h
 
+#include "platform/PlatformExport.h"
 #include "public/platform/WebCrypto.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
@@ -46,7 +47,8 @@ class CryptoResultCancel : public ThreadSafeRefCounted<CryptoResultCancel> {
 };
 
 // Receives notification of completion of the crypto operation.
-class CryptoResult : public GarbageCollectedFinalized<CryptoResult> {
+class PLATFORM_EXPORT CryptoResult
+    : public GarbageCollectedFinalized<CryptoResult> {
  public:
   virtual ~CryptoResult() {}
 

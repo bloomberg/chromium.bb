@@ -7,8 +7,11 @@
 
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 #include "modules/ModulesExport.h"
+#include "public/platform/WebCryptoAlgorithm.h"
 
 namespace blink {
+
+class WebCryptoKey;
 
 // Extends V8ScriptValueSerializer with support for modules/ types.
 class MODULES_EXPORT V8ScriptValueSerializerForModules final
@@ -19,6 +22,10 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
 
  protected:
   bool writeDOMObject(ScriptWrappable*, ExceptionState&) override;
+
+ private:
+  void writeOneByte(uint8_t byte) { writeRawBytes(&byte, 1); }
+  bool writeCryptoKey(const WebCryptoKey&, ExceptionState&);
 };
 
 }  // namespace blink

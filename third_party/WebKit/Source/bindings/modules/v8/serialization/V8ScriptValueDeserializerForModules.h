@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class CryptoKey;
+
 // Extends V8ScriptValueSerializer with support for modules/ types.
 class MODULES_EXPORT V8ScriptValueDeserializerForModules final
     : public V8ScriptValueDeserializer {
@@ -21,6 +23,16 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
 
  protected:
   ScriptWrappable* readDOMObject(SerializationTag) override;
+
+ private:
+  bool readOneByte(uint8_t* byte) {
+    const void* data;
+    if (!readRawBytes(1, &data))
+      return false;
+    *byte = *reinterpret_cast<const uint8_t*>(data);
+    return true;
+  }
+  CryptoKey* readCryptoKey();
 };
 
 }  // namespace blink
