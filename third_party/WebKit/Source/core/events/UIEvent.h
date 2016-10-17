@@ -42,14 +42,6 @@ class CORE_EXPORT UIEvent : public Event {
  public:
   static UIEvent* create() { return new UIEvent; }
   static UIEvent* create(const AtomicString& type,
-                         bool canBubble,
-                         bool cancelable,
-                         AbstractView* view,
-                         int detail) {
-    return new UIEvent(type, canBubble, cancelable, ComposedMode::Scoped, view,
-                       detail);
-  }
-  static UIEvent* create(const AtomicString& type,
                          const UIEventInit& initializer) {
     return new UIEvent(type, initializer);
   }
@@ -83,16 +75,6 @@ class CORE_EXPORT UIEvent : public Event {
 
  protected:
   UIEvent();
-  // TODO(crbug.com/563542): Remove of this ctor in favor of making
-  // platformTimeStamp (and perhaps sourceCapabilities) required in all
-  // constructions sites
-  UIEvent(const AtomicString& type,
-          bool canBubble,
-          bool cancelable,
-          ComposedMode,
-          AbstractView*,
-          int detail,
-          InputDeviceCapabilities* sourceCapabilities = nullptr);
   UIEvent(const AtomicString& type,
           bool canBubble,
           bool cancelable,

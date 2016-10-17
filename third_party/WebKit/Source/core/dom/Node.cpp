@@ -2078,8 +2078,9 @@ DispatchEventResult Node::dispatchDOMActivateEvent(int detail,
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 #endif
-  UIEvent* event = UIEvent::create(EventTypeNames::DOMActivate, true, true,
-                                   document().domWindow(), detail);
+  UIEvent* event = UIEvent::create();
+  event->initUIEvent(EventTypeNames::DOMActivate, true, true,
+                     document().domWindow(), detail);
   event->setUnderlyingEvent(underlyingEvent);
   dispatchScopedEvent(event);
 
