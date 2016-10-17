@@ -121,6 +121,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void SetQueueEnabled(bool enabled) override;
   bool IsQueueEnabled() const override;
   bool IsEmpty() const override;
+  size_t GetNumberOfPendingTasks() const override;
   bool HasPendingImmediateWork() const override;
   base::Optional<base::TimeTicks> GetNextScheduledWakeUp() override;
   void SetQueuePriority(QueuePriority priority) override;

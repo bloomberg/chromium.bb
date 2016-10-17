@@ -58,6 +58,11 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return false;
   };
 
+  size_t GetNumberOfPendingTasks() const override {
+    NOTREACHED();
+    return 0;
+  };
+
   bool HasPendingImmediateWork() const override {
     NOTREACHED();
     return false;

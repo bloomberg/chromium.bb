@@ -98,6 +98,8 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   bool GetAndClearSystemIsQuiescentBit();
   TaskQueue* CurrentlyExecutingTaskQueue() const;
 
+  size_t GetNumberOfPendingTasks() const;
+
   // Test helpers.
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
   TaskQueueManager* GetTaskQueueManagerForTesting();

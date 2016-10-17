@@ -490,6 +490,10 @@ void RendererSchedulerImpl::SuspendRenderer() {
   if (helper_.IsShutdown())
     return;
   suspend_timers_when_backgrounded_closure_.Cancel();
+
+  UMA_HISTOGRAM_COUNTS("PurgeAndSuspend.PendingTaskCount",
+                       helper_.GetNumberOfPendingTasks());
+
   // TODO(hajimehoshi): We might need to suspend not only timer queue but also
   // e.g. loading tasks or postMessage.
   MainThreadOnly().renderer_suspended = true;

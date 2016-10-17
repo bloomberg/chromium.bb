@@ -321,6 +321,17 @@ bool TaskQueueImpl::IsEmpty() const {
   return any_thread().immediate_incoming_queue.empty();
 }
 
+size_t TaskQueueImpl::GetNumberOfPendingTasks() const {
+  size_t task_count = 0;
+  task_count += main_thread_only().delayed_work_queue->Size();
+  task_count += main_thread_only().delayed_incoming_queue.size();
+  task_count += main_thread_only().immediate_work_queue->Size();
+
+  base::AutoLock lock(any_thread_lock_);
+  task_count += any_thread().immediate_incoming_queue.size();
+  return task_count;
+}
+
 bool TaskQueueImpl::HasPendingImmediateWork() const {
   // Any work queue tasks count as immediate work.
   if (!main_thread_only().delayed_work_queue->Empty() ||

@@ -68,6 +68,9 @@ scoped_refptr<TaskQueue> SchedulerHelper::ControlTaskRunner() {
   return control_task_runner_;
 }
 
+size_t SchedulerHelper::GetNumberOfPendingTasks() const {
+  return task_queue_manager_->GetNumberOfPendingTasks();
+}
 
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   CheckOnValidThread();

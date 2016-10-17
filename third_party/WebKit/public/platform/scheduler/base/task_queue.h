@@ -103,6 +103,9 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Returns true if the queue is completely empty.
   virtual bool IsEmpty() const = 0;
 
+  // Returns the number of pending tasks in the queue.
+  virtual size_t GetNumberOfPendingTasks() const = 0;
+
   // Returns true if the queue has work that's ready to execute now.
   // NOTE: this must be called on the thread this TaskQueue was created by.
   virtual bool HasPendingImmediateWork() const = 0;

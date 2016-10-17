@@ -137,6 +137,19 @@ TEST_F(SchedulerHelperTest, DefaultTaskRunnerRegistration) {
   EXPECT_EQ(nullptr, main_task_runner_->default_task_runner());
 }
 
+TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
+  std::vector<std::string> run_order;
+  scheduler_helper_->DefaultTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D1"));
+  scheduler_helper_->DefaultTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "D2"));
+  scheduler_helper_->ControlTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&AppendToVectorTestTask, &run_order, "C1"));
+  EXPECT_EQ(3U, scheduler_helper_->GetNumberOfPendingTasks());
+  RunUntilIdle();
+  EXPECT_EQ(0U, scheduler_helper_->GetNumberOfPendingTasks());
+}
+
 namespace {
 class MockTaskObserver : public base::MessageLoop::TaskObserver {
  public:

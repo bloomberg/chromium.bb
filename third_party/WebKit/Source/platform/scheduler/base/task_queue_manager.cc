@@ -439,6 +439,13 @@ LazyNow TaskQueueManager::CreateLazyNow() const {
   return LazyNow(delegate_.get());
 }
 
+size_t TaskQueueManager::GetNumberOfPendingTasks() const {
+  size_t task_count = 0;
+  for (auto& queue : queues_)
+    task_count += queue->GetNumberOfPendingTasks();
+  return task_count;
+}
+
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 TaskQueueManager::AsValueWithSelectorResult(
     bool should_run,

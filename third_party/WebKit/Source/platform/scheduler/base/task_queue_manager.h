@@ -137,6 +137,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
     return currently_executing_task_queue_;
   }
 
+  // Return number of pending tasks in task queues.
+  size_t GetNumberOfPendingTasks() const;
+
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
