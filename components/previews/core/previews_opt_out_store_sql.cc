@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,6 +27,14 @@ namespace {
 // This is a macro instead of a const, so it can be used inline in other SQL
 // statements below.
 #define PREVIEWS_TABLE_NAME "previews_v1"
+
+// The maximum number of entries allowed per host. Entries are evicted based on
+// entry time.
+const int kMaxRowsPerHost = 32;
+
+// The maximum number of entries allowed in the data base. Entries are evicted
+// based on entry time.
+const int kMaxRowsInDB = 3200;
 
 void CreateSchema(sql::Connection* db) {
   const char kSql[] = "CREATE TABLE IF NOT EXISTS " PREVIEWS_TABLE_NAME
@@ -94,6 +103,48 @@ void InitDatabase(sql::Connection* db, base::FilePath path) {
   CreateSchema(db);
 }
 
+// Adds the new entry to the data base.
+void AddPreviewNavigationToDataBase(sql::Connection* db,
+                                    bool opt_out,
+                                    const std::string& host_name,
+                                    PreviewsType type,
+                                    base::Time now) {
+  // Adds the new entry.
+  const char kSqlInsert[] = "INSERT INTO " PREVIEWS_TABLE_NAME
+                            " (host_name, time, opt_out, type)"
+                            " VALUES "
+                            " (?, ?, ?, ?)";
+
+  sql::Statement statement_insert(
+      db->GetCachedStatement(SQL_FROM_HERE, kSqlInsert));
+  statement_insert.BindString(0, host_name);
+  statement_insert.BindInt64(1, now.ToInternalValue());
+  statement_insert.BindBool(2, opt_out);
+  statement_insert.BindInt(3, static_cast<int>(type));
+  statement_insert.Run();
+}
+
+// Removes entries for |host_name| if the per-host row limit is exceeded.
+// Removes entries if per data base row limit is exceeded.
+void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
+                                     const std::string& host_name) {
+  // Delete the oldest entries if there are more than |kMaxRowsPerHost| for
+  // |host_name|.
+  // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
+  const char kSqlDeleteByHost[] = "DELETE FROM " PREVIEWS_TABLE_NAME
+                                  " WHERE ROWID IN"
+                                  " (SELECT ROWID from " PREVIEWS_TABLE_NAME
+                                  " WHERE host_name == ?"
+                                  " ORDER BY time DESC"
+                                  " LIMIT -1 OFFSET ?)";
+
+  sql::Statement statement_delete_by_host(
+      db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByHost));
+  statement_delete_by_host.BindString(0, host_name);
+  statement_delete_by_host.BindInt(1, kMaxRowsPerHost);
+  statement_delete_by_host.Run();
+}
+
 void LoadBlackListFromDataBase(
     sql::Connection* db,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -107,9 +158,11 @@ void LoadBlackListFromDataBase(
   sql::Statement statement(db->GetUniqueStatement(kSql));
 
   std::unique_ptr<BlackListItemMap> black_list_item_map(new BlackListItemMap());
+  int count = 0;
   // Add the host name, the visit time, and opt out history to
   // |black_list_item_map|.
   while (statement.Step()) {
+    ++count;
     std::string host_name = statement.ColumnString(0);
     PreviewsBlackListItem* black_list_item =
         PreviewsBlackList::GetOrCreateBlackListItem(black_list_item_map.get(),
@@ -124,12 +177,28 @@ void LoadBlackListFromDataBase(
         base::Time::FromInternalValue(statement.ColumnInt64(1)));
   }
 
+  // TODO(ryansturm): Add UMA to log |count|. crbug.com/656739
+  if (count > kMaxRowsInDB) {
+    // Delete the oldest entries if there are more than |kMaxEntriesInDB|.
+    // DELETE ... LIMIT -1 OFFSET x means delete all but the first x entries.
+    const char kSqlDeleteByDBSize[] = "DELETE FROM " PREVIEWS_TABLE_NAME
+                                      " WHERE ROWID IN"
+                                      " (SELECT ROWID from " PREVIEWS_TABLE_NAME
+                                      " ORDER BY time DESC"
+                                      " LIMIT -1 OFFSET ?)";
+
+    sql::Statement statement_delete(
+        db->GetCachedStatement(SQL_FROM_HERE, kSqlDeleteByDBSize));
+    statement_delete.BindInt(0, kMaxRowsInDB);
+    statement_delete.Run();
+  }
+
   runner->PostTask(FROM_HERE,
                    base::Bind(callback, base::Passed(&black_list_item_map)));
 }
 
-// Synchronous implementation, this is run on the background thread
-// and actually does the work to access SQL.
+// Synchronous implementations, these are run on the background thread
+// and actually do the work to access the SQL data base.
 void LoadBlackListSync(sql::Connection* db,
                        const base::FilePath& path,
                        scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -138,6 +207,33 @@ void LoadBlackListSync(sql::Connection* db,
     InitDatabase(db, path);
 
   LoadBlackListFromDataBase(db, runner, callback);
+}
+
+// Deletes every row in the table that has entry time between |begin_time| and
+// |end_time|.
+void ClearBlackListSync(sql::Connection* db,
+                        base::Time begin_time,
+                        base::Time end_time) {
+  const char kSql[] =
+      "DELETE FROM " PREVIEWS_TABLE_NAME " WHERE time >= ? and time <= ?";
+
+  sql::Statement statement(db->GetUniqueStatement(kSql));
+  statement.BindInt64(0, begin_time.ToInternalValue());
+  statement.BindInt64(1, end_time.ToInternalValue());
+  statement.Run();
+}
+
+void AddPreviewNavigationSync(bool opt_out,
+                              const std::string& host_name,
+                              PreviewsType type,
+                              base::Time now,
+                              sql::Connection* db) {
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return;
+  AddPreviewNavigationToDataBase(db, opt_out, host_name, type, now);
+  MaybeEvictHostEntryFromDataBase(db, host_name);
+  transaction.Commit();
 }
 
 }  // namespace
@@ -160,10 +256,22 @@ PreviewsOptOutStoreSQL::~PreviewsOptOutStoreSQL() {
 void PreviewsOptOutStoreSQL::AddPreviewNavigation(bool opt_out,
                                                   const std::string& host_name,
                                                   PreviewsType type,
-                                                  base::Time now) {}
+                                                  base::Time now) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(db_.get());
+  background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&AddPreviewNavigationSync, opt_out, host_name, type,
+                            now, db_.get()));
+}
 
 void PreviewsOptOutStoreSQL::ClearBlackList(base::Time begin_time,
-                                            base::Time end_time) {}
+                                            base::Time end_time) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(db_.get());
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ClearBlackListSync, db_.get(), begin_time, end_time));
+}
 
 void PreviewsOptOutStoreSQL::LoadBlackList(LoadBlackListCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
