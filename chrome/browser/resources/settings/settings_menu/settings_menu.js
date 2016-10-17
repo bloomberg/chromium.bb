@@ -12,6 +12,11 @@ Polymer({
   behaviors: [settings.RouteObserverBehavior],
 
   properties: {
+    advancedOpened: {
+      type: Boolean,
+      notify: true,
+    },
+
     /** @private */
     aboutSelected_: Boolean,
 
@@ -22,26 +27,6 @@ Polymer({
     pageVisibility: {
       type: Object,
     },
-  },
-
-  attached: function() {
-    document.addEventListener('toggle-advanced-page', function(e) {
-      if (e.detail)
-        this.$.advancedPage.open();
-      else
-        this.$.advancedPage.close();
-    }.bind(this));
-
-    this.$.advancedPage.addEventListener('paper-submenu-open', function() {
-      this.fire('toggle-advanced-page', true);
-    }.bind(this));
-
-    this.$.advancedPage.addEventListener('paper-submenu-close', function() {
-      this.fire('toggle-advanced-page', false);
-    }.bind(this));
-
-    this.fire('toggle-advanced-page',
-              settings.Route.ADVANCED.contains(settings.getCurrentRoute()));
   },
 
   /**

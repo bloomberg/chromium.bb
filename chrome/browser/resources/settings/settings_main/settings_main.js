@@ -25,10 +25,10 @@ Polymer({
       notify: true,
     },
 
-    /** @private */
-    advancedToggleExpanded_: {
+    advancedToggleExpanded: {
       type: Boolean,
-      value: false,
+      notify: true,
+      observer: 'updatePagesShown_',
     },
 
     /**
@@ -90,11 +90,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    document.addEventListener('toggle-advanced-page', function(e) {
-      this.advancedToggleExpanded_ = e.detail;
-      this.updatePagesShown_();
-    }.bind(this));
-
     var currentRoute = settings.getCurrentRoute();
     this.hasExpandedSection_ = currentRoute && currentRoute.isSubpage();
   },
@@ -206,7 +201,7 @@ Polymer({
       this.hasExpandedSection_ = false;
 
     if (settings.Route.ADVANCED.contains(newRoute))
-      this.advancedToggleExpanded_ = true;
+      this.advancedToggleExpanded = true;
 
     this.updatePagesShown_();
   },
@@ -235,7 +230,7 @@ Polymer({
             !this.hasExpandedSection_,
         advanced: this.hasExpandedSection_ ?
             settings.Route.ADVANCED.contains(currentRoute) :
-            this.advancedToggleExpanded_,
+            this.advancedToggleExpanded,
       };
     }
 
@@ -292,7 +287,7 @@ Polymer({
 
   /** @private */
   toggleAdvancedPage_: function() {
-    this.fire('toggle-advanced-page', !this.advancedToggleExpanded_);
+    this.advancedToggleExpanded = !this.advancedToggleExpanded;
   },
 
   /**

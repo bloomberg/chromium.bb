@@ -136,11 +136,11 @@
         </paper-menu>
       </div>
       <paper-submenu class="page-menu" id="advancedPage" actionable
-          opened="{{advancedOpened_}}"
+          opened="{{advancedOpened}}"
           hidden="[[!pageVisibility.advancedSettings]]">
         <div class="menu-trigger">
           <span>$i18n{advancedPageTitle}</span>
-          <iron-icon icon="[[arrowState_(advancedOpened_)]]"></iron-icon>
+          <iron-icon icon="[[arrowState_(advancedOpened)]]"></iron-icon>
           <paper-ripple></paper-ripple>
         </div>
         <paper-menu attr-for-selected="data-path" class="menu-content"

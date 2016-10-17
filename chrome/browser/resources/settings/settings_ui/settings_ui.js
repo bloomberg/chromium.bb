@@ -32,6 +32,13 @@ Polymer({
       value: new settings.DirectionDelegateImpl(),
     },
 
+    /** @private */
+    advancedOpened_: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+
     /** @private {boolean} */
     toolbarSpinnerActive_: {
       type: Boolean,
