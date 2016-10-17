@@ -109,10 +109,6 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
                                      ExceptionState&);
   bool boundaryPointsValid() const;
   bool intersectsNode(Node* refNode, ExceptionState&);
-  static bool intersectsNode(Node* refNode,
-                             const Position& start,
-                             const Position& end,
-                             ExceptionState&);
   void deleteContents(ExceptionState&);
   DocumentFragment* extractContents(ExceptionState&);
   DocumentFragment* cloneContents(ExceptionState&);

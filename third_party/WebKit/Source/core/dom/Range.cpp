@@ -454,50 +454,6 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState) {
   return true;  // all other cases
 }
 
-bool Range::intersectsNode(Node* refNode,
-                           const Position& start,
-                           const Position& end,
-                           ExceptionState& exceptionState) {
-  // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
-  // Returns a bool if the node intersects the range.
-  if (!nodeValidForIntersects(refNode, start.document(), exceptionState))
-    return false;
-
-  ContainerNode* parentNode = refNode->parentNode();
-  if (!parentNode)
-    return true;
-
-  int nodeIndex = refNode->nodeIndex();
-
-  Node* startContainerNode = start.computeContainerNode();
-  int startOffset = start.computeOffsetInContainerNode();
-
-  if (compareBoundaryPoints(parentNode, nodeIndex, startContainerNode,
-                            startOffset,
-                            exceptionState) < 0  // starts before start
-      &&
-      compareBoundaryPoints(parentNode, nodeIndex + 1, startContainerNode,
-                            startOffset,
-                            exceptionState) < 0) {  // ends before start
-    DCHECK(!exceptionState.hadException());
-    return false;
-  }
-
-  Node* endContainerNode = end.computeContainerNode();
-  int endOffset = end.computeOffsetInContainerNode();
-
-  if (compareBoundaryPoints(parentNode, nodeIndex, endContainerNode, endOffset,
-                            exceptionState) > 0  // starts after end
-      &&
-      compareBoundaryPoints(parentNode, nodeIndex + 1, endContainerNode,
-                            endOffset, exceptionState) > 0) {  // ends after end
-    DCHECK(!exceptionState.hadException());
-    return false;
-  }
-
-  return true;  // all other cases
-}
-
 static inline Node* highestAncestorUnderCommonRoot(Node* node,
                                                    Node* commonRoot) {
   if (node == commonRoot)
