@@ -621,9 +621,10 @@ void AppListView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   // Do not called inherited function as the bubble delegate auto close
   // functionality is not used.
-  if (widget == GetWidget())
-    FOR_EACH_OBSERVER(AppListViewObserver, observers_,
-                      OnActivationChanged(widget, active));
+  if (widget == GetWidget()) {
+    for (auto& observer : observers_)
+      observer.OnActivationChanged(widget, active);
+  }
 }
 
 void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,

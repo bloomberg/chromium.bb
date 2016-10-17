@@ -41,26 +41,26 @@ SearchResult::SearchResult()
 }
 
 SearchResult::~SearchResult() {
-  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnResultDestroying());
+  for (auto& observer : observers_)
+    observer.OnResultDestroying();
 }
 
 void SearchResult::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
-  FOR_EACH_OBSERVER(SearchResultObserver,
-                    observers_,
-                    OnIconChanged());
+  for (auto& observer : observers_)
+    observer.OnIconChanged();
 }
 
 void SearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
   badge_icon_ = badge_icon;
-  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnBadgeIconChanged());
+  for (auto& observer : observers_)
+    observer.OnBadgeIconChanged();
 }
 
 void SearchResult::SetActions(const Actions& sets) {
   actions_ = sets;
-  FOR_EACH_OBSERVER(SearchResultObserver,
-                    observers_,
-                    OnActionsChanged());
+  for (auto& observer : observers_)
+    observer.OnActionsChanged();
 }
 
 void SearchResult::SetIsInstalling(bool is_installing) {
@@ -68,9 +68,8 @@ void SearchResult::SetIsInstalling(bool is_installing) {
     return;
 
   is_installing_ = is_installing;
-  FOR_EACH_OBSERVER(SearchResultObserver,
-                    observers_,
-                    OnIsInstallingChanged());
+  for (auto& observer : observers_)
+    observer.OnIsInstallingChanged();
 }
 
 void SearchResult::SetPercentDownloaded(int percent_downloaded) {
@@ -78,9 +77,8 @@ void SearchResult::SetPercentDownloaded(int percent_downloaded) {
     return;
 
   percent_downloaded_ = percent_downloaded;
-  FOR_EACH_OBSERVER(SearchResultObserver,
-                    observers_,
-                    OnPercentDownloadedChanged());
+  for (auto& observer : observers_)
+    observer.OnPercentDownloadedChanged();
 }
 
 int SearchResult::GetPreferredIconDimension() const {
@@ -100,7 +98,8 @@ int SearchResult::GetPreferredIconDimension() const {
 }
 
 void SearchResult::NotifyItemInstalled() {
-  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnItemInstalled());
+  for (auto& observer : observers_)
+    observer.OnItemInstalled();
 }
 
 void SearchResult::AddObserver(SearchResultObserver* observer) {

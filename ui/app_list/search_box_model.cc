@@ -36,9 +36,8 @@ SearchBoxModel::~SearchBoxModel() {
 void SearchBoxModel::SetSpeechRecognitionButton(
     std::unique_ptr<SearchBoxModel::SpeechButtonProperty> speech_button) {
   speech_button_ = std::move(speech_button);
-  FOR_EACH_OBSERVER(SearchBoxModelObserver,
-                    observers_,
-                    SpeechRecognitionButtonPropChanged());
+  for (auto& observer : observers_)
+    observer.SpeechRecognitionButtonPropChanged();
 }
 
 void SearchBoxModel::SetHintText(const base::string16& hint_text) {
@@ -46,7 +45,8 @@ void SearchBoxModel::SetHintText(const base::string16& hint_text) {
     return;
 
   hint_text_ = hint_text;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, HintTextChanged());
+  for (auto& observer : observers_)
+    observer.HintTextChanged();
 }
 
 void SearchBoxModel::SetAccessibleName(const base::string16& accessible_name) {
@@ -54,7 +54,8 @@ void SearchBoxModel::SetAccessibleName(const base::string16& accessible_name) {
     return;
 
   accessible_name_ = accessible_name;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, HintTextChanged());
+  for (auto& observer : observers_)
+    observer.HintTextChanged();
 }
 
 void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
@@ -62,9 +63,8 @@ void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
     return;
 
   selection_model_ = sel;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver,
-                    observers_,
-                    SelectionModelChanged());
+  for (auto& observer : observers_)
+    observer.SelectionModelChanged();
 }
 
 void SearchBoxModel::SetText(const base::string16& text) {
@@ -77,7 +77,8 @@ void SearchBoxModel::SetText(const base::string16& text) {
     UMA_HISTOGRAM_ENUMERATION("Apps.AppListSearchCommenced", 1, 2);
   }
   text_ = text;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, TextChanged());
+  for (auto& observer : observers_)
+    observer.TextChanged();
 }
 
 void SearchBoxModel::AddObserver(SearchBoxModelObserver* observer) {

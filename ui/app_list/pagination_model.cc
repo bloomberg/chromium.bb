@@ -33,7 +33,8 @@ void PaginationModel::SetTotalPages(int total_pages) {
     SelectPage(0, false /* animate */);
   if (selected_page_ >= total_pages_)
     SelectPage(std::max(total_pages_ - 1, 0), false /* animate */);
-  FOR_EACH_OBSERVER(PaginationModelObserver, observers_, TotalPagesChanged());
+  for (auto& observer : observers_)
+    observer.TotalPagesChanged();
 }
 
 void PaginationModel::SelectPage(int page, bool animate) {
@@ -197,17 +198,18 @@ int PaginationModel::SelectedTargetPage() const {
 
 void PaginationModel::NotifySelectedPageChanged(int old_selected,
                                                 int new_selected) {
-  FOR_EACH_OBSERVER(PaginationModelObserver,
-                    observers_,
-                    SelectedPageChanged(old_selected, new_selected));
+  for (auto& observer : observers_)
+    observer.SelectedPageChanged(old_selected, new_selected);
 }
 
 void PaginationModel::NotifyTransitionStarted() {
-  FOR_EACH_OBSERVER(PaginationModelObserver, observers_, TransitionStarted());
+  for (auto& observer : observers_)
+    observer.TransitionStarted();
 }
 
 void PaginationModel::NotifyTransitionChanged() {
-  FOR_EACH_OBSERVER(PaginationModelObserver, observers_, TransitionChanged());
+  for (auto& observer : observers_)
+    observer.TransitionChanged();
 }
 
 int PaginationModel::CalculateTargetPage(int delta) const {

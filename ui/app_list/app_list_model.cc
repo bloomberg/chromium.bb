@@ -41,9 +41,8 @@ void AppListModel::SetStatus(Status status) {
     return;
 
   status_ = status;
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListModelStatusChanged());
+  for (auto& observer : observers_)
+    observer.OnAppListModelStatusChanged();
 }
 
 void AppListModel::SetState(State state) {
@@ -54,9 +53,8 @@ void AppListModel::SetState(State state) {
 
   state_ = state;
 
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListModelStateChanged(old_state, state_));
+  for (auto& observer : observers_)
+    observer.OnAppListModelStateChanged(old_state, state_);
 }
 
 AppListItem* AppListModel::FindItem(const std::string& id) {
@@ -232,17 +230,15 @@ void AppListModel::SetItemPosition(AppListItem* item,
   AppListFolderItem* folder = FindFolderItem(item->folder_id());
   DCHECK(folder);
   folder->item_list()->SetItemPosition(item, new_position);
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemUpdated(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemUpdated(item);
 }
 
 void AppListModel::SetItemName(AppListItem* item, const std::string& name) {
   item->SetName(name);
   DVLOG(2) << "AppListModel::SetItemName: " << item->ToDebugString();
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemUpdated(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemUpdated(item);
 }
 
 void AppListModel::SetItemNameAndShortName(AppListItem* item,
@@ -251,9 +247,8 @@ void AppListModel::SetItemNameAndShortName(AppListItem* item,
   item->SetNameAndShortName(name, short_name);
   DVLOG(2) << "AppListModel::SetItemNameAndShortName: "
            << item->ToDebugString();
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemUpdated(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemUpdated(item);
 }
 
 void AppListModel::DeleteItem(const std::string& id) {
@@ -263,22 +258,22 @@ void AppListModel::DeleteItem(const std::string& id) {
   if (!item->IsInFolder()) {
     DCHECK_EQ(0u, item->ChildItemCount())
         << "Invalid call to DeleteItem for item with children: " << id;
-    FOR_EACH_OBSERVER(AppListModelObserver,
-                      observers_,
-                      OnAppListItemWillBeDeleted(item));
+    for (auto& observer : observers_)
+      observer.OnAppListItemWillBeDeleted(item);
     top_level_item_list_->DeleteItem(id);
-    FOR_EACH_OBSERVER(AppListModelObserver, observers_, OnAppListItemDeleted());
+    for (auto& observer : observers_)
+      observer.OnAppListItemDeleted();
     return;
   }
   AppListFolderItem* folder = FindFolderItem(item->folder_id());
   DCHECK(folder) << "Folder not found for item: " << item->ToDebugString();
   std::unique_ptr<AppListItem> child_item = RemoveItemFromFolder(folder, item);
   DCHECK_EQ(item, child_item.get());
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemWillBeDeleted(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemWillBeDeleted(item);
   child_item.reset();  // Deletes item.
-  FOR_EACH_OBSERVER(AppListModelObserver, observers_, OnAppListItemDeleted());
+  for (auto& observer : observers_)
+    observer.OnAppListItemDeleted();
 }
 
 void AppListModel::DeleteUninstalledItem(const std::string& id) {
@@ -329,8 +324,8 @@ void AppListModel::SetFoldersEnabled(bool folders_enabled) {
 
 void AppListModel::SetCustomLauncherPageEnabled(bool enabled) {
   custom_launcher_page_enabled_ = enabled;
-  FOR_EACH_OBSERVER(AppListModelObserver, observers_,
-                    OnCustomLauncherPageEnabledStateChanged(enabled));
+  for (auto& observer : observers_)
+    observer.OnCustomLauncherPageEnabledStateChanged(enabled);
 }
 
 std::vector<SearchResult*> AppListModel::FilterSearchResultsByDisplayType(
@@ -367,8 +362,8 @@ void AppListModel::ClearCustomLauncherPageSubpages() {
 
 void AppListModel::SetSearchEngineIsGoogle(bool is_google) {
   search_engine_is_google_ = is_google;
-  FOR_EACH_OBSERVER(AppListModelObserver, observers_,
-                    OnSearchEngineIsGoogleChanged(is_google));
+  for (auto& observer : observers_)
+    observer.OnSearchEngineIsGoogleChanged(is_google);
 }
 
 // Private methods
@@ -376,9 +371,8 @@ void AppListModel::SetSearchEngineIsGoogle(bool is_google) {
 void AppListModel::OnListItemMoved(size_t from_index,
                                    size_t to_index,
                                    AppListItem* item) {
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemUpdated(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemUpdated(item);
 }
 
 AppListFolderItem* AppListModel::FindOrCreateFolderItem(
@@ -409,9 +403,8 @@ AppListItem* AppListModel::AddItemToItemListAndNotify(
     std::unique_ptr<AppListItem> item_ptr) {
   DCHECK(!item_ptr->IsInFolder());
   AppListItem* item = top_level_item_list_->AddItem(std::move(item_ptr));
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemAdded(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemAdded(item);
   return item;
 }
 
@@ -419,9 +412,8 @@ AppListItem* AppListModel::AddItemToItemListAndNotifyUpdate(
     std::unique_ptr<AppListItem> item_ptr) {
   DCHECK(!item_ptr->IsInFolder());
   AppListItem* item = top_level_item_list_->AddItem(std::move(item_ptr));
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemUpdated(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemUpdated(item);
   return item;
 }
 
@@ -431,9 +423,8 @@ AppListItem* AppListModel::AddItemToFolderItemAndNotify(
   CHECK_NE(folder->id(), item_ptr->folder_id());
   AppListItem* item = folder->item_list()->AddItem(std::move(item_ptr));
   item->set_folder_id(folder->id());
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListItemUpdated(item));
+  for (auto& observer : observers_)
+    observer.OnAppListItemUpdated(item);
   return item;
 }
 

@@ -84,9 +84,8 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
 
   // Insert the item and notify observers.
   app_list_items_.insert(app_list_items_.begin() + to_index, target_item);
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemMoved(from_index, to_index, target_item));
+  for (auto& observer : observers_)
+    observer.OnListItemMoved(from_index, to_index, target_item);
 }
 
 void AppListItemList::SetItemPosition(AppListItem* item,
@@ -120,9 +119,8 @@ void AppListItemList::SetItemPosition(AppListItem* item,
            << " To: " << to_index;
   item->set_position(new_position);
   app_list_items_.insert(app_list_items_.begin() + to_index, item);
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemMoved(from_index, to_index, item));
+  for (auto& observer : observers_)
+    observer.OnListItemMoved(from_index, to_index, item);
 }
 
 void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {
@@ -131,9 +129,8 @@ void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {
   size_t index;
   if (FindItemIndex(highlighted_id_, &index)) {
     item_at(index)->set_highlighted(false);
-    FOR_EACH_OBSERVER(AppListItemListObserver,
-                      observers_,
-                      OnAppListItemHighlight(index, false));
+    for (auto& observer : observers_)
+      observer.OnAppListItemHighlight(index, false);
   }
   highlighted_id_ = id;
   if (!FindItemIndex(highlighted_id_, &index)) {
@@ -143,8 +140,8 @@ void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {
   }
 
   item_at(index)->set_highlighted(true);
-  FOR_EACH_OBSERVER(
-      AppListItemListObserver, observers_, OnAppListItemHighlight(index, true));
+  for (auto& observer : observers_)
+    observer.OnAppListItemHighlight(index, true);
 }
 
 // AppListItemList private
@@ -179,16 +176,14 @@ AppListItem* AppListItemList::AddItem(std::unique_ptr<AppListItem> item_ptr) {
   EnsureValidItemPosition(item);
   size_t index = GetItemSortOrderIndex(item->position(), item->id());
   app_list_items_.insert(app_list_items_.begin() + index, item_ptr.release());
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemAdded(index, item));
+  for (auto& observer : observers_)
+    observer.OnListItemAdded(index, item);
 
   if (item->id() == highlighted_id_) {
     // Item not present when highlight requested, so highlight it now.
     item->set_highlighted(true);
-    FOR_EACH_OBSERVER(AppListItemListObserver,
-                      observers_,
-                      OnAppListItemHighlight(index, true));
+    for (auto& observer : observers_)
+      observer.OnAppListItemHighlight(index, true);
   }
   return item;
 }
@@ -210,9 +205,8 @@ std::unique_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
   CHECK_LT(index, item_count());
   AppListItem* item = app_list_items_[index];
   app_list_items_.weak_erase(app_list_items_.begin() + index);
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemRemoved(index, item));
+  for (auto& observer : observers_)
+    observer.OnListItemRemoved(index, item);
   return base::WrapUnique<AppListItem>(item);
 }
 
@@ -270,9 +264,8 @@ void AppListItemList::FixItemPosition(size_t index) {
       cur->set_position(prev->position().CreateAfter());
     prev = cur;
   }
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemMoved(index, index, app_list_items_[index]));
+  for (auto& observer : observers_)
+    observer.OnListItemMoved(index, index, app_list_items_[index]);
 }
 
 }  // namespace app_list

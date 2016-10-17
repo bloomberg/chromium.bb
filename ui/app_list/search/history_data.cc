@@ -145,8 +145,8 @@ void HistoryData::OnStoreLoaded(std::unique_ptr<Associations> loaded_data) {
   if (loaded_data)
     loaded_data->swap(associations_);
 
-  FOR_EACH_OBSERVER(
-      HistoryDataObserver, observers_, OnHistoryDataLoadedFromStore());
+  for (auto& observer : observers_)
+    observer.OnHistoryDataLoadedFromStore();
 }
 
 void HistoryData::TrimEntries() {

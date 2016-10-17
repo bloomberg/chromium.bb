@@ -223,7 +223,8 @@ void FolderImage::RedrawIconAndNotify() {
   icon_ =
       gfx::ImageSkia(new FolderImageSource(top_icons, icon_size), icon_size);
 
-  FOR_EACH_OBSERVER(FolderImageObserver, observers_, OnFolderImageUpdated());
+  for (auto& observer : observers_)
+    observer.OnFolderImageUpdated();
 }
 
 }  // namespace app_list

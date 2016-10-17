@@ -17,12 +17,14 @@ AppListItem::AppListItem(const std::string& id)
 }
 
 AppListItem::~AppListItem() {
-  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemBeingDestroyed());
+  for (auto& observer : observers_)
+    observer.ItemBeingDestroyed();
 }
 
 void AppListItem::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
-  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemIconChanged());
+  for (auto& observer : observers_)
+    observer.ItemIconChanged();
 }
 
 void AppListItem::SetIsInstalling(bool is_installing) {
@@ -30,9 +32,8 @@ void AppListItem::SetIsInstalling(bool is_installing) {
     return;
 
   is_installing_ = is_installing;
-  FOR_EACH_OBSERVER(AppListItemObserver,
-                    observers_,
-                    ItemIsInstallingChanged());
+  for (auto& observer : observers_)
+    observer.ItemIsInstallingChanged();
 }
 
 void AppListItem::SetPercentDownloaded(int percent_downloaded) {
@@ -40,9 +41,8 @@ void AppListItem::SetPercentDownloaded(int percent_downloaded) {
     return;
 
   percent_downloaded_ = percent_downloaded;
-  FOR_EACH_OBSERVER(AppListItemObserver,
-                    observers_,
-                    ItemPercentDownloadedChanged());
+  for (auto& observer : observers_)
+    observer.ItemPercentDownloadedChanged();
 }
 
 void AppListItem::AddObserver(AppListItemObserver* observer) {
@@ -96,7 +96,8 @@ void AppListItem::SetName(const std::string& name) {
     return;
   name_ = name;
   short_name_.clear();
-  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemNameChanged());
+  for (auto& observer : observers_)
+    observer.ItemNameChanged();
 }
 
 void AppListItem::SetNameAndShortName(const std::string& name,
@@ -105,7 +106,8 @@ void AppListItem::SetNameAndShortName(const std::string& name,
     return;
   name_ = name;
   short_name_ = short_name;
-  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemNameChanged());
+  for (auto& observer : observers_)
+    observer.ItemNameChanged();
 }
 
 }  // namespace app_list

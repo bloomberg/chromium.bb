@@ -35,9 +35,8 @@ void SpeechUIModel::SetSpeechResult(const base::string16& result,
 
   result_ = result;
   is_final_ = is_final;
-  FOR_EACH_OBSERVER(SpeechUIModelObserver,
-                    observers_,
-                    OnSpeechResult(result, is_final));
+  for (auto& observer : observers_)
+    observer.OnSpeechResult(result, is_final);
 }
 
 void SpeechUIModel::UpdateSoundLevel(int16_t level) {
@@ -70,9 +69,8 @@ void SpeechUIModel::UpdateSoundLevel(int16_t level) {
                     std::numeric_limits<uint8_t>::max() / range;
   }
 
-  FOR_EACH_OBSERVER(SpeechUIModelObserver,
-                    observers_,
-                    OnSpeechSoundLevelChanged(visible_level));
+  for (auto& observer : observers_)
+    observer.OnSpeechSoundLevelChanged(visible_level);
 }
 
 void SpeechUIModel::SetSpeechRecognitionState(SpeechRecognitionState new_state,
@@ -94,9 +92,8 @@ void SpeechUIModel::SetSpeechRecognitionState(SpeechRecognitionState new_state,
     maximum_sound_level_ = kDefaultSoundLevel;
   }
 
-  FOR_EACH_OBSERVER(SpeechUIModelObserver,
-                    observers_,
-                    OnSpeechRecognitionStateChanged(new_state));
+  for (auto& observer : observers_)
+    observer.OnSpeechRecognitionStateChanged(new_state);
 }
 
 void SpeechUIModel::AddObserver(SpeechUIModelObserver* observer) {
