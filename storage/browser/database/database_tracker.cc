@@ -614,8 +614,8 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
           storage::GetOriginFromIdentifier(origin_id),
           storage::kStorageTypeTemporary,
           new_size - old_size);
-    FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
-        origin_id, name, new_size));
+    for (auto& observer : observers_)
+      observer.OnDatabaseSizeChanged(origin_id, name, new_size);
   }
   return new_size;
 }
@@ -626,8 +626,8 @@ void DatabaseTracker::ScheduleDatabaseForDeletion(
   DCHECK(database_connections_.IsDatabaseOpened(origin_identifier,
                                                 database_name));
   dbs_to_be_deleted_[origin_identifier].insert(database_name);
-  FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseScheduledForDeletion(
-      origin_identifier, database_name));
+  for (auto& observer : observers_)
+    observer.OnDatabaseScheduledForDeletion(origin_identifier, database_name);
 }
 
 void DatabaseTracker::ScheduleDatabasesForDeletion(
