@@ -452,7 +452,8 @@ void EmbeddedWorkerInstance::Start(
   network_accessed_for_script_ = false;
   interface_registry_.reset(new service_manager::InterfaceRegistry);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStarting());
+  for (auto& observer : listener_list_)
+    observer.OnStarting();
 
   params->embedded_worker_id = embedded_worker_id_;
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
@@ -498,7 +499,8 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::Stop() {
   }
 
   status_ = EmbeddedWorkerStatus::STOPPING;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopping());
+  for (auto& observer : listener_list_)
+    observer.OnStopping();
   return status;
 }
 
@@ -577,7 +579,8 @@ void EmbeddedWorkerInstance::OnProcessAllocated(
   process_handle_ = std::move(handle);
   starting_phase_ = REGISTERING_TO_DEVTOOLS;
   start_situation_ = start_situation;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnProcessAllocated());
+  for (auto& observer : listener_list_)
+    observer.OnProcessAllocated();
 }
 
 void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
@@ -594,7 +597,8 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     // we set the NULL time here.
     step_time_ = base::TimeTicks();
   }
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnRegisteredToDevToolsManager());
+  for (auto& observer : listener_list_)
+    observer.OnRegisteredToDevToolsManager();
 }
 
 void EmbeddedWorkerInstance::SendMojoStartWorker(
@@ -616,7 +620,8 @@ void EmbeddedWorkerInstance::OnStartWorkerMessageSent() {
   }
 
   starting_phase_ = SENT_START_WORKER;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStartWorkerMessageSent());
+  for (auto& observer : listener_list_)
+    observer.OnStartWorkerMessageSent();
 }
 
 void EmbeddedWorkerInstance::OnReadyForInspection() {
@@ -657,7 +662,8 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
   }
 
   starting_phase_ = SCRIPT_LOADED;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoaded());
+  for (auto& observer : listener_list_)
+    observer.OnScriptLoaded();
   // |this| may be destroyed by the callback.
 }
 
@@ -697,7 +703,8 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   }
 
   thread_id_ = thread_id;
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
+  for (auto& observer : listener_list_)
+    observer.OnThreadStarted();
 
   service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
   interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
@@ -718,7 +725,8 @@ void EmbeddedWorkerInstance::OnScriptLoadFailed() {
   TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
                                inflight_start_task_.get(),
                                "OnScriptLoadFailed");
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoadFailed());
+  for (auto& observer : listener_list_)
+    observer.OnScriptLoadFailed();
 }
 
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
@@ -752,19 +760,22 @@ void EmbeddedWorkerInstance::OnStarted() {
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING);
   status_ = EmbeddedWorkerStatus::RUNNING;
   inflight_start_task_.reset();
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStarted());
+  for (auto& observer : listener_list_)
+    observer.OnStarted();
 }
 
 void EmbeddedWorkerInstance::OnStopped() {
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped(old_status));
+  for (auto& observer : listener_list_)
+    observer.OnStopped(old_status);
 }
 
 void EmbeddedWorkerInstance::OnDetached() {
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnDetached(old_status));
+  for (auto& observer : listener_list_)
+    observer.OnDetached(old_status);
 }
 
 void EmbeddedWorkerInstance::Detach() {
@@ -789,10 +800,10 @@ void EmbeddedWorkerInstance::OnReportException(
     int line_number,
     int column_number,
     const GURL& source_url) {
-  FOR_EACH_OBSERVER(
-      Listener,
-      listener_list_,
-      OnReportException(error_message, line_number, column_number, source_url));
+  for (auto& observer : listener_list_) {
+    observer.OnReportException(error_message, line_number, column_number,
+                               source_url);
+  }
 }
 
 void EmbeddedWorkerInstance::OnReportConsoleMessage(
@@ -801,11 +812,10 @@ void EmbeddedWorkerInstance::OnReportConsoleMessage(
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
-  FOR_EACH_OBSERVER(
-      Listener,
-      listener_list_,
-      OnReportConsoleMessage(
-          source_identifier, message_level, message, line_number, source_url));
+  for (auto& observer : listener_list_) {
+    observer.OnReportConsoleMessage(source_identifier, message_level, message,
+                                    line_number, source_url);
+  }
 }
 
 int EmbeddedWorkerInstance::process_id() const {
@@ -862,9 +872,10 @@ void EmbeddedWorkerInstance::OnStartFailed(const StatusCallback& callback,
   ReleaseProcess();
   base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();
   callback.Run(status);
-  if (weak_this && old_status != EmbeddedWorkerStatus::STOPPED)
-    FOR_EACH_OBSERVER(Listener, weak_this->listener_list_,
-                      OnStopped(old_status));
+  if (weak_this && old_status != EmbeddedWorkerStatus::STOPPED) {
+    for (auto& observer : weak_this->listener_list_)
+      observer.OnStopped(old_status);
+  }
 }
 
 base::TimeDelta EmbeddedWorkerInstance::UpdateStepTime() {

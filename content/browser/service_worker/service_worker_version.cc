@@ -374,7 +374,8 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   // property.
   // TODO(shimazu): Clarify the dependency of OnVersionStateChanged and
   // |status_change_callbacks_|
-  FOR_EACH_OBSERVER(Listener, listeners_, OnVersionStateChanged(this));
+  for (auto& observer : listeners_)
+    observer.OnVersionStateChanged(this);
 
   std::vector<base::Closure> callbacks;
   callbacks.swap(status_change_callbacks_);
@@ -584,8 +585,10 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
   pending_requests_.Remove(request_id);
-  if (!HasWork())
-    FOR_EACH_OBSERVER(Listener, listeners_, OnNoWork(this));
+  if (!HasWork()) {
+    for (auto& observer : listeners_)
+      observer.OnNoWork(this);
+  }
 
   return true;
 }
@@ -632,8 +635,8 @@ void ServiceWorkerVersion::AddControllee(
   controllee_map_[uuid] = provider_host;
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnControlleeAdded(this, provider_host));
+  for (auto& observer : listeners_)
+    observer.OnControlleeAdded(this, provider_host);
 }
 
 void ServiceWorkerVersion::RemoveControllee(
@@ -641,10 +644,12 @@ void ServiceWorkerVersion::RemoveControllee(
   const std::string& uuid = provider_host->client_uuid();
   DCHECK(base::ContainsKey(controllee_map_, uuid));
   controllee_map_.erase(uuid);
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnControlleeRemoved(this, provider_host));
-  if (!HasControllee())
-    FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
+  for (auto& observer : listeners_)
+    observer.OnControlleeRemoved(this, provider_host);
+  if (!HasControllee()) {
+    for (auto& observer : listeners_)
+      observer.OnNoControllees(this);
+  }
 }
 
 void ServiceWorkerVersion::AddStreamingURLRequestJob(
@@ -657,8 +662,10 @@ void ServiceWorkerVersion::AddStreamingURLRequestJob(
 void ServiceWorkerVersion::RemoveStreamingURLRequestJob(
     const ServiceWorkerURLRequestJob* request_job) {
   streaming_url_request_jobs_.erase(request_job);
-  if (!HasWork())
-    FOR_EACH_OBSERVER(Listener, listeners_, OnNoWork(this));
+  if (!HasWork()) {
+    for (auto& observer : listeners_)
+      observer.OnNoWork(this);
+  }
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {
@@ -760,8 +767,8 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
         url::Origin(scope()), http_info.headers.get());
   }
 
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnMainScriptHttpResponseInfoSet(this));
+  for (auto& observer : listeners_)
+    observer.OnMainScriptHttpResponseInfoSet(this);
 }
 
 void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
@@ -830,7 +837,8 @@ void ServiceWorkerVersion::OnThreadStarted() {
 }
 
 void ServiceWorkerVersion::OnStarting() {
-  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
+  for (auto& observer : listeners_)
+    observer.OnRunningStateChanged(this);
 }
 
 void ServiceWorkerVersion::OnStarted() {
@@ -840,7 +848,8 @@ void ServiceWorkerVersion::OnStarted() {
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);
   FinishStartWorker(SERVICE_WORKER_OK);
-  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
+  for (auto& observer : listeners_)
+    observer.OnRunningStateChanged(this);
 }
 
 void ServiceWorkerVersion::OnStopping() {
@@ -856,7 +865,8 @@ void ServiceWorkerVersion::OnStopping() {
   // when the worker starts up again.
   SetTimeoutTimerInterval(
       base::TimeDelta::FromSeconds(kStopWorkerTimeoutSeconds));
-  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
+  for (auto& observer : listeners_)
+    observer.OnRunningStateChanged(this);
 }
 
 void ServiceWorkerVersion::OnStopped(EmbeddedWorkerStatus old_status) {
@@ -889,7 +899,8 @@ void ServiceWorkerVersion::OnScriptLoadFailed() {
 }
 
 void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {
-  FOR_EACH_OBSERVER(Listener, listeners_, OnDevToolsRoutingIdChanged(this));
+  for (auto& observer : listeners_)
+    observer.OnDevToolsRoutingIdChanged(this);
 }
 
 void ServiceWorkerVersion::OnReportException(
@@ -897,11 +908,10 @@ void ServiceWorkerVersion::OnReportException(
     int line_number,
     int column_number,
     const GURL& source_url) {
-  FOR_EACH_OBSERVER(
-      Listener,
-      listeners_,
-      OnErrorReported(
-          this, error_message, line_number, column_number, source_url));
+  for (auto& observer : listeners_) {
+    observer.OnErrorReported(this, error_message, line_number, column_number,
+                             source_url);
+  }
 }
 
 void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
@@ -909,14 +919,10 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
                                                   const base::string16& message,
                                                   int line_number,
                                                   const GURL& source_url) {
-  FOR_EACH_OBSERVER(Listener,
-                    listeners_,
-                    OnReportConsoleMessage(this,
-                                           source_identifier,
-                                           message_level,
-                                           message,
-                                           line_number,
-                                           source_url));
+  for (auto& observer : listeners_) {
+    observer.OnReportConsoleMessage(this, source_identifier, message_level,
+                                    message, line_number, source_url);
+  }
 }
 
 bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
@@ -1113,7 +1119,8 @@ void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::OnSetCachedMetadata",
                          callback_id, "result", result);
-  FOR_EACH_OBSERVER(Listener, listeners_, OnCachedMetadataUpdated(this));
+  for (auto& observer : listeners_)
+    observer.OnCachedMetadataUpdated(this);
 }
 
 void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
@@ -1131,7 +1138,8 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::OnClearCachedMetadata",
                          callback_id, "result", result);
-  FOR_EACH_OBSERVER(Listener, listeners_, OnCachedMetadataUpdated(this));
+  for (auto& observer : listeners_)
+    observer.OnCachedMetadataUpdated(this);
 }
 
 void ServiceWorkerVersion::OnPostMessageToClient(
@@ -1792,11 +1800,14 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   // TODO(falken): Call SWURLRequestJob::ClearStream here?
   streaming_url_request_jobs_.clear();
 
-  FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
-  if (should_restart)
+  for (auto& observer : listeners_)
+    observer.OnRunningStateChanged(this);
+  if (should_restart) {
     StartWorkerInternal();
-  else if (!HasWork())
-    FOR_EACH_OBSERVER(Listener, listeners_, OnNoWork(this));
+  } else if (!HasWork()) {
+    for (auto& observer : listeners_)
+      observer.OnNoWork(this);
+  }
 }
 
 void ServiceWorkerVersion::OnMojoConnectionError(const char* service_name) {

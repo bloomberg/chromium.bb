@@ -78,18 +78,20 @@ void ServiceWorkerRegistration::RemoveListener(Listener* listener) {
 }
 
 void ServiceWorkerRegistration::NotifyRegistrationFailed() {
-  FOR_EACH_OBSERVER(Listener, listeners_, OnRegistrationFailed(this));
+  for (auto& observer : listeners_)
+    observer.OnRegistrationFailed(this);
   NotifyRegistrationFinished();
 }
 
 void ServiceWorkerRegistration::NotifyUpdateFound() {
-  FOR_EACH_OBSERVER(Listener, listeners_, OnUpdateFound(this));
+  for (auto& observer : listeners_)
+    observer.OnUpdateFound(this);
 }
 
 void ServiceWorkerRegistration::NotifyVersionAttributesChanged(
     ChangedVersionAttributesMask mask) {
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnVersionAttributesChanged(this, mask, GetInfo()));
+  for (auto& observer : listeners_)
+    observer.OnVersionAttributesChanged(this, mask, GetInfo());
   if (mask.active_changed() || mask.waiting_changed())
     NotifyRegistrationFinished();
 }
@@ -314,8 +316,10 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   // "activating" as arguments."
   activating_version->SetStatus(ServiceWorkerVersion::ACTIVATING);
   // "9. Fire a simple event named controllerchange..."
-  if (activating_version->skip_waiting())
-    FOR_EACH_OBSERVER(Listener, listeners_, OnSkippedWaiting(this));
+  if (activating_version->skip_waiting()) {
+    for (auto& observer : listeners_)
+      observer.OnSkippedWaiting(this);
+  }
 
   // "10. Queue a task to fire an event named activate..."
   // The browser could be shutting down. To avoid spurious start worker
@@ -488,8 +492,8 @@ void ServiceWorkerRegistration::Clear() {
       version->Doom();
   }
 
-  FOR_EACH_OBSERVER(
-      Listener, listeners_, OnRegistrationFinishedUninstalling(this));
+  for (auto& observer : listeners_)
+    observer.OnRegistrationFinishedUninstalling(this);
 }
 
 void ServiceWorkerRegistration::OnRestoreFinished(
