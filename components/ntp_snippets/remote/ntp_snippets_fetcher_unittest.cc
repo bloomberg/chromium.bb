@@ -255,8 +255,6 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   params.count_to_fetch = 25;
   params.interactive_request = false;
   params.user_class = "ACTIVE_NTP_USER";
-  params.ui_language.frequency = 0.0f;
-  params.other_top_language.frequency = 0.0f;
 
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
@@ -321,8 +319,6 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.excluded_ids = {};
   params.interactive_request = true;
   params.user_class = "ACTIVE_NTP_USER";
-  params.ui_language.frequency = 0.0f;
-  params.other_top_language.frequency = 0.0f;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -376,8 +372,6 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
     params.excluded_ids.insert(base::StringPrintf("%03d", i));
   }
   params.user_class = "ACTIVE_NTP_USER";
-  params.ui_language.frequency = 0.0f;
-  params.other_top_language.frequency = 0.0f;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -418,8 +412,6 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestNoUserClass) {
   params.host_restricts = {};
   params.count_to_fetch = 10;
   params.interactive_request = false;
-  params.ui_language.frequency = 0.0f;
-  params.other_top_language.frequency = 0.0f;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -468,7 +460,6 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestWithUILanguageOnly) {
   params.interactive_request = true;
   params.ui_language.language_code = "en";
   params.ui_language.frequency = 0.5f;
-  params.other_top_language.frequency = 0.0f;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -489,7 +480,6 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestWithOtherLanguageOnly) {
   params.host_restricts = {};
   params.count_to_fetch = 10;
   params.interactive_request = true;
-  params.ui_language.frequency = 0.0f;
   params.other_top_language.language_code = "de";
   params.other_top_language.frequency = 0.5f;
 

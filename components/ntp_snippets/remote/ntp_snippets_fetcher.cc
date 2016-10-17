@@ -372,7 +372,9 @@ NTPSnippetsFetcher::RequestParams::RequestParams()
       host_restricts(),
       count_to_fetch(),
       interactive_request(),
-      user_class() {}
+      user_class(),
+      ui_language{"", 0.0f},
+      other_top_language{"", 0.0f} {}
 
 NTPSnippetsFetcher::RequestParams::~RequestParams() = default;
 
@@ -524,11 +526,6 @@ void NTPSnippetsFetcher::SetUpCommonFetchingParameters(
 
   if (IsSendingUserClassEnabled())
     params->user_class = GetUserClassString(user_classifier_->GetUserClass());
-
-  // TODO(jkrcal): add the initializers into the struct and remove it from here
-  // and from the unit-tests (building the request).
-  params->ui_language.frequency = 0;
-  params->other_top_language.frequency = 0;
 
   // TODO(jkrcal): Add language model factory for iOS and add fakes to tests so
   // that |language_model_| is never nullptr. Remove this check and add a DCHECK
