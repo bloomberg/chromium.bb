@@ -94,3 +94,22 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewMacBrowserTest, CopyToPasteboard) {
   pasteboard_string = [pasteboard->get() stringForType:NSPasteboardTypeString];
   EXPECT_EQ(text, pasteboard_string.UTF8String);
 }
+
+// Verify that copying text from the omnibox into the pasteboard works with
+// a selection that begins on a combining character.
+IN_PROC_BROWSER_TEST_F(OmniboxViewMacBrowserTest, CopyToPasteboardDiacritic) {
+  base::string16 text = base::UTF8ToUTF16("สวัสดี");
+
+  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+  [[GetOmnibox()->field() currentEditor]
+      setString:base::SysUTF16ToNSString(text)];
+  [[GetOmnibox()->field() currentEditor]
+      setSelectedRange:NSMakeRange(2, text.size() - 2)];
+
+  GetOmnibox()->model()->SetUserText(text);
+  GetOmnibox()->CopyToPasteboard(pasteboard->get());
+
+  NSString* pasteboard_string =
+      [pasteboard->get() stringForType:NSPasteboardTypeString];
+  EXPECT_EQ(text.substr(2, 4), base::SysNSStringToUTF16(pasteboard_string));
+}

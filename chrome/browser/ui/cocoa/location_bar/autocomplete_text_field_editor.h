@@ -39,6 +39,10 @@ class AutocompleteTextFieldObserver;
 
   // Indicates if the text has been changed by key events.
   BOOL textChangedByKeyEvents_;
+
+  // The selected range as far as NSTextView is concerned.
+  // See |actualSelectedRange|.
+  NSRange visualSelectedRange_;
 }
 
 // The delegate is always an AutocompleteTextField*.  Override the superclass
@@ -49,6 +53,12 @@ class AutocompleteTextFieldObserver;
 // Sets attributed string programatically through the field editor's text
 // storage object.
 - (void)setAttributedString:(NSAttributedString*)aString;
+
+// Stores requested selection range, before it's adjusted to grapheme
+// boundaries. This range is what text editing commands
+// will operate on, vs. |visualSelectionRange_|, which reflects the
+// range that looks highlighted.
+@property(nonatomic, readonly) NSRange actualSelectedRange;
 
 @end
 

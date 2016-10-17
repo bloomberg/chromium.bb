@@ -4,6 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 
+#include "base/i18n/break_iterator.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -49,12 +52,57 @@ BOOL ThePasteboardIsTooDamnBig() {
   return [[pb stringForType:type] length] > kMaxPasteLength;
 }
 
+NSRange VisualSelectedRangeFromRange(NSRange range, NSString* string) {
+  if (range.location >= string.length)
+    return range;
+  base::string16 text = base::SysNSStringToUTF16(string);
+  base::i18n::BreakIterator grapheme_iterator(
+      text, base::i18n::BreakIterator::BREAK_CHARACTER);
+  if (!grapheme_iterator.Init())
+    return range;
+  // This works because NSString uses UTF-16 code units.
+  while (range.location < text.length() &&
+         !grapheme_iterator.IsGraphemeBoundary(
+             static_cast<size_t>(range.location))) {
+    range.location++;
+    if (range.length > 0)
+      range.length--;
+  }
+  return range;
+}
+
 }  // namespace
+
+// Method exposed for the purpose of overriding.
+// Used to restore model's selection range when the view doesn't
+// match the model due to combining characters.
+//
+// In some cases, (completing 'y' to 'ÿour', for example), the autocomplete
+// system requests a selection range that begins on a combining character.
+// setSelectedRange: and friends document that the range passed to them
+// "must begin and end on glyph boundaries and not split base glyphs and
+// their nonspacing marks". If passed such a range, the selection is
+// expanded to include the original user input, preventing the user
+// from being able to type other words beginning with that letter.
+//
+// To resolve this, the field editor modifies the selection to start
+// on the next glyph boundary, then keeps track of the original and
+// modified selections, substituting the original when the user takes
+// actions that operate on the selection. Since there are many methods
+// in NSResponder (for example deleteToBeginningOfLine:) that operate
+// on the selection, rather than shimming them all, we override this
+// private method that they're implemented in terms of.
+//
+@interface NSTextView (PrivateTextEditing)
+- (void)_userReplaceRange:(NSRange)range withString:(NSString*)string;
+@end
 
 @interface AutocompleteTextFieldEditor ()<NSDraggingSource>
 @end
 
 @implementation AutocompleteTextFieldEditor
+
+@synthesize actualSelectedRange = actualSelectedRange_;
 
 - (BOOL)shouldDrawInsertionPoint {
   return [super shouldDrawInsertionPoint] &&
@@ -400,6 +448,14 @@ BOOL ThePasteboardIsTooDamnBig() {
   return [dropHandler_ performDragOperation:sender];
 }
 
+- (void)_userReplaceRange:(NSRange)range withString:(NSString*)string {
+  if (NSEqualRanges(visualSelectedRange_, range) &&
+      !NSEqualRanges(visualSelectedRange_, actualSelectedRange_)) {
+    range = actualSelectedRange_;
+  }
+  [super _userReplaceRange:range withString:string];
+}
+
 // Prevent control characters from being entered into the Omnibox.
 // This is invoked for keyboard entry, not for pasting.
 - (void)insertText:(id)aString {
@@ -431,11 +487,15 @@ BOOL ThePasteboardIsTooDamnBig() {
     DCHECK_EQ(range.length, 0U);
   }
 
-  // NOTE: If |aString| is empty, this intentionally replaces the
-  // selection with empty.  This seems consistent with the case where
-  // the input contained a mixture of characters and the string ended
-  // up not empty.
-  [super insertText:aString];
+  if (!NSEqualRanges(visualSelectedRange_, actualSelectedRange_)) {
+    [super replaceCharactersInRange:actualSelectedRange_ withString:aString];
+  } else {
+    // NOTE: If |aString| is empty, this intentionally replaces the
+    // selection with empty.  This seems consistent with the case where
+    // the input contained a mixture of characters and the string ended
+    // up not empty.
+    [super insertText:aString];
+  }
 }
 
 - (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
@@ -457,6 +517,24 @@ BOOL ThePasteboardIsTooDamnBig() {
   // input from the user.
   if (interpretingKeyEvents_)
     textChangedByKeyEvents_ = YES;
+}
+
+- (void)setSelectedRanges:(NSArray*)ranges
+                 affinity:(NSSelectionAffinity)affinity
+           stillSelecting:(BOOL)flag {
+  DCHECK(ranges.count > 0);
+  base::scoped_nsobject<NSMutableArray> mutableRanges([ranges mutableCopy]);
+  // |ranges| is sorted, and empirically, the first range passed is returned
+  // as selectedRange.
+  NSRange firstRange = [base::mac::ObjCCastStrict<NSValue>(
+      [mutableRanges firstObject]) rangeValue];
+  actualSelectedRange_ = firstRange;
+  visualSelectedRange_ =
+      VisualSelectedRangeFromRange(firstRange, [self string]);
+  NSValue* boxedVisualRange = [NSValue valueWithRange:visualSelectedRange_];
+  [mutableRanges replaceObjectAtIndex:0 withObject:boxedVisualRange];
+
+  [super setSelectedRanges:mutableRanges affinity:affinity stillSelecting:flag];
 }
 
 - (void)interpretKeyEvents:(NSArray *)eventArray {
@@ -564,7 +642,7 @@ BOOL ThePasteboardIsTooDamnBig() {
 
 - (BOOL)validateMenuItem:(NSMenuItem*)item {
   if ([item action] == @selector(copyToFindPboard:))
-    return [self selectedRange].length > 0;
+    return actualSelectedRange_.length > 0;
   if ([item action] == @selector(pasteAndGo:)) {
     // TODO(rohitrao): If the clipboard is empty, should we show a
     // greyed-out "Paste and Go" or nothing at all?
@@ -576,11 +654,10 @@ BOOL ThePasteboardIsTooDamnBig() {
 }
 
 - (void)copyToFindPboard:(id)sender {
-  NSRange selectedRange = [self selectedRange];
-  if (selectedRange.length == 0)
+  if (actualSelectedRange_.length == 0)
     return;
   NSAttributedString* selection =
-      [self attributedSubstringForProposedRange:selectedRange
+      [self attributedSubstringForProposedRange:actualSelectedRange_
                                     actualRange:NULL];
   if (!selection)
     return;
