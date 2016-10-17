@@ -246,7 +246,8 @@ DownloadItemImpl::~DownloadItemImpl() {
   // DownloadManager shutdown.
   DCHECK(!download_file_.get());
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadDestroyed(this);
   delegate_->AssertStateConsistent(this);
   delegate_->Detach();
 }
@@ -267,7 +268,8 @@ void DownloadItemImpl::UpdateObservers() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __func__ << "()";
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadUpdated(this);
 }
 
 void DownloadItemImpl::ValidateDangerousDownload() {
@@ -428,7 +430,8 @@ void DownloadItemImpl::OpenDownload() {
   delegate_->CheckForFileRemoval(this);
   RecordOpen(GetEndTime(), !GetOpened());
   opened_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadOpened(this);
   delegate_->OpenDownload(this);
 }
 
@@ -974,7 +977,8 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
 }
 
 void DownloadItemImpl::NotifyRemoved() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadRemoved(this);
 }
 
 void DownloadItemImpl::OnDownloadedFileRemoved() {

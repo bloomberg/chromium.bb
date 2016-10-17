@@ -412,7 +412,8 @@ AppCacheServiceImpl::AppCacheServiceImpl(
 
 AppCacheServiceImpl::~AppCacheServiceImpl() {
   DCHECK(backends_.empty());
-  FOR_EACH_OBSERVER(Observer, observers_, OnServiceDestructionImminent(this));
+  for (auto& observer : observers_)
+    observer.OnServiceDestructionImminent(this);
   for (auto* helper : pending_helpers_)
     helper->Cancel();
   base::STLDeleteElements(&pending_helpers_);
@@ -472,8 +473,8 @@ void AppCacheServiceImpl::Reinitialize() {
   // defer deletion of the old storage object.
   scoped_refptr<AppCacheStorageReference> old_storage_ref(
       new AppCacheStorageReference(std::move(storage_)));
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnServiceReinitialized(old_storage_ref.get()));
+  for (auto& observer : observers_)
+    observer.OnServiceReinitialized(old_storage_ref.get());
 
   Initialize(cache_directory_, db_thread_, cache_thread_);
 }

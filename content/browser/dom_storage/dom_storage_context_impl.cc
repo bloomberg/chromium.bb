@@ -301,9 +301,8 @@ void DOMStorageContextImpl::NotifyItemSet(
     const base::string16& new_value,
     const base::NullableString16& old_value,
     const GURL& page_url) {
-  FOR_EACH_OBSERVER(
-      EventObserver, event_observers_,
-      OnDOMStorageItemSet(area, key, new_value, old_value, page_url));
+  for (auto& observer : event_observers_)
+    observer.OnDOMStorageItemSet(area, key, new_value, old_value, page_url);
 }
 
 void DOMStorageContextImpl::NotifyItemRemoved(
@@ -311,17 +310,15 @@ void DOMStorageContextImpl::NotifyItemRemoved(
     const base::string16& key,
     const base::string16& old_value,
     const GURL& page_url) {
-  FOR_EACH_OBSERVER(
-      EventObserver, event_observers_,
-      OnDOMStorageItemRemoved(area, key, old_value, page_url));
+  for (auto& observer : event_observers_)
+    observer.OnDOMStorageItemRemoved(area, key, old_value, page_url);
 }
 
 void DOMStorageContextImpl::NotifyAreaCleared(
     const DOMStorageArea* area,
     const GURL& page_url) {
-  FOR_EACH_OBSERVER(
-      EventObserver, event_observers_,
-      OnDOMStorageAreaCleared(area, page_url));
+  for (auto& observer : event_observers_)
+    observer.OnDOMStorageAreaCleared(area, page_url);
 }
 
 int64_t DOMStorageContextImpl::AllocateSessionId() {

@@ -258,9 +258,8 @@ void ContentViewCoreImpl::RemoveObserver(
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
   view_.GetLayer()->RemoveFromParent();
-  FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
-                    observer_list_,
-                    OnContentViewCoreDestroyed());
+  for (auto& observer : observer_list_)
+    observer.OnContentViewCoreDestroyed();
   observer_list_.Clear();
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -281,13 +280,11 @@ void ContentViewCoreImpl::UpdateWindowAndroid(
     ui::WindowAndroid* window =
         reinterpret_cast<ui::WindowAndroid*>(window_android);
     window->AddChild(&view_);
-    FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
-                      observer_list_,
-                      OnAttachedToWindow());
+    for (auto& observer : observer_list_)
+      observer.OnAttachedToWindow();
   } else {
-    FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
-                      observer_list_,
-                      OnDetachedFromWindow());
+    for (auto& observer : observer_list_)
+      observer.OnDetachedFromWindow();
     view_.RemoveFromParent();
   }
 }

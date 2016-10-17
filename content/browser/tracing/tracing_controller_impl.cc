@@ -532,8 +532,8 @@ void TracingControllerImpl::AddTraceMessageFilter(
         TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
 
-  FOR_EACH_OBSERVER(TraceMessageFilterObserver, trace_message_filter_observers_,
-                    OnTraceMessageFilterAdded(trace_message_filter));
+  for (auto& observer : trace_message_filter_observers_)
+    observer.OnTraceMessageFilterAdded(trace_message_filter);
 }
 
 void TracingControllerImpl::RemoveTraceMessageFilter(

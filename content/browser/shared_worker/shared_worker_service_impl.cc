@@ -474,9 +474,8 @@ void SharedWorkerServiceImpl::RenderFrameDetached(int render_process_id,
 
 void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
                                                     int worker_route_id) {
-  FOR_EACH_OBSERVER(WorkerServiceObserver,
-                    observers_,
-                    WorkerDestroyed(worker_process_id, worker_route_id));
+  for (auto& observer : observers_)
+    observer.WorkerDestroyed(worker_process_id, worker_route_id);
 }
 
 blink::WebWorkerCreationError
@@ -593,10 +592,8 @@ void SharedWorkerServiceImpl::RenderProcessReservedCallback(
   host->Start(pause_on_start);
   ProcessRouteIdPair key(worker_process_id, worker_route_id);
   worker_hosts_[key] = std::move(host);
-  FOR_EACH_OBSERVER(
-      WorkerServiceObserver,
-      observers_,
-      WorkerCreated(url, name, worker_process_id, worker_route_id));
+  for (auto& observer : observers_)
+    observer.WorkerCreated(url, name, worker_process_id, worker_route_id);
 }
 
 void SharedWorkerServiceImpl::RenderProcessReserveFailedCallback(

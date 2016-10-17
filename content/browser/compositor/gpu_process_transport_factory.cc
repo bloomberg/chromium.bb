@@ -613,8 +613,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 
     // If there are any observer left at this point, make sure they clean up
     // before we destroy the GLHelper.
-    FOR_EACH_OBSERVER(ui::ContextFactoryObserver, observer_list_,
-                      OnLostResources());
+    for (auto& observer : observer_list_)
+      observer.OnLostResources();
 
     helper.reset();
     DCHECK(!gl_helper_) << "Destroying the GLHelper should not cause a new "
@@ -856,8 +856,8 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   std::unique_ptr<display_compositor::GLHelper> lost_gl_helper =
       std::move(gl_helper_);
 
-  FOR_EACH_OBSERVER(ui::ContextFactoryObserver, observer_list_,
-                    OnLostResources());
+  for (auto& observer : observer_list_)
+    observer.OnLostResources();
 
   // Kill things that use the shared context before killing the shared context.
   lost_gl_helper.reset();

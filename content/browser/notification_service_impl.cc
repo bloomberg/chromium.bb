@@ -105,31 +105,27 @@ void NotificationServiceImpl::Notify(int type,
   // Notify observers of all types and all sources
   if (HasKey(observers_[NOTIFICATION_ALL], AllSources()) &&
       source != AllSources()) {
-    FOR_EACH_OBSERVER(NotificationObserver,
-                      *observers_[NOTIFICATION_ALL][AllSources().map_key()],
-                      Observe(type, source, details));
+    for (auto& observer : *observers_[NOTIFICATION_ALL][AllSources().map_key()])
+      observer.Observe(type, source, details);
   }
 
   // Notify observers of all types and the given source
   if (HasKey(observers_[NOTIFICATION_ALL], source)) {
-    FOR_EACH_OBSERVER(NotificationObserver,
-                      *observers_[NOTIFICATION_ALL][source.map_key()],
-                      Observe(type, source, details));
+    for (auto& observer : *observers_[NOTIFICATION_ALL][source.map_key()])
+      observer.Observe(type, source, details);
   }
 
   // Notify observers of the given type and all sources
   if (HasKey(observers_[type], AllSources()) &&
       source != AllSources()) {
-    FOR_EACH_OBSERVER(NotificationObserver,
-                      *observers_[type][AllSources().map_key()],
-                      Observe(type, source, details));
+    for (auto& observer : *observers_[type][AllSources().map_key()])
+      observer.Observe(type, source, details);
   }
 
   // Notify observers of the given type and the given source
   if (HasKey(observers_[type], source)) {
-    FOR_EACH_OBSERVER(NotificationObserver,
-                      *observers_[type][source.map_key()],
-                      Observe(type, source, details));
+    for (auto& observer : *observers_[type][source.map_key()])
+      observer.Observe(type, source, details);
   }
 }
 

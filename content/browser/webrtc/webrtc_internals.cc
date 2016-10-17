@@ -527,9 +527,8 @@ void WebRTCInternals::ProcessPendingUpdates() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   while (!pending_updates_.empty()) {
     const auto& update = pending_updates_.front();
-    FOR_EACH_OBSERVER(WebRTCInternalsUIObserver,
-                      observers_,
-                      OnUpdate(update.command(), update.value()));
+    for (auto& observer : observers_)
+      observer.OnUpdate(update.command(), update.value());
     pending_updates_.pop();
   }
 }

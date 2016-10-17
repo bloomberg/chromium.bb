@@ -244,8 +244,10 @@ void SiteInstanceImpl::IncrementActiveFrameCount() {
 }
 
 void SiteInstanceImpl::DecrementActiveFrameCount() {
-  if (--active_frame_count_ == 0)
-    FOR_EACH_OBSERVER(Observer, observers_, ActiveFrameCountIsZero(this));
+  if (--active_frame_count_ == 0) {
+    for (auto& observer : observers_)
+      observer.ActiveFrameCountIsZero(this);
+  }
 }
 
 void SiteInstanceImpl::IncrementRelatedActiveContentsCount() {
@@ -395,13 +397,15 @@ void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
 void SiteInstanceImpl::RenderProcessWillExit(RenderProcessHost* host) {
   // TODO(nick): http://crbug.com/575400 - RenderProcessWillExit might not serve
   // any purpose here.
-  FOR_EACH_OBSERVER(Observer, observers_, RenderProcessGone(this));
+  for (auto& observer : observers_)
+    observer.RenderProcessGone(this);
 }
 
 void SiteInstanceImpl::RenderProcessExited(RenderProcessHost* host,
                                            base::TerminationStatus status,
                                            int exit_code) {
-  FOR_EACH_OBSERVER(Observer, observers_, RenderProcessGone(this));
+  for (auto& observer : observers_)
+    observer.RenderProcessGone(this);
 }
 
 void SiteInstanceImpl::LockToOrigin() {

@@ -62,7 +62,8 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
 
 AppCacheHost::~AppCacheHost() {
   service_->RemoveObserver(this);
-  FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
+  for (auto& observer : observers_)
+    observer.OnDestructionImminent(this);
   if (associated_cache_.get())
     associated_cache_->UnassociateHost(this);
   if (group_being_updated_.get())
@@ -453,7 +454,8 @@ void AppCacheHost::FinishCacheSelection(
   else if (!pending_swap_cache_callback_.is_null())
     DoPendingSwapCache();
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnCacheSelectionComplete(this));
+  for (auto& observer : observers_)
+    observer.OnCacheSelectionComplete(this);
 }
 
 void AppCacheHost::OnServiceReinitialized(
