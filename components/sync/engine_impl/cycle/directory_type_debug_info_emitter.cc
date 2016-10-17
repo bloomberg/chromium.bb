@@ -26,7 +26,7 @@ DirectoryTypeDebugInfoEmitter::DirectoryTypeDebugInfoEmitter(
 DirectoryTypeDebugInfoEmitter::DirectoryTypeDebugInfoEmitter(
     ModelType type,
     base::ObserverList<TypeDebugInfoObserver>* observers)
-    : directory_(NULL), type_(type), type_debug_info_observers_(observers) {}
+    : directory_(nullptr), type_(type), type_debug_info_observers_(observers) {}
 
 DirectoryTypeDebugInfoEmitter::~DirectoryTypeDebugInfoEmitter() {}
 

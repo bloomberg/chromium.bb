@@ -172,10 +172,10 @@ bool UnpackKeystoreBootstrapToken(const std::string& keystore_bootstrap_token,
 
   JSONStringValueDeserializer json(decrypted_keystore_bootstrap);
   std::unique_ptr<base::Value> deserialized_keystore_keys(
-      json.Deserialize(NULL, NULL));
+      json.Deserialize(nullptr, nullptr));
   if (!deserialized_keystore_keys)
     return false;
-  base::ListValue* internal_list_value = NULL;
+  base::ListValue* internal_list_value = nullptr;
   if (!deserialized_keystore_keys->GetAsList(&internal_list_value))
     return false;
   int number_of_keystore_keys = internal_list_value->GetSize();

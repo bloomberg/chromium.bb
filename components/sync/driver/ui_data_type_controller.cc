@@ -57,7 +57,7 @@ void UIDataTypeController::LoadModels(
     return;
   }
   // Since we can't be called multiple times before Stop() is called,
-  // |shared_change_processor_| must be NULL here.
+  // |shared_change_processor_| must be null here.
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ = new SharedChangeProcessor(type());
 
@@ -236,7 +236,7 @@ void UIDataTypeController::AbortModelLoad() {
   state_ = NOT_RUNNING;
 
   if (shared_change_processor_.get()) {
-    shared_change_processor_ = NULL;
+    shared_change_processor_ = nullptr;
   }
 
   // We don't want to continue loading models (e.g OnModelLoaded should never be
@@ -267,7 +267,7 @@ void UIDataTypeController::StartDone(
 
     if (shared_change_processor_.get()) {
       shared_change_processor_->Disconnect();
-      shared_change_processor_ = NULL;
+      shared_change_processor_ = nullptr;
     }
   }
 
@@ -286,7 +286,7 @@ void UIDataTypeController::Stop() {
 
   if (shared_change_processor_.get()) {
     shared_change_processor_->Disconnect();
-    shared_change_processor_ = NULL;
+    shared_change_processor_ = nullptr;
   }
 
   // If Stop() is called while Start() is waiting for the datatype model to

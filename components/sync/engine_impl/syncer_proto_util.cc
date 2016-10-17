@@ -498,7 +498,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
         cycle->delegate()->OnTypesThrottled(
             sync_protocol_error.error_data_types, GetThrottleDelay(*response));
       }
-      if (partial_failure_data_types != NULL) {
+      if (partial_failure_data_types != nullptr) {
         *partial_failure_data_types = sync_protocol_error.error_data_types;
       }
       return SERVER_RETURN_PARTIAL_FAILURE;

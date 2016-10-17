@@ -42,7 +42,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
   }
 
   void TearDown() override {
-    controller_ = NULL;
+    controller_ = nullptr;
     local_device_.reset();
   }
 
@@ -118,7 +118,7 @@ TEST_F(DeviceInfoDataTypeControllerTest, DestructionWithDelayedStart) {
   // Destroy |local_device_| and |controller_| out of order
   // to verify that the controller doesn't crash in the destructor.
   local_device_.reset();
-  controller_ = NULL;
+  controller_ = nullptr;
 }
 
 }  // namespace

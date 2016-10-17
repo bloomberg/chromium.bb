@@ -225,7 +225,7 @@ void AttachmentDownloaderImpl::RequestAccessToken(
     DownloadState* download_state) {
   requests_waiting_for_access_token_.push_back(download_state);
   // Start access token request if there is no active one.
-  if (access_token_request_ == NULL) {
+  if (access_token_request_ == nullptr) {
     access_token_request_ = OAuth2TokenServiceRequest::CreateAndStart(
         token_service_provider_.get(), account_id_, oauth2_scopes_, this);
   }

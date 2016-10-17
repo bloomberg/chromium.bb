@@ -125,7 +125,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
 
   SyncGenericChangeProcessorTest()
       : syncable_service_ptr_factory_(&fake_syncable_service_),
-        mock_attachment_service_(NULL),
+        mock_attachment_service_(nullptr),
         sync_client_(&sync_factory_) {}
 
   void SetUp() override {
@@ -136,7 +136,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
   void TearDown() override {
-    mock_attachment_service_ = NULL;
+    mock_attachment_service_ = nullptr;
     if (test_user_share_) {
       test_user_share_->TearDown();
     }

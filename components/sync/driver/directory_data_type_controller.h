@@ -63,7 +63,7 @@ class DirectoryDataTypeController : public DataTypeController {
   virtual ModelSafeGroup model_safe_group() const = 0;
 
   // Access to the ChangeProcessor for the type being controlled by |this|.
-  // Returns NULL if the ChangeProcessor isn't created or connected.
+  // Returns null if the ChangeProcessor isn't created or connected.
   virtual ChangeProcessor* GetChangeProcessor() const = 0;
 
   SyncClient* const sync_client_;

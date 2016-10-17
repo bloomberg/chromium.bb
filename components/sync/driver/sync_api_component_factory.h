@@ -118,7 +118,7 @@ class SyncApiComponentFactory {
   // |model_type| is the model type this AttachmentService will be used with.
   //
   // |delegate| is optional delegate for AttachmentService to notify about
-  // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
+  // asynchronous events (AttachmentUploaded). Pass null if delegate is not
   // provided. AttachmentService doesn't take ownership of delegate, the pointer
   // must be valid throughout AttachmentService lifetime.
   virtual std::unique_ptr<AttachmentService> CreateAttachmentService(

@@ -173,7 +173,7 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
   } else {
     // Encrypt new_specifics into generated_specifics.
     if (VLOG_IS_ON(2)) {
-      std::unique_ptr<base::DictionaryValue> value(entry->ToValue(NULL));
+      std::unique_ptr<base::DictionaryValue> value(entry->ToValue(nullptr));
       std::string info;
       base::JSONWriter::WriteWithOptions(
           *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &info);

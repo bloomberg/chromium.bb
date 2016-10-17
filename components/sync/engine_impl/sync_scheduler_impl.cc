@@ -518,7 +518,7 @@ void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
 void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(mode_, CONFIGURATION_MODE);
-  DCHECK(pending_configure_params_ != NULL);
+  DCHECK(pending_configure_params_ != nullptr);
 
   if (!CanRunJobNow(priority)) {
     SDVLOG(2) << "Unable to run configure job right now.";

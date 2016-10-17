@@ -10,7 +10,7 @@ namespace syncer {
 
 ChangeProcessor::ChangeProcessor(
     std::unique_ptr<DataTypeErrorHandler> error_handler)
-    : error_handler_(std::move(error_handler)), share_handle_(NULL) {}
+    : error_handler_(std::move(error_handler)), share_handle_(nullptr) {}
 
 ChangeProcessor::~ChangeProcessor() {}
 

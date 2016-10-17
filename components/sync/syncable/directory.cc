@@ -101,7 +101,7 @@ Directory::Directory(
     const base::Closure& report_unrecoverable_error_function,
     NigoriHandler* nigori_handler,
     Cryptographer* cryptographer)
-    : kernel_(NULL),
+    : kernel_(nullptr),
       store_(store),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(report_unrecoverable_error_function),
@@ -210,14 +210,14 @@ void Directory::Close() {
   store_.reset();
   if (kernel_) {
     delete kernel_;
-    kernel_ = NULL;
+    kernel_ = nullptr;
   }
 }
 
 void Directory::OnUnrecoverableError(const BaseTransaction* trans,
                                      const tracked_objects::Location& location,
                                      const std::string& message) {
-  DCHECK(trans != NULL);
+  DCHECK(trans != nullptr);
   unrecoverable_error_set_ = true;
   unrecoverable_error_handler_.Call(
       FROM_HERE, &UnrecoverableErrorHandler::OnUnrecoverableError, location,
@@ -237,7 +237,7 @@ EntryKernel* Directory::GetEntryById(const ScopedKernelLock& lock,
   if (id_found != kernel_->ids_map.end()) {
     return id_found->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 EntryKernel* Directory::GetEntryByClientTag(const string& tag) {
@@ -248,7 +248,7 @@ EntryKernel* Directory::GetEntryByClientTag(const string& tag) {
   if (it != kernel_->client_tags_map.end()) {
     return it->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 EntryKernel* Directory::GetEntryByServerTag(const string& tag) {
@@ -258,7 +258,7 @@ EntryKernel* Directory::GetEntryByServerTag(const string& tag) {
   if (it != kernel_->server_tags_map.end()) {
     return it->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 EntryKernel* Directory::GetEntryByHandle(int64_t metahandle) {
@@ -274,7 +274,7 @@ EntryKernel* Directory::GetEntryByHandle(const ScopedKernelLock& lock,
     // Found it in memory.  Easy.
     return found->second.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 bool Directory::GetChildHandlesById(BaseTransaction* trans,
@@ -346,7 +346,7 @@ bool Directory::InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry) {
 bool Directory::InsertEntry(const ScopedKernelLock& lock,
                             BaseWriteTransaction* trans,
                             EntryKernel* entry) {
-  if (!SyncAssert(NULL != entry, FROM_HERE, "Entry is null", trans))
+  if (!SyncAssert(nullptr != entry, FROM_HERE, "Entry is null", trans))
     return false;
 
   static const char error[] = "Entry already in memory index.";
@@ -389,7 +389,7 @@ bool Directory::ReindexId(BaseWriteTransaction* trans,
                           EntryKernel* const entry,
                           const Id& new_id) {
   ScopedKernelLock lock(this);
-  if (NULL != GetEntryById(lock, new_id))
+  if (nullptr != GetEntryById(lock, new_id))
     return false;
 
   {
@@ -480,7 +480,7 @@ void Directory::GetMetahandlesByAttachmentId(
 }
 
 bool Directory::unrecoverable_error_set(const BaseTransaction* trans) const {
-  DCHECK(trans != NULL);
+  DCHECK(trans != nullptr);
   return unrecoverable_error_set_;
 }
 
@@ -536,7 +536,7 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
     DCHECK_EQ(1U, kernel_->dirty_metahandles.count(*i));
     // We don't bother removing from the index here as we blow the entire thing
     // in a moment, and it unnecessarily complicates iteration.
-    entry->clear_dirty(NULL);
+    entry->clear_dirty(nullptr);
   }
   ClearDirtyMetahandles(lock);
 
@@ -585,7 +585,8 @@ bool Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
     MetahandlesMap::iterator found =
         kernel_->metahandles_map.find((*i)->ref(META_HANDLE));
     EntryKernel* entry =
-        (found == kernel_->metahandles_map.end() ? NULL : found->second.get());
+        (found == kernel_->metahandles_map.end() ? nullptr
+                                                 : found->second.get());
     if (entry && SafeToPurgeFromMemory(&trans, entry)) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
@@ -1311,7 +1312,7 @@ Id Directory::NextId() {
 
 bool Directory::HasChildren(BaseTransaction* trans, const Id& id) {
   ScopedKernelLock lock(this);
-  return kernel_->parent_child_index.GetChildren(id) != NULL;
+  return kernel_->parent_child_index.GetChildren(id) != nullptr;
 }
 
 Id Directory::GetFirstChildId(BaseTransaction* trans,
@@ -1385,13 +1386,13 @@ void Directory::PutPredecessor(EntryKernel* e, EntryKernel* predecessor) {
 
   if (!siblings) {
     // This parent currently has no other children.
-    DCHECK(predecessor == NULL);
+    DCHECK(predecessor == nullptr);
     UniquePosition pos = UniquePosition::InitialPosition(suffix);
     e->put(UNIQUE_POSITION, pos);
     return;
   }
 
-  if (predecessor == NULL) {
+  if (predecessor == nullptr) {
     // We have at least one sibling, and we're inserting to the left of them.
     UniquePosition successor_pos = (*siblings->begin())->ref(UNIQUE_POSITION);
 

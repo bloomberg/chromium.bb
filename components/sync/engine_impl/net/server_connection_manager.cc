@@ -158,7 +158,7 @@ ServerConnectionManager::ServerConnectionManager(
       proto_sync_path_(kSyncServerSyncPath),
       server_status_(HttpResponse::NONE),
       terminated_(false),
-      active_connection_(NULL),
+      active_connection_(nullptr),
       cancelation_signal_(cancelation_signal),
       signal_handler_registered_(false) {
   signal_handler_registered_ = cancelation_signal_->TryRegisterHandler(this);
@@ -181,7 +181,7 @@ ServerConnectionManager::MakeActiveConnection() {
   base::AutoLock lock(terminate_connection_lock_);
   DCHECK(!active_connection_);
   if (terminated_)
-    return NULL;
+    return nullptr;
 
   active_connection_ = MakeConnection();
   return active_connection_;
@@ -190,13 +190,13 @@ ServerConnectionManager::MakeActiveConnection() {
 void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
   DCHECK(connection);
   base::AutoLock lock(terminate_connection_lock_);
-  // |active_connection_| can be NULL already if it was aborted. Also,
+  // |active_connection_| can be null already if it was aborted. Also,
   // it can legitimately be a different Connection object if a new Connection
   // was created after a previous one was Aborted and destroyed.
   if (active_connection_ != connection)
     return;
 
-  active_connection_ = NULL;
+  active_connection_ = nullptr;
 }
 
 bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
@@ -312,7 +312,7 @@ void ServerConnectionManager::RemoveListener(
 }
 
 ServerConnectionManager::Connection* ServerConnectionManager::MakeConnection() {
-  return NULL;  // For testing.
+  return nullptr;  // For testing.
 }
 
 void ServerConnectionManager::OnSignalReceived() {
@@ -323,7 +323,7 @@ void ServerConnectionManager::OnSignalReceived() {
 
   // Sever our ties to this connection object. Note that it still may exist,
   // since we don't own it, but it has been neutered.
-  active_connection_ = NULL;
+  active_connection_ = nullptr;
 }
 
 std::ostream& operator<<(std::ostream& s, const struct HttpResponse& hr) {

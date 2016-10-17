@@ -427,7 +427,7 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_NoDownloader) {
   // No downloader.
   InitializeAttachmentService(
       base::WrapUnique<MockAttachmentUploader>(new MockAttachmentUploader()),
-      base::WrapUnique<MockAttachmentDownloader>(NULL), this);
+      base::WrapUnique<MockAttachmentDownloader>(nullptr), this);
 
   AttachmentIdList attachment_ids;
   attachment_ids.push_back(AttachmentId::Create(0, 0));
@@ -481,7 +481,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
   InitializeAttachmentService(base::MakeUnique<MockAttachmentUploader>(),
                               base::MakeUnique<MockAttachmentDownloader>(),
-                              NULL);  // No delegate.
+                              nullptr);  // No delegate.
 
   AttachmentIdList attachment_ids;
   attachment_ids.push_back(AttachmentId::Create(0, 0));
@@ -549,7 +549,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
-  InitializeAttachmentService(base::WrapUnique<MockAttachmentUploader>(NULL),
+  InitializeAttachmentService(base::WrapUnique<MockAttachmentUploader>(nullptr),
                               base::MakeUnique<MockAttachmentDownloader>(),
                               this);
 

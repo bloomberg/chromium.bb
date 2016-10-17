@@ -62,7 +62,7 @@ class CancelationSignal {
   // True if Signal() has been invoked.
   bool signalled_;
 
-  // The registered abort handler.  May be NULL.
+  // The registered abort handler.  May be null.
   CancelationObserver* handler_;
 };
 

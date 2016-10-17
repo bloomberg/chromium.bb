@@ -39,8 +39,8 @@ const char kUserAgent[] = "user-agent";
 class MAYBE_SyncHttpBridgeTest : public testing::Test {
  public:
   MAYBE_SyncHttpBridgeTest()
-      : fake_default_request_context_getter_(NULL),
-        bridge_for_race_test_(NULL),
+      : fake_default_request_context_getter_(nullptr),
+        bridge_for_race_test_(nullptr),
         io_thread_("IO thread") {
     test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
   }
@@ -55,7 +55,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
     if (fake_default_request_context_getter_) {
       GetIOThreadLoop()->task_runner()->ReleaseSoon(
           FROM_HERE, fake_default_request_context_getter_);
-      fake_default_request_context_getter_ = NULL;
+      fake_default_request_context_getter_ = nullptr;
     }
     io_thread_.Stop();
   }
@@ -160,7 +160,7 @@ class ShuntedHttpBridge : public HttpBridge {
         test_->GetIOThreadLoop()->task_runner()->BelongsToCurrentThread());
     // We return a dummy content response.
     std::string response_content = "success!";
-    net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), NULL);
+    net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), nullptr);
     scoped_refptr<net::HttpResponseHeaders> response_headers(
         new net::HttpResponseHeaders(""));
     fetcher.set_response_code(200);
@@ -188,7 +188,7 @@ void MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
     int os_error = 0;
     int response_code = 0;
     bridge->MakeSynchronousPost(&os_error, &response_code);
-    bridge_for_race_test_ = NULL;
+    bridge_for_race_test_ = nullptr;
   }
   signal_when_released->Signal();
 }
@@ -434,7 +434,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   net::URLFetcherDelegate* delegate =
       static_cast<net::URLFetcherDelegate*>(bridge_for_race_test());
   std::string response_content = "success!";
-  net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), NULL);
+  net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), nullptr);
   fetcher.set_response_code(200);
   fetcher.SetResponseString(response_content);
   ASSERT_TRUE(io_thread()->task_runner()->PostTask(
@@ -493,8 +493,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   base::Thread sync_thread("SyncThread");
   sync_thread.Start();
 
-  HttpPostProviderFactory* factory = NULL;
-  HttpPostProviderInterface* bridge = NULL;
+  HttpPostProviderFactory* factory = nullptr;
+  HttpPostProviderInterface* bridge = nullptr;
 
   scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
       new net::TestURLRequestContextGetter(io_thread()->task_runner()));
@@ -536,7 +536,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   // |baseline_context_getter| should have only one reference from local
   // variable.
   EXPECT_TRUE(baseline_context_getter->HasOneRef());
-  baseline_context_getter = NULL;
+  baseline_context_getter = nullptr;
 
   // Unblock and stop IO thread before sync thread.
   wait_done.Signal();

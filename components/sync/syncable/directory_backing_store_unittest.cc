@@ -41,7 +41,7 @@ std::unique_ptr<EntryKernel> CreateEntry(int id, const std::string& id_suffix) {
   std::string id_string = base::Int64ToString(id) + id_suffix;
   entry->put(ID, Id::CreateFromClientString(id_string));
   entry->put(META_HANDLE, id);
-  entry->mark_dirty(NULL);
+  entry->mark_dirty(nullptr);
   return entry;
 }
 

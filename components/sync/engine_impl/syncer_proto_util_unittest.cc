@@ -248,11 +248,11 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
 
   dcm.set_send_error(true);
   EXPECT_FALSE(
-      SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL, msg, &response));
+      SyncerProtoUtil::PostAndProcessHeaders(&dcm, nullptr, msg, &response));
 
   dcm.set_send_error(false);
   EXPECT_TRUE(
-      SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL, msg, &response));
+      SyncerProtoUtil::PostAndProcessHeaders(&dcm, nullptr, msg, &response));
 }
 
 }  // namespace syncer

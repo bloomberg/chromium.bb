@@ -230,7 +230,7 @@ class FakeServer {
   sync_pb::SyncEnums::ErrorType error_type_;
 
   // Used as the error field of ClientToServerResponse when its pointer is not
-  // NULL.
+  // null.
   std::unique_ptr<sync_pb::ClientToServerResponse_Error>
       triggered_actionable_error_;
 

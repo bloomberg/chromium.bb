@@ -82,7 +82,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
  public:
   MyTestURLRequestContext() : TestURLRequestContext(true) {
     context_storage_.set_host_resolver(
-        net::HostResolver::CreateDefaultResolver(NULL));
+        net::HostResolver::CreateDefaultResolver(nullptr));
     context_storage_.set_transport_security_state(
         base::MakeUnique<net::TransportSecurityState>());
     Init();

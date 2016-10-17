@@ -111,8 +111,8 @@ SyncBackendHostCore::SyncBackendHostCore(
     : name_(name),
       sync_data_folder_path_(sync_data_folder_path),
       host_(backend),
-      sync_loop_(NULL),
-      registrar_(NULL),
+      sync_loop_(nullptr),
+      registrar_(nullptr),
       has_sync_setup_completed_(has_sync_setup_completed),
       forward_protocol_events_(false),
       forward_type_info_(false),
@@ -466,7 +466,7 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
   // which is called at the end of every sync cycle.
   // TODO(zea): eventually add an experiment handler and initialize it here.
 
-  if (!sync_manager_->GetUserShare()) {  // NULL in some tests.
+  if (!sync_manager_->GetUserShare()) {  // Null in some tests.
     DVLOG(1) << "Skipping initialization of DeviceInfo";
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
@@ -527,7 +527,7 @@ void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
 
   DoDestroySyncManager(reason);
 
-  registrar_ = NULL;
+  registrar_ = nullptr;
 
   if (reason == DISABLE_SYNC)
     DeleteSyncDataFolder();

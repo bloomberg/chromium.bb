@@ -152,7 +152,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // A private copy of the most recent cryptographer known to sync.
   // Initialized at construction time and updated with UpdateCryptographer().
-  // NULL if encryption is not enabled for this type.
+  // null if encryption is not enabled for this type.
   std::unique_ptr<Cryptographer> cryptographer_;
 
   // Interface used to access and send nudges to the sync scheduler. Not owned.

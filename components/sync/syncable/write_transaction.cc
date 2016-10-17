@@ -14,7 +14,7 @@ namespace syncer {
 // WriteTransaction member definitions
 WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
                                    UserShare* share)
-    : BaseTransaction(share), transaction_(NULL) {
+    : BaseTransaction(share), transaction_(nullptr) {
   transaction_ = new syncable::WriteTransaction(from_here, syncable::SYNCAPI,
                                                 share->directory.get());
 }
@@ -22,7 +22,7 @@ WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
 WriteTransaction::WriteTransaction(const tracked_objects::Location& from_here,
                                    UserShare* share,
                                    int64_t* new_model_version)
-    : BaseTransaction(share), transaction_(NULL) {
+    : BaseTransaction(share), transaction_(nullptr) {
   transaction_ = new syncable::WriteTransaction(
       from_here, share->directory.get(), new_model_version);
 }

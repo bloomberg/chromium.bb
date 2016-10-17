@@ -207,7 +207,7 @@ void SyncBackendRegistrar::DeactivateDataType(ModelType type) {
 }
 
 bool SyncBackendRegistrar::IsTypeActivatedForTest(ModelType type) const {
-  return GetProcessor(type) != NULL;
+  return GetProcessor(type) != nullptr;
 }
 
 void SyncBackendRegistrar::OnChangesApplied(
@@ -253,7 +253,7 @@ ChangeProcessor* SyncBackendRegistrar::GetProcessor(ModelType type) const {
   base::AutoLock lock(lock_);
   ChangeProcessor* processor = GetProcessorUnsafe(type);
   if (!processor)
-    return NULL;
+    return nullptr;
 
   // We can only check if |processor| exists, as otherwise the type is
   // mapped to GROUP_PASSIVE.
@@ -274,7 +274,7 @@ ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
   // association takes place then the change processor is added to the
   // |processors_| list.
   if (it == processors_.end())
-    return NULL;
+    return nullptr;
 
   return it->second;
 }

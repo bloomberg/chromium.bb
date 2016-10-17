@@ -57,7 +57,7 @@ class MockSyncer : public Syncer {
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, SyncCycle*));
 };
 
-MockSyncer::MockSyncer() : Syncer(NULL) {}
+MockSyncer::MockSyncer() : Syncer(nullptr) {}
 
 typedef std::vector<TimeTicks> SyncShareTimes;
 
@@ -111,7 +111,7 @@ static const size_t kMinNumSamples = 5;
 class SyncSchedulerImplTest : public testing::Test {
  public:
   SyncSchedulerImplTest()
-      : syncer_(NULL), delay_(NULL), weak_ptr_factory_(this) {}
+      : syncer_(nullptr), delay_(nullptr), weak_ptr_factory_(this) {}
 
   class MockDelayProvider : public BackoffDelayProvider {
    public:
@@ -126,7 +126,7 @@ class SyncSchedulerImplTest : public testing::Test {
   void SetUp() override {
     dir_maker_.SetUp();
     syncer_ = new testing::StrictMock<MockSyncer>();
-    delay_ = NULL;
+    delay_ = nullptr;
     extensions_activity_ = new ExtensionsActivity();
 
     routing_info_[THEMES] = GROUP_UI;

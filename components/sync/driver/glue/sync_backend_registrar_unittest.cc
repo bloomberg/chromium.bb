@@ -27,7 +27,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
-  registrar->OnChangesApplied(type, 0, NULL, ImmutableChangeRecordList());
+  registrar->OnChangesApplied(type, 0, nullptr, ImmutableChangeRecordList());
   registrar->OnChangesComplete(type);
 }
 
@@ -81,7 +81,7 @@ class SyncBackendRegistrarTest : public testing::Test {
   SyncBackendRegistrarTest()
       : db_thread_("DBThreadForTest"),
         file_thread_("FileThreadForTest"),
-        sync_thread_(NULL) {}
+        sync_thread_(nullptr) {}
 
   ~SyncBackendRegistrarTest() override {}
 
@@ -224,7 +224,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   StrictMock<ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl());
   EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
-  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(NULL, _, _));
+  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(nullptr, _, _));
   EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
   EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
   EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(false));
@@ -256,7 +256,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   StrictMock<ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl());
   EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
-  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(NULL, _, _));
+  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(nullptr, _, _));
   EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
   EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
   EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(false));

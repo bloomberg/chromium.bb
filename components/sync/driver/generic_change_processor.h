@@ -52,7 +52,7 @@ class GenericChangeProcessor : public ChangeProcessor,
                                public base::NonThreadSafe {
  public:
   // Create a change processor for |type| and connect it to the syncer.
-  // |attachment_store| can be NULL which means that datatype will not use sync
+  // |attachment_store| can be null which means that datatype will not use sync
   // attachments.
   GenericChangeProcessor(
       ModelType type,
@@ -172,7 +172,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // and have to keep a local pointer to the user_share.
   UserShare* const share_handle_;
 
-  // AttachmentService for datatype. Can be NULL if datatype doesn't use
+  // AttachmentService for datatype. Can be null if datatype doesn't use
   // attachments.
   std::unique_ptr<AttachmentService> attachment_service_;
 
@@ -181,7 +181,7 @@ class GenericChangeProcessor : public ChangeProcessor,
 
   // Must be destroyed before attachment_service_ to ensure WeakPtrs are
   // invalidated before attachment_service_ is destroyed.
-  // Can be NULL if attachment_service_ is NULL;
+  // Can be null if attachment_service_ is null;
   std::unique_ptr<base::WeakPtrFactory<AttachmentService>>
       attachment_service_weak_ptr_factory_;
   AttachmentServiceProxy attachment_service_proxy_;

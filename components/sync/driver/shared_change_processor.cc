@@ -25,14 +25,14 @@ SharedChangeProcessor::SharedChangeProcessor(ModelType type)
     : disconnected_(false),
       type_(type),
       frontend_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      generic_change_processor_(NULL) {
+      generic_change_processor_(nullptr) {
   DCHECK_NE(type_, UNSPECIFIED);
 }
 
 SharedChangeProcessor::~SharedChangeProcessor() {
   // We can either be deleted when the DTC is destroyed (on UI
   // thread), or when the SyncableService stops syncing (datatype
-  // thread).  |generic_change_processor_|, if non-NULL, must be
+  // thread).  |generic_change_processor_|, if non-null, must be
   // deleted on |backend_loop_|.
   if (backend_task_runner_.get()) {
     if (backend_task_runner_->BelongsToCurrentThread()) {

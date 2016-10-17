@@ -109,7 +109,7 @@ class Directory {
     std::string store_birthday;
     // The serialized bag of chips we were given by the server. Contents are
     // opaque to the client. This is the serialization of a message of type
-    // ChipBag defined in sync.proto. It can contains NULL characters.
+    // ChipBag defined in sync.proto. It can contains null characters.
     std::string bag_of_chips;
     // The per-datatype context.
     sync_pb::DataTypeContext datatype_context[MODEL_TYPE_COUNT];
@@ -143,7 +143,7 @@ class Directory {
   };
 
   struct Kernel {
-    // |delegate| must not be NULL.  |transaction_observer| must be
+    // |delegate| must not be null.  |transaction_observer| must be
     // initialized.
     Kernel(const std::string& name,
            const KernelLoadInfo& info,
@@ -235,7 +235,7 @@ class Directory {
     // The next metahandle is protected by kernel mutex.
     int64_t next_metahandle;
 
-    // The delegate for directory change events.  Must not be NULL.
+    // The delegate for directory change events.  Must not be null.
     DirectoryChangeDelegate* const delegate;
 
     // The transaction observer.
@@ -243,7 +243,7 @@ class Directory {
   };
 
   // Does not take ownership of |encryptor|.
-  // |report_unrecoverable_error_function| may be NULL.
+  // |report_unrecoverable_error_function| may be null.
   // Takes ownership of |store|.
   Directory(
       DirectoryBackingStore* store,
@@ -253,7 +253,7 @@ class Directory {
       Cryptographer* cryptographer);
   virtual ~Directory();
 
-  // Does not take ownership of |delegate|, which must not be NULL.
+  // Does not take ownership of |delegate|, which must not be null.
   // Starts sending events to |delegate| if the returned result is
   // OPENED.  Note that events to |delegate| may be sent from *any*
   // thread.  |transaction_observer| must be initialized.
@@ -266,7 +266,7 @@ class Directory {
   // Generates next client ID based on a randomly generated GUID.
   syncable::Id NextId();
 
-  bool good() const { return NULL != kernel_; }
+  bool good() const { return nullptr != kernel_; }
 
   // The download progress is an opaque token provided by the sync server
   // to indicate the continuation state of the next GetUpdates operation.
@@ -370,7 +370,7 @@ class Directory {
   syncable::Id GetPredecessorId(EntryKernel* e);
   syncable::Id GetSuccessorId(EntryKernel* e);
 
-  // Places |e| as a successor to |predecessor|.  If |predecessor| is NULL,
+  // Places |e| as a successor to |predecessor|.  If |predecessor| is null,
   // |e| will be placed as the left-most item in its folder.
   //
   // Both |e| and |predecessor| must be valid entries under the same parent.

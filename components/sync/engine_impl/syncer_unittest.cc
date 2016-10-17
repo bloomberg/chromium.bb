@@ -181,7 +181,7 @@ class SyncerTest : public testing::Test,
  protected:
   SyncerTest()
       : extensions_activity_(new ExtensionsActivity),
-        syncer_(NULL),
+        syncer_(nullptr),
         last_client_invalidation_hint_buffer_size_(10) {}
 
   // SyncCycle::Delegate implementation.

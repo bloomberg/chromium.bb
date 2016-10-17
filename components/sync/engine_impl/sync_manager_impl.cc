@@ -84,7 +84,7 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
 
 SyncManagerImpl::SyncManagerImpl(const std::string& name)
     : name_(name),
-      change_delegate_(NULL),
+      change_delegate_(nullptr),
       initialized_(false),
       observing_network_connectivity_changes_(false),
       weak_ptr_factory_(this) {
@@ -525,7 +525,7 @@ void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
 
   RemoveObserver(&debug_info_event_listener_);
 
-  // |connection_manager_| may end up being NULL here in tests (in synchronous
+  // |connection_manager_| may end up being null here in tests (in synchronous
   // initialization mode).
   //
   // TODO(akalin): Fix this behavior.
@@ -543,7 +543,7 @@ void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
 
   share_.directory.reset();
 
-  change_delegate_ = NULL;
+  change_delegate_ = nullptr;
 
   initialized_ = false;
 

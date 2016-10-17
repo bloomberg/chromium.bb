@@ -54,7 +54,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
       name_(name),
       initialized_(false),
       sync_prefs_(sync_prefs),
-      frontend_(NULL),
+      frontend_(nullptr),
       cached_passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE),
       invalidator_(invalidator),
       invalidation_handler_registered_(false),
@@ -225,7 +225,7 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
   DCHECK(frontend_task_runner_->BelongsToCurrentThread());
 
   // Immediately stop sending messages to the frontend.
-  frontend_ = NULL;
+  frontend_ = nullptr;
 
   DCHECK(registrar_->sync_thread()->IsRunning());
 
@@ -248,7 +248,7 @@ std::unique_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
       UnregisterInvalidationIds();
     }
     invalidator_->UnregisterInvalidationHandler(this);
-    invalidator_ = NULL;
+    invalidator_ = nullptr;
   }
   invalidation_handler_registered_ = false;
 
@@ -258,7 +258,7 @@ std::unique_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
   registrar_->sync_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoShutdown, core_, reason));
-  core_ = NULL;
+  core_ = nullptr;
 
   // Worker cleanup.
   SyncBackendRegistrar* detached_registrar = registrar_.release();

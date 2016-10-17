@@ -268,10 +268,10 @@ class SyncBackendHostCore
   WeakHandle<SyncBackendHostImpl> host_;
 
   // The loop where all the sync backend operations happen.
-  // Non-NULL only between calls to DoInitialize() and ~Core().
+  // Non-null only between calls to DoInitialize() and ~Core().
   base::MessageLoop* sync_loop_;
 
-  // Our parent's registrar (not owned).  Non-NULL only between
+  // Our parent's registrar (not owned).  Non-null only between
   // calls to DoInitialize() and DoShutdown().
   SyncBackendRegistrar* registrar_;
 

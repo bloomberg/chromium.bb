@@ -100,7 +100,7 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
     scoped_refptr<ModelSafeWorker> worker = worker_it->second;
 
     // DebugInfoEmitters are never deleted.  Use existing one if we have it.
-    DirectoryTypeDebugInfoEmitter* emitter = NULL;
+    DirectoryTypeDebugInfoEmitter* emitter = nullptr;
     DirectoryTypeDebugInfoEmitterMap::iterator it =
         directory_type_debug_info_emitter_map_.find(type);
     if (it != directory_type_debug_info_emitter_map_.end()) {

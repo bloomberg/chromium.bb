@@ -17,7 +17,7 @@ class SingleThreadTaskRunner;
 namespace syncer {
 
 // Check integrity of sync DB under |sync_dir|. Invoke |callback| with last
-// modified time if integrity check passes, with NULL time otherwise. This
+// modified time if integrity check passes, with null time otherwise. This
 // is called on either sync thread or IO thread.
 void CheckSyncDbLastModifiedTime(
     const base::FilePath& sync_dir,

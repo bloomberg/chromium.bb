@@ -736,7 +736,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, BookmarkFolderLoop) {
   // Item 'Y' is child of 'X'.
   entry_factory()->CreateUnsyncedItem(TestIdFactory::MakeServer("Y"),
                                       TestIdFactory::MakeServer("X"), "Y", true,
-                                      BOOKMARKS, NULL);
+                                      BOOKMARKS, nullptr);
 
   // If the server's update were applied, we would have X be a child of Y, and Y
   // as a child of X.  That's a directory loop.  The UpdateApplicator should
@@ -819,7 +819,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   // Create a local child of the server-deleted directory.
   entry_factory()->CreateUnsyncedItem(TestIdFactory::MakeServer("child"),
                                       TestIdFactory::MakeServer("parent"),
-                                      "child", false, BOOKMARKS, NULL);
+                                      "child", false, BOOKMARKS, nullptr);
 
   // The server's request to delete the directory must be ignored, otherwise our
   // unsynced new child would be orphaned.  This is a hierarchy conflict.

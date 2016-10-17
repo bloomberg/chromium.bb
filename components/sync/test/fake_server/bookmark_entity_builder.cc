@@ -47,7 +47,7 @@ void BookmarkEntityBuilder::SetParentId(const std::string& parent_id) {
 std::unique_ptr<FakeServerEntity> BookmarkEntityBuilder::BuildBookmark(
     const GURL& url) {
   if (!url.is_valid()) {
-    return base::WrapUnique<FakeServerEntity>(NULL);
+    return base::WrapUnique<FakeServerEntity>(nullptr);
   }
 
   sync_pb::EntitySpecifics entity_specifics = CreateBaseEntitySpecifics();

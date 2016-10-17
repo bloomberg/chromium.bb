@@ -57,7 +57,7 @@ class SyncPrefObserver {
 class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
                   public base::SupportsWeakPtr<SyncPrefs> {
  public:
-  // |pref_service| may not be NULL.
+  // |pref_service| may not be null.
   // Does not take ownership of |pref_service|.
   explicit SyncPrefs(PrefService* pref_service);
 
@@ -198,7 +198,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   void OnSyncManagedPrefChanged();
 
-  // May be NULL.
+  // May be null.
   PrefService* const pref_service_;
 
   base::ObserverList<SyncPrefObserver> sync_pref_observers_;

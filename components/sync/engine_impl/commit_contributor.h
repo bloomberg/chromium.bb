@@ -27,7 +27,7 @@ class CommitContributor {
   virtual ~CommitContributor() = 0;
 
   // Gathers up to |max_entries| unsynced items from this contributor into a
-  // CommitContribution.  Returns NULL when the contributor has nothing to
+  // CommitContribution.  Returns null when the contributor has nothing to
   // contribute.
   virtual std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) = 0;

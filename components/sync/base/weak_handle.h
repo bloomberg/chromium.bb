@@ -158,15 +158,15 @@ class WeakHandle {
   WeakHandle(const WeakHandle<U>& other)  // NOLINT
       : core_(other.IsInitialized()
                   ? new internal::WeakHandleCore<T>(other.Get())
-                  : NULL) {}
+                  : nullptr) {}
 
   // Returns true iff this WeakHandle is initialized.  Note that being
   // initialized isn't a guarantee that the underlying object is still
   // alive.
-  bool IsInitialized() const { return core_.get() != NULL; }
+  bool IsInitialized() const { return core_.get() != nullptr; }
 
   // Resets to an uninitialized WeakHandle.
-  void Reset() { core_ = NULL; }
+  void Reset() { core_ = nullptr; }
 
   // Must be called only on the underlying object's owner thread.
   base::WeakPtr<T> Get() const {

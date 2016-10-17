@@ -9,7 +9,7 @@
 
 namespace syncer {
 
-CancelationSignal::CancelationSignal() : signalled_(false), handler_(NULL) {}
+CancelationSignal::CancelationSignal() : signalled_(false), handler_(nullptr) {}
 
 CancelationSignal::~CancelationSignal() {
   DCHECK(!handler_);
@@ -29,7 +29,7 @@ bool CancelationSignal::TryRegisterHandler(CancelationObserver* handler) {
 void CancelationSignal::UnregisterHandler(CancelationObserver* handler) {
   base::AutoLock lock(signal_lock_);
   DCHECK_EQ(handler_, handler);
-  handler_ = NULL;
+  handler_ = nullptr;
 }
 
 bool CancelationSignal::IsSignalled() {

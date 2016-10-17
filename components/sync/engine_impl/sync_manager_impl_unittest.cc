@@ -436,7 +436,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
     // we'll use this spare folder later
     WriteNode folder_node(&trans);
-    EXPECT_TRUE(folder_node.InitBookmarkByCreation(root_node, NULL));
+    EXPECT_TRUE(folder_node.InitBookmarkByCreation(root_node, nullptr));
     folder_id = folder_node.GetId();
 
     WriteNode wnode(&trans);
@@ -550,7 +550,7 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     root_node.InitByRootLookup();
 
     WriteNode bookmark_node(&trans);
-    ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, NULL));
+    ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, nullptr));
     bookmark_id = bookmark_node.GetId();
     bookmark_node.SetTitle("foo");
 
@@ -587,7 +587,7 @@ TEST_F(SyncApiTest, WriteEmptyBookmarkTitle) {
     root_node.InitByRootLookup();
 
     WriteNode bookmark_node(&trans);
-    ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, NULL));
+    ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, nullptr));
     bookmark_id = bookmark_node.GetId();
     bookmark_node.SetTitle("");
   }
@@ -671,7 +671,7 @@ TEST_F(SyncApiTest, GetTotalNodeCountEmpty) {
 TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
   int64_t type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   int64_t parent =
-      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
+      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, nullptr);
   EXPECT_EQ(2, GetTotalNodeCount(user_share(), type_root));
   EXPECT_EQ(1, GetTotalNodeCount(user_share(), parent));
 }
@@ -681,11 +681,13 @@ TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
 TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
   int64_t type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   int64_t parent =
-      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
-  ignore_result(MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL));
-  int64_t child1 = MakeFolderWithParent(user_share(), BOOKMARKS, parent, NULL);
-  ignore_result(MakeBookmarkWithParent(user_share(), parent, NULL));
-  ignore_result(MakeBookmarkWithParent(user_share(), child1, NULL));
+      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, nullptr);
+  ignore_result(
+      MakeFolderWithParent(user_share(), BOOKMARKS, type_root, nullptr));
+  int64_t child1 =
+      MakeFolderWithParent(user_share(), BOOKMARKS, parent, nullptr);
+  ignore_result(MakeBookmarkWithParent(user_share(), parent, nullptr));
+  ignore_result(MakeBookmarkWithParent(user_share(), child1, nullptr));
   EXPECT_EQ(6, GetTotalNodeCount(user_share(), type_root));
   EXPECT_EQ(4, GetTotalNodeCount(user_share(), parent));
 }
@@ -1291,11 +1293,11 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   // Create some unencrypted unsynced data.
   int64_t folder = MakeFolderWithParent(sync_manager_.GetUserShare(), BOOKMARKS,
-                                        GetIdForDataType(BOOKMARKS), NULL);
+                                        GetIdForDataType(BOOKMARKS), nullptr);
   // First batch_size nodes are children of folder.
   size_t i;
   for (i = 0; i < batch_size; ++i) {
-    MakeBookmarkWithParent(sync_manager_.GetUserShare(), folder, NULL);
+    MakeBookmarkWithParent(sync_manager_.GetUserShare(), folder, nullptr);
   }
   // Next batch_size nodes are a different type and on their own.
   for (; i < 2 * batch_size; ++i) {
@@ -1807,7 +1809,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
     ReadNode bookmark_root(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, bookmark_root.InitTypeRoot(BOOKMARKS));
     WriteNode node(&trans);
-    ASSERT_TRUE(node.InitBookmarkByCreation(bookmark_root, NULL));
+    ASSERT_TRUE(node.InitBookmarkByCreation(bookmark_root, nullptr));
     node.SetIsFolder(false);
     node.SetTitle(title);
 
@@ -2569,7 +2571,7 @@ class ComponentsFactory : public TestEngineComponentsFactory {
 
 class SyncManagerTestWithMockScheduler : public SyncManagerTest {
  public:
-  SyncManagerTestWithMockScheduler() : scheduler_(NULL) {}
+  SyncManagerTestWithMockScheduler() : scheduler_(nullptr) {}
   EngineComponentsFactory* GetFactory() override {
     scheduler_ = new MockSyncScheduler();
     return new ComponentsFactory(GetSwitches(), scheduler_, &cycle_context_,

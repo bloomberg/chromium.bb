@@ -263,7 +263,7 @@ class Entry {
   void* operator new(size_t size) { return (::operator new)(size); }
 
   inline explicit Entry(BaseTransaction* trans)
-      : basetrans_(trans), kernel_(NULL) {}
+      : basetrans_(trans), kernel_(nullptr) {}
 
  protected:
   BaseTransaction* const basetrans_;

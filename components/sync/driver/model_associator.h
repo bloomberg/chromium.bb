@@ -71,7 +71,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   virtual int64_t GetSyncIdFromChromeId(const IDType& id) = 0;
 
   // Returns the chrome node for the given sync id.
-  // Returns NULL if no node is found for the given sync id.
+  // Returns null if no node is found for the given sync id.
   virtual const Node* GetChromeNodeFromSyncId(int64_t sync_id) = 0;
 
   // Initializes the given sync node from the given chrome node id.

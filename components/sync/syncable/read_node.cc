@@ -15,13 +15,13 @@ namespace syncer {
 //////////////////////////////////////////////////////////////////////////
 // ReadNode member definitions
 ReadNode::ReadNode(const BaseTransaction* transaction)
-    : entry_(NULL), transaction_(transaction) {
+    : entry_(nullptr), transaction_(transaction) {
   DCHECK(transaction);
 }
 
 ReadNode::ReadNode() {
-  entry_ = NULL;
-  transaction_ = NULL;
+  entry_ = nullptr;
+  transaction_ = nullptr;
 }
 
 ReadNode::~ReadNode() {

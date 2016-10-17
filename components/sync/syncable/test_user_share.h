@@ -65,7 +65,7 @@ class TestUserShare {
   // Save and reload Directory to clear out temporary data in memory.
   bool Reload();
 
-  // Non-NULL iff called between a call to SetUp() and TearDown().
+  // Non-null iff called between a call to SetUp() and TearDown().
   UserShare* user_share();
 
   // Sync's encryption handler. Used by tests to invoke the sync encryption

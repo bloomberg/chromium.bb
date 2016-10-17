@@ -111,11 +111,11 @@ void HttpBridgeFactory::OnSignalReceived() {
   base::AutoLock lock(request_context_getter_lock_);
   // Release |request_context_getter_| as soon as possible so that it
   // is destroyed in the right order on its network task runner.
-  request_context_getter_ = NULL;
+  request_context_getter_ = nullptr;
 }
 
 HttpBridge::URLFetchState::URLFetchState()
-    : url_poster(NULL),
+    : url_poster(nullptr),
       aborted(false),
       request_completed(false),
       request_succeeded(false),
@@ -274,7 +274,7 @@ const std::string HttpBridge::GetResponseHeaderValue(
   DCHECK(fetch_state_.request_completed);
 
   std::string value;
-  fetch_state_.response_headers->EnumerateHeader(NULL, name, &value);
+  fetch_state_.response_headers->EnumerateHeader(nullptr, name, &value);
   return value;
 }
 
@@ -283,7 +283,7 @@ void HttpBridge::Abort() {
 
   // Release |request_context_getter_| as soon as possible so that it is
   // destroyed in the right order on its network task runner.
-  request_context_getter_ = NULL;
+  request_context_getter_ = nullptr;
 
   DCHECK(!fetch_state_.aborted);
   if (fetch_state_.aborted || fetch_state_.request_completed)
@@ -299,7 +299,7 @@ void HttpBridge::Abort() {
     NOTREACHED() << "Could not post task to delete URLFetcher";
   }
 
-  fetch_state_.url_poster = NULL;
+  fetch_state_.url_poster = nullptr;
   fetch_state_.error_code = net::ERR_ABORTED;
   http_post_completed_.Signal();
 }
@@ -361,7 +361,7 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   // URLFetcher, so it seems most natural / "polite" to let the stack unwind.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
                                                   fetch_state_.url_poster);
-  fetch_state_.url_poster = NULL;
+  fetch_state_.url_poster = nullptr;
 
   // Wake the blocked syncer thread in MakeSynchronousPost.
   // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!
@@ -408,7 +408,7 @@ void HttpBridge::OnURLFetchTimedOut() {
   // This method is called by the timer, not the url fetcher implementation,
   // so it's safe to delete the fetcher here.
   delete fetch_state_.url_poster;
-  fetch_state_.url_poster = NULL;
+  fetch_state_.url_poster = nullptr;
 
   // Timer is smart enough to handle being deleted as part of the invoked task.
   fetch_state_.http_request_timeout_timer.reset();
@@ -429,8 +429,8 @@ void HttpBridge::UpdateNetworkTime() {
   if (!fetch_state_.request_succeeded || fetch_state_.start_time.is_null() ||
       fetch_state_.end_time < fetch_state_.start_time ||
       !fetch_state_.response_headers ||
-      !fetch_state_.response_headers->EnumerateHeader(NULL, "Sane-Time-Millis",
-                                                      &sane_time_str)) {
+      !fetch_state_.response_headers->EnumerateHeader(
+          nullptr, "Sane-Time-Millis", &sane_time_str)) {
     return;
   }
 

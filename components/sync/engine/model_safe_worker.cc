@@ -124,7 +124,7 @@ void ModelSafeWorker::WillDestroyCurrentMessageLoop() {
 
   {
     base::AutoLock l(working_task_runner_lock_);
-    working_task_runner_ = NULL;
+    working_task_runner_ = nullptr;
   }
 
   if (observer_)

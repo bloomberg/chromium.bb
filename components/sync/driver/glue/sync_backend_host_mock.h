@@ -18,7 +18,7 @@ namespace syncer {
 // A mock of the SyncBackendHost.
 //
 // This class implements the bare minimum required for the ProfileSyncService to
-// get through initialization.  It often returns NULL pointers or nonesense
+// get through initialization.  It often returns null pointers or nonesense
 // values; it is not intended to be used in tests that depend on SyncBackendHost
 // behavior.
 class SyncBackendHostMock : public SyncBackendHost {

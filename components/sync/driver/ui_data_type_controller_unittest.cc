@@ -48,7 +48,7 @@ class SyncUIDataTypeControllerTest : public testing::Test,
                                      public FakeSyncClient {
  public:
   SyncUIDataTypeControllerTest()
-      : type_(PREFERENCES), change_processor_(NULL) {}
+      : type_(PREFERENCES), change_processor_(nullptr) {}
 
   // FakeSyncClient overrides.
   base::WeakPtr<SyncableService> GetSyncableServiceForType(
@@ -65,7 +65,7 @@ class SyncUIDataTypeControllerTest : public testing::Test,
   void TearDown() override {
     // Must be done before we pump the loop.
     syncable_service_.StopSyncing(type_);
-    preference_dtc_ = NULL;
+    preference_dtc_ = nullptr;
     PumpLoop();
   }
 

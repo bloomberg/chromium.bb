@@ -230,7 +230,7 @@ class ServerConnectionManager : public CancelationObserver {
 
   // Helper to check terminated flags and build a Connection object, installing
   // it as the |active_connection_|.  If this ServerConnectionManager has been
-  // terminated, this will return NULL.
+  // terminated, this will return null.
   Connection* MakeActiveConnection();
 
   // Called by Connection objects as they are destroyed to allow the

@@ -173,7 +173,7 @@ void FakeServerHelperAndroid::DeserializeEntitySpecifics(
     sync_pb::EntitySpecifics* entity_specifics) {
   int specifics_bytes_length = env->GetArrayLength(serialized_entity_specifics);
   jbyte* specifics_bytes =
-      env->GetByteArrayElements(serialized_entity_specifics, NULL);
+      env->GetByteArrayElements(serialized_entity_specifics, nullptr);
   std::string specifics_string(reinterpret_cast<char*>(specifics_bytes),
                                specifics_bytes_length);
 

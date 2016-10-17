@@ -360,9 +360,9 @@ namespace {
 // path.
 bool ValueHasSpecifics(const base::DictionaryValue& value,
                        const std::string& path) {
-  const base::ListValue* entities_list = NULL;
-  const base::DictionaryValue* entry_dictionary = NULL;
-  const base::DictionaryValue* specifics_dictionary = NULL;
+  const base::ListValue* entities_list = nullptr;
+  const base::DictionaryValue* entry_dictionary = nullptr;
+  const base::DictionaryValue* specifics_dictionary = nullptr;
 
   if (!value.GetList(path, &entities_list))
     return false;

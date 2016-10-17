@@ -49,11 +49,11 @@ class ParentChildIndex {
   // Returns true if this item is in the index as a child.
   bool Contains(EntryKernel* e) const;
 
-  // Returns all children of the entry with the given Id.  Returns NULL if the
+  // Returns all children of the entry with the given Id.  Returns null if the
   // node has no children or the Id does not identify a valid directory node.
   const OrderedChildSet* GetChildren(const Id& id) const;
 
-  // Returns all children of the entry.  Returns NULL if the node has no
+  // Returns all children of the entry.  Returns null if the node has no
   // children.
   const OrderedChildSet* GetChildren(EntryKernel* e) const;
 

@@ -77,7 +77,7 @@ AssertionResult FakeServerVerifier::VerifyEntityCountByType(
   }
 
   string model_type_string = ModelTypeToString(model_type);
-  base::ListValue* entity_list = NULL;
+  base::ListValue* entity_list = nullptr;
   if (!entities->GetList(model_type_string, &entity_list)) {
     return UnknownTypeAssertionFailure(model_type_string);
   } else if (expected_count != entity_list->GetSize()) {
@@ -101,7 +101,7 @@ AssertionResult FakeServerVerifier::VerifyEntityCountByTypeAndName(
   }
 
   string model_type_string = ModelTypeToString(model_type);
-  base::ListValue* entity_list = NULL;
+  base::ListValue* entity_list = nullptr;
   size_t actual_count = 0;
   if (entities->GetList(model_type_string, &entity_list)) {
     base::StringValue name_value(name);

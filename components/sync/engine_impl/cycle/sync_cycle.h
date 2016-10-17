@@ -123,7 +123,7 @@ class SyncCycle {
   // The context for this cycle, guaranteed to outlive |this|.
   SyncCycleContext* const context_;
 
-  // The delegate for this cycle, must never be NULL.
+  // The delegate for this cycle, must never be null.
   Delegate* const delegate_;
 
   // Our controller for various status and error counters.

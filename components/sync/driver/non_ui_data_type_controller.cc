@@ -44,7 +44,7 @@ void NonUIDataTypeController::LoadModels(
 
   state_ = MODEL_STARTING;
   // Since we can't be called multiple times before Stop() is called,
-  // |shared_change_processor_| must be NULL here.
+  // |shared_change_processor_| must be null here.
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ = CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
@@ -215,7 +215,7 @@ ChangeProcessor* NonUIDataTypeController::GetChangeProcessor() const {
 
 void NonUIDataTypeController::DisconnectSharedChangeProcessor() {
   DCHECK(CalledOnValidThread());
-  // |shared_change_processor_| can already be NULL if Stop() is
+  // |shared_change_processor_| can already be null if Stop() is
   // called after StartDone(_, DISABLED, _).
   if (shared_change_processor_.get()) {
     shared_change_processor_->Disconnect();

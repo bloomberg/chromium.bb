@@ -1346,8 +1346,8 @@ TEST_F(SyncableDirectoryTest, PositionWithNullSurvivesSaveAndReload) {
   const char null_cstr[] = "\0null\0test";
   std::string null_str(null_cstr, arraysize(null_cstr) - 1);
   // Pad up to the minimum length with 0x7f characters, then add a string that
-  // contains a few NULLs to the end.  This is slightly wrong, since the suffix
-  // part of a UniquePosition shouldn't contain NULLs, but it's good enough for
+  // contains a few nulls to the end.  This is slightly wrong, since the suffix
+  // part of a UniquePosition shouldn't contain nulls, but it's good enough for
   // this test.
   std::string suffix =
       std::string(UniquePosition::kSuffixLength - null_str.length(), '\x7f') +
@@ -1621,7 +1621,7 @@ TEST_F(SyncableDirectoryTest, ToValue) {
     Entry e(&rtrans, GET_BY_ID, id);
     EXPECT_FALSE(e.good());  // Hasn't been written yet.
 
-    std::unique_ptr<base::DictionaryValue> value(e.ToValue(NULL));
+    std::unique_ptr<base::DictionaryValue> value(e.ToValue(nullptr));
     ExpectDictBooleanValue(false, *value, "good");
     EXPECT_EQ(1u, value->size());
   }
@@ -1634,7 +1634,7 @@ TEST_F(SyncableDirectoryTest, ToValue) {
     me.PutId(id);
     me.PutBaseVersion(1);
 
-    std::unique_ptr<base::DictionaryValue> value(me.ToValue(NULL));
+    std::unique_ptr<base::DictionaryValue> value(me.ToValue(nullptr));
     ExpectDictBooleanValue(true, *value, "good");
     EXPECT_TRUE(value->HasKey("kernel"));
     ExpectDictStringValue("Bookmarks", *value, "modelType");

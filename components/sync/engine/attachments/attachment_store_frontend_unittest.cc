@@ -228,7 +228,7 @@ TEST_F(AttachmentStoreFrontendTest, MethodsCalled) {
 
   // Releasing referehce to AttachmentStoreFrontend should result in
   // MockAttachmentStore being deleted on backend loop.
-  attachment_store_frontend_ = NULL;
+  attachment_store_frontend_ = nullptr;
   EXPECT_EQ(dtor_call_count_, 0);
   RunMessageLoop();
   EXPECT_EQ(dtor_call_count_, 1);

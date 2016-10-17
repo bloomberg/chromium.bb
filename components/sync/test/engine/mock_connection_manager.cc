@@ -45,7 +45,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
       client_stuck_(false),
       countdown_to_postbuffer_fail_(0),
       directory_(directory),
-      mid_commit_observer_(NULL),
+      mid_commit_observer_(nullptr),
       throttling_(false),
       partialThrottling_(false),
       fail_non_periodic_get_updates_(false),
@@ -739,7 +739,7 @@ MockConnectionManager::GetProgressMarkerForType(
       return &(filter.Get(i));
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void MockConnectionManager::SetServerReachable() {

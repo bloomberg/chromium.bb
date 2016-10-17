@@ -27,17 +27,17 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     Cryptographer* crypto) {
   if (!specifics.has_password())
-    return NULL;
+    return nullptr;
   const sync_pb::PasswordSpecifics& password_specifics = specifics.password();
   if (!password_specifics.has_encrypted())
-    return NULL;
+    return nullptr;
   const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
   std::unique_ptr<sync_pb::PasswordSpecificsData> data(
       new sync_pb::PasswordSpecificsData);
   if (!crypto->CanDecrypt(encrypted))
-    return NULL;
+    return nullptr;
   if (!crypto->Decrypt(encrypted, data.get()))
-    return NULL;
+    return nullptr;
   return data.release();
 }
 

@@ -19,10 +19,10 @@ SyncManager::ChangeObserver::~ChangeObserver() {}
 SyncManager::Observer::~Observer() {}
 
 SyncManager::InitArgs::InitArgs()
-    : extensions_activity(NULL),
-      change_delegate(NULL),
-      encryptor(NULL),
-      cancelation_signal(NULL) {}
+    : extensions_activity(nullptr),
+      change_delegate(nullptr),
+      encryptor(nullptr),
+      cancelation_signal(nullptr) {}
 
 SyncManager::InitArgs::~InitArgs() {}
 

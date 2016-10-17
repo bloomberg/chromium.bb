@@ -7,7 +7,7 @@
 namespace syncer {
 
 FakeModelWorker::FakeModelWorker(ModelSafeGroup group)
-    : ModelSafeWorker(NULL), group_(group) {}
+    : ModelSafeWorker(nullptr), group_(group) {}
 
 FakeModelWorker::~FakeModelWorker() {
   // We may need to relax this is FakeModelWorker is used in a

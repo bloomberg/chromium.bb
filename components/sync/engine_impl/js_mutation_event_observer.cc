@@ -53,7 +53,7 @@ void JsMutationEventObserver::OnChangesApplied(
   details.SetString("modelType", ModelTypeToString(model_type));
   details.SetString("writeTransactionId",
                     base::Int64ToString(write_transaction_id));
-  base::Value* changes_value = NULL;
+  base::Value* changes_value = nullptr;
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
     base::ListValue* changes_list = new base::ListValue();

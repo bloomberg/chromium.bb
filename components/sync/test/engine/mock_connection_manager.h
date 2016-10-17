@@ -355,7 +355,7 @@ class MockConnectionManager : public ServerConnectionManager {
   int countdown_to_postbuffer_fail_;
 
   // Our directory.  Used only to ensure that we are not holding the transaction
-  // lock when performing network I/O.  Can be NULL if the test author is
+  // lock when performing network I/O.  Can be null if the test author is
   // confident this can't happen.
   syncable::Directory* directory_;
 

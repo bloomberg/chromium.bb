@@ -161,7 +161,7 @@ class Cryptographer {
   bool is_ready() const { return is_initialized() && !has_pending_keys(); }
 
   // Returns whether there is a pending set of keys that needs to be decrypted.
-  bool has_pending_keys() const { return NULL != pending_keys_.get(); }
+  bool has_pending_keys() const { return nullptr != pending_keys_.get(); }
 
   // Obtain a token that can be provided on construction to a future
   // Cryptographer instance to bootstrap itself.  Returns false if such a token

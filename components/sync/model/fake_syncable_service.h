@@ -28,7 +28,7 @@ class FakeSyncableService : public SyncableService {
   void set_attachment_store(std::unique_ptr<AttachmentStore> attachment_store);
 
   // AttachmentService should be set when this syncable service is connected,
-  // just before MergeDataAndStartSyncing. NULL is returned by default.
+  // just before MergeDataAndStartSyncing. Null is returned by default.
   const AttachmentService* attachment_service() const;
 
   // Whether we're syncing or not. Set on a successful MergeDataAndStartSyncing,

@@ -26,7 +26,7 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
       base::Bind(&SyncPrefs::OnSyncManagedPrefChanged, base::Unretained(this)));
 }
 
-SyncPrefs::SyncPrefs() : pref_service_(NULL) {}
+SyncPrefs::SyncPrefs() : pref_service_(nullptr) {}
 
 SyncPrefs::~SyncPrefs() {
   DCHECK(CalledOnValidThread());
@@ -324,7 +324,7 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType data_type) {
       break;
   }
   NOTREACHED() << "Type is " << data_type;
-  return NULL;
+  return nullptr;
 }
 
 #if defined(OS_CHROMEOS)
@@ -406,7 +406,7 @@ bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
     return true;
 
   if (type == PROXY_TABS &&
-      pref_service_->GetUserPrefValue(pref_name) == NULL &&
+      pref_service_->GetUserPrefValue(pref_name) == nullptr &&
       pref_service_->IsUserModifiablePreference(pref_name)) {
     // If there is no tab sync preference yet (i.e. newly enabled type),
     // default to the session sync preference value.

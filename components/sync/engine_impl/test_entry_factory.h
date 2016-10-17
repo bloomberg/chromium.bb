@@ -45,7 +45,7 @@ class TestEntryFactory {
   // local ID, it will be treated as a create-new.  Otherwise, if it's a server
   // ID, we'll fake the server data so that it looks like it exists on the
   // server.  Returns the methandle of the created item in |metahandle_out| if
-  // not NULL.
+  // not null.
   void CreateUnsyncedItem(const syncable::Id& item_id,
                           const syncable::Id& parent_id,
                           const std::string& name,

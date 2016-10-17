@@ -117,7 +117,7 @@ ModelSafeGroup FakeDataTypeController::model_safe_group() const {
 }
 
 ChangeProcessor* FakeDataTypeController::GetChangeProcessor() const {
-  return NULL;
+  return nullptr;
 }
 
 DataTypeController::State FakeDataTypeController::state() const {

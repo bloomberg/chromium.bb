@@ -46,7 +46,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
   // and local device info must be available.
   const DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  DCHECK(local_device_info != NULL);
+  DCHECK(local_device_info != nullptr);
 
   // Indicates whether a local device has been added or updated.
   // |change_type| defaults to ADD and might be changed to

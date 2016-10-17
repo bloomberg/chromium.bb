@@ -107,7 +107,7 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
  public:
   explicit FakeSyncManagerFactory(FakeSyncManager** fake_manager)
       : fake_manager_(fake_manager) {
-    *fake_manager_ = NULL;
+    *fake_manager_ = nullptr;
   }
   ~FakeSyncManagerFactory() override {}
 
@@ -155,7 +155,7 @@ class BackendSyncClient : public FakeSyncClient {
 
 class SyncBackendHostTest : public testing::Test {
  protected:
-  SyncBackendHostTest() : fake_manager_(NULL) {}
+  SyncBackendHostTest() : fake_manager_(nullptr) {}
 
   ~SyncBackendHostTest() override {}
 

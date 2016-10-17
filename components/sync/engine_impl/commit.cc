@@ -48,7 +48,7 @@ Commit* Commit::Init(ModelTypeSet requested_types,
 
   // Give up if no one had anything to commit.
   if (contributions.empty())
-    return NULL;
+    return nullptr;
 
   sync_pb::ClientToServerMessage message;
   message.set_message_contents(sync_pb::ClientToServerMessage::COMMIT);
@@ -115,7 +115,7 @@ SyncerError Commit::PostAndProcessResponse(
 
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &message_, &response_, cycle, NULL);
+      &message_, &response_, cycle, nullptr);
   TRACE_EVENT_END0("sync", "PostCommit");
 
   // TODO(rlarocque): Use result that includes errors captured later?

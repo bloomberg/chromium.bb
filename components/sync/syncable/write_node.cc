@@ -195,7 +195,7 @@ void WriteNode::SetExternalId(int64_t id) {
 }
 
 WriteNode::WriteNode(WriteTransaction* transaction)
-    : entry_(NULL), transaction_(transaction) {
+    : entry_(nullptr), transaction_(transaction) {
   DCHECK(transaction);
 }
 
@@ -258,7 +258,7 @@ BaseNode::InitByLookupResult WriteNode::InitTypeRoot(ModelType type) {
 bool WriteNode::InitBookmarkByCreation(const BaseNode& parent,
                                        const BaseNode* predecessor) {
   DCHECK(!entry_) << "Init called twice";
-  // |predecessor| must be a child of |parent| or NULL.
+  // |predecessor| must be a child of |parent| or null.
   if (predecessor && predecessor->GetParentId() != parent.GetId()) {
     DCHECK(false);
     return false;
@@ -404,7 +404,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
 
 bool WriteNode::SetPosition(const BaseNode& new_parent,
                             const BaseNode* predecessor) {
-  // |predecessor| must be a child of |new_parent| or NULL.
+  // |predecessor| must be a child of |new_parent| or null.
   if (predecessor && predecessor->GetParentId() != new_parent.GetId()) {
     DCHECK(false);
     return false;

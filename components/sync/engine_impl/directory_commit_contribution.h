@@ -42,7 +42,7 @@ class DirectoryCommitContribution : public CommitContribution {
   // Build a CommitContribution from the IS_UNSYNCED items in |dir| with the
   // given |type|.  The contribution will include at most |max_items| entries.
   //
-  // This function may return NULL if this type has no items ready for and
+  // This function may return null if this type has no items ready for and
   // requiring commit.  This function may make model neutral changes to the
   // directory.
   static std::unique_ptr<DirectoryCommitContribution> Build(

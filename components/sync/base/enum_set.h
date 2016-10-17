@@ -77,7 +77,7 @@ class EnumSet {
     // A default-constructed iterator can't do anything except check
     // Good().  You need to call First() on an EnumSet to get a usable
     // iterator.
-    Iterator() : enums_(NULL), i_(kValueCount) {}
+    Iterator() : enums_(nullptr), i_(kValueCount) {}
     ~Iterator() {}
 
     // Copy constructor and assignment welcome.

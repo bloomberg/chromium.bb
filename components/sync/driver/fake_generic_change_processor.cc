@@ -15,10 +15,10 @@ namespace syncer {
 FakeGenericChangeProcessor::FakeGenericChangeProcessor(ModelType type,
                                                        SyncClient* sync_client)
     : GenericChangeProcessor(type,
-                             NULL,
+                             nullptr,
                              base::WeakPtr<SyncableService>(),
                              base::WeakPtr<SyncMergeResult>(),
-                             NULL,
+                             nullptr,
                              sync_client,
                              nullptr),
       sync_model_has_user_created_nodes_(true),

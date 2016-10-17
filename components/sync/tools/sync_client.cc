@@ -79,7 +79,7 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
  public:
   MyTestURLRequestContext() : TestURLRequestContext(true) {
     context_storage_.set_host_resolver(
-        net::HostResolver::CreateDefaultResolver(NULL));
+        net::HostResolver::CreateDefaultResolver(nullptr));
     context_storage_.set_transport_security_state(
         base::MakeUnique<net::TransportSecurityState>());
     Init();
@@ -392,8 +392,8 @@ int SyncClientMain(int argc, char* argv[]) {
   std::unique_ptr<SyncManager> sync_manager =
       sync_manager_factory.CreateSyncManager("sync_client manager");
   LoggingJsEventHandler js_event_handler;
-  // Used only by InitialProcessMetadata(), so it's okay to leave this as NULL.
-  const scoped_refptr<base::TaskRunner> blocking_task_runner = NULL;
+  // Used only by InitialProcessMetadata(), so it's okay to leave this as null.
+  const scoped_refptr<base::TaskRunner> blocking_task_runner = nullptr;
   const char kUserAgent[] = "sync_client";
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
@@ -402,9 +402,8 @@ int SyncClientMain(int argc, char* argv[]) {
       context_getter.get(), base::Bind(&StubNetworkTimeUpdateCallback),
       &factory_cancelation_signal));
   post_factory->Init(kUserAgent, BindToTrackerCallback());
-  // Used only when committing bookmarks, so it's okay to leave this
-  // as NULL.
-  ExtensionsActivity* extensions_activity = NULL;
+  // Used only when committing bookmarks, so it's okay to leave this as null.
+  ExtensionsActivity* extensions_activity = nullptr;
   LoggingChangeDelegate change_delegate;
   const char kRestoredKeyForBootstrapping[] = "";
   const char kRestoredKeystoreKeyForBootstrapping[] = "";

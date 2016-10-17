@@ -151,7 +151,7 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate,
 
   void RemoveWorker(ModelSafeGroup group);
 
-  // Returns the change processor for the given model, or NULL if none
+  // Returns the change processor for the given model, or null if none
   // exists.  Must be called from |group|'s native thread.
   ChangeProcessor* GetProcessor(ModelType type) const;
 

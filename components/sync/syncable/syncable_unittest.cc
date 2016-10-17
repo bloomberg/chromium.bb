@@ -115,7 +115,7 @@ TestDirectory::TestDirectory(
     Encryptor* encryptor,
     const WeakHandle<UnrecoverableErrorHandler>& handler,
     TestBackingStore* backing_store)
-    : Directory(backing_store, handler, base::Closure(), NULL, NULL),
+    : Directory(backing_store, handler, base::Closure(), nullptr, nullptr),
       backing_store_(backing_store) {}
 
 TestDirectory::~TestDirectory() {}
@@ -556,8 +556,8 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
 
   {
     Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path),
-                  MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), NULL,
-                  NULL);
+                  MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
+                  nullptr, nullptr);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
     ASSERT_EQ(result, OPENED);

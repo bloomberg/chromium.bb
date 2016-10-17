@@ -21,7 +21,7 @@ WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer,
                                    Directory* directory)
     : BaseWriteTransaction(location, "WriteTransaction", writer, directory),
-      transaction_version_(NULL) {
+      transaction_version_(nullptr) {
   Lock();
 }
 

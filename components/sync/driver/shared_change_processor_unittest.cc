@@ -118,7 +118,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     //
     // TODO(akalin): Write deterministic tests for the destruction of
     // |shared_change_processor_| on the UI and DB threads.
-    shared_change_processor_ = NULL;
+    shared_change_processor_ = nullptr;
     backend_thread_.Stop();
 
     // Note: Stop() joins the threads, and that barrier prevents this read

@@ -655,9 +655,9 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
       decoded_bootstrap, &decrypted_bootstrap));
   JSONStringValueDeserializer json(decrypted_bootstrap);
   std::unique_ptr<base::Value> deserialized_keystore_keys(
-      json.Deserialize(NULL, NULL));
+      json.Deserialize(nullptr, nullptr));
   ASSERT_TRUE(deserialized_keystore_keys.get());
-  base::ListValue* keystore_list = NULL;
+  base::ListValue* keystore_list = nullptr;
   deserialized_keystore_keys->GetAsList(&keystore_list);
   ASSERT_TRUE(keystore_list);
   ASSERT_EQ(2U, keystore_list->GetSize());

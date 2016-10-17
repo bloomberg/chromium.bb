@@ -24,7 +24,7 @@ void MutableEntry::Init(WriteTransaction* trans,
                         const Id& parent_id,
                         const string& name) {
   std::unique_ptr<EntryKernel> kernel(new EntryKernel);
-  kernel_ = NULL;
+  kernel_ = nullptr;
 
   kernel->put(ID, trans->directory_->NextId());
   kernel->put(META_HANDLE, trans->directory_->NextMetahandle());
@@ -250,7 +250,7 @@ void MutableEntry::PutUniquePosition(const UniquePosition& value) {
 
 bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   if (predecessor_id.IsNull()) {
-    dir()->PutPredecessor(kernel_, NULL);
+    dir()->PutPredecessor(kernel_, nullptr);
   } else {
     MutableEntry predecessor(write_transaction(), GET_BY_ID, predecessor_id);
     if (!predecessor.good())
@@ -305,7 +305,7 @@ void MutableEntry::MarkAttachmentAsOnServer(
 
 // This function sets only the flags needed to get this entry to sync.
 bool MarkForSyncing(MutableEntry* e) {
-  DCHECK_NE(static_cast<MutableEntry*>(NULL), e);
+  DCHECK_NE(static_cast<MutableEntry*>(nullptr), e);
   DCHECK(!e->IsRoot()) << "We shouldn't mark a permanent object for syncing.";
   if (!(e->PutIsUnsynced(true)))
     return false;

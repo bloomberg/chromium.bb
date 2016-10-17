@@ -40,7 +40,7 @@ class AttachmentServiceImpl
   // GetOrDownloadAttachments.
   //
   // |delegate| is optional delegate for AttachmentService to notify about
-  // asynchronous events (AttachmentUploaded). Pass NULL if delegate is not
+  // asynchronous events (AttachmentUploaded). Pass null if delegate is not
   // provided. AttachmentService doesn't take ownership of delegate, the pointer
   // must be valid throughout AttachmentService lifetime.
   //

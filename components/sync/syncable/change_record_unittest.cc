@@ -57,8 +57,8 @@ void CheckChangeRecordValue(const ChangeRecord& record,
     if (record.extra.get()) {
       expected_extra_value = record.extra->ToValue();
     }
-    const base::Value* extra_value = NULL;
-    EXPECT_EQ(record.extra.get() != NULL, value.Get("extra", &extra_value));
+    const base::Value* extra_value = nullptr;
+    EXPECT_EQ(record.extra.get() != nullptr, value.Get("extra", &extra_value));
     EXPECT_TRUE(base::Value::Equals(extra_value, expected_extra_value.get()));
 
     std::unique_ptr<base::DictionaryValue> expected_specifics_value(

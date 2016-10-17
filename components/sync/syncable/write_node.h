@@ -65,8 +65,8 @@ class WriteNode : public BaseNode {
                                            const std::string& tag) override;
 
   // Create a new bookmark node with the specified parent and predecessor.  Use
-  // a NULL |predecessor| to indicate that this is to be the first child.
-  // |predecessor| must be a child of |new_parent| or NULL. Returns false on
+  // a null |predecessor| to indicate that this is to be the first child.
+  // |predecessor| must be a child of |new_parent| or null. Returns false on
   // failure.
   bool InitBookmarkByCreation(const BaseNode& parent,
                               const BaseNode* predecessor);
@@ -110,8 +110,8 @@ class WriteNode : public BaseNode {
   void Drop();
 
   // Set a new parent and position.  Position is specified by |predecessor|; if
-  // it is NULL, the node is moved to the first position.  |predecessor| must
-  // be a child of |new_parent| or NULL.  Returns false on failure..
+  // it is null, the node is moved to the first position.  |predecessor| must
+  // be a child of |new_parent| or null.  Returns false on failure..
   bool SetPosition(const BaseNode& new_parent, const BaseNode* predecessor);
 
   // Set the bookmark specifics (url and favicon).

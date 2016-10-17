@@ -224,8 +224,8 @@ std::unique_ptr<base::ListValue> EntryKernelMutationMapToValue(
 std::unique_ptr<base::DictionaryValue> EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set("original", mutation.original.ToValue(NULL));
-  dict->Set("mutated", mutation.mutated.ToValue(NULL));
+  dict->Set("original", mutation.original.ToValue(nullptr));
+  dict->Set("mutated", mutation.mutated.ToValue(nullptr));
   return dict;
 }
 

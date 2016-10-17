@@ -90,9 +90,9 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor);
 
   // Calls Disconnect() on |shared_change_processor_|, then sets it to
-  // NULL.  Must be called only by StartDoneImpl() or Stop() (on the
+  // null.  Must be called only by StartDoneImpl() or Stop() (on the
   // UI thread) and only after a call to Start() (i.e.,
-  // |shared_change_processor_| must be non-NULL).
+  // |shared_change_processor_| must be non-null).
   void DisconnectSharedChangeProcessor();
 
   // Posts StopLocalService() to the processor on the model type thread.

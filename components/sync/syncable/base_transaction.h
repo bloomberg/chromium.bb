@@ -36,7 +36,7 @@ class BaseTransaction {
 
   syncable::Directory* GetDirectory() const {
     if (!user_share_) {
-      return NULL;
+      return nullptr;
     } else {
       return user_share_->directory.get();
     }
@@ -48,7 +48,7 @@ class BaseTransaction {
   explicit BaseTransaction(UserShare* share);
   virtual ~BaseTransaction();
 
-  BaseTransaction() : user_share_(NULL) {}
+  BaseTransaction() : user_share_(nullptr) {}
 
  private:
   UserShare* user_share_;

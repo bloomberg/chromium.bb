@@ -40,7 +40,7 @@ class AttachmentDownloader {
   // done.
   //
   // |callback| will receive a DownloadResult code and an Attachment object. If
-  // DownloadResult is not DOWNLOAD_SUCCESS then attachment pointer is NULL.
+  // DownloadResult is not DOWNLOAD_SUCCESS then attachment pointer is null.
   virtual void DownloadAttachment(const AttachmentId& attachment_id,
                                   const DownloadCallback& callback) = 0;
 

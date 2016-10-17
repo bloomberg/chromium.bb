@@ -319,7 +319,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
     DataTypeController::TypeMap::const_iterator it =
         controllers_.find(model_type);
     if (it == controllers_.end()) {
-      return NULL;
+      return nullptr;
     }
     return static_cast<FakeDataTypeController*>(it->second.get());
   }

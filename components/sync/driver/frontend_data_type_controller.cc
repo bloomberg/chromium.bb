@@ -100,7 +100,7 @@ void FrontendDataTypeController::Stop() {
     error = model_associator()->DisassociateModels();
   }
 
-  set_model_associator(NULL);
+  set_model_associator(nullptr);
   change_processor_.reset();
 
   state_ = NOT_RUNNING;
@@ -185,7 +185,7 @@ void FrontendDataTypeController::CleanUpState() {
 
 void FrontendDataTypeController::CleanUp() {
   CleanUpState();
-  set_model_associator(NULL);
+  set_model_associator(nullptr);
   change_processor_.reset();
 }
 

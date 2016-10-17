@@ -124,7 +124,7 @@ void UnpackProtoFields(sql::Statement* statement,
 }
 
 // The caller owns the returned EntryKernel*.  Assumes the statement currently
-// points to a valid row in the metas table. Returns NULL to indicate that
+// points to a valid row in the metas table. Returns null to indicate that
 // it detected a corruption in the data on unpacking.
 std::unique_ptr<EntryKernel> UnpackEntry(sql::Statement* statement,
                                          int* total_specifics_copies) {
@@ -1213,7 +1213,7 @@ bool DirectoryBackingStore::MigrateVersion79To80() {
   sql::Statement update(db_->GetUniqueStatement(
           "UPDATE share_info SET bag_of_chips = ?"));
   // An empty message is serialized to an empty string.
-  update.BindBlob(0, NULL, 0);
+  update.BindBlob(0, nullptr, 0);
   if (!update.Run())
     return false;
   SetVersion(80);
@@ -1510,7 +1510,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindString(1, dir_name_);                   // name
     s.BindString(2, std::string());               // store_birthday
     s.BindString(3, GenerateCacheGUID());         // cache_guid
-    s.BindBlob(4, NULL, 0);                       // bag_of_chips
+    s.BindBlob(4, nullptr, 0);                    // bag_of_chips
     if (!s.Run())
       return false;
   }

@@ -57,7 +57,7 @@ static bool RunSyncTest(
 // Gets a port value from the switch with name |switch_name| and writes it to
 // |port|. Returns true if a port was provided and false otherwise.
 static bool GetPortFromSwitch(const std::string& switch_name, uint16_t* port) {
-  DCHECK(port != NULL) << "|port| is NULL";
+  DCHECK(port != nullptr) << "|port| is null";
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   int port_int = 0;
   if (command_line->HasSwitch(switch_name)) {

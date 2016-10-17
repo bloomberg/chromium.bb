@@ -22,7 +22,7 @@ SyncBridgedConnection::SyncBridgedConnection(ServerConnectionManager* scm,
 SyncBridgedConnection::~SyncBridgedConnection() {
   DCHECK(post_provider_);
   factory_->Destroy(post_provider_);
-  post_provider_ = NULL;
+  post_provider_ = nullptr;
 }
 
 bool SyncBridgedConnection::Init(const char* path,

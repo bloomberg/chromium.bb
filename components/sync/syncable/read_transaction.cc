@@ -13,7 +13,7 @@ namespace syncer {
 // ReadTransaction member definitions
 ReadTransaction::ReadTransaction(const tracked_objects::Location& from_here,
                                  UserShare* share)
-    : BaseTransaction(share), transaction_(NULL), close_transaction_(true) {
+    : BaseTransaction(share), transaction_(nullptr), close_transaction_(true) {
   transaction_ =
       new syncable::ReadTransaction(from_here, share->directory.get());
 }

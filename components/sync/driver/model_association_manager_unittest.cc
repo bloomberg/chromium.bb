@@ -36,7 +36,7 @@ FakeDataTypeController* GetController(
     ModelType model_type) {
   DataTypeController::TypeMap::const_iterator it = controllers.find(model_type);
   if (it == controllers.end()) {
-    return NULL;
+    return nullptr;
   }
   return static_cast<FakeDataTypeController*>(it->second.get());
 }

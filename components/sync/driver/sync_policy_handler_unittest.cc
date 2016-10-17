@@ -23,7 +23,7 @@ TEST_F(SyncPolicyHandlerTest, Default) {
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
-  EXPECT_FALSE(prefs.GetValue(prefs::kSyncManaged, NULL));
+  EXPECT_FALSE(prefs.GetValue(prefs::kSyncManaged, nullptr));
 }
 
 TEST_F(SyncPolicyHandlerTest, Enabled) {
@@ -36,7 +36,7 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Enabling Sync should not set the pref.
-  EXPECT_FALSE(prefs.GetValue(prefs::kSyncManaged, NULL));
+  EXPECT_FALSE(prefs.GetValue(prefs::kSyncManaged, nullptr));
 }
 
 TEST_F(SyncPolicyHandlerTest, Disabled) {
@@ -49,7 +49,7 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
   handler.ApplyPolicySettings(policy, &prefs);
 
   // Sync should be flagged as managed.
-  const base::Value* value = NULL;
+  const base::Value* value = nullptr;
   EXPECT_TRUE(prefs.GetValue(prefs::kSyncManaged, &value));
   ASSERT_TRUE(value);
   bool sync_managed = false;
