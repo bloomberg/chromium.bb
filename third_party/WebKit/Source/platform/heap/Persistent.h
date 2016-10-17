@@ -227,6 +227,14 @@ class PersistentBase {
   }
 
   void uninitialize() {
+    // TODO(haraken): This is a short-term hack to prevent use-after-frees
+    // during a shutdown sequence.
+    // 1) blink::shutdown() frees the underlying storage for persistent nodes.
+    // 2) ~MessageLoop() destructs some Chromium-side objects that hold
+    //    Persistent. It touches the underlying storage and crashes.
+    if (WTF::isShutdown())
+      return;
+
     if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
       if (acquireLoad(reinterpret_cast<void* volatile*>(&m_persistentNode)))
         ProcessHeap::crossThreadPersistentRegion().freePersistentNode(
