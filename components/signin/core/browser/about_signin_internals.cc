@@ -282,9 +282,8 @@ void AboutSigninInternals::NotifyObservers() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 AboutSigninInternals::NotifyObservers1"));
 
-  FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
-                    signin_observers_,
-                    OnSigninStateChanged(signin_status_value.get()));
+  for (auto& observer : signin_observers_)
+    observer.OnSigninStateChanged(signin_status_value.get());
 }
 
 std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
@@ -400,9 +399,8 @@ void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
   }
 
   // Update the observers that the cookie's accounts are updated.
-  FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
-                    signin_observers_,
-                    OnCookieAccountsFetched(&cookie_status));
+  for (auto& observer : signin_observers_)
+    observer.OnCookieAccountsFetched(&cookie_status);
 }
 
 AboutSigninInternals::TokenInfo::TokenInfo(

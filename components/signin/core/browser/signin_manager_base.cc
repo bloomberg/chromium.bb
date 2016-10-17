@@ -250,7 +250,6 @@ void SigninManagerBase::RemoveSigninDiagnosticsObserver(
 void SigninManagerBase::NotifyDiagnosticsObservers(
     const TimedSigninStatusField& field,
     const std::string& value) {
-  FOR_EACH_OBSERVER(SigninDiagnosticsObserver,
-                    signin_diagnostics_observers_,
-                    NotifySigninValueChanged(field, value));
+  for (auto& observer : signin_diagnostics_observers_)
+    observer.NotifySigninValueChanged(field, value);
 }
