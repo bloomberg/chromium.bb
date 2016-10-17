@@ -1337,6 +1337,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -1345,7 +1346,9 @@
       'id': 19,
       'caption': '''Specify a list of disabled plugins''',
       'tags': [],
-      'desc': '''Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">$1<ex>DefaultPluginsSetting</ex></ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">$1<ex>AlwaysOpenPdfExternally</ex></ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+
+      Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
 
@@ -1364,6 +1367,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -1372,7 +1376,9 @@
       'id': 78,
       'caption': '''Specify a list of enabled plugins''',
       'tags': ['system-security'],
-      'desc': '''Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">$1<ex>DefaultPluginsSetting</ex></ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">$1<ex>AlwaysOpenPdfExternally</ex></ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+
+      Specifies a list of plugins that are enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
 
@@ -1391,6 +1397,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -1399,7 +1406,9 @@
       'id': 79,
       'caption': '''Specify a list of plugins that the user can enable or disable''',
       'tags': [],
-      'desc': '''Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy is deprecated. Please use the <ph name="DEFAULT_PLUGINS_SETTING_POLICY">$1<ex>DefaultPluginsSetting</ex></ph> to control the avalability of the Flash plugin and <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY">$1<ex>AlwaysOpenPdfExternally</ex></ph> to control whether the integrated PDF viewer should be used for opening PDF files.
+
+      Specifies a list of plugins that user can enable or disable in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\\', so to match actual '*', '?', or '\\' characters, you can put a '\\' in front of them.
 
