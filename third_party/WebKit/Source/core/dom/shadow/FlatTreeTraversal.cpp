@@ -68,6 +68,9 @@ Node* FlatTreeTraversal::resolveDistributionStartingAt(
                       : sibling->previousSibling())) {
     if (isHTMLSlotElement(*sibling)) {
       const HTMLSlotElement& slot = toHTMLSlotElement(*sibling);
+      if (!slot.supportsDistribution()) {
+        const_cast<HTMLSlotElement&>(slot).updateDistributedNodesManually();
+      }
       if (Node* found = (direction == TraversalDirectionForward
                              ? slot.firstDistributedNode()
                              : slot.lastDistributedNode()))
