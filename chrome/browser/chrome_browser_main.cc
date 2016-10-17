@@ -81,8 +81,8 @@
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/power/process_power_collector.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
@@ -1190,7 +1190,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif  // OS_WIN
 
   local_state_->UpdateCommandLinePrefStore(
-      new CommandLinePrefStore(base::CommandLine::ForCurrentProcess()));
+      new ChromeCommandLinePrefStore(base::CommandLine::ForCurrentProcess()));
 
   // Reset the command line in the crash report details, since we may have
   // just changed it to include experiments.

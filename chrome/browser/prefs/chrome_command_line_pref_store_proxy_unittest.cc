@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 
 #include <gtest/gtest.h>
 #include <stddef.h>
@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -153,10 +152,10 @@ static const CommandLineTestParams kCommandLineTestParams[] = {
 
 }  // namespace
 
-class CommandLinePrefStoreProxyTest
+class ChromeCommandLinePrefStoreProxyTest
     : public testing::TestWithParam<CommandLineTestParams> {
  protected:
-  CommandLinePrefStoreProxyTest()
+  ChromeCommandLinePrefStoreProxyTest()
       : command_line_(base::CommandLine::NO_PROGRAM) {}
 
   net::ProxyConfig* proxy_config() { return &proxy_config_; }
@@ -173,7 +172,8 @@ class CommandLinePrefStoreProxyTest
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
     PrefProxyConfigTrackerImpl::RegisterPrefs(registry.get());
     syncable_prefs::PrefServiceMockFactory factory;
-    factory.set_command_line_prefs(new CommandLinePrefStore(&command_line_));
+    factory.set_command_line_prefs(
+        new ChromeCommandLinePrefStore(&command_line_));
     pref_service_ = factory.Create(registry.get());
     PrefProxyConfigTrackerImpl::ReadPrefConfig(pref_service_.get(),
                                                &proxy_config_);
@@ -185,12 +185,12 @@ class CommandLinePrefStoreProxyTest
   net::ProxyConfig proxy_config_;
 };
 
-TEST_P(CommandLinePrefStoreProxyTest, CommandLine) {
+TEST_P(ChromeCommandLinePrefStoreProxyTest, CommandLine) {
   EXPECT_EQ(GetParam().auto_detect, proxy_config()->auto_detect());
   EXPECT_EQ(GetParam().pac_url, proxy_config()->pac_url());
   EXPECT_TRUE(GetParam().proxy_rules.Matches(proxy_config()->proxy_rules()));
 }
 
-INSTANTIATE_TEST_CASE_P(CommandLinePrefStoreProxyTestInstance,
-                        CommandLinePrefStoreProxyTest,
+INSTANTIATE_TEST_CASE_P(ChromeCommandLinePrefStoreProxyTestInstance,
+                        ChromeCommandLinePrefStoreProxyTest,
                         testing::ValuesIn(kCommandLineTestParams));

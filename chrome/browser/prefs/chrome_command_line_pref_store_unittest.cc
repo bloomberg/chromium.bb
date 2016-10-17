@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
@@ -25,10 +25,10 @@ const char unknown_string[] = "unknown_other_switch";
 
 }  // namespace
 
-class TestCommandLinePrefStore : public CommandLinePrefStore {
+class TestCommandLinePrefStore : public ChromeCommandLinePrefStore {
  public:
   explicit TestCommandLinePrefStore(base::CommandLine* cl)
-      : CommandLinePrefStore(cl) {}
+      : ChromeCommandLinePrefStore(cl) {}
 
   bool ProxySwitchesAreValid() {
     return ValidateProxySwitches();
@@ -67,10 +67,11 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
 };
 
 // Tests a simple string pref on the command line.
-TEST(CommandLinePrefStoreTest, SimpleStringPref) {
+TEST(ChromeCommandLinePrefStoreTest, SimpleStringPref) {
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
-  scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
+  scoped_refptr<ChromeCommandLinePrefStore> store =
+      new ChromeCommandLinePrefStore(&cl);
 
   const base::Value* actual = NULL;
   EXPECT_TRUE(store->GetValue(prefs::kApplicationLocale, &actual));
@@ -80,7 +81,7 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
 }
 
 // Tests a simple boolean pref on the command line.
-TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
+TEST(ChromeCommandLinePrefStoreTest, SimpleBooleanPref) {
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitch(switches::kNoProxyServer);
   scoped_refptr<TestCommandLinePrefStore> store =
@@ -90,11 +91,12 @@ TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
 }
 
 // Tests a command line with no recognized prefs.
-TEST(CommandLinePrefStoreTest, NoPrefs) {
+TEST(ChromeCommandLinePrefStoreTest, NoPrefs) {
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitchASCII(unknown_bool, "a value");
-  scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
+  scoped_refptr<ChromeCommandLinePrefStore> store =
+      new ChromeCommandLinePrefStore(&cl);
 
   const base::Value* actual = NULL;
   EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
@@ -102,7 +104,7 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
 }
 
 // Tests a complex command line with multiple known and unknown switches.
-TEST(CommandLinePrefStoreTest, MultipleSwitches) {
+TEST(ChromeCommandLinePrefStoreTest, MultipleSwitches) {
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitchASCII(switches::kProxyServer, "proxy");
@@ -132,7 +134,7 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
 }
 
 // Tests proxy switch validation.
-TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
+TEST(ChromeCommandLinePrefStoreTest, ProxySwitchValidation) {
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
 
   // No switches.
@@ -163,7 +165,7 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
   EXPECT_TRUE(store4->ProxySwitchesAreValid());
 }
 
-TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
+TEST(ChromeCommandLinePrefStoreTest, ManualProxyModeInference) {
   base::CommandLine cl1(base::CommandLine::NO_PROGRAM);
   cl1.AppendSwitch(unknown_string);
   cl1.AppendSwitchASCII(switches::kProxyServer, "proxy");
@@ -184,7 +186,7 @@ TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
   store3->VerifyProxyMode(ProxyPrefs::MODE_DIRECT);
 }
 
-TEST(CommandLinePrefStoreTest, DisableSSLCipherSuites) {
+TEST(ChromeCommandLinePrefStoreTest, DisableSSLCipherSuites) {
   base::CommandLine cl1(base::CommandLine::NO_PROGRAM);
   cl1.AppendSwitchASCII(switches::kCipherSuiteBlacklist,
                         "0x0004,0x0005");

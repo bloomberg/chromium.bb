@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -104,7 +104,8 @@ class ProxyPolicyTest : public testing::Test {
 
   std::unique_ptr<PrefService> CreatePrefService(bool with_managed_policies) {
     syncable_prefs::PrefServiceMockFactory factory;
-    factory.set_command_line_prefs(new CommandLinePrefStore(&command_line_));
+    factory.set_command_line_prefs(
+        new ChromeCommandLinePrefStore(&command_line_));
     if (with_managed_policies) {
       factory.SetManagedPolicies(policy_service_.get(),
                                  g_browser_process->browser_policy_connector());

@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ssl_config/ssl_config_service_manager.h"
-
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/ssl_config/ssl_config_switches.h"
 #include "components/syncable_prefs/pref_service_mock_factory.h"
 #include "net/ssl/ssl_config.h"
@@ -41,7 +40,7 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
 
   syncable_prefs::PrefServiceMockFactory factory;
   factory.set_user_prefs(local_state_store);
-  factory.set_command_line_prefs(new CommandLinePrefStore(&command_line));
+  factory.set_command_line_prefs(new ChromeCommandLinePrefStore(&command_line));
   scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
   std::unique_ptr<PrefService> local_state(factory.Create(registry.get()));
 

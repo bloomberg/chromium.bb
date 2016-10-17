@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <chrome/browser/prefs/chrome_command_line_pref_store.h>
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 
 #include <stddef.h>
@@ -22,7 +23,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/chrome_pref_model_associator_client.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -440,7 +440,7 @@ void PrepareFactory(syncable_prefs::PrefServiceSyncableFactory* factory,
   factory->set_async(async);
   factory->set_extension_prefs(extension_prefs);
   factory->set_command_line_prefs(make_scoped_refptr(
-      new CommandLinePrefStore(base::CommandLine::ForCurrentProcess())));
+      new ChromeCommandLinePrefStore(base::CommandLine::ForCurrentProcess())));
   factory->set_read_error_callback(base::Bind(&HandleReadError, pref_filename));
   factory->set_user_prefs(user_pref_store);
   factory->SetPrefModelAssociatorClient(

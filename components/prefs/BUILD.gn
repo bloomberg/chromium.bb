@@ -4,6 +4,8 @@
 
 component("prefs") {
   sources = [
+    "command_line_pref_store.cc",
+    "command_line_pref_store.h",
     "default_pref_store.cc",
     "default_pref_store.h",
     "in_memory_pref_store.cc",

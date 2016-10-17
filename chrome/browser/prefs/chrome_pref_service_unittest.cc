@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -52,7 +52,7 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   cmd_line.AppendSwitch(switches::kEnableCloudPrintProxy);
 
   // Call UpdateCommandLinePrefStore and check to see if the value has changed.
-  prefs.UpdateCommandLinePrefStore(new CommandLinePrefStore(&cmd_line));
+  prefs.UpdateCommandLinePrefStore(new ChromeCommandLinePrefStore(&cmd_line));
   pref = prefs.FindPreference(prefs::kCloudPrintProxyEnabled);
   ASSERT_TRUE(pref);
   value = pref->GetValue();

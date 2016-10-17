@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 
 #include <stddef.h>
 
@@ -13,7 +13,6 @@
 #include "ash/common/ash_switches.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -35,8 +34,8 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
-    CommandLinePrefStore::string_switch_map_[] = {
+const CommandLinePrefStore::SwitchToPreferenceMapEntry
+    ChromeCommandLinePrefStore::string_switch_map_[] = {
       { switches::kLang, prefs::kApplicationLocale },
       { data_reduction_proxy::switches::kDataReductionProxy,
           data_reduction_proxy::prefs::kDataReductionProxy },
@@ -49,13 +48,13 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
 #endif
 };
 
-const CommandLinePrefStore::PathSwitchToPreferenceMapEntry
-    CommandLinePrefStore::path_switch_map_[] = {
+const CommandLinePrefStore::SwitchToPreferenceMapEntry
+    ChromeCommandLinePrefStore::path_switch_map_[] = {
       { switches::kDiskCacheDir, prefs::kDiskCacheDir },
 };
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
-    CommandLinePrefStore::boolean_switch_map_[] = {
+    ChromeCommandLinePrefStore::boolean_switch_map_[] = {
         {switches::kDisable3DAPIs, prefs::kDisable3DAPIs, true},
         {switches::kEnableCloudPrintProxy, prefs::kCloudPrintProxyEnabled,
          true},
@@ -78,15 +77,15 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {switches::kUnsafePacUrl, prefs::kPacHttpsUrlStrippingEnabled, false},
 };
 
-const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry
-    CommandLinePrefStore::integer_switch_map_[] = {
+const CommandLinePrefStore::SwitchToPreferenceMapEntry
+    ChromeCommandLinePrefStore::integer_switch_map_[] = {
       { switches::kDiskCacheSize, prefs::kDiskCacheSize },
       { switches::kMediaCacheSize, prefs::kMediaCacheSize },
     };
 
-CommandLinePrefStore::CommandLinePrefStore(
+ChromeCommandLinePrefStore::ChromeCommandLinePrefStore(
     const base::CommandLine* command_line)
-    : command_line_(command_line) {
+    : CommandLinePrefStore(command_line) {
   ApplySimpleSwitches();
   ApplyProxyMode();
   ValidateProxySwitches();
@@ -94,14 +93,14 @@ CommandLinePrefStore::CommandLinePrefStore(
   ApplyBackgroundModeSwitches();
 }
 
-CommandLinePrefStore::~CommandLinePrefStore() {}
+ChromeCommandLinePrefStore::~ChromeCommandLinePrefStore() {}
 
-bool CommandLinePrefStore::ValidateProxySwitches() {
-  if (command_line_->HasSwitch(switches::kNoProxyServer) &&
-      (command_line_->HasSwitch(switches::kProxyAutoDetect) ||
-       command_line_->HasSwitch(switches::kProxyServer) ||
-       command_line_->HasSwitch(switches::kProxyPacUrl) ||
-       command_line_->HasSwitch(switches::kProxyBypassList))) {
+bool ChromeCommandLinePrefStore::ValidateProxySwitches() {
+  if (command_line()->HasSwitch(switches::kNoProxyServer) &&
+      (command_line()->HasSwitch(switches::kProxyAutoDetect) ||
+       command_line()->HasSwitch(switches::kProxyServer) ||
+       command_line()->HasSwitch(switches::kProxyPacUrl) ||
+       command_line()->HasSwitch(switches::kProxyBypassList))) {
     LOG(WARNING) << "Additional command-line proxy switches specified when --"
                  << switches::kNoProxyServer << " was also specified.";
     return false;
@@ -109,77 +108,35 @@ bool CommandLinePrefStore::ValidateProxySwitches() {
   return true;
 }
 
-void CommandLinePrefStore::ApplySimpleSwitches() {
+void ChromeCommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.
-  for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {
-    if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
-      SetValue(string_switch_map_[i].preference_path,
-               base::MakeUnique<base::StringValue>(
-                   command_line_->GetSwitchValueASCII(
-                       string_switch_map_[i].switch_name)),
-               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-    }
-  }
-
-  for (size_t i = 0; i < arraysize(path_switch_map_); ++i) {
-    if (command_line_->HasSwitch(path_switch_map_[i].switch_name)) {
-      SetValue(
-          path_switch_map_[i].preference_path,
-          base::MakeUnique<base::StringValue>(
-              command_line_->GetSwitchValuePath(path_switch_map_[i].switch_name)
-                  .value()),
-          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-    }
-  }
-
-  for (size_t i = 0; i < arraysize(integer_switch_map_); ++i) {
-    if (command_line_->HasSwitch(integer_switch_map_[i].switch_name)) {
-      std::string str_value = command_line_->GetSwitchValueASCII(
-          integer_switch_map_[i].switch_name);
-      int int_value = 0;
-      if (!base::StringToInt(str_value, &int_value)) {
-        LOG(ERROR) << "The value " << str_value << " of "
-                   << integer_switch_map_[i].switch_name
-                   << " can not be converted to integer, ignoring!";
-        continue;
-      }
-      SetValue(integer_switch_map_[i].preference_path,
-               base::MakeUnique<base::FundamentalValue>(int_value),
-               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-    }
-  }
-
-  for (size_t i = 0; i < arraysize(boolean_switch_map_); ++i) {
-    if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
-      SetValue(boolean_switch_map_[i].preference_path,
-               base::MakeUnique<base::FundamentalValue>(
-                   boolean_switch_map_[i].set_value),
-               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-    }
-  }
+  ApplyStringSwitches(string_switch_map_, arraysize(string_switch_map_));
+  ApplyPathSwitches(path_switch_map_, arraysize(path_switch_map_));
+  ApplyIntegerSwitches(integer_switch_map_, arraysize(integer_switch_map_));
+  ApplyBooleanSwitches(boolean_switch_map_, arraysize(boolean_switch_map_));
 }
 
-void CommandLinePrefStore::ApplyProxyMode() {
-  if (command_line_->HasSwitch(switches::kNoProxyServer)) {
+void ChromeCommandLinePrefStore::ApplyProxyMode() {
+  if (command_line()->HasSwitch(switches::kNoProxyServer)) {
     SetValue(proxy_config::prefs::kProxy,
              base::WrapUnique(ProxyConfigDictionary::CreateDirect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
+  } else if (command_line()->HasSwitch(switches::kProxyPacUrl)) {
     std::string pac_script_url =
-        command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
+        command_line()->GetSwitchValueASCII(switches::kProxyPacUrl);
     SetValue(proxy_config::prefs::kProxy,
              base::WrapUnique(
                  ProxyConfigDictionary::CreatePacScript(pac_script_url, false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
+  } else if (command_line()->HasSwitch(switches::kProxyAutoDetect)) {
     SetValue(proxy_config::prefs::kProxy,
              base::WrapUnique(ProxyConfigDictionary::CreateAutoDetect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  } else if (command_line_->HasSwitch(switches::kProxyServer)) {
+  } else if (command_line()->HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
-        command_line_->GetSwitchValueASCII(switches::kProxyServer);
+        command_line()->GetSwitchValueASCII(switches::kProxyServer);
     std::string bypass_list =
-        command_line_->GetSwitchValueASCII(switches::kProxyBypassList);
+        command_line()->GetSwitchValueASCII(switches::kProxyBypassList);
     SetValue(proxy_config::prefs::kProxy,
              base::WrapUnique(ProxyConfigDictionary::CreateFixedServers(
                  proxy_server, bypass_list)),
@@ -187,19 +144,19 @@ void CommandLinePrefStore::ApplyProxyMode() {
   }
 }
 
-void CommandLinePrefStore::ApplySSLSwitches() {
-  if (command_line_->HasSwitch(switches::kCipherSuiteBlacklist)) {
+void ChromeCommandLinePrefStore::ApplySSLSwitches() {
+  if (command_line()->HasSwitch(switches::kCipherSuiteBlacklist)) {
     std::unique_ptr<base::ListValue> list_value(new base::ListValue());
     list_value->AppendStrings(base::SplitString(
-        command_line_->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
+        command_line()->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
     SetValue(ssl_config::prefs::kCipherSuiteBlacklist, std::move(list_value),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
-void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
-  if (command_line_->HasSwitch(switches::kDisableExtensions)) {
+void ChromeCommandLinePrefStore::ApplyBackgroundModeSwitches() {
+  if (command_line()->HasSwitch(switches::kDisableExtensions)) {
     SetValue(prefs::kBackgroundModeEnabled,
              base::MakeUnique<base::FundamentalValue>(false),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
