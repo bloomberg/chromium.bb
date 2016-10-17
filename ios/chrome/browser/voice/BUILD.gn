@@ -1,0 +1,21 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("voice") {
+  sources = [
+    "speech_input_locale.h",
+    "speech_input_locale_config.h",
+    "speech_input_locale_config.mm",
+    "speech_input_locale_config_impl.h",
+    "speech_input_locale_config_impl.mm",
+    "speech_input_locale_match_config.h",
+    "speech_input_locale_match_config.mm",
+  ]
+
+  public_deps = [
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/public/provider/chrome/browser",
+  ]
+}

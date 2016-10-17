@@ -30,6 +30,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   UpdatableResourceProvider* GetUpdatableResourceProvider() override;
   UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const override NS_RETURNS_RETAINED;
+  NSArray* GetAvailableVoiceSearchLanguages() const override;
 
  private:
   std::unique_ptr<ChromeIdentityService> chrome_identity_service_;

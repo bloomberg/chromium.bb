@@ -29,6 +29,8 @@ source_set("browser") {
     "ui/text_field_styling.h",
     "updatable_resource_provider.h",
     "updatable_resource_provider.mm",
+    "voice/voice_search_language.h",
+    "voice/voice_search_language.mm",
   ]
 
   deps = [

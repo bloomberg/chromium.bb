@@ -7,9 +7,11 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
+#import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
 @interface TestStyledTextField : UITextField<TextFieldStyling>
 @end
@@ -56,6 +58,14 @@ TestChromeBrowserProvider::GetUpdatableResourceProvider() {
 UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(
     CGRect frame) const {
   return [[TestStyledTextField alloc] initWithFrame:frame];
+}
+
+NSArray* TestChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
+  base::scoped_nsobject<VoiceSearchLanguage> en([[VoiceSearchLanguage alloc]
+          initWithIdentifier:@"en-US"
+                 displayName:@"English (US)"
+      localizationPreference:nil]);
+  return @[ en ];
 }
 
 }  // namespace ios

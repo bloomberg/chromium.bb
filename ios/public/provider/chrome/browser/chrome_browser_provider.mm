@@ -122,4 +122,8 @@ ChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
   return nullptr;
 }
 
+NSArray* ChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
+  return [NSArray array];
+}
+
 }  // namespace ios

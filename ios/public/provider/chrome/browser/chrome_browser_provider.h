@@ -140,6 +140,9 @@ class ChromeBrowserProvider {
   // metrics_services_manager_client.h for details on |on_update_callback|.
   virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
 
+  // Returns the list of available voice search languages.
+  virtual NSArray* GetAvailableVoiceSearchLanguages() const;
+
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(ios::ChromeBrowserState* browser_state);
