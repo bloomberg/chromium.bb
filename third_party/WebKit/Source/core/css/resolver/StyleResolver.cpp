@@ -634,7 +634,6 @@ void StyleResolver::matchRuleSet(ElementRuleCollector& collector,
   collector.sortAndTransferMatchedRules();
 }
 
-DISABLE_CFI_PERF
 void StyleResolver::matchAllRules(StyleResolverState& state,
                                   ElementRuleCollector& collector,
                                   bool includeSMILProperties) {

@@ -546,7 +546,6 @@ void ChromeClientImpl::invalidateRect(const IntRect& updateRect) {
     m_webView->invalidateRect(updateRect);
 }
 
-DISABLE_CFI_PERF
 void ChromeClientImpl::scheduleAnimation(Widget* widget) {
   DCHECK(widget->isFrameView());
   FrameView* view = toFrameView(widget);

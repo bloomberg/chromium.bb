@@ -26,7 +26,6 @@ static bool boxNeedsClip(const LayoutBox& box) {
   return box.hasOverflowClip() || box.styleRef().containsPaint();
 }
 
-DISABLE_CFI_PERF
 BoxClipper::BoxClipper(const LayoutBox& box,
                        const PaintInfo& paintInfo,
                        const LayoutPoint& accumulatedOffset,

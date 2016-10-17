@@ -4668,7 +4668,6 @@ bool LayoutBox::shrinkToAvoidFloats() const {
   return style()->width().isAuto();
 }
 
-DISABLE_CFI_PERF
 static bool shouldBeConsideredAsReplaced(Node* node) {
   // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have
   // their own layoutObject in which to override avoidFloats().

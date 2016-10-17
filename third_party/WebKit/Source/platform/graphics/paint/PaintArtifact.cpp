@@ -87,7 +87,6 @@ void PaintArtifact::replay(GraphicsContext& graphicsContext) const {
     displayItem.replay(graphicsContext);
 }
 
-DISABLE_CFI_PERF
 void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
   size_t visualRectIndex = 0;

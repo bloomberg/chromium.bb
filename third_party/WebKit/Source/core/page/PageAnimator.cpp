@@ -73,7 +73,6 @@ void PageAnimator::serviceScriptedAnimations(
   }
 }
 
-DISABLE_CFI_PERF
 void PageAnimator::scheduleVisualUpdate(LocalFrame* frame) {
   if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting)
     return;

@@ -107,7 +107,6 @@ void FrameTree::setPrecalculatedName(const AtomicString& name,
   m_uniqueName = uniqueName;
 }
 
-DISABLE_CFI_PERF
 Frame* FrameTree::parent() const {
   if (!m_thisFrame->client())
     return nullptr;
@@ -477,7 +476,6 @@ bool FrameTree::isDescendantOf(const Frame* ancestor) const {
   return false;
 }
 
-DISABLE_CFI_PERF
 Frame* FrameTree::traverseNext(const Frame* stayWithin) const {
   Frame* child = firstChild();
   if (child) {

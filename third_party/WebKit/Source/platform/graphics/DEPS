@@ -3,7 +3,6 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/bind.h",
     "+base/callback.h",
-    "+base/compiler_specific.h",
     "+base/message_loop",
     "+base/threading/thread_checker.h",
     "+cc",
