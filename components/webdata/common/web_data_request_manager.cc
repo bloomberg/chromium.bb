@@ -104,10 +104,7 @@ int WebDataRequestManager::GetNextRequestHandle() {
 void WebDataRequestManager::CancelRequest(WebDataServiceBase::Handle h) {
   base::AutoLock l(pending_lock_);
   RequestMap::iterator i = pending_requests_.find(h);
-  if (i == pending_requests_.end()) {
-    NOTREACHED() << "Canceling a nonexistent web data service request";
-    return;
-  }
+  DCHECK(i != pending_requests_.end());
   i->second->Cancel();
   pending_requests_.erase(i);
 }
@@ -134,10 +131,7 @@ void WebDataRequestManager::RequestCompletedOnThread(
   {
     base::AutoLock l(pending_lock_);
     RequestMap::iterator i = pending_requests_.find(request->GetHandle());
-    if (i == pending_requests_.end()) {
-      NOTREACHED() << "Request completed called for an unknown request";
-      return;
-    }
+    DCHECK(i != pending_requests_.end());
 
     // Take ownership of the request object and remove it from the map.
     pending_requests_.erase(i);
