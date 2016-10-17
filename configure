@@ -269,6 +269,7 @@ EXPERIMENT_LIST="
     bitstream_debug
     tile_groups
     ec_adapt
+    simp_mv_pred
 "
 CONFIG_LIST="
     dependency_tracking

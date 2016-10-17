@@ -2819,6 +2819,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
 
+#if CONFIG_SIMP_MV_PRED
+  cm->setup_mi(cm);
+#endif
+
   xd->mi = cm->mi_grid_visible;
   xd->mi[0] = cm->mi;
 

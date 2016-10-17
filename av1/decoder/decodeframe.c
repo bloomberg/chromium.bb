@@ -2305,6 +2305,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 
   if (early_terminate) return;
 
+#if CONFIG_SIMP_MV_PRED
+  cm->setup_mi(cm);
+#endif
+
   cm->use_prev_frame_mvs =
       !cm->error_resilient_mode && cm->width == cm->last_width &&
       cm->height == cm->last_height && !cm->last_intra_only &&
