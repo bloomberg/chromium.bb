@@ -10948,7 +10948,6 @@ extern const NameToFunc g_gles2_function_table[] = {
           f.write(code % {
             'name': ToUnderscore(name),
           })
-      f.write("UpdateETCCompressedTextureFormats();");
       f.write("}\n\n");
 
       f.write("void Validators::UpdateETCCompressedTextureFormats() {\n")
@@ -11022,12 +11021,6 @@ const size_t GLES2Util::enum_to_string_table_len_ =
             for es3_enum in _NAMED_TYPE_INFO[enum]['valid_es3']:
               if not es3_enum in valid_list:
                 valid_list.append(es3_enum)
-          if enum in [
-              'CompressedTextureFormat',
-              'TextureInternalFormatStorage',
-            ]:
-            for es3_enum in _ETC_COMPRESSED_TEXTURE_FORMATS:
-              valid_list.append(es3_enum)
           assert len(valid_list) == len(set(valid_list))
           if len(valid_list) > 0:
             f.write("  static const EnumToString string_table[] = {\n")

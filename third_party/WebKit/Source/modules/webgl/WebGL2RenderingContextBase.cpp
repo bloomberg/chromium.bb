@@ -135,19 +135,6 @@ const GLenum kSupportedInternalFormatsStorage[] = {
     GL_DEPTH32F_STENCIL8,
 };
 
-const GLenum kCompressedTextureFormatsETC2EAC[] = {
-    GL_COMPRESSED_R11_EAC,
-    GL_COMPRESSED_SIGNED_R11_EAC,
-    GL_COMPRESSED_RG11_EAC,
-    GL_COMPRESSED_SIGNED_RG11_EAC,
-    GL_COMPRESSED_RGB8_ETC2,
-    GL_COMPRESSED_SRGB8_ETC2,
-    GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2,
-    GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2,
-    GL_COMPRESSED_RGBA8_ETC2_EAC,
-    GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
-};
-
 WebGL2RenderingContextBase::WebGL2RenderingContextBase(
     HTMLCanvasElement* passedCanvas,
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
@@ -160,17 +147,6 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
       kSupportedInternalFormatsStorage,
       kSupportedInternalFormatsStorage +
           WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
-  m_supportedInternalFormatsStorage.insert(
-      kCompressedTextureFormatsETC2EAC,
-      kCompressedTextureFormatsETC2EAC +
-          WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));
-  m_compressedTextureFormatsETC2EAC.insert(
-      kCompressedTextureFormatsETC2EAC,
-      kCompressedTextureFormatsETC2EAC +
-          WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));
-  m_compressedTextureFormats.append(
-      kCompressedTextureFormatsETC2EAC,
-      WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));
 }
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase() {

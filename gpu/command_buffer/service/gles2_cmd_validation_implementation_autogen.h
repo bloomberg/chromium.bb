@@ -1502,7 +1502,6 @@ void Validators::UpdateValuesES3() {
                                arraysize(valid_vertex_attrib_type_table_es3));
   vertex_attribute.AddValues(valid_vertex_attribute_table_es3,
                              arraysize(valid_vertex_attribute_table_es3));
-  UpdateETCCompressedTextureFormats();
 }
 
 void Validators::UpdateETCCompressedTextureFormats() {
