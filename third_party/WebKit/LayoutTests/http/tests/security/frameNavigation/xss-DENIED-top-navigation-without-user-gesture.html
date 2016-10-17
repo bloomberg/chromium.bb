@@ -6,6 +6,8 @@ if (window.testRunner) {
     testRunner.dumpChildFramesAsText();
     testRunner.setDumpConsoleMessages(false);
 }
+if (window.internals)
+    internals.runtimeFlags.setFramebustingNeedsSameOriginOrUserGesture(true);
 </script>
 </head>
 <body>
