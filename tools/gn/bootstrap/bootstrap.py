@@ -288,7 +288,7 @@ def write_gn_ninja(path, root_gen_dir, options):
   else:
     cc = os.environ.get('CC', 'cc')
     cxx = os.environ.get('CXX', 'c++')
-    ld = os.environ.get('LD', cxx)
+    ld = cxx
     ar = os.environ.get('AR', 'ar')
 
   cflags = os.environ.get('CFLAGS', '').split()
