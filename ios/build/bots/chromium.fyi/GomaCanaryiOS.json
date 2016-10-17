@@ -22,6 +22,7 @@
     "target_cpu=\"arm\"",
     "target_os=\"ios\""
   ],
+  "use_goma_canary": true,
   "mb_type": "gn",
   "compiler": "ninja",
   "additional_compile_targets": ["gn_all"],
