@@ -59,13 +59,10 @@ class WebNotificationManager {
                                 WebServiceWorkerRegistration*,
                                 WebNotificationGetCallbacks*) = 0;
 
-  // Closes a notification previously shown, and removes it if being shown.
-  virtual void close(WebNotificationDelegate*) = 0;
-
-  // Closes a persistent notification identified by its notification Id.
-  virtual void closePersistent(const WebSecurityOrigin&,
-                               const WebString& tag,
-                               const WebString& notificationId) = 0;
+  // Closes a notification identified by its notification Id.
+  virtual void close(const WebSecurityOrigin&,
+                     const WebString& tag,
+                     const WebString& notificationId) = 0;
 
   // Indicates that the delegate object is being destroyed, and must no longer
   // be used by the embedder to dispatch events.

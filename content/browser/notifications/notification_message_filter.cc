@@ -117,10 +117,7 @@ bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnShowPersistentNotification)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_GetNotifications,
                         OnGetNotifications)
-    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_Close,
-                        OnClosePlatformNotification)
-    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_ClosePersistent,
-                        OnClosePersistentNotification)
+    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_Close, OnCloseNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -130,8 +127,7 @@ bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void NotificationMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     content::BrowserThread::ID* thread) {
-  if (message.type() == PlatformNotificationHostMsg_Show::ID ||
-      message.type() == PlatformNotificationHostMsg_Close::ID)
+  if (message.type() == PlatformNotificationHostMsg_Show::ID)
     *thread = BrowserThread::UI;
 }
 
@@ -306,26 +302,7 @@ void NotificationMessageFilter::DidGetNotifications(
       request_id, persistent_notifications));
 }
 
-void NotificationMessageFilter::OnClosePlatformNotification(
-    const GURL& origin,
-    const std::string& tag,
-    int non_persistent_notification_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!RenderProcessHost::FromID(process_id_))
-    return;
-
-  std::string notification_id =
-      GetNotificationIdGenerator()->GenerateForNonPersistentNotification(
-          origin, tag, non_persistent_notification_id, process_id_);
-
-  if (!close_closures_.count(notification_id))
-    return;
-
-  close_closures_[notification_id].Run();
-  close_closures_.erase(notification_id);
-}
-
-void NotificationMessageFilter::OnClosePersistentNotification(
+void NotificationMessageFilter::OnCloseNotification(
     const GURL& origin,
     const std::string& tag,
     const std::string& notification_id) {
@@ -340,19 +317,38 @@ void NotificationMessageFilter::OnClosePersistentNotification(
       GetContentClient()->browser()->GetPlatformNotificationService();
   DCHECK(service);
 
-  // There's no point in waiting until the database data has been removed before
-  // closing the notification presented to the user. Post that task immediately.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PlatformNotificationService::ClosePersistentNotification,
-                 base::Unretained(service),  // The service is a singleton.
-                 browser_context_, notification_id));
+  if (NotificationIdGenerator::IsPersistentNotification(notification_id)) {
+    // There's no point in waiting until the database data has been removed
+    // before closing the notification presented to the user.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PlatformNotificationService::ClosePersistentNotification,
+                   base::Unretained(service),  // The service is a singleton.
+                   browser_context_, notification_id));
 
-  notification_context_->DeleteNotificationData(
-      notification_id, origin,
-      base::Bind(
-          &NotificationMessageFilter::DidDeletePersistentNotificationData,
-          weak_factory_io_.GetWeakPtr()));
+    notification_context_->DeleteNotificationData(
+        notification_id, origin,
+        base::Bind(
+            &NotificationMessageFilter::DidDeletePersistentNotificationData,
+            weak_factory_io_.GetWeakPtr()));
+
+    return;
+  }
+
+  if (NotificationIdGenerator::IsNonPersistentNotification(notification_id)) {
+    if (!close_closures_.count(notification_id))
+      return;
+
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            close_closures_[notification_id]);
+
+    close_closures_.erase(notification_id);
+    return;
+  }
+
+  // The renderer may have been compromised if the given |notification_id|
+  // doesn't map to either a persistent or a non-persistent notification.
+  bad_message::ReceivedBadMessage(this, bad_message::NMF_INVALID_ID_CLOSE);
 }
 
 void NotificationMessageFilter::DidDeletePersistentNotificationData(

@@ -137,7 +137,8 @@ Notification::Notification(ExecutionContext* context,
       ActiveDOMObject(context),
       m_type(type),
       m_state(State::Loading),
-      m_data(data) {
+      m_data(data),
+      m_requestedClose(false) {
   DCHECK(notificationManager());
 }
 
@@ -156,7 +157,7 @@ void Notification::prepareShow() {
   DCHECK_EQ(m_state, State::Loading);
   if (NotificationManager::from(getExecutionContext())->permissionStatus() !=
       mojom::blink::PermissionStatus::GRANTED) {
-    dispatchErrorEvent();
+    dispatchEvent(Event::create(EventTypeNames::error));
     return;
   }
 
@@ -179,48 +180,55 @@ void Notification::didLoadResources(NotificationResourcesLoader* loader) {
 }
 
 void Notification::close() {
-  if (m_state != State::Showing)
+  if (m_state != State::Showing) {
+    // TODO(peter): Abort the load instead of closing the notification after
+    // it's completed.
+    if (m_state == State::Loading || m_notificationId.isEmpty())
+      m_requestedClose = true;
+
     return;
+  }
 
   // Schedule the "close" event to be fired for non-persistent notifications.
   // Persistent notifications won't get such events for programmatic closes.
   if (m_type == Type::NonPersistent) {
     getExecutionContext()->postTask(
-        BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent,
-                                              wrapPersistent(this)));
+        BLINK_FROM_HERE,
+        createSameThreadTask(&Notification::didCloseNotification,
+                             wrapPersistent(this)));
     m_state = State::Closing;
-
-    notificationManager()->close(this);
-    return;
+  } else {
+    m_state = State::Closed;
   }
-
-  m_state = State::Closed;
 
   SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
   DCHECK(origin);
 
-  notificationManager()->closePersistent(WebSecurityOrigin(origin), m_data.tag,
-                                         m_notificationId);
+  notificationManager()->close(WebSecurityOrigin(origin), m_data.tag,
+                               m_notificationId);
 }
 
-void Notification::dispatchShowEvent() {
+void Notification::didShowNotification(const WebString& notificationId) {
+  DCHECK(m_notificationId.isEmpty());
+  m_notificationId = notificationId;
+
   dispatchEvent(Event::create(EventTypeNames::show));
+
+  if (m_requestedClose)
+    close();
 }
 
-void Notification::dispatchClickEvent() {
+void Notification::didClickNotification() {
   UserGestureIndicator gestureIndicator(
       UserGestureToken::create(UserGestureToken::NewGesture));
+
   ScopedWindowFocusAllowedIndicator windowFocusAllowed(getExecutionContext());
   dispatchEvent(Event::create(EventTypeNames::click));
 }
 
-void Notification::dispatchErrorEvent() {
-  dispatchEvent(Event::create(EventTypeNames::error));
-}
-
-void Notification::dispatchCloseEvent() {
-  // The notification should be Showing if the user initiated the close, or it
-  // should be Closing if the developer initiated the close.
+void Notification::didCloseNotification() {
+  // The notification will be showing when the user initiated the close, or it
+  // will be closing if the developer initiated the close.
   if (m_state != State::Showing && m_state != State::Closing)
     return;
 
