@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
@@ -137,6 +135,9 @@ public class ItemChooserDialog {
         // The background color of the highlighted item.
         private final int mBackgroundHighlightColor;
 
+        // The color of the non-highlighted text.
+        private final int mDefaultTextColor;
+
         // The zero-based index of the item currently selected in the dialog,
         // or -1 (INVALID_POSITION) if nothing is selected.
         private int mSelectedItem = ListView.INVALID_POSITION;
@@ -157,6 +158,8 @@ public class ItemChooserDialog {
 
             mBackgroundHighlightColor = ApiCompatibilityUtils.getColor(getContext().getResources(),
                     R.color.light_active_color);
+            mDefaultTextColor = ApiCompatibilityUtils.getColor(getContext().getResources(),
+                    R.color.default_text_color);
         }
 
         @Override
@@ -297,22 +300,18 @@ public class ItemChooserDialog {
                         R.layout.item_chooser_dialog_row, parent, false);
             }
 
-
             // Set highlighting for currently selected item.
             if (position == mSelectedItem) {
                 view.setBackgroundColor(mBackgroundHighlightColor);
                 view.setTextColor(Color.WHITE);
             } else {
                 view.setBackground(null);
-
-                @ColorRes final int textColorId = isEnabled(position)
-                        ? R.color.default_text_color
-                        : R.color.primary_text_disabled_material_light;
-
-                @ColorInt final int textColor = ApiCompatibilityUtils.getColor(
-                        getContext().getResources(), textColorId);
-
-                view.setTextColor(textColor);
+                if (!isEnabled(position)) {
+                    view.setTextColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
+                            R.color.primary_text_disabled_material_light));
+                } else {
+                    view.setTextColor(mDefaultTextColor);
+                }
             }
 
             view.setText(getDisplayText(position));
