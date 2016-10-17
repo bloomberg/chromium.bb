@@ -9,7 +9,6 @@
 #import <cmath>
 #include <memory>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
@@ -351,16 +350,7 @@ static NSString* gSearchTerm;
   NSDictionary* info = [note userInfo];
   CGSize kbSize =
       [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].size;
-  UIInterfaceOrientation orientation =
-      [[UIApplication sharedApplication] statusBarOrientation];
   CGFloat kbHeight = kbSize.height;
-  // Prior to iOS 8, the keyboard frame was not dependent on interface
-  // orientation, so height and width need to be swapped in landscape mode.
-  if (UIInterfaceOrientationIsLandscape(orientation) &&
-      !base::ios::IsRunningOnIOS8OrLater()) {
-    kbHeight = kbSize.width;
-  }
-
   UIEdgeInsets insets = UIEdgeInsetsZero;
   insets.bottom = kbHeight;
   [_webViewProxy registerInsets:insets forCaller:self];
