@@ -130,9 +130,4 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(
   collection->dispose();
 }
 
-DEFINE_TRACE_WRAPPERS(DocumentStyleSheetCollection) {
-  for (auto sheet : m_styleSheetsForStyleSheetList) {
-    visitor->traceWrappers(sheet);
-  }
-}
 }  // namespace blink

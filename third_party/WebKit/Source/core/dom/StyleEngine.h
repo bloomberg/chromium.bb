@@ -30,6 +30,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/invalidation/StyleInvalidator.h"
@@ -83,8 +84,8 @@ class CORE_EXPORT StyleEngine final
 
   ~StyleEngine();
 
-  const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList(
-      TreeScope&);
+  const HeapVector<TraceWrapperMember<StyleSheet>>&
+  styleSheetsForStyleSheetList(TreeScope&);
 
   const HeapVector<Member<CSSStyleSheet>>& injectedAuthorStyleSheets() const {
     return m_injectedAuthorStyleSheets;

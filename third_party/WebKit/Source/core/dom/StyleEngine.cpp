@@ -114,8 +114,8 @@ TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(
   return it->value.get();
 }
 
-const HeapVector<Member<StyleSheet>>& StyleEngine::styleSheetsForStyleSheetList(
-    TreeScope& treeScope) {
+const HeapVector<TraceWrapperMember<StyleSheet>>&
+StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope) {
   if (treeScope == m_document)
     return documentStyleSheetCollection().styleSheetsForStyleSheetList();
 

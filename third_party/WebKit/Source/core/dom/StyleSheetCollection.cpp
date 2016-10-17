@@ -40,7 +40,8 @@ void StyleSheetCollection::dispose() {
 }
 
 void StyleSheetCollection::swap(StyleSheetCollection& other) {
-  m_styleSheetsForStyleSheetList.swap(other.m_styleSheetsForStyleSheetList);
+  ::blink::swap(m_styleSheetsForStyleSheetList,
+                other.m_styleSheetsForStyleSheetList, this, &other);
   m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
 }
 
@@ -48,20 +49,32 @@ void StyleSheetCollection::swapSheetsForSheetList(
     HeapVector<Member<StyleSheet>>& sheets) {
   // Only called for collection of HTML Imports that never has active sheets.
   DCHECK(m_activeAuthorStyleSheets.isEmpty());
-  m_styleSheetsForStyleSheetList.swap(sheets);
+  ::blink::swap(m_styleSheetsForStyleSheetList, sheets, this);
 }
 
 void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet) {
   m_activeAuthorStyleSheets.append(sheet);
 }
 
+void StyleSheetCollection::appendActiveStyleSheets(
+    const HeapVector<Member<CSSStyleSheet>>& sheets) {
+  m_activeAuthorStyleSheets.appendVector(sheets);
+}
+
 void StyleSheetCollection::appendSheetForList(StyleSheet* sheet) {
-  m_styleSheetsForStyleSheetList.append(sheet);
+  m_styleSheetsForStyleSheetList.append(
+      TraceWrapperMember<StyleSheet>(this, sheet));
 }
 
 DEFINE_TRACE(StyleSheetCollection) {
   visitor->trace(m_activeAuthorStyleSheets);
   visitor->trace(m_styleSheetsForStyleSheetList);
+}
+
+DEFINE_TRACE_WRAPPERS(StyleSheetCollection) {
+  for (auto sheet : m_styleSheetsForStyleSheetList) {
+    visitor->traceWrappers(sheet);
+  }
 }
 
 }  // namespace blink

@@ -33,8 +33,8 @@ using namespace HTMLNames;
 
 StyleSheetList::StyleSheetList(TreeScope* treeScope) : m_treeScope(treeScope) {}
 
-inline const HeapVector<Member<StyleSheet>>& StyleSheetList::styleSheets()
-    const {
+inline const HeapVector<TraceWrapperMember<StyleSheet>>&
+StyleSheetList::styleSheets() const {
   return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
 }
 
@@ -43,7 +43,7 @@ unsigned StyleSheetList::length() {
 }
 
 StyleSheet* StyleSheetList::item(unsigned index) {
-  const HeapVector<Member<StyleSheet>>& sheets = styleSheets();
+  const HeapVector<TraceWrapperMember<StyleSheet>>& sheets = styleSheets();
   return index < sheets.size() ? sheets[index].get() : nullptr;
 }
 

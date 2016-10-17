@@ -35,39 +35,43 @@
 namespace blink {
 
 DocumentStyleSheetCollector::DocumentStyleSheetCollector(
-    HeapVector<Member<StyleSheet>>& sheetsForList,
-    HeapVector<Member<CSSStyleSheet>>& activeList,
-    HeapHashSet<Member<Document>>& visitedDocuments)
-    : m_styleSheetsForStyleSheetList(sheetsForList),
-      m_activeAuthorStyleSheets(activeList),
+    StyleSheetCollection* collection,
+    HeapVector<Member<StyleSheet>>* sheetsForList,
+    HeapHashSet<Member<Document>>* visitedDocuments)
+    : m_collection(collection),
+      m_styleSheetsForStyleSheetList(sheetsForList),
       m_visitedDocuments(visitedDocuments) {}
 
 DocumentStyleSheetCollector::~DocumentStyleSheetCollector() {}
 
 void DocumentStyleSheetCollector::appendActiveStyleSheets(
     const HeapVector<Member<CSSStyleSheet>>& sheets) {
-  m_activeAuthorStyleSheets.appendVector(sheets);
+  DCHECK(m_collection);
+  m_collection->appendActiveStyleSheets(sheets);
 }
 
 void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet) {
-  m_activeAuthorStyleSheets.append(sheet);
+  DCHECK(m_collection);
+  m_collection->appendActiveStyleSheet(sheet);
 }
 
 void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet) {
-  m_styleSheetsForStyleSheetList.append(sheet);
+  if (m_styleSheetsForStyleSheetList) {
+    m_styleSheetsForStyleSheetList->append(sheet);
+  } else {
+    m_collection->appendSheetForList(sheet);
+  }
 }
 
 ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(
     StyleSheetCollection& collection)
-    : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList,
-                                  collection.m_activeAuthorStyleSheets,
-                                  m_visitedDocuments) {}
+    : DocumentStyleSheetCollector(&collection, nullptr, &m_visitedDocuments) {}
 
 ImportedDocumentStyleSheetCollector::ImportedDocumentStyleSheetCollector(
     DocumentStyleSheetCollector& collector,
     HeapVector<Member<StyleSheet>>& sheetForList)
-    : DocumentStyleSheetCollector(sheetForList,
-                                  collector.m_activeAuthorStyleSheets,
+    : DocumentStyleSheetCollector(collector.m_collection,
+                                  &sheetForList,
                                   collector.m_visitedDocuments) {}
 
 }  // namespace blink

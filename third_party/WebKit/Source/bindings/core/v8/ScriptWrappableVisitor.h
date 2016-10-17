@@ -323,5 +323,59 @@ class TraceWrapperMember : public Member<T> {
    */
   void* m_parent;
 };
+
+/**
+ * Swaps two HeapVectors specialized for TraceWrapperMember. The custom swap
+ * function is required as TraceWrapperMember contains ownership information
+ * which is not copyable but has to be explicitly specified.
+ */
+template <typename T>
+void swap(HeapVector<TraceWrapperMember<T>>& a,
+          HeapVector<TraceWrapperMember<T>>& b,
+          void* parentForA,
+          void* parentForB) {
+  HeapVector<TraceWrapperMember<T>> temp;
+  temp.reserveCapacity(a.size());
+  for (auto item : a) {
+    temp.append(TraceWrapperMember<T>(parentForB, item.get()));
+  }
+  a.clear();
+  a.reserveCapacity(b.size());
+  for (auto item : b) {
+    a.append(TraceWrapperMember<T>(parentForA, item.get()));
+  }
+  b.clear();
+  b.reserveCapacity(temp.size());
+  for (auto item : temp) {
+    b.append(TraceWrapperMember<T>(parentForB, item.get()));
+  }
+}
+
+/**
+ * Swaps two HeapVectors, one containing TraceWrapperMember and one with
+ * regular Members. The custom swap function is required as
+ * TraceWrapperMember contains ownership information which is not copyable
+ * but has to be explicitly specified.
+ */
+template <typename T>
+void swap(HeapVector<TraceWrapperMember<T>>& a,
+          HeapVector<Member<T>>& b,
+          void* parentForA) {
+  HeapVector<TraceWrapperMember<T>> temp;
+  temp.reserveCapacity(a.size());
+  for (auto item : a) {
+    temp.append(TraceWrapperMember<T>(nullptr, item.get()));
+  }
+  a.clear();
+  a.reserveCapacity(b.size());
+  for (auto item : b) {
+    a.append(TraceWrapperMember<T>(parentForA, item.get()));
+  }
+  b.clear();
+  b.reserveCapacity(temp.size());
+  for (auto item : temp) {
+    b.append(item.get());
+  }
+}
 }
 #endif

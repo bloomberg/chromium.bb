@@ -57,7 +57,7 @@ class StyleSheetList final : public GarbageCollected<StyleSheetList>,
 
  private:
   explicit StyleSheetList(TreeScope*);
-  const HeapVector<Member<StyleSheet>>& styleSheets() const;
+  const HeapVector<TraceWrapperMember<StyleSheet>>& styleSheets() const;
 
   Member<TreeScope> m_treeScope;
 };

@@ -30,6 +30,7 @@
 #ifndef StyleSheetCollection_h
 #define StyleSheetCollection_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
@@ -53,23 +54,26 @@ class CORE_EXPORT StyleSheetCollection
   const HeapVector<Member<CSSStyleSheet>>& activeAuthorStyleSheets() const {
     return m_activeAuthorStyleSheets;
   }
-  const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList() const {
+  const HeapVector<TraceWrapperMember<StyleSheet>>&
+  styleSheetsForStyleSheetList() const {
     return m_styleSheetsForStyleSheetList;
   }
 
   void swap(StyleSheetCollection&);
   void swapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
   void appendActiveStyleSheet(CSSStyleSheet*);
+  void appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
   void appendSheetForList(StyleSheet*);
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   void dispose();
 
  protected:
   StyleSheetCollection();
 
-  HeapVector<Member<StyleSheet>> m_styleSheetsForStyleSheetList;
+  HeapVector<TraceWrapperMember<StyleSheet>> m_styleSheetsForStyleSheetList;
   HeapVector<Member<CSSStyleSheet>> m_activeAuthorStyleSheets;
 };
 

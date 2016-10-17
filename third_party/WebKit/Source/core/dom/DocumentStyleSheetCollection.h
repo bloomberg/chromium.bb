@@ -55,8 +55,6 @@ class DocumentStyleSheetCollection final
     TreeScopeStyleSheetCollection::trace(visitor);
   }
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
-
  private:
   explicit DocumentStyleSheetCollection(TreeScope&);
 
