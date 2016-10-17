@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/scheduler/base/enqueue_order.h"
+#include "platform/scheduler/base/intrusive_heap.h"
 #include "public/platform/scheduler/base/task_queue.h"
 
 namespace blink {
@@ -178,6 +179,22 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // TimeDomain. Must be called from the main thread.
   void WakeUpForDelayedWork(LazyNow* lazy_now);
 
+  base::TimeTicks scheduled_time_domain_wakeup() const {
+    return main_thread_only().scheduled_time_domain_wakeup;
+  }
+
+  void set_scheduled_time_domain_wakeup(
+      base::TimeTicks scheduled_time_domain_wakeup) {
+    main_thread_only().scheduled_time_domain_wakeup =
+        scheduled_time_domain_wakeup;
+  }
+
+  HeapHandle heap_handle() const { return main_thread_only().heap_handle; }
+
+  void set_heap_handle(HeapHandle heap_handle) {
+    main_thread_only().heap_handle = heap_handle;
+  }
+
  private:
   friend class WorkQueue;
   friend class WorkQueueTest;
@@ -216,9 +233,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     std::priority_queue<Task> delayed_incoming_queue;
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;
+    HeapHandle heap_handle;
     bool is_enabled;
     base::trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
+    base::TimeTicks scheduled_time_domain_wakeup;
   };
 
   ~TaskQueueImpl() override;

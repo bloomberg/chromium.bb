@@ -5,59 +5,52 @@
 #include "platform/scheduler/base/work_queue_sets.h"
 
 #include "base/logging.h"
-#include "platform/scheduler/base/work_queue.h"
 
 namespace blink {
 namespace scheduler {
 namespace internal {
 
 WorkQueueSets::WorkQueueSets(size_t num_sets, const char* name)
-    : enqueue_order_to_work_queue_maps_(num_sets), name_(name) {}
+    : work_queue_heaps_(num_sets), name_(name) {}
 
 WorkQueueSets::~WorkQueueSets() {}
 
 void WorkQueueSets::AddQueue(WorkQueue* work_queue, size_t set_index) {
   DCHECK(!work_queue->work_queue_sets());
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
+  DCHECK_LT(set_index, work_queue_heaps_.size());
   EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   work_queue->AssignToWorkQueueSets(this);
   work_queue->AssignSetIndex(set_index);
   if (!has_enqueue_order)
     return;
-  enqueue_order_to_work_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, work_queue));
+  work_queue_heaps_[set_index].insert({enqueue_order, work_queue});
 }
 
 void WorkQueueSets::RemoveQueue(WorkQueue* work_queue) {
   DCHECK_EQ(this, work_queue->work_queue_sets());
-  EnqueueOrder enqueue_order;
-  bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   work_queue->AssignToWorkQueueSets(nullptr);
-  if (!has_enqueue_order)
+  HeapHandle heap_handle = work_queue->heap_handle();
+  if (!heap_handle.IsValid())
     return;
   size_t set_index = work_queue->work_queue_set_index();
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
-  DCHECK_EQ(
-      work_queue,
-      enqueue_order_to_work_queue_maps_[set_index].find(enqueue_order)->second);
-  enqueue_order_to_work_queue_maps_[set_index].erase(enqueue_order);
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  work_queue_heaps_[set_index].erase(heap_handle);
 }
 
 void WorkQueueSets::ChangeSetIndex(WorkQueue* work_queue, size_t set_index) {
   DCHECK_EQ(this, work_queue->work_queue_sets());
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
+  DCHECK_LT(set_index, work_queue_heaps_.size());
   EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   size_t old_set = work_queue->work_queue_set_index();
-  DCHECK_LT(old_set, enqueue_order_to_work_queue_maps_.size());
+  DCHECK_LT(old_set, work_queue_heaps_.size());
   DCHECK_NE(old_set, set_index);
   work_queue->AssignSetIndex(set_index);
   if (!has_enqueue_order)
     return;
-  enqueue_order_to_work_queue_maps_[old_set].erase(enqueue_order);
-  enqueue_order_to_work_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, work_queue));
+  work_queue_heaps_[old_set].erase(work_queue->heap_handle());
+  work_queue_heaps_[set_index].insert({enqueue_order, work_queue});
 }
 
 void WorkQueueSets::OnPushQueue(WorkQueue* work_queue) {
@@ -68,55 +61,40 @@ void WorkQueueSets::OnPushQueue(WorkQueue* work_queue) {
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
   DCHECK(has_enqueue_order);
   size_t set_index = work_queue->work_queue_set_index();
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size())
-      << " set_index = " << set_index;
-  enqueue_order_to_work_queue_maps_[set_index].insert(
-      std::make_pair(enqueue_order, work_queue));
+  DCHECK_LT(set_index, work_queue_heaps_.size()) << " set_index = "
+                                                 << set_index;
+  work_queue_heaps_[set_index].insert({enqueue_order, work_queue});
 }
 
 void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
   // Assume that |work_queue| contains the lowest enqueue_order.
   size_t set_index = work_queue->work_queue_set_index();
   DCHECK_EQ(this, work_queue->work_queue_sets());
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
-  DCHECK(!enqueue_order_to_work_queue_maps_[set_index].empty())
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  DCHECK(!work_queue_heaps_[set_index].empty()) << " set_index = " << set_index;
+  DCHECK_EQ(work_queue_heaps_[set_index].min().value, work_queue)
       << " set_index = " << set_index;
-  DCHECK_EQ(enqueue_order_to_work_queue_maps_[set_index].begin()->second,
-            work_queue)
-      << " set_index = " << set_index;
-  EnqueueOrderToWorkQueueMap::iterator old_it =
-      enqueue_order_to_work_queue_maps_[set_index].begin();
   EnqueueOrder enqueue_order;
   if (work_queue->GetFrontTaskEnqueueOrder(&enqueue_order)) {
-    // Amortized O(1) if the new location is close to |old_it|, otherwise
-    // O(log n).
-    enqueue_order_to_work_queue_maps_[set_index].insert(
-        std::make_pair(enqueue_order, work_queue));
+    work_queue_heaps_[set_index].ReplaceMin({enqueue_order, work_queue});
+  } else {
+    work_queue_heaps_[set_index].pop();
   }
-  // O(1)
-  enqueue_order_to_work_queue_maps_[set_index].erase(old_it);
 }
 
 bool WorkQueueSets::GetOldestQueueInSet(size_t set_index,
                                         WorkQueue** out_work_queue) const {
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size());
-  if (enqueue_order_to_work_queue_maps_[set_index].empty())
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  if (work_queue_heaps_[set_index].empty())
     return false;
-  *out_work_queue =
-      enqueue_order_to_work_queue_maps_[set_index].begin()->second;
-#ifndef NDEBUG
-  EnqueueOrder enqueue_order;
-  DCHECK((*out_work_queue)->GetFrontTaskEnqueueOrder(&enqueue_order));
-  DCHECK_EQ(enqueue_order,
-            enqueue_order_to_work_queue_maps_[set_index].begin()->first);
-#endif
+  *out_work_queue = work_queue_heaps_[set_index].min().value;
   return true;
 }
 
 bool WorkQueueSets::IsSetEmpty(size_t set_index) const {
-  DCHECK_LT(set_index, enqueue_order_to_work_queue_maps_.size())
-      << " set_index = " << set_index;
-  return enqueue_order_to_work_queue_maps_[set_index].empty();
+  DCHECK_LT(set_index, work_queue_heaps_.size()) << " set_index = "
+                                                 << set_index;
+  return work_queue_heaps_[set_index].empty();
 }
 
 #if DCHECK_IS_ON() || !defined(NDEBUG)
@@ -125,12 +103,11 @@ bool WorkQueueSets::ContainsWorkQueueForTest(
   EnqueueOrder enqueue_order;
   bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
 
-  for (const EnqueueOrderToWorkQueueMap& map :
-       enqueue_order_to_work_queue_maps_) {
-    for (const EnqueueOrderToWorkQueueMap::value_type& key_value_pair : map) {
-      if (key_value_pair.second == work_queue) {
+  for (const IntrusiveHeap<OldestTaskEnqueueOrder>& heap : work_queue_heaps_) {
+    for (const OldestTaskEnqueueOrder& heap_value_pair : heap) {
+      if (heap_value_pair.value == work_queue) {
         DCHECK(has_enqueue_order);
-        DCHECK_EQ(key_value_pair.first, enqueue_order);
+        DCHECK_EQ(heap_value_pair.key, enqueue_order);
         DCHECK_EQ(this, work_queue->work_queue_sets());
         return true;
       }
