@@ -1318,6 +1318,15 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         chromedriver.UnknownError, "some error",
         self._driver.ExecuteScript, 'throw new Error("some error")')
 
+  def testDoesntCrashWhenScriptLogsUndefinedValue(self):
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1547
+    self._driver.ExecuteScript('var b; console.log(b);')
+
+  def testDoesntThrowWhenPageLogsUndefinedValue(self):
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1547
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/log_undefined_value.html'))
+
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 

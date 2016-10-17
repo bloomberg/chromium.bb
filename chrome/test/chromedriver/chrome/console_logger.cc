@@ -209,7 +209,10 @@ Status ConsoleLogger::OnRuntimeConsoleApiCalled(
       args->GetSize() < 1 ||
       !args->GetDictionary(0, &first_arg))
     return Status(kUnknownError, "missing or invalid args");
-  if (!first_arg->GetString("description", &text)) {
+  std::string arg_type;
+  if (first_arg->GetString("type", &arg_type) && arg_type == "undefined") {
+    text = "undefined";
+  } else if (!first_arg->GetString("description", &text)) {
     const base::Value* value = nullptr;
     if (!first_arg->Get("value", &value))
       return Status(kUnknownError, "missing or invalid arg value");
