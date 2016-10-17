@@ -36,7 +36,7 @@ Polymer({
 
   /** @private */
   closePopupMenu_: function() {
-    this.$$('iron-dropdown').close();
+    this.$$('dialog[is=settings-action-menu]').close();
   },
 
   /**
@@ -46,5 +46,12 @@ Polymer({
    */
   getIconSet_: function(url) {
     return cr.icon.getFavicon(url);
+  },
+
+  /** @private */
+  onDotsTap_: function() {
+    /** @type {!SettingsActionMenuElement} */ (
+        this.$$('dialog[is=settings-action-menu]')).showAt(
+            assert(this.$$('paper-icon-button')));
   },
 });

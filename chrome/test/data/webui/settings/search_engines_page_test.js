@@ -336,6 +336,9 @@ cr.define('settings_search_engines_page', function() {
         entry = document.createElement('settings-omnibox-extension-entry');
         entry.set('engine', createSampleOmniboxExtension());
         document.body.appendChild(entry);
+
+        // Open action menu.
+        MockInteractions.tap(entry.$$('paper-icon-button'));
       });
 
       teardown(function() { entry.remove(); });
