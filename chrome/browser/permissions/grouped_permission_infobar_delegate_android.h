@@ -13,6 +13,7 @@
 
 class GURL;
 class InfoBarService;
+class PermissionRequest;
 
 // An InfoBar that displays a group of permission requests, each of which can be
 // allowed or blocked independently.
@@ -25,11 +26,11 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   static infobars::InfoBar* Create(
       InfoBarService* infobar_service,
       const GURL& requesting_origin,
-      const std::vector<ContentSettingsType>& types);
+      const std::vector<PermissionRequest*>& requests);
 
   bool persist() const { return persist_; }
   void set_persist(bool persist) { persist_ = persist; }
-  size_t permission_count() const { return types_.size(); }
+  size_t permission_count() const { return requests_.size(); }
 
   // Returns true if the infobar should display a toggle to allow users to
   // opt-out of persisting their accept/deny decision.
@@ -53,7 +54,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   GroupedPermissionInfoBarDelegate(
       const GURL& requesting_origin,
-      const std::vector<ContentSettingsType>& types);
+      const std::vector<PermissionRequest*>& requests);
 
   // ConfirmInfoBarDelegate:
   InfoBarIdentifier GetIdentifier() const override;
@@ -62,7 +63,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetButtonLabel(InfoBarButton button) const override;
 
   const GURL requesting_origin_;
-  const std::vector<ContentSettingsType> types_;
+  const std::vector<PermissionRequest*> requests_;
   std::vector<bool> accept_states_;
   // Whether the accept/deny decision is persisted.
   bool persist_;

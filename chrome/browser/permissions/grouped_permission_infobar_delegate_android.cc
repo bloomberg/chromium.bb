@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,10 +23,10 @@ GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {}
 infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const GURL& requesting_origin,
-    const std::vector<ContentSettingsType>& types) {
+    const std::vector<PermissionRequest*>& requests) {
   return infobar_service->AddInfoBar(
       base::MakeUnique<GroupedPermissionInfoBar>(base::WrapUnique(
-          new GroupedPermissionInfoBarDelegate(requesting_origin, types))));
+          new GroupedPermissionInfoBarDelegate(requesting_origin, requests))));
 }
 
 bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
@@ -34,37 +35,25 @@ bool GroupedPermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
 
 ContentSettingsType GroupedPermissionInfoBarDelegate::GetContentSettingType(
     size_t position) const {
-  DCHECK_LT(position, types_.size());
-  return types_[position];
+  DCHECK_LT(position, requests_.size());
+  return requests_[position]->GetContentSettingsType();
 }
 
 int GroupedPermissionInfoBarDelegate::GetIconIdForPermission(
     size_t position) const {
-  DCHECK_LT(position, types_.size());
-  ContentSettingsType type = types_[position];
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-    return IDR_INFOBAR_MEDIA_STREAM_MIC;
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
-    return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
-
-  return IDR_ANDROID_INFOBAR_WARNING;
+  DCHECK_LT(position, requests_.size());
+  return requests_[position]->GetIconId();
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageTextFragment(
     size_t position) const {
-  DCHECK_LT(position, types_.size());
-  ContentSettingsType type = types_[position];
-
-  const bool is_mic = (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-  DCHECK(is_mic || (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
-  return l10n_util::GetStringUTF16(
-      is_mic ? IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT
-             : IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT);
+  DCHECK_LT(position, requests_.size());
+  return requests_[position]->GetMessageTextFragment();
 }
 
 void GroupedPermissionInfoBarDelegate::ToggleAccept(size_t position,
                                                     bool new_value) {
-  DCHECK_LT(position, types_.size());
+  DCHECK_LT(position, requests_.size());
   accept_states_[position] = new_value;
 }
 
@@ -75,16 +64,16 @@ base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
 }
 
 bool GroupedPermissionInfoBarDelegate::GetAcceptState(size_t position) {
-  DCHECK_LT(position, types_.size());
+  DCHECK_LT(position, requests_.size());
   return accept_states_[position];
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     const GURL& requesting_origin,
-    const std::vector<ContentSettingsType>& types)
+    const std::vector<PermissionRequest*>& requests)
     : requesting_origin_(requesting_origin),
-      types_(types),
-      accept_states_(types_.size(), true),
+      requests_(requests),
+      accept_states_(requests_.size(), true),
       persist_(true) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier

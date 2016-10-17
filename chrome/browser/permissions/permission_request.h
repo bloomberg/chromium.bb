@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
@@ -110,6 +111,10 @@ class PermissionRequest {
   // To keep things simple this metric is only recorded for the most popular
   // request types.
   virtual PermissionRequestGestureType GetGestureType() const;
+
+  // Used on Android to determine what Android OS permissions are needed for
+  // this permission request.
+  virtual ContentSettingsType GetContentSettingsType() const;
 
   void set_persist(bool persist) { persist_ = persist; }
 

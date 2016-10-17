@@ -49,6 +49,7 @@ class PermissionRequestImpl : public PermissionRequest {
   bool ShouldShowPersistenceToggle() const override;
   PermissionRequestType GetPermissionRequestType() const override;
   PermissionRequestGestureType GetGestureType() const override;
+  ContentSettingsType GetContentSettingsType() const override;
 
   GURL request_origin_;
   content::PermissionType permission_type_;

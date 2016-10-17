@@ -19,3 +19,7 @@ PermissionRequestType PermissionRequest::GetPermissionRequestType() const {
 PermissionRequestGestureType PermissionRequest::GetGestureType() const {
   return PermissionRequestGestureType::UNKNOWN;
 }
+
+ContentSettingsType PermissionRequest::GetContentSettingsType() const {
+  return CONTENT_SETTINGS_TYPE_DEFAULT;
+}

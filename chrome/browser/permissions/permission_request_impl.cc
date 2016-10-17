@@ -150,3 +150,26 @@ PermissionRequestGestureType PermissionRequestImpl::GetGestureType()
   return has_gesture_ ? PermissionRequestGestureType::GESTURE
                       : PermissionRequestGestureType::NO_GESTURE;
 }
+
+ContentSettingsType PermissionRequestImpl::GetContentSettingsType() const {
+  switch (permission_type_) {
+    case content::PermissionType::GEOLOCATION:
+      return CONTENT_SETTINGS_TYPE_GEOLOCATION;
+    case content::PermissionType::PUSH_MESSAGING:
+#if defined(ENABLE_NOTIFICATIONS)
+    case content::PermissionType::NOTIFICATIONS:
+#endif
+      return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+    case content::PermissionType::MIDI_SYSEX:
+      return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+#if defined(OS_CHROMEOS)
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
+#endif
+    case content::PermissionType::FLASH:
+      return CONTENT_SETTINGS_TYPE_PLUGINS;
+    default:
+      NOTREACHED();
+      return CONTENT_SETTINGS_TYPE_DEFAULT;
+  }
+}
