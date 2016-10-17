@@ -230,6 +230,10 @@ read_mode (yaml_parser_t *parser) {
       mode |= otherTrans;
     } else if (!strcmp(event.data.scalar.value, "ucBrl")) {
       mode |= ucBrl;
+    } else if (!strcmp(event.data.scalar.value, "noUndefinedDots")) {
+      mode |= noUndefinedDots;
+    } else if (!strcmp(event.data.scalar.value, "partialTrans")) {
+      mode |= partialTrans;
     } else {
       error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Mode '%s' not supported\n", event.data.scalar.value);
