@@ -33,8 +33,6 @@ class MediaControlsWindowEventListener final : public EventListener {
 
   void handleEvent(ExecutionContext*, Event*) override;
 
-  void handleClickEvent();
-
   LocalDOMWindow* getLocalDOMWindow() const;
 
   Member<MediaControls> m_mediaControls;
