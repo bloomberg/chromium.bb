@@ -29,13 +29,6 @@
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif  // defined(USE_AURA) || defined(OS_MACOSX)
 
-// http://crbug.com/145639
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_TabEvents DISABLED_TabEvents
-#else
-#define MAYBE_TabEvents TabEvents
-#endif
-
 class ExtensionApiNewTabTest : public ExtensionApiTest {
  public:
   ExtensionApiNewTabTest() {}
@@ -111,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabMove) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabEvents) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
 }
 
