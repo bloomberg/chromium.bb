@@ -261,10 +261,11 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     if (!delegate_->IsNested() && task_start_time != base::TimeTicks()) {
       // Only report top level task durations.
       base::TimeTicks task_end_time = lazy_now.Now();
-      FOR_EACH_OBSERVER(
-          TaskTimeObserver, task_time_observers_,
-          ReportTaskTime(task_queue, MonotonicTimeInSeconds(task_start_time),
-                         MonotonicTimeInSeconds(task_end_time)));
+      for (auto& observer : task_time_observers_) {
+        observer.ReportTaskTime(task_queue,
+                                MonotonicTimeInSeconds(task_start_time),
+                                MonotonicTimeInSeconds(task_end_time));
+      }
       task_start_time = task_end_time;
     }
 
@@ -342,8 +343,8 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
                        pending_task);
   if (queue->GetShouldNotifyObservers()) {
-    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                      WillProcessTask(pending_task));
+    for (auto& observer : task_observers_)
+      observer.WillProcessTask(pending_task);
     queue->NotifyWillProcessTask(pending_task);
   }
   TRACE_EVENT1(tracing_category_, "TaskQueueManager::RunTask", "queue",
@@ -363,8 +364,8 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   currently_executing_task_queue_ = prev_executing_task_queue;
 
   if (queue->GetShouldNotifyObservers()) {
-    FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
-                      DidProcessTask(pending_task));
+    for (auto& observer : task_observers_)
+      observer.DidProcessTask(pending_task);
     queue->NotifyDidProcessTask(pending_task);
   }
 

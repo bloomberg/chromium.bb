@@ -518,17 +518,15 @@ void TaskQueueImpl::NotifyWillProcessTask(
   DCHECK(should_notify_observers_);
   if (main_thread_only().blame_context)
     main_thread_only().blame_context->Enter();
-  FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver,
-                    main_thread_only().task_observers,
-                    WillProcessTask(pending_task));
+  for (auto& observer : main_thread_only().task_observers)
+    observer.WillProcessTask(pending_task);
 }
 
 void TaskQueueImpl::NotifyDidProcessTask(
     const base::PendingTask& pending_task) {
   DCHECK(should_notify_observers_);
-  FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver,
-                    main_thread_only().task_observers,
-                    DidProcessTask(pending_task));
+  for (auto& observer : main_thread_only().task_observers)
+    observer.DidProcessTask(pending_task);
   if (main_thread_only().blame_context)
     main_thread_only().blame_context->Leave();
 }
