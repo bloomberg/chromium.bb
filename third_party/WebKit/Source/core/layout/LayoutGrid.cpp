@@ -464,7 +464,7 @@ void LayoutGrid::repeatTracksSizingIfNeeded(GridSizingData& sizingData,
   // all the cases with orthogonal flows require this extra cycle; we need a
   // more specific condition to detect whether child's min-content contribution
   // has changed or not.
-  if (!m_orthogonalChildren.isEmpty()) {
+  if (m_hasAnyOrthogonalChildren) {
     computeTrackSizesForDefiniteSize(ForColumns, sizingData,
                                      availableSpaceForColumns);
     computeTrackSizesForDefiniteSize(ForRows, sizingData,
@@ -492,13 +492,9 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
     // computed again in the updateLogicalWidth call bellow.
     if (sizesLogicalWidthToFitContent(styleRef().logicalWidth()) ||
         styleRef().logicalWidth().isIntrinsicOrAuto()) {
-      // We do cache orthogonal items during the placeItemsOnGrid call, which is
-      // executed later. However, we are
-      // only interested on running this logic when we are performing a
-      // relayout, hence we have already cached
-      // the orthogonal items.
-      for (auto* child : m_orthogonalChildren) {
-        if (child->isOutOfFlowPositioned())
+      for (auto* child = firstChildBox(); child;
+           child = child->nextInFlowSiblingBox()) {
+        if (child->isOutOfFlowPositioned() || !isOrthogonalChild(*child))
           continue;
         child->clearOverrideSize();
         child->clearContainingBlockOverrideSize();
@@ -1931,14 +1927,14 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
 
   Vector<LayoutBox*> autoMajorAxisAutoGridItems;
   Vector<LayoutBox*> specifiedMajorAxisAutoGridItems;
-  m_orthogonalChildren.shrink(0);
+  m_hasAnyOrthogonalChildren = false;
   for (LayoutBox* child = m_orderIterator.first(); child;
        child = m_orderIterator.next()) {
     if (child->isOutOfFlowPositioned())
       continue;
 
-    if (isOrthogonalChild(*child))
-      m_orthogonalChildren.append(child);
+    m_hasAnyOrthogonalChildren =
+        m_hasAnyOrthogonalChildren || isOrthogonalChild(*child);
 
     GridArea area = cachedGridArea(*child);
     if (!area.rows.isIndefinite())
