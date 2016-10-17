@@ -147,7 +147,7 @@ source_set("unit_tests") {
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common",
     "//components/strings",
-    "//components/sync:test_support_sync_driver",
+    "//components/sync:test_support_driver",
     "//components/sync_sessions",
     "//components/variations",
     "//net:test_support",

@@ -816,7 +816,7 @@ source_set("test_support") {
     "//components/signin/ios/browser",
     "//components/signin/ios/browser:test_support",
     "//components/sync",
-    "//components/sync:test_support_sync_driver",
+    "//components/sync:test_support_driver",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
     "//components/user_prefs",

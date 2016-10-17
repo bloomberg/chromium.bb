@@ -30,7 +30,8 @@ test("sync_listen_notifications") {
     ":common",
     "//base",
     "//components/invalidation/impl",
-    "//components/sync:test_support_sync_core",
+    "//components/sync",
+    "//components/sync:test_support_engine",
     "//jingle:notifier",
     "//net:test_support",
   ]
@@ -47,7 +48,8 @@ test("sync_client") {
     ":common",
     "//base",
     "//components/invalidation/impl",
-    "//components/sync:test_support_sync_core",
+    "//components/sync",
+    "//components/sync:test_support_engine",
     "//jingle:notifier",
     "//net:test_support",
   ]

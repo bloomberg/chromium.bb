@@ -22,22 +22,19 @@
 #include "components/sync/engine_impl/nudge_handler.h"
 
 namespace syncer {
+
+class CommitContributor;
+class DirectoryCommitContributor;
+class DirectoryTypeDebugInfoEmitter;
+class DirectoryUpdateHandler;
 class ModelTypeProcessor;
 class ModelTypeWorker;
+class UpdateHandler;
 struct ModelTypeState;
-}
-
-namespace syncer {
 
 namespace syncable {
 class Directory;
 }  // namespace syncable
-
-class CommitContributor;
-class DirectoryCommitContributor;
-class DirectoryUpdateHandler;
-class DirectoryTypeDebugInfoEmitter;
-class UpdateHandler;
 
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
 typedef std::map<ModelType, CommitContributor*> CommitContributorMap;

@@ -600,8 +600,7 @@ static_library("sync") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# TODO(maxbogue): Refactor the test support targets to remove core references.
-static_library("test_support_sync_core") {
+static_library("test_support_base") {
   testonly = true
   sources = [
     "base/fake_encryptor.cc",
@@ -612,13 +611,54 @@ static_library("test_support_sync_core") {
     "base/model_type_test_util.h",
     "base/test_unrecoverable_error_handler.cc",
     "base/test_unrecoverable_error_handler.h",
+    "js/js_test_util.cc",
+    "js/js_test_util.h",
+    "test/callback_counter.h",
+    "test/mock_invalidation.cc",
+    "test/mock_invalidation.h",
+    "test/mock_invalidation_tracker.cc",
+    "test/mock_invalidation_tracker.h",
+    "test/trackable_mock_invalidation.cc",
+    "test/trackable_mock_invalidation.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  deps = [
+    ":sync",
+  ]
+
+  defines = [ "SYNC_TEST" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+static_library("test_support_engine") {
+  testonly = true
+  sources = [
+    "engine/fake_model_type_connector.cc",
+    "engine/fake_model_type_connector.h",
+    "engine/fake_model_type_processor.cc",
+    "engine/fake_model_type_processor.h",
+    "engine/fake_sync_manager.cc",
+    "engine/fake_sync_manager.h",
+    "engine/sync_manager_factory_for_profile_sync_test.cc",
+    "engine/sync_manager_factory_for_profile_sync_test.h",
+    "engine/test_engine_components_factory.cc",
+    "engine/test_engine_components_factory.h",
     "engine_impl/cycle/mock_debug_info_getter.cc",
     "engine_impl/cycle/mock_debug_info_getter.h",
     "engine_impl/cycle/test_util.cc",
     "engine_impl/cycle/test_util.h",
-    "js/js_test_util.cc",
-    "js/js_test_util.h",
-    "test/callback_counter.h",
+    "engine_impl/sync_manager_for_profile_sync_test.cc",
+    "engine_impl/sync_manager_for_profile_sync_test.h",
+    "engine_impl/test_entry_factory.cc",
+    "engine_impl/test_entry_factory.h",
+    "syncable/test_user_share.cc",
+    "syncable/test_user_share.h",
     "test/directory_backing_store_corruption_testing.cc",
     "test/directory_backing_store_corruption_testing.h",
     "test/engine/fake_model_worker.cc",
@@ -644,10 +684,6 @@ static_library("test_support_sync_core") {
     "test/engine/test_syncable_utils.h",
     "test/fake_sync_encryption_handler.cc",
     "test/fake_sync_encryption_handler.h",
-    "test/mock_invalidation.cc",
-    "test/mock_invalidation.h",
-    "test/mock_invalidation_tracker.cc",
-    "test/mock_invalidation_tracker.h",
     "test/null_directory_change_delegate.cc",
     "test/null_directory_change_delegate.h",
     "test/null_transaction_observer.cc",
@@ -656,61 +692,25 @@ static_library("test_support_sync_core") {
     "test/test_directory_backing_store.h",
     "test/test_transaction_observer.cc",
     "test/test_transaction_observer.h",
-    "test/trackable_mock_invalidation.cc",
-    "test/trackable_mock_invalidation.h",
   ]
 
   public_deps = [
-    "//base",
-    "//components/sync",
-    "//testing/gmock",
-    "//testing/gtest",
+    ":test_support_base",
+  ]
+
+  deps = [
+    ":sync",
   ]
 
   defines = [ "SYNC_TEST" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-# TODO(maxbogue): Refactor the test support targets to remove core references.
-static_library("test_support_sync_core_impl") {
+static_library("test_support_model") {
   testonly = true
   sources = [
-    "engine/fake_model_type_connector.cc",
-    "engine/fake_model_type_connector.h",
-    "engine/fake_model_type_processor.cc",
-    "engine/fake_model_type_processor.h",
-    "engine/fake_sync_manager.cc",
-    "engine/fake_sync_manager.h",
-    "engine/sync_manager_factory_for_profile_sync_test.cc",
-    "engine/sync_manager_factory_for_profile_sync_test.h",
-    "engine/test_engine_components_factory.cc",
-    "engine/test_engine_components_factory.h",
-    "engine_impl/sync_manager_for_profile_sync_test.cc",
-    "engine_impl/sync_manager_for_profile_sync_test.h",
-    "engine_impl/test_entry_factory.cc",
-    "engine_impl/test_entry_factory.h",
     "model/data_type_error_handler_mock.cc",
     "model/data_type_error_handler_mock.h",
-    "model/model_type_store_test_util.cc",
-    "model/model_type_store_test_util.h",
-    "syncable/test_user_share.cc",
-    "syncable/test_user_share.h",
-  ]
-
-  public_deps = [
-    ":test_support_sync_core",
-    "//base",
-    "//components/sync",
-    "//testing/gtest",
-  ]
-
-  defines = [ "SYNC_TEST" ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
-static_library("test_support_sync_model") {
-  testonly = true
-  sources = [
     "model/fake_model_type_change_processor.cc",
     "model/fake_model_type_change_processor.h",
     "model/fake_model_type_service.cc",
@@ -721,6 +721,8 @@ static_library("test_support_sync_model") {
     "model/fake_syncable_service.h",
     "model/mock_model_type_store.cc",
     "model/mock_model_type_store.h",
+    "model/model_type_store_test_util.cc",
+    "model/model_type_store_test_util.h",
     "model/stub_model_type_service.cc",
     "model/stub_model_type_service.h",
     "model/sync_change_processor_wrapper_for_test.cc",
@@ -732,14 +734,15 @@ static_library("test_support_sync_model") {
   defines = [ "SYNC_TEST" ]
 
   public_deps = [
-    "//base",
-    "//components/sync",
-    "//testing/gmock",
-    "//testing/gtest",
+    ":test_support_base",
+  ]
+
+  deps = [
+    ":sync",
   ]
 }
 
-static_library("test_support_sync_driver") {
+static_library("test_support_driver") {
   testonly = true
   sources = [
     "device_info/local_device_info_provider_mock.cc",
@@ -771,17 +774,15 @@ static_library("test_support_sync_driver") {
   ]
 
   public_deps = [
-    "//components/sync",
+    ":test_support_base",
   ]
 
   deps = [
-    ":test_support_sync_core_impl",
-    "//base",
+    ":sync",
+    ":test_support_engine",
     "//components/syncable_prefs:test_support",
     "//components/version_info",
     "//google_apis",
-    "//testing/gmock",
-    "//testing/gtest",
   ]
 }
 
@@ -909,10 +910,11 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":test_support_sync_core",
-    ":test_support_sync_core_impl",
-    ":test_support_sync_driver",
-    ":test_support_sync_model",
+    ":sync",
+    ":test_support_base",
+    ":test_support_driver",
+    ":test_support_engine",
+    ":test_support_model",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",
@@ -920,7 +922,6 @@ source_set("unit_tests") {
     "//components/pref_registry:test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",
-    "//components/sync",
     "//components/sync/engine_impl/attachments/proto",
     "//components/syncable_prefs",
     "//components/syncable_prefs:test_support",
@@ -958,7 +959,7 @@ source_set("unit_tests") {
   defines = [ "SYNC_TEST" ]
 }
 
-static_library("test_support_sync_fake_server") {
+static_library("test_support_fake_server") {
   testonly = true
   sources = [
     "test/fake_server/bookmark_entity.cc",
@@ -988,8 +989,8 @@ static_library("test_support_sync_fake_server") {
   ]
 
   deps = [
+    ":sync",
     "//base",
-    "//components/sync",
     "//net",
     "//testing/gtest",
     "//url",
@@ -1002,7 +1003,7 @@ static_library("test_support_sync_fake_server") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-static_library("test_support_sync_testserver") {
+static_library("test_support_testserver") {
   testonly = true
   sources = [
     "test/local_sync_test_server.cc",
@@ -1031,7 +1032,7 @@ if (!is_ios) {
     ]
 
     deps = [
-      ":test_support_sync_testserver",
+      ":test_support_testserver",
       "//base",
       "//base/test:test_support",
       "//build/config/sanitizers:deps",
@@ -1053,26 +1054,26 @@ if (is_android) {
     ]
   }
 
-  _test_support_sync_prepared_protos_dir =
-      "$root_gen_dir/test_support_sync_proto_java_prepare/"
-  action("test_support_sync_proto_java_prepare") {
+  _test_support_prepared_protos_dir =
+      "$root_gen_dir/test_support_proto_java_prepare/"
+  action("test_support_proto_java_prepare") {
     script = "//components/sync/protocol/prepare_protos_for_java_tests.py"
     inputs = sync_protocol_sources
     outputs = process_file_template(
             sync_protocol_sources,
-            [ "$_test_support_sync_prepared_protos_dir/{{source_file_part}}" ])
+            [ "$_test_support_prepared_protos_dir/{{source_file_part}}" ])
     args = [
       "--output_dir",
-      rebase_path(_test_support_sync_prepared_protos_dir, root_build_dir),
+      rebase_path(_test_support_prepared_protos_dir, root_build_dir),
     ]
     args += rebase_path(sync_protocol_sources, root_build_dir)
   }
 
-  proto_java_library("test_support_sync_proto_java") {
-    proto_path = _test_support_sync_prepared_protos_dir
-    sources = get_target_outputs(":test_support_sync_proto_java_prepare")
+  proto_java_library("test_support_proto_java") {
+    proto_path = _test_support_prepared_protos_dir
+    sources = get_target_outputs(":test_support_proto_java_prepare")
     deps = [
-      ":test_support_sync_proto_java_prepare",
+      ":test_support_proto_java_prepare",
     ]
   }
 
@@ -1085,7 +1086,7 @@ if (is_android) {
     java_files = [ "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java" ]
   }
 
-  static_library("test_support_sync_fake_server_android") {
+  static_library("test_support_fake_server_android") {
     testonly = true
     sources = [
       "test/fake_server/android/fake_server_helper_android.cc",
@@ -1094,7 +1095,7 @@ if (is_android) {
     deps = [
       ":fake_server_jni",
       ":sync",
-      ":test_support_sync_fake_server",
+      ":test_support_fake_server",
       "//base",
       "//testing/gtest",
       "//url:url",

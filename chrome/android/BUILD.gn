@@ -630,7 +630,7 @@ shared_library("chrome_sync_shell") {
     "//build/config/sanitizers:deps",
     "//chrome:chrome_android_core",
     "//components/sync",
-    "//components/sync:test_support_sync_fake_server_android",
+    "//components/sync:test_support_fake_server_android",
   ]
 }
 
@@ -672,7 +672,7 @@ chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
     # This exists here because com.google.protobuf.nano is needed in tests,
     # but that code is stripped out via proguard. Adding this deps adds
     # usages and prevents removal of the proto code.
-    "//components/sync:test_support_sync_proto_java",
+    "//components/sync:test_support_proto_java",
   ]
 }
 
@@ -728,7 +728,7 @@ android_library("chrome_sync_shell_test_apk_java") {
     "//components/policy/android:policy_java",
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/sync:sync_java_test_support",
-    "//components/sync:test_support_sync_proto_java",
+    "//components/sync:test_support_proto_java",
     "//components/sync/android:sync_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",

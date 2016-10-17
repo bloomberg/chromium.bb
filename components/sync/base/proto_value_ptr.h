@@ -9,11 +9,9 @@
 #include "base/memory/ref_counted.h"
 
 namespace syncer {
-struct EntityData;
-class ProcessorEntityTracker;
-}  // namespace syncer
 
-namespace syncer {
+class ProcessorEntityTracker;
+struct EntityData;
 
 namespace syncable {
 struct EntryKernel;

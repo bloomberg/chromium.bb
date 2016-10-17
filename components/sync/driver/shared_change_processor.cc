@@ -18,10 +18,8 @@
 using base::AutoLock;
 
 namespace syncer {
-class AttachmentService;
-}  // namespace syncer
 
-namespace syncer {
+class AttachmentService;
 
 SharedChangeProcessor::SharedChangeProcessor(ModelType type)
     : disconnected_(false),

@@ -23,19 +23,14 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/simple_metadata_change_list.h"
 
-namespace syncer {
-class SyncError;
-}  // namespace syncer
-
-namespace syncer {
-class ModelTypeChangeProcessor;
-}  // namespace syncer
-
 namespace sync_pb {
 class DeviceInfoSpecifics;
 }  // namespace sync_pb
 
 namespace syncer {
+
+class ModelTypeChangeProcessor;
+class SyncError;
 
 // USS service implementation for DEVICE_INFO model type. Handles storage of
 // device info and associated sync metadata, applying/merging foreign changes,
