@@ -368,7 +368,6 @@ _COPY_PATHS_CHROME = (
     Path('resources/'),
     Path('resources.pak'),
     Path('xdg-settings'),
-    Path('*_manifest.json'),
     Path('*.png'),
 ) + _COPY_PATHS_COMMON
 
@@ -377,10 +376,16 @@ _COPY_PATHS_ENVOY = (
     Path('envoy_shell.pak'),
 ) + _COPY_PATHS_COMMON
 
+_COPY_PATHS_MASH = (
+    Path('Packages/', blacklist=(r'.*\.library$',)),
+    Path('*_manifest.json'),
+) + _COPY_PATHS_CHROME
+
 _COPY_PATHS_MAP = {
     'app_shell': _COPY_PATHS_APP_SHELL,
     'chrome': _COPY_PATHS_CHROME,
     'envoy': _COPY_PATHS_ENVOY,
+    'mash': _COPY_PATHS_MASH,
 }
 
 
@@ -396,7 +401,7 @@ def GetCopyPaths(deployment_type='chrome'):
 
   Args:
     deployment_type: String describing the deployment type. Either "app_shell",
-                     "chrome", or "envoy".
+                     "chrome", "envoy" or "mash".
 
   Returns:
     The list of paths to use as a filter for staging files.
