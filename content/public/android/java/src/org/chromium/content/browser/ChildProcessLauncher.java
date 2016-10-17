@@ -490,10 +490,6 @@ public class ChildProcessLauncher {
     // Manages oom bindings used to bind chind services.
     private static BindingManager sBindingManager = BindingManagerImpl.createBindingManager();
 
-    // Map from surface id to Surface.
-    private static Map<Integer, Surface> sViewSurfaceMap =
-            new ConcurrentHashMap<Integer, Surface>();
-
     // Map from surface texture id to Surface.
     private static Map<Pair<Integer, Integer>, Surface> sSurfaceTextureSurfaceMap =
             new ConcurrentHashMap<Pair<Integer, Integer>, Surface>();
@@ -510,32 +506,6 @@ public class ChildProcessLauncher {
     @CalledByNative
     private static boolean isOomProtected(int pid) {
         return sBindingManager.isOomProtected(pid);
-    }
-
-    @CalledByNative
-    private static void registerViewSurface(int surfaceId, Surface surface) {
-        if (!surface.isValid())
-            throw new RuntimeException("Attempting to register invalid Surface.");
-        sViewSurfaceMap.put(surfaceId, surface);
-    }
-
-    @CalledByNative
-    private static void unregisterViewSurface(int surfaceId) {
-        sViewSurfaceMap.remove(surfaceId);
-    }
-
-    @CalledByNative
-    private static Surface getViewSurface(int surfaceId) {
-        Surface surface = sViewSurfaceMap.get(surfaceId);
-        if (surface == null) {
-            Log.e(TAG, "Invalid surfaceId.");
-            return null;
-        }
-        if (!surface.isValid()) {
-            Log.e(TAG, "Requested surface is not valid.");
-            return null;
-        }
-        return surface;
     }
 
     private static void registerSurfaceTextureSurface(
@@ -894,7 +864,7 @@ public class ChildProcessLauncher {
                     Log.e(TAG, "Illegal callback for non-GPU process.");
                     return null;
                 }
-                Surface surface = ChildProcessLauncher.getViewSurface(surfaceId);
+                Surface surface = ChildProcessLauncher.nativeGetViewSurface(surfaceId);
                 if (surface == null) {
                     return null;
                 }
@@ -1029,4 +999,5 @@ public class ChildProcessLauncher {
     private static native void nativeCompleteScopedSurfaceRequest(
             long requestTokenHigh, long requestTokenLow, Surface surface);
     private static native boolean nativeIsSingleProcess();
+    private static native Surface nativeGetViewSurface(int surfaceId);
 }

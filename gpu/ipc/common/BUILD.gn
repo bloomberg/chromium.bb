@@ -173,3 +173,21 @@ source_set("struct_traits") {
     "//mojo/public/cpp/bindings:bindings",
   ]
 }
+
+if (is_mac || is_android) {
+  source_set("gpu_surface_tracker") {
+    sources = [
+      "gpu_surface_tracker.cc",
+      "gpu_surface_tracker.h",
+    ]
+
+    deps = [
+      "//gpu/ipc/common",
+      "//ui/gl",
+    ]
+
+    if (is_android) {
+      libs = [ "android" ]
+    }
+  }
+}

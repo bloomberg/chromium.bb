@@ -62,6 +62,11 @@ bool ScopedJavaSurface::IsEmpty() const {
   return j_surface_.is_null();
 }
 
+bool ScopedJavaSurface::IsValid() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return !IsEmpty() && JNI_Surface::Java_Surface_isValid(env, j_surface_);
+}
+
 // static
 ScopedJavaSurface ScopedJavaSurface::AcquireExternalSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();

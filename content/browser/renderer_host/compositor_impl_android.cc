@@ -49,10 +49,8 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 #include "components/display_compositor/gl_helper.h"
-#include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -64,6 +62,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -471,7 +470,7 @@ void CompositorImpl::SetSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_surface(env, surface);
 
-  GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
+  gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
 
   if (window_) {
     // Shut down GL context before unregistering surface.
@@ -479,7 +478,8 @@ void CompositorImpl::SetSurface(jobject surface) {
     tracker->RemoveSurface(surface_handle_);
     ANativeWindow_release(window_);
     window_ = NULL;
-    UnregisterViewSurface(surface_handle_);
+
+    tracker->UnregisterViewSurface(surface_handle_);
     surface_handle_ = gpu::kNullSurfaceHandle;
   }
 
@@ -497,7 +497,7 @@ void CompositorImpl::SetSurface(jobject surface) {
     ANativeWindow_acquire(window);
     surface_handle_ = tracker->AddSurfaceForNativeWidget(window);
     // Register first, SetVisible() might create a CompositorFrameSink.
-    RegisterViewSurface(surface_handle_, j_surface);
+    tracker->RegisterViewSurface(surface_handle_, j_surface);
     SetVisible(true);
     ANativeWindow_release(window);
   }

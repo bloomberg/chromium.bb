@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "jni/ChildProcessLauncher_jni.h"
 #include "media/base/android/media_player_android.h"
 #include "ui/gl/android/surface_texture.h"
@@ -213,25 +214,6 @@ void CompleteScopedSurfaceRequest(JNIEnv* env,
       gl::ScopedJavaSurface(jsurface));
 }
 
-void RegisterViewSurface(int surface_id, const JavaRef<jobject>& j_surface) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  Java_ChildProcessLauncher_registerViewSurface(env, surface_id, j_surface);
-}
-
-void UnregisterViewSurface(int surface_id) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  Java_ChildProcessLauncher_unregisterViewSurface(env, surface_id);
-}
-
-gl::ScopedJavaSurface GetViewSurface(int surface_id) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  return gl::ScopedJavaSurface::AcquireExternalSurface(
-      Java_ChildProcessLauncher_getViewSurface(env, surface_id).obj());
-}
-
 void CreateSurfaceTextureSurface(int surface_texture_id,
                                  int client_id,
                                  gl::SurfaceTexture* surface_texture) {
@@ -261,6 +243,14 @@ gl::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
 jboolean IsSingleProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess);
+}
+
+base::android::ScopedJavaLocalRef<jobject> GetViewSurface(JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    jint surface_id) {
+  gl::ScopedJavaSurface surface_view =
+      gpu::GpuSurfaceTracker::GetInstance()->AcquireJavaSurface(surface_id);
+  return base::android::ScopedJavaLocalRef<jobject>(surface_view.j_surface());
 }
 
 bool RegisterChildProcessLauncher(JNIEnv* env) {

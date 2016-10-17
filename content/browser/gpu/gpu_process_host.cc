@@ -90,7 +90,7 @@
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-#include "content/browser/gpu/gpu_surface_tracker.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
 #endif
 
 namespace content {
@@ -485,7 +485,7 @@ GpuProcessHost::~GpuProcessHost() {
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
-                           GpuSurfaceTracker::Get()->GetSurfaceCount());
+                           gpu::GpuSurfaceTracker::Get()->GetSurfaceCount());
 #endif
 
   std::string message;

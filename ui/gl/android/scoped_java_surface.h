@@ -43,6 +43,9 @@ class GL_EXPORT ScopedJavaSurface {
   // Checks whether the surface is an empty one.
   bool IsEmpty() const;
 
+  // Checks whether this object references a valid surface.
+  bool IsValid() const;
+
   // Checks whether the surface is hardware protected so that no readback is
   // possible.
   bool is_protected() const { return is_protected_; }

@@ -41,13 +41,6 @@ bool IsChildProcessOomProtected(base::ProcessHandle handle);
 void SetChildProcessInForeground(base::ProcessHandle handle,
                                  bool in_foreground);
 
-void RegisterViewSurface(int surface_id,
-                         const base::android::JavaRef<jobject>& j_surface);
-
-void UnregisterViewSurface(int surface_id);
-
-gl::ScopedJavaSurface GetViewSurface(int surface_id);
-
 void CreateSurfaceTextureSurface(int surface_texture_id,
                                  int client_id,
                                  gl::SurfaceTexture* surface_texture);

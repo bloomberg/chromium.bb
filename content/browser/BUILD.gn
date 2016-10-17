@@ -132,7 +132,6 @@ source_set("browser") {
     "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/snapshot",
-    "//ui/surface",
     "//ui/touch_selection",
   ]
 
@@ -628,8 +627,6 @@ source_set("browser") {
     "gpu/gpu_process_host.h",
     "gpu/gpu_process_host_ui_shim.cc",
     "gpu/gpu_process_host_ui_shim.h",
-    "gpu/gpu_surface_tracker.cc",
-    "gpu/gpu_surface_tracker.h",
     "gpu/shader_disk_cache.cc",
     "gpu/shader_disk_cache.h",
     "histogram_controller.cc",
@@ -1893,6 +1890,10 @@ source_set("browser") {
     deps += [ "//ui/compositor" ]
   }
 
+  if (is_android || is_mac) {
+    deps += [ "//gpu/ipc/common:gpu_surface_tracker" ]
+  }
+
   if (enable_web_speech) {
     deps += [ "//third_party/flac" ]
   }
@@ -1911,13 +1912,6 @@ source_set("browser") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-  }
-
-  if (!is_mac && !is_android) {
-    sources -= [
-      "gpu/gpu_surface_tracker.cc",
-      "gpu/gpu_surface_tracker.h",
-    ]
   }
 
   if (enable_webvr) {

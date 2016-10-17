@@ -85,7 +85,7 @@
 #include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-#include "content/browser/gpu/gpu_surface_tracker.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
 #endif
 
 #if defined(ENABLE_VULKAN)
@@ -599,7 +599,7 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
   if (data->surface_handle)
-    GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
+    gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
 #endif
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
@@ -825,7 +825,7 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 #if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
     data->surface_handle = widget;
 #else
-    GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
+    gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
     data->surface_handle = tracker->AddSurfaceForNativeWidget(widget);
 #endif
   }

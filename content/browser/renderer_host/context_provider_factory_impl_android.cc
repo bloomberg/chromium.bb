@@ -14,7 +14,6 @@
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/common/content_switches.h"

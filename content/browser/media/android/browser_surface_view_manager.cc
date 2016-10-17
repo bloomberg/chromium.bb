@@ -6,14 +6,13 @@
 
 #include "base/android/build_info.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/surface_view_manager_messages_android.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "media/base/surface_manager.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -41,17 +40,18 @@ void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
   TRACE_EVENT0("media", "BrowserSurfaceViewManager::SetVideoSurface");
   if (surface.IsEmpty()) {
     DCHECK_NE(surface_id_, media::SurfaceManager::kNoSurfaceID);
-    GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
-    UnregisterViewSurface(surface_id_);
+    gpu::GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
+    gpu::GpuSurfaceTracker::Get()->UnregisterViewSurface(surface_id_);
     SendDestroyingVideoSurfaceIfRequired(surface_id_);
     surface_id_ = media::SurfaceManager::kNoSurfaceID;
   } else {
     // We mainly use the surface tracker to allocate a surface id for us. The
     // lookup will go through the Android specific path and get the java
     // surface directly, so there's no need to add a valid native widget here.
-    surface_id_ = GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
+    surface_id_ = gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
         gfx::kNullAcceleratedWidget);
-    RegisterViewSurface(surface_id_, surface.j_surface());
+    gpu::GpuSurfaceTracker::GetInstance()->RegisterViewSurface(
+        surface_id_, surface.j_surface());
     SendSurfaceID(surface_id_);
   }
 }

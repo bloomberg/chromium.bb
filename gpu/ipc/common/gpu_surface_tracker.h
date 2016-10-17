@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GPU_GPU_SURFACE_TRACKER_H_
-#define CONTENT_BROWSER_GPU_GPU_SURFACE_TRACKER_H_
+#ifndef GPU_IPC_COMMON_GPU_SURFACE_TRACKER_H_
+#define GPU_IPC_COMMON_GPU_SURFACE_TRACKER_H_
 
 #include <stddef.h>
 
@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
+#include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace content {
+namespace gpu {
 
 // This class is used on Android and Mac, and is responsible for tracking native
 // window surfaces exposed to the GPU process. Every surface gets registered to
@@ -30,7 +30,7 @@ namespace content {
 // On Mac, the handle just passes through the GPU process, and is sent back via
 // GpuCommandBufferMsg_SwapBuffersCompleted to reference the surface.
 // This class is thread safe.
-class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
+class GPU_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
  public:
   // GpuSurfaceLookup implementation:
   // Returns the native widget associated with a given surface_handle.
@@ -39,6 +39,9 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
       gpu::SurfaceHandle surface_handle) override;
 
 #if defined(OS_ANDROID)
+  void RegisterViewSurface(int surface_id,
+                           const base::android::JavaRef<jobject>& j_surface);
+  void UnregisterViewSurface(int surface_id);
   gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
 #endif
 
@@ -69,13 +72,20 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   GpuSurfaceTracker();
   ~GpuSurfaceTracker() override;
 
-  base::Lock lock_;
+  mutable base::Lock surface_map_lock_;
   SurfaceMap surface_map_;
   int next_surface_handle_;
+
+#if defined(OS_ANDROID)
+  base::Lock surface_view_map_lock_;
+  typedef std::map<gpu::SurfaceHandle, gl::ScopedJavaSurface> SurfaceViewMap;
+  SurfaceViewMap surface_view_map_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceTracker);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_GPU_GPU_SURFACE_TRACKER_H_
+#endif  // GPU_IPC_COMMON_GPU_SURFACE_TRACKER_H_
+
