@@ -30,6 +30,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // See |bg_color_override_|.
   void SetBgColorOverride(const base::Optional<SkColor>& color);
 
+  // View:
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+
   // LabelButton:
   void OnFocus() override;
   void OnBlur() override;

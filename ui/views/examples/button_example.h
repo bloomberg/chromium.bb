@@ -13,6 +13,7 @@ namespace views {
 
 class ImageButton;
 class LabelButton;
+class MdTextButton;
 
 namespace examples {
 
@@ -36,6 +37,9 @@ class VIEWS_EXAMPLES_EXPORT ButtonExample : public ExampleBase,
   LabelButton* label_button_ = nullptr;
   LabelButton* styled_button_ = nullptr;
   LabelButton* disabled_button_ = nullptr;
+  MdTextButton* md_button_ = nullptr;
+  MdTextButton* md_default_button_ = nullptr;
+  MdTextButton* md_prominent_button_ = nullptr;
   ImageButton* image_button_ = nullptr;
 
   const gfx::ImageSkia* icon_ = nullptr;

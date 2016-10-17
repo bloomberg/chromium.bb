@@ -91,6 +91,15 @@ void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
   UpdateColors();
 }
 
+void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
+  LabelButton::OnPaintBackground(canvas);
+  if (hover_animation().is_animating() || state() == STATE_HOVERED) {
+    const int kHoverAlpha = is_prominent_ ? 0x0c : 0x05;
+    SkScalar alpha = hover_animation().CurrentValueBetween(0, kHoverAlpha);
+    canvas->FillRect(GetLocalBounds(), SkColorSetA(SK_ColorBLACK, alpha));
+  }
+}
+
 void MdTextButton::OnFocus() {
   LabelButton::OnFocus();
   FocusRing::Install(this);
@@ -191,6 +200,8 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   label()->SetAutoColorReadabilityEnabled(false);
   set_request_focus_on_press(false);
   LabelButton::SetFontList(GetMdFontList());
+
+  set_animate_on_state_change(true);
 
   // Paint to a layer so that the canvas is snapped to pixel boundaries (useful
   // for fractional DSF).

@@ -94,6 +94,8 @@ void CustomButton::SetState(ButtonState state) {
 }
 
 void CustomButton::StartThrobbing(int cycles_til_stop) {
+  if (!animate_on_state_change_)
+    return;
   is_throbbing_ = true;
   hover_animation_.StartThrobbing(cycles_til_stop);
 }
@@ -403,7 +405,6 @@ CustomButton::CustomButton(ButtonListener* listener)
     : Button(listener),
       state_(STATE_NORMAL),
       hover_animation_(this),
-      animate_on_state_change_(true),
       is_throbbing_(false),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
       request_focus_on_press_(false),

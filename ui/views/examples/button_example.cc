@@ -59,16 +59,19 @@ void ButtonExample::CreateExampleView(View* container) {
 
   container->AddChildView(new BlueButton(this, ASCIIToUTF16("Blue Button")));
 
-  container->AddChildView(
-      MdTextButton::Create(nullptr, base::ASCIIToUTF16("Material design")));
-  MdTextButton* md_button =
-      MdTextButton::Create(nullptr, base::ASCIIToUTF16("Default"));
-  md_button->SetIsDefault(true);
-  container->AddChildView(md_button);
-  md_button =
-      MdTextButton::Create(nullptr, base::ASCIIToUTF16("Call to action"));
-  md_button->SetProminent(true);
-  container->AddChildView(md_button);
+  md_button_ =
+      MdTextButton::Create(this, base::ASCIIToUTF16("Material design"));
+  container->AddChildView(md_button_);
+
+  md_default_button_ =
+      MdTextButton::Create(this, base::ASCIIToUTF16("Default"));
+  md_default_button_->SetIsDefault(true);
+  container->AddChildView(md_default_button_);
+
+  md_prominent_button_ =
+      MdTextButton::Create(this, base::ASCIIToUTF16("Call to action"));
+  md_prominent_button_->SetProminent(true);
+  container->AddChildView(md_prominent_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
@@ -122,14 +125,18 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
 }
 
 void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (sender == label_button_)
+  if (sender == label_button_) {
     LabelButtonPressed(label_button_, event);
-  else if (sender == styled_button_)
+  } else if (sender == styled_button_) {
     LabelButtonPressed(styled_button_, event);
-  else if (sender == disabled_button_)
+  } else if (sender == disabled_button_) {
     LabelButtonPressed(disabled_button_, event);
-  else
+  } else if (sender == md_button_ || sender == md_default_button_ ||
+             sender == md_prominent_button_) {
+    static_cast<CustomButton*>(sender)->StartThrobbing(5);
+  } else {
     PrintStatus("Image Button Pressed! count: %d", ++count_);
+  }
 }
 
 }  // namespace examples

@@ -42,6 +42,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void SetState(ButtonState state);
 
   // Starts throbbing. See HoverAnimation for a description of cycles_til_stop.
+  // This method does nothing if |animate_on_state_change_| is false.
   void StartThrobbing(int cycles_til_stop);
 
   // Stops throbbing immediately.
@@ -165,8 +166,8 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
 
   gfx::ThrobAnimation hover_animation_;
 
-  // Should we animate when the state changes? Defaults to true.
-  bool animate_on_state_change_;
+  // Should we animate when the state changes?
+  bool animate_on_state_change_ = false;
 
   // Is the hover animation running because StartThrob was invoked?
   bool is_throbbing_;

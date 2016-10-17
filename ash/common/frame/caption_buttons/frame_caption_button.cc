@@ -44,6 +44,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       use_light_images_(false),
       alpha_(255),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
+  set_animate_on_state_change(true);
   swap_images_animation_->Reset(1);
 
   // Do not flip the gfx::Canvas passed to the OnPaint() method. The snap left
