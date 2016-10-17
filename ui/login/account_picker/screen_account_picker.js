@@ -183,12 +183,20 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         /** @const */ var BUBBLE_OFFSET = 7;
         /** @const */ var BUBBLE_PADDING = 4;
 
+        // Anchor the bubble to the pod instead of the input if the pin keyboard
+        // is showing to avoid covering parts of the pin keyboard.
+        var bubbleAnchor;
+        if (activatedPod.pinContainer)
+          bubbleAnchor = activatedPod;
+        else
+          bubbleAnchor = activatedPod.mainInput;
+
         // We want the bubble to point to where the input is after it is done
-        // tranisitioning.
+        // transitioning.
         var showBottomCallback = function() {
           activatedPod.removeEventListener("webkitTransitionEnd",
               showBottomCallback);
-          $('bubble').showContentForElement(activatedPod.mainInput,
+          $('bubble').showContentForElement(bubbleAnchor,
                                             cr.ui.Bubble.Attachment.BOTTOM,
                                             error,
                                             BUBBLE_OFFSET, BUBBLE_PADDING);
@@ -204,7 +212,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
           var showTopCallback = function() {
             activatedPod.removeEventListener("webkitTransitionEnd",
                 showTopCallback);
-            $('bubble').showContentForElement(activatedPod.mainInput,
+            $('bubble').showContentForElement(bubbleAnchor,
                                               cr.ui.Bubble.Attachment.TOP,
                                               error,
                                               BUBBLE_OFFSET, BUBBLE_PADDING);
