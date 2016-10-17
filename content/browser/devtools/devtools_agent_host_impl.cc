@@ -7,8 +7,11 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
+#include "base/observer_list.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
@@ -17,7 +20,9 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/loader/netlog_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 
 namespace content {
 
@@ -25,12 +30,8 @@ namespace {
 typedef std::map<std::string, DevToolsAgentHostImpl*> Instances;
 base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 
-using AgentStateCallbacks =
-    std::vector<const DevToolsAgentHost::AgentStateCallback*>;
-base::LazyInstance<AgentStateCallbacks>::Leaky g_callbacks =
-    LAZY_INSTANCE_INITIALIZER;
-using DiscoveryCallbacks =
-    std::vector<DevToolsAgentHost::DiscoveryCallback>;
+base::LazyInstance<base::ObserverList<DevToolsAgentHostObserver>>::Leaky
+    g_observers = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 char DevToolsAgentHost::kTypePage[] = "page";
@@ -40,6 +41,7 @@ char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
 char DevToolsAgentHost::kTypeExternal[] = "external";
 char DevToolsAgentHost::kTypeBrowser[] = "browser";
 char DevToolsAgentHost::kTypeOther[] = "other";
+int DevToolsAgentHostImpl::s_attached_count_ = 0;
 
 // static
 std::string DevToolsAgentHost::GetProtocolVersion() {
@@ -138,6 +140,7 @@ bool DevToolsAgentHostImpl::InnerAttach(DevToolsAgentHostClient* client,
   }
   client_ = client;
   Attach();
+  NotifyAttached();
   return true;
 }
 
@@ -170,6 +173,7 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
 void DevToolsAgentHostImpl::InnerDetach() {
   Detach();
   io_context_.DiscardAllStreams();
+  NotifyDetached();
 }
 
 bool DevToolsAgentHostImpl::IsAttached() {
@@ -251,6 +255,7 @@ void DevToolsAgentHostImpl::HostClosed() {
   DevToolsAgentHostClient* client = client_;
   client_ = NULL;
   client->AgentHostClosed(this, false);
+  NotifyDetached();
 }
 
 void DevToolsAgentHostImpl::InspectElement(int x, int y) {
@@ -288,34 +293,40 @@ void DevToolsAgentHost::DetachAllClients() {
 }
 
 // static
-void DevToolsAgentHost::AddAgentStateCallback(
-    const AgentStateCallback& callback) {
-  g_callbacks.Get().push_back(&callback);
+void DevToolsAgentHost::AddObserver(DevToolsAgentHostObserver* observer) {
+  g_observers.Get().AddObserver(observer);
 }
 
 // static
-void DevToolsAgentHost::RemoveAgentStateCallback(
-    const AgentStateCallback& callback) {
-  if (g_callbacks == NULL)
-    return;
-
-  AgentStateCallbacks* callbacks_ = g_callbacks.Pointer();
-  AgentStateCallbacks::iterator it =
-      std::find(callbacks_->begin(), callbacks_->end(), &callback);
-  DCHECK(it != callbacks_->end());
-  callbacks_->erase(it);
+void DevToolsAgentHost::RemoveObserver(DevToolsAgentHostObserver* observer) {
+  g_observers.Get().RemoveObserver(observer);
 }
 
-// static
-void DevToolsAgentHostImpl::NotifyCallbacks(
-    DevToolsAgentHostImpl* agent_host, bool attached) {
-  AgentStateCallbacks copy(g_callbacks.Get());
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->AgentHostStateChanged(agent_host, attached);
-  if (manager->delegate())
-    manager->delegate()->DevToolsAgentStateChanged(agent_host, attached);
-  for (AgentStateCallbacks::iterator it = copy.begin(); it != copy.end(); ++it)
-     (*it)->Run(agent_host, attached);
+void DevToolsAgentHostImpl::NotifyAttached() {
+  if (!s_attached_count_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&NetLogObserver::Attach,
+                   GetContentClient()->browser()->GetNetLog()));
+  }
+  ++s_attached_count_;
+
+  for (auto& observer : g_observers.Get())
+    observer.DevToolsAgentHostAttached(this);
+}
+
+void DevToolsAgentHostImpl::NotifyDetached() {
+  --s_attached_count_;
+  if (!s_attached_count_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&NetLogObserver::Detach));
+  }
+
+  for (auto& observer : g_observers.Get())
+    observer.DevToolsAgentHostDetached(this);
 }
 
 // DevToolsMessageChunkProcessor -----------------------------------------------

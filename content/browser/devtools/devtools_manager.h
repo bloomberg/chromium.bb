@@ -32,8 +32,6 @@ class CONTENT_EXPORT DevToolsManager {
 
   DevToolsManagerDelegate* delegate() const { return delegate_.get(); }
 
-  void AgentHostStateChanged(DevToolsAgentHostImpl* agent_host, bool attached);
-
   void SetHttpHandler(std::unique_ptr<DevToolsHttpHandler> http_handler);
 
  private:
@@ -41,7 +39,6 @@ class CONTENT_EXPORT DevToolsManager {
 
   std::unique_ptr<DevToolsManagerDelegate> delegate_;
   std::unique_ptr<DevToolsHttpHandler> http_handler_;
-  int attached_hosts_count_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
 };

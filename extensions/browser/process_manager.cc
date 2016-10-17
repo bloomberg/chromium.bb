@@ -263,9 +263,7 @@ ProcessManager::ProcessManager(BrowserContext* context,
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<BrowserContext>(context));
-  devtools_callback_ = base::Bind(&ProcessManager::OnDevToolsStateChanged,
-                                  weak_ptr_factory_.GetWeakPtr());
-  content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
+  content::DevToolsAgentHost::AddObserver(this);
 
   OnKeepaliveImpulseCheck();
 }
@@ -274,7 +272,7 @@ ProcessManager::~ProcessManager() {
   extension_registry_->RemoveObserver(this);
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
-  content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
+  content::DevToolsAgentHost::RemoveObserver(this);
 }
 
 void ProcessManager::RegisterRenderFrameHost(
@@ -891,27 +889,30 @@ void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
   }
 }
 
-void ProcessManager::OnDevToolsStateChanged(
-    content::DevToolsAgentHost* agent_host,
-    bool attached) {
+const Extension* ProcessManager::GetExtensionForAgentHost(
+    content::DevToolsAgentHost* agent_host) {
   content::WebContents* web_contents = agent_host->GetWebContents();
   // Ignore unrelated notifications.
   if (!web_contents || web_contents->GetBrowserContext() != browser_context_)
-    return;
+    return nullptr;
   if (GetViewType(web_contents) != VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
-    return;
-  const Extension* extension =
-      extension_registry_->enabled_extensions().GetByID(
-          GetExtensionIdForSiteInstance(web_contents->GetSiteInstance()));
-  if (!extension)
-    return;
-  if (attached) {
+    return nullptr;
+  return GetExtensionForWebContents(web_contents);
+}
+
+void ProcessManager::DevToolsAgentHostAttached(
+    content::DevToolsAgentHost* agent_host) {
+  if (const Extension* extension = GetExtensionForAgentHost(agent_host)) {
     // Keep the lazy background page alive while it's being inspected.
     CancelSuspend(extension);
     IncrementLazyKeepaliveCount(extension);
-  } else {
-    DecrementLazyKeepaliveCount(extension);
   }
+}
+
+void ProcessManager::DevToolsAgentHostDetached(
+    content::DevToolsAgentHost* agent_host) {
+  if (const Extension* extension = GetExtensionForAgentHost(agent_host))
+    DecrementLazyKeepaliveCount(extension);
 }
 
 void ProcessManager::UnregisterExtension(const std::string& extension_id) {

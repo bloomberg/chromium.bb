@@ -9,18 +9,20 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 class DevToolsNetworkProtocolHandler;
 
-class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
+class DevToolsManagerDelegateAndroid :
+    public content::DevToolsManagerDelegate,
+    public content::DevToolsAgentHostObserver {
  public:
   DevToolsManagerDelegateAndroid();
   ~DevToolsManagerDelegateAndroid() override;
 
+ private:
   // content::DevToolsManagerDelegate implementation.
-  void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
-                                 bool attached) override;
   base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
@@ -32,7 +34,12 @@ class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
 
- private:
+  // content::DevToolsAgentHostObserver overrides.
+  void DevToolsAgentHostAttached(
+      content::DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostDetached(
+      content::DevToolsAgentHost* agent_host) override;
+
   std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegateAndroid);

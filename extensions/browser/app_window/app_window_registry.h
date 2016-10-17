@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -29,7 +30,8 @@ class AppWindow;
 
 // The AppWindowRegistry tracks the AppWindows for all platform apps for a
 // particular browser context.
-class AppWindowRegistry : public KeyedService {
+class AppWindowRegistry : public KeyedService,
+                          public content::DevToolsAgentHostObserver {
  public:
   class Observer {
    public:
@@ -125,9 +127,6 @@ class AppWindowRegistry : public KeyedService {
         content::BrowserContext* context) const override;
   };
 
- protected:
-  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
-
  private:
   // Ensures the specified |app_window| is included in |app_windows_|.
   // Otherwise adds |app_window| to the back of |app_windows_|.
@@ -144,12 +143,19 @@ class AppWindowRegistry : public KeyedService {
   // WebContents is not for a AppWindow, return an empty string.
   std::string GetWindowKeyForWebContents(
       content::WebContents* web_contents) const;
+  std::string GetWindowKeyForAgentHost(
+      content::DevToolsAgentHost* agent_host) const;
+
+  // content::DevToolsAgentHostObserver overrides.
+  void DevToolsAgentHostAttached(
+      content::DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostDetached(
+      content::DevToolsAgentHost* agent_host) override;
 
   content::BrowserContext* context_;
   AppWindowList app_windows_;
   InspectedWindowSet inspected_windows_;
   base::ObserverList<Observer> observers_;
-  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 };
 
 }  // namespace extensions

@@ -45,34 +45,10 @@ DevToolsManager* DevToolsManager::GetInstance() {
 }
 
 DevToolsManager::DevToolsManager()
-    : delegate_(GetContentClient()->browser()->GetDevToolsManagerDelegate()),
-      attached_hosts_count_(0) {
+    : delegate_(GetContentClient()->browser()->GetDevToolsManagerDelegate()) {
 }
 
 DevToolsManager::~DevToolsManager() {
-  DCHECK(!attached_hosts_count_);
-}
-
-void DevToolsManager::AgentHostStateChanged(
-    DevToolsAgentHostImpl* agent_host, bool attached) {
-  if (attached) {
-    if (!attached_hosts_count_) {
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&NetLogObserver::Attach,
-                     GetContentClient()->browser()->GetNetLog()));
-    }
-    ++attached_hosts_count_;
-  } else {
-    --attached_hosts_count_;
-    if (!attached_hosts_count_) {
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&NetLogObserver::Detach));
-    }
-  }
 }
 
 void DevToolsManager::SetHttpHandler(

@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_agent_host_client.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -124,6 +125,10 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Stops remote debugging.
   static void StopRemoteDebuggingServer();
 
+  // Observer is notified about changes in DevToolsAgentHosts.
+  static void AddObserver(DevToolsAgentHostObserver*);
+  static void RemoveObserver(DevToolsAgentHostObserver*);
+
   // Attaches |client| to this agent host to start debugging.
   // Returns true iff attach succeeded.
   virtual bool AttachClient(DevToolsAgentHostClient* client) = 0;
@@ -200,12 +205,6 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Terminates all debugging sessions and detaches all clients.
   static void DetachAllClients();
-
-  typedef base::Callback<void(DevToolsAgentHost*, bool attached)>
-      AgentStateCallback;
-
-  static void AddAgentStateCallback(const AgentStateCallback& callback);
-  static void RemoveAgentStateCallback(const AgentStateCallback& callback);
 
  protected:
   friend class base::RefCounted<DevToolsAgentHost>;

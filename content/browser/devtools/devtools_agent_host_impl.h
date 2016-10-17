@@ -73,17 +73,18 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
   int session_id() { DCHECK(client_); return session_id_; }
 
-  static void NotifyCallbacks(DevToolsAgentHostImpl* agent_host, bool attached);
-
  private:
   friend class DevToolsAgentHost; // for static methods
   bool InnerAttach(DevToolsAgentHostClient* client, bool force);
   void InnerDetach();
+  void NotifyAttached();
+  void NotifyDetached();
 
   const std::string id_;
   int session_id_;
   DevToolsAgentHostClient* client_;
   devtools::DevToolsIOContext io_context_;
+  static int s_attached_count_;
 };
 
 class DevToolsMessageChunkProcessor {

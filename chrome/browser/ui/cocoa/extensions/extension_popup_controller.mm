@@ -20,6 +20,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
@@ -90,38 +91,39 @@ class ExtensionPopupContainer : public ExtensionViewMac::Container {
   ExtensionPopupController* controller_; // Weak; owns this.
 };
 
-class ExtensionPopupNotificationBridge : public content::NotificationObserver {
+class ExtensionPopupNotificationBridge :
+    public content::NotificationObserver,
+    public content::DevToolsAgentHostObserver {
  public:
   ExtensionPopupNotificationBridge(ExtensionPopupController* controller,
                                    ExtensionViewHost* view_host)
     : controller_(controller),
       view_host_(view_host),
-      web_contents_(view_host_->host_contents()),
-      devtools_callback_(base::Bind(
-          &ExtensionPopupNotificationBridge::OnDevToolsStateChanged,
-          base::Unretained(this))) {
-    content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
+      web_contents_(view_host_->host_contents()) {
+    content::DevToolsAgentHost::AddObserver(this);
   }
 
   ~ExtensionPopupNotificationBridge() override {
-    content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
+    content::DevToolsAgentHost::RemoveObserver(this);
   }
 
-  void OnDevToolsStateChanged(content::DevToolsAgentHost* agent_host,
-                              bool attached) {
+  void DevToolsAgentHostAttached(
+      content::DevToolsAgentHost* agent_host) override {
     if (agent_host->GetWebContents() != web_contents_)
       return;
+    // Set the flag on the controller so the popup is not hidden when
+    // the dev tools get focus.
+    [controller_ setBeingInspected:YES];
+  }
 
-    if (attached) {
-      // Set the flag on the controller so the popup is not hidden when
-      // the dev tools get focus.
-      [controller_ setBeingInspected:YES];
-    } else {
-      // Allow the devtools to finish detaching before we close the popup.
-      [controller_ performSelector:@selector(close)
-                        withObject:nil
-                        afterDelay:0.0];
-    }
+  void DevToolsAgentHostDetached(
+      content::DevToolsAgentHost* agent_host) override {
+    if (agent_host->GetWebContents() != web_contents_)
+      return;
+    // Allow the devtools to finish detaching before we close the popup.
+    [controller_ performSelector:@selector(close)
+                      withObject:nil
+                      afterDelay:0.0];
   }
 
   void Observe(int type,
@@ -153,7 +155,6 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
   // know what it is for notifications, but our ExtensionViewHost may not be
   // valid.
   WebContents* web_contents_;
-  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupNotificationBridge);
 };

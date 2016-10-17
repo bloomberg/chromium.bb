@@ -259,7 +259,12 @@ std::string DevToolsManagerDelegateAndroid::GetDiscoveryPageHTML() {
       IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
-void DevToolsManagerDelegateAndroid::DevToolsAgentStateChanged(
-    DevToolsAgentHost* agent_host, bool attached) {
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, attached);
+void DevToolsManagerDelegateAndroid::DevToolsAgentHostAttached(
+    content::DevToolsAgentHost* agent_host) {
+  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, true);
+}
+
+void DevToolsManagerDelegateAndroid::DevToolsAgentHostDetached(
+    content::DevToolsAgentHost* agent_host) {
+  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
 }

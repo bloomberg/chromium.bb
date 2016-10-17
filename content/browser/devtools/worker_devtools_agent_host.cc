@@ -26,7 +26,6 @@ void WorkerDevToolsAgentHost::Attach() {
     host->Send(
         new DevToolsAgentMsg_Attach(worker_id_.second, GetId(), session_id()));
   OnAttachedStateChanged(true);
-  DevToolsAgentHostImpl::NotifyCallbacks(this, true);
 }
 
 void WorkerDevToolsAgentHost::Detach() {
@@ -39,7 +38,6 @@ void WorkerDevToolsAgentHost::Detach() {
   } else if (state_ == WORKER_PAUSED_FOR_REATTACH) {
     state_ = WORKER_UNINSPECTED;
   }
-  DevToolsAgentHostImpl::NotifyCallbacks(this, false);
 }
 
 bool WorkerDevToolsAgentHost::DispatchProtocolMessage(

@@ -25,9 +25,6 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Opens the inspector for |agent_host|.
   virtual void Inspect(DevToolsAgentHost* agent_host);
 
-  virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
-                                         bool attached);
-
   // Returns DevToolsAgentHost type to use for given |host| target.
   virtual std::string GetTargetType(RenderFrameHost* host);
 

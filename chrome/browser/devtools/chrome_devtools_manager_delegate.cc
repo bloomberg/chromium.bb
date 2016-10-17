@@ -184,10 +184,14 @@ std::string ChromeDevToolsManagerDelegate::GetFrontendResource(
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
-void ChromeDevToolsManagerDelegate::DevToolsAgentStateChanged(
-    DevToolsAgentHost* agent_host,
-    bool attached) {
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, attached);
+void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(
+    content::DevToolsAgentHost* agent_host) {
+  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, true);
+}
+
+void ChromeDevToolsManagerDelegate::DevToolsAgentHostDetached(
+    content::DevToolsAgentHost* agent_host) {
+  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
 }
 
 std::unique_ptr<base::DictionaryValue>

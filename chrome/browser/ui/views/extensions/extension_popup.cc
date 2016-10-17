@@ -59,8 +59,6 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                                ShowAction show_action)
     : BubbleDialogDelegateView(anchor_view, arrow),
       host_(host),
-      devtools_callback_(base::Bind(
-          &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))),
       widget_initialized_(false) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   set_margins(gfx::Insets(kBubbleMargin));
@@ -75,7 +73,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
       this,
       extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<content::BrowserContext>(host->browser_context()));
-  content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
+  content::DevToolsAgentHost::AddObserver(this);
 
   GetExtensionView(host)->GetBrowser()->tab_strip_model()->AddObserver(this);
 
@@ -93,7 +91,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
 }
 
 ExtensionPopup::~ExtensionPopup() {
-  content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
+  content::DevToolsAgentHost::RemoveObserver(this);
 
   GetExtensionView(
       host_.get())->GetBrowser()->tab_strip_model()->RemoveObserver(this);
@@ -123,22 +121,23 @@ void ExtensionPopup::Observe(int type,
   }
 }
 
-void ExtensionPopup::OnDevToolsStateChanged(
-    content::DevToolsAgentHost* agent_host,
-    bool attached) {
+void ExtensionPopup::DevToolsAgentHostAttached(
+    content::DevToolsAgentHost* agent_host) {
   // First check that the devtools are being opened on this popup.
   if (host()->host_contents() != agent_host->GetWebContents())
     return;
+  // Set inspect_with_devtools_ so the popup will be kept open while
+  // the devtools are open.
+  inspect_with_devtools_ = true;
+}
 
-  if (attached) {
-    // Set inspect_with_devtools_ so the popup will be kept open while
-    // the devtools are open.
-    inspect_with_devtools_ = true;
-  } else {
-    // Widget::Close posts a task, which should give the devtools window a
-    // chance to finish detaching from the inspected RenderViewHost.
-    GetWidget()->Close();
-  }
+void ExtensionPopup::DevToolsAgentHostDetached(
+    content::DevToolsAgentHost* agent_host) {
+  if (host()->host_contents() != agent_host->GetWebContents())
+    return;
+  // Widget::Close posts a task, which should give the devtools window a
+  // chance to finish detaching from the inspected RenderViewHost.
+  GetWidget()->Close();
 }
 
 void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {

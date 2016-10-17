@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_page_tracker.h"
@@ -48,7 +49,8 @@ class ProcessManagerObserver;
 class ProcessManager : public KeyedService,
                        public content::NotificationObserver,
                        public ExtensionRegistryObserver,
-                       public EventPageTracker {
+                       public EventPageTracker,
+                       public content::DevToolsAgentHostObserver {
  public:
   using ExtensionHostSet = std::set<extensions::ExtensionHost*>;
 
@@ -267,7 +269,14 @@ class ProcessManager : public KeyedService,
   void CloseLazyBackgroundPageNow(const std::string& extension_id,
                                   uint64_t sequence_id);
 
-  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
+  const Extension* GetExtensionForAgentHost(
+      content::DevToolsAgentHost* agent_host);
+
+  // content::DevToolsAgentHostObserver overrides.
+  void DevToolsAgentHostAttached(
+      content::DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostDetached(
+      content::DevToolsAgentHost* agent_host) override;
 
   // Unregister RenderFrameHosts and clear background page data for an extension
   // which has been unloaded.
@@ -298,8 +307,6 @@ class ProcessManager : public KeyedService,
 
   // True if we have created the startup set of background hosts.
   bool startup_background_hosts_created_;
-
-  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
   ImpulseCallbackForTesting keepalive_impulse_callback_for_testing_;
   ImpulseCallbackForTesting keepalive_impulse_decrement_callback_for_testing_;

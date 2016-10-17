@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
+#include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -33,7 +34,8 @@ class ExtensionViewHost;
 class ExtensionPopup : public views::BubbleDialogDelegateView,
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver,
-                       public TabStripModelObserver {
+                       public TabStripModelObserver,
+                       public content::DevToolsAgentHostObserver {
  public:
   enum ShowAction {
     SHOW,
@@ -107,7 +109,11 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();
 
-  void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
+  // content::DevToolsAgentHostObserver overrides.
+  void DevToolsAgentHostAttached(
+      content::DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostDetached(
+      content::DevToolsAgentHost* agent_host) override;
 
   // The contained host for the view.
   std::unique_ptr<extensions::ExtensionViewHost> host_;
@@ -117,8 +123,6 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   bool inspect_with_devtools_;
 
   content::NotificationRegistrar registrar_;
-
-  base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
   bool widget_initialized_;
 
