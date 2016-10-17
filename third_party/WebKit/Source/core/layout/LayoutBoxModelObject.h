@@ -402,7 +402,14 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   bool backgroundStolenForBeingBody(
       const ComputedStyle* rootElementStyle = nullptr) const;
 
+  void absoluteQuads(Vector<FloatQuad>& quads) const override;
+
  protected:
+  // Compute absolute quads for |this|, but not any continuations. May only be
+  // called for objects which can be or have continuations, i.e. LayoutInline or
+  // LayoutBlockFlow.
+  virtual void absoluteQuadsForSelf(Vector<FloatQuad>& quads) const;
+
   void willBeDestroyed() override;
 
   LayoutPoint adjustedPositionRelativeTo(const LayoutPoint&,

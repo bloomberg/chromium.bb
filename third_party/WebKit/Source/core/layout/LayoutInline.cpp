@@ -775,14 +775,11 @@ class AbsoluteQuadsGeneratorContext {
 
 }  // unnamed namespace
 
-void LayoutInline::absoluteQuads(Vector<FloatQuad>& quads) const {
+void LayoutInline::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
   AbsoluteQuadsGeneratorContext context(this, quads);
   generateLineBoxRects(context);
   if (quads.isEmpty())
     context(FloatRect());
-
-  if (const LayoutBoxModelObject* continuation = this->continuation())
-    continuation->absoluteQuads(quads);
 }
 
 LayoutUnit LayoutInline::offsetLeft(const Element* parent) const {

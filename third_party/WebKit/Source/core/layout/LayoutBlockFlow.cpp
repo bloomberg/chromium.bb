@@ -2434,6 +2434,10 @@ void LayoutBlockFlow::absoluteQuads(Vector<FloatQuad>& quads) const {
     LayoutBlock::absoluteQuads(quads);
     return;
   }
+  LayoutBoxModelObject::absoluteQuads(quads);
+}
+
+void LayoutBlockFlow::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
   // For blocks inside inlines, we go ahead and include margins so that we run
   // right up to the inline boxes above and below us (thus getting merged with
   // them to form a single irregular shape).
@@ -2442,7 +2446,6 @@ void LayoutBlockFlow::absoluteQuads(Vector<FloatQuad>& quads) const {
   LayoutRect localRect(LayoutPoint(), size());
   localRect.expand(collapsedMarginBoxLogicalOutsets());
   quads.append(localToAbsoluteQuad(FloatRect(localRect)));
-  continuation()->absoluteQuads(quads);
 }
 
 LayoutObject* LayoutBlockFlow::hoverAncestor() const {

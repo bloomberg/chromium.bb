@@ -620,6 +620,27 @@ bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const {
   return false;
 }
 
+void LayoutBoxModelObject::absoluteQuadsForSelf(
+    Vector<FloatQuad>& quads) const {
+  NOTREACHED();
+}
+
+void LayoutBoxModelObject::absoluteQuads(Vector<FloatQuad>& quads) const {
+  absoluteQuadsForSelf(quads);
+
+  // Iterate over continuations, avoiding recursion in case there are
+  // many of them. See crbug.com/653767.
+  for (const LayoutBoxModelObject* continuationObject = this->continuation();
+       continuationObject;
+       continuationObject = continuationObject->continuation()) {
+    DCHECK(continuationObject->isLayoutInline() ||
+           (continuationObject->isLayoutBlockFlow() &&
+            toLayoutBlockFlow(continuationObject)
+                ->isAnonymousBlockContinuation()));
+    continuationObject->absoluteQuadsForSelf(quads);
+  }
+}
+
 void LayoutBoxModelObject::updateFromStyle() {
   const ComputedStyle& styleToUse = styleRef();
   setHasBoxDecorationBackground(styleToUse.hasBoxDecorationBackground());
