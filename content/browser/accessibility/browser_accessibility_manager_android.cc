@@ -694,6 +694,15 @@ jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(
   return false;
 }
 
+void BrowserAccessibilityManagerAndroid::ShowContextMenu(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint id) {
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
+  if (node && node->manager()->delegate())
+    node->manager()->delegate()->AccessibilityShowContextMenu(node->GetId());
+}
+
 void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
     BrowserAccessibility* node) {
   JNIEnv* env = AttachCurrentThread();

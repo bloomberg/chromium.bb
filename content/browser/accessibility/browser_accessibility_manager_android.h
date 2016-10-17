@@ -154,6 +154,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                         const base::android::JavaParamRef<jobject>& obj,
                         jint id,
                         jboolean increment);
+  void ShowContextMenu(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj,
+                       jint id);
 
   // Return the id of the next node in tree order in the direction given by
   // |forwards|, starting with |start_id|, that matches |element_type|,

@@ -47,6 +47,15 @@ public class BrowserAccessibilityManager {
             "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
     private static final int WINDOW_CONTENT_CHANGED_DELAY_MS = 500;
 
+    // Constants from AccessibilityNodeInfo defined in the M SDK.
+    // Source: https://developer.android.com/reference/android/R.id.html
+    private static final int ACTION_CONTEXT_CLICK = 0x0102003c;
+    private static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
+    private static final int ACTION_SCROLL_UP = 0x01020038;
+    private static final int ACTION_SCROLL_DOWN = 0x0102003a;
+    private static final int ACTION_SCROLL_LEFT = 0x01020039;
+    private static final int ACTION_SCROLL_RIGHT = 0x0102003b;
+
     private final AccessibilityNodeProvider mAccessibilityNodeProvider;
     private ContentViewCore mContentViewCore;
     private final AccessibilityManager mAccessibilityManager;
@@ -328,6 +337,20 @@ public class BrowserAccessibilityManager {
                 // If something is collapsible or expandable, just activate it to toggle.
                 nativeClick(mNativeObj, virtualViewId);
                 return true;
+            case ACTION_SHOW_ON_SCREEN:
+                nativeScrollToMakeNodeVisible(mNativeObj, virtualViewId);
+                return true;
+            case ACTION_CONTEXT_CLICK:
+                nativeShowContextMenu(mNativeObj, virtualViewId);
+                return true;
+            case ACTION_SCROLL_UP:
+                return nativeScroll(mNativeObj, virtualViewId, ScrollDirection.UP);
+            case ACTION_SCROLL_DOWN:
+                return nativeScroll(mNativeObj, virtualViewId, ScrollDirection.DOWN);
+            case ACTION_SCROLL_LEFT:
+                return nativeScroll(mNativeObj, virtualViewId, ScrollDirection.LEFT);
+            case ACTION_SCROLL_RIGHT:
+                return nativeScroll(mNativeObj, virtualViewId, ScrollDirection.RIGHT);
             default:
                 break;
         }
@@ -822,6 +845,8 @@ public class BrowserAccessibilityManager {
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
+        node.addAction(ACTION_SHOW_ON_SCREEN);
+        node.addAction(ACTION_CONTEXT_CLICK);
 
         if (editableText && enabled) {
             // TODO: don't support actions that modify it if it's read-only (but
@@ -844,8 +869,21 @@ public class BrowserAccessibilityManager {
             node.addAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
         }
 
-        // TODO(dmazzoni): add custom actions for scrolling up, down,
-        // left, and right.
+        if (canScrollUp) {
+            node.addAction(ACTION_SCROLL_UP);
+        }
+
+        if (canScrollDown) {
+            node.addAction(ACTION_SCROLL_DOWN);
+        }
+
+        if (canScrollLeft) {
+            node.addAction(ACTION_SCROLL_LEFT);
+        }
+
+        if (canScrollRight) {
+            node.addAction(ACTION_SCROLL_RIGHT);
+        }
 
         if (focusable) {
             if (focused) {
@@ -1152,4 +1190,6 @@ public class BrowserAccessibilityManager {
             long nativeBrowserAccessibilityManagerAndroid, int id, int direction);
     protected native String nativeGetSupportedHtmlElementTypes(
             long nativeBrowserAccessibilityManagerAndroid);
+    private native void nativeShowContextMenu(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
 }
