@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -23,8 +24,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -68,6 +72,8 @@ const uint8_t kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
 
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
+
+constexpr char kSessionIdSwitch[] = "session-id";
 
 // SRT registry keys and value names.
 const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
@@ -145,6 +151,13 @@ bool ValidateString(const std::string& str,
          });
 }
 
+std::string GenerateSessionId() {
+  std::string session_id;
+  base::Base64Encode(base::RandBytesAsString(30), &session_id);
+  DCHECK(!session_id.empty());
+  return session_id;
+}
+
 // Add |behaviour_flag| to |supported_behaviours| if |behaviour_name| is found
 // in the dictionary. Returns false on error.
 bool GetOptionalBehaviour(
@@ -190,6 +203,8 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     return;
   }
 
+  const std::string session_id = GenerateSessionId();
+
   safe_browsing::SwReporterQueue invocations;
   for (const auto& iter : *parameter_list) {
     const base::DictionaryValue* invocation_params = nullptr;
@@ -233,6 +248,17 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     }
 
     base::CommandLine command_line(argv);
+
+    // Add a random session id to link experimental reporter runs together.
+    command_line.AppendSwitchASCII(kSessionIdSwitch, session_id);
+
+    const std::string experiment_group =
+        variations::GetVariationParamValueByFeature(
+            kExperimentalEngineFeature, "experiment_group_for_reporting");
+    command_line.AppendSwitchNative("engine-experiment-group",
+                                    experiment_group.empty()
+                                        ? L"missing_experiment_group"
+                                        : base::UTF8ToUTF16(experiment_group));
 
     // Add the histogram suffix to the command-line as well, so that the
     // reporter will add the same suffix to registry keys where it writes
@@ -302,7 +328,9 @@ void SwReporterInstallerTraits::ComponentReady(
     RunExperimentalSwReporter(exe_path, version, std::move(manifest),
                               reporter_runner_);
   } else {
-    auto invocation = SwReporterInvocation::FromFilePath(exe_path);
+    base::CommandLine command_line(exe_path);
+    command_line.AppendSwitchASCII(kSessionIdSwitch, GenerateSessionId());
+    auto invocation = SwReporterInvocation::FromCommandLine(command_line);
     invocation.supported_behaviours =
         SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
         SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |

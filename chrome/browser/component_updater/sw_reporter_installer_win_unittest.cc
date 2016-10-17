@@ -31,7 +31,12 @@ namespace component_updater {
 
 namespace {
 
+constexpr char kExperimentGroupName[] = "my_test_engine_group";
+
+constexpr char kEngineExperimentGroupSwitch[] = "engine-experiment-group";
 constexpr char kRegistrySuffixSwitch[] = "registry-suffix";
+constexpr char kSessionIdSwitch[] = "session-id";
+
 constexpr char kErrorHistogramName[] = "SoftwareReporter.ExperimentErrors";
 constexpr char kExperimentTag[] = "experiment_tag";
 constexpr char kMissingTag[] = "missing_tag";
@@ -70,7 +75,8 @@ class SwReporterInstallerTest : public ::testing::Test {
     EXPECT_TRUE(attributes.empty());
   }
 
-  // Expects that the SwReporter was launched exactly once, with no arguments.
+  // Expects that the SwReporter was launched exactly once, with a session-id
+  // switch.
   void ExpectDefaultInvocation() const {
     EXPECT_EQ(default_version_, launched_version_);
     ASSERT_EQ(1U, launched_invocations_.size());
@@ -78,7 +84,10 @@ class SwReporterInstallerTest : public ::testing::Test {
     const SwReporterInvocation& invocation = launched_invocations_.front();
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
-    EXPECT_TRUE(invocation.command_line.GetSwitches().empty());
+    EXPECT_EQ(1U, invocation.command_line.GetSwitches().size());
+    EXPECT_EQ(
+        40U,
+        invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
     EXPECT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_TRUE(invocation.suffix.empty());
     EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
@@ -128,22 +137,24 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
 
   void CreateFeatureWithParams(
       const std::map<std::string, std::string>& params) {
-    constexpr char kExperimentGroupName[] = "ExperimentalSwReporterEngine";
+    constexpr char kFeatureName[] = "ExperimentalSwReporterEngine";
+
+    std::map<std::string, std::string> params_with_group = params;
+    params_with_group["experiment_group_for_reporting"] = kExperimentGroupName;
 
     // Assign the given variation params to the experiment group until
     // |variations_| goes out of scope when the test exits. This will also
     // create a FieldTrial for this group.
     variations_ = std::make_unique<variations::testing::VariationParamsManager>(
-        kExperimentGroupName, params);
+        kFeatureName, params_with_group);
 
     // Create a feature list containing only the field trial for this group,
     // and enable it for the length of the test.
-    base::FieldTrial* trial = base::FieldTrialList::Find(kExperimentGroupName);
+    base::FieldTrial* trial = base::FieldTrialList::Find(kFeatureName);
     ASSERT_TRUE(trial);
     auto feature_list = std::make_unique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
-        kExperimentGroupName, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-        trial);
+        kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
@@ -156,10 +167,11 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
   }
 
   // Expects that the SwReporter was launched exactly once, with the given
-  // |expected_suffix| and one |expected_additional_argument| on the
-  // command-line. (|expected_additional_argument| mainly exists to test that
-  // arguments are included at all, so there is no need to test for
-  // combinations of multiple arguments and switches in this function.)
+  // |expected_suffix|, an experiment group, a session-id, and one
+  // |expected_additional_argument| on the command-line.
+  // (|expected_additional_argument| mainly exists to test that arguments are
+  // included at all, so there is no need to test for combinations of multiple
+  // arguments and switches in this function.)
   void ExpectExperimentalInvocation(
       const std::string& expected_suffix,
       const base::string16& expected_additional_argument) {
@@ -169,12 +181,17 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
     const SwReporterInvocation& invocation = launched_invocations_.front();
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
+    EXPECT_EQ(
+        40U,
+        invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
+    EXPECT_EQ(kExperimentGroupName, invocation.command_line.GetSwitchValueASCII(
+                                        kEngineExperimentGroupSwitch));
 
     if (expected_suffix.empty()) {
-      EXPECT_TRUE(invocation.command_line.GetSwitches().empty());
+      EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
       EXPECT_TRUE(invocation.suffix.empty());
     } else {
-      EXPECT_EQ(1U, invocation.command_line.GetSwitches().size());
+      EXPECT_EQ(3U, invocation.command_line.GetSwitches().size());
       EXPECT_EQ(expected_suffix, invocation.command_line.GetSwitchValueASCII(
                                      kRegistrySuffixSwitch));
       EXPECT_EQ(expected_suffix, invocation.suffix);
@@ -198,7 +215,8 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
   void ExpectExperimentalInvocationInSeries(
       const std::string& expected_suffix,
       const std::string& expected_engine,
-      SwReporterInvocation::Behaviours expected_behaviours) {
+      SwReporterInvocation::Behaviours expected_behaviours,
+      std::string* out_session_id) {
     SCOPED_TRACE("Invocation with suffix " + expected_suffix);
     SwReporterInvocation invocation = launched_invocations_.front();
     launched_invocations_.pop();
@@ -206,11 +224,16 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
               invocation.command_line.GetProgram());
     // There should be one switch added from the manifest, plus registry-suffix
     // added automatically.
-    EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
+    EXPECT_EQ(4U, invocation.command_line.GetSwitches().size());
     EXPECT_EQ(expected_engine,
               invocation.command_line.GetSwitchValueASCII("engine"));
     EXPECT_EQ(expected_suffix, invocation.command_line.GetSwitchValueASCII(
                                    kRegistrySuffixSwitch));
+    *out_session_id =
+        invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch);
+    EXPECT_EQ(40U, out_session_id->size());
+    EXPECT_EQ(kExperimentGroupName, invocation.command_line.GetSwitchValueASCII(
+                                        kEngineExperimentGroupSwitch));
     ASSERT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_EQ(expected_suffix, invocation.suffix);
     EXPECT_EQ(expected_behaviours, invocation.supported_behaviours);
@@ -317,11 +340,16 @@ TEST_F(ExperimentalSwReporterInstallerTest, SingleInvocation) {
   const SwReporterInvocation& invocation = launched_invocations_.front();
   EXPECT_EQ(MakeTestFilePath(default_path_),
             invocation.command_line.GetProgram());
-  EXPECT_EQ(2U, invocation.command_line.GetSwitches().size());
+  EXPECT_EQ(4U, invocation.command_line.GetSwitches().size());
   EXPECT_EQ("experimental",
             invocation.command_line.GetSwitchValueASCII("engine"));
   EXPECT_EQ("TestSuffix",
             invocation.command_line.GetSwitchValueASCII(kRegistrySuffixSwitch));
+  EXPECT_EQ(
+      40U,
+      invocation.command_line.GetSwitchValueASCII(kSessionIdSwitch).size());
+  EXPECT_EQ(kExperimentGroupName, invocation.command_line.GetSwitchValueASCII(
+                                      kEngineExperimentGroupSwitch));
   ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
   EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
   EXPECT_EQ("TestSuffix", invocation.suffix);
@@ -367,16 +395,30 @@ TEST_F(ExperimentalSwReporterInstallerTest, MultipleInvocations) {
   // The SwReporter should be launched four times with the given arguments.
   EXPECT_EQ(default_version_, launched_version_);
   ASSERT_EQ(4U, launched_invocations_.size());
+  std::string out_session_id;
   ExpectExperimentalInvocationInSeries(
       "TestSuffix", "experimental",
-      SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS);
+      SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS,
+      &out_session_id);
+
+  const std::string first_session_id(out_session_id);
+
   ExpectExperimentalInvocationInSeries(
-      "SecondSuffix", "second", SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT);
-  ExpectExperimentalInvocationInSeries("ThirdSuffix", "third", 0U);
+      "SecondSuffix", "second", SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT,
+      &out_session_id);
+  EXPECT_EQ(first_session_id, out_session_id);
+
+  ExpectExperimentalInvocationInSeries("ThirdSuffix", "third", 0U,
+                                       &out_session_id);
+  EXPECT_EQ(first_session_id, out_session_id);
+
   ExpectExperimentalInvocationInSeries(
       "FourthSuffix", "fourth",
       SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS |
-          SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT);
+          SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT,
+      &out_session_id);
+  EXPECT_EQ(first_session_id, out_session_id);
+
   histograms_.ExpectTotalCount(kErrorHistogramName, 0);
 }
 
