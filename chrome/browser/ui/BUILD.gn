@@ -1809,8 +1809,6 @@ split_static_library("ui") {
         "views/tabs/window_finder.cc",
         "views/tabs/window_finder.h",
         "views/tabs/window_finder_chromeos.cc",
-        "views/tabs/window_finder_mus.cc",
-        "views/tabs/window_finder_mus.h",
         "views/tabs/window_finder_win.cc",
         "views/theme_copying_widget.cc",
         "views/theme_copying_widget.h",
@@ -1858,9 +1856,14 @@ split_static_library("ui") {
         ]
       }
 
-      # TODO(ellyjones): This target fails to build on Mac because of
-      # incompatible uses of gpu::AcceleratedWidget vs gpu::SurfaceHandle.
+      # TODO(ellyjones): Mus is not supported on Mac (there is no ui::Window
+      # apart from aura::Window, which is also not supported).
       if (!is_mac) {
+        sources += [
+          "views/tabs/window_finder_mus.cc",
+          "views/tabs/window_finder_mus.h",
+        ]
+
         deps += [ "//ui/views/mus" ]
       }
     }
