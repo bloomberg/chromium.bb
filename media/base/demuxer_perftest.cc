@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
@@ -83,7 +83,8 @@ class StreamReader {
   const std::vector<int>& counts() { return counts_; }
 
  private:
-  void OnReadDone(base::MessageLoop* message_loop,
+  void OnReadDone(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                  const base::Closure& quit_when_idle_closure,
                   bool* end_of_stream,
                   base::TimeDelta* timestamp,
                   media::DemuxerStream::Status status,
@@ -128,10 +129,12 @@ void StreamReader::Read() {
   bool end_of_stream = false;
   base::TimeDelta timestamp;
 
-  streams_[index]->Read(base::Bind(
-      &StreamReader::OnReadDone, base::Unretained(this),
-      base::MessageLoop::current(), &end_of_stream, &timestamp));
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  streams_[index]->Read(
+      base::Bind(&StreamReader::OnReadDone, base::Unretained(this),
+                 base::ThreadTaskRunnerHandle::Get(),
+                 run_loop.QuitWhenIdleClosure(), &end_of_stream, &timestamp));
+  run_loop.Run();
 
   CHECK(end_of_stream || timestamp != media::kNoTimestamp);
   end_of_stream_[index] = end_of_stream;
@@ -148,7 +151,8 @@ bool StreamReader::IsDone() {
 }
 
 void StreamReader::OnReadDone(
-    base::MessageLoop* message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::Closure& quit_when_idle_closure,
     bool* end_of_stream,
     base::TimeDelta* timestamp,
     media::DemuxerStream::Status status,
@@ -157,8 +161,7 @@ void StreamReader::OnReadDone(
   CHECK(buffer.get());
   *end_of_stream = buffer->end_of_stream();
   *timestamp = *end_of_stream ? media::kNoTimestamp : buffer->timestamp();
-  message_loop->task_runner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  task_runner->PostTask(FROM_HERE, quit_when_idle_closure);
 }
 
 int StreamReader::GetNextStreamIndexToRead() {
