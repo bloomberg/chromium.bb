@@ -54,6 +54,11 @@ class UserManagerMac {
                         signin_metrics::Reason reason);
   void CloseReauthDialog();
 
+  void DisplayErrorMessage();
+
+  void SetSigninProfilePath(const base::FilePath& profile_path);
+  base::FilePath GetSigninProfilePath();
+
  private:
   explicit UserManagerMac(Profile* profile);
   virtual ~UserManagerMac();
@@ -64,6 +69,8 @@ class UserManagerMac {
   base::scoped_nsobject<ReauthDialogWindowController> reauth_window_;
 
   base::Time user_manager_started_showing_;
+
+  base::FilePath signin_profile_path_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerMac);
 };

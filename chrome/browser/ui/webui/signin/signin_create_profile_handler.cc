@@ -423,11 +423,8 @@ void SigninCreateProfileHandler::OpenNewWindowForProfile(
 }
 
 void SigninCreateProfileHandler::OpenSigninDialogForProfile(Profile* profile) {
-// TODO(zmin): Remove the switcher once the UserManager API is finished on Mac.
-#if !defined(OS_MACOSX)
   UserManager::ShowSigninDialog(web_ui()->GetWebContents()->GetBrowserContext(),
                                 profile->GetPath());
-#endif
 }
 
 void SigninCreateProfileHandler::ShowProfileCreationError(

@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -46,8 +47,6 @@ void ChangeAppControllerForProfile(Profile* profile,
     [controller windowChangedToProfile:profile];
   }
 }
-
-}  // namespace
 
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
@@ -165,11 +164,13 @@ class ReauthDialogDelegate : public UserManager::BaseReauthDialogDelegate,
     CloseReauthDialog();
   }
 
-private:
+ private:
   std::unique_ptr<UserManagerWebContentsDelegate> hotKeysWebContentsDelegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ReauthDialogDelegate);
 };
+
+}  // namespace
 
 // WindowController for the reauth dialog.
 @interface ReauthDialogWindowController
@@ -186,6 +187,7 @@ private:
                 email:(std::string)email
                reason:(signin_metrics::Reason)reason
           webContents:(content::WebContents*)webContents;
+- (void)showURL:(const GURL&)url;
 - (void)close;
 @end
 
@@ -233,13 +235,17 @@ private:
   return self;
 }
 
+- (void)showURL:(const GURL&)url {
+  reauthWebContents_->GetController().LoadURL(url, content::Referrer(),
+                                              ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                              std::string());
+}
+
 - (void)show {
   GURL url = signin::GetReauthURLWithEmail(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason_,
       emailAddress_);
-  reauthWebContents_->GetController().LoadURL(url, content::Referrer(),
-                                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                        std::string());
+  [self showURL:url];
 }
 
 - (void)closeButtonClicked:(NSButton*)button {
@@ -278,6 +284,7 @@ private:
 - (void)showReauthDialogWithProfile:(Profile*)profile
                               email:(std::string)email
                              reason:(signin_metrics::Reason)reason;
+- (void)displayErrorMessage;
 - (void)closeReauthDialog;
 @end
 
@@ -393,6 +400,10 @@ private:
           webContents:webContents_.get()]);
 }
 
+- (void)displayErrorMessage {
+  [reauth_window_controller_ showURL:GURL(chrome::kChromeUISigninErrorURL)];
+}
+
 - (void)closeReauthDialog {
   [reauth_window_controller_ close];
 }
@@ -487,6 +498,27 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
   user_manager_shown_callbacks_for_testing_->push_back(callback);
 }
 
+// static
+void UserManager::ShowSigninDialog(content::BrowserContext* browser_context,
+                                   const base::FilePath& profile_path) {
+  if (!IsShowing())
+    return;
+  instance_->SetSigninProfilePath(profile_path);
+  ShowReauthDialog(browser_context, std::string(),
+                   signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+}
+
+// static
+void UserManager::DisplayErrorMessage() {
+  DCHECK(instance_);
+  instance_->DisplayErrorMessage();
+}
+
+// static
+base::FilePath UserManager::GetSigninProfilePath() {
+  return instance_->GetSigninProfilePath();
+}
+
 void UserManagerMac::ShowReauthDialog(content::BrowserContext* browser_context,
                                       const std::string& email,
                                       signin_metrics::Reason reason) {
@@ -532,4 +564,16 @@ void UserManagerMac::WindowWasClosed() {
   CloseReauthDialog();
   instance_ = NULL;
   delete this;
+}
+
+void UserManagerMac::DisplayErrorMessage() {
+  [window_controller_ displayErrorMessage];
+}
+
+void UserManagerMac::SetSigninProfilePath(const base::FilePath& profile_path) {
+  signin_profile_path_ = profile_path;
+}
+
+base::FilePath UserManagerMac::GetSigninProfilePath() {
+  return signin_profile_path_;
 }

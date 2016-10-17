@@ -472,22 +472,15 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   content::BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
 
-// In order to support the upgrade case where we have a local hash but no
-// password token, the user perform a full online reauth.
-// TODO(zmin): Remove the condition for MACOSX once user_manager_mac.cc is
-// updated.
-#if !defined(OS_MACOSX)
   if (!email_address_.empty()) {
+    // In order to support the upgrade case where we have a local hash but no
+    // password token, the user must perform a full online reauth.
     UserManager::ShowReauthDialog(browser_context, email_address_,
                                   signin_metrics::Reason::REASON_UNLOCK);
   } else {
     // Fresh sign in via user manager without existing email address.
     UserManager::ShowSigninDialog(browser_context, profile_path);
   }
-#else
-  UserManager::ShowReauthDialog(browser_context, email_address_,
-                                signin_metrics::Reason::REASON_UNLOCK);
-#endif
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {

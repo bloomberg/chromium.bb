@@ -39,18 +39,12 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
   bool is_system_profile =
       webui_profile->GetOriginalProfile()->IsSystemProfile();
 
-// TODO(zmin): Remove the condition for MACOSX once user_manager_mac.cc is
-// updated.
-#if !defined(OS_MACOSX)
   if (is_system_profile) {
     signin_profile = g_browser_process->profile_manager()->GetProfileByPath(
         UserManager::GetSigninProfilePath());
   } else {
     signin_profile = webui_profile;
   }
-#else
-  signin_profile = webui_profile;
-#endif
 
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninErrorHost);

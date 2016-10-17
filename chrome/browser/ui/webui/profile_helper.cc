@@ -32,8 +32,6 @@ void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
     return;
 
   if (signin::IsForceSigninEnabled()) {
-// TODO(zmin): Remove the switcher once the UserManager API is finished on Mac.
-#if !defined(OS_MACOSX)
     if (!UserManager::IsShowing()) {
       UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
                         profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
@@ -44,7 +42,6 @@ void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
         base::Bind(&ShowSigninDialog, profile->GetPath()), base::string16(),
         std::string(), std::string());
 
-#endif
   } else {
     profiles::FindOrCreateNewWindowForProfile(
         profile, chrome::startup::IS_PROCESS_STARTUP,
