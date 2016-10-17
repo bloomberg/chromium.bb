@@ -4,24 +4,27 @@
 
 #include "blimp/net/helium/syncable.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/common/mandatory_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace blimp {
 namespace {
 
 // This is a sample implementation that demostrates the implementation
 // of the Syncable and TwoPhaseSyncable
-
 // For simplicity of this example, the ChangeSet will be an integer.
-class FakeIntSyncable : public Syncable<int> {
+class FakeIntSyncable : public Syncable {
  public:
   explicit FakeIntSyncable(VersionVectorGenerator* clock_gen)
-      : Syncable<int>(), clock_gen_(clock_gen), value_(0) {
+      : clock_gen_(clock_gen), value_(0) {
     last_modified_ = clock_gen_->current();
   }
 
@@ -29,16 +32,17 @@ class FakeIntSyncable : public Syncable<int> {
     return from.local_revision() < last_modified_.local_revision();
   }
 
-  std::unique_ptr<int> CreateChangesetToCurrent(
-      const VersionVector& from) override {
-    return base::MakeUnique<int>(value_);
+  void CreateChangesetToCurrent(
+      const VersionVector& from,
+      google::protobuf::io::CodedOutputStream* output_stream) override {
+    output_stream->WriteVarint32(value_);
   }
 
-  void ApplyChangeset(const VersionVector& from,
-                      const VersionVector& to,
-                      std::unique_ptr<int> changeset) override {
-    // Restore the value
-    value_ = *changeset;
+  void ApplyChangeset(
+      const VersionVector& from,
+      const VersionVector& to,
+      google::protobuf::io::CodedInputStream* input_stream) override {
+    input_stream->ReadVarint32(&value_);
 
     // Update our clock to the latest clock
     last_modified_ = to;
@@ -62,7 +66,7 @@ class FakeIntSyncable : public Syncable<int> {
   // The last time this object was changed
   VersionVectorGenerator* clock_gen_;
   VersionVector last_modified_;
-  int32_t value_;
+  uint32_t value_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIntSyncable);
 };
@@ -72,40 +76,41 @@ class ParentObjectSyncable : public TwoPhaseSyncable {
   explicit ParentObjectSyncable(VersionVectorGenerator* clock_gen)
       : TwoPhaseSyncable(), child1_(clock_gen), child2_(clock_gen) {}
 
-  std::unique_ptr<proto::ChangesetMessage> CreateChangesetToCurrent(
-      const VersionVector& from) override {
-    std::unique_ptr<proto::ChangesetMessage> changeset =
-        base::MakeUnique<proto::ChangesetMessage>();
-
-    proto::TestChangesetMessage* bm = changeset->mutable_test();
-
+  void CreateChangesetToCurrent(
+      const VersionVector& from,
+      google::protobuf::io::CodedOutputStream* output_stream) override {
+    // Low-level serialization.
+    // Field format: <field count> (<field id> <varint>)*.
+    int count = child1_.ModifiedSince(from) + child2_.ModifiedSince(from);
+    output_stream->WriteVarint32(count);
     if (child1_.ModifiedSince(from)) {
-      std::unique_ptr<int> value1 = child1_.CreateChangesetToCurrent(from);
-      bm->set_value1(*value1);
+      output_stream->WriteTag(1);
+      child1_.CreateChangesetToCurrent(from, output_stream);
     }
 
     if (child2_.ModifiedSince(from)) {
-      std::unique_ptr<int> value2 = child2_.CreateChangesetToCurrent(from);
-      bm->set_value2(*value2);
+      output_stream->WriteTag(2);
+      child2_.CreateChangesetToCurrent(from, output_stream);
     }
-
-    return changeset;
   }
 
   void ApplyChangeset(
       const VersionVector& from,
       const VersionVector& to,
-      std::unique_ptr<proto::ChangesetMessage> changeset) override {
-    proto::TestChangesetMessage bm = changeset->test();
+      google::protobuf::io::CodedInputStream* input_stream) override {
+    uint32_t count;
+    CHECK(input_stream->ReadVarint32(&count));
+    CHECK_GT(count, 0u);
 
-    int child1_value = bm.value1();
-    if (child1_value != 0) {
-      child1_.ApplyChangeset(from, to, base::MakeUnique<int>(child1_value));
-    }
-
-    int child2_value = bm.value2();
-    if (child2_value != 0) {
-      child2_.ApplyChangeset(from, to, base::MakeUnique<int>(child2_value));
+    for (uint32_t i = 0; i < count; ++i) {
+      switch (input_stream->ReadTag()) {
+        case 1:
+          child1_.ApplyChangeset(from, to, input_stream);
+          break;
+        case 2:
+          child2_.ApplyChangeset(from, to, input_stream);
+          break;
+      }
     }
   }
 
@@ -129,8 +134,8 @@ class ParentObjectSyncable : public TwoPhaseSyncable {
     done.Run();
   }
 
-  FakeIntSyncable* get_mutable_child1() { return &child1_; }
-  FakeIntSyncable* get_mutable_child2() { return &child2_; }
+  FakeIntSyncable* mutable_child1() { return &child1_; }
+  FakeIntSyncable* mutable_child2() { return &child2_; }
 
  private:
   FakeIntSyncable child1_;
@@ -142,62 +147,82 @@ class ParentObjectSyncable : public TwoPhaseSyncable {
 class SyncableTest : public testing::Test {
  public:
   SyncableTest()
-      : clock_gen1_(base::MakeUnique<VersionVectorGenerator>()),
-        clock_gen2_(base::MakeUnique<VersionVectorGenerator>()),
-        last_sync_local_(clock_gen1_->current()),
-        last_sync_remote_(clock_gen2_->current()),
-        parent_local_(clock_gen1_.get()),
-        parent_remote_(clock_gen2_.get()) {}
+      : last_sync_master_(master_clock_.current()),
+        last_sync_replica_(replica_clock_.current()),
+        master_(&master_clock_),
+        replica_(&replica_clock_) {}
 
   ~SyncableTest() override {}
 
  protected:
-  void ChangeChild(int value1_set,
-                   int value1_get,
-                   int value2_get,
-                   FakeIntSyncable* child_to_be_modified,
-                   FakeIntSyncable* child_to_be_read_only) {
-    // Lets modify a children object
-    child_to_be_modified->SetValue(value1_set);
+  // Propagates pending changes from |master_| to |replica_|.
+  void Synchronize() {
+    EXPECT_TRUE(master_.ModifiedSince(last_sync_master_));
+    EXPECT_FALSE(replica_.ModifiedSince(last_sync_replica_));
 
-    // At this point |child1| and |parent_local_| should have its clock
-    // incremented whereas |child2| should still be the same.
-    EXPECT_TRUE(child_to_be_modified->ModifiedSince(last_sync_local_));
-    EXPECT_FALSE(child_to_be_read_only->ModifiedSince(last_sync_local_));
+    // Create the changeset stream from |master_|.
+    std::string changeset;
+    google::protobuf::io::StringOutputStream raw_output_stream(&changeset);
+    google::protobuf::io::CodedOutputStream output_stream(&raw_output_stream);
 
-    std::unique_ptr<proto::ChangesetMessage> changeset =
-        parent_local_.CreateChangesetToCurrent(last_sync_local_);
+    master_.CreateChangesetToCurrent(last_sync_master_, &output_stream);
+    CHECK(!changeset.empty());
+    output_stream.Trim();
 
-    VersionVector local_clock = clock_gen1_->current();
-    VersionVector remote_clock = local_clock.Invert();
+    // Apply the changeset stream to |replica_|.
+    google::protobuf::io::ArrayInputStream raw_input_stream(changeset.data(),
+                                                            changeset.size());
+    google::protobuf::io::CodedInputStream input_stream(&raw_input_stream);
 
-    parent_remote_.ApplyChangeset(last_sync_remote_, remote_clock,
-                                  std::move(changeset));
-    last_sync_local_ = local_clock;
-    parent_local_.ReleaseCheckpointsBefore(local_clock);
-    EXPECT_FALSE(child_to_be_modified->ModifiedSince(last_sync_local_));
-    EXPECT_FALSE(child_to_be_read_only->ModifiedSince(last_sync_local_));
+    replica_.ApplyChangeset(last_sync_replica_, replica_clock_.current(),
+                            &input_stream);
+    last_sync_master_ = master_clock_.current();
+    master_.ReleaseCheckpointsBefore(last_sync_master_);
 
-    EXPECT_EQ(value1_get, child_to_be_modified->value());
-    EXPECT_EQ(value2_get, child_to_be_read_only->value());
+    // Ensure that the changeset stream was consumed in its entirety.
+    EXPECT_FALSE(master_.ModifiedSince(last_sync_master_));
+    EXPECT_FALSE(replica_.ModifiedSince(last_sync_replica_));
+    EXPECT_FALSE(input_stream.Skip(1));
   }
 
-  std::unique_ptr<VersionVectorGenerator> clock_gen1_;
-  std::unique_ptr<VersionVectorGenerator> clock_gen2_;
-  VersionVector last_sync_local_;
-  VersionVector last_sync_remote_;
-  ParentObjectSyncable parent_local_;
-  ParentObjectSyncable parent_remote_;
+  VersionVectorGenerator master_clock_;
+  VersionVectorGenerator replica_clock_;
+  VersionVector last_sync_master_;
+  VersionVector last_sync_replica_;
+  ParentObjectSyncable master_;
+  ParentObjectSyncable replica_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncableTest);
 };
 
-TEST_F(SyncableTest, CreateAndApplyChangesetTest) {
-  ChangeChild(123, 123, 0, parent_local_.get_mutable_child1(),
-              parent_local_.get_mutable_child2());
-  ChangeChild(456, 456, 123, parent_local_.get_mutable_child2(),
-              parent_local_.get_mutable_child1());
+TEST_F(SyncableTest, SequentialMutations) {
+  master_.mutable_child1()->SetValue(123);
+  Synchronize();
+  EXPECT_EQ(123, replica_.mutable_child1()->value());
+
+  master_.mutable_child1()->SetValue(456);
+  Synchronize();
+  EXPECT_EQ(456, replica_.mutable_child1()->value());
+}
+
+TEST_F(SyncableTest, MutateMultiple) {
+  master_.mutable_child1()->SetValue(123);
+  master_.mutable_child2()->SetValue(456);
+  Synchronize();
+  EXPECT_EQ(123, replica_.mutable_child1()->value());
+  EXPECT_EQ(456, replica_.mutable_child2()->value());
+}
+
+TEST_F(SyncableTest, MutateMultipleDiscrete) {
+  master_.mutable_child1()->SetValue(123);
+  Synchronize();
+  EXPECT_EQ(123, replica_.mutable_child1()->value());
+
+  master_.mutable_child2()->SetValue(456);
+  Synchronize();
+  EXPECT_EQ(123, replica_.mutable_child1()->value());
+  EXPECT_EQ(456, replica_.mutable_child2()->value());
 }
 
 }  // namespace

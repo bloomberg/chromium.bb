@@ -14,6 +14,15 @@
 #include "blimp/net/helium/version_vector.h"
 #include "blimp/net/helium/version_vector_generator.h"
 
+namespace google {
+namespace protobuf {
+namespace io {
+class CodedInputStream;
+class CodedOutputStream;
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
 namespace blimp {
 
 namespace proto {
@@ -33,28 +42,29 @@ class ChangesetMessage;
 // Syncable is a base interface that is used for both self contained
 // objects (i.e. Simple register) and objects which are disconnected replicas
 // of external state.
-//
-template <class ChangesetType>
 class Syncable {
  public:
   virtual ~Syncable() {}
 
-  // Constructs a changeset between the |from| revision and its current state.
-  // The Sync layer will encapsulate the changeset with details since |from|,
+  // Emits a byte stream representation a changeset comprised of the changes
+  // between |from| and the current revision.
+  //
+  // The Sync layer will construct the changeset with details since |from|,
   // but the Syncable is responsible for including any revision information
   // additional to that expressed by the VersionVectors, that is necessary to
   // detect and resolve conflicts.
-  // The changeset is returned as a return value.
-  virtual std::unique_ptr<ChangesetType> CreateChangesetToCurrent(
-      const VersionVector& from) = 0;
+  virtual void CreateChangesetToCurrent(
+      const VersionVector& from,
+      google::protobuf::io::CodedOutputStream* output_stream) = 0;
 
-  // Applies a |changeset| given as parameter to the contents of the
-  // Syncable.
+  // Reads and applies a stream of changes originating from this Syncable. The
+  // unconsumed bytes of |input_stream| are left intact.
   // The VersionVectors |from| and |to| can be used to detect and resolve
   // concurrent change conflicts.
-  virtual void ApplyChangeset(const VersionVector& from,
-                              const VersionVector& to,
-                              std::unique_ptr<ChangesetType> changeset) = 0;
+  virtual void ApplyChangeset(
+      const VersionVector& from,
+      const VersionVector& to,
+      google::protobuf::io::CodedInputStream* input_stream) = 0;
 
   // Gives a chance for the Syncable to delete any old data previous to the
   // |checkpoint|.
@@ -80,7 +90,7 @@ class Syncable {
 // 2.1) ApplyChangeset is called which updates the local state.
 // 2.2) PostApplyChangeset is called to apply the state from the local
 // object into the external state.
-class TwoPhaseSyncable : public Syncable<proto::ChangesetMessage> {
+class TwoPhaseSyncable : public Syncable {
  public:
   ~TwoPhaseSyncable() override {}
 
