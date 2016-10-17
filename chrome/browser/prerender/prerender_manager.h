@@ -99,6 +99,13 @@ class PrerenderManager : public content::NotificationObserver,
     CLEAR_MAX = 0x1 << 2
   };
 
+  // Used to manipulate time for testing.
+  class TimeOverride {
+   public:
+    virtual base::Time GetCurrentTime() const = 0;
+    virtual base::TimeTicks GetCurrentTimeTicks() const = 0;
+  };
+
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
   ~PrerenderManager() override;
@@ -312,11 +319,13 @@ class PrerenderManager : public content::NotificationObserver,
 
   Profile* profile() const { return profile_; }
 
-  // Classes which will be tested in prerender unit browser tests should use
-  // these methods to get times for comparison, so that the test framework can
-  // mock advancing/retarding time.
-  virtual base::Time GetCurrentTime() const;
-  virtual base::TimeTicks GetCurrentTimeTicks() const;
+  base::Time GetCurrentTime() const;
+  base::TimeTicks GetCurrentTimeTicks() const;
+
+  // For testing.
+  // TODO(mattcary): unify time testing by using base::SimpleTestClock and
+  // SimpleTestTickClock.
+  void SetTimeOverride(std::unique_ptr<TimeOverride> override);
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.
@@ -595,6 +604,8 @@ class PrerenderManager : public content::NotificationObserver,
   // Set of process hosts being prerendered.
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
   PrerenderProcessSet prerender_process_hosts_;
+
+  std::unique_ptr<TimeOverride> time_override_;
 
   base::WeakPtrFactory<PrerenderManager> weak_factory_;
 

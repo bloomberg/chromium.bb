@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_test_utils.h"
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -13,6 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -24,6 +27,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -63,7 +67,7 @@ class MockHTTPJob : public net::URLRequestMockHTTPJob {
   base::Closure start_callback_;
 };
 
-// Protocol handler which counts the number of requests that start.
+// URLRequestInterceptor which counts the number of requests that start.
 class CountingInterceptor : public net::URLRequestInterceptor {
  public:
   CountingInterceptor(const base::FilePath& file,
@@ -307,6 +311,51 @@ void TestPrerenderContents::Observe(
   PrerenderContents::Observe(type, source, details);
 }
 
+DestructionWaiter::DestructionWaiter(TestPrerenderContents* prerender_contents,
+                                     FinalStatus expected_final_status)
+    : expected_final_status_(expected_final_status),
+      saw_correct_status_(false) {
+  if (!prerender_contents) {
+    // TODO(mattcary): It is not correct to assume the contents were destroyed
+    // correctly, but until the prefetch renderer destruction race can be fixed
+    // there's no other way to keep tests from flaking.
+    saw_correct_status_ = true;
+    return;
+  }
+  if (prerender_contents->final_status() != FINAL_STATUS_MAX) {
+    // The contents was already destroyed by the time this was called.
+    MarkDestruction(prerender_contents->final_status());
+  } else {
+    marker_ = base::MakeUnique<DestructionMarker>(this);
+    prerender_contents->AddObserver(marker_.get());
+  }
+}
+
+DestructionWaiter::~DestructionWaiter() {}
+
+bool DestructionWaiter::WaitForDestroy() {
+  if (!saw_correct_status_) {
+    wait_loop_.Run();
+  }
+  return saw_correct_status_;
+}
+
+void DestructionWaiter::MarkDestruction(FinalStatus reason) {
+  saw_correct_status_ = (reason == expected_final_status_);
+  wait_loop_.Quit();
+}
+
+DestructionWaiter::DestructionMarker::DestructionMarker(
+    DestructionWaiter* waiter)
+    : waiter_(waiter) {}
+
+DestructionWaiter::DestructionMarker::~DestructionMarker() {}
+
+void DestructionWaiter::DestructionMarker::OnPrerenderStop(
+    PrerenderContents* contents) {
+  waiter_->MarkDestruction(contents->final_status());
+}
+
 TestPrerender::TestPrerender()
     : contents_(nullptr), number_of_loads_(0), expected_number_of_loads_(0) {}
 
@@ -429,6 +478,15 @@ PrerenderInProcessBrowserTest::GetSessionStorageNamespace() const {
   return web_contents->GetController().GetDefaultSessionStorageNamespace();
 }
 
+std::string PrerenderInProcessBrowserTest::MakeAbsolute(
+    const std::string& path) {
+  CHECK(!path.empty());
+  if (path.front() == '/') {
+    return path;
+  }
+  return "/" + path;
+}
+
 bool PrerenderInProcessBrowserTest::UrlIsInPrerenderManager(
     const std::string& html_file) const {
   return UrlIsInPrerenderManager(embedded_test_server()->GetURL(html_file));
@@ -462,17 +520,8 @@ std::unique_ptr<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
     const std::string& html_file,
     FinalStatus expected_final_status,
     int expected_number_of_loads) {
-  GURL url = embedded_test_server()->GetURL(html_file);
+  GURL url = src_server()->GetURL(MakeAbsolute(html_file));
   return PrerenderTestURL(url, expected_final_status, expected_number_of_loads);
-}
-
-ScopedVector<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
-    const std::string& html_file,
-    const std::vector<FinalStatus>& expected_final_status_queue,
-    int expected_number_of_loads) {
-  GURL url = embedded_test_server()->GetURL(html_file);
-  return PrerenderTestURLImpl(url, expected_final_status_queue,
-                              expected_number_of_loads);
 }
 
 std::unique_ptr<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
@@ -487,6 +536,30 @@ std::unique_ptr<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
       .release(&prerenders);
   CHECK_EQ(1u, prerenders.size());
   return std::unique_ptr<TestPrerender>(prerenders[0]);
+}
+
+ScopedVector<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
+    const std::string& html_file,
+    const std::vector<FinalStatus>& expected_final_status_queue,
+    int expected_number_of_loads) {
+  GURL url = src_server()->GetURL(MakeAbsolute(html_file));
+  return PrerenderTestURLImpl(url, expected_final_status_queue,
+                              expected_number_of_loads);
+}
+
+net::EmbeddedTestServer* PrerenderInProcessBrowserTest::src_server() {
+  if (https_src_server_)
+    return https_src_server_.get();
+  return embedded_test_server();
+}
+
+test_utils::FakeSafeBrowsingDatabaseManager*
+PrerenderInProcessBrowserTest::GetFakeSafeBrowsingDatabaseManager() {
+  return static_cast<test_utils::FakeSafeBrowsingDatabaseManager*>(
+      safe_browsing_factory()
+          ->test_safe_browsing_service()
+          ->database_manager()
+          .get());
 }
 
 void PrerenderInProcessBrowserTest::SetUpInProcessBrowserTestFixture() {
@@ -521,15 +594,57 @@ void PrerenderInProcessBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(safe_browsing_factory_->test_safe_browsing_service());
 }
 
+void PrerenderInProcessBrowserTest::UseHttpsSrcServer() {
+  if (https_src_server_)
+    return;
+  https_src_server_.reset(
+      new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+  https_src_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+  CHECK(https_src_server_->Start());
+}
+
+base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerTab(
+    const char* page_title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
+                                    base::ASCIIToUTF16(page_title));
+}
+
+base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
+    const char* page_title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
+                                    base::ASCIIToUTF16(page_title));
+}
+
+ScopedVector<TestPrerender>
+PrerenderInProcessBrowserTest::NavigateWithPrerenders(
+    const GURL& loader_url,
+    const std::vector<FinalStatus>& expected_final_status_queue,
+    int expected_number_of_loads) {
+  CHECK(!expected_final_status_queue.empty());
+  ScopedVector<TestPrerender> prerenders;
+  for (size_t i = 0; i < expected_final_status_queue.size(); i++) {
+    prerenders.push_back(
+        prerender_contents_factory()
+            ->ExpectPrerenderContents(expected_final_status_queue[i])
+            .release());
+  }
+
+  // Navigate to the loader URL and then wait for the first prerender to be
+  // created.
+  ui_test_utils::NavigateToURL(current_browser(), loader_url);
+  prerenders.get().at(0)->WaitForCreate();
+  prerenders.get().at(0)->WaitForLoads(expected_number_of_loads);
+
+  return prerenders;
+}
+
 void CreateCountingInterceptorOnIO(
     const GURL& url,
     const base::FilePath& file,
     const base::WeakPtr<RequestCounter>& counter) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  std::unique_ptr<net::URLRequestInterceptor> request_interceptor(
-      new CountingInterceptor(file, counter));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::move(request_interceptor));
+      url, base::MakeUnique<CountingInterceptor>(file, counter));
 }
 
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {

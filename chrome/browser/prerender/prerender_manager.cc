@@ -147,15 +147,16 @@ struct PrerenderManager::NavigationRecord {
 PrerenderManager::PrerenderManager(Profile* profile)
     : profile_(profile),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
-      last_prerender_start_time_(
-          GetCurrentTimeTicks() -
-          base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
       histograms_(new PrerenderHistograms()),
       profile_network_bytes_(0),
       last_recorded_profile_network_bytes_(0),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  last_prerender_start_time_ =
+      GetCurrentTimeTicks() -
+      base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs);
 
   // Certain experiments override our default config_ values.
   switch (PrerenderManager::GetMode()) {
@@ -1071,11 +1072,21 @@ void PrerenderManager::DeleteOldEntries() {
 }
 
 base::Time PrerenderManager::GetCurrentTime() const {
+  if (time_override_) {
+    return time_override_->GetCurrentTime();
+  }
   return base::Time::Now();
 }
 
 base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
+  if (time_override_) {
+    return time_override_->GetCurrentTimeTicks();
+  }
   return base::TimeTicks::Now();
+}
+
+void PrerenderManager::SetTimeOverride(std::unique_ptr<TimeOverride> override) {
+  time_override_ = std::move(override);
 }
 
 std::unique_ptr<PrerenderContents> PrerenderManager::CreatePrerenderContents(

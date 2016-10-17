@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -66,7 +65,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -117,7 +115,6 @@
 #include "net/url_request/url_request_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using chrome_browser_net::NetworkPredictionOptions;
@@ -745,15 +742,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     EXPECT_TRUE(js_result);
   }
 
-  void UseHttpsSrcServer() {
-    if (https_src_server_)
-      return;
-    https_src_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_src_server_->ServeFilesFromSourceDirectory("chrome/test/data");
-    CHECK(https_src_server_->Start());
-  }
-
   void DisableJavascriptCalls() {
     call_javascript_ = false;
   }
@@ -852,15 +840,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return history_list->GetSize();
   }
 
-  test_utils::FakeSafeBrowsingDatabaseManager*
-  GetFakeSafeBrowsingDatabaseManager() {
-    return static_cast<test_utils::FakeSafeBrowsingDatabaseManager*>(
-        safe_browsing_factory()
-            ->test_safe_browsing_service()
-            ->database_manager()
-            .get());
-  }
-
   void SetLoaderHostOverride(const std::string& host) {
     loader_host_override_ = host;
     host_resolver()->AddRule(host, "127.0.0.1");
@@ -921,20 +900,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
         base::ASCIIToUTF16(javascript));
   }
 
-  // Returns a string for pattern-matching TaskManager tab entries.
-  base::string16 MatchTaskManagerTab(const char* page_title) {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
-                                      base::ASCIIToUTF16(page_title));
-  }
-
-  // Returns a string for pattern-matching TaskManager prerender entries.
-  base::string16 MatchTaskManagerPrerender(const char* page_title) {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
-                                      base::ASCIIToUTF16(page_title));
-  }
-
-  const base::HistogramTester& histogram_tester() { return histogram_tester_; }
-
  private:
   // TODO(davidben): Remove this altogether so the tests don't globally assume
   // only one prerender.
@@ -955,34 +920,18 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     net::test_server::GetFilePathWithReplacements(
         loader_path_, replacement_text, &replacement_path);
 
-    const net::EmbeddedTestServer* src_server = embedded_test_server();
-    if (https_src_server_)
-      src_server = https_src_server_.get();
-    GURL loader_url = src_server->GetURL(
-        replacement_path + "&" + loader_query_);
+    GURL loader_url =
+        src_server()->GetURL(replacement_path + "&" + loader_query_);
 
     GURL::Replacements loader_replacements;
     if (!loader_host_override_.empty())
       loader_replacements.SetHostStr(loader_host_override_);
     loader_url = loader_url.ReplaceComponents(loader_replacements);
 
-    CHECK(!expected_final_status_queue.empty());
-    ScopedVector<TestPrerender> prerenders;
-    for (size_t i = 0; i < expected_final_status_queue.size(); i++) {
-      prerenders.push_back(
-          prerender_contents_factory()
-              ->ExpectPrerenderContents(expected_final_status_queue[i])
-              .release());
-    }
+    ScopedVector<TestPrerender> prerenders = NavigateWithPrerenders(
+        loader_url, expected_final_status_queue, expected_number_of_loads);
 
     FinalStatus expected_final_status = expected_final_status_queue.front();
-
-    // Navigate to the loader URL and then wait for the first prerender to be
-    // created.
-    ui_test_utils::NavigateToURL(current_browser(), loader_url);
-    prerenders[0]->WaitForCreate();
-    prerenders[0]->WaitForLoads(expected_number_of_loads);
-
     if (ShouldAbortPrerenderBeforeSwap(expected_final_status)) {
       // The prerender will abort on its own. Assert it does so correctly.
       prerenders[0]->WaitForStop();
@@ -1068,13 +1017,11 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   }
 
   GURL dest_url_;
-  std::unique_ptr<net::EmbeddedTestServer> https_src_server_;
   bool call_javascript_;
   bool check_load_events_;
   std::string loader_host_override_;
   std::string loader_path_;
   std::string loader_query_;
-  base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -1685,11 +1632,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
 
 // Checks that the referrer is not set when prerendering and the source page is
 // HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderNoSSLReferrer) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
+  // Use http:// url for the prerendered page main resource.
+  GURL url(
+      embedded_test_server()->GetURL("/prerender/prerender_no_referrer.html"));
+
+  // Use https:// for all other resources.
   UseHttpsSrcServer();
-  PrerenderTestURL("/prerender/prerender_no_referrer.html", FINAL_STATUS_USED,
-                   1);
+
+  PrerenderTestURL(url, FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -2172,16 +2123,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrDelete) {
                    FINAL_STATUS_INVALID_HTTP_METHOD, 1);
 }
 
-// Checks that a top-level page which would trigger an SSL error is canceled.
+// Sets up HTTPS server for prerendered page, and checks that an SSL error will
+// cancel the prerender. The prerenderer loader will be served through HTTP.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorTopLevel) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/prerender_page.html");
-  PrerenderTestURL(https_url,
-                   FINAL_STATUS_SSL_ERROR,
-                   0);
+  PrerenderTestURL(https_url, FINAL_STATUS_SSL_ERROR, 0);
 }
 
 // Checks that an SSL error that comes from a subresource does not cancel

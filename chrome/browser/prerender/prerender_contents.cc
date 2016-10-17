@@ -186,19 +186,7 @@ class PrerenderContents::WebContentsDelegateImpl
   PrerenderContents* prerender_contents_;
 };
 
-void PrerenderContents::Observer::OnPrerenderStopLoading(
-    PrerenderContents* contents) {
-}
-
-void PrerenderContents::Observer::OnPrerenderDomContentLoaded(
-    PrerenderContents* contents) {
-}
-
-PrerenderContents::Observer::Observer() {
-}
-
-PrerenderContents::Observer::~Observer() {
-}
+PrerenderContents::Observer::~Observer() {}
 
 PrerenderContents::PrerenderContents(
     PrerenderManager* prerender_manager,

@@ -74,21 +74,21 @@ class PrerenderContents : public content::NotificationObserver,
   class Observer {
    public:
     // Signals that the prerender has started running.
-    virtual void OnPrerenderStart(PrerenderContents* contents) = 0;
+    virtual void OnPrerenderStart(PrerenderContents* contents) {}
 
     // Signals that the prerender has had its load event.
-    virtual void OnPrerenderStopLoading(PrerenderContents* contents);
+    virtual void OnPrerenderStopLoading(PrerenderContents* contents) {}
 
     // Signals that the prerender has had its 'DOMContentLoaded' event.
-    virtual void OnPrerenderDomContentLoaded(PrerenderContents* contents);
+    virtual void OnPrerenderDomContentLoaded(PrerenderContents* contents) {}
 
     // Signals that the prerender has stopped running. A PrerenderContents with
     // an unset final status will always call OnPrerenderStop before being
     // destroyed.
-    virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
+    virtual void OnPrerenderStop(PrerenderContents* contents) {}
 
    protected:
-    Observer();
+    Observer() {}
     virtual ~Observer() = 0;
   };
 
