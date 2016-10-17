@@ -43,7 +43,8 @@ void SettingsManager::UpdateEngineSettings(const EngineSettings& settings) {
 
   if (settings_.record_whole_document != old_settings.record_whole_document) {
     // Notify the observers that the web preferences have changed.
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnWebPreferencesChanged());
+    for (auto& observer : observer_list_)
+      observer.OnWebPreferencesChanged();
   }
 }
 

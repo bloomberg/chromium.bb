@@ -39,8 +39,8 @@ void BlimpScreen::UpdateDisplayScaleAndSize(float scale,
 
   display_.SetScaleAndBounds(scale, gfx::Rect(size));
 
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayMetricsChanged(display_, metrics));
+  for (auto& observer : observers_)
+    observer.OnDisplayMetricsChanged(display_, metrics);
 }
 
 gfx::Point BlimpScreen::GetCursorScreenPoint() {

@@ -36,14 +36,15 @@ base::WeakPtr<ConnectionStatus> ConnectionStatus::GetWeakPtr() {
 void ConnectionStatus::OnConnected() {
   is_connected_ = true;
   UMA_HISTOGRAM_BOOLEAN("Blimp.Connected", true);
-  FOR_EACH_OBSERVER(NetworkEventObserver, connection_observers_, OnConnected());
+  for (auto& observer : connection_observers_)
+    observer.OnConnected();
 }
 
 void ConnectionStatus::OnDisconnected(int result) {
   is_connected_ = false;
   UMA_HISTOGRAM_BOOLEAN("Blimp.Connected", false);
-  FOR_EACH_OBSERVER(NetworkEventObserver, connection_observers_,
-                    OnDisconnected(result));
+  for (auto& observer : connection_observers_)
+    observer.OnDisconnected(result);
 }
 
 }  // namespace client

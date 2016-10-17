@@ -45,7 +45,8 @@ BlimpContentsImpl::BlimpContentsImpl(
 }
 
 BlimpContentsImpl::~BlimpContentsImpl() {
-  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_, BlimpContentsDying());
+  for (auto& observer : observers_)
+    observer.BlimpContentsDying();
   ime_feature_->set_delegate(nullptr);
 }
 
@@ -103,18 +104,18 @@ bool BlimpContentsImpl::HasObserver(BlimpContentsObserver* observer) {
 }
 
 void BlimpContentsImpl::OnNavigationStateChanged() {
-  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
-                    OnNavigationStateChanged());
+  for (auto& observer : observers_)
+    observer.OnNavigationStateChanged();
 }
 
 void BlimpContentsImpl::OnLoadingStateChanged(bool loading) {
-  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
-                    OnLoadingStateChanged(loading));
+  for (auto& observer : observers_)
+    observer.OnLoadingStateChanged(loading);
 }
 
 void BlimpContentsImpl::OnPageLoadingStateChanged(bool loading) {
-  FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
-                    OnPageLoadingStateChanged(loading));
+  for (auto& observer : observers_)
+    observer.OnPageLoadingStateChanged(loading);
 }
 
 void BlimpContentsImpl::SetSizeAndScale(const gfx::Size& size,

@@ -192,8 +192,8 @@ void BlimpConnection::OnConnectionError(int error) {
   VLOG(1) << "OnConnectionError, error=" << error;
 
   // Propagate the error to all observers.
-  FOR_EACH_OBSERVER(ConnectionErrorObserver, error_observers_,
-                    OnConnectionError(error));
+  for (auto& observer : error_observers_)
+    observer.OnConnectionError(error);
 }
 
 }  // namespace blimp
