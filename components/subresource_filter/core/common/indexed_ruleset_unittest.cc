@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +45,8 @@ class IndexedRulesetTest : public testing::Test {
       proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER) const {
     DCHECK_NE(matcher_.get(), nullptr);
     url::Origin origin = GetOrigin(initiator);
-    return !matcher_->ShouldDisallowResourceLoad(GURL(url), origin,
+    FirstPartyOrigin first_party(origin);
+    return !matcher_->ShouldDisallowResourceLoad(GURL(url), first_party,
                                                  element_type);
   }
 

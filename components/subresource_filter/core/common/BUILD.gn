@@ -11,6 +11,8 @@ static_library("common") {
     "closed_hash_map.h",
     "copying_file_stream.cc",
     "copying_file_stream.h",
+    "first_party_origin.cc",
+    "first_party_origin.h",
     "fuzzy_pattern_matching.cc",
     "fuzzy_pattern_matching.h",
     "indexed_ruleset.cc",
@@ -60,6 +62,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "closed_hash_map_unittest.cc",
+    "first_party_origin_unittest.cc",
     "fuzzy_pattern_matching_unittest.cc",
     "indexed_ruleset_unittest.cc",
     "knuth_morris_pratt_unittest.cc",

@@ -21,6 +21,8 @@
 
 namespace subresource_filter {
 
+class FirstPartyOrigin;
+
 // The integer type used to represent N-grams.
 using NGram = uint64_t;
 // The hasher used for hashing N-grams.
@@ -127,7 +129,7 @@ class IndexedRulesetMatcher {
   // |document_origin| is not allowed to proceed. Always returns false if the
   // |url| is not valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
   bool ShouldDisallowResourceLoad(const GURL& url,
-                                  const url::Origin& document_origin,
+                                  const FirstPartyOrigin& first_party,
                                   proto::ElementType element_type) const;
 
  private:

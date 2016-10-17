@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
+#include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -84,11 +85,6 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
   DCHECK_NE(activation_state_, ActivationState::DISABLED);
   DCHECK(ruleset);
 
-  if (ancestor_document_urls.empty())
-    return;
-
-  document_origin_ = url::Origin(ancestor_document_urls.front());
-
   url::Origin parent_document_origin;
   for (auto iter = ancestor_document_urls.rbegin(),
             rend = ancestor_document_urls.rend();
@@ -100,8 +96,12 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
       filtering_disabled_for_document_ = true;
       return;
     }
+    // TODO(pkalinnikov): Think about avoiding this conversion.
     parent_document_origin = url::Origin(document_url);
   }
+
+  url::Origin document_origin = std::move(parent_document_origin);
+  document_origin_.reset(new FirstPartyOrigin(std::move(document_origin)));
 
   // TODO(pkalinnikov): Implement GENERICBLOCK activation type as well.
   // TODO(pkalinnikov): Match several activation types in a batch.
@@ -124,8 +124,9 @@ bool DocumentSubresourceFilter::allowLoad(
     return true;
 
   ++num_loads_evaluated_;
+  DCHECK(document_origin_);
   if (ruleset_matcher_.ShouldDisallowResourceLoad(
-          GURL(resourceUrl), document_origin_,
+          GURL(resourceUrl), *document_origin_,
           ToElementType(request_context))) {
     ++num_loads_matching_rules_;
     if (activation_state_ == ActivationState::ENABLED) {

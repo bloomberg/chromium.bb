@@ -21,6 +21,7 @@
 
 namespace subresource_filter {
 
+class FirstPartyOrigin;
 class MemoryMappedRuleset;
 
 // Performs filtering of subresource loads in the scope of a given document.
@@ -62,7 +63,9 @@ class DocumentSubresourceFilter
   ActivationState activation_state_;
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
   IndexedRulesetMatcher ruleset_matcher_;
-  url::Origin document_origin_;
+
+  // Note: Equals nullptr iff |filtering_disabled_for_document_|.
+  std::unique_ptr<FirstPartyOrigin> document_origin_;
 
   base::Closure first_disallowed_load_callback_;
 

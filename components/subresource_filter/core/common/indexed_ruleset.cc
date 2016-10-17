@@ -10,10 +10,10 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/ngram_extractor.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
 #include "components/subresource_filter/core/common/url_pattern_matching.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 namespace subresource_filter {
@@ -357,15 +357,6 @@ bool DoesInitiatorMatchDomainList(
   return max_domain_length ? is_positive : negatives_only;
 }
 
-// Returns whether |url| is a third party in respect to |first_party_origin|.
-bool IsThirdPartyUrl(const GURL& url, const url::Origin& first_party_origin) {
-  // TODO(pkalinnikov): Avoid converting Origin to GURL.
-  return first_party_origin.unique() ||
-         !net::registry_controlled_domains::SameDomainOrHost(
-             url, first_party_origin.GetURL(),
-             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-}
-
 // Returns true iff the request to |url| of type |element_type| requested by
 // |initiator| matches the |rule|'s metadata: resource type, first/third party,
 // domain list.
@@ -450,22 +441,25 @@ bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
       activation_type == proto::ACTIVATION_TYPE_UNSPECIFIED) {
     return false;
   }
-  return IsMatch(root_->whitelist_index(), document_url, parent_document_origin,
-                 proto::ELEMENT_TYPE_UNSPECIFIED, activation_type,
-                 IsThirdPartyUrl(document_url, parent_document_origin));
+  return IsMatch(
+      root_->whitelist_index(), document_url, parent_document_origin,
+      proto::ELEMENT_TYPE_UNSPECIFIED, activation_type,
+      FirstPartyOrigin::IsThirdParty(document_url, parent_document_origin));
 }
 
 bool IndexedRulesetMatcher::ShouldDisallowResourceLoad(
     const GURL& url,
-    const url::Origin& document_origin,
+    const FirstPartyOrigin& first_party,
     proto::ElementType element_type) const {
   if (!url.is_valid() || element_type == proto::ELEMENT_TYPE_UNSPECIFIED)
     return false;
-  const bool is_third_party = IsThirdPartyUrl(url, document_origin);
-  return IsMatch(root_->blacklist_index(), url, document_origin, element_type,
-                 proto::ACTIVATION_TYPE_UNSPECIFIED, is_third_party) &&
-         !IsMatch(root_->whitelist_index(), url, document_origin, element_type,
-                  proto::ACTIVATION_TYPE_UNSPECIFIED, is_third_party);
+  const bool is_third_party = first_party.IsThirdParty(url);
+  return IsMatch(root_->blacklist_index(), url, first_party.origin(),
+                 element_type, proto::ACTIVATION_TYPE_UNSPECIFIED,
+                 is_third_party) &&
+         !IsMatch(root_->whitelist_index(), url, first_party.origin(),
+                  element_type, proto::ACTIVATION_TYPE_UNSPECIFIED,
+                  is_third_party);
 }
 
 bool IndexedRulesetMatcher::IsMatch(const flat::UrlPatternIndex* index,
