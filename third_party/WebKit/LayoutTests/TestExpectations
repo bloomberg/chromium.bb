@@ -969,10 +969,6 @@ crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
 
-crbug.com/338908 fast/canvas/canvas-text-baseline-tiny-fonts.html [ NeedsRebaseline ]
-crbug.com/338908 virtual/gpu/fast/canvas/canvas-text-baseline-tiny-fonts.html [ NeedsRebaseline ]
-crbug.com/338908 virtual/display_list_2d_canvas/fast/canvas/canvas-text-baseline-tiny-fonts.html [ NeedsRebaseline ]
-
 # Mac10.10-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
