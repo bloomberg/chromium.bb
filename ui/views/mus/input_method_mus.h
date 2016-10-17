@@ -15,7 +15,10 @@
 
 namespace ui {
 class Window;
-}  // namespace mojo
+namespace mojom {
+enum class EventResult;
+}  // namespace mojom
+}  // namespace ui
 
 namespace views {
 
@@ -28,6 +31,10 @@ class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
   ~InputMethodMus() override;
 
   void Init(service_manager::Connector* connector);
+  void DispatchKeyEvent(
+      ui::KeyEvent* event,
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>
+          ack_callback);
 
   // Overridden from ui::InputMethod:
   void OnFocus() override;
@@ -49,6 +56,11 @@ class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
                                 ui::TextInputClient* focused) override;
 
   void UpdateTextInputType();
+  void ProcessKeyEventCallback(
+      const ui::KeyEvent& event,
+      std::unique_ptr<base::Callback<void(ui::mojom::EventResult)>>
+          ack_callback,
+      bool handled);
 
   // The toplevel window which is not owned by this class. This may be null
   // for tests.

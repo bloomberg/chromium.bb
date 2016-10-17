@@ -14,6 +14,8 @@
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 #include "ui/views/mus/text_input_client_impl.h"
 
+using ui::mojom::EventResult;
+
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +31,31 @@ InputMethodMus::~InputMethodMus() {}
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
   connector->ConnectToInterface("service:ui", &ime_server_);
+}
+
+void InputMethodMus::DispatchKeyEvent(
+    ui::KeyEvent* event,
+    std::unique_ptr<base::Callback<void(EventResult)>> ack_callback) {
+  DCHECK(event->type() == ui::ET_KEY_PRESSED ||
+         event->type() == ui::ET_KEY_RELEASED);
+
+  // If no text input client, do nothing.
+  if (!GetTextInputClient()) {
+    ignore_result(DispatchKeyEventPostIME(event));
+    if (ack_callback) {
+      ack_callback->Run(event->handled() ? EventResult::HANDLED
+                                         : EventResult::UNHANDLED);
+    }
+    return;
+  }
+
+  // IME driver will notify us whether it handled the event or not by calling
+  // ProcessKeyEventCallback(), in which we will run the |ack_callback| to tell
+  // the window server if client handled the event or not.
+  input_method_->ProcessKeyEvent(
+      ui::Event::Clone(*event),
+      base::Bind(&InputMethodMus::ProcessKeyEventCallback,
+                 base::Unretained(this), *event, Passed(&ack_callback)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,28 +79,7 @@ bool InputMethodMus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 }
 
 void InputMethodMus::DispatchKeyEvent(ui::KeyEvent* event) {
-  DCHECK(event->type() == ui::ET_KEY_PRESSED ||
-         event->type() == ui::ET_KEY_RELEASED);
-
-  // If no text input client, do nothing.
-  if (!GetTextInputClient()) {
-    ignore_result(DispatchKeyEventPostIME(event));
-    return;
-  }
-
-  // TODO(moshayedi): crbug.com/641355. Currently if we stop propagation of
-  // non-char events here, accelerators ddn't work. This is because we send the
-  // event ack too early in NativeWidgetMus. We should send both char and
-  // non-char events to the IME driver once we fix this.
-  if (event->is_char()) {
-    // IME driver will notify the text input client if it is not interested in
-    // event, which in turn will call DispatchKeyEventPostIME().
-    input_method_->ProcessKeyEvent(ui::Event::Clone(*event));
-    event->StopPropagation();
-    return;
-  }
-
-  ignore_result(DispatchKeyEventPostIME(event));
+  DispatchKeyEvent(event, nullptr);
 }
 
 void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
@@ -114,7 +120,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
   UpdateTextInputType();
 
-  text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused, this);
+  text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
   ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
                             GetProxy(&input_method_));
 }
@@ -129,6 +135,29 @@ void InputMethodMus::UpdateTextInputType() {
     else
       window_->SetTextInputState(std::move(state));
   }
+}
+
+void InputMethodMus::ProcessKeyEventCallback(
+    const ui::KeyEvent& event,
+    std::unique_ptr<base::Callback<void(EventResult)>> ack_callback,
+    bool handled) {
+  EventResult event_result;
+  if (!handled) {
+    // If not handled by IME, try dispatching the event to delegate to see if
+    // any client-side post-ime processing needs to be done. This includes cases
+    // like backspace, return key, etc.
+    std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
+    ignore_result(DispatchKeyEventPostIME(event_clone->AsKeyEvent()));
+    event_result =
+        event_clone->handled() ? EventResult::HANDLED : EventResult::UNHANDLED;
+  } else {
+    event_result = EventResult::HANDLED;
+  }
+  // |ack_callback| can be null if the standard form of DispatchKeyEvent() is
+  // called instead of the version which provides a callback. In mus+ash we
+  // use the version with callback, but some unittests use the standard form.
+  if (ack_callback)
+    ack_callback->Run(event_result);
 }
 
 }  // namespace views

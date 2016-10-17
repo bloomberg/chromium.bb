@@ -20,7 +20,8 @@ class TestInputMethod : public mojom::InputMethod {
   void OnTextInputModeChanged(mojom::TextInputMode text_input_mode) override {}
   void OnTextInputTypeChanged(mojom::TextInputType text_input_type) override {}
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {}
-  void ProcessKeyEvent(std::unique_ptr<Event> key_event) override {
+  void ProcessKeyEvent(std::unique_ptr<Event> key_event,
+                       const ProcessKeyEventCallback& callback) override {
     DCHECK(key_event->IsKeyEvent());
 
     if (key_event->AsKeyEvent()->is_char()) {
@@ -29,10 +30,11 @@ class TestInputMethod : public mojom::InputMethod {
       composition_event->type = mojom::CompositionEventType::INSERT_CHAR;
       composition_event->key_event = std::move(key_event);
       client_->OnCompositionEvent(std::move(composition_event));
+      callback.Run(true);
     } else {
-      client_->OnUnhandledEvent(std::move(key_event));
+      callback.Run(false);
     }
-  };
+  }
   void CancelComposition() override {}
 
   mojom::TextInputClientPtr client_;

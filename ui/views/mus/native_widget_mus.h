@@ -59,6 +59,7 @@ class TooltipController;
 }
 class DropHelper;
 class DropTargetMus;
+class InputMethodMus;
 class TooltipManagerAura;
 class WidgetDelegate;
 
@@ -300,6 +301,8 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
 
   std::unique_ptr<corewm::TooltipController> tooltip_controller_;
   std::unique_ptr<TooltipManagerAura> tooltip_manager_;
+
+  std::unique_ptr<InputMethodMus> input_method_;
 
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 

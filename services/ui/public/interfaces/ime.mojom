@@ -93,11 +93,11 @@ interface InputMethod {
   // Mus translates it to global coordinates and sends it to IME app.
   OnCaretBoundsChanged(gfx.mojom.Rect caret_bounds);
 
-  // Called to process a key event. If InputMethod handles the event, it will
-  // notify the client of the resulting composition events (there might be none)
-  // by calling TextInputClient::OnCompositionEvent(). If the event is not
-  // handled by InputMethod, TextInputClient::OnUnhandledEvent() is called.
-  ProcessKeyEvent(ui.mojom.Event key_event);
+  // Called to process a key event. The callback function will be called to
+  // notify the client if the event was handled or not. A handled event may
+  // generate zero or more composition events which will be sent to the client
+  // by calling TextInputClient::OnCompositionEvent().
+  ProcessKeyEvent(ui.mojom.Event key_event) => (bool handled);
 
   CancelComposition();
 };
@@ -107,9 +107,6 @@ interface TextInputClient {
   // Corresponds to "input method result" functions of ui::TextInputClient.
   // See comments for InputMethod::ProcessKeyEvent() for when this is called.
   OnCompositionEvent(CompositionEvent event);
-
-  // See comments for InputMethod::ProcessKeyEvent() for when this is called.
-  OnUnhandledEvent(ui.mojom.Event key_event);
 
   // TODO(moshayedi): Add functions corresponding to ui::TextInputClient for:
   // - Input text confirmation

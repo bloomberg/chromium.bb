@@ -59,9 +59,6 @@ WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
   platform_window()->SetBounds(window->bounds());
 
   compositor()->SetHostHasTransparentBackground(true);
-
-  input_method_ = base::MakeUnique<InputMethodMus>(this, window);
-  SetSharedInputMethod(input_method_.get());
 }
 
 WindowTreeHostMus::~WindowTreeHostMus() {
@@ -69,15 +66,9 @@ WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyDispatcher();
 }
 
-void WindowTreeHostMus::InitInputMethod(service_manager::Connector* connector) {
-  input_method_->Init(connector);
-}
-
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
-  if (event->IsKeyEvent() && GetInputMethod()) {
-    GetInputMethod()->DispatchKeyEvent(event->AsKeyEvent());
-    return;
-  }
+  // Key events are sent to InputMethodMus directly from NativeWidgetMus.
+  DCHECK(!event->IsKeyEvent());
   WindowTreeHostPlatform::DispatchEvent(event);
 }
 

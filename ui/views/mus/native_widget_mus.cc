@@ -46,6 +46,7 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/mus/drag_drop_client_mus.h"
 #include "ui/views/mus/drop_target_mus.h"
+#include "ui/views/mus/input_method_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -548,6 +549,9 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   aura::SetMusWindow(content_, window_);
   window->SetLocalProperty(kNativeWidgetMusKey, this);
   window_tree_host_ = base::MakeUnique<WindowTreeHostMus>(this, window_);
+  input_method_ =
+      base::MakeUnique<InputMethodMus>(window_tree_host_.get(), window_);
+  window_tree_host_->SetSharedInputMethod(input_method_.get());
 }
 
 NativeWidgetMus::~NativeWidgetMus() {
@@ -715,10 +719,8 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   // TODO(moshayedi): crbug.com/641039. Investigate whether there are any cases
   // where we need input method but don't have the WindowManagerConnection here.
-  if (WindowManagerConnection::Exists()) {
-    window_tree_host_->InitInputMethod(
-        WindowManagerConnection::Get()->connector());
-  }
+  if (WindowManagerConnection::Exists())
+    input_method_->Init(WindowManagerConnection::Get()->connector());
 
   focus_client_ =
       base::MakeUnique<FocusControllerMus>(new FocusRulesImpl(hosted_window));
@@ -1511,10 +1513,17 @@ void NativeWidgetMus::OnWindowInputEvent(
     ui::Window* view,
     const ui::Event& event_in,
     std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
+  std::unique_ptr<ui::Event> event = ui::Event::Clone(event_in);
+
+  if (event->IsKeyEvent()) {
+    input_method_->DispatchKeyEvent(event->AsKeyEvent(),
+                                    std::move(*ack_callback));
+    return;
+  }
+
   // Take ownership of the callback, indicating that we will handle it.
   EventAckHandler ack_handler(std::move(*ack_callback));
 
-  std::unique_ptr<ui::Event> event = ui::Event::Clone(event_in);
   // TODO(markdittmer): This should be this->OnEvent(event.get()), but that
   // can't happen until IME is refactored out of in WindowTreeHostMus.
   platform_window_delegate()->DispatchEvent(event.get());

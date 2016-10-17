@@ -22,7 +22,6 @@ class Connector;
 
 namespace views {
 
-class InputMethodMus;
 class NativeWidgetMus;
 class PlatformWindowMus;
 
@@ -31,8 +30,6 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   WindowTreeHostMus(NativeWidgetMus* native_widget, ui::Window* window);
   ~WindowTreeHostMus() override;
   NativeWidgetMus* native_widget() { return native_widget_; }
-
-  void InitInputMethod(service_manager::Connector* connector);
 
  private:
   // aura::WindowTreeHostPlatform:
@@ -43,7 +40,6 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   gfx::ICCProfile GetICCProfileForCurrentDisplay() override;
 
   NativeWidgetMus* native_widget_;
-  std::unique_ptr<InputMethodMus> input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };

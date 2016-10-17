@@ -9,11 +9,8 @@
 
 namespace views {
 
-TextInputClientImpl::TextInputClientImpl(ui::TextInputClient* text_input_client,
-                                         InputMethodMus* input_method)
-    : text_input_client_(text_input_client),
-      input_method_(input_method),
-      binding_(this) {}
+TextInputClientImpl::TextInputClientImpl(ui::TextInputClient* text_input_client)
+    : text_input_client_(text_input_client), binding_(this) {}
 
 TextInputClientImpl::~TextInputClientImpl() {}
 
@@ -44,12 +41,6 @@ void TextInputClientImpl::OnCompositionEvent(
       NOTIMPLEMENTED();
       break;
   }
-}
-
-void TextInputClientImpl::OnUnhandledEvent(
-    std::unique_ptr<ui::Event> key_event) {
-  DCHECK(key_event && key_event->IsKeyEvent());
-  input_method_->DispatchKeyEventPostIME(key_event->AsKeyEvent());
 }
 
 }  // namespace views
