@@ -4,8 +4,8 @@
 
 #include "core/paint/BlockPainter.h"
 
-#include "core/editing/DragCaretController.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/drag_and_drop/DragCaretController.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/api/LineLayoutAPIShim.h"

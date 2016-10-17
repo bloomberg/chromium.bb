@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/DragData.h"
+#include "core/editing/drag_and_drop/DragData.h"
 
 #include "core/clipboard/DataObject.h"
 #include "core/dom/DocumentFragment.h"

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/DragController.h"
+#include "core/editing/drag_and_drop/DragController.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
@@ -38,11 +38,14 @@
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/DragCaretController.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/commands/DragAndDropCommand.h"
+#include "core/editing/drag_and_drop/DragCaretController.h"
+#include "core/editing/drag_and_drop/DragData.h"
+#include "core/editing/drag_and_drop/DragSession.h"
+#include "core/editing/drag_and_drop/DragState.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"
 #include "core/fetch/ImageResource.h"
@@ -64,9 +67,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/DragData.h"
-#include "core/page/DragSession.h"
-#include "core/page/DragState.h"
 #include "core/page/Page.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntRect.h"

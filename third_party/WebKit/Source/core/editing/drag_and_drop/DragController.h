@@ -27,8 +27,8 @@
 #define DragController_h
 
 #include "core/CoreExport.h"
+#include "core/editing/drag_and_drop/DragActions.h"
 #include "core/events/EventTarget.h"
-#include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
