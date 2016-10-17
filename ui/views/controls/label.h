@@ -199,11 +199,11 @@ class VIEWS_EXPORT Label : public View {
   // The RenderText instances used to display elided and multi-line text.
   std::vector<std::unique_ptr<gfx::RenderText>> lines_;
 
-  SkColor requested_enabled_color_;
-  SkColor actual_enabled_color_;
-  SkColor requested_disabled_color_;
-  SkColor actual_disabled_color_;
-  SkColor background_color_;
+  SkColor requested_enabled_color_ = SK_ColorRED;
+  SkColor actual_enabled_color_ = SK_ColorRED;
+  SkColor requested_disabled_color_ = SK_ColorRED;
+  SkColor actual_disabled_color_ = SK_ColorRED;
+  SkColor background_color_ = SK_ColorRED;
 
   // Set to true once the corresponding setter is invoked.
   bool enabled_color_set_;
