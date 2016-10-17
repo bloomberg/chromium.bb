@@ -1,54 +1,54 @@
 <!DOCTYPE html>
 <title>IndexedDB: IDBDatabase transaction() Exception Ordering</title>
+<meta charset=utf-8>
 <link rel="help" href="https://w3c.github.io/IndexedDB/#dom-idbdatabase-transaction">
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/testharness-helpers.js"></script>
-
 <script>
 
 indexeddb_test(
-    function(t, db) {
-        db.createObjectStore('s');
-    },
-    function(t, db) {
-        db.close();
-        assert_throws('InvalidStateError', function() {
-            db.transaction('no-such-store');
-        }, '"Connection is closed" check (InvalidStateError) should precede ' +
-           '"store names" check (NotFoundError)');
-        t.done();
-    },
-    'IDBDatabase.transaction exception order: InvalidStateError vs. NotFoundError'
+  (t, db) => {
+    db.createObjectStore('s');
+  },
+  (t, db) => {
+    db.close();
+    assert_throws('InvalidStateError', () => {
+      db.transaction('no-such-store');
+    }, '"Connection is closed" check (InvalidStateError) should precede ' +
+       '"store names" check (NotFoundError)');
+    t.done();
+  },
+  'IDBDatabase.transaction exception order: InvalidStateError vs. NotFoundError'
 );
 
 indexeddb_test(
-    function(t, db) {
-        db.createObjectStore('s');
-    },
-    function(t, db) {
-        db.close();
-        assert_throws('InvalidStateError', function() {
-            db.transaction([]);
-        }, '"Connection is closed" check (InvalidStateError) should precede ' +
-           '"stores is empty" check (InvalidAccessError)');
-        t.done();
-    },
-    'IDBDatabase.transaction exception order: InvalidStateError vs. InvalidAccessError'
+  (t, db) => {
+    db.createObjectStore('s');
+  },
+  (t, db) => {
+    db.close();
+    assert_throws('InvalidStateError', () => {
+      db.transaction([]);
+    }, '"Connection is closed" check (InvalidStateError) should precede ' +
+       '"stores is empty" check (InvalidAccessError)');
+    t.done();
+  },
+  'IDBDatabase.transaction exception order: InvalidStateError vs. InvalidAccessError'
 );
 
 indexeddb_test(
-    function(t, db) {
-        db.createObjectStore('s');
-    },
-    function(t, db) {
-        assert_throws('NotFoundError', function() {
-            db.transaction('no-such-store', 'versionchange');
-        }, '"No such store" check (NotFoundError) should precede ' +
-           '"invalid mode" check (InvalidAccessError)');
-        t.done();
-    },
-    'IDBDatabase.transaction exception order: NotFoundError vs. InvalidAccessError'
+  (t, db) => {
+    db.createObjectStore('s');
+  },
+  (t, db) => {
+    assert_throws('NotFoundError', () => {
+      db.transaction('no-such-store', 'versionchange');
+    }, '"No such store" check (NotFoundError) should precede ' +
+       '"invalid mode" check (InvalidAccessError)');
+    t.done();
+  },
+  'IDBDatabase.transaction exception order: NotFoundError vs. InvalidAccessError'
 );
 
 </script>
