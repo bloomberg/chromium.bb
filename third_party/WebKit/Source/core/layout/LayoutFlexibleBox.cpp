@@ -460,7 +460,7 @@ void LayoutFlexibleBox::repositionLogicalHeightDependentFlexItems(
 
   // direction:rtl + flex-direction:column means the cross-axis direction is
   // flipped.
-  flipForRightToLeftColumn();
+  flipForRightToLeftColumn(lineContexts);
 }
 
 DISABLE_CFI_PERF
@@ -2259,22 +2259,30 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(
   }
 }
 
-void LayoutFlexibleBox::flipForRightToLeftColumn() {
+void LayoutFlexibleBox::flipForRightToLeftColumn(
+    const Vector<LineContext>& lineContexts) {
   if (style()->isLeftToRightDirection() || !isColumnFlow())
     return;
 
   LayoutUnit crossExtent = crossAxisExtent();
-  for (LayoutBox* child = m_orderIterator.first(); child;
-       child = m_orderIterator.next()) {
-    if (child->isOutOfFlowPositioned())
-      continue;
-    LayoutPoint location = flowAwareLocationForChild(*child);
-    // For vertical flows, setFlowAwareLocationForChild will transpose x and y,
-    // so using the y axis for a column cross axis extent is correct.
-    location.setY(crossExtent - crossAxisExtentForChild(*child) - location.y());
-    if (!isHorizontalWritingMode())
-      location.move(LayoutSize(0, -horizontalScrollbarHeight()));
-    setFlowAwareLocationForChild(*child, location);
+  for (size_t lineNumber = 0; lineNumber < lineContexts.size(); ++lineNumber) {
+    const LineContext& lineContext = lineContexts[lineNumber];
+    for (size_t childNumber = 0; childNumber < lineContext.flexItems.size();
+         ++childNumber) {
+      const FlexItem& flexItem = lineContext.flexItems[childNumber];
+      if (flexItem.box->isOutOfFlowPositioned())
+        continue;
+
+      LayoutPoint location = flowAwareLocationForChild(*flexItem.box);
+      // For vertical flows, setFlowAwareLocationForChild will transpose x and
+      // y,
+      // so using the y axis for a column cross axis extent is correct.
+      location.setY(crossExtent - crossAxisExtentForChild(*flexItem.box) -
+                    location.y());
+      if (!isHorizontalWritingMode())
+        location.move(LayoutSize(0, -horizontalScrollbarHeight()));
+      setFlowAwareLocationForChild(*flexItem.box, location);
+    }
   }
 }
 

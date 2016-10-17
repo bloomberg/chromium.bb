@@ -246,7 +246,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void alignChildren(const Vector<LineContext>&, LayoutObject* childToExclude);
   void applyStretchAlignmentToChild(LayoutBox& child,
                                     LayoutUnit lineCrossAxisExtent);
-  void flipForRightToLeftColumn();
+  void flipForRightToLeftColumn(const Vector<LineContext>& lineContexts);
   void flipForWrapReverse(const Vector<LineContext>&,
                           LayoutUnit crossAxisStartEdge);
 
