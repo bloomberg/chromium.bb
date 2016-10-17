@@ -53,6 +53,7 @@ class ContextualSearchFakeServer
 
     private String mSearchTermRequested;
     private boolean mShouldUseHttps;
+    private boolean mIsOnline = true;
 
     private boolean mDidEverCallContentViewCoreOnShow;
 
@@ -476,6 +477,14 @@ class ContextualSearchFakeServer
     }
 
     /**
+     * Sets whether the device is currently online or not.
+     */
+    @VisibleForTesting
+    void setIsOnline(boolean isOnline) {
+        mIsOnline = isOnline;
+    }
+
+    /**
      * Resets the fake server's member data.
      */
     @VisibleForTesting
@@ -483,6 +492,7 @@ class ContextualSearchFakeServer
         mLoadedUrl = null;
         mSearchTermRequested = null;
         mShouldUseHttps = false;
+        mIsOnline = true;
         mLoadedUrlCount = 0;
     }
 
@@ -523,7 +533,13 @@ class ContextualSearchFakeServer
     }
 
     @Override
-    @Nullable public URL getBasePageUrl() {
+    public boolean isOnline() {
+        return mIsOnline;
+    }
+
+    @Override
+    @Nullable
+    public URL getBasePageUrl() {
         URL baseUrl = mBaseManager.getBasePageUrl();
         if (mShouldUseHttps && baseUrl != null) {
             try {

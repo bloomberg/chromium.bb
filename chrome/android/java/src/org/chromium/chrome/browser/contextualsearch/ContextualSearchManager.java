@@ -48,6 +48,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.TopControlsState;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.MalformedURLException;
@@ -676,7 +677,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         String message;
         boolean doLiteralSearch = false;
         if (isNetworkUnavailable) {
-            // TODO(donnd): double-check that the network is really unavailable?
+            // TODO(donnd): double-check that the network is really unavailable, maybe using
+            // NetworkChangeNotifier#isOnline.
             message = mActivity.getResources().getString(
                     R.string.contextual_search_network_unavailable);
         } else if (!isHttpFailureCode(responseCode) && !TextUtils.isEmpty(displayText)) {
@@ -735,6 +737,23 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         if (selectionStartAdjust != 0 || selectionEndAdjust != 0) {
             mSelectionController.adjustSelection(selectionStartAdjust, selectionEndAdjust);
         }
+    }
+
+    /**
+     * External entry point to determine if the device is currently online or not.
+     * Stubbed out when under test.
+     * @return Whether the device is currently online.
+     */
+    boolean isDeviceOnline() {
+        return mNetworkCommunicator.isOnline();
+    }
+
+    /**
+     * Handles this {@link ContextualSearchNetworkCommunicator} vector when not under test.
+     */
+    @Override
+    public boolean isOnline() {
+        return NetworkChangeNotifier.isOnline();
     }
 
     /**

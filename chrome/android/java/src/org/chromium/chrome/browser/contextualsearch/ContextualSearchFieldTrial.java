@@ -73,6 +73,11 @@ public class ContextualSearchFieldTrial {
     private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
     private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
 
+    // Safety switch for disabling online-detection.  Also used to disable detection when running
+    // tests.
+    @VisibleForTesting
+    static final String ONLINE_DETECTION_DISABLED = "disable_online_detection";
+
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -95,6 +100,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsBarOverlapSuppressionEnabled;
     private static Integer sSuppressionTaps;
     private static Boolean sIsContextualCardsBarIntegrationEnabled;
+    private static Boolean sIsOnlineDetectionDisabled;
 
     /**
      * Don't instantiate.
@@ -373,6 +379,17 @@ public class ContextualSearchFieldTrial {
                     ChromeSwitches.CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION);
         }
         return sIsContextualCardsBarIntegrationEnabled;
+    }
+
+    /**
+     * @return Whether detection of device-online should be disabled (default false).
+     */
+    static boolean isOnlineDetectionDisabled() {
+        // TODO(donnd): Convert to test-only after launch and we have confidence it's robust.
+        if (sIsOnlineDetectionDisabled == null) {
+            sIsOnlineDetectionDisabled = getBooleanParam(ONLINE_DETECTION_DISABLED);
+        }
+        return sIsOnlineDetectionDisabled;
     }
 
     // --------------------------------------------------------------------------------------------
