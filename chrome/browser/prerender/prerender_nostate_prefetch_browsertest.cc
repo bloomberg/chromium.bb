@@ -6,7 +6,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_test_utils.h"
@@ -77,9 +76,12 @@ const char kPrefetchImagePage[] = "prerender/prefetch_image.html";
 const char kPrefetchJpeg[] = "prerender/image.jpeg";
 const char kPrefetchLoaderPath[] = "/prerender/prefetch_loader.html";
 const char kPrefetchLoopPage[] = "prerender/prefetch_loop.html";
+const char kPrefetchMetaCSP[] = "prerender/prefetch_meta_csp.html";
 const char kPrefetchPage[] = "prerender/prefetch_page.html";
 const char kPrefetchPage2[] = "prerender/prefetch_page2.html";
 const char kPrefetchPng[] = "prerender/image.png";
+const char kPrefetchResponseHeaderCSP[] =
+    "prerender/prefetch_response_csp.html";
 const char kPrefetchScript[] = "prerender/prefetch.js";
 const char kPrefetchScript2[] = "prerender/prefetch2.js";
 const char kPrefetchSubresourceRedirectPage[] =
@@ -148,13 +150,13 @@ class NoStatePrefetchBrowserTest
     base::FilePath file_path = base::FilePath::FromUTF8Unsafe(path_str);
     replacement.SetPathStr(file_path.value());
     const GURL url = src_server()->base_url().ReplaceComponents(replacement);
-    CountRequestFor(url, path_str, counter);
+    CountRequestForUrl(url, path_str, counter);
   }
 
   // As above, but specify the data path and URL separately.
-  void CountRequestFor(const GURL& url,
-                       const std::string& path_str,
-                       RequestCounter* counter) {
+  void CountRequestForUrl(const GURL& url,
+                          const std::string& path_str,
+                          RequestCounter* counter) {
     base::FilePath url_file = ui_test_utils::GetTestFilePath(
         base::FilePath(), base::FilePath::FromUTF8Unsafe(path_str));
     content::BrowserThread::PostTask(
@@ -272,9 +274,52 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCrossDomain) {
       "http://%s:%d/%s", secondary_domain.c_str(),
       embedded_test_server()->host_port_pair().port(), kPrefetchPage));
   RequestCounter cross_domain_counter;
-  CountRequestFor(cross_domain_url, kPrefetchPage, &cross_domain_counter);
+  CountRequestForUrl(cross_domain_url, kPrefetchPage, &cross_domain_counter);
   PrerenderTestURL(cross_domain_url, FINAL_STATUS_APP_TERMINATING, 1);
   cross_domain_counter.WaitForCount(1);
+}
+
+// Checks that response header CSP is respected.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ResponseHeaderCSP) {
+  static const std::string secondary_domain = "foo.bar";
+  host_resolver()->AddRule(secondary_domain, "127.0.0.1");
+  RequestCounter main_page;
+  CountRequestFor(kPrefetchResponseHeaderCSP, &main_page);
+  RequestCounter first_script;
+  CountRequestFor(kPrefetchScript, &first_script);
+  RequestCounter second_script;
+  GURL second_script_url(std::string("http://foo.bar/") + kPrefetchScript2);
+  CountRequestForUrl(second_script_url, kPrefetchScript2, &second_script);
+  PrerenderTestURL(kPrefetchResponseHeaderCSP, FINAL_STATUS_APP_TERMINATING, 1);
+  // The second script is in the correct domain for CSP, but the first script is
+  // not.
+  main_page.WaitForCount(1);
+  second_script.WaitForCount(1);
+  // TODO(pasko): wait for prefetch to be finished before checking the counts.
+  first_script.WaitForCount(0);
+}
+
+// Checks that CSP in the meta tag cancels the prefetch.
+// TODO(mattcary): probably this behavior should be consistent with
+// response-header CSP. See crbug/656581.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, MetaTagCSP) {
+  static const std::string secondary_domain = "foo.bar";
+  host_resolver()->AddRule(secondary_domain, "127.0.0.1");
+  RequestCounter main_page;
+  CountRequestFor(kPrefetchMetaCSP, &main_page);
+  RequestCounter first_script;
+  CountRequestFor(kPrefetchScript, &first_script);
+  RequestCounter second_script;
+  GURL second_script_url(std::string("http://foo.bar/") + kPrefetchScript2);
+  CountRequestForUrl(second_script_url, kPrefetchScript2, &second_script);
+  PrerenderTestURL(kPrefetchMetaCSP, FINAL_STATUS_APP_TERMINATING, 1);
+  // TODO(mattcary): See test comment above. If the meta CSP tag were parsed,
+  // |second_script| would be loaded. Instead as the background scanner bails as
+  // soon as the meta CSP tag is seen, only |main_page| is fetched.
+  main_page.WaitForCount(1);
+  // TODO(pasko): wait for prefetch to be finished before checking the counts.
+  second_script.WaitForCount(0);
+  first_script.WaitForCount(0);
 }
 
 // Checks simultaneous prefetch.

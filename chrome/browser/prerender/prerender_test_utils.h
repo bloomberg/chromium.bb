@@ -301,6 +301,7 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
       const std::vector<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads);
 
+  // Set up an HTTPS server.
   void UseHttpsSrcServer();
 
   // Returns the currently active server. See |UseHttpsSrcServer|.
