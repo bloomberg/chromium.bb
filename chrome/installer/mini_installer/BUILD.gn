@@ -263,7 +263,7 @@ generate_mini_installer("mini_installer") {
   chrome_dll_target = "//chrome:main_dll"
 }
 
-if (syzygy_optimize || is_syzyasan) {
+if (is_syzyasan) {
   generate_mini_installer("mini_installer_syzygy") {
     out_dir = "$root_out_dir/syzygy/"
     chrome_dll_file = "$root_out_dir/syzygy/chrome.dll"

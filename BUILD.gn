@@ -151,9 +151,8 @@ if (is_win) {
     ]
   }
 
-  # TODO(sebmarchand): Remove this once we stop supporting Syzygy (M54+).
   group("All_syzygy") {
-    if (is_syzyasan || syzygy_optimize) {
+    if (is_syzyasan) {
       deps = [
         "//chrome/installer/mini_installer:mini_installer",
         "//chrome/installer/mini_installer:mini_installer_syzygy",

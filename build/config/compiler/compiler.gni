@@ -65,13 +65,6 @@ declare_args() {
 }
 
 declare_args() {
-  # Generate Syzygy optimized binaries. Syzygy optimize mode is a profile
-  # guided optimization that reorders code for better locality.
-  syzygy_optimize = is_win && target_cpu == "x86" && is_official_build &&
-                    !is_clang && !is_win_fastlink && !is_syzyasan
-}
-
-declare_args() {
   # Whether to use the gold linker from binutils instead of lld or bfd.
   use_gold = !use_lld && !(is_chromecast && is_linux &&
                            (current_cpu == "arm" || current_cpu == "mipsel")) &&

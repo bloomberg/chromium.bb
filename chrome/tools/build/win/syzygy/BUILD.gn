@@ -7,34 +7,10 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/win/syzygy/syzygy.gni")
 
-assert(!syzygy_optimize || !is_syzyasan,
-       "Don't do both syzygy_optimize and is_syzyasan")
-
 # Where the output binaries will be placed.
 syzygy_dest_dir = "$root_out_dir/syzygy"
 
-if (syzygy_optimize) {
-  syzygy_optimize("chrome_dll_syzygy") {
-    binary_name = "chrome.dll"
-    deps = [
-      "//chrome:main_dll",
-    ]
-    if (is_multi_dll_chrome) {
-      data_deps = [
-        ":chrome_child_dll_syzygy",
-      ]
-    }
-  }
-  if (is_multi_dll_chrome) {
-    # Also instrument chrome_child.dll.
-    syzygy_optimize("chrome_child_dll_syzygy") {
-      binary_name = "chrome_child.dll"
-      deps = [
-        "//chrome:chrome_child",
-      ]
-    }
-  }
-} else if (is_syzyasan) {
+if (is_syzyasan) {
   syzygy_asan("chrome_dll_syzygy") {
     binary_name = "chrome.dll"
     dest_dir = syzygy_dest_dir
