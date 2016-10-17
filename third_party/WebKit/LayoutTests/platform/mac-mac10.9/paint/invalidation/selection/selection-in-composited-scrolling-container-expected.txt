@@ -27,7 +27,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [67, 13],
+      "bounds": [68, 13],
       "drawsContent": true,
       "paintInvalidations": [
         {

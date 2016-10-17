@@ -520,7 +520,7 @@ int PaintLayerScrollableArea::visibleWidth() const {
 }
 
 IntSize PaintLayerScrollableArea::contentsSize() const {
-  return IntSize(scrollWidth().toInt(), scrollHeight().toInt());
+  return IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
 }
 
 IntPoint PaintLayerScrollableArea::lastKnownMousePosition() const {
