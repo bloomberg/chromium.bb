@@ -354,8 +354,8 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
       PHONE_HOME_WHOLE_NUMBER,
   };
 
-  for (ServerFieldType type : types) {
-    int comparison = GetRawInfo(type).compare(profile.GetRawInfo(type));
+  for (size_t i = 0; i < arraysize(types); ++i) {
+    int comparison = GetRawInfo(types[i]).compare(profile.GetRawInfo(types[i]));
     if (comparison != 0) {
       return comparison;
     }

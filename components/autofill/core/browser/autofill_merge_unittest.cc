@@ -91,7 +91,8 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
   for (size_t i = 0; i < profiles.size(); ++i) {
     result += kProfileSeparator;
     result += "\n";
-    for (const ServerFieldType& type : kProfileFieldTypes) {
+    for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
+      ServerFieldType type = kProfileFieldTypes[j];
       base::string16 value = profiles[i]->GetRawInfo(type);
       result += AutofillType(type).ToString();
       result += kFieldSeparator;

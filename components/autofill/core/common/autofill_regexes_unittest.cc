@@ -37,7 +37,8 @@ TEST(AutofillRegexesTest, SampleRegexes) {
     // Case-insensitive
     {"StRiNg", "string"},
   };
-  for (const auto& test_case : kPositiveCases) {
+  for (size_t i = 0; i < arraysize(kPositiveCases); ++i) {
+    const TestCase& test_case = kPositiveCases[i];
     SCOPED_TRACE(test_case.input);
     SCOPED_TRACE(test_case.pattern);
     EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(test_case.input),
@@ -56,7 +57,8 @@ TEST(AutofillRegexesTest, SampleRegexes) {
     {"string", "ring "},
     {"string", "rin$"},
   };
-  for (const auto& test_case : kNegativeCases) {
+  for (size_t i = 0; i < arraysize(kNegativeCases); ++i) {
+    const TestCase& test_case = kNegativeCases[i];
     SCOPED_TRACE(test_case.input);
     SCOPED_TRACE(test_case.pattern);
     EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(test_case.input),
@@ -95,7 +97,8 @@ TEST(AutofillRegexesTest, ExpirationDate2DigitYearRegexes) {
     {"Exp Date     (MM / YY)"},
   };
 
-  for (const auto& test_case : kPositiveCases) {
+  for (size_t i = 0; i < arraysize(kPositiveCases); ++i) {
+    const TestCase& test_case = kPositiveCases[i];
     SCOPED_TRACE(test_case.input);
     EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(test_case.input),pattern));
   }
@@ -129,7 +132,8 @@ TEST(AutofillRegexesTest, ExpirationDate2DigitYearRegexes) {
     {"Exp Date     (MM / YYYY)"},
   };
 
-  for (const auto& test_case : kNegativeCases) {
+  for (size_t i = 0; i < arraysize(kNegativeCases); ++i) {
+    const TestCase& test_case = kNegativeCases[i];
     SCOPED_TRACE(test_case.input);
     EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(test_case.input), pattern));
   }
@@ -166,7 +170,8 @@ TEST(AutofillRegexesTest, ExpirationDate4DigitYearRegexes) {
     {"Exp Date     (MM / YYYY)"},
   };
 
-  for (const auto& test_case : kPositiveCases) {
+  for (size_t i = 0; i < arraysize(kPositiveCases); ++i) {
+    const TestCase& test_case = kPositiveCases[i];
     SCOPED_TRACE(test_case.input);
     EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(test_case.input),pattern));
   }
@@ -200,7 +205,8 @@ TEST(AutofillRegexesTest, ExpirationDate4DigitYearRegexes) {
     {"Exp Date     (MM / YY)"},
   };
 
-  for (const auto& test_case : kNegativeCases) {
+  for (size_t i = 0; i < arraysize(kNegativeCases); ++i) {
+    const TestCase& test_case = kNegativeCases[i];
     SCOPED_TRACE(test_case.input);
     EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(test_case.input), pattern));
   }
