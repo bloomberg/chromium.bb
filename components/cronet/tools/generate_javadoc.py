@@ -43,9 +43,7 @@ def GenerateJavadoc(options, src_dir):
              '-Dlib.java.dir=' + lib_java_dir, '-Doverview=' + overview_file,
              'doc']
   stdout = build_utils.CheckOutput(javadoc_cmd, cwd=working_dir)
-  # TODO(crbug.com/655666): add 'or "warning"' back once compiler
-  # situation is resolved.
-  if " error: " in stdout or "javadoc: error " in stdout:
+  if " error: " in stdout or "warning" in stdout or "javadoc: error " in stdout:
     build_utils.DeleteDirectory(output_dir)
     raise build_utils.CalledProcessError(working_dir, javadoc_cmd, stdout)
 
