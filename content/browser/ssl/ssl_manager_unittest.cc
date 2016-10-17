@@ -28,7 +28,7 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   const SSLStatus& last_ssl_state() { return last_ssl_state_; }
 
   // WebContentsDelegate:
-  void VisibleSSLStateChanged(const WebContents* source) override {
+  void VisibleSSLStateChanged(WebContents* source) override {
     NavigationEntry* entry = source->GetController().GetVisibleEntry();
     EXPECT_TRUE(entry);
     last_ssl_state_ = entry->GetSSL();

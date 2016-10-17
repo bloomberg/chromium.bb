@@ -111,7 +111,7 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Called to inform the delegate that the WebContent's visible SSL state (as
   // defined by SSLStatus) changed.
-  virtual void VisibleSSLStateChanged(const WebContents* source) {}
+  virtual void VisibleSSLStateChanged(WebContents* source) {}
 
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this

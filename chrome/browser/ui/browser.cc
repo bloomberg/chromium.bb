@@ -1424,12 +1424,16 @@ void Browser::NavigationStateChanged(WebContents* source,
     hosted_app_controller_->UpdateLocationBarVisibility(true);
 }
 
-void Browser::VisibleSSLStateChanged(const WebContents* source) {
+void Browser::VisibleSSLStateChanged(WebContents* source) {
   // When the current tab's SSL state changes, we need to update the URL
   // bar to reflect the new state.
   DCHECK(source);
   if (tab_strip_model_->GetActiveWebContents() == source)
     UpdateToolbar(false);
+
+  ChromeSecurityStateModelClient* security_model =
+      ChromeSecurityStateModelClient::FromWebContents(source);
+  security_model->VisibleSSLStateChanged();
 }
 
 void Browser::AddNewContents(WebContents* source,

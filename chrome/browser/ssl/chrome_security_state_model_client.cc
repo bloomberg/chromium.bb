@@ -22,6 +22,8 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
@@ -166,8 +168,10 @@ void CheckSafeBrowsingStatus(content::NavigationEntry* entry,
 
 ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      security_state_model_(new SecurityStateModel()) {
+    : content::WebContentsObserver(web_contents),
+      web_contents_(web_contents),
+      security_state_model_(new SecurityStateModel()),
+      logged_http_warning_on_current_navigation_(false) {
   security_state_model_->SetClient(this);
 }
 
@@ -299,6 +303,34 @@ blink::WebSecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
 void ChromeSecurityStateModelClient::GetSecurityInfo(
     SecurityStateModel::SecurityInfo* result) const {
   security_state_model_->GetSecurityInfo(result);
+}
+
+void ChromeSecurityStateModelClient::VisibleSSLStateChanged() {
+  if (logged_http_warning_on_current_navigation_)
+    return;
+
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  GetSecurityInfo(&security_info);
+  if (security_info.security_level ==
+      security_state::SecurityStateModel::HTTP_SHOW_WARNING) {
+    web_contents_->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_WARNING,
+        "In Chrome M56 (Jan 2017), this page will be marked "
+        "as \"not secure\" in the URL bar. For more "
+        "information, see https://goo.gl/zmWq3m");
+    logged_http_warning_on_current_navigation_ = true;
+  }
+}
+
+void ChromeSecurityStateModelClient::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSynchronousNavigation()) {
+    // Only reset the console message flag for main-frame navigations,
+    // and not for synchronous navigations like reference fragments and
+    // pushState.
+    logged_http_warning_on_current_navigation_ = false;
+  }
 }
 
 bool ChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
