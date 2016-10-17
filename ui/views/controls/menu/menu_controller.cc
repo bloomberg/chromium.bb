@@ -532,7 +532,13 @@ void MenuController::Cancel(ExitType type) {
     // WARNING: the call to MenuClosed deletes us.
     return;
   }
-  ExitAsyncRun();
+
+  // On Windows and Linux the destruction of this menu's Widget leads to the
+  // teardown of the platform specific drag-and-drop Widget. Do not shutdown
+  // while dragging, leave the Widget hidden until drag-and-drop has completed,
+  // at which point all menus will be destroyed.
+  if (!drag_in_progress_)
+    ExitAsyncRun();
 }
 
 void MenuController::AddNestedDelegate(

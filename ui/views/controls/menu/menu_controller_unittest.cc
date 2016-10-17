@@ -389,6 +389,12 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->showing_ = true;
   }
 
+  // Tests that the menu does not destroy itself when canceled during a drag.
+  void TestCancelAllDuringDrag() {
+    menu_controller_->CancelAll();
+    EXPECT_EQ(0, menu_controller_delegate_->on_menu_closed_called());
+  }
+
  protected:
   void SetPendingStateItem(MenuItemView* item) {
     menu_controller_->pending_state_.item = item;
@@ -1405,6 +1411,27 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
   TestDragDropClient drag_drop_client(
       base::Bind(&MenuControllerTest::TestMenuControllerReplacementDuringDrag,
                  base::Unretained(this)));
+  aura::client::SetDragDropClient(owner()->GetNativeWindow()->GetRootWindow(),
+                                  &drag_drop_client);
+  AddButtonMenuItems();
+  StartDrag();
+}
+
+// Tests that if a CancelAll is called during drag-and-drop that it does not
+// destroy the MenuController. On Windows and Linux this destruction also
+// destroys the Widget used for drag-and-drop, thereby ending the drag.
+TEST_F(MenuControllerTest, CancelAllDuringDrag) {
+  // This test creates two native widgets, but expects the child native widget
+  // to be able to reach up and use the parent native widget's aura
+  // objects. https://crbug.com/614037
+  if (IsMus())
+    return;
+
+  MenuController* controller = menu_controller();
+  controller->SetAsyncRun(true);
+
+  TestDragDropClient drag_drop_client(base::Bind(
+      &MenuControllerTest::TestCancelAllDuringDrag, base::Unretained(this)));
   aura::client::SetDragDropClient(owner()->GetNativeWindow()->GetRootWindow(),
                                   &drag_drop_client);
   AddButtonMenuItems();
