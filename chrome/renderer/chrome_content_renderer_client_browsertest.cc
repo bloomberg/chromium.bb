@@ -92,9 +92,11 @@ class ChromeContentRendererClientBrowserTest : public InProcessBrowserTest {
       return;
 
     auto type = request.headers.find("Accept");
-    EXPECT_NE(std::string::npos, type->second.find("text/html"));
+    EXPECT_NE(std::string::npos, type->second.find("text/html"))
+        << "Type is not text/html for test " << test_name_;
 
-    EXPECT_EQ(request.relative_url, expected_url_);
+    EXPECT_EQ(request.relative_url, expected_url_)
+        << "URL is wrong for test " << test_name_;
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      message_runner_->QuitClosure());
   }
@@ -104,9 +106,16 @@ class ChromeContentRendererClientBrowserTest : public InProcessBrowserTest {
     message_runner_->Run();
   }
 
-  void set_expected_url(std::string given) { expected_url_ = given; }
+  void set_expected_url(const std::string& expected_url) {
+    expected_url_ = expected_url;
+  }
+
+  void set_test_name(const std::string& test_name) {
+    test_name_ = test_name;
+  }
 
  private:
+  std::string test_name_;
   std::string expected_url_;
   scoped_refptr<content::MessageLoopRunner> message_runner_;
 };
@@ -116,6 +125,50 @@ class ChromeContentRendererClientBrowserTest : public InProcessBrowserTest {
 // the MIME type of the request to ensure that it is "text/html".
 IN_PROC_BROWSER_TEST_F(ChromeContentRendererClientBrowserTest,
                        RewriteYouTubeFlashEmbed) {
+  struct TestData {
+    std::string name;
+    std::string host;
+    std::string path;
+    std::string type;
+    std::string expected_url;
+  } test_data[] = {
+    {
+      "Valid URL, no parameters",
+      "www.youtube.com",
+      "/v/deadbeef",
+      "application/x-shockwave-flash",
+      "/embed/deadbeef"
+    },
+    {
+      "Valid URL, no parameters, subdomain",
+      "www.foo.youtube.com",
+      "/v/deadbeef",
+      "application/x-shockwave-flash",
+      "/embed/deadbeef"
+    },
+    {
+      "Valid URL, many parameters",
+      "www.youtube.com",
+      "/v/deadbeef?start=4&fs=1",
+      "application/x-shockwave-flash",
+      "/embed/deadbeef?start=4&fs=1"
+    },
+    {
+      "Invalid parameter construct, many parameters",
+      "www.youtube.com",
+      "/v/deadbeef&bar=4&foo=6",
+      "application/x-shockwave-flash",
+      "/embed/deadbeef?bar=4&foo=6"
+    },
+    {
+      "Valid URL, enablejsapi=1",
+      "www.youtube.com",
+      "/v/deadbeef?enablejsapi=1",
+      "",
+      "/v/deadbeef?enablejsapi=1"
+    }
+  };
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -134,40 +187,17 @@ IN_PROC_BROWSER_TEST_F(ChromeContentRendererClientBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   std::string port = std::to_string(embedded_test_server()->port());
 
-  // Valid URL, no parameters
-  std::string video_url = "http://www.youtube.com:" + port + "/v/deadbeef";
-  std::string mime_type = "application/x-shockwave-flash";
-  set_expected_url("/embed/deadbeef");
-  EXPECT_TRUE(ExecuteScript(
-      web_contents, "appendToDOM('" + video_url + "','" + mime_type + "');"));
-  WaitForYouTubeRequest();
+  for (auto data : test_data) {
+    std::string video_url = "http://" + data.host + ":" + port + data.path;
+    set_expected_url(data.expected_url);
+    set_test_name("<embed src= > " + data.name);
+    EXPECT_TRUE(ExecuteScript(web_contents,
+        "appendEmbedToDOM('" + video_url + "','" + data.type + "');"));
+    WaitForYouTubeRequest();
 
-  // Valid URL, no parameters, subdomain
-  video_url = "http://www.foo.youtube.com:" + port + "/v/deadbeef";
-  set_expected_url("/embed/deadbeef");
-  EXPECT_TRUE(ExecuteScript(
-      web_contents, "appendToDOM('" + video_url + "','" + mime_type + "');"));
-  WaitForYouTubeRequest();
-
-  // Valid URL, many parameters
-  video_url = "http://www.youtube.com:" + port + "/v/deadbeef?start=4&fs=1";
-  set_expected_url("/embed/deadbeef?start=4&fs=1");
-  EXPECT_TRUE(ExecuteScript(
-      web_contents, "appendToDOM('" + video_url + "','" + mime_type + "');"));
-  WaitForYouTubeRequest();
-
-  // Invalid parameter construct, many parameters
-  video_url = "http://www.youtube.com:" + port + "/v/deadbeef&bar=4&foo=6";
-  set_expected_url("/embed/deadbeef?bar=4&foo=6");
-  EXPECT_TRUE(ExecuteScript(
-      web_contents, "appendToDOM('" + video_url + "','" + mime_type + "');"));
-  WaitForYouTubeRequest();
-
-  // Valid URL, enablejsapi=1
-  video_url = "http://www.youtube.com:" + port + "/v/deadbeef?enablejsapi=1";
-  mime_type = "";
-  set_expected_url("/v/deadbeef?enablejsapi=1");
-  EXPECT_TRUE(ExecuteScript(
-      web_contents, "appendToDOM('" + video_url + "','" + mime_type + "');"));
-  WaitForYouTubeRequest();
+    set_test_name("<embed data= > " + data.name);
+    EXPECT_TRUE(ExecuteScript(web_contents,
+        "appendDataEmbedToDOM('" + video_url + "','" + data.type + "');"));
+    WaitForYouTubeRequest();
+  }
 }
