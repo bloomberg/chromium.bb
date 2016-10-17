@@ -121,11 +121,8 @@ base::FilePath GetBinaryCookiesFilePath() {
 // Clears all cookies from the .binarycookies file.
 // Must be called from a thread where IO operations are allowed.
 // Preconditions: There must be no active WKWebViews present in the app.
+// Note that the .binarycookies file is present only on iOS8+.
 void ClearAllCookiesFromBinaryCookiesFile() {
-  // The .binarycookies file is present only on iOS8+.
-  if (!base::ios::IsRunningOnIOS8OrLater()) {
-    return;
-  }
   base::FilePath path = GetBinaryCookiesFilePath();
   if (base::PathExists(path)) {
     bool success = base::DeleteFile(path, false);

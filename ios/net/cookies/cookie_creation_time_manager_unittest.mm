@@ -47,16 +47,10 @@ TEST_F(CookieCreationTimeManagerTest, GetFromSystemCookie) {
   base::Time now = base::Time::Now();
   ASSERT_FALSE(time.is_null());
   int64_t delta = (now - time).InMilliseconds();
-  // On iOS 8, the range is (0, 1000) ms, but on earlier iOS versions the range
-  // is (-500, 500) ms. The intervals tested are actually 1200 ms to allow some
-  // imprecision.
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    EXPECT_GT(delta, -100);
-    EXPECT_LT(delta, 1100);
-  } else {
-    EXPECT_GT(delta, -600);
-    EXPECT_LT(delta, 600);
-  }
+  // On iOS 8, the range is (0, 1000) ms. The intervals tested are actually
+  // 1200 ms to allow some imprecision.
+  EXPECT_GT(delta, -100);
+  EXPECT_LT(delta, 1100);
 }
 
 TEST_F(CookieCreationTimeManagerTest, MakeUniqueCreationTime) {
