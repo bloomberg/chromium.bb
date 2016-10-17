@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_util.h"
 #include "base/values.h"
+#include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/argument_spec.h"
 #include "gin/converter.h"
 #include "gin/public/isolate_holder.h"
@@ -16,20 +14,6 @@
 
 namespace extensions {
 
-namespace {
-
-// Returns a parsed version of |str|, substituting double quotes for single
-// quotes.
-std::unique_ptr<base::Value> GetValue(const std::string& str) {
-  std::string updated;
-  base::ReplaceChars(str.c_str(), "'", "\"", &updated);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(updated);
-  CHECK(value) << str;
-  return value;
-}
-
-}  // namespace
-
 class ArgumentSpecUnitTest : public gin::V8Test {
  protected:
   ArgumentSpecUnitTest() {}
@@ -37,11 +21,8 @@ class ArgumentSpecUnitTest : public gin::V8Test {
   void ExpectSuccess(const ArgumentSpec& spec,
                      const std::string& script_source,
                      const std::string& expected_json_single_quotes) {
-    std::string expected_json;
-    base::ReplaceChars(expected_json_single_quotes.c_str(), "'", "\"",
-                       &expected_json);
-    RunTest(spec, script_source, TestResult::PASS, expected_json,
-            std::string());
+    RunTest(spec, script_source, TestResult::PASS,
+            ReplaceSingleQuotes(expected_json_single_quotes), std::string());
   }
 
   void ExpectFailure(const ArgumentSpec& spec,
@@ -82,15 +63,11 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
                                    const std::string& expected_thrown_message) {
   v8::Isolate* isolate = instance_->isolate();
   v8::HandleScope handle_scope(instance_->isolate());
-  v8::Local<v8::String> source = gin::StringToV8(isolate, script_source);
-  ASSERT_FALSE(source.IsEmpty());
 
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(instance_->isolate(), context_);
-  v8::Local<v8::Script> script = v8::Script::Compile(source);
-  ASSERT_FALSE(script.IsEmpty()) << script_source;
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Value> val = script->Run();
+  v8::Local<v8::Value> val = V8ValueFromScriptSource(isolate, script_source);
   ASSERT_FALSE(val.IsEmpty()) << script_source;
 
   std::string error;
@@ -102,9 +79,7 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
   ASSERT_EQ(should_throw, try_catch.HasCaught()) << script_source;
   if (should_succeed) {
     ASSERT_TRUE(out_value);
-    std::string actual_json;
-    EXPECT_TRUE(base::JSONWriter::Write(*out_value, &actual_json));
-    EXPECT_EQ(expected_json, actual_json);
+    EXPECT_EQ(expected_json, ValueToString(*out_value));
   } else if (should_throw) {
     EXPECT_EQ(expected_thrown_message,
               gin::V8ToString(try_catch.Message()->Get()));
@@ -113,7 +88,7 @@ void ArgumentSpecUnitTest::RunTest(const ArgumentSpec& spec,
 
 TEST_F(ArgumentSpecUnitTest, Test) {
   {
-    ArgumentSpec spec(*GetValue("{'type': 'integer'}"));
+    ArgumentSpec spec(*ValueFromString("{'type': 'integer'}"));
     ExpectSuccess(spec, "1", "1");
     ExpectSuccess(spec, "-1", "-1");
     ExpectSuccess(spec, "0", "0");
@@ -126,7 +101,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   }
 
   {
-    ArgumentSpec spec(*GetValue("{'type': 'integer', 'minimum': 1}"));
+    ArgumentSpec spec(*ValueFromString("{'type': 'integer', 'minimum': 1}"));
     ExpectSuccess(spec, "2", "2");
     ExpectSuccess(spec, "1", "1");
     ExpectFailure(spec, "0");
@@ -134,7 +109,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   }
 
   {
-    ArgumentSpec spec(*GetValue("{'type': 'string'}"));
+    ArgumentSpec spec(*ValueFromString("{'type': 'string'}"));
     ExpectSuccess(spec, "'foo'", "'foo'");
     ExpectSuccess(spec, "''", "''");
     ExpectFailure(spec, "1");
@@ -143,7 +118,8 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   }
 
   {
-    ArgumentSpec spec(*GetValue("{'type': 'string', 'enum': ['foo', 'bar']}"));
+    ArgumentSpec spec(
+        *ValueFromString("{'type': 'string', 'enum': ['foo', 'bar']}"));
     ExpectSuccess(spec, "'foo'", "'foo'");
     ExpectSuccess(spec, "'bar'", "'bar'");
     ExpectFailure(spec, "['foo']");
@@ -154,7 +130,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   }
 
   {
-    ArgumentSpec spec(*GetValue("{'type': 'boolean'}"));
+    ArgumentSpec spec(*ValueFromString("{'type': 'boolean'}"));
     ExpectSuccess(spec, "true", "true");
     ExpectSuccess(spec, "false", "false");
     ExpectFailure(spec, "1");
@@ -164,7 +140,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
 
   {
     ArgumentSpec spec(
-        *GetValue("{'type': 'array', 'items': {'type': 'string'}}"));
+        *ValueFromString("{'type': 'array', 'items': {'type': 'string'}}"));
     ExpectSuccess(spec, "[]", "[]");
     ExpectSuccess(spec, "['foo']", "['foo']");
     ExpectSuccess(spec, "['foo', 'bar']", "['foo','bar']");
@@ -191,7 +167,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
         "    'prop2': {'type': 'integer', 'optional': true}"
         "  }"
         "}";
-    ArgumentSpec spec(*GetValue(kObjectSpec));
+    ArgumentSpec spec(*ValueFromString(kObjectSpec));
     ExpectSuccess(spec, "({prop1: 'foo', prop2: 2})",
                   "{'prop1':'foo','prop2':2}");
     ExpectSuccess(spec, "({prop1: 'foo', prop2: 2, prop3: 'blah'})",
@@ -240,8 +216,10 @@ TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
       "}";
   const char kEnumType[] =
       "{'id': 'refEnum', 'type': 'string', 'enum': ['alpha', 'beta']}";
-  AddTypeRef("refObj", base::MakeUnique<ArgumentSpec>(*GetValue(kObjectType)));
-  AddTypeRef("refEnum", base::MakeUnique<ArgumentSpec>(*GetValue(kEnumType)));
+  AddTypeRef("refObj",
+             base::MakeUnique<ArgumentSpec>(*ValueFromString(kObjectType)));
+  AddTypeRef("refEnum",
+             base::MakeUnique<ArgumentSpec>(*ValueFromString(kEnumType)));
 
   {
     const char kObjectWithRefEnumSpec[] =
@@ -253,7 +231,7 @@ TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
         "    'sub': {'type': 'integer'}"
         "  }"
         "}";
-    ArgumentSpec spec(*GetValue(kObjectWithRefEnumSpec));
+    ArgumentSpec spec(*ValueFromString(kObjectWithRefEnumSpec));
     ExpectSuccess(spec, "({e: 'alpha', sub: 1})", "{'e':'alpha','sub':1}");
     ExpectSuccess(spec, "({e: 'beta', sub: 1})", "{'e':'beta','sub':1}");
     ExpectFailure(spec, "({e: 'gamma', sub: 1})");
@@ -269,7 +247,7 @@ TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
         "    'o': {'$ref': 'refObj'}"
         "  }"
         "}";
-    ArgumentSpec spec(*GetValue(kObjectWithRefObjectSpec));
+    ArgumentSpec spec(*ValueFromString(kObjectWithRefObjectSpec));
     ExpectSuccess(spec, "({o: {prop1: 'foo'}})", "{'o':{'prop1':'foo'}}");
     ExpectSuccess(spec, "({o: {prop1: 'foo', prop2: 2}})",
                   "{'o':{'prop1':'foo','prop2':2}}");
@@ -279,7 +257,7 @@ TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
   {
     const char kRefEnumListSpec[] =
         "{'type': 'array', 'items': {'$ref': 'refEnum'}}";
-    ArgumentSpec spec(*GetValue(kRefEnumListSpec));
+    ArgumentSpec spec(*ValueFromString(kRefEnumListSpec));
     ExpectSuccess(spec, "['alpha']", "['alpha']");
     ExpectSuccess(spec, "['alpha', 'alpha']", "['alpha','alpha']");
     ExpectSuccess(spec, "['alpha', 'beta']", "['alpha','beta']");

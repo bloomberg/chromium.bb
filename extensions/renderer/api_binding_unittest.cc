@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/api_binding.h"
+#include "extensions/renderer/api_binding_test_util.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
@@ -67,16 +65,6 @@ const char kFunctions[] =
 
 const char kError[] = "Uncaught TypeError: Invalid invocation";
 
-// Helper to convert |source| into a ListValue after replacing single quotes
-// with double quotes.
-std::unique_ptr<base::ListValue> GetListValue(const char* source) {
-  std::string str;
-  base::ReplaceChars(source, "'", "\"", &str);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
-  EXPECT_TRUE(value) << source;
-  return base::ListValue::From(std::move(value));
-}
-
 }  // namespace
 
 class APIBindingTest : public gin::V8Test {
@@ -104,10 +92,8 @@ class APIBindingTest : public gin::V8Test {
   void ExpectPass(v8::Local<v8::Object> object,
                   const std::string& script_source,
                   const std::string& expected_json_arguments_single_quotes) {
-    std::string expected_json_arguments;
-    base::ReplaceChars(expected_json_arguments_single_quotes.c_str(), "'", "\"",
-                       &expected_json_arguments);
-    RunTest(object, script_source, true, expected_json_arguments,
+    RunTest(object, script_source, true,
+            ReplaceSingleQuotes(expected_json_arguments_single_quotes),
             std::string());
   }
 
@@ -139,17 +125,12 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
   std::string wrapped_script_source =
       base::StringPrintf("(function(obj) { %s })", script_source.c_str());
   v8::Isolate* isolate = instance_->isolate();
-  v8::Local<v8::String> source =
-      gin::StringToV8(isolate, wrapped_script_source);
-  ASSERT_FALSE(source.IsEmpty());
+
+  v8::Local<v8::Function> func =
+      FunctionFromString(isolate, wrapped_script_source);
+  ASSERT_FALSE(func.IsEmpty());
 
   v8::TryCatch try_catch(isolate);
-  v8::Local<v8::Script> script = v8::Script::Compile(source);
-  ASSERT_FALSE(script.IsEmpty());
-  v8::Local<v8::Value> val = script->Run();
-  ASSERT_FALSE(val.IsEmpty());
-  v8::Local<v8::Function> func;
-  ASSERT_TRUE(gin::ConvertFromV8(isolate, val, &func));
   v8::Local<v8::Value> argv[] = {object};
   func->Call(v8::Undefined(isolate), 1, argv);
 
@@ -157,9 +138,7 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
     EXPECT_FALSE(try_catch.HasCaught())
         << gin::V8ToString(try_catch.Message()->Get());
     ASSERT_TRUE(arguments_) << script_source;
-    std::string actual_json;
-    EXPECT_TRUE(base::JSONWriter::Write(*arguments_, &actual_json));
-    EXPECT_EQ(expected_json_arguments, actual_json);
+    EXPECT_EQ(expected_json_arguments, ValueToString(*arguments_));
   } else {
     ASSERT_TRUE(try_catch.HasCaught()) << script_source;
     std::string message = gin::V8ToString(try_catch.Message()->Get());
@@ -170,7 +149,7 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
 }
 
 TEST_F(APIBindingTest, Test) {
-  std::unique_ptr<base::ListValue> functions = GetListValue(kFunctions);
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
   ASSERT_TRUE(functions);
   ArgumentSpec::RefMap refs;
   APIBinding binding(
@@ -248,9 +227,10 @@ TEST_F(APIBindingTest, TypeRefsTest) {
       "   }]"
       "}]";
 
-  std::unique_ptr<base::ListValue> functions = GetListValue(kRefFunctions);
+  std::unique_ptr<base::ListValue> functions =
+      ListValueFromString(kRefFunctions);
   ASSERT_TRUE(functions);
-  std::unique_ptr<base::ListValue> types = GetListValue(kTypes);
+  std::unique_ptr<base::ListValue> types = ListValueFromString(kTypes);
   ASSERT_TRUE(types);
   ArgumentSpec::RefMap refs;
   APIBinding binding(

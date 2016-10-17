@@ -255,6 +255,8 @@ source_set("unit_tests") {
   sources = [
     "activity_log_converter_strategy_unittest.cc",
     "api/mojo_private/mojo_private_unittest.cc",
+    "api_binding_test_util.cc",
+    "api_binding_test_util.h",
     "api_binding_unittest.cc",
     "api_test_base.cc",
     "api_test_base.h",
@@ -279,6 +281,7 @@ source_set("unit_tests") {
   deps = [
     ":renderer",
     "//base",
+    "//content/public/child",
     "//extensions:extensions_renderer_resources",
     "//gin:gin_test",
 
