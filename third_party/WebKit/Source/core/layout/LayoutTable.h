@@ -469,9 +469,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   LayoutUnit convertStyleLogicalWidthToComputedWidth(
       const Length& styleLogicalWidth,
-      LayoutUnit availableWidth);
+      LayoutUnit availableWidth) const;
   LayoutUnit convertStyleLogicalHeightToComputedHeight(
-      const Length& styleLogicalHeight);
+      const Length& styleLogicalHeight) const;
 
   LayoutRect overflowClipRect(
       const LayoutPoint& location,
@@ -484,6 +484,10 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void layoutSection(LayoutTableSection&,
                      SubtreeLayoutScope&,
                      LayoutUnit logicalLeft);
+
+  // Return the logical height based on the height, min-height and max-height
+  // properties from CSS. Will return 0 if auto.
+  LayoutUnit logicalHeightFromStyle() const;
 
   void distributeExtraLogicalHeight(int extraLogicalHeight);
 

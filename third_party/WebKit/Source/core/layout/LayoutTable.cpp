@@ -361,7 +361,7 @@ void LayoutTable::updateLogicalWidth() {
 // length and computes its actual value.
 LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(
     const Length& styleLogicalWidth,
-    LayoutUnit availableWidth) {
+    LayoutUnit availableWidth) const {
   if (styleLogicalWidth.isIntrinsic())
     return computeIntrinsicLogicalWidthUsing(
         styleLogicalWidth, availableWidth,
@@ -382,7 +382,7 @@ LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(
 }
 
 LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(
-    const Length& styleLogicalHeight) {
+    const Length& styleLogicalHeight) const {
   LayoutUnit borderAndPaddingBefore =
       borderBefore() + (collapseBorders() ? LayoutUnit() : paddingBefore());
   LayoutUnit borderAndPaddingAfter =
@@ -453,6 +453,38 @@ void LayoutTable::layoutSection(LayoutTableSection& section,
   int sectionLogicalHeight = section.calcRowLogicalHeight();
   section.setLogicalHeight(LayoutUnit(sectionLogicalHeight));
   setLogicalHeight(logicalHeight() + sectionLogicalHeight);
+}
+
+LayoutUnit LayoutTable::logicalHeightFromStyle() const {
+  LayoutUnit computedLogicalHeight;
+  Length logicalHeightLength = style()->logicalHeight();
+  if (logicalHeightLength.isIntrinsic() ||
+      (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive())) {
+    computedLogicalHeight =
+        convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
+  }
+
+  Length logicalMaxHeightLength = style()->logicalMaxHeight();
+  if (logicalMaxHeightLength.isIntrinsic() ||
+      (logicalMaxHeightLength.isSpecified() &&
+       !logicalMaxHeightLength.isNegative())) {
+    LayoutUnit computedMaxLogicalHeight =
+        convertStyleLogicalHeightToComputedHeight(logicalMaxHeightLength);
+    computedLogicalHeight =
+        std::min(computedLogicalHeight, computedMaxLogicalHeight);
+  }
+
+  Length logicalMinHeightLength = style()->logicalMinHeight();
+  if (logicalMinHeightLength.isIntrinsic() ||
+      (logicalMinHeightLength.isSpecified() &&
+       !logicalMinHeightLength.isNegative())) {
+    LayoutUnit computedMinLogicalHeight =
+        convertStyleLogicalHeightToComputedHeight(logicalMinHeightLength);
+    computedLogicalHeight =
+        std::max(computedLogicalHeight, computedMinLogicalHeight);
+  }
+
+  return computedLogicalHeight;
 }
 
 void LayoutTable::distributeExtraLogicalHeight(int extraLogicalHeight) {
@@ -613,34 +645,7 @@ void LayoutTable::layout() {
 
     setLogicalHeight(tableBoxLogicalTop + borderAndPaddingBefore);
 
-    LayoutUnit computedLogicalHeight;
-
-    Length logicalHeightLength = style()->logicalHeight();
-    if (logicalHeightLength.isIntrinsic() ||
-        (logicalHeightLength.isSpecified() && logicalHeightLength.isPositive()))
-      computedLogicalHeight =
-          convertStyleLogicalHeightToComputedHeight(logicalHeightLength);
-
-    Length logicalMaxHeightLength = style()->logicalMaxHeight();
-    if (logicalMaxHeightLength.isIntrinsic() ||
-        (logicalMaxHeightLength.isSpecified() &&
-         !logicalMaxHeightLength.isNegative())) {
-      LayoutUnit computedMaxLogicalHeight =
-          convertStyleLogicalHeightToComputedHeight(logicalMaxHeightLength);
-      computedLogicalHeight =
-          std::min(computedLogicalHeight, computedMaxLogicalHeight);
-    }
-
-    Length logicalMinHeightLength = style()->logicalMinHeight();
-    if (logicalMinHeightLength.isIntrinsic() ||
-        (logicalMinHeightLength.isSpecified() &&
-         !logicalMinHeightLength.isNegative())) {
-      LayoutUnit computedMinLogicalHeight =
-          convertStyleLogicalHeightToComputedHeight(logicalMinHeightLength);
-      computedLogicalHeight =
-          std::max(computedLogicalHeight, computedMinLogicalHeight);
-    }
-
+    LayoutUnit computedLogicalHeight = logicalHeightFromStyle();
     LayoutUnit totalSectionLogicalHeight;
     if (topSection) {
       totalSectionLogicalHeight =
