@@ -70,7 +70,9 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_margin_side,
     float search_bar_height,
     float search_context_opacity,
+    float search_text_layer_min_height,
     float search_term_opacity,
+    float search_term_caption_spacing,
     float search_caption_animation_percentage,
     bool search_caption_visible,
     bool search_bar_border_visible,
@@ -89,11 +91,6 @@ void ContextualSearchLayer::SetProperties(
     float progress_bar_height,
     float progress_bar_opacity,
     int progress_bar_completion) {
-
-  // Grabs the dynamic Search Context resource.
-  ui::ResourceManager::Resource* search_context_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                     search_context_resource_id);
 
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
@@ -231,76 +228,18 @@ void ContextualSearchLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
-  // Search Context
+  // Search Term, Context and Search Caption
   // ---------------------------------------------------------------------------
-  if (search_context_resource) {
-    // Centers the text vertically in the Search Bar.
-    float search_bar_padding_top =
-        search_bar_top +
-        search_bar_height / 2 -
-        search_context_resource->size.height() / 2;
-    search_context_->SetUIResourceId(
-        search_context_resource->ui_resource->id());
-    search_context_->SetBounds(search_context_resource->size);
-    search_context_->SetPosition(gfx::PointF(0.f, search_bar_padding_top));
-    search_context_->SetOpacity(search_context_opacity);
-  }
-
-  // -----------------------------------------------------------------
-  // Search Caption Text
-  // -----------------------------------------------------------------
-  // We don't want to load the resource if it won't ever be used, and since
-  // captions are still rare, we only load if visible.
-  ui::ResourceManager::Resource* search_caption_resource = nullptr;
-  if (search_caption_visible) {
-    // Grabs the dynamic Search Caption resource so we can get a snapshot.
-    search_caption_resource = resource_manager_->GetResource(
-        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, search_caption_resource_id);
-  }
-  // Once a valid snapshot is available, the caller will set the animation
-  // percentage so the caption can actually be seen by the user.
-  if (search_caption_visible && search_caption_animation_percentage != 0.f
-      && search_caption_.get()) {
-    if (search_caption_->parent() != text_container_) {
-      AddBarTextLayer(search_caption_);
-    }
-    if (search_caption_resource) {
-      // Calculate position of the Caption and offset the main bar text and
-      // Search Context to allow for it.
-      // Without a caption they are not moved from their default centered
-      // positions. When there is a Caption interpolate their positions between
-      // the default and adjusted (moved up by the size of the caption and
-      // margin).
-      float bar_text_height = bar_text_->bounds().height();
-      float search_caption_height = search_caption_resource->size.height();
-      float text_margin = floor(
-          (search_bar_height - bar_text_height - search_caption_height) / 5);
-      float search_caption_top =
-          search_bar_top + bar_text_height + text_margin * 2;
-      // Get the current centered position set up by the OverlayPanelLayer.
-      float bar_text_top_centered = bar_text_->position().y();
-      float bar_text_adjust =
-          search_caption_animation_percentage *
-          (search_caption_height + text_margin) / 2;
-      float bar_text_top = bar_text_top_centered - bar_text_adjust;
-      // Move the main bar text up.
-      bar_text_->SetPosition(gfx::PointF(0.f, bar_text_top));
-      // Move the Search Context up.
-      if (search_context_resource) {
-        float search_context_top =
-            search_context_->position().y() - bar_text_adjust;
-        search_context_->SetPosition(gfx::PointF(0.f, search_context_top));
-      }
-      // Add the caption
-      search_caption_->SetUIResourceId(
-          search_caption_resource->ui_resource->id());
-      search_caption_->SetBounds(search_caption_resource->size);
-      search_caption_->SetPosition(gfx::PointF(0.f, search_caption_top));
-      search_caption_->SetOpacity(search_caption_animation_percentage);
-    }
-  } else if (search_caption_.get() && search_caption_->parent()) {
-    search_caption_->RemoveFromParent();
-  }
+  SetupTextLayer(
+      search_bar_top,
+      search_bar_height,
+      search_text_layer_min_height,
+      search_caption_resource_id,
+      search_caption_visible,
+      search_caption_animation_percentage,
+      search_context_resource_id,
+      search_context_opacity,
+      search_term_caption_spacing);
 
   // ---------------------------------------------------------------------------
   // Arrow Icon
@@ -508,6 +447,133 @@ void ContextualSearchLayer::SetupIconLayer(
   }
 }
 
+void ContextualSearchLayer::SetupTextLayer(
+    float bar_top,
+    float bar_height,
+    float search_text_layer_min_height,
+    int caption_resource_id,
+    bool caption_visible,
+    float animation_percentage,
+    int context_resource_id,
+    float context_opacity,
+    float term_caption_spacing) {
+  // ---------------------------------------------------------------------------
+  // Setup the Drawing Hierarchy
+  // ---------------------------------------------------------------------------
+  // Search Term
+  if (bar_text_->parent() != text_layer_)
+    text_layer_->AddChild(bar_text_);
+
+  // Search Context
+  ui::ResourceManager::Resource* context_resource =
+      resource_manager_->GetResource(
+          ui::ANDROID_RESOURCE_TYPE_DYNAMIC, context_resource_id);
+  if (context_resource) {
+    search_context_->SetUIResourceId(context_resource->ui_resource->id());
+    search_context_->SetBounds(context_resource->size);
+  }
+
+  // Search Caption
+  ui::ResourceManager::Resource* caption_resource = nullptr;
+  if (caption_visible) {
+    // Grabs the dynamic Search Caption resource so we can get a snapshot.
+    caption_resource  = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, caption_resource_id);
+  }
+
+  if (caption_visible && animation_percentage != 0.f) {
+    if (search_caption_->parent() != text_layer_) {
+      text_layer_->AddChild(search_caption_);
+    }
+    if (caption_resource) {
+      search_caption_->SetUIResourceId(caption_resource->ui_resource->id());
+      search_caption_->SetBounds(caption_resource->size);
+    }
+  } else if (search_caption_->parent()) {
+    search_caption_->RemoveFromParent();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Calculate Text Layer Size
+  // ---------------------------------------------------------------------------
+  // If space allows, the Term, Context and Caption should occupy a Text
+  // section of fixed size.
+  // We may not be able to fit these inside the ideal size as the user may have
+  // their Font Size set to large.
+
+  // The search_caption_ may not have had it's resource set by this point, if so
+  // the bounds will be zero and everything will still work.
+  float term_height = bar_text_->bounds().height();
+  float caption_height = search_caption_->bounds().height();
+
+  float layer_height = std::max(search_text_layer_min_height,
+      term_height + caption_height + term_caption_spacing);
+  float layer_width = std::max(bar_text_->bounds().width(),
+                                 search_caption_->bounds().width());
+
+  float layer_top = bar_top + (bar_height - layer_height) / 2;
+  text_layer_->SetBounds(gfx::Size(layer_width, layer_height));
+  text_layer_->SetPosition(gfx::PointF(0.f, layer_top));
+  text_layer_->SetMasksToBounds(true);
+
+  // ---------------------------------------------------------------------------
+  // Layout Text Layer
+  // ---------------------------------------------------------------------------
+  // ---Top of Search Bar--- <- bar_top
+  //
+  // ---Top of Text Layer--- <- layer_top
+  //                         } remaining_height / 2
+  // Term & Context          } term_height
+  //                         } term_caption_spacing
+  // Caption                 } caption_height
+  //                         } remaining_height / 2
+  // --Bottom of Text Layer-
+  //
+  // --Bottom of Search Bar-
+  // If the Caption is not visible the Term is centered in this space, when
+  // the Caption becomes visible it is animated sliding up into it's position
+  // with the spacings determined by UI.
+  // The Term and the Context are assumed to be the same height and will be
+  // positioned one on top of the other. When the Context is resolved it will
+  // fade out and the Term will fade in.
+
+  search_context_->SetOpacity(context_opacity);
+  bar_text_->SetOpacity(1.f - context_opacity);
+
+  // If there is no caption, just vertically center the Search Term.
+  float term_top = (layer_height - term_height) / 2;
+
+  // If we aren't displaying the caption we're done.
+  if (!caption_visible || animation_percentage == 0.f || !caption_resource) {
+    bar_text_->SetPosition(gfx::PointF(0.f, term_top));
+    search_context_->SetPosition(gfx::PointF(0.f, term_top));
+    return;
+  }
+
+  // Calculate the positions for the Term and Caption when the Caption
+  // animation is complete.
+  float remaining_height = layer_height
+                         - term_height
+                         - term_caption_spacing
+                         - caption_height;
+
+  float term_top_end = remaining_height / 2;
+  float caption_top_end = term_top_end + term_height + term_caption_spacing;
+
+  // Interpolate between the animation start and end positions (short cut
+  // if the animation is at the end or start).
+  term_top = term_top * (1.f - animation_percentage)
+           + term_top_end * animation_percentage;
+
+  // The Caption starts off the bottom of the Text Layer.
+  float caption_top = layer_height * (1.f - animation_percentage)
+                    + caption_top_end * animation_percentage;
+
+  bar_text_->SetPosition(gfx::PointF(0.f, term_top));
+  search_context_->SetPosition(gfx::PointF(0.f, term_top));
+  search_caption_->SetPosition(gfx::PointF(0.f, caption_top));
+}
+
 void ContextualSearchLayer::SetThumbnail(const SkBitmap* thumbnail) {
   // Determine the scaled thumbnail width and height. If both the height and
   // width of |thumbnail| are larger than |thumbnail_size_|, the thumbnail will
@@ -599,7 +665,8 @@ ContextualSearchLayer::ContextualSearchLayer(
       peek_promo_text_(cc::UIResourceLayer::Create()),
       progress_bar_(cc::NinePatchLayer::Create()),
       progress_bar_background_(cc::NinePatchLayer::Create()),
-      search_caption_(cc::UIResourceLayer::Create()) {
+      search_caption_(cc::UIResourceLayer::Create()),
+      text_layer_(cc::UIResourceLayer::Create()) {
   // Search Peek Promo
   peek_promo_container_->SetIsDrawable(true);
   peek_promo_container_->SetBackgroundColor(kSearchBarBackgroundColor);
@@ -611,8 +678,6 @@ ContextualSearchLayer::ContextualSearchLayer(
 
   // Search Bar Text
   search_context_->SetIsDrawable(true);
-  // NOTE(mdjones): This can be called multiple times to add other text layers.
-  AddBarTextLayer(search_context_);
 
   // Search Bar Caption
   search_caption_->SetIsDrawable(true);
@@ -640,6 +705,12 @@ ContextualSearchLayer::ContextualSearchLayer(
 
   // Thumbnail
   thumbnail_layer_->SetIsDrawable(true);
+
+  // Content layer
+  text_layer_->SetIsDrawable(true);
+  // NOTE(mdjones): This can be called multiple times to add other text layers.
+  AddBarTextLayer(text_layer_);
+  text_layer_->AddChild(search_context_);
 }
 
 ContextualSearchLayer::~ContextualSearchLayer() {

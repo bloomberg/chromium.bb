@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
@@ -55,6 +56,10 @@ public class ContextualSearchBarControl
      */
     private float mSearchBarTermOpacity = 1.f;
 
+    // Dimensions used for laying out the search bar.
+    private final float mTextLayerMinHeight;
+    private final float mTermCaptionSpacing;
+
     /**
      * Constructs a new bottom bar control container by inflating views from XML.
      *
@@ -71,6 +76,26 @@ public class ContextualSearchBarControl
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
         mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader);
+
+        mTextLayerMinHeight = context.getResources().getDimension(
+                R.dimen.contextual_search_text_layer_min_height);
+        mTermCaptionSpacing = context.getResources().getDimension(
+                R.dimen.contextual_search_term_caption_spacing);
+    }
+
+    /**
+     * Returns the minimum height that the text layer (containing the Search Context, Term and
+     * Caption) should be.
+     */
+    public float getTextLayerMinHeight() {
+        return mTextLayerMinHeight;
+    }
+
+    /**
+     * Returns the spacing that should be placed between the Search Term and Caption.
+     */
+    public float getSearchTermCaptionSpacing() {
+        return mTermCaptionSpacing;
     }
 
     /**

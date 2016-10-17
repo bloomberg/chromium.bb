@@ -65,7 +65,9 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_bar_margin_side,
                      float search_bar_height,
                      float search_context_opacity,
+                     float search_text_layer_min_height,
                      float search_term_opacity,
+                     float search_term_caption_spacing,
                      float search_caption_animation_percentage,
                      bool search_caption_visible,
                      bool search_bar_border_visible,
@@ -101,6 +103,19 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                       bool thumbnail_visible,
                       float thumbnail_visibility_percentage);
 
+  // Sets up |text_layer_|, which contains |bar_text_|, |search_context_| and
+  // |search_caption_|.
+  void SetupTextLayer(
+      float search_bar_top,
+      float search_bar_height,
+      float search_text_layer_min_height,
+      int search_caption_resource_id,
+      bool search_caption_visible,
+      float search_caption_animation_percentage,
+      int search_context_resource_id,
+      float search_context_opacity,
+      float search_term_caption_spacing);
+
   int thumbnail_size_;
   float thumbnail_side_margin_;
   float thumbnail_top_margin_;
@@ -118,6 +133,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::NinePatchLayer> progress_bar_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_caption_;
+  scoped_refptr<cc::UIResourceLayer> text_layer_;
 };
 
 }  //  namespace android

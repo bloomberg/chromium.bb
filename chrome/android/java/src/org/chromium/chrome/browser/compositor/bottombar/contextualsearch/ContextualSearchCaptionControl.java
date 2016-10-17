@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -14,6 +16,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelInflater;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -24,6 +27,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
         implements ChromeAnimation.Animatable<ContextualSearchCaptionControl.AnimationType> {
     private static final float ANIMATION_PERCENTAGE_ZERO = 0.f;
     private static final float ANIMATION_PERCENTAGE_COMPLETE = 1.f;
+    private static final Interpolator ANIMATION_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     /**
      * Animation properties.
@@ -147,7 +151,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
     private void animateTransitionIn() {
         mOverlayPanel.addToAnimation(this, AnimationType.APPEARANCE, ANIMATION_PERCENTAGE_ZERO,
                 ANIMATION_PERCENTAGE_COMPLETE, OverlayPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS,
-                0);
+                0, false, ANIMATION_INTERPOLATOR);
     }
 
     @Override
