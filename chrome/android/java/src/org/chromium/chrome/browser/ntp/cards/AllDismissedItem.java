@@ -22,10 +22,11 @@ import java.util.Calendar;
  * Displayed when all suggested content and their sections have been dismissed. Provides a button
  * to restore the dismissed sections and load new suggestions from the server.
  */
-public class AllDismissedItem extends SingleItemGroup {
+public class AllDismissedItem extends Leaf {
     @Override
-    public int getType() {
-        return NewTabPageItem.VIEW_TYPE_ALL_DISMISSED;
+    @ItemViewType
+    public int getItemViewType() {
+        return ItemViewType.ALL_DISMISSED;
     }
 
     @Override
@@ -35,7 +36,7 @@ public class AllDismissedItem extends SingleItemGroup {
     }
 
     /**
-     * ViewHolder for an item of type {@link #VIEW_TYPE_ALL_DISMISSED}.
+     * ViewHolder for an item of type {@link ItemViewType#ALL_DISMISSED}.
      */
     public static class ViewHolder extends NewTabPageViewHolder {
         private final TextView mBodyTextView;

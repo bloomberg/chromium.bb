@@ -5,14 +5,15 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.Bitmap;
 
-import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
+import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.cards.Leaf;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 
 /**
  * Represents the data for an article card on the NTP.
  */
-public class SnippetArticle implements NewTabPageItem {
+public class SnippetArticle extends Leaf {
     /** The category of this article. */
     public final int mCategory;
 
@@ -88,14 +89,22 @@ public class SnippetArticle implements NewTabPageItem {
     }
 
     @Override
-    public int getType() {
-        return NewTabPageItem.VIEW_TYPE_SNIPPET;
+    @ItemViewType
+    public int getItemViewType() {
+        return ItemViewType.SNIPPET;
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder) {
+    protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof SnippetArticleViewHolder;
         ((SnippetArticleViewHolder) holder).onBindViewHolder(this);
+    }
+
+    @Override
+    public SnippetArticle getSuggestionAt(int position) {
+        if (position != 0) throw new IndexOutOfBoundsException();
+
+        return this;
     }
 
     /**

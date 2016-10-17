@@ -13,23 +13,17 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 
-import java.util.Collections;
-import java.util.List;
-
 /**
- * Shows a card prompting the user to sign in. This item is also an {@link ItemGroup}, and calling
+ * Shows a card prompting the user to sign in. This item is also a {@link TreeNode}, and calling
  * {@link #hide()} or {@link #maybeShow()} will control its visibility.
  */
-public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
-    private final NewTabPageItem mItem = new Item();
-    private final List<NewTabPageItem> mItems = Collections.<NewTabPageItem>singletonList(mItem);
-    private Observer mChangeObserver;
-
+public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataSource {
     /**
      * Whether the promo should be visible, according to the parent object.
      *
@@ -44,7 +38,8 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
      */
     private boolean mDismissed;
 
-    public SignInPromo() {
+    public SignInPromo(NodeParent parent) {
+        super(parent);
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
         SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
@@ -52,32 +47,30 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
     }
 
     @Override
-    public List<NewTabPageItem> getItems() {
-        return isShown() ? mItems : Collections.<NewTabPageItem>emptyList();
-    }
+    public int getItemCount() {
+        if (!isShown()) return 0;
 
-    private class Item implements NewTabPageItem {
-        @Override
-        public int getType() {
-            return NewTabPageItem.VIEW_TYPE_PROMO;
-        }
-
-        @Override
-        public void onBindViewHolder(NewTabPageViewHolder holder) {
-            assert holder instanceof ViewHolder;
-            ((ViewHolder) holder).onBindViewHolder(SignInPromo.this);
-        }
+        return 1;
     }
 
     @Override
-    public void performAction(Context context) {
-        AccountSigninActivity.startIfAllowed(context, SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
+    @ItemViewType
+    public int getItemViewType(int position) {
+        checkIndex(position);
+        return ItemViewType.PROMO;
     }
 
-    /** Sets the {@link Observer} that will be notified when the visibility of the item changes. */
-    public void setObserver(Observer changeObserver) {
-        assert mChangeObserver == null;
-        this.mChangeObserver = changeObserver;
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+        checkIndex(position);
+        assert holder instanceof StatusCardViewHolder;
+        ((StatusCardViewHolder) holder).onBindViewHolder(this);
+    }
+
+    @Override
+    public SnippetArticle getSuggestionAt(int position) {
+        checkIndex(position);
+        return null;
     }
 
     @Override
@@ -98,6 +91,11 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
         return R.string.sign_in_button;
     }
 
+    @Override
+    public void performAction(Context context) {
+        AccountSigninActivity.startIfAllowed(context, SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
+    }
+
     public boolean isShown() {
         return !mDismissed && mVisible;
     }
@@ -110,7 +108,7 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
         if (mDismissed) return;
 
         RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
-        mChangeObserver.onItemRangeInserted(this, 0, 1);
+        notifyItemInserted(0);
     }
 
     /** Hides the sign in promo. */
@@ -120,7 +118,7 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
 
         if (mDismissed) return;
 
-        mChangeObserver.onItemRangeRemoved(this, 0, 1);
+        notifyItemRemoved(0);
     }
 
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
@@ -157,17 +155,23 @@ public class SignInPromo implements ItemGroup, StatusCardViewHolder.DataSource {
 
             if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
 
-            @NewTabPageItem.ViewType
+            @ItemViewType
             int precedingCardType =
                     getRecyclerView().getAdapter().getItemViewType(getAdapterPosition() - 1);
 
             // The sign in promo should stick to the articles of the preceding section, but have
             // some space otherwise.
-            if (precedingCardType != NewTabPageItem.VIEW_TYPE_SNIPPET) {
+            if (precedingCardType != ItemViewType.SNIPPET) {
                 getParams().topMargin = mSeparationSpaceSize;
             } else {
                 getParams().topMargin = 0;
             }
+        }
+    }
+
+    private void checkIndex(int position) {
+        if (position < 0 || position >= getItemCount()) {
+            throw new IndexOutOfBoundsException(position + "/" + getItemCount());
         }
     }
 }

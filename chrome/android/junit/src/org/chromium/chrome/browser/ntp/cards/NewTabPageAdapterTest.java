@@ -107,27 +107,27 @@ public class NewTabPageAdapterTest {
             mCurrentIndex = startingIndex;
         }
 
-        public void expect(@NewTabPageItem.ViewType int expectedItemType) {
+        public void expect(@ItemViewType int expectedItemType) {
             if (mCurrentIndex >= mAdapter.getItemCount()) {
                 fail("Expected item of type " + expectedItemType + " but encountered end of list");
             }
-            @NewTabPageItem.ViewType int itemType = mAdapter.getItemViewType(mCurrentIndex);
+            @ItemViewType int itemType = mAdapter.getItemViewType(mCurrentIndex);
             assertEquals("Type mismatch at position " + mCurrentIndex, expectedItemType, itemType);
             mCurrentIndex++;
         }
 
         public void expect(SectionDescriptor descriptor) {
-            expect(NewTabPageItem.VIEW_TYPE_HEADER);
+            expect(ItemViewType.HEADER);
             if (descriptor.mStatusCard) {
-                expect(NewTabPageItem.VIEW_TYPE_STATUS);
-                expect(NewTabPageItem.VIEW_TYPE_ACTION);
-                expect(NewTabPageItem.VIEW_TYPE_PROGRESS);
+                expect(ItemViewType.STATUS);
+                expect(ItemViewType.ACTION);
+                expect(ItemViewType.PROGRESS);
             } else {
                 for (int i = 1; i <= descriptor.mNumSuggestions; i++) {
-                    expect(NewTabPageItem.VIEW_TYPE_SNIPPET);
+                    expect(ItemViewType.SNIPPET);
                 }
                 if (descriptor.mMoreButton) {
-                    expect(NewTabPageItem.VIEW_TYPE_ACTION);
+                    expect(ItemViewType.ACTION);
                 }
             }
         }
@@ -143,11 +143,11 @@ public class NewTabPageAdapterTest {
      * @param descriptor The section descriptor to match against.
      * @param itemGroup The items from the adapter.
      */
-    private void assertMatches(SectionDescriptor descriptor, ItemGroup itemGroup) {
+    private void assertMatches(SectionDescriptor descriptor, TreeNode itemGroup) {
         int offset = mAdapter.getGroupPositionOffset(itemGroup);
         ItemsMatcher matcher = new ItemsMatcher(mAdapter, offset);
         matcher.expect(descriptor);
-        matcher.expectPosition(offset + itemGroup.getItems().size());
+        matcher.expectPosition(offset + itemGroup.getItemCount());
     }
 
     /**
@@ -158,14 +158,14 @@ public class NewTabPageAdapterTest {
      */
     private void assertItemsFor(SectionDescriptor... descriptors) {
         ItemsMatcher matcher = new ItemsMatcher(mAdapter, 0);
-        matcher.expect(NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD);
+        matcher.expect(ItemViewType.ABOVE_THE_FOLD);
         for (SectionDescriptor descriptor : descriptors) matcher.expect(descriptor);
         if (descriptors.length == 0) {
-            matcher.expect(NewTabPageItem.VIEW_TYPE_ALL_DISMISSED);
+            matcher.expect(ItemViewType.ALL_DISMISSED);
         } else {
-            matcher.expect(NewTabPageItem.VIEW_TYPE_FOOTER);
+            matcher.expect(ItemViewType.FOOTER);
         }
-        matcher.expect(NewTabPageItem.VIEW_TYPE_SPACING);
+        matcher.expect(ItemViewType.SPACING);
         matcher.expectPosition(mAdapter.getItemCount());
     }
 
@@ -363,9 +363,8 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testProgressIndicatorDisplay() {
         int progressPos = mAdapter.getFooterPosition() - 1;
-        SuggestionsSection section = (SuggestionsSection) mAdapter.getGroup(progressPos);
-        List<NewTabPageItem> items = section.getItems();
-        ProgressItem progress = (ProgressItem) items.get(items.size() - 1);
+        SuggestionsSection section = mAdapter.getSuggestionsSection(progressPos);
+        ProgressItem progress = section.getProgressItemForTesting();
 
         mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.INITIALIZING);
         assertTrue(progress.isVisible());
@@ -614,7 +613,7 @@ public class NewTabPageAdapterTest {
 
         NewTabPageAdapter ntpAdapter =
                 new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
-        List<ItemGroup> groups = ntpAdapter.getGroups();
+        List<TreeNode> groups = ntpAdapter.getGroups();
 
         assertEquals(basicGroupCount + 4, groups.size());
         assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
@@ -760,8 +759,7 @@ public class NewTabPageAdapterTest {
         MockNewTabPageManager ntpManager = new MockNewTabPageManager(mSource);
         NewTabPageAdapter adapter = new NewTabPageAdapter(ntpManager, null, null);
 
-        assertEquals(5, adapter.getGroups().size());
-        ItemGroup signinPromoGroup = adapter.getGroup(5);
+        TreeNode signinPromoGroup = adapter.getGroups().get(2);
 
         // Adapter content:
         // Idx | Item               | Group Index
@@ -775,14 +773,14 @@ public class NewTabPageAdapterTest {
         // 6   | Footer             | 3
         // 7   | Spacer             | 4
 
-        assertEquals(1, signinPromoGroup.getItems().size());
-        assertEquals(NewTabPageItem.VIEW_TYPE_PROMO, signinPromoGroup.getItems().get(0).getType());
+        assertEquals(1, signinPromoGroup.getItemCount());
+        assertEquals(ItemViewType.PROMO, signinPromoGroup.getItemViewType(0));
 
         ntpManager.mSignInStateObserver.onSignedIn();
-        assertEquals(0, signinPromoGroup.getItems().size());
+        assertEquals(0, signinPromoGroup.getItemCount());
 
         ntpManager.mSignInStateObserver.onSignedOut();
-        assertEquals(1, signinPromoGroup.getItems().size());
+        assertEquals(1, signinPromoGroup.getItemCount());
     }
 
     @Test
@@ -797,31 +795,31 @@ public class NewTabPageAdapterTest {
         final int signInPromoIndex = 5;
 
         assertEquals(5, adapter.getGroups().size());
-        ItemGroup signinPromoGroup = adapter.getGroup(signInPromoIndex);
+        TreeNode signinPromoGroup = adapter.getGroups().get(2);
 
         // Adapter content:
-        // Idx | Item
-        // ----|----------------
-        // 0   | Above-the-fold
-        // 1   | Header
-        // 2   | Status
-        // 3   | Action
-        // 4   | Progress Indicator
-        // 5   | Sign in promo
-        // 6   | Footer
-        // 7   | Spacer
+        // Idx | Item               | Group Index
+        // ----|--------------------|-------------
+        // 0   | Above-the-fold     | 0
+        // 1   | Header             | 1
+        // 2   | Status             | 1
+        // 3   | Action             | 1
+        // 4   | Progress Indicator | 1
+        // 5   | Sign in promo      | 2
+        // 6   | Footer             | 3
+        // 7   | Spacer             | 4
 
-        assertEquals(NewTabPageItem.VIEW_TYPE_PROMO, signinPromoGroup.getItems().get(0).getType());
+        assertEquals(ItemViewType.PROMO, signinPromoGroup.getItemViewType(0));
 
         adapter.dismissItem(signInPromoIndex);
-        assertTrue(signinPromoGroup.getItems().isEmpty());
+        assertEquals(0, signinPromoGroup.getItemCount());
         assertTrue(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
                            .getNewTabPageSigninPromoDismissed());
 
         adapter = new NewTabPageAdapter(ntpManager, null, null);
         assertEquals(5, adapter.getGroups().size());
         // The items below the signin promo move up, footer is now at the position of the promo.
-        assertEquals(NewTabPageItem.VIEW_TYPE_FOOTER, adapter.getItemViewType(signInPromoIndex));
+        assertEquals(ItemViewType.FOOTER, adapter.getItemViewType(signInPromoIndex));
     }
 
     /** Registers the category with hasMoreButton=false and showIfEmpty=true*/
@@ -836,7 +834,7 @@ public class NewTabPageAdapterTest {
                 category, createDummySuggestions(suggestionCount));
     }
 
-    private int getCategory(ItemGroup itemGroup) {
+    private int getCategory(TreeNode itemGroup) {
         return ((SuggestionsSection) itemGroup).getCategory();
     }
 

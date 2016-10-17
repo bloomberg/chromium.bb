@@ -174,7 +174,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // It might not be in the layout yet if it's not visible or ready to be displayed.
         if (bottomSpacingViewHolder == null) return;
 
-        assert bottomSpacingViewHolder.getItemViewType() == NewTabPageItem.VIEW_TYPE_SPACING;
+        assert bottomSpacingViewHolder.getItemViewType() == ItemViewType.SPACING;
         bottomSpacingViewHolder.itemView.requestLayout();
     }
 

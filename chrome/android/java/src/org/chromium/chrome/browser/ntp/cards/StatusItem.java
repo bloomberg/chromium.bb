@@ -13,7 +13,7 @@ import org.chromium.chrome.R;
  * Card that is shown when the user needs to be made aware of some information about their
  * configuration that affects the NTP suggestions.
  */
-public abstract class StatusItem implements NewTabPageItem, StatusCardViewHolder.DataSource {
+public abstract class StatusItem extends Leaf implements StatusCardViewHolder.DataSource {
     public static StatusItem createNoSuggestionsItem(SuggestionsCategoryInfo categoryInfo) {
         return new NoSuggestionsItem(categoryInfo);
     }
@@ -50,12 +50,13 @@ public abstract class StatusItem implements NewTabPageItem, StatusCardViewHolder
     }
 
     @Override
-    public int getType() {
-        return NewTabPageItem.VIEW_TYPE_STATUS;
+    @ItemViewType
+    protected int getItemViewType() {
+        return ItemViewType.STATUS;
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder) {
+    protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof StatusCardViewHolder;
         ((StatusCardViewHolder) holder).onBindViewHolder(this);
     }

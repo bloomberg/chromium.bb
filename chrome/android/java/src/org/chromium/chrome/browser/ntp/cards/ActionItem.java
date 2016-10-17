@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.ntp.UiConfig;
 /**
  * Item that allows the user to perform an action on the NTP.
  */
-class ActionItem implements NewTabPageItem {
+class ActionItem extends Leaf {
     private static final String TAG = "NtpCards";
 
     private final SuggestionsCategoryInfo mCategoryInfo;
@@ -28,8 +28,9 @@ class ActionItem implements NewTabPageItem {
     }
 
     @Override
-    public int getType() {
-        return NewTabPageItem.VIEW_TYPE_ACTION;
+    @ItemViewType
+    protected int getItemViewType() {
+        return ItemViewType.ACTION;
     }
 
     public int getPosition() {
@@ -83,7 +84,7 @@ class ActionItem implements NewTabPageItem {
     }
 
     @Override
-    public void onBindViewHolder(NewTabPageViewHolder holder) {
+    protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof ViewHolder;
         ((ViewHolder) holder).onBindViewHolder(this);
     }

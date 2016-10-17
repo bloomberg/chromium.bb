@@ -18,27 +18,26 @@ import java.util.List;
 /**
  * A group of suggestions, with a header, a status card, and a progress indicator.
  */
-public class SuggestionsSection implements ItemGroup {
+public class SuggestionsSection extends InnerNode {
     private final List<SnippetArticle> mSuggestions = new ArrayList<>();
     private final SectionHeader mHeader;
     private final StatusItem mStatus;
     private final ProgressItem mProgressIndicator = new ProgressItem();
     private final ActionItem mMoreButton;
-    private final Observer mObserver;
     private final SuggestionsCategoryInfo mCategoryInfo;
 
-    public SuggestionsSection(SuggestionsCategoryInfo info, Observer observer) {
+    public SuggestionsSection(NodeParent parent, SuggestionsCategoryInfo info) {
+        super(parent);
         mHeader = new SectionHeader(info.getTitle());
         mCategoryInfo = info;
-        mObserver = observer;
         mMoreButton = new ActionItem(info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
     }
 
     @Override
-    public List<NewTabPageItem> getItems() {
+    public List<TreeNode> getChildren() {
         // Note: Keep this coherent with the various notify** calls on ItemGroup.Observer
-        List<NewTabPageItem> items = new ArrayList<>();
+        List<TreeNode> items = new ArrayList<>();
         items.add(mHeader);
         items.addAll(mSuggestions);
 
@@ -58,16 +57,16 @@ public class SuggestionsSection implements ItemGroup {
 
         // Note: Keep this coherent with getItems()
         int globalRemovedIndex = removedIndex + 1; // Header has index 0 in the section.
-        mObserver.onItemRangeRemoved(this, globalRemovedIndex, 1);
+        notifyItemRemoved(globalRemovedIndex);
 
         // If we still have some suggestions, we are done. Otherwise, we'll have to notify about the
         // status-related items that are now present.
         if (hasSuggestions()) return;
-        mObserver.onItemRangeInserted(this, globalRemovedIndex, 1); // Status card.
+        notifyItemInserted(globalRemovedIndex); // Status card.
         if (!mCategoryInfo.hasMoreButton()) {
-            mObserver.onItemRangeInserted(this, globalRemovedIndex + 1, 1); // Action card.
+            notifyItemInserted(globalRemovedIndex + 1); // Action card.
         }
-        mObserver.onItemRangeInserted(this, globalRemovedIndex + 2, 1); // Progress indicator.
+        notifyItemInserted(globalRemovedIndex + 2); // Progress indicator.
     }
 
     public void removeSuggestionById(String idWithinCategory) {
@@ -90,7 +89,7 @@ public class SuggestionsSection implements ItemGroup {
     public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
         copyThumbnails(suggestions);
 
-        int itemCountBefore = getItems().size();
+        int itemCountBefore = getItemCount();
         setStatusInternal(status);
 
         mSuggestions.clear();
@@ -105,7 +104,7 @@ public class SuggestionsSection implements ItemGroup {
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */
     public void setStatus(@CategoryStatusEnum int status) {
-        int itemCountBefore = getItems().size();
+        int itemCountBefore = getItemCount();
         setStatusInternal(status);
         notifySectionChanged(itemCountBefore);
     }
@@ -140,13 +139,15 @@ public class SuggestionsSection implements ItemGroup {
      * @return a position delta to apply to the position of the provided item to get the adapter
      * position of the item to animate. Returns {@code 0} if there is no dismiss sibling.
      */
-    public int getDismissSiblingPosDelta(NewTabPageItem item) {
+    public int getDismissSiblingPosDelta(int position) {
         // The only dismiss siblings we have so far are the More button and the status card.
         // Exit early if there is no More button.
         if (mMoreButton == null) return 0;
 
         // When there are suggestions we won't have contiguous status and action items.
         if (hasSuggestions()) return 0;
+
+        TreeNode item = getChildren().get(position);
 
         // The sibling of the more button is the status card, that should be right above.
         if (item == mMoreButton) return -1;
@@ -158,21 +159,27 @@ public class SuggestionsSection implements ItemGroup {
     }
 
     private void notifySectionChanged(int itemCountBefore) {
-        int itemCountAfter = getItems().size();
+        int itemCountAfter = getItemCount();
 
         // The header is stable in sections. Don't notify about it.
         final int startPos = 1;
         itemCountBefore--;
         itemCountAfter--;
 
-        mObserver.onItemRangeChanged(this, startPos, Math.min(itemCountBefore, itemCountAfter));
+        notifyItemRangeChanged(startPos, Math.min(itemCountBefore, itemCountAfter));
         if (itemCountBefore < itemCountAfter) {
-            mObserver.onItemRangeInserted(
-                    this, startPos + itemCountBefore, itemCountAfter - itemCountBefore);
+            notifyItemRangeInserted(startPos + itemCountBefore, itemCountAfter - itemCountBefore);
         } else if (itemCountBefore > itemCountAfter) {
-            mObserver.onItemRangeRemoved(
-                    this, startPos + itemCountAfter, itemCountBefore - itemCountAfter);
+            notifyItemRangeRemoved(startPos + itemCountAfter, itemCountBefore - itemCountAfter);
         }
+    }
+
+    /**
+     * @return The progress indicator.
+     */
+    @VisibleForTesting
+    ProgressItem getProgressItemForTesting() {
+        return mProgressIndicator;
     }
 
     @VisibleForTesting

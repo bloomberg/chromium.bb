@@ -233,19 +233,19 @@ public class CardViewHolder extends NewTabPageViewHolder {
         return LayoutInflater.from(parent.getContext()).inflate(resourceId, parent, false);
     }
 
-    public static boolean isCard(@NewTabPageItem.ViewType int type) {
+    public static boolean isCard(@ItemViewType int type) {
         switch (type) {
-            case NewTabPageItem.VIEW_TYPE_SNIPPET:
-            case NewTabPageItem.VIEW_TYPE_STATUS:
-            case NewTabPageItem.VIEW_TYPE_ACTION:
-            case NewTabPageItem.VIEW_TYPE_PROMO:
+            case ItemViewType.SNIPPET:
+            case ItemViewType.STATUS:
+            case ItemViewType.ACTION:
+            case ItemViewType.PROMO:
                 return true;
-            case NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD:
-            case NewTabPageItem.VIEW_TYPE_HEADER:
-            case NewTabPageItem.VIEW_TYPE_SPACING:
-            case NewTabPageItem.VIEW_TYPE_PROGRESS:
-            case NewTabPageItem.VIEW_TYPE_FOOTER:
-            case NewTabPageItem.VIEW_TYPE_ALL_DISMISSED:
+            case ItemViewType.ABOVE_THE_FOLD:
+            case ItemViewType.HEADER:
+            case ItemViewType.SPACING:
+            case ItemViewType.PROGRESS:
+            case ItemViewType.FOOTER:
+            case ItemViewType.ALL_DISMISSED:
                 return false;
             default:
                 assert false;

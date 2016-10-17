@@ -8,10 +8,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,9 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
-
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -42,7 +41,7 @@ public class SuggestionsSectionTest {
     private static final int EMPTY_SECTION_COUNT = 4;
 
     @Mock
-    private ItemGroup.Observer mObserver;
+    private NodeParent mParent;
 
     @Before
     public void setUp() {
@@ -55,19 +54,20 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> snippets = createDummySuggestions(3);
         SuggestionsSection section;
 
-        section = ContentSuggestionsTestUtils.createSection(true, true, mObserver);
+        section = ContentSuggestionsTestUtils.createSection(true, true, mParent);
         section.setStatus(CategoryStatus.AVAILABLE);
         assertNotNull(section.getActionItem());
 
         // Without snippets.
-        assertEquals(-1, section.getDismissSiblingPosDelta(section.getActionItem()));
-        assertEquals(1, section.getDismissSiblingPosDelta(section.getStatusItem()));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
+        assertEquals(-1, section.getDismissSiblingPosDelta(2));
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
+        assertEquals(1, section.getDismissSiblingPosDelta(1));
 
         // With snippets.
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
-        assertEquals(0, section.getDismissSiblingPosDelta(section.getActionItem()));
-        assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
-        assertEquals(0, section.getDismissSiblingPosDelta(snippets.get(0)));
+        assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
+        assertEquals(0, section.getDismissSiblingPosDelta(1));
     }
 
     @Test
@@ -76,14 +76,14 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, true, mObserver);
+        SuggestionsSection section = createSection(false, true, mParent);
         // Note: when status is not initialised, we insert an item for the status card, but it's
         // null!
-        assertEquals(EMPTY_SECTION_COUNT, section.getItems().size());
+        assertEquals(EMPTY_SECTION_COUNT, section.getItemCount());
 
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
-        verify(mObserver).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-        verify(mObserver).onItemRangeInserted(
+        verify(mParent).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
+        verify(mParent).onItemRangeInserted(
                 section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
     }
 
@@ -93,23 +93,23 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, true, mObserver);
+        SuggestionsSection section = createSection(false, true, mParent);
 
         section.setStatus(CategoryStatus.AVAILABLE);
-        verify(mObserver).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
+        verify(mParent).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
 
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         // We don't clear suggestions when the status is AVAILABLE.
         section.setStatus(CategoryStatus.AVAILABLE);
-        verify(mObserver, times(2)).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-        verify(mObserver).onItemRangeInserted(
+        verify(mParent, times(2)).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
+        verify(mParent).onItemRangeInserted(
                 section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
 
         // We clear existing suggestions when the status is not AVAILABLE.
         section.setStatus(CategoryStatus.SIGNED_OUT);
-        verify(mObserver, times(3)).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-        verify(mObserver).onItemRangeRemoved(
+        verify(mParent, times(3)).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
+        verify(mParent).onItemRangeRemoved(
                 section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
     }
 
@@ -119,25 +119,25 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 2;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, true, mObserver);
+        SuggestionsSection section = createSection(false, true, mParent);
 
         section.removeSuggestion(snippets.get(0));
-        verify(mObserver, never())
+        verify(mParent, never())
                 .onItemRangeChanged(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mObserver, never())
+        verify(mParent, never())
                 .onItemRangeInserted(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mObserver, never())
+        verify(mParent, never())
                 .onItemRangeRemoved(any(SuggestionsSection.class), anyInt(), anyInt());
 
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         section.removeSuggestion(snippets.get(1));
-        verify(mObserver).onItemRangeRemoved(eq(section), eq(2), eq(1));
+        verify(mParent).onItemRangeRemoved(section, 2, 1);
 
         section.removeSuggestion(snippets.get(0));
-        verify(mObserver).onItemRangeRemoved(eq(section), eq(1), eq(1));
-        verify(mObserver).onItemRangeInserted(eq(section), eq(1), eq(1));
-        verify(mObserver).onItemRangeInserted(eq(section), eq(2), eq(1));
+        verify(mParent).onItemRangeRemoved(section, 1, 1);
+        verify(mParent).onItemRangeInserted(section, 1, 1);
+        verify(mParent).onItemRangeInserted(section, 2, 1);
     }
 
     @Test
@@ -146,24 +146,24 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 2;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(true, true, mObserver);
+        SuggestionsSection section = createSection(true, true, mParent);
 
         section.removeSuggestion(snippets.get(0));
-        verify(mObserver, never())
+        verify(mParent, never())
                 .onItemRangeChanged(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mObserver, never())
+        verify(mParent, never())
                 .onItemRangeInserted(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mObserver, never())
+        verify(mParent, never())
                 .onItemRangeRemoved(any(SuggestionsSection.class), anyInt(), anyInt());
 
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         section.removeSuggestion(snippets.get(0));
-        verify(mObserver).onItemRangeRemoved(eq(section), eq(1), eq(1));
+        verify(mParent).onItemRangeRemoved(section, 1, 1);
 
         section.removeSuggestion(snippets.get(1));
-        verify(mObserver, times(2)).onItemRangeRemoved(eq(section), eq(1), eq(1));
-        verify(mObserver).onItemRangeInserted(eq(section), eq(1), eq(1));
-        verify(mObserver).onItemRangeInserted(eq(section), eq(3), eq(1));
+        verify(mParent, times(2)).onItemRangeRemoved(section, 1, 1);
+        verify(mParent).onItemRangeInserted(section, 1, 1);
+        verify(mParent).onItemRangeInserted(section, 3, 1);
     }
 }

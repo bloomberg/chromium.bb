@@ -33,8 +33,8 @@ public final class ContentSuggestionsTestUtils {
     }
 
     public static SuggestionsSection createSection(
-            boolean moreButton, boolean showIfEmpty, ItemGroup.Observer observer) {
+            boolean moreButton, boolean showIfEmpty, NodeParent parent) {
         SuggestionsCategoryInfo info = createInfo(42, moreButton, showIfEmpty);
-        return new SuggestionsSection(info, observer);
+        return new SuggestionsSection(parent, info);
     }
 }
