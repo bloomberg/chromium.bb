@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_MEMORY_MEMORY_COORDINATOR_H_
 
 #include "base/memory/memory_coordinator_client_registry.h"
-#include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/memory_coordinator.mojom.h"
@@ -25,10 +24,14 @@ class MemoryCoordinatorHandleImpl;
 // child processes based on its best knowledge of the memory usage.
 class CONTENT_EXPORT MemoryCoordinator {
  public:
-  ~MemoryCoordinator();
+  virtual ~MemoryCoordinator();
 
   // Singleton factory/accessor.
   static MemoryCoordinator* GetInstance();
+
+  // Starts monitoring memory usage. After calling this method, memory
+  // coordinator will start dispatching state changes.
+  virtual void Start() {}
 
   // Creates a handle to the provided child process.
   void CreateHandle(int render_process_id,
@@ -47,6 +50,9 @@ class CONTENT_EXPORT MemoryCoordinator {
   // if the process is not tracked by this coordinator.
   mojom::MemoryState GetMemoryState(int render_process_id) const;
 
+  // Called when ChildMemoryCoordinator calls AddChild().
+  virtual void OnChildAdded(int render_process_id) {}
+
  protected:
   // Constructor. Protected as this is a singleton, but accessible for
   // unittests.
@@ -60,16 +66,11 @@ class CONTENT_EXPORT MemoryCoordinator {
   // for testing.
   void OnConnectionError(int render_process_id);
 
+  // Returns true when a given renderer can be throttled.
+  bool CanThrottleRenderer(int render_process_id);
+
   // Returns true when a given renderer can be suspended.
   bool CanSuspendRenderer(int render_process_id);
-
- private:
-  friend struct base::DefaultSingletonTraits<MemoryCoordinator>;
-
-  // Helper function of CreateHandle and AddChildForTesting.
-  void CreateChildInfoMapEntry(
-      int render_process_id,
-      std::unique_ptr<MemoryCoordinatorHandleImpl> handle);
 
   // Stores information about any known child processes.
   struct ChildInfo {
@@ -84,6 +85,14 @@ class CONTENT_EXPORT MemoryCoordinator {
 
   // A map from process ID (RenderProcessHost::GetID()) to child process info.
   using ChildInfoMap = std::map<int, ChildInfo>;
+
+  ChildInfoMap& children() { return children_; }
+
+private:
+  // Helper function of CreateHandle and AddChildForTesting.
+  void CreateChildInfoMapEntry(
+      int render_process_id,
+      std::unique_ptr<MemoryCoordinatorHandleImpl> handle);
 
   // Tracks child processes. An entry is added when a renderer connects to
   // MemoryCoordinator and removed automatically when an underlying binding is

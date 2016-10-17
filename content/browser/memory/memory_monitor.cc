@@ -22,4 +22,12 @@ void MemoryMonitorDelegate::GetSystemMemoryInfo(
   base::GetSystemMemoryInfo(mem_info);
 }
 
+#if defined(OS_MACOSX)
+// TODO(bashi,bcwhite): Remove when memory monitor for mac is available.
+std::unique_ptr<MemoryMonitor> CreateMemoryMonitor() {
+  NOTREACHED();
+  return std::unique_ptr<MemoryMonitor>();
+}
+#endif
+
 }  // namespace content

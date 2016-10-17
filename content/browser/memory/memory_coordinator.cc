@@ -16,32 +16,43 @@ namespace content {
 // for the role of this class.
 class MemoryCoordinatorHandleImpl : public mojom::MemoryCoordinatorHandle {
  public:
-  MemoryCoordinatorHandleImpl(mojom::MemoryCoordinatorHandleRequest request)
-      : binding_(this, std::move(request)) {
-  }
+  MemoryCoordinatorHandleImpl(mojom::MemoryCoordinatorHandleRequest request,
+                              MemoryCoordinator* coordinator,
+                              int render_process_id);
+  ~MemoryCoordinatorHandleImpl() override;
 
   // mojom::MemoryCoordinatorHandle:
-  void AddChild(mojom::ChildMemoryCoordinatorPtr child) override {
-    DCHECK(!child_.is_bound());
-    child_ = std::move(child);
-  }
+  void AddChild(mojom::ChildMemoryCoordinatorPtr child) override;
 
   mojom::ChildMemoryCoordinatorPtr& child() { return child_; }
   mojo::Binding<mojom::MemoryCoordinatorHandle>& binding() { return binding_; }
 
  private:
+  MemoryCoordinator* coordinator_;
+  int render_process_id_;
   mojom::ChildMemoryCoordinatorPtr child_;
   mojo::Binding<mojom::MemoryCoordinatorHandle> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorHandleImpl);
 };
 
-// static
-MemoryCoordinator* MemoryCoordinator::GetInstance() {
-  if (!base::FeatureList::IsEnabled(features::kMemoryCoordinator))
-    return nullptr;
-  return base::Singleton<MemoryCoordinator,
-                         base::LeakySingletonTraits<MemoryCoordinator>>::get();
+MemoryCoordinatorHandleImpl::MemoryCoordinatorHandleImpl(
+    mojom::MemoryCoordinatorHandleRequest request,
+    MemoryCoordinator* coordinator,
+    int render_process_id)
+    : coordinator_(coordinator),
+      render_process_id_(render_process_id),
+      binding_(this, std::move(request)) {
+  DCHECK(coordinator_);
+}
+
+MemoryCoordinatorHandleImpl::~MemoryCoordinatorHandleImpl() {}
+
+void MemoryCoordinatorHandleImpl::AddChild(
+    mojom::ChildMemoryCoordinatorPtr child) {
+  DCHECK(!child_.is_bound());
+  child_ = std::move(child);
+  coordinator_->OnChildAdded(render_process_id_);
 }
 
 MemoryCoordinator::MemoryCoordinator()
@@ -54,7 +65,8 @@ void MemoryCoordinator::CreateHandle(
     int render_process_id,
     mojom::MemoryCoordinatorHandleRequest request) {
   std::unique_ptr<MemoryCoordinatorHandleImpl> handle(
-      new MemoryCoordinatorHandleImpl(std::move(request)));
+      new MemoryCoordinatorHandleImpl(std::move(request), this,
+                                      render_process_id));
   handle->binding().set_connection_error_handler(
       base::Bind(&MemoryCoordinator::OnConnectionError, base::Unretained(this),
                  render_process_id));
@@ -76,9 +88,18 @@ bool MemoryCoordinator::SetMemoryState(int render_process_id,
   if (iter == children_.end())
     return false;
 
+  // Can't send a message to a child that isn't bound.
+  if (!iter->second.handle->child().is_bound())
+    return false;
+
   // A nop doesn't need to be sent, but is considered successful.
   if (iter->second.memory_state == memory_state)
     return true;
+
+  // Can't throttle the given renderer.
+  if (memory_state == mojom::MemoryState::THROTTLED &&
+      !CanThrottleRenderer(render_process_id))
+    return false;
 
   // Can't suspend the given renderer.
   if (memory_state == mojom::MemoryState::SUSPENDED &&
@@ -104,13 +125,24 @@ void MemoryCoordinator::AddChildForTesting(
   mojom::MemoryCoordinatorHandlePtr mch;
   auto request = mojo::GetProxy(&mch);
   std::unique_ptr<MemoryCoordinatorHandleImpl> handle(
-      new MemoryCoordinatorHandleImpl(std::move(request)));
+      new MemoryCoordinatorHandleImpl(std::move(request), this,
+                                      dummy_render_process_id));
   handle->AddChild(std::move(child));
   CreateChildInfoMapEntry(dummy_render_process_id, std::move(handle));
 }
 
 void MemoryCoordinator::OnConnectionError(int render_process_id) {
   children_.erase(render_process_id);
+}
+
+bool MemoryCoordinator::CanThrottleRenderer(int render_process_id) {
+  // If there is no delegate (i.e. tests), renderers are always throttleable.
+  // TODO(bashi): We check |delegate_| to avoid calling FromID() on a
+  // wrong thread in tests. Figure out a better way to handle tests.
+  if (!delegate_)
+    return true;
+  auto* render_process_host = RenderProcessHost::FromID(render_process_id);
+  return render_process_host->IsProcessBackgrounded();
 }
 
 bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {

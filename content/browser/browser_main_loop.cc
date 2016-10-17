@@ -56,6 +56,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/media_internals.h"
+#include "content/browser/memory/memory_coordinator.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -748,6 +749,9 @@ int BrowserMainLoop::PreCreateThreads() {
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
   InitializeMemoryManagementComponent();
+
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
+    MemoryCoordinator::GetInstance()->Start();
 
 #if defined(ENABLE_PLUGINS)
   // Prior to any processing happening on the IO thread, we create the

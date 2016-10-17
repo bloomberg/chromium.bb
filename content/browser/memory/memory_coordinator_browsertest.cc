@@ -35,7 +35,13 @@ class MemoryCoordinatorTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, HandleAdded) {
+// TODO(bashi): Enable this test on macos when MemoryMonitorMac is implemented.
+#if defined(OS_MACOSX)
+#define MAYBE_HandleAdded DISABLED_HandleAdded
+#else
+#define MAYBE_HandleAdded HandleAdded
+#endif
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, MAYBE_HandleAdded) {
   GURL url = GetTestUrl("", "simple_page.html");
   NavigateToURL(shell(), url);
   EXPECT_EQ(1u, MemoryCoordinator::GetInstance()->NumChildrenForTesting());

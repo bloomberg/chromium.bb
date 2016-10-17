@@ -59,7 +59,7 @@ class TestMemoryCoordinator : public MemoryCoordinator {
   };
 
   TestMemoryCoordinator() {}
-  ~TestMemoryCoordinator() {}
+  ~TestMemoryCoordinator() override {}
 
   using MemoryCoordinator::OnConnectionError;
 
