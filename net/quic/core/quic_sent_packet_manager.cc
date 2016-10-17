@@ -214,7 +214,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   if (consecutive_rto_count_ > 0 && !use_new_rto_) {
     packets_lost_.clear();
   }
-  MaybeInvokeCongestionEvent(rtt_updated, prior_in_flight);
+  MaybeInvokeCongestionEvent(rtt_updated, prior_in_flight, ack_receive_time);
   unacked_packets_.RemoveObsoletePackets();
 
   sustained_bandwidth_recorder_.RecordEstimate(
@@ -273,15 +273,16 @@ void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
 
 void QuicSentPacketManager::MaybeInvokeCongestionEvent(
     bool rtt_updated,
-    QuicByteCount prior_in_flight) {
+    QuicByteCount prior_in_flight,
+    QuicTime event_time) {
   if (!rtt_updated && packets_acked_.empty() && packets_lost_.empty()) {
     return;
   }
   if (using_pacing_) {
-    pacing_sender_.OnCongestionEvent(rtt_updated, prior_in_flight,
+    pacing_sender_.OnCongestionEvent(rtt_updated, prior_in_flight, event_time,
                                      packets_acked_, packets_lost_);
   } else {
-    send_algorithm_->OnCongestionEvent(rtt_updated, prior_in_flight,
+    send_algorithm_->OnCongestionEvent(rtt_updated, prior_in_flight, event_time,
                                        packets_acked_, packets_lost_);
   }
   packets_acked_.clear();
@@ -589,8 +590,9 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
     case LOSS_MODE: {
       ++stats_->loss_timeout_count;
       QuicByteCount prior_in_flight = unacked_packets_.bytes_in_flight();
-      InvokeLossDetection(clock_->Now());
-      MaybeInvokeCongestionEvent(false, prior_in_flight);
+      const QuicTime now = clock_->Now();
+      InvokeLossDetection(now);
+      MaybeInvokeCongestionEvent(false, prior_in_flight, now);
       return;
     }
     case TLP_MODE:

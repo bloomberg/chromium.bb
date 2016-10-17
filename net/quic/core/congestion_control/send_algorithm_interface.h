@@ -58,6 +58,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // packets considered acked or lost as a result of the congestion event.
   virtual void OnCongestionEvent(bool rtt_updated,
                                  QuicByteCount prior_in_flight,
+                                 QuicTime event_time,
                                  const CongestionVector& acked_packets,
                                  const CongestionVector& lost_packets) = 0;
 

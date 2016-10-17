@@ -158,11 +158,9 @@ bool BbrSender::InRecovery() const {
 
 void BbrSender::OnCongestionEvent(bool /*rtt_updated*/,
                                   QuicByteCount prior_in_flight,
+                                  QuicTime event_time,
                                   const CongestionVector& acked_packets,
                                   const CongestionVector& lost_packets) {
-  // TODO(vasilvv): this should be passed from the SentPacketManager in order
-  // to minimize the number of Now() calls.
-  const QuicTime now = clock_->Now();
   const QuicByteCount total_bytes_acked_before = sampler_.total_bytes_acked();
 
   bool is_round_start = false;
@@ -174,22 +172,22 @@ void BbrSender::OnCongestionEvent(bool /*rtt_updated*/,
   if (!acked_packets.empty()) {
     QuicPacketNumber last_acked_packet = acked_packets.rbegin()->first;
     is_round_start = UpdateRoundTripCounter(last_acked_packet);
-    min_rtt_expired = UpdateBandwidthAndMinRtt(now, acked_packets);
+    min_rtt_expired = UpdateBandwidthAndMinRtt(event_time, acked_packets);
   }
 
   // Handle logic specific to PROBE_BW mode.
   if (mode_ == PROBE_BW) {
-    UpdateGainCyclePhase(now, prior_in_flight, !lost_packets.empty());
+    UpdateGainCyclePhase(event_time, prior_in_flight, !lost_packets.empty());
   }
 
   // Handle logic specific to STARTUP and DRAIN modes.
   if (is_round_start && !is_at_full_bandwidth_) {
     CheckIfFullBandwidthReached();
   }
-  MaybeExitStartupOrDrain(now);
+  MaybeExitStartupOrDrain(event_time);
 
   // Handle logic specific to PROBE_RTT.
-  MaybeEnterOrExitProbeRtt(now, is_round_start, min_rtt_expired);
+  MaybeEnterOrExitProbeRtt(event_time, is_round_start, min_rtt_expired);
 
   // After the model is updated, recalculate the pacing rate and congestion
   // window.
