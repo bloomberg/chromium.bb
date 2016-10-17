@@ -853,7 +853,8 @@ bool FrameView::shouldPerformScrollAnchoring() const {
   return RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
          !RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
          m_scrollAnchor.hasScroller() &&
-         layoutBox()->style()->overflowAnchor() != AnchorNone;
+         layoutBox()->style()->overflowAnchor() != AnchorNone &&
+         !m_frame->document()->finishingOrIsPrinting();
 }
 
 static inline void layoutFromRootObject(LayoutObject& root) {

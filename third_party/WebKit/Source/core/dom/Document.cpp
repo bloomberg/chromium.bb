@@ -428,8 +428,7 @@ Document::Document(const DocumentInit& initializer,
       m_importsController(initializer.importsController()),
       m_contextFeatures(ContextFeatures::defaultSwitch()),
       m_wellFormed(false),
-      m_printing(false),
-      m_wasPrinting(false),
+      m_printing(NotPrinting),
       m_paginatedForScreen(false),
       m_compatibilityMode(NoQuirksMode),
       m_compatibilityModeLocked(false),
@@ -1934,8 +1933,6 @@ void Document::updateStyle() {
   clearChildNeedsStyleRecalc();
 
   resolver.clearStyleSharingList();
-
-  m_wasPrinting = m_printing;
 
   DCHECK(!needsStyleRecalc());
   DCHECK(!childNeedsStyleRecalc());

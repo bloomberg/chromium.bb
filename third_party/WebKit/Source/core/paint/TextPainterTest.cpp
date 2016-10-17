@@ -129,7 +129,7 @@ TEST_F(TextPainterTest,
   document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust,
                                             CSSValueEconomy);
   document().settings()->setShouldPrintBackgrounds(false);
-  document().setPrinting(true);
+  document().setPrinting(Document::Printing);
   document().view()->updateAllLifecyclePhases();
 
   TextPainter::Style textStyle = TextPainter::textPaintingStyle(
@@ -150,7 +150,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
   document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust,
                                             CSSValueEconomy);
   document().settings()->setShouldPrintBackgrounds(false);
-  document().setPrinting(true);
+  document().setPrinting(Document::Printing);
   document().view()->updateAllLifecyclePhases();
 
   TextPainter::Style textStyle = TextPainter::textPaintingStyle(

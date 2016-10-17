@@ -628,9 +628,14 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentParser* parser() const { return m_parser.get(); }
   ScriptableDocumentParser* scriptableDocumentParser() const;
 
-  bool printing() const { return m_printing; }
-  void setPrinting(bool isPrinting) { m_printing = isPrinting; }
-  bool wasPrinting() const { return m_wasPrinting; }
+  // FinishingPrinting denotes that the non-printing layout state is being
+  // restored.
+  enum PrintingState { NotPrinting, Printing, FinishingPrinting };
+  bool printing() const { return m_printing == Printing; }
+  bool finishingOrIsPrinting() {
+    return m_printing == Printing || m_printing == FinishingPrinting;
+  }
+  void setPrinting(PrintingState state) { m_printing = state; }
 
   bool paginatedForScreen() const { return m_paginatedForScreen; }
   void setPaginatedForScreen(bool p) { m_paginatedForScreen = p; }
@@ -1438,8 +1443,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<CSSStyleSheet> m_elemSheet;
 
-  bool m_printing;
-  bool m_wasPrinting;
+  PrintingState m_printing;
   bool m_paginatedForScreen;
 
   CompatibilityMode m_compatibilityMode;

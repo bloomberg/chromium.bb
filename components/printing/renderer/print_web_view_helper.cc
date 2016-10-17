@@ -803,11 +803,11 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
     blink::WebView* web_view = frame->view();
     if (is_printing_started_) {
       is_printing_started_ = false;
-      frame->printEnd();
       if (!owns_web_view_) {
         web_view->settings()->setShouldPrintBackgrounds(false);
         RestoreSize();
       }
+      frame->printEnd();
     }
     if (owns_web_view_) {
       DCHECK(!frame->isLoading());

@@ -830,7 +830,8 @@ void PaintLayerScrollableArea::clampScrollOffsetsAfterLayout() {
 bool PaintLayerScrollableArea::shouldPerformScrollAnchoring() const {
   return RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
          m_scrollAnchor.hasScroller() &&
-         layoutBox()->style()->overflowAnchor() != AnchorNone;
+         layoutBox()->style()->overflowAnchor() != AnchorNone &&
+         !box().document().finishingOrIsPrinting();
 }
 
 ScrollBehavior PaintLayerScrollableArea::scrollBehaviorStyle() const {

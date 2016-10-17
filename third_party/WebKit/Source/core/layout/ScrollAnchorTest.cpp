@@ -8,6 +8,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "core/page/PrintContext.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/testing/HistogramTester.h"
 
@@ -867,6 +868,24 @@ TEST_F(ScrollAnchorTest, NonDefaultRootScroller) {
   // Scroll anchoring should not apply within main frame.
   EXPECT_EQ(0, layoutViewport()->scrollOffset().height());
   EXPECT_EQ(nullptr, scrollAnchor(layoutViewport()).anchorObject());
+}
+
+// This test verifies that scroll anchoring is disabled when the document is in
+// printing mode.
+TEST_F(ScrollAnchorTest, AnchoringDisabledForPrinting) {
+  setBodyInnerHTML(
+      "<style> body { height: 1000px } div { height: 100px } </style>"
+      "<div id='block1'>abc</div>"
+      "<div id='block2'>def</div>");
+
+  ScrollableArea* viewport = layoutViewport();
+  scrollLayoutViewport(ScrollOffset(0, 150));
+
+  // This will trigger printing and layout.
+  PrintContext::numberOfPages(document().frame(), FloatSize(500, 500));
+
+  EXPECT_EQ(150, viewport->scrollOffsetInt().height());
+  EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
 class ScrollAnchorCornerTest : public ScrollAnchorTest {

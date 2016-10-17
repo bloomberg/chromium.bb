@@ -746,8 +746,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
   if (!animatingElement)
     return;
 
-  if (animatingElement->document().printing() ||
-      animatingElement->document().wasPrinting())
+  if (animatingElement->document().finishingOrIsPrinting())
     return;
 
   ElementAnimations* elementAnimations = animatingElement->elementAnimations();

@@ -557,7 +557,8 @@ void LocalFrame::setPrinting(bool printing,
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
   ResourceCacheValidationSuppressor validationSuppressor(document()->fetcher());
 
-  document()->setPrinting(printing);
+  document()->setPrinting(printing ? Document::Printing
+                                   : Document::FinishingPrinting);
   view()->adjustMediaTypeForPrinting(printing);
 
   if (shouldUsePrintingLayout()) {
@@ -579,6 +580,9 @@ void LocalFrame::setPrinting(bool printing,
     if (child->isLocalFrame())
       toLocalFrame(child)->setPrinting(printing, FloatSize(), FloatSize(), 0);
   }
+
+  if (!printing)
+    document()->setPrinting(Document::NotPrinting);
 }
 
 bool LocalFrame::shouldUsePrintingLayout() const {
