@@ -1261,6 +1261,11 @@ void WebLocalFrameImpl::moveRangeSelection(
 
 void WebLocalFrameImpl::moveCaretSelection(const WebPoint& pointInViewport) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::moveCaretSelection");
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   Element* editable = frame()->selection().rootEditableElement();
   if (!editable)
     return;
