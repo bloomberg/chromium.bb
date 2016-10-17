@@ -187,9 +187,8 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
   DCHECK(thread_checker_.CalledOnValidThread());
   ObserverMap::iterator iterator = observers_.find(ns.domain);
   if (iterator != observers_.end()) {
-    FOR_EACH_OBSERVER(PolicyService::Observer,
-                      *iterator->second,
-                      OnPolicyUpdated(ns, previous, current));
+    for (auto& observer : *iterator->second)
+      observer.OnPolicyUpdated(ns, previous, current);
   }
 }
 
@@ -267,9 +266,8 @@ void PolicyServiceImpl::CheckInitializationComplete() {
       initialization_complete_[domain] = true;
       ObserverMap::iterator iter = observers_.find(policy_domain);
       if (iter != observers_.end()) {
-        FOR_EACH_OBSERVER(PolicyService::Observer,
-                          *iter->second,
-                          OnPolicyServiceInitialized(policy_domain));
+        for (auto& observer : *iter->second)
+          observer.OnPolicyServiceInitialized(policy_domain);
       }
     }
   }

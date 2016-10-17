@@ -769,19 +769,23 @@ void CloudPolicyClient::OnGcmIdUpdated(
 }
 
 void CloudPolicyClient::NotifyPolicyFetched() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnPolicyFetched(this));
+  for (auto& observer : observers_)
+    observer.OnPolicyFetched(this);
 }
 
 void CloudPolicyClient::NotifyRegistrationStateChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnRegistrationStateChanged(this));
+  for (auto& observer : observers_)
+    observer.OnRegistrationStateChanged(this);
 }
 
 void CloudPolicyClient::NotifyRobotAuthCodesFetched() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnRobotAuthCodesFetched(this));
+  for (auto& observer : observers_)
+    observer.OnRobotAuthCodesFetched(this);
 }
 
 void CloudPolicyClient::NotifyClientError() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnClientError(this));
+  for (auto& observer : observers_)
+    observer.OnClientError(this);
 }
 
 }  // namespace policy

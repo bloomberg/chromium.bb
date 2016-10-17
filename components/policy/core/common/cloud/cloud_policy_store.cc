@@ -44,12 +44,14 @@ void CloudPolicyStore::NotifyStoreLoaded() {
   // metadata already.
   if (external_data_manager_)
     external_data_manager_->OnPolicyStoreLoaded();
-  FOR_EACH_OBSERVER(Observer, observers_, OnStoreLoaded(this));
+  for (auto& observer : observers_)
+    observer.OnStoreLoaded(this);
 }
 
 void CloudPolicyStore::NotifyStoreError() {
   is_initialized_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnStoreError(this));
+  for (auto& observer : observers_)
+    observer.OnStoreError(this);
 }
 
 void CloudPolicyStore::SetExternalDataManager(

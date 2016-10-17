@@ -47,9 +47,8 @@ void ConfigurationPolicyProvider::UpdatePolicy(
     policy_bundle_.Swap(bundle.get());
   else
     policy_bundle_.Clear();
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_,
-                    OnUpdatePolicy(this));
+  for (auto& observer : observer_list_)
+    observer.OnUpdatePolicy(this);
 }
 
 SchemaRegistry* ConfigurationPolicyProvider::schema_registry() const {

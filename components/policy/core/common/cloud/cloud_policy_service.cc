@@ -156,7 +156,8 @@ void CloudPolicyService::OnStoreError(CloudPolicyStore* store) {
 void CloudPolicyService::CheckInitializationCompleted() {
   if (!IsInitializationComplete() && store_->is_initialized()) {
     initialization_complete_ = true;
-    FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(this));
+    for (auto& observer : observers_)
+      observer.OnInitializationCompleted(this);
   }
 }
 

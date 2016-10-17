@@ -63,8 +63,8 @@ void RemoteCommandsQueue::CurrentJobFinished() {
 
   execution_timeout_timer_.Stop();
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnJobFinished(running_command_.get()));
+  for (auto& observer : observer_list_)
+    observer.OnJobFinished(running_command_.get());
   running_command_.reset();
 
   ScheduleNextJob();
@@ -86,8 +86,8 @@ void RemoteCommandsQueue::ScheduleNextJob() {
   if (running_command_->Run(clock_->NowTicks(),
                             base::Bind(&RemoteCommandsQueue::CurrentJobFinished,
                                        base::Unretained(this)))) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnJobStarted(running_command_.get()));
+    for (auto& observer : observer_list_)
+      observer.OnJobStarted(running_command_.get());
   } else {
     CurrentJobFinished();
   }

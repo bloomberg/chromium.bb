@@ -21,9 +21,8 @@ SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
 }
 
 SchemaRegistry::~SchemaRegistry() {
-  FOR_EACH_OBSERVER(InternalObserver,
-                    internal_observers_,
-                    OnSchemaRegistryShuttingDown(this));
+  for (auto& observer : internal_observers_)
+    observer.OnSchemaRegistryShuttingDown(this);
 }
 
 void SchemaRegistry::RegisterComponent(const PolicyNamespace& ns,
@@ -71,8 +70,10 @@ void SchemaRegistry::SetReady(PolicyDomain domain) {
   if (domains_ready_[domain])
     return;
   domains_ready_[domain] = true;
-  if (IsReady())
-    FOR_EACH_OBSERVER(Observer, observers_, OnSchemaRegistryReady());
+  if (IsReady()) {
+    for (auto& observer : observers_)
+      observer.OnSchemaRegistryReady();
+  }
 }
 
 void SchemaRegistry::AddObserver(Observer* observer) {
@@ -92,8 +93,8 @@ void SchemaRegistry::RemoveInternalObserver(InternalObserver* observer) {
 }
 
 void SchemaRegistry::Notify(bool has_new_schemas) {
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnSchemaRegistryUpdated(has_new_schemas));
+  for (auto& observer : observers_)
+    observer.OnSchemaRegistryUpdated(has_new_schemas);
 }
 
 CombinedSchemaRegistry::CombinedSchemaRegistry()

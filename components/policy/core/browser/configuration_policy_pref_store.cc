@@ -91,8 +91,8 @@ void ConfigurationPolicyPrefStore::OnPolicyUpdated(
 void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized(
     PolicyDomain domain) {
   if (domain == POLICY_DOMAIN_CHROME) {
-    FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                      OnInitializationCompleted(true));
+    for (auto& observer : observers_)
+      observer.OnInitializationCompleted(true);
   }
 }
 
@@ -110,8 +110,8 @@ void ConfigurationPolicyPrefStore::Refresh() {
   for (std::vector<std::string>::const_iterator pref(changed_prefs.begin());
        pref != changed_prefs.end();
        ++pref) {
-    FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                      OnPrefValueChanged(*pref));
+    for (auto& observer : observers_)
+      observer.OnPrefValueChanged(*pref);
   }
 }
 
