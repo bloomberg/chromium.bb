@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='Sample output from a computer program'
+++android.view.View name='Sample output from a computer program'

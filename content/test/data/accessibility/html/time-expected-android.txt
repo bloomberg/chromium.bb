@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
-++++android.view.View role_description='time' clickable name='10:00'
-++++android.view.View role_description='time' clickable name='Valentines day'
+++++android.view.View role_description='time' name='10:00'
+++++android.view.View role_description='time' name='Valentines day'

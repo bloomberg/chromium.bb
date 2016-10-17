@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
-++++android.view.View
-++++++android.view.View clickable focusable scrollable
+++++android.view.View focusable
+++++++android.view.View scrollable

@@ -1,5 +1,5 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View
-++++android.view.View clickable name='The '
-++++android.view.View clickable name='World Health Organization'
-++++android.view.View clickable name=' was founded in 1948.'
+++++android.view.View name='The '
+++++android.view.View name='World Health Organization'
+++++android.view.View name=' was founded in 1948.'

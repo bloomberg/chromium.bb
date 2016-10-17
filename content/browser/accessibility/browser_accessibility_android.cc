@@ -154,12 +154,14 @@ bool BrowserAccessibilityAndroid::IsChecked() const {
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
-  if (!PlatformIsLeaf())
-    return false;
+  // If it has a default action, it's definitely clickable.
+  if (HasStringAttribute(ui::AX_ATTR_ACTION))
+    return true;
 
-  // We are very aggressive about returning true with IsClickable on Android
-  // because there is no way to know for sure what might have a click handler.
-  return IsFocusable() || !GetText().empty();
+  // Otherwise return true if it's focusable, but skip web areas and iframes.
+  if (IsIframe() || (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA))
+    return false;
+  return IsFocusable();
 }
 
 bool BrowserAccessibilityAndroid::IsCollapsed() const {
@@ -207,12 +209,14 @@ bool BrowserAccessibilityAndroid::IsExpanded() const {
 }
 
 bool BrowserAccessibilityAndroid::IsFocusable() const {
-  bool focusable = HasState(ui::AX_STATE_FOCUSABLE);
-  if (IsIframe() ||
-      GetRole() == ui::AX_ROLE_WEB_AREA) {
-    focusable = false;
-  }
-  return focusable;
+  // If it's an iframe element, or the root element of a child frame,
+  // only mark it as focusable if the element has an explicit name.
+  // Otherwise mark it as not focusable to avoid the user landing on
+  // empty container elements in the tree.
+  if (IsIframe() || (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && GetParent()))
+    return HasStringAttribute(ui::AX_ATTR_NAME);
+
+  return HasState(ui::AX_STATE_FOCUSABLE);
 }
 
 bool BrowserAccessibilityAndroid::IsFocused() const {

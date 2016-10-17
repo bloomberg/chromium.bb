@@ -1,6 +1,6 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='Before.'
-++android.view.View role_description='splitter' clickable name='Dividing line'
-++android.view.View clickable name='Middle.'
+++android.view.View name='Before.'
+++android.view.View role_description='splitter' name='Dividing line'
+++android.view.View name='Middle.'
 ++android.view.View role_description='splitter'
-++android.view.View clickable name='After.'
+++android.view.View name='After.'

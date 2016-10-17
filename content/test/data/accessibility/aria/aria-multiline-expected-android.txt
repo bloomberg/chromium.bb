@@ -1,4 +1,3 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.EditText editable_text
-++android.widget.EditText editable_text multiline
-
+++android.widget.EditText clickable editable_text
+++android.widget.EditText clickable editable_text multiline

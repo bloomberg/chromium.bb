@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='This is to check italic property using i tag.'
+++android.view.View name='This is to check italic property using i tag.'

@@ -1,2 +1,2 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='Some LTR textSome RTL text with some LTR text embedded'
+++android.view.View name='Some LTR textSome RTL text with some LTR text embedded'

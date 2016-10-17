@@ -1,4 +1,4 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable name='Before'
-++android.view.View role_description='splitter' clickable name='This is ARIA separator.'
-++android.view.View clickable name='After'
+++android.view.View name='Before'
+++android.view.View role_description='splitter' name='This is ARIA separator.'
+++android.view.View name='After'
