@@ -1695,6 +1695,21 @@
             ]
         }
     ],
+    "SaveAsMenuText": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "download"
+                }
+            ]
+        }
+    ],
     "SchedulerExpensiveTaskBlocking": [
         {
             "platforms": [
