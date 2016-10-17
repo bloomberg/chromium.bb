@@ -418,13 +418,11 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
       notification_list_->GetVisibleNotifications(blockers_));
 
   for (const auto& id : blocked_ids) {
-    FOR_EACH_OBSERVER(MessageCenterObserver,
-                      observer_list_,
-                      OnNotificationUpdated(id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(id);
   }
-  FOR_EACH_OBSERVER(MessageCenterObserver,
-                    observer_list_,
-                    OnBlockingStateChanged(blocker));
+  for (auto& observer : observer_list_)
+    observer.OnBlockingStateChanged(blocker);
 }
 
 void MessageCenterImpl::UpdateIconImage(
@@ -448,8 +446,8 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
     notification_cache_.RecountUnread();
 
     for (const auto& id : updated_ids) {
-      FOR_EACH_OBSERVER(
-          MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
+      for (auto& observer : observer_list_)
+        observer.OnNotificationUpdated(id);
     }
   }
 
@@ -458,9 +456,8 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
     notification_queue_->ApplyChanges(this);
   }
 
-  FOR_EACH_OBSERVER(MessageCenterObserver,
-                    observer_list_,
-                    OnCenterVisibilityChanged(visibility));
+  for (auto& observer : observer_list_)
+    observer.OnCenterVisibilityChanged(visibility);
 }
 
 bool MessageCenterImpl::IsMessageCenterVisible() const {
@@ -544,11 +541,11 @@ void MessageCenterImpl::AddNotificationImmediately(
       notification_list_->GetVisibleNotifications(blockers_));
 
   if (already_exists) {
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(id);
   } else {
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationAdded(id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationAdded(id);
   }
 }
 
@@ -594,13 +591,13 @@ void MessageCenterImpl::UpdateNotificationImmediately(
   notification_cache_.Rebuild(
      notification_list_->GetVisibleNotifications(blockers_));
   if (old_id == new_id) {
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnNotificationUpdated(new_id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(new_id);
   } else {
-    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                      OnNotificationRemoved(old_id, false));
-    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                      OnNotificationAdded(new_id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationRemoved(old_id, false);
+    for (auto& observer : observer_list_)
+      observer.OnNotificationAdded(new_id);
   }
 }
 
@@ -636,9 +633,8 @@ void MessageCenterImpl::RemoveNotificationImmediately(
   notification_list_->RemoveNotification(copied_id);
   notification_cache_.Rebuild(
       notification_list_->GetVisibleNotifications(blockers_));
-  FOR_EACH_OBSERVER(MessageCenterObserver,
-                    observer_list_,
-                    OnNotificationRemoved(copied_id, by_user));
+  for (auto& observer : observer_list_)
+    observer.OnNotificationRemoved(copied_id, by_user);
 }
 
 void MessageCenterImpl::RemoveNotificationsForNotifierId(
@@ -679,9 +675,8 @@ void MessageCenterImpl::RemoveAllNotifications(bool by_user, RemoveType type) {
         notification_list_->GetVisibleNotifications(blockers_));
   }
   for (const auto& id : ids) {
-    FOR_EACH_OBSERVER(MessageCenterObserver,
-                      observer_list_,
-                      OnNotificationRemoved(id, by_user));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationRemoved(id, by_user);
   }
 }
 
@@ -701,8 +696,8 @@ void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
   }
 
   if (updated) {
-    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                      OnNotificationUpdated(notification_id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(notification_id);
   }
 }
 
@@ -722,8 +717,8 @@ void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
   }
 
   if (updated) {
-    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                      OnNotificationUpdated(notification_id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(notification_id);
   }
 }
 
@@ -745,8 +740,8 @@ void MessageCenterImpl::SetNotificationButtonIcon(
   }
 
   if (updated) {
-    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                      OnNotificationUpdated(notification_id));
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(notification_id);
   }
 }
 
@@ -774,8 +769,8 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
       notification_list_->GetNotificationDelegate(id);
   if (delegate.get())
     delegate->Click();
-  FOR_EACH_OBSERVER(
-      MessageCenterObserver, observer_list_, OnNotificationClicked(id));
+  for (auto& observer : observer_list_)
+    observer.OnNotificationClicked(id);
 }
 
 void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
@@ -790,9 +785,8 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
       notification_list_->GetNotificationDelegate(id);
   if (delegate.get())
     delegate->ButtonClick(button_index);
-  FOR_EACH_OBSERVER(
-      MessageCenterObserver, observer_list_, OnNotificationButtonClicked(
-          id, button_index));
+  for (auto& observer : observer_list_)
+    observer.OnNotificationButtonClicked(id, button_index);
 }
 
 void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {
@@ -800,8 +794,8 @@ void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {
       notification_list_->GetNotificationDelegate(id);
   if (delegate.get())
     delegate->SettingsClick();
-  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                    OnNotificationSettingsClicked());
+  for (auto& observer : observer_list_)
+    observer.OnNotificationSettingsClicked();
 }
 
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
@@ -813,8 +807,8 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
 #else
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
   notification_cache_.RecountUnread();
-  FOR_EACH_OBSERVER(
-      MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
+  for (auto& observer : observer_list_)
+    observer.OnNotificationUpdated(id);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -831,10 +825,8 @@ void MessageCenterImpl::DisplayedNotification(
       notification_list_->GetNotificationDelegate(id);
   if (delegate.get())
     delegate->Display();
-  FOR_EACH_OBSERVER(
-      MessageCenterObserver,
-      observer_list_,
-      OnNotificationDisplayed(id, source));
+  for (auto& observer : observer_list_)
+    observer.OnNotificationDisplayed(id, source);
 }
 
 void MessageCenterImpl::SetNotifierSettingsProvider(
@@ -855,9 +847,8 @@ NotifierSettingsProvider* MessageCenterImpl::GetNotifierSettingsProvider() {
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {
   if (in_quiet_mode != notification_list_->quiet_mode()) {
     notification_list_->SetQuietMode(in_quiet_mode);
-    FOR_EACH_OBSERVER(MessageCenterObserver,
-                      observer_list_,
-                      OnQuietModeChanged(in_quiet_mode));
+    for (auto& observer : observer_list_)
+      observer.OnQuietModeChanged(in_quiet_mode);
   }
   quiet_mode_timer_.reset();
 }
@@ -865,8 +856,8 @@ void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {
 void MessageCenterImpl::SetLockedState(bool locked) {
   if (locked != locked_) {
     locked_ = locked;
-    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                      OnLockedStateChanged(locked));
+    for (auto& observer : observer_list_)
+      observer.OnLockedStateChanged(locked);
   }
 }
 
@@ -878,8 +869,8 @@ void MessageCenterImpl::EnterQuietModeWithExpire(
     quiet_mode_timer_->Reset();
   } else {
     notification_list_->SetQuietMode(true);
-    FOR_EACH_OBSERVER(
-        MessageCenterObserver, observer_list_, OnQuietModeChanged(true));
+    for (auto& observer : observer_list_)
+      observer.OnQuietModeChanged(true);
 
     quiet_mode_timer_.reset(new base::OneShotTimer);
     quiet_mode_timer_->Start(
