@@ -104,6 +104,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -944,15 +945,6 @@ void ProfileIOData::set_data_reduction_proxy_io_data(
   data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
 }
 
-net::HttpServerProperties* ProfileIOData::http_server_properties() const {
-  return http_server_properties_.get();
-}
-
-void ProfileIOData::set_http_server_properties(
-    std::unique_ptr<net::HttpServerProperties> http_server_properties) const {
-  http_server_properties_ = std::move(http_server_properties);
-}
-
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data),
       host_resolver_(NULL),
@@ -1024,6 +1016,8 @@ void ProfileIOData::Init(
 
   // Create the common request contexts.
   main_request_context_.reset(new net::URLRequestContext());
+  main_request_context_storage_.reset(
+      new net::URLRequestContextStorage(main_request_context_.get()));
   extensions_request_context_.reset(new net::URLRequestContext());
 
   main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
@@ -1299,11 +1293,6 @@ void ProfileIOData::ShutdownOnUIThread(
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)
     delete this;
-}
-
-void ProfileIOData::set_channel_id_service(
-    net::ChannelIDService* channel_id_service) const {
-  channel_id_service_.reset(channel_id_service);
 }
 
 void ProfileIOData::DestroyResourceContext() {

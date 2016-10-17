@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
@@ -37,6 +38,7 @@
 #include "net/sdch/sdch_owner.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/database/database_tracker.h"
 
@@ -198,6 +200,8 @@ void OffTheRecordProfileIOData::InitializeInternal(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
   net::URLRequestContext* main_context = main_request_context();
+  net::URLRequestContextStorage* main_context_storage =
+      main_request_context_storage();
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
@@ -212,9 +216,8 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
-  main_context->set_network_delegate(chrome_network_delegate.get());
-
-  network_delegate_ = std::move(chrome_network_delegate);
+  main_context_storage->set_network_delegate(
+      std::move(chrome_network_delegate));
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
@@ -223,30 +226,26 @@ void OffTheRecordProfileIOData::InitializeInternal(
   main_context->set_proxy_service(proxy_service());
 
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
-  set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(
-      new net::HttpServerPropertiesImpl()));
-  main_context->set_http_server_properties(http_server_properties());
+  main_context_storage->set_http_server_properties(
+      base::MakeUnique<net::HttpServerPropertiesImpl>());
 
   // For incognito, we use a non-persistent channel ID store.
-  net::ChannelIDService* channel_id_service =
-      new net::ChannelIDService(
-          new net::DefaultChannelIDStore(NULL),
-          base::WorkerPool::GetTaskRunner(true));
-  set_channel_id_service(channel_id_service);
-  main_context->set_channel_id_service(channel_id_service);
+  main_context_storage->set_channel_id_service(
+      base::MakeUnique<net::ChannelIDService>(
+          new net::DefaultChannelIDStore(nullptr),
+          base::WorkerPool::GetTaskRunner(true)));
 
   using content::CookieStoreConfig;
-  main_cookie_store_ = CreateCookieStore(CookieStoreConfig(
+  main_context_storage->set_cookie_store(CreateCookieStore(CookieStoreConfig(
       base::FilePath(), CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL,
-      profile_params->cookie_monster_delegate.get()));
-  main_context->set_cookie_store(main_cookie_store_.get());
-  main_cookie_store_->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+      profile_params->cookie_monster_delegate.get())));
 
-  http_network_session_ = CreateHttpNetworkSession(*profile_params);
-  main_http_factory_ = CreateMainHttpFactory(
-      http_network_session_.get(), net::HttpCache::DefaultBackend::InMemory(0));
+  main_context_storage->set_http_network_session(
+      CreateHttpNetworkSession(*profile_params));
+  main_context_storage->set_http_transaction_factory(
+      CreateMainHttpFactory(main_context_storage->http_network_session(),
+                            net::HttpCache::DefaultBackend::InMemory(0)));
 
-  main_context->set_http_transaction_factory(main_http_factory_.get());
 #if !defined(DISABLE_FTP_SUPPORT)
   ftp_factory_.reset(
       new net::FtpNetworkLayer(main_context->host_resolver()));
@@ -256,16 +255,15 @@ void OffTheRecordProfileIOData::InitializeInternal(
       new net::URLRequestJobFactoryImpl());
 
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
-  main_job_factory_ = SetUpJobFactoryDefaults(
+  main_context_storage->set_job_factory(SetUpJobFactoryDefaults(
       std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
-      main_context->network_delegate(), ftp_factory_.get());
-  main_context->set_job_factory(main_job_factory_.get());
+      main_context->network_delegate(), ftp_factory_.get()));
 
   // Setup SDCH for this profile.
-  sdch_manager_.reset(new net::SdchManager);
-  sdch_policy_.reset(new net::SdchOwner(sdch_manager_.get(), main_context));
-  main_context->set_sdch_manager(sdch_manager_.get());
+  main_context_storage->set_sdch_manager(base::MakeUnique<net::SdchManager>());
+  sdch_policy_.reset(
+      new net::SdchOwner(main_context->sdch_manager(), main_context));
 
 #if defined(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);
@@ -337,7 +335,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
 
   // Build a new HttpNetworkSession that uses the new ChannelIDService.
   net::HttpNetworkSession::Params network_params =
-      http_network_session_->params();
+      main_request_context_storage()->http_network_session()->params();
   network_params.channel_id_service = channel_id_service.get();
   std::unique_ptr<net::HttpNetworkSession> http_network_session(
       new net::HttpNetworkSession(network_params));

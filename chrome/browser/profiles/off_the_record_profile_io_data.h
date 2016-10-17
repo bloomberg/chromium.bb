@@ -22,9 +22,6 @@ class Profile;
 namespace net {
 class CookieStore;
 class FtpTransactionFactory;
-class HttpNetworkSession;
-class HttpTransactionFactory;
-class SdchManager;
 class SdchOwner;
 class URLRequestContext;
 }  // namespace net
@@ -143,19 +140,12 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
 
-  mutable std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
-
-  mutable std::unique_ptr<net::HttpNetworkSession> http_network_session_;
-  mutable std::unique_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable std::unique_ptr<net::FtpTransactionFactory> ftp_factory_;
 
-  mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
   mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 
-  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
   mutable std::unique_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
-  mutable std::unique_ptr<net::SdchManager> sdch_manager_;
   mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);

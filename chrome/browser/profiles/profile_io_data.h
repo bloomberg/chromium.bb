@@ -86,6 +86,7 @@ class ReportSender;
 class SSLConfigService;
 class TransportSecurityPersister;
 class TransportSecurityState;
+class URLRequestContextStorage;
 class URLRequestJobFactoryImpl;
 }  // namespace net
 
@@ -378,13 +379,6 @@ class ProfileIOData {
   void ShutdownOnUIThread(
       std::unique_ptr<ChromeURLRequestContextGetterVector> context_getters);
 
-  // A ChannelIDService object is created by a derived class of
-  // ProfileIOData, and the derived class calls this method to set the
-  // channel_id_service_ member and transfers ownership to the base
-  // class.
-  void set_channel_id_service(
-      net::ChannelIDService* channel_id_service) const;
-
   void set_data_reduction_proxy_io_data(
       std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
           data_reduction_proxy_io_data) const;
@@ -393,13 +387,15 @@ class ProfileIOData {
     return proxy_service_.get();
   }
 
-  net::HttpServerProperties* http_server_properties() const;
-
-  void set_http_server_properties(
-      std::unique_ptr<net::HttpServerProperties> http_server_properties) const;
-
   net::URLRequestContext* main_request_context() const {
     return main_request_context_.get();
+  }
+
+  // Storage for |main_request_context_|, to allow objects created by subclasses
+  // to live until the ProfileIOData destructor is invoked, so it can safely
+  // cancel URLRequests.
+  net::URLRequestContextStorage* main_request_context_storage() const {
+    return main_request_context_storage_.get();
   }
 
   bool initialized() const {
@@ -561,7 +557,6 @@ class ProfileIOData {
 #if defined(ENABLE_EXTENSIONS)
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
 #endif
-  mutable std::unique_ptr<net::ChannelIDService> channel_id_service_;
 
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
@@ -571,7 +566,6 @@ class ProfileIOData {
       transport_security_state_;
   mutable std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
   mutable std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
-  mutable std::unique_ptr<net::HttpServerProperties> http_server_properties_;
 #if defined(OS_CHROMEOS)
   // Set to |cert_verifier_| if it references a PolicyCertVerifier. In that
   // case, the verifier is owned by  |cert_verifier_|. Otherwise, set to NULL.
@@ -589,9 +583,14 @@ class ProfileIOData {
   mutable std::unique_ptr<certificate_transparency::CTPolicyManager>
       ct_policy_manager_;
 
-  // These are only valid in between LazyInitialize() and their accessor being
-  // called.
+  // Owns the subset of URLRequestContext's elements that are created by
+  // subclasses of ProfileImplIOData, to ensure proper destruction ordering.
+  // TODO(mmenke):  Move ownship of net objects owned by the ProfileIOData
+  // itself to this class, to improve destruction ordering.
+  mutable std::unique_ptr<net::URLRequestContextStorage>
+      main_request_context_storage_;
   mutable std::unique_ptr<net::URLRequestContext> main_request_context_;
+
   mutable std::unique_ptr<net::URLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.
   mutable URLRequestContextMap app_request_context_map_;
