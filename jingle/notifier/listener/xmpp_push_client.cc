@@ -63,41 +63,41 @@ void XmppPushClient::OnTransientDisconnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Push: Transient disconnection";
   base_task_.reset();
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  for (auto& observer : observers_)
+    observer.OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
 }
 
 void XmppPushClient::OnCredentialsRejected() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Push: Credentials rejected";
   base_task_.reset();
-  FOR_EACH_OBSERVER(
-      PushClientObserver, observers_,
-      OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
+  for (auto& observer : observers_)
+    observer.OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED);
 }
 
 void XmppPushClient::OnNotificationReceived(
     const Notification& notification) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnIncomingNotification(notification));
+  for (auto& observer : observers_)
+    observer.OnIncomingNotification(notification);
 }
 
 void XmppPushClient::OnPingResponseReceived() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_, OnPingResponse());
+  for (auto& observer : observers_)
+    observer.OnPingResponse();
 }
 
 void XmppPushClient::OnSubscribed() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsEnabled());
+  for (auto& observer : observers_)
+    observer.OnNotificationsEnabled();
 }
 
 void XmppPushClient::OnSubscriptionError() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  for (auto& observer : observers_)
+    observer.OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
 }
 
 void XmppPushClient::AddObserver(PushClientObserver* observer) {

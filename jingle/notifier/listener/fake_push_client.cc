@@ -40,20 +40,20 @@ void FakePushClient::SendPing() {
 }
 
 void FakePushClient::EnableNotifications() {
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsEnabled());
+  for (auto& observer : observers_)
+    observer.OnNotificationsEnabled();
 }
 
 void FakePushClient::DisableNotifications(
     NotificationsDisabledReason reason) {
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsDisabled(reason));
+  for (auto& observer : observers_)
+    observer.OnNotificationsDisabled(reason);
 }
 
 void FakePushClient::SimulateIncomingNotification(
     const Notification& notification) {
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnIncomingNotification(notification));
+  for (auto& observer : observers_)
+    observer.OnIncomingNotification(notification);
 }
 
 const SubscriptionList& FakePushClient::subscriptions() const {

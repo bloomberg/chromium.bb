@@ -218,27 +218,28 @@ void NonBlockingPushClient::SendPing() {
 
 void NonBlockingPushClient::OnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsEnabled());
+  for (auto& observer : observers_)
+    observer.OnNotificationsEnabled();
 }
 
 void NonBlockingPushClient::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationsDisabled(reason));
+  for (auto& observer : observers_)
+    observer.OnNotificationsDisabled(reason);
 }
 
 void NonBlockingPushClient::OnIncomingNotification(
     const Notification& notification) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnIncomingNotification(notification));
+  for (auto& observer : observers_)
+    observer.OnIncomingNotification(notification);
 }
 
 void NonBlockingPushClient::OnPingResponse() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(PushClientObserver, observers_, OnPingResponse());
+  for (auto& observer : observers_)
+    observer.OnPingResponse();
 }
 
 }  // namespace notifier
