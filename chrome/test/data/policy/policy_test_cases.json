@@ -367,28 +367,65 @@
     ]
   },
 
-  "DisabledPlugins": {
+  "DisabledPlugins.0": {
+    "note": "This policy is deprecated. This test tests its migration path.",
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DisabledPlugins": ["Flash"] },
+    "test_policy": { "DisabledPlugins": ["*Flash*"] },
     "pref_mappings": [
-      { "pref": "plugins.plugins_disabled" }
+      { "pref": "profile.managed_default_content_settings.plugins",
+        "indicator_selector": "[content-setting=plugins]",
+        "indicator_tests": [
+          { "policy": { "DisabledPlugins": ["*Flash*"] },
+            "value": "block"}
+        ]
+      }
     ]
   },
 
-  "EnabledPlugins": {
+  "DisabledPlugins.1": {
+    "note": "This policy is deprecated. This test tests its migration path.",
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "EnabledPlugins": ["Flash"] },
+    "test_policy": { "DisabledPlugins": ["*PDF*"] },
     "pref_mappings": [
-      { "pref": "plugins.plugins_enabled" }
+      { "pref": "plugins.always_open_pdf_externally",
+        "indicator_tests": [
+          { "policy": { "DisabledPlugins": ["*PDF*"] }}
+        ]
+      }
+    ]
+  },
+
+  "EnabledPlugins.0": {
+    "note": "This policy is deprecated. This test tests its migration path.",
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "EnabledPlugins": ["*Flash*"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.plugins",
+        "indicator_selector": "[content-setting=plugins]",
+        "indicator_tests": [
+          { "policy": { "EnabledPlugins": ["*Flash*"] },
+            "value": "allow"}
+        ]
+      }
+    ]
+  },
+
+  "EnabledPlugins.1": {
+    "note": "This policy is deprecated. This test tests its migration path.",
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "EnabledPlugins": ["*PDF*"] },
+    "pref_mappings": [
+      { "pref": "plugins.always_open_pdf_externally",
+        "indicator_tests": [
+          { "policy": { "EnabledPlugins": ["*PDF*"] }}
+        ]
+      }
     ]
   },
 
   "DisabledPluginsExceptions": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DisabledPluginsExceptions": ["Flash"] },
-    "pref_mappings": [
-      { "pref": "plugins.plugins_disabled_exceptions" }
-    ]
+    "note": "This policy is deprecated it doesn't map to a pref value anymore.",
+    "os": ["win", "linux", "mac", "chromeos"]
   },
 
   "AlwaysOpenPdfExternally": {

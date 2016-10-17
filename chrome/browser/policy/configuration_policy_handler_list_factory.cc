@@ -79,6 +79,10 @@
 #include "extensions/common/manifest.h"
 #endif
 
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/plugin_policy_handler.h"
+#endif
+
 #if defined(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/pref_names.h"
 #endif
@@ -138,15 +142,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kApplicationLocaleValue,
     prefs::kApplicationLocale,
     base::Value::TYPE_STRING },
-  { key::kDisabledPlugins,
-    prefs::kPluginsDisabledPlugins,
-    base::Value::TYPE_LIST },
-  { key::kDisabledPluginsExceptions,
-    prefs::kPluginsDisabledPluginsExceptions,
-    base::Value::TYPE_LIST },
-  { key::kEnabledPlugins,
-    prefs::kPluginsEnabledPlugins,
-    base::Value::TYPE_LIST },
   { key::kAlwaysOpenPdfExternally,
     prefs::kPluginsAlwaysOpenPdfExternally,
     base::Value::TYPE_BOOLEAN },
@@ -934,6 +929,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       base::MakeUnique<chromeos::KeyPermissionsPolicyHandler>(chrome_schema));
   handlers->AddHandler(base::WrapUnique(new DefaultGeolocationPolicyHandler()));
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(ENABLE_PLUGINS)
+  handlers->AddHandler(base::MakeUnique<PluginPolicyHandler>());
+#endif  // defined(ENABLE_PLUGINS)
 
   return handlers;
 }
