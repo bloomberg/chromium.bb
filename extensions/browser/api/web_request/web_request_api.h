@@ -436,6 +436,7 @@ class ExtensionWebRequestEventRouter
   RawListeners GetMatchingListeners(
       void* browser_context,
       const extensions::InfoMap* extension_info_map,
+      ExtensionNavigationUIData* navigation_ui_data,
       const std::string& event_name,
       const net::URLRequest* request,
       int* extra_info_spec);
@@ -447,6 +448,7 @@ class ExtensionWebRequestEventRouter
   void GetMatchingListenersImpl(void* browser_context,
                                 const net::URLRequest* request,
                                 const extensions::InfoMap* extension_info_map,
+                                ExtensionNavigationUIData* navigation_ui_data,
                                 bool crosses_incognito,
                                 const std::string& event_name,
                                 const GURL& url,
@@ -477,6 +479,7 @@ class ExtensionWebRequestEventRouter
   // and wants to return the correct network error code himself.
   int ExecuteDeltas(void* browser_context,
                     uint64_t request_id,
+                    ExtensionNavigationUIData* navigation_ui_data,
                     bool call_callback);
 
   // Evaluates the rules of the declarative webrequest API and stores
@@ -489,14 +492,16 @@ class ExtensionWebRequestEventRouter
       const extensions::InfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
+      ExtensionNavigationUIData* navigation_ui_data,
       extensions::RequestStage request_stage,
       const net::HttpResponseHeaders* original_response_headers);
 
   // If the BlockedRequest contains messages_to_extension entries in the event
   // deltas, we send them to subscribers of
   // chrome.declarativeWebRequest.onMessage.
-  void SendMessages(
-      void* browser_context, const BlockedRequest& blocked_request);
+  void SendMessages(void* browser_context,
+                    const BlockedRequest& blocked_request,
+                    ExtensionNavigationUIData* navigation_ui_data);
 
   // Called when the RulesRegistry is ready to unblock a request that was
   // waiting for said event.

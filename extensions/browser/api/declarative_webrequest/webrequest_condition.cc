@@ -48,14 +48,17 @@ namespace keys = declarative_webrequest_constants;
 WebRequestData::WebRequestData(net::URLRequest* request, RequestStage stage)
     : request(request),
       stage(stage),
-      original_response_headers(NULL) {}
+      navigation_ui_data(nullptr),
+      original_response_headers(nullptr) {}
 
 WebRequestData::WebRequestData(
     net::URLRequest* request,
     RequestStage stage,
+    ExtensionNavigationUIData* navigation_ui_data,
     const net::HttpResponseHeaders* original_response_headers)
     : request(request),
       stage(stage),
+      navigation_ui_data(navigation_ui_data),
       original_response_headers(original_response_headers) {}
 
 WebRequestData::~WebRequestData() {}

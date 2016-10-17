@@ -21,6 +21,7 @@
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/error_utils.h"
@@ -475,12 +476,16 @@ bool WebRequestAction::Equals(const WebRequestAction* other) const {
   return type() == other->type();
 }
 
-bool WebRequestAction::HasPermission(const InfoMap* extension_info_map,
-                                     const std::string& extension_id,
-                                     const net::URLRequest* request,
-                                     bool crosses_incognito) const {
-  if (WebRequestPermissions::HideRequest(extension_info_map, request))
+bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
+                                     const std::string& extension_id) const {
+  const InfoMap* extension_info_map = apply_info->extension_info_map;
+  const net::URLRequest* request = apply_info->request_data.request;
+  ExtensionNavigationUIData* navigation_ui_data =
+      apply_info->request_data.navigation_ui_data;
+  if (WebRequestPermissions::HideRequest(extension_info_map, request,
+                                         navigation_ui_data)) {
     return false;
+  }
 
   // In unit tests we don't have an extension_info_map object here and skip host
   // permission checks.
@@ -492,7 +497,8 @@ bool WebRequestAction::HasPermission(const InfoMap* extension_info_map,
 
   // The embedder can always access all hosts from within a <webview>.
   // The same is not true of extensions.
-  if (WebViewRendererState::GetInstance()->IsGuest(process_id))
+  if (WebViewRendererState::GetInstance()->IsGuest(process_id) ||
+      (navigation_ui_data && navigation_ui_data->is_web_view()))
     return true;
 
   WebRequestPermissions::HostPermissionsCheck permission_check =
@@ -510,7 +516,7 @@ bool WebRequestAction::HasPermission(const InfoMap* extension_info_map,
   // TODO(devlin): Pass in the real tab id here.
   return WebRequestPermissions::CanExtensionAccessURL(
              extension_info_map, extension_id, request->url(), -1,
-             crosses_incognito,
+             apply_info->crosses_incognito,
              permission_check) == PermissionsData::ACCESS_ALLOWED;
 }
 
@@ -539,9 +545,7 @@ scoped_refptr<const WebRequestAction> WebRequestAction::Create(
 void WebRequestAction::Apply(const std::string& extension_id,
                              base::Time extension_install_time,
                              ApplyInfo* apply_info) const {
-  if (!HasPermission(apply_info->extension_info_map, extension_id,
-                     apply_info->request_data.request,
-                     apply_info->crosses_incognito))
+  if (!HasPermission(apply_info, extension_id))
     return;
   if (stages() & apply_info->request_data.stage) {
     LinkedPtrEventResponseDelta delta = CreateDelta(

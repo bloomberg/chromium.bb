@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -84,14 +85,17 @@ bool HasWebRequestScheme(const GURL& url) {
 // static
 bool WebRequestPermissions::HideRequest(
     const extensions::InfoMap* extension_info_map,
-    const net::URLRequest* request) {
+    const net::URLRequest* request,
+    extensions::ExtensionNavigationUIData* navigation_ui_data) {
   // Hide requests from the Chrome WebStore App or signin process.
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info) {
     int process_id = info->GetChildID();
     // Never hide requests from guest processes.
-    if (extensions::WebViewRendererState::GetInstance()->IsGuest(process_id))
+    if (extensions::WebViewRendererState::GetInstance()->IsGuest(process_id) ||
+        (navigation_ui_data && navigation_ui_data->is_web_view())) {
       return false;
+    }
 
     if (extension_info_map &&
         extension_info_map->process_map().Contains(extensions::kWebStoreAppId,

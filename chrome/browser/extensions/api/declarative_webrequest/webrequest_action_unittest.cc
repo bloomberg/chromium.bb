@@ -150,7 +150,8 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
   std::list<LinkedPtrEventResponseDelta> deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));
-  WebRequestData request_data(regular_request.get(), stage, headers.get());
+  WebRequestData request_data(regular_request.get(), stage, nullptr,
+                              headers.get());
   std::set<std::string> ignored_tags;
   WebRequestAction::ApplyInfo apply_info = { extension_info_map_.get(),
                                              request_data,

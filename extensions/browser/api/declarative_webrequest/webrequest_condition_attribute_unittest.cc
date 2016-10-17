@@ -162,10 +162,10 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_include.get());
   EXPECT_FALSE(attribute_include->IsFulfilled(
-      WebRequestData(url_request.get(), ON_BEFORE_REQUEST,
+      WebRequestData(url_request.get(), ON_BEFORE_REQUEST, nullptr,
                      url_request->response_headers())));
   EXPECT_TRUE(attribute_include->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
                      url_request->response_headers())));
   EXPECT_EQ(std::string(keys::kContentTypeKey), attribute_include->GetName());
 
@@ -175,7 +175,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_exclude.get());
   EXPECT_FALSE(attribute_exclude->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
                      url_request->response_headers())));
 
   content_types.Clear();
@@ -186,7 +186,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unincluded.get());
   EXPECT_FALSE(attribute_unincluded->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
                      url_request->response_headers())));
 
   scoped_refptr<const WebRequestConditionAttribute> attribute_unexcluded =
@@ -195,7 +195,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unexcluded.get());
   EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
-      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED,
+      WebRequestData(url_request.get(), ON_HEADERS_RECEIVED, nullptr,
                      url_request->response_headers())));
   EXPECT_EQ(std::string(keys::kExcludeContentTypeKey),
             attribute_unexcluded->GetName());
@@ -435,7 +435,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
   EXPECT_EQ(key, attribute->GetName());
 
   *result = attribute->IsFulfilled(WebRequestData(
-      url_request, stage, url_request->response_headers()));
+      url_request, stage, nullptr, url_request->response_headers()));
 }
 
 }  // namespace

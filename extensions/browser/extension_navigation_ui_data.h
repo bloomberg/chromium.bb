@@ -31,12 +31,16 @@ class ExtensionNavigationUIData {
     return frame_data_;
   }
 
- private:
-  void set_frame_data(const ExtensionApiFrameIdMap::FrameData& frame_data) {
-    frame_data_ = frame_data;
-  }
+  bool is_web_view() const { return is_web_view_; }
+  int web_view_instance_id() const { return web_view_instance_id_; }
+  int web_view_rules_registry_id() const { return web_view_rules_registry_id_; }
 
+ private:
   ExtensionApiFrameIdMap::FrameData frame_data_;
+  bool is_web_view_;
+  // These are only valid iff is_web_view_.
+  int web_view_instance_id_;
+  int web_view_rules_registry_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionNavigationUIData);
 };

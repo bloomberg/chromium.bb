@@ -119,14 +119,12 @@ class WebRequestAction : public base::RefCounted<WebRequestAction> {
   // Returns whether the specified extension has permission to execute this
   // action on |request|. Checks the host permission if the host permissions
   // strategy is STRATEGY_DEFAULT.
-  // |extension_info_map| may only be NULL for during testing, in which case
-  // host permissions are ignored. |crosses_incognito| specifies
+  // |apply_info->extension_info_map| may only be NULL for during testing, in
+  // which case host permissions are ignored. |crosses_incognito| specifies
   // whether the request comes from a different profile than |extension_id|
   // but was processed because the extension is in spanning mode.
-  virtual bool HasPermission(const InfoMap* extension_info_map,
-                             const std::string& extension_id,
-                             const net::URLRequest* request,
-                             bool crosses_incognito) const;
+  bool HasPermission(ApplyInfo* apply_info,
+                     const std::string& extension_id) const;
 
   // Factory method that instantiates a concrete WebRequestAction
   // implementation according to |json_action|, the representation of the

@@ -89,6 +89,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   // Shows the context menu for the guest.
   void ShowContextMenu(int request_id);
 
+  int rules_registry_id() const { return rules_registry_id_; }
+
   // Sets the frame name of the guest.
   void SetName(const std::string& name);
   const std::string& name() { return name_; }

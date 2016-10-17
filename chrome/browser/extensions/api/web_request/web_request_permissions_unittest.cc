@@ -107,7 +107,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     std::unique_ptr<net::URLRequest> request(
         context.CreateRequest(sensitive_url, net::DEFAULT_PRIORITY, NULL));
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
-        extension_info_map_.get(), request.get())) << sensitive_urls[i];
+        extension_info_map_.get(), request.get(), nullptr)) <<
+        sensitive_urls[i];
   }
   // Check that requests are accepted if they don't touch sensitive urls.
   for (size_t i = 0; i < arraysize(non_sensitive_urls); ++i) {
@@ -115,7 +116,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     std::unique_ptr<net::URLRequest> request(
         context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL));
     EXPECT_FALSE(WebRequestPermissions::HideRequest(
-        extension_info_map_.get(), request.get())) << non_sensitive_urls[i];
+        extension_info_map_.get(), request.get(), nullptr)) <<
+        non_sensitive_urls[i];
   }
 
   // Check protection of requests originating from the frame showing the Chrome
@@ -125,7 +127,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
   std::unique_ptr<net::URLRequest> non_sensitive_request(
       context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL));
   EXPECT_FALSE(WebRequestPermissions::HideRequest(
-      extension_info_map_.get(), non_sensitive_request.get()));
+      extension_info_map_.get(), non_sensitive_request.get(), nullptr));
   // If the origin is labeled by the WebStoreAppId, it becomes protected.
   {
     int process_id = 42;
@@ -147,7 +149,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     extension_info_map_->RegisterExtensionProcess(
         extensions::kWebStoreAppId, process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
-        extension_info_map_.get(), sensitive_request.get()));
+        extension_info_map_.get(), sensitive_request.get(), nullptr));
   }
 }
 

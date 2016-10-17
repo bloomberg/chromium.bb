@@ -14,6 +14,7 @@
 class GURL;
 
 namespace extensions {
+class ExtensionNavigationUIData;
 class InfoMap;
 }
 
@@ -32,8 +33,10 @@ class WebRequestPermissions {
   };
 
   // Returns true if the request shall not be reported to extensions.
-  static bool HideRequest(const extensions::InfoMap* extension_info_map,
-                          const net::URLRequest* request);
+  static bool HideRequest(
+      const extensions::InfoMap* extension_info_map,
+      const net::URLRequest* request,
+      extensions::ExtensionNavigationUIData* navigation_ui_data);
 
   // |host_permission_check| controls how permissions are checked with regard to
   // |url|.
