@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
@@ -67,8 +68,8 @@ void SyncArcPackageHelper::SetupTest(SyncTest* test) {
   }
   test_ = test;
 
-  user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-      new chromeos::FakeChromeUserManager()));
+  user_manager_enabler_ = base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
+      new chromeos::FakeChromeUserManager());
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableArc);
   ArcAppListPrefsFactory::SetFactoryForSyncTest();
@@ -166,7 +167,8 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile, size_t id) {
   arc_app_list_prefs->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 
-  instance_map_[profile].reset(new FakeAppInstance(arc_app_list_prefs));
+  instance_map_[profile] =
+      base::MakeUnique<FakeAppInstance>(arc_app_list_prefs);
   DCHECK(instance_map_[profile].get());
   arc_app_list_prefs->app_instance_holder()->SetInstance(
       instance_map_[profile].get());

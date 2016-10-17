@@ -674,7 +674,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   EXPECT_EQ(kId1, metadata_v1.server_id());
   EXPECT_EQ(metadata_v1.client_tag_hash(), out_entity1.client_tag_hash);
 
-  entity_data.reset(new EntityData());
+  entity_data = base::MakeUnique<EntityData>();
   // This is a sketchy move here, changing the name will change the generated
   // storage key and client tag values.
   entity_data->specifics.mutable_preference()->set_name(kKey2);

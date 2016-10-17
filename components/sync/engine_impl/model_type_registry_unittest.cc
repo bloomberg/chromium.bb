@@ -81,8 +81,8 @@ void ModelTypeRegistryTest::SetUp() {
   workers_.push_back(ui_worker);
   workers_.push_back(db_worker);
 
-  registry_.reset(
-      new ModelTypeRegistry(workers_, directory(), &mock_nudge_handler_));
+  registry_ = base::MakeUnique<ModelTypeRegistry>(workers_, directory(),
+                                                  &mock_nudge_handler_);
 }
 
 void ModelTypeRegistryTest::TearDown() {

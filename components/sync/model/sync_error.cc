@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace syncer {
 
@@ -65,7 +66,7 @@ void SyncError::Init(const tracked_objects::Location& location,
                      const std::string& message,
                      ModelType model_type,
                      ErrorType error_type) {
-  location_.reset(new tracked_objects::Location(location));
+  location_ = base::MakeUnique<tracked_objects::Location>(location);
   message_ = message;
   model_type_ = model_type;
   error_type_ = error_type;

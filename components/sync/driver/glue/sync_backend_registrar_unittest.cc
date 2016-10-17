@@ -5,6 +5,7 @@
 #include "components/sync/driver/glue/sync_backend_registrar.h"
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/sync/driver/change_processor_mock.h"
@@ -88,11 +89,11 @@ class SyncBackendRegistrarTest : public testing::Test {
     db_thread_.StartAndWaitForTesting();
     file_thread_.StartAndWaitForTesting();
     test_user_share_.SetUp();
-    sync_client_.reset(new RegistrarSyncClient(
-        ui_task_runner(), db_task_runner(), file_task_runner()));
-    registrar_.reset(new SyncBackendRegistrar(
+    sync_client_ = base::MakeUnique<RegistrarSyncClient>(
+        ui_task_runner(), db_task_runner(), file_task_runner());
+    registrar_ = base::MakeUnique<SyncBackendRegistrar>(
         "test", sync_client_.get(), std::unique_ptr<base::Thread>(),
-        ui_task_runner(), db_task_runner(), file_task_runner()));
+        ui_task_runner(), db_task_runner(), file_task_runner());
     sync_thread_ = registrar_->sync_thread();
   }
 
@@ -328,8 +329,8 @@ class SyncBackendRegistrarShutdownTest : public testing::Test {
   void SetUp() override {
     db_thread_.StartAndWaitForTesting();
     file_thread_.StartAndWaitForTesting();
-    sync_client_.reset(new RegistrarSyncClient(
-        ui_task_runner(), db_task_runner(), file_task_runner()));
+    sync_client_ = base::MakeUnique<RegistrarSyncClient>(
+        ui_task_runner(), db_task_runner(), file_task_runner());
   }
 
   void PostQuitOnUIMessageLoop() {

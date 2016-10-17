@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -236,7 +237,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         profile_sync_service_bundle_.CreateBasicInitParams(behavior,
                                                            builder.Build());
 
-    service_.reset(new ProfileSyncService(std::move(init_params)));
+    service_ = base::MakeUnique<ProfileSyncService>(std::move(init_params));
     service_->RegisterDataTypeController(
         base::MakeUnique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
   }

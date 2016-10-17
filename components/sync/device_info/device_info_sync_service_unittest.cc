@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info_util.h"
@@ -74,12 +75,12 @@ class DeviceInfoSyncServiceTest : public testing::Test,
   ~DeviceInfoSyncServiceTest() override {}
 
   void SetUp() override {
-    local_device_.reset(new LocalDeviceInfoProviderMock(
+    local_device_ = base::MakeUnique<LocalDeviceInfoProviderMock>(
         "guid_1", "client_1", "Chromium 10k", "Chrome 10k",
-        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
-    sync_service_.reset(new DeviceInfoSyncService(local_device_.get()));
-    sync_processor_.reset(new TestChangeProcessor());
-    // Register observer
+        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
+    sync_service_ =
+        base::MakeUnique<DeviceInfoSyncService>(local_device_.get());
+    sync_processor_ = base::MakeUnique<TestChangeProcessor>();
     sync_service_->AddObserver(this);
   }
 

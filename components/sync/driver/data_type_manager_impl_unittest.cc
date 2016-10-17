@@ -262,9 +262,9 @@ class SyncDataTypeManagerImplTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    dtm_.reset(new TestDataTypeManager(WeakHandle<DataTypeDebugInfoListener>(),
-                                       &configurer_, &controllers_,
-                                       &encryption_handler_, &observer_));
+    dtm_ = base::MakeUnique<TestDataTypeManager>(
+        WeakHandle<DataTypeDebugInfoListener>(), &configurer_, &controllers_,
+        &encryption_handler_, &observer_);
   }
 
   void SetConfigureStartExpectation() { observer_.ExpectStart(); }

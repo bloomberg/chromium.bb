@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/model_type.h"
@@ -160,7 +161,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   void SetUpDBSyncableService() {
     DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(!db_syncable_service_.get());
-    db_syncable_service_.reset(new FakeSyncableService());
+    db_syncable_service_ = base::MakeUnique<FakeSyncableService>();
   }
 
   // Used by TearDown().

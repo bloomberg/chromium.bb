@@ -5,6 +5,7 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/get_session_name.h"
@@ -21,9 +22,9 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   ~LocalDeviceInfoProviderImplTest() override {}
 
   void SetUp() override {
-    provider_.reset(new LocalDeviceInfoProviderImpl(
+    provider_ = base::MakeUnique<LocalDeviceInfoProviderImpl>(
         version_info::Channel::UNKNOWN,
-        version_info::GetVersionStringWithModifier("UNKNOWN"), false));
+        version_info::GetVersionStringWithModifier("UNKNOWN"), false);
   }
 
   void TearDown() override {

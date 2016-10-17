@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -271,8 +272,8 @@ void AttachmentUploaderImplTest::OnRequestReceived(const HttpRequest& request) {
 
 void AttachmentUploaderImplTest::SetUp() {
   DCHECK(CalledOnValidThread());
-  request_handler_.reset(new RequestHandler(message_loop_.task_runner(),
-                                            weak_ptr_factory_.GetWeakPtr()));
+  request_handler_ = base::MakeUnique<RequestHandler>(
+      message_loop_.task_runner(), weak_ptr_factory_.GetWeakPtr());
   url_request_context_getter_ =
       new net::TestURLRequestContextGetter(message_loop_.task_runner());
 
@@ -283,15 +284,15 @@ void AttachmentUploaderImplTest::SetUp() {
 
   GURL url(base::StringPrintf("http://localhost:%u/", server_.port()));
 
-  token_service_.reset(new MockOAuth2TokenService);
+  token_service_ = base::MakeUnique<MockOAuth2TokenService>();
   scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider(new TokenServiceProvider(token_service_.get()));
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  uploader().reset(new AttachmentUploaderImpl(
+  uploader() = base::MakeUnique<AttachmentUploaderImpl>(
       url, url_request_context_getter_, kAccountId, scopes,
-      token_service_provider, std::string(kStoreBirthday), kModelType));
+      token_service_provider, std::string(kStoreBirthday), kModelType);
 
   upload_callback_ = base::Bind(&AttachmentUploaderImplTest::UploadDone,
                                 base::Unretained(this));

@@ -185,19 +185,19 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     std::unique_ptr<Cryptographer> cryptographer_copy;
     if (cryptographer_) {
-      cryptographer_copy.reset(new Cryptographer(*cryptographer_));
+      cryptographer_copy = base::MakeUnique<Cryptographer>(*cryptographer_);
     }
 
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
-    worker_.reset(
-        new ModelTypeWorker(kModelType, state, std::move(cryptographer_copy),
-                            &mock_nudge_handler_, std::move(processor)));
+    worker_ = base::MakeUnique<ModelTypeWorker>(
+        kModelType, state, std::move(cryptographer_copy), &mock_nudge_handler_,
+        std::move(processor));
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
   void NewForeignEncryptionKey() {
     if (!cryptographer_) {
-      cryptographer_.reset(new Cryptographer(&fake_encryptor_));
+      cryptographer_ = base::MakeUnique<Cryptographer>(&fake_encryptor_);
     }
 
     foreign_encryption_key_index_++;
@@ -244,7 +244,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // Update the local cryptographer with all relevant keys.
   void UpdateLocalCryptographer() {
     if (!cryptographer_) {
-      cryptographer_.reset(new Cryptographer(&fake_encryptor_));
+      cryptographer_ = base::MakeUnique<Cryptographer>(&fake_encryptor_);
     }
 
     KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);

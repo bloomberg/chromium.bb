@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,7 +34,7 @@ class SyncStartupTrackerTest : public testing::Test {
       no_error_(GoogleServiceAuthError::NONE) {
   }
   void SetUp() override {
-    profile_.reset(new TestingProfile());
+    profile_ = base::MakeUnique<TestingProfile>();
     mock_pss_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildMockProfileSyncService));

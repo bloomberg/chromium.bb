@@ -98,7 +98,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)
-      context_.reset(new MyTestURLRequestContext());
+      context_ = base::MakeUnique<MyTestURLRequestContext>();
     return context_.get();
   }
 
@@ -427,8 +427,8 @@ int SyncClientMain(int argc, char* argv[]) {
   args.restored_key_for_bootstrapping = kRestoredKeyForBootstrapping;
   args.restored_keystore_key_for_bootstrapping =
       kRestoredKeystoreKeyForBootstrapping;
-  args.engine_components_factory.reset(
-      new EngineComponentsFactoryImpl(factory_switches));
+  args.engine_components_factory =
+      base::MakeUnique<EngineComponentsFactoryImpl>(factory_switches);
   args.encryptor = &null_encryptor;
   args.unrecoverable_error_handler = WeakHandle<UnrecoverableErrorHandler>();
   args.report_unrecoverable_error_function =

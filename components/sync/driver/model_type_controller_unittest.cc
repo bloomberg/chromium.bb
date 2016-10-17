@@ -125,8 +125,8 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
   void SetUp() override {
     model_thread_.Start();
     InitializeModelTypeService();
-    controller_.reset(new ModelTypeController(
-        kTestModelType, base::Closure(), this, model_thread_.task_runner()));
+    controller_ = base::MakeUnique<ModelTypeController>(
+        kTestModelType, base::Closure(), this, model_thread_.task_runner());
   }
 
   void TearDown() override {
@@ -220,8 +220,8 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
 
   void InitializeModelTypeService() {
     if (model_thread_.task_runner()->BelongsToCurrentThread()) {
-      service_.reset(new StubModelTypeService(base::Bind(
-          &ModelTypeControllerTest::CreateProcessor, base::Unretained(this))));
+      service_ = base::MakeUnique<StubModelTypeService>(base::Bind(
+          &ModelTypeControllerTest::CreateProcessor, base::Unretained(this)));
     } else {
       model_thread_.task_runner()->PostTask(
           FROM_HERE,

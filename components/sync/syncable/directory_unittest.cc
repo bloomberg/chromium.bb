@@ -78,9 +78,9 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // Use a TestDirectoryBackingStore and sql::Connection so we can have test
   // data persist across Directory object lifetimes while getting the
   // performance benefits of not writing to disk.
-  dir_.reset(new Directory(
+  dir_ = base::MakeUnique<Directory>(
       new TestDirectoryBackingStore(kDirectoryName, &connection_),
-      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), NULL, NULL));
+      MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr, nullptr);
 
   DirOpenResult open_result =
       dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());
@@ -1695,7 +1695,8 @@ TEST_F(SyncableDirectoryTest, StressTransactions) {
   std::unique_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
 
   for (int i = 0; i < kThreadCount; ++i) {
-    thread_delegates[i].reset(new StressTransactionsDelegate(dir().get(), i));
+    thread_delegates[i] =
+        base::MakeUnique<StressTransactionsDelegate>(dir().get(), i);
     ASSERT_TRUE(base::PlatformThread::Create(0, thread_delegates[i].get(),
                                              &threads[i]));
   }

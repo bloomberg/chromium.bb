@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
@@ -22,14 +23,15 @@ TestDirectorySetterUpper::TestDirectorySetterUpper() : name_("Test") {}
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::SetUp() {
-  test_transaction_observer_.reset(new syncable::TestTransactionObserver());
+  test_transaction_observer_ =
+      base::MakeUnique<syncable::TestTransactionObserver>();
   WeakHandle<syncable::TransactionObserver> transaction_observer =
       MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
 
-  directory_.reset(new syncable::Directory(
+  directory_ = base::MakeUnique<syncable::Directory>(
       new syncable::InMemoryDirectoryBackingStore(name_),
       MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
-      &encryption_handler_, encryption_handler_.cryptographer()));
+      &encryption_handler_, encryption_handler_.cryptographer());
   ASSERT_EQ(syncable::OPENED,
             directory_->Open(name_, &delegate_, transaction_observer));
 }
@@ -37,13 +39,14 @@ void TestDirectorySetterUpper::SetUp() {
 void TestDirectorySetterUpper::SetUpWith(
     syncable::DirectoryBackingStore* directory_store) {
   CHECK(directory_store);
-  test_transaction_observer_.reset(new syncable::TestTransactionObserver());
+  test_transaction_observer_ =
+      base::MakeUnique<syncable::TestTransactionObserver>();
   WeakHandle<syncable::TransactionObserver> transaction_observer =
       MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
 
-  directory_.reset(new syncable::Directory(
+  directory_ = base::MakeUnique<syncable::Directory>(
       directory_store, MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
-      &encryption_handler_, encryption_handler_.cryptographer()));
+      &encryption_handler_, encryption_handler_.cryptographer());
   ASSERT_EQ(syncable::OPENED,
             directory_->Open(name_, &delegate_, transaction_observer));
 }

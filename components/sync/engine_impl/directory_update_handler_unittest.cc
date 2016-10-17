@@ -477,7 +477,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
   void SetUp() override {
     dir_maker_.SetUp();
-    entry_factory_.reset(new TestEntryFactory(directory()));
+    entry_factory_ = base::MakeUnique<TestEntryFactory>(directory());
 
     update_handler_map_.insert(std::make_pair(
         BOOKMARKS,

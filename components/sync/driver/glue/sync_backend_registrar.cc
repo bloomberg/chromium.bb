@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/sync_client.h"
@@ -33,7 +34,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
 
   sync_thread_ = std::move(sync_thread);
   if (!sync_thread_) {
-    sync_thread_.reset(new base::Thread("Chrome_SyncThread"));
+    sync_thread_ = base::MakeUnique<base::Thread>("Chrome_SyncThread");
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
     CHECK(sync_thread_->StartWithOptions(options));

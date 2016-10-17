@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -145,11 +146,12 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   // model type |type|.
   void InitializeForType(ModelType type) {
     TearDown();
-    test_user_share_.reset(new TestUserShare);
+    test_user_share_ = base::MakeUnique<TestUserShare>();
     test_user_share_->SetUp();
-    sync_merge_result_.reset(new SyncMergeResult(type));
-    merge_result_ptr_factory_.reset(
-        new base::WeakPtrFactory<SyncMergeResult>(sync_merge_result_.get()));
+    sync_merge_result_ = base::MakeUnique<SyncMergeResult>(type);
+    merge_result_ptr_factory_ =
+        base::MakeUnique<base::WeakPtrFactory<SyncMergeResult>>(
+            sync_merge_result_.get());
 
     ModelTypeSet types = ProtocolTypes();
     for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
@@ -162,11 +164,11 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   void ConstructGenericChangeProcessor(ModelType type) {
     std::unique_ptr<AttachmentStore> attachment_store =
         AttachmentStore::CreateInMemoryStore();
-    change_processor_.reset(new GenericChangeProcessor(
+    change_processor_ = base::MakeUnique<GenericChangeProcessor>(
         type, base::MakeUnique<DataTypeErrorHandlerMock>(),
         syncable_service_ptr_factory_.GetWeakPtr(),
         merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
-        &sync_client_, attachment_store->CreateAttachmentStoreForSync()));
+        &sync_client_, attachment_store->CreateAttachmentStoreForSync());
     mock_attachment_service_ = sync_factory_.GetMockAttachmentService();
   }
 

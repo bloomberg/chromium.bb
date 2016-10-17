@@ -21,6 +21,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -266,9 +267,9 @@ class SyncerTest : public testing::Test,
 
   void SetUp() override {
     dir_maker_.SetUp();
-    mock_server_.reset(
-        new MockConnectionManager(directory(), &cancelation_signal_));
-    debug_info_getter_.reset(new MockDebugInfoGetter);
+    mock_server_ = base::MakeUnique<MockConnectionManager>(
+        directory(), &cancelation_signal_);
+    debug_info_getter_ = base::MakeUnique<MockDebugInfoGetter>();
     EnableDatatype(BOOKMARKS);
     EnableDatatype(EXTENSIONS);
     EnableDatatype(NIGORI);
@@ -282,24 +283,24 @@ class SyncerTest : public testing::Test,
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
-    model_type_registry_.reset(
-        new ModelTypeRegistry(workers_, directory(), &mock_nudge_handler_));
+    model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
+        workers_, directory(), &mock_nudge_handler_);
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
-    context_.reset(new SyncCycleContext(
+    context_ = base::MakeUnique<SyncCycleContext>(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,   // enable keystore encryption
         false,  // force enable pre-commit GU avoidance experiment
-        "fake_invalidator_client_id"));
+        "fake_invalidator_client_id");
     context_->SetRoutingInfo(routing_info);
     syncer_ = new Syncer(&cancelation_signal_);
-    scheduler_.reset(new SyncSchedulerImpl(
+    scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(),
         context_.get(),
         // scheduler_ owned syncer_ now and will manage the memory of syncer_
-        syncer_));
+        syncer_);
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Directory::Metahandles children;

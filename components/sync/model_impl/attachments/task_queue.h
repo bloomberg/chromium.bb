@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -183,10 +184,10 @@ TaskQueue<T>::TaskQueue(const HandleTaskCallback& callback,
   backoff_policy_.maximum_backoff_ms = max_backoff_delay.InMilliseconds();
   backoff_policy_.entry_lifetime_ms = -1;
   backoff_policy_.always_use_initial_delay = false;
-  backoff_entry_.reset(new net::BackoffEntry(&backoff_policy_));
+  backoff_entry_ = base::MakeUnique<net::BackoffEntry>(&backoff_policy_);
   dispatch_closure_ =
       base::Bind(&TaskQueue::Dispatch, weak_ptr_factory_.GetWeakPtr());
-  backoff_timer_.reset(new base::Timer(false, false));
+  backoff_timer_ = base::MakeUnique<base::Timer>(false, false);
 }
 
 template <typename T>

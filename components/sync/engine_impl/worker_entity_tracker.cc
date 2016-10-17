@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/syncable/syncable_util.h"
@@ -82,7 +83,7 @@ void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
   DCHECK_EQ(client_tag_hash_, data.entity->client_tag_hash);
   // TODO(stanisc): consider simply copying CommitRequestData instead of
   // allocating one dynamically.
-  pending_commit_.reset(new CommitRequestData(data));
+  pending_commit_ = base::MakeUnique<CommitRequestData>(data);
 
   // Do our counter values indicate a conflict? If so, don't commit.
   //
@@ -150,7 +151,7 @@ bool WorkerEntityTracker::ReceiveEncryptedUpdate(
     return false;
 
   highest_gu_response_version_ = data.response_version;
-  encrypted_update_.reset(new UpdateResponseData(data));
+  encrypted_update_ = base::MakeUnique<UpdateResponseData>(data);
   ClearPendingCommit();
   return true;
 }

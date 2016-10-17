@@ -146,7 +146,7 @@ void ModelTypeRegistry::ConnectType(
 
   std::unique_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
-    cryptographer_copy.reset(new Cryptographer(*cryptographer_));
+    cryptographer_copy = base::MakeUnique<Cryptographer>(*cryptographer_);
 
   std::unique_ptr<ModelTypeWorker> worker(new ModelTypeWorker(
       type, activation_context->model_type_state, std::move(cryptographer_copy),
@@ -276,7 +276,7 @@ void ModelTypeRegistry::OnEncryptionComplete() {}
 
 void ModelTypeRegistry::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
-  cryptographer_.reset(new Cryptographer(*cryptographer));
+  cryptographer_ = base::MakeUnique<Cryptographer>(*cryptographer);
   OnEncryptionStateChanged();
 }
 

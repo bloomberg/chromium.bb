@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "components/sync/base/fake_encryptor.h"
@@ -95,9 +96,9 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
   void SetUpEncryptionWithKeyForBootstrapping(
       const std::string& key_for_bootstrapping) {
-    encryption_handler_.reset(new SyncEncryptionHandlerImpl(
+    encryption_handler_ = base::MakeUnique<SyncEncryptionHandlerImpl>(
         user_share(), &encryptor_, key_for_bootstrapping,
-        std::string() /* keystore key for bootstrapping */));
+        std::string() /* keystore key for bootstrapping */);
     encryption_handler_->AddObserver(&observer_);
   }
 

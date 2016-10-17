@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -163,17 +164,18 @@ class SyncBackendHostTest : public testing::Test {
 
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
 
-    sync_prefs_.reset(new SyncPrefs(&pref_service_));
-    backend_.reset(new SyncBackendHostImpl(
+    sync_prefs_ = base::MakeUnique<SyncPrefs>(&pref_service_);
+    backend_ = base::MakeUnique<SyncBackendHostImpl>(
         "dummyDebugName", &sync_client_, base::ThreadTaskRunnerHandle::Get(),
         nullptr, sync_prefs_->AsWeakPtr(),
-        temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir))));
+        temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
     credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
-    fake_manager_factory_.reset(new FakeSyncManagerFactory(&fake_manager_));
+    fake_manager_factory_ =
+        base::MakeUnique<FakeSyncManagerFactory>(&fake_manager_);
 
     // These types are always implicitly enabled.
     enabled_types_.PutAll(ControlTypes());
@@ -186,7 +188,7 @@ class SyncBackendHostTest : public testing::Test {
     enabled_types_.Put(SEARCH_ENGINES);
     enabled_types_.Put(AUTOFILL);
 
-    network_resources_.reset(new HttpBridgeNetworkResources());
+    network_resources_ = base::MakeUnique<HttpBridgeNetworkResources>();
   }
 
   void TearDown() override {

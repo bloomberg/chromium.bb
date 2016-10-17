@@ -5,6 +5,7 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "components/sync/base/get_session_name.h"
@@ -94,9 +95,9 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     return;
   }
 
-  local_device_info_.reset(
-      new DeviceInfo(guid, session_name, version_, GetSyncUserAgent(),
-                     GetLocalDeviceType(is_tablet_), signin_scoped_device_id));
+  local_device_info_ = base::MakeUnique<DeviceInfo>(
+      guid, session_name, version_, GetSyncUserAgent(),
+      GetLocalDeviceType(is_tablet_), signin_scoped_device_id);
 
   // Notify observers.
   callback_list_.Notify();

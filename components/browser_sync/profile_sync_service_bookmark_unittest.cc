@@ -546,10 +546,10 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     DCHECK(!model_associator_);
 
     // Set up model associator.
-    model_associator_.reset(new BookmarkModelAssociator(
+    model_associator_ = base::MakeUnique<BookmarkModelAssociator>(
         model_.get(), sync_client_.get(), test_user_share_.user_share(),
         base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
-        kExpectMobileBookmarks));
+        kExpectMobileBookmarks);
 
     local_merge_result_ = syncer::SyncMergeResult(syncer::BOOKMARKS);
     syncer_merge_result_ = syncer::SyncMergeResult(syncer::BOOKMARKS);

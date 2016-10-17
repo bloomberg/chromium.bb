@@ -206,7 +206,7 @@ void ChromeSyncClient::Initialize() {
     net::URLRequestContextGetter* url_request_context_getter =
         profile_->GetRequestContext();
 
-    component_factory_.reset(new ProfileSyncComponentsFactoryImpl(
+    component_factory_ = base::MakeUnique<ProfileSyncComponentsFactoryImpl>(
         this, chrome::GetChannel(), chrome::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         *base::CommandLine::ForCurrentProcess(),
@@ -216,7 +216,7 @@ void ChromeSyncClient::Initialize() {
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::DB),
         token_service, url_request_context_getter, web_data_service_,
-        password_store_));
+        password_store_);
   }
 }
 

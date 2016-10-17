@@ -5,6 +5,7 @@
 #include "components/sync/syncable/test_user_share.h"
 
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
@@ -24,7 +25,7 @@ TestUserShare::~TestUserShare() {
 }
 
 void TestUserShare::SetUp() {
-  user_share_.reset(new UserShare());
+  user_share_ = base::MakeUnique<UserShare>();
   dir_maker_->SetUp();
 
   // The pointer is owned by dir_maker_, we should not be storing it in a
@@ -49,7 +50,7 @@ bool TestUserShare::Reload() {
 
   // Ensure the unique_ptr doesn't delete the memory we don't own.
   ignore_result(user_share_->directory.release());
-  user_share_.reset(new UserShare());
+  user_share_ = base::MakeUnique<UserShare>();
   dir_maker_->SetUpWith(saved_store);
   user_share_->directory.reset(dir_maker_->directory());
   return true;

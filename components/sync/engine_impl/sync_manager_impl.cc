@@ -240,9 +240,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   allstatus_.SetHasKeystoreKey(
       !args->restored_keystore_key_for_bootstrapping.empty());
-  sync_encryption_handler_.reset(new SyncEncryptionHandlerImpl(
+  sync_encryption_handler_ = base::MakeUnique<SyncEncryptionHandlerImpl>(
       &share_, args->encryptor, args->restored_key_for_bootstrapping,
-      args->restored_keystore_key_for_bootstrapping));
+      args->restored_keystore_key_for_bootstrapping);
   sync_encryption_handler_->AddObserver(this);
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
@@ -256,10 +256,10 @@ void SyncManagerImpl::Init(InitArgs* args) {
           args->credentials.account_id, absolute_db_path);
 
   DCHECK(backing_store.get());
-  share_.directory.reset(new syncable::Directory(
+  share_.directory = base::MakeUnique<syncable::Directory>(
       backing_store.release(), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),
-      sync_encryption_handler_->GetCryptographerUnsafe()));
+      sync_encryption_handler_->GetCryptographerUnsafe());
   share_.sync_credentials = args->credentials;
 
   // UserShare is accessible to a lot of code that doesn't need access to the
@@ -281,11 +281,11 @@ void SyncManagerImpl::Init(InitArgs* args) {
     args->saved_nigori_state.reset();
   }
 
-  connection_manager_.reset(new SyncServerConnectionManager(
+  connection_manager_ = base::MakeUnique<SyncServerConnectionManager>(
       args->service_url.host() + args->service_url.path(),
       args->service_url.EffectiveIntPort(),
       args->service_url.SchemeIsCryptographic(), args->post_factory.release(),
-      args->cancelation_signal));
+      args->cancelation_signal);
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
@@ -296,8 +296,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
-  model_type_registry_.reset(
-      new ModelTypeRegistry(args->workers, directory(), this));
+  model_type_registry_ =
+      base::MakeUnique<ModelTypeRegistry>(args->workers, directory(), this);
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
   // Build a SyncCycleContext and store the worker in it.

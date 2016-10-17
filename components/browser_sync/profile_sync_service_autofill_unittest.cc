@@ -327,8 +327,8 @@ class WebDataServiceFake : public AutofillWebDataService {
       const base::Callback<void(syncer::ModelType)>& on_sync_started) {
     ASSERT_TRUE(db_thread_->RunsTasksOnCurrentThread());
     // These services are deleted in DestroySyncableService().
-    backend_.reset(new MockAutofillBackend(GetDatabase(), on_changed_callback,
-                                           on_sync_started, ui_thread_.get()));
+    backend_ = base::MakeUnique<MockAutofillBackend>(
+        GetDatabase(), on_changed_callback, on_sync_started, ui_thread_.get());
     AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
         this, backend_.get());
     AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
@@ -402,7 +402,7 @@ class ProfileSyncServiceAutofillTest
     profile_sync_service_bundle()->set_db_thread(
         data_type_thread()->task_runner());
 
-    web_database_.reset(new WebDatabaseFake(&autofill_table_));
+    web_database_ = base::MakeUnique<WebDatabaseFake>(&autofill_table_);
     web_data_wrapper_ = base::MakeUnique<MockWebDataServiceWrapper>(
         new WebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
                                data_type_thread()->task_runner()),

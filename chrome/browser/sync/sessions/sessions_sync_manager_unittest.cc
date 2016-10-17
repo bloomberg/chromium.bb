@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -309,32 +310,28 @@ class SessionsSyncManagerTest
  protected:
   SessionsSyncManagerTest()
       : test_processor_(NULL) {
-    local_device_.reset(new LocalDeviceInfoProviderMock(
-        "cache_guid",
-        "Wayne Gretzky's Hacking Box",
-        "Chromium 10k",
-        "Chrome 10k",
-        sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-        "device_id"));
+    local_device_ = base::MakeUnique<LocalDeviceInfoProviderMock>(
+        "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
+        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
   }
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    sync_client_.reset(new browser_sync::ChromeSyncClient(profile()));
-    sessions_client_shim_.reset(
-        new SyncSessionsClientShim(sync_client_->GetSyncSessionsClient()));
+    sync_client_ = base::MakeUnique<browser_sync::ChromeSyncClient>(profile());
+    sessions_client_shim_ = base::MakeUnique<SyncSessionsClientShim>(
+        sync_client_->GetSyncSessionsClient());
     NotificationServiceSessionsRouter* router(
         new NotificationServiceSessionsRouter(
             profile(), GetSyncSessionsClient(),
             syncer::SyncableService::StartSyncFlare()));
-    sync_prefs_.reset(new syncer::SyncPrefs(profile()->GetPrefs()));
-    manager_.reset(new SessionsSyncManager(
+    sync_prefs_ = base::MakeUnique<syncer::SyncPrefs>(profile()->GetPrefs());
+    manager_ = base::MakeUnique<SessionsSyncManager>(
         GetSyncSessionsClient(), sync_prefs_.get(), local_device_.get(),
         std::unique_ptr<LocalSessionEventRouter>(router),
         base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
                    base::Unretained(&observer_)),
         base::Bind(&SessionNotificationObserver::NotifyOfRefresh,
-                   base::Unretained(&observer_))));
+                   base::Unretained(&observer_)));
   }
 
   void TearDown() override {

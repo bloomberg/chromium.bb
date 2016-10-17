@@ -655,7 +655,7 @@ void SyncBackendHostCore::StartSavingChanges() {
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   DCHECK(!save_changes_timer_.get());
-  save_changes_timer_.reset(new base::RepeatingTimer());
+  save_changes_timer_ = base::MakeUnique<base::RepeatingTimer>();
   save_changes_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
       this, &SyncBackendHostCore::SaveChanges);

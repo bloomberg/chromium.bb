@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,12 +29,12 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
   ~DeviceInfoDataTypeControllerTest() override {}
 
   void SetUp() override {
-    local_device_.reset(new LocalDeviceInfoProviderMock(
+    local_device_ = base::MakeUnique<LocalDeviceInfoProviderMock>(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
-        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
+        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
 
-    controller_.reset(new DeviceInfoDataTypeController(
-        base::Closure(), &sync_client_, local_device_.get()));
+    controller_ = base::MakeUnique<DeviceInfoDataTypeController>(
+        base::Closure(), &sync_client_, local_device_.get());
 
     load_finished_ = false;
     last_type_ = UNSPECIFIED;

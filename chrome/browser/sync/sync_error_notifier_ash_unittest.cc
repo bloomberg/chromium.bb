@@ -89,29 +89,30 @@ class SyncErrorNotifierTest : public AshTestBase  {
     // Set up a desktop screen for Windows to hold native widgets, used when
     // adding desktop widgets (i.e., message center notifications).
 #if defined(OS_WIN)
-    test_screen_.reset(aura::TestScreen::Create(gfx::Size()));
+    test_screen_ = base::MakeUnique<aura::TestScreen::Create>(gfx::Size());
     display::Screen::SetScreenInstance(test_screen_.get());
 #endif
 
     AshTestBase::SetUp();
 
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
     profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
 
-    service_.reset(new browser_sync::ProfileSyncServiceMock(
-        CreateProfileSyncServiceParamsForTest(profile_)));
+    service_ = base::MakeUnique<browser_sync::ProfileSyncServiceMock>(
+        CreateProfileSyncServiceParamsForTest(profile_));
 
     FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
         LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_, BuildMockLoginUIService));
     login_ui_service->SetLoginUI(&login_ui_);
 
-    error_controller_.reset(new syncer::SyncErrorController(service_.get()));
-    error_notifier_.reset(new SyncErrorNotifier(error_controller_.get(),
-                                                profile_));
+    error_controller_ =
+        base::MakeUnique<syncer::SyncErrorController>(service_.get());
+    error_notifier_ =
+        base::MakeUnique<SyncErrorNotifier>(error_controller_.get(), profile_);
 
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }

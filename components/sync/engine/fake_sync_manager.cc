@@ -34,7 +34,7 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
       configure_fail_types_(configure_fail_types),
       last_configure_reason_(CONFIGURE_REASON_UNKNOWN),
       num_invalidations_received_(0) {
-  fake_encryption_handler_.reset(new FakeSyncEncryptionHandler());
+  fake_encryption_handler_ = base::MakeUnique<FakeSyncEncryptionHandler>();
 }
 
 FakeSyncManager::~FakeSyncManager() {}

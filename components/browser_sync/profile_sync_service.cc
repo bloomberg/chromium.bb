@@ -263,26 +263,26 @@ void ProfileSyncService::Initialize() {
 
   // We don't pass StartupController an Unretained reference to future-proof
   // against the controller impl changing to post tasks.
-  startup_controller_.reset(new syncer::StartupController(
+  startup_controller_ = base::MakeUnique<syncer::StartupController>(
       &sync_prefs_,
       base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()));
   std::unique_ptr<sync_sessions::LocalSessionEventRouter> router(
       sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter());
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
-  sync_stopped_reporter_.reset(new syncer::SyncStoppedReporter(
+  sync_stopped_reporter_ = base::MakeUnique<syncer::SyncStoppedReporter>(
       sync_service_url_, local_device_->GetSyncUserAgent(),
-      url_request_context_, syncer::SyncStoppedReporter::ResultCallback()));
-  sessions_sync_manager_.reset(new SessionsSyncManager(
+      url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
+  sessions_sync_manager_ = base::MakeUnique<SessionsSyncManager>(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
       std::move(router),
       base::Bind(&ProfileSyncService::NotifyForeignSessionUpdated,
                  sync_enabled_weak_factory_.GetWeakPtr()),
       base::Bind(&ProfileSyncService::TriggerRefresh,
                  sync_enabled_weak_factory_.GetWeakPtr(),
-                 syncer::ModelTypeSet(syncer::SESSIONS))));
+                 syncer::ModelTypeSet(syncer::SESSIONS)));
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
@@ -292,16 +292,16 @@ void ProfileSyncService::Initialize() {
     // TODO(skym): Stop creating leveldb files when signed out.
     // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
     // as the Local State file is guaranteed to be UTF-8.
-    device_info_service_.reset(new DeviceInfoService(
+    device_info_service_ = base::MakeUnique<DeviceInfoService>(
         local_device_.get(),
         base::Bind(&ModelTypeStore::CreateStore, syncer::DEVICE_INFO,
                    directory_path_.Append(base::FilePath(kLevelDBFolderName))
                        .AsUTF8Unsafe(),
                    blocking_task_runner),
-        base::Bind(&ModelTypeChangeProcessor::Create)));
+        base::Bind(&ModelTypeChangeProcessor::Create));
   } else {
-    device_info_sync_service_.reset(
-        new DeviceInfoSyncService(local_device_.get()));
+    device_info_sync_service_ =
+        base::MakeUnique<DeviceInfoSyncService>(local_device_.get());
   }
 
   syncer::SyncApiComponentFactory::RegisterDataTypesMethod
@@ -366,13 +366,13 @@ void ProfileSyncService::Initialize() {
 #if !defined(OS_ANDROID)
   DCHECK(sync_error_controller_ == NULL)
       << "Initialize() called more than once.";
-  sync_error_controller_.reset(new syncer::SyncErrorController(this));
+  sync_error_controller_ = base::MakeUnique<syncer::SyncErrorController>(this);
   AddObserver(sync_error_controller_.get());
 #endif
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+  memory_pressure_listener_ = base::MakeUnique<base::MemoryPressureListener>(
       base::Bind(&ProfileSyncService::OnMemoryPressure,
-                 sync_enabled_weak_factory_.GetWeakPtr())));
+                 sync_enabled_weak_factory_.GetWeakPtr()));
   startup_controller_->Reset(GetRegisteredDataTypes());
 
   // Auto-start means means the first time the profile starts up, sync should
@@ -1753,10 +1753,10 @@ void ProfileSyncService::ConfigureDataTypeManager() {
             this));
 
     // We create the migrator at the same time.
-    migrator_.reset(new BackendMigrator(
+    migrator_ = base::MakeUnique<BackendMigrator>(
         debug_identifier_, GetUserShare(), this, data_type_manager_.get(),
         base::Bind(&ProfileSyncService::StartSyncingWithServer,
-                   base::Unretained(this))));
+                   base::Unretained(this)));
   }
 
   syncer::ModelTypeSet types;
@@ -1851,7 +1851,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() {
   for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
     ModelType type = it.Get();
 
-    type_status.reset(new base::DictionaryValue());
+    type_status = base::MakeUnique<base::DictionaryValue>();
     type_status->SetString("name", ModelTypeToString(type));
 
     if (error_map.find(type) != error_map.end()) {

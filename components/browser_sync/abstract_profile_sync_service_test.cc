@@ -86,11 +86,9 @@ SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
 void SyncBackendHostForProfileSyncTest::InitCore(
     std::unique_ptr<syncer::DoInitializeOptions> options) {
-  options->http_bridge_factory =
-      std::unique_ptr<syncer::HttpPostProviderFactory>(
-          new TestHttpBridgeFactory());
-  options->sync_manager_factory.reset(
-      new syncer::SyncManagerFactoryForProfileSyncTest(callback_));
+  options->http_bridge_factory = base::MakeUnique<TestHttpBridgeFactory>();
+  options->sync_manager_factory =
+      base::MakeUnique<syncer::SyncManagerFactoryForProfileSyncTest>(callback_);
   options->credentials.email = "testuser@gmail.com";
   options->credentials.sync_token = "token";
   options->credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
@@ -101,10 +99,10 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   // free it. Grab the switches to pass on first.
   syncer::EngineComponentsFactory::Switches factory_switches =
       options->engine_components_factory->GetSwitches();
-  options->engine_components_factory.reset(
-      new syncer::TestEngineComponentsFactory(
+  options->engine_components_factory =
+      base::MakeUnique<syncer::TestEngineComponentsFactory>(
           factory_switches, syncer::EngineComponentsFactory::STORAGE_IN_MEMORY,
-          nullptr));
+          nullptr);
 
   SyncBackendHostImpl::InitCore(std::move(options));
 }

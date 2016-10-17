@@ -188,12 +188,12 @@ class DeviceInfoServiceTest : public testing::Test,
   // only be called once per run, as it passes |store_|.
   void InitializeService() {
     ASSERT_TRUE(store_);
-    service_.reset(new DeviceInfoService(
+    service_ = base::MakeUnique<DeviceInfoService>(
         local_device_.get(),
         base::Bind(&ModelTypeStoreTestUtil::MoveStoreToCallback,
                    base::Passed(&store_)),
         base::Bind(&DeviceInfoServiceTest::CreateModelTypeChangeProcessor,
-                   base::Unretained(this))));
+                   base::Unretained(this)));
     service_->AddObserver(this);
   }
 

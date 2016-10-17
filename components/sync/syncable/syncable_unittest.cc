@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/condition_variable.h"
@@ -342,10 +343,10 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
 
   dir()->SaveChanges();
-  dir().reset(
-      new Directory(new OnDiskDirectoryBackingStore(kDirectoryName, file_path_),
-                    MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
-                    base::Closure(), NULL, NULL));
+  dir() = base::MakeUnique<Directory>(
+      new OnDiskDirectoryBackingStore(kDirectoryName, file_path_),
+      MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
+      base::Closure(), nullptr, nullptr);
 
   ASSERT_TRUE(dir().get());
   ASSERT_EQ(OPENED, dir()->Open(kDirectoryName, directory_change_delegate(),

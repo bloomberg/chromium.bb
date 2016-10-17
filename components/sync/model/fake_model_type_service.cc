@@ -307,7 +307,8 @@ ConflictResolution FakeModelTypeService::ResolveConflict(
 
 void FakeModelTypeService::SetConflictResolution(
     ConflictResolution resolution) {
-  conflict_resolution_.reset(new ConflictResolution(std::move(resolution)));
+  conflict_resolution_ =
+      base::MakeUnique<ConflictResolution>(std::move(resolution));
 }
 
 void FakeModelTypeService::SetServiceError(SyncError::ErrorType error_type) {

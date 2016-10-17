@@ -11,6 +11,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
@@ -41,7 +42,8 @@ Cryptographer::Cryptographer(const Cryptographer& other)
   }
 
   if (other.pending_keys_) {
-    pending_keys_.reset(new sync_pb::EncryptedData(*(other.pending_keys_)));
+    pending_keys_ =
+        base::MakeUnique<sync_pb::EncryptedData>(*(other.pending_keys_));
   }
 }
 
@@ -230,7 +232,7 @@ void Cryptographer::SetDefaultKey(const std::string& key_name) {
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
   DCHECK(!CanDecrypt(encrypted));
   DCHECK(!encrypted.blob().empty());
-  pending_keys_.reset(new sync_pb::EncryptedData(encrypted));
+  pending_keys_ = base::MakeUnique<sync_pb::EncryptedData>(encrypted);
 }
 
 const sync_pb::EncryptedData& Cryptographer::GetPendingKeys() const {

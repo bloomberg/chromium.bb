@@ -149,7 +149,8 @@ class MockAttachmentDownloader
     std::unique_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
       scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
-      attachment.reset(new Attachment(Attachment::CreateFromParts(id, data)));
+      attachment =
+          base::MakeUnique<Attachment>(Attachment::CreateFromParts(id, data));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -238,10 +239,10 @@ class AttachmentServiceImplTest : public testing::Test,
     if (downloader.get()) {
       attachment_downloader_ = downloader->AsWeakPtr();
     }
-    attachment_service_.reset(new AttachmentServiceImpl(
+    attachment_service_ = base::MakeUnique<AttachmentServiceImpl>(
         attachment_store->CreateAttachmentStoreForSync(), std::move(uploader),
         std::move(downloader), delegate, base::TimeDelta::FromMinutes(1),
-        base::TimeDelta::FromMinutes(8)));
+        base::TimeDelta::FromMinutes(8));
 
     std::unique_ptr<base::MockTimer> timer_to_pass(
         new base::MockTimer(false, false));

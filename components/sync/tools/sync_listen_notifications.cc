@@ -101,7 +101,7 @@ class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
     // Construct |context_| lazily so it gets constructed on the right
     // thread (the IO thread).
     if (!context_)
-      context_.reset(new MyTestURLRequestContext());
+      context_ = base::MakeUnique<MyTestURLRequestContext>();
     return context_.get();
   }
 

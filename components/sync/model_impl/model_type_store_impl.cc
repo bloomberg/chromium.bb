@@ -335,7 +335,7 @@ void ModelTypeStoreImpl::DeleteGlobalMetadata(WriteBatch* write_batch) {
 }
 
 ModelTypeStoreImpl::WriteBatchImpl::WriteBatchImpl() {
-  leveldb_write_batch_.reset(new leveldb::WriteBatch());
+  leveldb_write_batch_ = base::MakeUnique<leveldb::WriteBatch>();
 }
 
 ModelTypeStoreImpl::WriteBatchImpl::~WriteBatchImpl() {}

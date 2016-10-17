@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -124,7 +125,7 @@ TEST_F(ModelTypeStoreBackendTest, ReadDeletedRecord) {
   ASSERT_TRUE(missing_id_list.empty());
 
   // Delete one record.
-  write_batch.reset(new leveldb::WriteBatch());
+  write_batch = base::MakeUnique<leveldb::WriteBatch>();
   write_batch->Delete("prefix:id2");
   result = backend->WriteModifications(std::move(write_batch));
   ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
