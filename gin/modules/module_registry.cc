@@ -163,8 +163,8 @@ void ModuleRegistry::AddPendingModule(Isolate* isolate,
   const std::string pending_id = pending->id;
   const std::vector<std::string> pending_dependencies = pending->dependencies;
   AttemptToLoad(isolate, std::move(pending));
-  FOR_EACH_OBSERVER(ModuleRegistryObserver, observer_list_,
-                    OnDidAddPendingModule(pending_id, pending_dependencies));
+  for (auto& observer : observer_list_)
+    observer.OnDidAddPendingModule(pending_id, pending_dependencies);
 }
 
 void ModuleRegistry::LoadModule(Isolate* isolate,
