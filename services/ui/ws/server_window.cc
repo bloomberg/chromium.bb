@@ -46,7 +46,8 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
 }
 
 ServerWindow::~ServerWindow() {
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_, OnWindowDestroying(this));
+  for (auto& observer : observers_)
+    observer.OnWindowDestroying(this);
 
   if (transient_parent_)
     transient_parent_->RemoveTransientWindow(this);
@@ -65,7 +66,8 @@ ServerWindow::~ServerWindow() {
   if (parent_)
     parent_->Remove(this);
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_, OnWindowDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnWindowDestroyed(this);
 }
 
 void ServerWindow::AddObserver(ServerWindowObserver* observer) {
@@ -101,8 +103,8 @@ void ServerWindow::Add(ServerWindow* child) {
   }
 
   ServerWindow* old_parent = child->parent();
-  FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
-                    OnWillChangeWindowHierarchy(child, this, old_parent));
+  for (auto& observer : child->observers_)
+    observer.OnWillChangeWindowHierarchy(child, this, old_parent);
 
   if (child->parent())
     child->parent()->RemoveImpl(child);
@@ -115,8 +117,8 @@ void ServerWindow::Add(ServerWindow* child) {
     RestackTransientDescendants(child->transient_parent_, &GetStackingTarget,
                                 &ReorderImpl);
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
-                    OnWindowHierarchyChanged(child, this, old_parent));
+  for (auto& observer : child->observers_)
+    observer.OnWindowHierarchyChanged(child, this, old_parent);
 }
 
 void ServerWindow::Remove(ServerWindow* child) {
@@ -125,8 +127,8 @@ void ServerWindow::Remove(ServerWindow* child) {
   DCHECK(child != this);
   DCHECK(child->parent() == this);
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
-                    OnWillChangeWindowHierarchy(child, nullptr, this));
+  for (auto& observer : child->observers_)
+    observer.OnWillChangeWindowHierarchy(child, nullptr, this);
   RemoveImpl(child);
 
   // Stack the child properly if it is a transient child of a sibling.
@@ -134,8 +136,8 @@ void ServerWindow::Remove(ServerWindow* child) {
     RestackTransientDescendants(child->transient_parent_, &GetStackingTarget,
                                 &ReorderImpl);
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, child->observers_,
-                    OnWindowHierarchyChanged(child, nullptr, this));
+  for (auto& observer : child->observers_)
+    observer.OnWindowHierarchyChanged(child, nullptr, this);
 }
 
 void ServerWindow::Reorder(ServerWindow* relative,
@@ -165,8 +167,8 @@ void ServerWindow::SetBounds(const gfx::Rect& bounds) {
 
   const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowBoundsChanged(this, old_bounds, bounds));
+  for (auto& observer : observers_)
+    observer.OnWindowBoundsChanged(this, old_bounds, bounds);
 }
 
 void ServerWindow::SetClientArea(
@@ -179,9 +181,8 @@ void ServerWindow::SetClientArea(
 
   additional_client_areas_ = additional_client_areas;
   client_area_ = insets;
-  FOR_EACH_OBSERVER(
-      ServerWindowObserver, observers_,
-      OnWindowClientAreaChanged(this, insets, additional_client_areas));
+  for (auto& observer : observers_)
+    observer.OnWindowClientAreaChanged(this, insets, additional_client_areas);
 }
 
 void ServerWindow::SetHitTestMask(const gfx::Rect& mask) {
@@ -231,8 +232,8 @@ bool ServerWindow::AddTransientWindow(ServerWindow* child) {
   if (child->parent() == parent())
     RestackTransientDescendants(this, &GetStackingTarget, &ReorderImpl);
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnTransientWindowAdded(this, child));
+  for (auto& observer : observers_)
+    observer.OnTransientWindowAdded(this, child);
   return true;
 }
 
@@ -250,8 +251,8 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
   if (parent() == child->parent())
     RestackTransientDescendants(this, &GetStackingTarget, &ReorderImpl);
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnTransientWindowRemoved(this, child));
+  for (auto& observer : observers_)
+    observer.OnTransientWindowRemoved(this, child);
 }
 
 void ServerWindow::SetModal() {
@@ -270,11 +271,11 @@ void ServerWindow::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWillChangeWindowVisibility(this));
+  for (auto& observer : observers_)
+    observer.OnWillChangeWindowVisibility(this);
   visible_ = value;
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowVisibilityChanged(this));
+  for (auto& observer : observers_)
+    observer.OnWindowVisibilityChanged(this);
 }
 
 void ServerWindow::SetOpacity(float value) {
@@ -283,26 +284,24 @@ void ServerWindow::SetOpacity(float value) {
   float old_opacity = opacity_;
   opacity_ = value;
   delegate_->OnScheduleWindowPaint(this);
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowOpacityChanged(this, old_opacity, opacity_));
+  for (auto& observer : observers_)
+    observer.OnWindowOpacityChanged(this, old_opacity, opacity_);
 }
 
 void ServerWindow::SetPredefinedCursor(ui::mojom::Cursor value) {
   if (value == cursor_id_)
     return;
   cursor_id_ = value;
-  FOR_EACH_OBSERVER(
-      ServerWindowObserver, observers_,
-      OnWindowPredefinedCursorChanged(this, value));
+  for (auto& observer : observers_)
+    observer.OnWindowPredefinedCursorChanged(this, value);
 }
 
 void ServerWindow::SetNonClientCursor(ui::mojom::Cursor value) {
   if (value == non_client_cursor_id_)
     return;
   non_client_cursor_id_ = value;
-  FOR_EACH_OBSERVER(
-      ServerWindowObserver, observers_,
-      OnWindowNonClientCursorChanged(this, value));
+  for (auto& observer : observers_)
+    observer.OnWindowNonClientCursorChanged(this, value);
 }
 
 void ServerWindow::SetTransform(const gfx::Transform& transform) {
@@ -332,8 +331,8 @@ void ServerWindow::SetProperty(const std::string& name,
     properties_.erase(it);
   }
 
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowSharedPropertyChanged(this, name, value));
+  for (auto& observer : observers_)
+    observer.OnWindowSharedPropertyChanged(this, name, value);
 }
 
 std::string ServerWindow::GetName() const {
@@ -349,8 +348,8 @@ void ServerWindow::SetTextInputState(const ui::TextInputState& state) {
     text_input_state_ = state;
     // keyboard even if the state is not changed. So we have to notify
     // |observers_|.
-    FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                      OnWindowTextInputStateChanged(this, state));
+    for (auto& observer : observers_)
+      observer.OnWindowTextInputStateChanged(this, state);
   }
 }
 
@@ -379,8 +378,8 @@ void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {
 }
 
 void ServerWindow::OnEmbeddedAppDisconnected() {
-  FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
-                    OnWindowEmbeddedAppDisconnected(this));
+  for (auto& observer : observers_)
+    observer.OnWindowEmbeddedAppDisconnected(this);
 }
 
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
@@ -449,8 +448,8 @@ void ServerWindow::ReorderImpl(ServerWindow* window,
     DCHECK(i != window->parent_->children_.end());
     window->parent_->children_.insert(i, window);
   }
-  FOR_EACH_OBSERVER(ServerWindowObserver, window->observers_,
-                    OnWindowReordered(window, relative, direction));
+  for (auto& observer : window->observers_)
+    observer.OnWindowReordered(window, relative, direction);
   window->OnStackingChanged();
 }
 

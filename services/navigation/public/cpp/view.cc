@@ -101,7 +101,8 @@ void View::OpenURL(mojom::OpenURLParamsPtr params) {
 
 void View::LoadingStateChanged(bool is_loading) {
   is_loading_ = is_loading;
-  FOR_EACH_OBSERVER(ViewObserver, observers_, LoadingStateChanged(this));
+  for (auto& observer : observers_)
+    observer.LoadingStateChanged(this);
 }
 
 void View::NavigationStateChanged(const GURL& url,
@@ -112,16 +113,18 @@ void View::NavigationStateChanged(const GURL& url,
   title_ = base::UTF8ToUTF16(title.get());
   can_go_back_ = can_go_back;
   can_go_forward_ = can_go_forward;
-  FOR_EACH_OBSERVER(ViewObserver, observers_, NavigationStateChanged(this));
+  for (auto& observer : observers_)
+    observer.NavigationStateChanged(this);
 }
 
 void View::LoadProgressChanged(double progress) {
-  FOR_EACH_OBSERVER(ViewObserver, observers_,
-                    LoadProgressChanged(this, progress));
+  for (auto& observer : observers_)
+    observer.LoadProgressChanged(this, progress);
 }
 
 void View::UpdateHoverURL(const GURL& url) {
-  FOR_EACH_OBSERVER(ViewObserver, observers_, HoverTargetURLChanged(this, url));
+  for (auto& observer : observers_)
+    observer.HoverTargetURLChanged(this, url);
 }
 
 void View::ViewCreated(mojom::ViewPtr view,

@@ -148,8 +148,8 @@ void FocusController::SetActiveWindow(ServerWindow* window,
   ServerWindow* old_active = active_window_;
   active_window_ = window;
   activation_reason_ = reason;
-  FOR_EACH_OBSERVER(FocusControllerObserver, observers_,
-                    OnActivationChanged(old_active, active_window_));
+  for (auto& observer : observers_)
+    observer.OnActivationChanged(old_active, active_window_);
   if (active_window_ && activation_reason_ == ActivationChangeReason::CYCLE)
     cycle_windows_->Add(active_window_);
 }
@@ -223,8 +223,8 @@ bool FocusController::SetFocusedWindowImpl(
   SetActiveWindow(GetActivatableAncestorOf(window),
                   ActivationChangeReason::FOCUS);
 
-  FOR_EACH_OBSERVER(FocusControllerObserver, observers_,
-                    OnFocusChanged(change_source, old_focused, window));
+  for (auto& observer : observers_)
+    observer.OnFocusChanged(change_source, old_focused, window);
 
   focused_window_ = window;
   // We can currently use only a single ServerWindowDrawnTracker since focused

@@ -92,8 +92,8 @@ WindowTreeClient::WindowTreeClient(
 WindowTreeClient::~WindowTreeClient() {
   in_destructor_ = true;
 
-  FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
-                    OnWillDestroyClient(this));
+  for (auto& observer : observers_)
+    observer.OnWillDestroyClient(this);
 
   std::vector<Window*> non_owned;
   WindowTracker tracker;
@@ -114,8 +114,8 @@ WindowTreeClient::~WindowTreeClient() {
   while (!tracker.windows().empty())
     delete tracker.windows().front();
 
-  FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
-                    OnDidDestroyClient(this));
+  for (auto& observer : observers_)
+    observer.OnDidDestroyClient(this);
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory(
@@ -371,11 +371,11 @@ void WindowTreeClient::LocalSetCapture(Window* window) {
   Window* lost_capture = capture_window_;
   capture_window_ = window;
   if (lost_capture) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(lost_capture).observers(),
-                      OnWindowLostCapture(lost_capture));
+    for (auto& observer : *WindowPrivate(lost_capture).observers())
+      observer.OnWindowLostCapture(lost_capture);
   }
-  FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
-                    OnWindowTreeCaptureChanged(window, lost_capture));
+  for (auto& observer : observers_)
+    observer.OnWindowTreeCaptureChanged(window, lost_capture);
 }
 
 void WindowTreeClient::LocalSetFocus(Window* focused) {
@@ -385,15 +385,15 @@ void WindowTreeClient::LocalSetFocus(Window* focused) {
   // |WindowTreeClient::GetFocusedWindow()| etc.
   focused_window_ = focused;
   if (blurred) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(blurred).observers(),
-                      OnWindowFocusChanged(focused, blurred));
+    for (auto& observer : *WindowPrivate(blurred).observers())
+      observer.OnWindowFocusChanged(focused, blurred);
   }
   if (focused) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(focused).observers(),
-                      OnWindowFocusChanged(focused, blurred));
+    for (auto& observer : *WindowPrivate(focused).observers())
+      observer.OnWindowFocusChanged(focused, blurred);
   }
-  FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
-                    OnWindowTreeFocusChanged(focused, blurred));
+  for (auto& observer : observers_)
+    observer.OnWindowTreeFocusChanged(focused, blurred);
 }
 
 void WindowTreeClient::AddWindow(Window* window) {
@@ -571,8 +571,8 @@ void WindowTreeClient::OnEmbedImpl(mojom::WindowTree* window_tree,
   delegate_->OnEmbed(root);
 
   if (focused_window_) {
-    FOR_EACH_OBSERVER(WindowTreeClientObserver, observers_,
-                      OnWindowTreeFocusChanged(focused_window_, nullptr));
+    for (auto& observer : observers_)
+      observer.OnWindowTreeFocusChanged(focused_window_, nullptr);
   }
 }
 
@@ -784,8 +784,8 @@ void WindowTreeClient::OnEmbed(ClientSpecificId client_id,
 void WindowTreeClient::OnEmbeddedAppDisconnected(Id window_id) {
   Window* window = GetWindowByServerId(window_id);
   if (window) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),
-                      OnWindowEmbeddedAppDisconnected(window));
+    for (auto& observer : *WindowPrivate(window).observers())
+      observer.OnWindowEmbeddedAppDisconnected(window);
   }
 }
 
@@ -1248,8 +1248,8 @@ void WindowTreeClient::RequestClose(uint32_t window_id) {
   if (!window || !IsRoot(window))
     return;
 
-  FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window).observers(),
-                    OnRequestClose(window));
+  for (auto& observer : *WindowPrivate(window).observers())
+    observer.OnRequestClose(window);
 }
 
 void WindowTreeClient::OnConnect(ClientSpecificId client_id) {

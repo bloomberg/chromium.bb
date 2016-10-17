@@ -37,11 +37,11 @@ void NotifyWindowTreeChangeAtReceiver(
   WindowObserver::TreeChangeParams local_params = params;
   local_params.receiver = receiver;
   if (change_applied) {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(receiver).observers(),
-                      OnTreeChanged(local_params));
+    for (auto& observer : *WindowPrivate(receiver).observers())
+      observer.OnTreeChanged(local_params);
   } else {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(receiver).observers(),
-                      OnTreeChanging(local_params));
+    for (auto& observer : *WindowPrivate(receiver).observers())
+      observer.OnTreeChanging(local_params);
   }
 }
 
@@ -107,14 +107,13 @@ class OrderChangedNotifier {
   ~OrderChangedNotifier() {}
 
   void NotifyWindowReordering() {
-    FOR_EACH_OBSERVER(
-        WindowObserver, *WindowPrivate(window_).observers(),
-        OnWindowReordering(window_, relative_window_, direction_));
+    for (auto& observer : *WindowPrivate(window_).observers())
+      observer.OnWindowReordering(window_, relative_window_, direction_);
   }
 
   void NotifyWindowReordered() {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window_).observers(),
-                      OnWindowReordered(window_, relative_window_, direction_));
+    for (auto& observer : *WindowPrivate(window_).observers())
+      observer.OnWindowReordered(window_, relative_window_, direction_);
   }
 
  private:
@@ -131,13 +130,12 @@ class ScopedSetBoundsNotifier {
                           const gfx::Rect& old_bounds,
                           const gfx::Rect& new_bounds)
       : window_(window), old_bounds_(old_bounds), new_bounds_(new_bounds) {
-    FOR_EACH_OBSERVER(
-        WindowObserver, *WindowPrivate(window_).observers(),
-        OnWindowBoundsChanging(window_, old_bounds_, new_bounds_));
+    for (auto& observer : *WindowPrivate(window_).observers())
+      observer.OnWindowBoundsChanging(window_, old_bounds_, new_bounds_);
   }
   ~ScopedSetBoundsNotifier() {
-    FOR_EACH_OBSERVER(WindowObserver, *WindowPrivate(window_).observers(),
-                      OnWindowBoundsChanged(window_, old_bounds_, new_bounds_));
+    for (auto& observer : *WindowPrivate(window_).observers())
+      observer.OnWindowBoundsChanged(window_, old_bounds_, new_bounds_);
   }
 
  private:
@@ -518,7 +516,8 @@ std::string Window::GetName() const {
 Window::Window() : Window(nullptr, static_cast<Id>(-1)) {}
 
 Window::~Window() {
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
+  for (auto& observer : observers_)
+    observer.OnWindowDestroying(this);
   if (client_)
     client_->OnWindowDestroying(this);
 
@@ -559,7 +558,8 @@ Window::~Window() {
   }
 
   // Notify observers before clearing properties (order matches aura::Window).
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnWindowDestroyed(this);
 
   // Clear properties.
   for (auto& pair : prop_map_) {
@@ -627,8 +627,8 @@ int64_t Window::SetLocalPropertyInternal(const void* key,
     prop_value.deallocator = deallocator;
     prop_map_[key] = prop_value;
   }
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowLocalPropertyChanged(this, key, old));
+  for (auto& observer : observers_)
+    observer.OnWindowLocalPropertyChanged(this, key, old);
   return old;
 }
 
@@ -671,15 +671,15 @@ void Window::LocalAddTransientWindow(Window* transient_window) {
     RestackTransientDescendants(this, &GetStackingTarget,
                                 &ReorderWithoutNotification);
 
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnTransientChildAdded(this, transient_window));
+  for (auto& observer : observers_)
+    observer.OnTransientChildAdded(this, transient_window);
 }
 
 void Window::LocalRemoveTransientWindow(Window* transient_window) {
   DCHECK_EQ(this, transient_window->transient_parent());
   RemoveTransientWindowImpl(transient_window);
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnTransientChildRemoved(this, transient_window));
+  for (auto& observer : observers_)
+    observer.OnTransientChildRemoved(this, transient_window);
 }
 
 void Window::LocalSetModal() {
@@ -708,9 +708,10 @@ void Window::LocalSetClientArea(
   const gfx::Insets old_client_area = client_area_;
   client_area_ = new_client_area;
   additional_client_areas_ = additional_client_areas;
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowClientAreaChanged(this, old_client_area,
-                                              old_additional_client_areas));
+  for (auto& observer : observers_) {
+    observer.OnWindowClientAreaChanged(this, old_client_area,
+                                       old_additional_client_areas);
+  }
 }
 
 void Window::LocalSetDisplay(int64_t display_id) {
@@ -729,21 +730,23 @@ void Window::LocalSetParentDrawn(bool value) {
     parent_drawn_ = value;
     return;
   }
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDrawnChanging(this));
+  for (auto& observer : observers_)
+    observer.OnWindowDrawnChanging(this);
   parent_drawn_ = value;
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDrawnChanged(this));
+  for (auto& observer : observers_)
+    observer.OnWindowDrawnChanged(this);
 }
 
 void Window::LocalSetVisible(bool visible) {
   if (visible_ == visible)
     return;
 
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowVisibilityChanging(this, visible));
+  for (auto& observer : observers_)
+    observer.OnWindowVisibilityChanging(this, visible);
   visible_ = visible;
   if (parent_) {
-    FOR_EACH_OBSERVER(WindowObserver, parent_->observers_,
-                      OnChildWindowVisibilityChanged(this, visible));
+    for (auto& observer : parent_->observers_)
+      observer.OnChildWindowVisibilityChanged(this, visible);
   }
 
   NotifyWindowVisibilityChanged(this, visible);
@@ -755,8 +758,8 @@ void Window::LocalSetOpacity(float opacity) {
 
   float old_opacity = opacity_;
   opacity_ = opacity;
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowOpacityChanged(this, old_opacity, opacity_));
+  for (auto& observer : observers_)
+    observer.OnWindowOpacityChanged(this, old_opacity, opacity_);
 }
 
 void Window::LocalSetPredefinedCursor(mojom::Cursor cursor_id) {
@@ -764,8 +767,8 @@ void Window::LocalSetPredefinedCursor(mojom::Cursor cursor_id) {
     return;
 
   cursor_id_ = cursor_id;
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowPredefinedCursorChanged(this, cursor_id));
+  for (auto& observer : observers_)
+    observer.OnWindowPredefinedCursorChanged(this, cursor_id);
 }
 
 void Window::LocalSetSharedProperty(const std::string& name,
@@ -791,9 +794,8 @@ void Window::LocalSetSharedProperty(const std::string& name,
     properties_.erase(it);
   }
 
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_,
-      OnWindowSharedPropertyChanged(this, name, old_value_ptr, value));
+  for (auto& observer : observers_)
+    observer.OnWindowSharedPropertyChanged(this, name, old_value_ptr, value);
 }
 
 void Window::LocalSetSurfaceId(std::unique_ptr<SurfaceInfo> surface_info) {
@@ -844,8 +846,8 @@ bool Window::NotifyWindowVisibilityChangedAtReceiver(Window* target,
   // exit without further access to any members.
   WindowTracker tracker;
   tracker.Add(this);
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowVisibilityChanged(target, visible));
+  for (auto& observer : observers_)
+    observer.OnWindowVisibilityChanged(target, visible);
   return tracker.Contains(this);
 }
 

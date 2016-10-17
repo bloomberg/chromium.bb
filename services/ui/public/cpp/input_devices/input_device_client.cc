@@ -70,29 +70,29 @@ mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
 void InputDeviceClient::OnKeyboardDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   keyboard_devices_ = devices;
-  FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
-                    OnKeyboardDeviceConfigurationChanged());
+  for (auto& observer : observers_)
+    observer.OnKeyboardDeviceConfigurationChanged();
 }
 
 void InputDeviceClient::OnTouchscreenDeviceConfigurationChanged(
     const std::vector<ui::TouchscreenDevice>& devices) {
   touchscreen_devices_ = devices;
-  FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
-                    OnTouchscreenDeviceConfigurationChanged());
+  for (auto& observer : observers_)
+    observer.OnTouchscreenDeviceConfigurationChanged();
 }
 
 void InputDeviceClient::OnMouseDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   mouse_devices_ = devices;
-  FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
-                    OnMouseDeviceConfigurationChanged());
+  for (auto& observer : observers_)
+    observer.OnMouseDeviceConfigurationChanged();
 }
 
 void InputDeviceClient::OnTouchpadDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   touchpad_devices_ = devices;
-  FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
-                    OnTouchpadDeviceConfigurationChanged());
+  for (auto& observer : observers_)
+    observer.OnTouchpadDeviceConfigurationChanged();
 }
 
 void InputDeviceClient::OnDeviceListsComplete(
@@ -112,14 +112,14 @@ void InputDeviceClient::OnDeviceListsComplete(
 
   if (!device_lists_complete_) {
     device_lists_complete_ = true;
-    FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
-                      OnDeviceListsComplete());
+    for (auto& observer : observers_)
+      observer.OnDeviceListsComplete();
   }
 }
 
 void InputDeviceClient::OnStylusStateChanged(StylusState state) {
-  FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
-                    OnStylusStateChanged(state));
+  for (auto& observer : observers_)
+    observer.OnStylusStateChanged(state);
 }
 
 }  // namespace ui

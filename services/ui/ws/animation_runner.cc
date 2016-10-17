@@ -79,8 +79,8 @@ AnimationRunner::AnimationId AnimationRunner::Schedule(
     id_to_windows_map_[animation_id].insert(window);
   }
 
-  FOR_EACH_OBSERVER(AnimationRunnerObserver, observers_,
-                    OnAnimationScheduled(animation_id));
+  for (auto& observer : observers_)
+    observer.OnAnimationScheduled(animation_id);
   return animation_id;
 }
 
@@ -122,7 +122,8 @@ void AnimationRunner::Tick(base::TimeTicks time) {
     }
   }
   for (const AnimationId& id : animations_completed) {
-    FOR_EACH_OBSERVER(AnimationRunnerObserver, observers_, OnAnimationDone(id));
+    for (auto& observer : observers_)
+      observer.OnAnimationDone(id);
   }
 }
 
@@ -135,11 +136,11 @@ void AnimationRunner::CancelAnimationForWindowImpl(ServerWindow* window,
   if (RemoveWindowFromMaps(window)) {
     // This was the last window in the group.
     if (source == CANCEL_SOURCE_CANCEL) {
-      FOR_EACH_OBSERVER(AnimationRunnerObserver, observers_,
-                        OnAnimationCanceled(animation_id));
+      for (auto& observer : observers_)
+        observer.OnAnimationCanceled(animation_id);
     } else {
-      FOR_EACH_OBSERVER(AnimationRunnerObserver, observers_,
-                        OnAnimationInterrupted(animation_id));
+      for (auto& observer : observers_)
+        observer.OnAnimationInterrupted(animation_id);
     }
   }
 }
