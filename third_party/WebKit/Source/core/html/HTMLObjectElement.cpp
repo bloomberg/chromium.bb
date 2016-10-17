@@ -33,14 +33,12 @@
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/fetch/ImageResource.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/api/LayoutEmbeddedItem.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "core/plugins/PluginView.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
@@ -314,15 +312,6 @@ void HTMLObjectElement::updateWidgetInternal() {
   // layoutObject now that we don't have beforeload events?
   if (!layoutObject())
     return;
-
-  // Overwrites the URL and MIME type of a Flash embed to use an HTML5 embed.
-  KURL overridenUrl =
-      document().frame()->loader().client()->overrideFlashEmbedWithHTML(
-          document().completeURL(m_url));
-  if (!overridenUrl.isEmpty()) {
-    url = m_url = overridenUrl.getString();
-    serviceType = m_serviceType = "text/html";
-  }
 
   if (!hasValidClassId() ||
       !requestObject(url, serviceType, paramNames, paramValues)) {
