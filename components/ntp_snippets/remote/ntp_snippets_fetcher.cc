@@ -542,6 +542,16 @@ void NTPSnippetsFetcher::SetUpCommonFetchingParameters(
   for (const LanguageModel::LanguageInfo& info : top_languages) {
     if (info.language_code != params->ui_language.language_code) {
       params->other_top_language = info;
+
+      // Report to UMA how important the UI language is.
+      DCHECK_GT(params->other_top_language.frequency, 0)
+          << "GetTopLanguages() should not return languages with 0 frequency";
+      float ratio_ui_in_both_languages = params->ui_language.frequency /
+                                         (params->ui_language.frequency +
+                                          params->other_top_language.frequency);
+      UMA_HISTOGRAM_PERCENTAGE(
+          "NewTabPage.Languages.UILanguageRatioInTwoTopLanguages",
+          ratio_ui_in_both_languages * 100);
       break;
     }
   }
