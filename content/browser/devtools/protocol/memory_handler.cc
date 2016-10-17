@@ -7,6 +7,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/memory/memory_pressure_controller_impl.h"
+#include "content/public/common/content_features.h"
 
 namespace content {
 namespace devtools {
@@ -18,6 +19,11 @@ MemoryHandler::~MemoryHandler() {}
 
 MemoryHandler::Response MemoryHandler::SetPressureNotificationsSuppressed(
     bool suppressed) {
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    return Response::InvalidParams(
+        "Cannot enable/disable notifications when memory coordinator is "
+        "enabled");
+  }
   content::MemoryPressureControllerImpl::GetInstance()
       ->SetPressureNotificationsSuppressedInAllProcesses(suppressed);
   return Response::OK();

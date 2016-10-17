@@ -190,6 +190,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   void CreateAudioManager();
   bool UsingInProcessGpu() const;
 
+  void InitializeMemoryManagementComponent();
+
   // Quick reference for initialization order:
   // Constructor
   // Init()

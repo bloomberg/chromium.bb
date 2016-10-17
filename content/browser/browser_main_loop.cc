@@ -75,6 +75,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
@@ -746,19 +747,7 @@ int BrowserMainLoop::PreCreateThreads() {
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
-  // TODO(chrisha): Abstract away this construction mess to a helper function,
-  // once MemoryPressureMonitor is made a concrete class.
-#if defined(OS_CHROMEOS)
-  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
-    memory_pressure_monitor_.reset(new base::chromeos::MemoryPressureMonitor(
-        chromeos::switches::GetMemoryPressureThresholds()));
-  }
-#elif defined(OS_MACOSX)
-  memory_pressure_monitor_.reset(new base::mac::MemoryPressureMonitor());
-#elif defined(OS_WIN)
-  memory_pressure_monitor_.reset(CreateWinMemoryPressureMonitor(
-      parsed_command_line_));
-#endif
+  InitializeMemoryManagementComponent();
 
 #if defined(ENABLE_PLUGINS)
   // Prior to any processing happening on the IO thread, we create the
@@ -1394,6 +1383,28 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 bool BrowserMainLoop::UsingInProcessGpu() const {
   return parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
          parsed_command_line_.HasSwitch(switches::kInProcessGPU);
+}
+
+void BrowserMainLoop::InitializeMemoryManagementComponent() {
+  if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
+    // Disable MemoryPressureListener when memory coordinator is enabled.
+    base::MemoryPressureListener::SetNotificationsSuppressed(true);
+    return;
+  }
+
+  // TODO(chrisha): Abstract away this construction mess to a helper function,
+  // once MemoryPressureMonitor is made a concrete class.
+#if defined(OS_CHROMEOS)
+  if (chromeos::switches::MemoryPressureHandlingEnabled()) {
+    memory_pressure_monitor_.reset(new base::chromeos::MemoryPressureMonitor(
+        chromeos::switches::GetMemoryPressureThresholds()));
+  }
+#elif defined(OS_MACOSX)
+  memory_pressure_monitor_.reset(new base::mac::MemoryPressureMonitor());
+#elif defined(OS_WIN)
+  memory_pressure_monitor_.reset(CreateWinMemoryPressureMonitor(
+      parsed_command_line_));
+#endif
 }
 
 bool BrowserMainLoop::InitializeToolkit() {
