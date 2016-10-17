@@ -73,6 +73,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     /** The dropdown key that triggers the address editor to add a new billing address. */
     private static final String BILLING_ADDRESS_ADD_NEW = "add";
 
+    /** The shared preference for the 'save card to device' checkbox status*/
+    private static final String CHECK_SAVE_CARD_TO_DEVICE = "check_save_card_to_device";
+
     /** The web contents where the web payments API is invoked. */
     private final WebContents mWebContents;
 
@@ -546,9 +549,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private void addSaveCardCheckbox(EditorModel editor) {
         if (mSaveCardCheckbox == null) {
             mSaveCardCheckbox = EditorFieldModel.createCheckbox(
-                    mContext.getString(R.string.payments_save_card_to_device_checkbox));
+                    mContext.getString(R.string.payments_save_card_to_device_checkbox),
+                    CHECK_SAVE_CARD_TO_DEVICE);
         }
-        mSaveCardCheckbox.setIsChecked(true);
         editor.addField(mSaveCardCheckbox);
     }
 

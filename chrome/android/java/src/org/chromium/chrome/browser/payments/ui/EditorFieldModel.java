@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 
 import java.util.ArrayList;
@@ -109,7 +110,6 @@ public class EditorFieldModel {
     private int mLabelIconResourceId;
     private int mActionIconResourceId;
     private int mActionDescriptionForAccessibility;
-    private boolean mIsChecked = false;
     private boolean mIsFullLine = true;
 
     /**
@@ -139,14 +139,18 @@ public class EditorFieldModel {
     }
 
     /**
-     * Constructs a checkbox to show in the editor. It's unchecked by default.
+     * Constructs a checkbox to show in the editor. It's checked by default.
      *
-     * @param checkboxLabel The label for the checkbox.
+     * @param checkboxLabel      The label for the checkbox.
+     * @param checkboxPreference The shared preference for the checkbox status.
      */
-    public static EditorFieldModel createCheckbox(CharSequence checkboxLabel) {
+    public static EditorFieldModel createCheckbox(
+            CharSequence checkboxLabel, CharSequence checkboxPreference) {
         assert checkboxLabel != null;
+        assert checkboxPreference != null;
         EditorFieldModel result = new EditorFieldModel(INPUT_TYPE_HINT_CHECKBOX);
         result.mLabel = checkboxLabel;
+        result.mValue = checkboxPreference;
         return result;
     }
 
@@ -288,13 +292,16 @@ public class EditorFieldModel {
     /** @return Whether the checkbox is checked. */
     public boolean isChecked() {
         assert mInputTypeHint == INPUT_TYPE_HINT_CHECKBOX;
-        return mIsChecked;
+        return ContextUtils.getAppSharedPreferences().getBoolean(mValue.toString(), true);
     }
 
     /** Sets the checkbox state. */
     public void setIsChecked(boolean isChecked) {
         assert mInputTypeHint == INPUT_TYPE_HINT_CHECKBOX;
-        mIsChecked = isChecked;
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(mValue.toString(), isChecked)
+                .apply();
     }
 
     /** @return The list of icons resource identifiers to display. */
