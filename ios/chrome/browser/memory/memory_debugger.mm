@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/ios/ios_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/memory/memory_metrics.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -60,7 +59,6 @@ const CGFloat kPadding = 10;
     self.opaque = NO;
 
     [self addSubviews];
-    [self adjustForOrientation:nil];
     [self sizeToFit];
     [self registerForNotifications];
   }
@@ -169,17 +167,6 @@ const CGFloat kPadding = 10;
 }
 
 - (void)registerForNotifications {
-  // On iOS 7, the screen coordinate system is not dependent on orientation so
-  // the debugger has to handle its own rotation.
-  if (!base::ios::IsRunningOnIOS8OrLater()) {
-    // Register to receive orientation notifications.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(adjustForOrientation:)
-               name:UIDeviceOrientationDidChangeNotification
-             object:nil];
-  }
-
   // Register to receive memory warning.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
@@ -379,45 +366,6 @@ const CGFloat kPadding = 10;
     [self setCenter:[superview center]];
 }
 
-- (void)adjustForOrientation:(NSNotification*)notification {
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    return;
-  }
-  UIInterfaceOrientation orientation =
-      [[UIApplication sharedApplication] statusBarOrientation];
-  if (orientation == _currentOrientation) {
-    return;
-  }
-  _currentOrientation = orientation;
-  CGFloat angle;
-  switch (orientation) {
-    case UIInterfaceOrientationPortrait:
-      angle = 0;
-      break;
-    case UIInterfaceOrientationPortraitUpsideDown:
-      angle = M_PI;
-      break;
-    case UIInterfaceOrientationLandscapeLeft:
-      angle = -M_PI_2;
-      break;
-    case UIInterfaceOrientationLandscapeRight:
-      angle = M_PI_2;
-      break;
-    case UIInterfaceOrientationUnknown:
-    default:
-      angle = 0;
-  }
-
-  // Since the debugger view is in screen coordinates and handles its own
-  // rotation via the |transform| property, the view's position after rotation
-  // can be unexpected and partially off-screen. Centering the view before
-  // rotating it ensures that the view remains within the bounds of the screen.
-  if (self.superview) {
-    self.center = self.superview.center;
-  }
-  self.transform = CGAffineTransformMakeRotation(angle);
-}
-
 #pragma mark Keyboard notification callbacks
 
 // Ensures the debugger is visible by shifting it up as the keyboard animates
@@ -428,11 +376,8 @@ const CGFloat kPadding = 10;
       [userInfo valueForKey:UIKeyboardFrameEndUserInfoKey];
   CGFloat keyboardHeight = CurrentKeyboardHeight(keyboardFrameValue);
 
-  // Get the coord of the bottom of the debugger's frame. This is orientation
-  // dependent on iOS 7 because the debugger is in screen coords.
+  // Get the coord of the bottom of the debugger's frame.
   CGFloat bottomOfFrame = CGRectGetMaxY(self.frame);
-  if (!base::ios::IsRunningOnIOS8OrLater() && IsLandscape())
-    bottomOfFrame = CGRectGetMaxX(self.frame);
 
   // Shift the debugger up by the "height" of the keyboard, but since the
   // keyboard rect is in screen coords, use the orientation to find the height.
