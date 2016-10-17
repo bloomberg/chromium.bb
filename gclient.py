@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Meta checkout manager supporting both Subversion and GIT."""
+"""Meta checkout dependency manager for Git."""
 # Files
 #   .gclient      : Current client configuration, written by 'config' command.
 #                   Format is a Python script defining 'solutions', a list whose
@@ -173,29 +173,6 @@ class GClientKeywords(object):
       return 'From(%s, %s)' % (repr(self.module_name),
                                repr(self.sub_target_name))
 
-  class FileImpl(object):
-    """Used to implement the File('') syntax which lets you sync a single file
-    from a SVN repo."""
-
-    def __init__(self, file_location):
-      self.file_location = file_location
-
-    def __str__(self):
-      return 'File("%s")' % self.file_location
-
-    def GetPath(self):
-      return os.path.split(self.file_location)[0]
-
-    def GetFilename(self):
-      rev_tokens = self.file_location.split('@')
-      return os.path.split(rev_tokens[0])[1]
-
-    def GetRevision(self):
-      rev_tokens = self.file_location.split('@')
-      if len(rev_tokens) > 1:
-        return rev_tokens[1]
-      return None
-
   class VarImpl(object):
     def __init__(self, custom_vars, local_scope):
       self._custom_vars = custom_vars
@@ -244,24 +221,15 @@ class DependencySettings(GClientKeywords):
     self._custom_deps = custom_deps or {}
     self._custom_hooks = custom_hooks or []
 
-    # TODO(iannucci): Remove this when all masters are correctly substituting
-    # the new blink url.
-    if (self._custom_vars.get('webkit_trunk', '') ==
-        'svn://svn-mirror.golo.chromium.org/webkit-readonly/trunk'):
-      new_url = 'svn://svn-mirror.golo.chromium.org/blink/trunk'
-      print('Overwriting Var("webkit_trunk") with %s' % new_url)
-      self._custom_vars['webkit_trunk'] = new_url
-
     # Post process the url to remove trailing slashes.
     if isinstance(self._url, basestring):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
       self._url = self._url.replace('/@', '@')
-    elif not isinstance(self._url,
-        (self.FromImpl, self.FileImpl, None.__class__)):
+    elif not isinstance(self._url, (self.FromImpl, None.__class__)):
       raise gclient_utils.Error(
           ('dependency url must be either a string, None, '
-           'File() or From() instead of %s') % self._url.__class__.__name__)
+           'or From() instead of %s') % self._url.__class__.__name__)
     # Make any deps_file path platform-appropriate.
     for sep in ['/', '\\']:
       self._deps_file = self._deps_file.replace(sep, os.sep)
@@ -534,8 +502,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               'relative DEPS entry \'%s\' must begin with a slash' % url)
         # Create a scm just to query the full url.
         parent_url = self.parent.parsed_url
-        if isinstance(parent_url, self.FileImpl):
-          parent_url = parent_url.file_location
         scm = gclient_scm.CreateSCM(
             parent_url, self.root.root_dir, None, self.outbuf)
         parsed_url = scm.FullUrlForRelativeUrl(url)
@@ -545,12 +511,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           'Dependency(%s).LateOverride(%s) -> %s' %
           (self.name, url, parsed_url))
       return parsed_url
-
-    if isinstance(url, self.FileImpl):
-      logging.info(
-          'Dependency(%s).LateOverride(%s) -> %s (File)' %
-          (self.name, url, url))
-      return url
 
     if url is None:
       logging.info(
@@ -642,7 +602,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         }
       else:
         global_scope = {
-          'File': self.FileImpl,
           'From': self.FromImpl,
           'Var': var.Lookup,
           'deps_os': {},
@@ -773,41 +732,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     self._mark_as_parsed(hooks)
 
-  def maybeGetParentRevision(self, command, options, parsed_url, parent):
-    """Uses revision/timestamp of parent if no explicit revision was specified.
-
-    If we are performing an update and --transitive is set, use
-    - the parent's revision if 'self.url' is in the same repository
-    - the parent's timestamp otherwise
-    to update 'self.url'. The used revision/timestamp will be set in
-    'options.revision'.
-    If we have an explicit revision do nothing.
-    """
-    if command == 'update' and options.transitive and not options.revision:
-      _, revision = gclient_utils.SplitUrlRevision(parsed_url)
-      if not revision:
-        options.revision = getattr(parent, '_used_revision', None)
-        if (options.revision and
-            not gclient_utils.IsDateRevision(options.revision)):
-          assert self.parent and self.parent.used_scm
-          # If this dependency is in the same repository as parent it's url will
-          # start with a slash. If so we take the parent revision instead of
-          # it's timestamp.
-          # (The timestamps of commits in google code are broken -- which can
-          # result in dependencies to be checked out at the wrong revision)
-          if self.url.startswith('/'):
-            if options.verbose:
-              print('Using parent\'s revision %s since we are in the same '
-                    'repository.' % options.revision)
-          else:
-            parent_revision_date = self.parent.used_scm.GetRevisionDate(
-                options.revision)
-            options.revision = gclient_utils.MakeDateRevision(
-                parent_revision_date)
-            if options.verbose:
-              print('Using parent\'s revision date %s since we are in a '
-                    'different repository.' % options.revision)
-
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
 
@@ -842,31 +766,17 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     file_list = [] if not options.nohooks else None
     revision_override = revision_overrides.pop(self.name, None)
     if run_scm and parsed_url:
-      if isinstance(parsed_url, self.FileImpl):
-        # Special support for single-file checkout.
-        if not command in (None, 'cleanup', 'diff', 'pack', 'status'):
-          # Sadly, pylint doesn't realize that parsed_url is of FileImpl.
-          # pylint: disable=E1103
-          options.revision = parsed_url.GetRevision()
-          self._used_scm = gclient_scm.SVNWrapper(
-              parsed_url.GetPath(), self.root.root_dir, self.name,
-              out_cb=work_queue.out_cb)
-          self._used_scm.RunCommand('updatesingle',
-              options, args + [parsed_url.GetFilename()], file_list)
-      else:
-        # Create a shallow copy to mutate revision.
-        options = copy.copy(options)
-        options.revision = revision_override
-        self.maybeGetParentRevision(
-            command, options, parsed_url, self.parent)
-        self._used_revision = options.revision
-        self._used_scm = gclient_scm.CreateSCM(
-            parsed_url, self.root.root_dir, self.name, self.outbuf,
-            out_cb=work_queue.out_cb)
-        self._got_revision = self._used_scm.RunCommand(command, options, args,
-                                                       file_list)
-        if file_list:
-          file_list = [os.path.join(self.name, f.strip()) for f in file_list]
+      # Create a shallow copy to mutate revision.
+      options = copy.copy(options)
+      options.revision = revision_override
+      self._used_revision = options.revision
+      self._used_scm = gclient_scm.CreateSCM(
+          parsed_url, self.root.root_dir, self.name, self.outbuf,
+          out_cb=work_queue.out_cb)
+      self._got_revision = self._used_scm.RunCommand(command, options, args,
+                                                     file_list)
+      if file_list:
+        file_list = [os.path.join(self.name, f.strip()) for f in file_list]
 
       # TODO(phajdan.jr): We should know exactly when the paths are absolute.
       # Convert all absolute paths to relative.
@@ -893,61 +803,60 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         work_queue.enqueue(s)
 
     if command == 'recurse':
-      if not isinstance(parsed_url, self.FileImpl):
-        # Skip file only checkout.
-        scm = gclient_scm.GetScmName(parsed_url)
-        if not options.scm or scm in options.scm:
-          cwd = os.path.normpath(os.path.join(self.root.root_dir, self.name))
-          # Pass in the SCM type as an env variable.  Make sure we don't put
-          # unicode strings in the environment.
-          env = os.environ.copy()
-          if scm:
-            env['GCLIENT_SCM'] = str(scm)
-          if parsed_url:
-            env['GCLIENT_URL'] = str(parsed_url)
-          env['GCLIENT_DEP_PATH'] = str(self.name)
-          if options.prepend_dir and scm == 'git':
-            print_stdout = False
-            def filter_fn(line):
-              """Git-specific path marshaling. It is optimized for git-grep."""
+      # Skip file only checkout.
+      scm = gclient_scm.GetScmName(parsed_url)
+      if not options.scm or scm in options.scm:
+        cwd = os.path.normpath(os.path.join(self.root.root_dir, self.name))
+        # Pass in the SCM type as an env variable.  Make sure we don't put
+        # unicode strings in the environment.
+        env = os.environ.copy()
+        if scm:
+          env['GCLIENT_SCM'] = str(scm)
+        if parsed_url:
+          env['GCLIENT_URL'] = str(parsed_url)
+        env['GCLIENT_DEP_PATH'] = str(self.name)
+        if options.prepend_dir and scm == 'git':
+          print_stdout = False
+          def filter_fn(line):
+            """Git-specific path marshaling. It is optimized for git-grep."""
 
-              def mod_path(git_pathspec):
-                match = re.match('^(\\S+?:)?([^\0]+)$', git_pathspec)
-                modified_path = os.path.join(self.name, match.group(2))
-                branch = match.group(1) or ''
-                return '%s%s' % (branch, modified_path)
+            def mod_path(git_pathspec):
+              match = re.match('^(\\S+?:)?([^\0]+)$', git_pathspec)
+              modified_path = os.path.join(self.name, match.group(2))
+              branch = match.group(1) or ''
+              return '%s%s' % (branch, modified_path)
 
-              match = re.match('^Binary file ([^\0]+) matches$', line)
-              if match:
-                print('Binary file %s matches\n' % mod_path(match.group(1)))
-                return
+            match = re.match('^Binary file ([^\0]+) matches$', line)
+            if match:
+              print('Binary file %s matches\n' % mod_path(match.group(1)))
+              return
 
-              items = line.split('\0')
-              if len(items) == 2 and items[1]:
-                print('%s : %s' % (mod_path(items[0]), items[1]))
-              elif len(items) >= 2:
-                # Multiple null bytes or a single trailing null byte indicate
-                # git is likely displaying filenames only (such as with -l)
-                print('\n'.join(mod_path(path) for path in items if path))
-              else:
-                print(line)
-          else:
-            print_stdout = True
-            filter_fn = None
+            items = line.split('\0')
+            if len(items) == 2 and items[1]:
+              print('%s : %s' % (mod_path(items[0]), items[1]))
+            elif len(items) >= 2:
+              # Multiple null bytes or a single trailing null byte indicate
+              # git is likely displaying filenames only (such as with -l)
+              print('\n'.join(mod_path(path) for path in items if path))
+            else:
+              print(line)
+        else:
+          print_stdout = True
+          filter_fn = None
 
-          if parsed_url is None:
-            print('Skipped omitted dependency %s' % cwd, file=sys.stderr)
-          elif os.path.isdir(cwd):
-            try:
-              gclient_utils.CheckCallAndFilter(
-                  args, cwd=cwd, env=env, print_stdout=print_stdout,
-                  filter_fn=filter_fn,
-                  )
-            except subprocess2.CalledProcessError:
-              if not options.ignore:
-                raise
-          else:
-            print('Skipped missing %s' % cwd, file=sys.stderr)
+        if parsed_url is None:
+          print('Skipped omitted dependency %s' % cwd, file=sys.stderr)
+        elif os.path.isdir(cwd):
+          try:
+            gclient_utils.CheckCallAndFilter(
+                args, cwd=cwd, env=env, print_stdout=print_stdout,
+                filter_fn=filter_fn,
+                )
+          except subprocess2.CalledProcessError:
+            if not options.ignore:
+              raise
+        else:
+          print('Skipped missing %s' % cwd, file=sys.stderr)
 
 
   @gclient_utils.lockedmethod
@@ -985,11 +894,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # If "--force" was specified, run all hooks regardless of what files have
     # changed.
     if self.deps_hooks:
-      # TODO(maruel): If the user is using git or git-svn, then we don't know
+      # TODO(maruel): If the user is using git, then we don't know
       # what files have changed so we always run all hooks. It'd be nice to fix
       # that.
       if (options.force or
-          isinstance(self.parsed_url, self.FileImpl) or
           gclient_scm.GetScmName(self.parsed_url) in ('git', None) or
           os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
         for hook_dict in self.deps_hooks:
@@ -1273,9 +1181,7 @@ The local checkout in %(checkout_path)s reports:
 %(actual_url)s (%(actual_scm)s)
 
 You should ensure that the URL listed in .gclient is correct and either change
-it or fix the checkout. If you're managing your own git checkout in
-%(checkout_path)s but the URL in .gclient is for an svn repository, you probably
-want to set 'managed': False in .gclient.
+it or fix the checkout.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': gclient_scm.GetScmName(dep.url),
@@ -1338,82 +1244,6 @@ want to set 'managed': False in .gclient.
                                          self._options.config_filename),
                             self.config_content)
 
-  def MigrateConfigToGit(self, path, options):
-    svn_url_re = re.compile('^(https?://src\.chromium\.org/svn|'
-                            'svn://svn\.chromium\.org/chrome)/'
-                            '(trunk|branches/[^/]+)/src')
-    old_git_re = re.compile('^(https?://git\.chromium\.org|'
-                            'ssh://([a-zA-Z_][a-zA-Z0-9_-]*@)?'
-                            'gerrit\.chromium\.org(:2941[89])?)/'
-                            'chromium/src\.git')
-    # Scan existing .gclient file for obsolete settings.  It would be simpler
-    # to traverse self.dependencies, but working with the AST allows the code to
-    # dump an updated .gclient file that preserves the ordering of the original.
-    a = ast.parse(self.config_content, options.config_filename, 'exec')
-    modified = False
-    solutions = [elem for elem in a.body if 'solutions' in
-                 [target.id for target in elem.targets]]
-    if not solutions:
-      return self
-    solutions = solutions[-1]
-    for solution in solutions.value.elts:
-      # Check for obsolete URL's
-      url_idx = ast_dict_index(solution, 'url')
-      if url_idx == -1:
-        continue
-      url_val = solution.values[url_idx]
-      if type(url_val) is not ast.Str:
-        continue
-      if (svn_url_re.match(url_val.s.strip())):
-        raise gclient_utils.Error(
-"""
-The chromium code repository has migrated completely to git.
-Your SVN-based checkout is now obsolete; you need to create a brand-new
-git checkout by following these instructions:
-
-http://www.chromium.org/developers/how-tos/get-the-code
-""")
-      if (old_git_re.match(url_val.s.strip())):
-        url_val.s = CHROMIUM_SRC_URL
-        modified = True
-
-      # Ensure deps_file is set to .DEPS.git.  We enforce this here to smooth
-      # over switching between pre-git-migration and post-git-migration
-      # revisions.
-      #   - For pre-migration revisions, .DEPS.git must be explicitly set.
-      #   - For post-migration revisions, .DEPS.git is not present, so gclient
-      #     will correctly fall back to DEPS.
-      if url_val.s == CHROMIUM_SRC_URL:
-        deps_file_idx = ast_dict_index(solution, 'deps_file')
-        if deps_file_idx != -1:
-          continue
-        solution.keys.append(ast.Str('deps_file'))
-        solution.values.append(ast.Str('.DEPS.git'))
-        modified = True
-
-    if not modified:
-      return self
-
-    print(
-"""
-WARNING: gclient detected an obsolete setting in your %s file.  The file has
-been automagically updated.  The previous version is available at %s.old.
-""" % (options.config_filename, options.config_filename))
-
-    # Replace existing .gclient with the updated version.
-    # Return a new GClient instance based on the new content.
-    new_content = ast2str(a)
-    dot_gclient_fn = os.path.join(path, options.config_filename)
-    try:
-      os.rename(dot_gclient_fn, dot_gclient_fn + '.old')
-    except OSError:
-      pass
-    with open(dot_gclient_fn, 'w') as fh:
-      fh.write(new_content)
-    client = GClient(path, options)
-    client.SetConfig(new_content)
-    return client
-
   @staticmethod
   def LoadCurrentConfig(options):
     """Searches for and loads a .gclient file relative to the current working
@@ -1431,7 +1261,6 @@ been automagically updated.  The previous version is available at %s.old.
       client = GClient(path, options)
       client.SetConfig(gclient_utils.FileRead(
           os.path.join(path, options.config_filename)))
-      client = client.MigrateConfigToGit(path, options)
 
     if (options.revisions and
         len(client.dependencies) > 1 and
@@ -1466,10 +1295,8 @@ been automagically updated.  The previous version is available at %s.old.
     # makes testing a bit too fun.
     result = 'entries = {\n'
     for entry in self.root.subtree(False):
-      # Skip over File() dependencies as we can't version them.
-      if not isinstance(entry.parsed_url, self.FileImpl):
-        result += '  %s: %s,\n' % (pprint.pformat(entry.name),
-            pprint.pformat(entry.parsed_url))
+      result += '  %s: %s,\n' % (pprint.pformat(entry.name),
+          pprint.pformat(entry.parsed_url))
     result += '}\n'
     file_path = os.path.join(self.root_dir, self._options.entries_filename)
     logging.debug(result)
@@ -1599,17 +1426,12 @@ been automagically updated.  The previous version is available at %s.old.
               prev_url, self.root_dir, entry_fixed, self.outbuf)
 
           # Check to see if this directory is now part of a higher-up checkout.
-          # The directory might be part of a git OR svn checkout.
           scm_root = None
-          scm_class = None
-          for scm_class in (gclient_scm.scm.GIT, gclient_scm.scm.SVN):
-            try:
-              scm_root = scm_class.GetCheckoutRoot(scm.checkout_path)
-            except subprocess2.CalledProcessError:
-              pass
-            if scm_root:
-              break
-          else:
+          try:
+            scm_root = gclient_scm.scm.GIT.GetCheckoutRoot(scm.checkout_path)
+          except subprocess2.CalledProcessError:
+            pass
+          if not scm_root:
             logging.warning('Could not find checkout root for %s. Unable to '
                             'determine whether it is part of a higher-level '
                             'checkout, so not removing.' % entry)
@@ -1620,14 +1442,14 @@ been automagically updated.  The previous version is available at %s.old.
           # If the subproject is a Git project, we need to remove its .git
           # folder. Otherwise git operations on that folder will have different
           # effects depending on the current working directory.
-          if scm_class == gclient_scm.scm.GIT and (
-              os.path.abspath(scm_root) == os.path.abspath(e_dir)):
+          if os.path.abspath(scm_root) == os.path.abspath(e_dir):
             e_par_dir = os.path.join(e_dir, os.pardir)
-            if scm_class.IsInsideWorkTree(e_par_dir):
-              par_scm_root = scm_class.GetCheckoutRoot(e_par_dir)
+            if gclient_scm.scm.GIT.IsInsideWorkTree(e_par_dir):
+              par_scm_root = gclient_scm.scm.GIT.GetCheckoutRoot(e_par_dir)
               # rel_e_dir : relative path of entry w.r.t. its parent repo.
               rel_e_dir = os.path.relpath(e_dir, par_scm_root)
-              if scm_class.IsDirectoryVersioned(par_scm_root, rel_e_dir):
+              if gclient_scm.scm.GIT.IsDirectoryVersioned(
+                  par_scm_root, rel_e_dir):
                 save_dir = scm.GetGitBackupDirPath()
                 # Remove any eventual stale backup dir for the same project.
                 if os.path.exists(save_dir):
@@ -1640,7 +1462,7 @@ been automagically updated.  The previous version is available at %s.old.
                 # In such case we want to cleanup any eventual stale files
                 # (coming from the old subproject) in order to end up with a
                 # clean checkout.
-                scm_class.CleanupDir(par_scm_root, rel_e_dir)
+                gclient_scm.scm.GIT.CleanupDir(par_scm_root, rel_e_dir)
                 assert not os.path.exists(os.path.join(e_dir, '.git'))
                 print(('\nWARNING: \'%s\' has been moved from DEPS to a higher '
                        'level checkout. The git folder containing all the local'
@@ -1688,13 +1510,9 @@ been automagically updated.  The previous version is available at %s.old.
       """Returns the revision-qualified SCM url for a Dependency."""
       if dep.parsed_url is None:
         return None
-      if isinstance(dep.parsed_url, self.FileImpl):
-        original_url = dep.parsed_url.file_location
-      else:
-        original_url = dep.parsed_url
-      url, _ = gclient_utils.SplitUrlRevision(original_url)
+      url, _ = gclient_utils.SplitUrlRevision(dep.parsed_url)
       scm = gclient_scm.CreateSCM(
-          original_url, self.root_dir, dep.name, self.outbuf)
+          dep.parsed_url, self.root_dir, dep.name, self.outbuf)
       if not os.path.isdir(scm.checkout_path):
         return None
       return '%s@%s' % (url, scm.revinfo(self._options, [], None))
@@ -1778,9 +1596,9 @@ been automagically updated.  The previous version is available at %s.old.
 
 
 def CMDcleanup(parser, args):
-  """Cleans up all working copies.
+  """DEPRECATED: SVN-only. Cleaned up all working copies.
 
-  Mostly svn-specific. Simply runs 'svn cleanup' for each module.
+  This is a no-op in Git.
   """
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
@@ -1963,7 +1781,7 @@ def CMDconfig(parser, args):
 def CMDpack(parser, args):
   """Generates a patch which can be applied at the root of the tree.
 
-  Internally, runs 'svn diff'/'git diff' on each checked out module and
+  Internally, runs 'git diff' on each checked out module and
   dependencies, and performs minimal postprocessing of the output. The
   resulting patch is printed to stdout and can be applied to a freshly
   checked out tree via 'patch -p0 < patchfile'.
@@ -2018,8 +1836,8 @@ os_deps, etc.)
 {
   "solutions" : {
     "<name>": {  # <name> is the posix-normalized path to the solution.
-      "revision": [<svn rev int>|<git id hex string>|null],
-      "scm": ["svn"|"git"|null],
+      "revision": [<git id hex string>|null],
+      "scm": ["git"|null],
     }
   }
 }
@@ -2046,11 +1864,6 @@ def CMDsync(parser, args):
                          'full checkout. (git only)')
   parser.add_option('--with_tags', action='store_true',
                     help='Clone git tags in addition to the default refspecs.')
-  parser.add_option('-t', '--transitive', action='store_true',
-                    help='When a revision is specified (in the DEPS file or '
-                          'with the command-line flag), transitively update '
-                          'the dependencies to the date of the given revision. '
-                          'Only supported for SVN repositories.')
   parser.add_option('-H', '--head', action='store_true',
                     help='skips any safesync_urls specified in '
                          'configured solutions and sync to head instead')
@@ -2075,9 +1888,6 @@ def CMDsync(parser, args):
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
                          'references')
-  parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
-                    help='Skip svn up whenever possible by requesting '
-                         'actual HEAD revision from the repository')
   parser.add_option('--upstream', action='store_true',
                     help='Make repo state match upstream branch.')
   parser.add_option('--output-json',
@@ -2102,6 +1912,11 @@ def CMDsync(parser, args):
   parser.add_option('--lock_timeout', type='int', default=5000,
                     help='GIT ONLY - Deadline (in seconds) to wait for git '
                          'cache lock to become available. Default is %default.')
+  # TODO(agable): Remove these when the oldest CrOS release milestone is M56.
+  parser.add_option('-t', '--transitive', action='store_true',
+                    help='DEPRECATED: This is a no-op.')
+  parser.add_option('-m', '--manually_grap_svn_rev', action='store_true',
+                    help='DEPRECATED: This is a no-op.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 
@@ -2151,7 +1966,7 @@ def CMDrevert(parser, args):
   """Reverts all modifications in every dependencies.
 
   That's the nuclear option to get back to a 'clean' state. It removes anything
-  that shows up in svn status."""
+  that shows up in git status."""
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
@@ -2203,9 +2018,8 @@ def CMDrevinfo(parser, args):
 
   This allows the capture of an overall 'revision' for the source tree that
   can be used to reproduce the same tree in the future. It is only useful for
-  'unpinned dependencies', i.e. DEPS/deps references without a svn revision
-  number or a git hash. A git branch name isn't 'pinned' since the actual
-  commit can change.
+  'unpinned dependencies', i.e. DEPS/deps references without a git hash.
+  A git branch name isn't 'pinned' since the actual commit can change.
   """
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
@@ -2271,12 +2085,6 @@ class OptionParser(optparse.OptionParser):
       jobs = 1
     else:
       jobs = max(8, gclient_utils.NumLocalCpus())
-    # cmp: 2013/06/19
-    # Temporary workaround to lower bot-load on SVN server.
-    # Bypassed if a bot_update flag is detected.
-    if (os.environ.get('CHROME_HEADLESS') == '1' and
-        not os.path.exists('update.flag')):
-      jobs = 1
 
     self.add_option(
         '-j', '--jobs', default=jobs, type='int',
@@ -2327,8 +2135,6 @@ class OptionParser(optparse.OptionParser):
       options.noprehooks = True
     if not hasattr(options, 'deps_os'):
       options.deps_os = None
-    if not hasattr(options, 'manually_grab_svn_rev'):
-      options.manually_grab_svn_rev = None
     if not hasattr(options, 'force'):
       options.force = None
     return (options, args)
