@@ -485,15 +485,13 @@ void StartPageService::OnSpeechResult(
     speech_result_obtained_ = true;
     RecordAction(UserMetricsAction("AppList_SearchedBySpeech"));
   }
-  FOR_EACH_OBSERVER(StartPageObserver,
-                    observers_,
-                    OnSpeechResult(query, is_final));
+  for (auto& observer : observers_)
+    observer.OnSpeechResult(query, is_final);
 }
 
 void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {
-  FOR_EACH_OBSERVER(StartPageObserver,
-                    observers_,
-                    OnSpeechSoundLevelChanged(level));
+  for (auto& observer : observers_)
+    observer.OnSpeechSoundLevelChanged(level);
 }
 
 void StartPageService::OnSpeechRecognitionStateChanged(
@@ -532,9 +530,8 @@ void StartPageService::OnSpeechRecognitionStateChanged(
   speech_button_toggled_manually_ = false;
   speech_result_obtained_ = false;
   state_ = new_state;
-  FOR_EACH_OBSERVER(StartPageObserver,
-                    observers_,
-                    OnSpeechRecognitionStateChanged(new_state));
+  for (auto& observer : observers_)
+    observer.OnSpeechRecognitionStateChanged(new_state);
 }
 
 void StartPageService::GetSpeechAuthParameters(std::string* auth_scope,

@@ -327,7 +327,8 @@ void AppListSyncableService::RemoveObserver(Observer* observer) {
 }
 
 void AppListSyncableService::NotifyObserversSyncUpdated() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnSyncModelUpdated());
+  for (auto& observer : observer_list_)
+    observer.OnSyncModelUpdated();
 }
 
 size_t AppListSyncableService::GetNumSyncItemsForTest() {
