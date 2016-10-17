@@ -175,7 +175,8 @@ class PLATFORM_EXPORT FontCache {
 #endif
   PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(
       const FontPlatformData*,
-      ShouldRetain = Retain);
+      ShouldRetain = Retain,
+      bool = false);
 
   void invalidateShapeCache();
 

@@ -58,7 +58,8 @@ static const size_t maxVDMXTableSize = 1024 * 1024;  // 1 MB
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platformData,
                                PassRefPtr<CustomFontData> customData,
-                               bool isTextOrientationFallback)
+                               bool isTextOrientationFallback,
+                               bool subpixelAscentDescent)
     : m_maxCharWidth(-1),
       m_avgCharWidth(-1),
       m_platformData(platformData),
@@ -66,7 +67,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData,
       m_verticalData(nullptr),
       m_hasVerticalGlyphs(false),
       m_customFontData(customData) {
-  platformInit();
+  platformInit(subpixelAscentDescent);
   platformGlyphInit();
   if (platformData.isVerticalAnyUpright() && !isTextOrientationFallback) {
     m_verticalData = platformData.verticalData();
@@ -86,7 +87,7 @@ SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData,
       m_hasVerticalGlyphs(false),
       m_customFontData(customData) {}
 
-void SimpleFontData::platformInit() {
+void SimpleFontData::platformInit(bool subpixelAscentDescent) {
   if (!m_platformData.size()) {
     m_fontMetrics.reset();
     m_avgCharWidth = 0;
@@ -131,14 +132,24 @@ void SimpleFontData::platformInit() {
   float descent;
 
   // Beware those who step here: This code is designed to match Win32 font
-  // metrics *exactly* (except the adjustment of ascent/descent on
-  // Linux/Android).
+  // metrics *exactly* except:
+  // - the adjustment of ascent/descent on Linux/Android
+  // - metrics.fAscent and .fDesscent are not rounded to int for tiny fonts
   if (isVDMXValid) {
     ascent = vdmxAscent;
     descent = -vdmxDescent;
   } else {
-    ascent = SkScalarRoundToInt(-metrics.fAscent);
-    descent = SkScalarRoundToInt(metrics.fDescent);
+    // For tiny fonts, the rounding of fAscent and fDescent results in equal
+    // baseline for different types of text baselines (crbug.com/338908).
+    // Please see CanvasRenderingContext2D::getFontBaseline for the heuristic.
+    if (subpixelAscentDescent &&
+        (-metrics.fAscent < 3 || -metrics.fAscent + metrics.fDescent < 2)) {
+      ascent = -metrics.fAscent;
+      descent = metrics.fDescent;
+    } else {
+      ascent = SkScalarRoundToScalar(-metrics.fAscent);
+      descent = SkScalarRoundToScalar(metrics.fDescent);
+    }
 #if OS(LINUX) || OS(ANDROID)
     // When subpixel positioning is enabled, if the descent is rounded down, the
     // descent part of the glyph may be truncated when displayed in a 'overflow:

@@ -46,7 +46,8 @@ const unsigned cTargetInactiveFontData = 200;
 
 PassRefPtr<SimpleFontData> FontDataCache::get(
     const FontPlatformData* platformData,
-    ShouldRetain shouldRetain) {
+    ShouldRetain shouldRetain,
+    bool subpixelAscentDescent) {
   if (!platformData)
     return nullptr;
 
@@ -62,7 +63,9 @@ PassRefPtr<SimpleFontData> FontDataCache::get(
   Cache::iterator result = m_cache.find(platformData);
   if (result == m_cache.end()) {
     std::pair<RefPtr<SimpleFontData>, unsigned> newValue(
-        SimpleFontData::create(*platformData), shouldRetain == Retain ? 1 : 0);
+        SimpleFontData::create(*platformData, nullptr, false,
+                               subpixelAscentDescent),
+        shouldRetain == Retain ? 1 : 0);
     // The new SimpleFontData takes a copy of the incoming FontPlatformData
     // object. The incoming key may be temporary. So, for cache storage, take
     // the address of the newly created FontPlatformData that is copied an owned

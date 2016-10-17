@@ -833,6 +833,7 @@ void CanvasRenderingContext2D::drawTextInternal(
         DisableDeferralReasonSubPixelTextAntiAliasingSupport);
 
   const Font& font = accessFont();
+  font.getFontDescription().setSubpixelAscentDescent(true);
   const SimpleFontData* fontData = font.primaryFont();
   DCHECK(fontData);
   if (!fontData)
@@ -915,22 +916,34 @@ const Font& CanvasRenderingContext2D::accessFont() {
   return state().font();
 }
 
-int CanvasRenderingContext2D::getFontBaseline(
+float CanvasRenderingContext2D::getFontBaseline(
     const FontMetrics& fontMetrics) const {
+  // If the font is so tiny that the lroundf operations result in two
+  // different types of text baselines to return the same baseline, use
+  // floating point metrics (crbug.com/338908).
+  // If you changed the heuristic here, for consistency please also change it
+  // in SimpleFontData::platformInit().
+  bool useFloatAscentDescent =
+      fontMetrics.ascent() < 3 || fontMetrics.height() < 2;
   switch (state().getTextBaseline()) {
     case TopTextBaseline:
-      return fontMetrics.ascent();
+      return useFloatAscentDescent ? fontMetrics.floatAscent()
+                                   : fontMetrics.ascent();
     case HangingTextBaseline:
       // According to
       // http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
       // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of
       // the ascender height"
-      return (fontMetrics.ascent() * 4) / 5;
+      return useFloatAscentDescent ? (fontMetrics.floatAscent() * 4.0) / 5.0
+                                   : (fontMetrics.ascent() * 4) / 5;
     case BottomTextBaseline:
     case IdeographicTextBaseline:
-      return -fontMetrics.descent();
+      return useFloatAscentDescent ? -fontMetrics.floatDescent()
+                                   : -fontMetrics.descent();
     case MiddleTextBaseline:
-      return -fontMetrics.descent() + fontMetrics.height() / 2;
+      return useFloatAscentDescent
+                 ? -fontMetrics.floatDescent() + fontMetrics.floatHeight() / 2.0
+                 : -fontMetrics.descent() + fontMetrics.height() / 2;
     case AlphabeticTextBaseline:
     default:
       // Do nothing.

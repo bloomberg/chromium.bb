@@ -60,9 +60,11 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   static PassRefPtr<SimpleFontData> create(
       const FontPlatformData& platformData,
       PassRefPtr<CustomFontData> customData = nullptr,
-      bool isTextOrientationFallback = false) {
+      bool isTextOrientationFallback = false,
+      bool subpixelAscentDescent = false) {
     return adoptRef(new SimpleFontData(platformData, std::move(customData),
-                                       isTextOrientationFallback));
+                                       isTextOrientationFallback,
+                                       subpixelAscentDescent));
   }
 
   ~SimpleFontData() override;
@@ -161,7 +163,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
  protected:
   SimpleFontData(const FontPlatformData&,
                  PassRefPtr<CustomFontData> customData,
-                 bool isTextOrientationFallback = false);
+                 bool isTextOrientationFallback = false,
+                 bool subpixelAscentDescent = false);
 
   SimpleFontData(PassRefPtr<CustomFontData> customData,
                  float fontSize,
@@ -169,7 +172,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
                  bool syntheticItalic);
 
  private:
-  void platformInit();
+  void platformInit(bool subpixelAscentDescent);
   void platformGlyphInit();
 
   PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&,

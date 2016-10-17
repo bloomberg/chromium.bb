@@ -114,6 +114,7 @@ class PLATFORM_EXPORT FontDescription {
     m_fields.m_subpixelTextPosition = s_useSubpixelTextPositioning;
     m_fields.m_typesettingFeatures = s_defaultTypesettingFeatures;
     m_fields.m_variantNumeric = FontVariantNumeric().m_fieldsAsUnsigned;
+    m_fields.m_subpixelAscentDescent = false;
   }
 
   bool operator==(const FontDescription&) const;
@@ -320,6 +321,14 @@ class PLATFORM_EXPORT FontDescription {
   }
   static bool subpixelPositioning() { return s_useSubpixelTextPositioning; }
 
+  void setSubpixelAscentDescent(bool sp) const {
+    m_fields.m_subpixelAscentDescent = sp;
+  }
+
+  bool subpixelAscentDescent() const {
+    return m_fields.m_subpixelAscentDescent;
+  }
+
   static void setDefaultTypesettingFeatures(TypesettingFeatures);
   static TypesettingFeatures defaultTypesettingFeatures();
 
@@ -391,6 +400,7 @@ class PLATFORM_EXPORT FontDescription {
     unsigned m_subpixelTextPosition : 1;
     unsigned m_typesettingFeatures : 3;
     unsigned m_variantNumeric : 8;
+    mutable unsigned m_subpixelAscentDescent : 1;
   };
 
   static_assert(sizeof(BitFields) == sizeof(FieldsAsUnsignedType),

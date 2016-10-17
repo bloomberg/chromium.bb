@@ -249,15 +249,18 @@ PassRefPtr<SimpleFontData> FontCache::getFontData(
   if (FontPlatformData* platformData = getFontPlatformData(
           fontDescription, FontFaceCreationParams(
                                adjustFamilyNameToAvoidUnsupportedFonts(family)),
-          checkingAlternateName))
-    return fontDataFromFontPlatformData(platformData, shouldRetain);
+          checkingAlternateName)) {
+    return fontDataFromFontPlatformData(
+        platformData, shouldRetain, fontDescription.subpixelAscentDescent());
+  }
 
   return nullptr;
 }
 
 PassRefPtr<SimpleFontData> FontCache::fontDataFromFontPlatformData(
     const FontPlatformData* platformData,
-    ShouldRetain shouldRetain) {
+    ShouldRetain shouldRetain,
+    bool subpixelAscentDescent) {
   if (!gFontDataCache)
     gFontDataCache = new FontDataCache;
 
@@ -266,7 +269,7 @@ PassRefPtr<SimpleFontData> FontCache::fontDataFromFontPlatformData(
     ASSERT(m_purgePreventCount);
 #endif
 
-  return gFontDataCache->get(platformData, shouldRetain);
+  return gFontDataCache->get(platformData, shouldRetain, subpixelAscentDescent);
 }
 
 bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription,
