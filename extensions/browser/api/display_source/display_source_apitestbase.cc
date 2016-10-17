@@ -406,8 +406,8 @@ void MockDisplaySourceConnectionDelegate::OnSinkConnected() {
 }
 
 void MockDisplaySourceConnectionDelegate::NotifySinksUpdated() {
-  FOR_EACH_OBSERVER(DisplaySourceConnectionDelegate::Observer, observers_,
-                    OnSinksUpdated(sinks_));
+  for (auto& observer : observers_)
+    observer.OnSinksUpdated(sinks_);
 }
 
 void MockDisplaySourceConnectionDelegate::

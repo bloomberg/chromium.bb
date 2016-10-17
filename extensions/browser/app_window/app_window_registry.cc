@@ -60,26 +60,30 @@ AppWindowRegistry* AppWindowRegistry::Get(content::BrowserContext* context) {
 
 void AppWindowRegistry::AddAppWindow(AppWindow* app_window) {
   BringToFront(app_window);
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowAdded(app_window));
+  for (auto& observer : observers_)
+    observer.OnAppWindowAdded(app_window);
 }
 
 void AppWindowRegistry::AppWindowIconChanged(AppWindow* app_window) {
   AddAppWindowToList(app_window);
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowIconChanged(app_window));
+  for (auto& observer : observers_)
+    observer.OnAppWindowIconChanged(app_window);
 }
 
 void AppWindowRegistry::AppWindowActivated(AppWindow* app_window) {
   BringToFront(app_window);
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowActivated(app_window));
+  for (auto& observer : observers_)
+    observer.OnAppWindowActivated(app_window);
 }
 
 void AppWindowRegistry::AppWindowHidden(AppWindow* app_window) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowHidden(app_window));
+  for (auto& observer : observers_)
+    observer.OnAppWindowHidden(app_window);
 }
 
 void AppWindowRegistry::AppWindowShown(AppWindow* app_window, bool was_hidden) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnAppWindowShown(app_window, was_hidden));
+  for (auto& observer : observers_)
+    observer.OnAppWindowShown(app_window, was_hidden);
 }
 
 void AppWindowRegistry::RemoveAppWindow(AppWindow* app_window) {
@@ -87,7 +91,8 @@ void AppWindowRegistry::RemoveAppWindow(AppWindow* app_window) {
       std::find(app_windows_.begin(), app_windows_.end(), app_window);
   if (it != app_windows_.end())
     app_windows_.erase(it);
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowRemoved(app_window));
+  for (auto& observer : observers_)
+    observer.OnAppWindowRemoved(app_window);
 }
 
 void AppWindowRegistry::AddObserver(Observer* observer) {

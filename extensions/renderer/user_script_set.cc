@@ -156,8 +156,8 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
     scripts_.push_back(std::move(script));
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnUserScriptsUpdated(changed_hosts, scripts_));
+  for (auto& observer : observers_)
+    observer.OnUserScriptsUpdated(changed_hosts, scripts_);
   return true;
 }
 

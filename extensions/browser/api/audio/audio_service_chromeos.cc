@@ -222,12 +222,13 @@ void AudioServiceImpl::OnActiveInputNodeChanged() {
 }
 
 void AudioServiceImpl::NotifyDeviceChanged() {
-  FOR_EACH_OBSERVER(AudioService::Observer, observer_list_, OnDeviceChanged());
+  for (auto& observer : observer_list_)
+    observer.OnDeviceChanged();
 }
 
 void AudioServiceImpl::NotifyLevelChanged(uint64_t id, int level) {
-  FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
-                    OnLevelChanged(base::Uint64ToString(id), level));
+  for (auto& observer : observer_list_)
+    observer.OnLevelChanged(base::Uint64ToString(id), level);
 
   // Notify DeviceChanged event for backward compatibility.
   // TODO(jennyz): remove this code when the old version of hotrod retires.
@@ -235,8 +236,8 @@ void AudioServiceImpl::NotifyLevelChanged(uint64_t id, int level) {
 }
 
 void AudioServiceImpl::NotifyMuteChanged(bool is_input, bool is_muted) {
-  FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
-                    OnMuteChanged(is_input, is_muted));
+  for (auto& observer : observer_list_)
+    observer.OnMuteChanged(is_input, is_muted);
 
   // Notify DeviceChanged event for backward compatibility.
   // TODO(jennyz): remove this code when the old version of hotrod retires.
@@ -273,8 +274,8 @@ void AudioServiceImpl::NotifyDevicesChanged() {
     devices_info_list.push_back(std::move(info));
   }
 
-  FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
-                    OnDevicesChanged(devices_info_list));
+  for (auto& observer : observer_list_)
+    observer.OnDevicesChanged(devices_info_list);
 
   // Notify DeviceChanged event for backward compatibility.
   // TODO(jennyz): remove this code when the old version of hotrod retires.

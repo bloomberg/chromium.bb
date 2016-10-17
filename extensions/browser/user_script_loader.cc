@@ -170,7 +170,8 @@ UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
 }
 
 UserScriptLoader::~UserScriptLoader() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnUserScriptLoaderDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnUserScriptLoaderDestroyed(this);
 }
 
 void UserScriptLoader::AddScripts(std::unique_ptr<UserScriptList> scripts) {
@@ -394,7 +395,8 @@ void UserScriptLoader::OnScriptsLoaded(
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<base::SharedMemory>(shared_memory_.get()));
-  FOR_EACH_OBSERVER(Observer, observers_, OnScriptsLoaded(this));
+  for (auto& observer : observers_)
+    observer.OnScriptsLoaded(this);
 }
 
 void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,

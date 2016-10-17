@@ -168,9 +168,8 @@ class Handler : public content::WebContentsObserver {
         host_id_.type() == HostID::EXTENSIONS) {
       ScriptExecutionObserver::ExecutingScriptsMap id_map;
       id_map[host_id_.id()] = std::set<std::string>();
-      FOR_EACH_OBSERVER(
-          ScriptExecutionObserver, *script_observers_,
-          OnScriptsExecuted(web_contents(), id_map, root_frame_url_));
+      for (auto& observer : *script_observers_)
+        observer.OnScriptsExecuted(web_contents(), id_map, root_frame_url_);
     }
 
     if (!callback_.is_null())

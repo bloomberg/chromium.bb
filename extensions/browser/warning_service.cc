@@ -117,8 +117,8 @@ void WarningService::RemoveObserver(Observer* observer) {
 
 void WarningService::NotifyWarningsChanged(
     const ExtensionIdSet& affected_extensions) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    ExtensionWarningsChanged(affected_extensions));
+  for (auto& observer : observer_list_)
+    observer.ExtensionWarningsChanged(affected_extensions);
 }
 
 void WarningService::OnExtensionUnloaded(

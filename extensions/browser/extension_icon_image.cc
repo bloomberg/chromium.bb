@@ -163,7 +163,8 @@ void IconImage::RemoveObserver(Observer* observer) {
 }
 
 IconImage::~IconImage() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionIconImageDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnExtensionIconImageDestroyed(this);
   source_->ResetHost();
 }
 
@@ -247,7 +248,8 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   // there's no way to combine the storage of two images.
   image_ = gfx::Image(image_skia_);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionIconImageChanged(this));
+  for (auto& observer : observers_)
+    observer.OnExtensionIconImageChanged(this);
 }
 
 void IconImage::Observe(int type,

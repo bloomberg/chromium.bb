@@ -378,8 +378,8 @@ std::string ExtensionPrefValueMap::GetExtensionControllingPref(
 }
 
 void ExtensionPrefValueMap::NotifyInitializationCompleted() {
-  FOR_EACH_OBSERVER(ExtensionPrefValueMap::Observer, observers_,
-                    OnInitializationCompleted());
+  for (auto& observer : observers_)
+    observer.OnInitializationCompleted();
 }
 
 void ExtensionPrefValueMap::NotifyPrefValueChanged(
@@ -389,11 +389,11 @@ void ExtensionPrefValueMap::NotifyPrefValueChanged(
 }
 
 void ExtensionPrefValueMap::NotifyPrefValueChanged(const std::string& key) {
-  FOR_EACH_OBSERVER(ExtensionPrefValueMap::Observer, observers_,
-                    OnPrefValueChanged(key));
+  for (auto& observer : observers_)
+    observer.OnPrefValueChanged(key);
 }
 
 void ExtensionPrefValueMap::NotifyOfDestruction() {
-  FOR_EACH_OBSERVER(ExtensionPrefValueMap::Observer, observers_,
-                    OnExtensionPrefValueMapDestruction());
+  for (auto& observer : observers_)
+    observer.OnExtensionPrefValueMapDestruction();
 }

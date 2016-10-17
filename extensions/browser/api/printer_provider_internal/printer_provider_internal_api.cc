@@ -67,33 +67,32 @@ void PrinterProviderInternalAPI::NotifyGetPrintersResult(
     const Extension* extension,
     int request_id,
     const PrinterProviderInternalAPIObserver::PrinterInfoVector& printers) {
-  FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
-                    OnGetPrintersResult(extension, request_id, printers));
+  for (auto& observer : observers_)
+    observer.OnGetPrintersResult(extension, request_id, printers);
 }
 
 void PrinterProviderInternalAPI::NotifyGetCapabilityResult(
     const Extension* extension,
     int request_id,
     const base::DictionaryValue& capability) {
-  FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
-                    OnGetCapabilityResult(extension, request_id, capability));
+  for (auto& observer : observers_)
+    observer.OnGetCapabilityResult(extension, request_id, capability);
 }
 
 void PrinterProviderInternalAPI::NotifyPrintResult(
     const Extension* extension,
     int request_id,
     api::printer_provider_internal::PrintError error) {
-  FOR_EACH_OBSERVER(PrinterProviderInternalAPIObserver, observers_,
-                    OnPrintResult(extension, request_id, error));
+  for (auto& observer : observers_)
+    observer.OnPrintResult(extension, request_id, error);
 }
 
 void PrinterProviderInternalAPI::NotifyGetUsbPrinterInfoResult(
     const Extension* extension,
     int request_id,
     const api::printer_provider::PrinterInfo* printer_info) {
-  FOR_EACH_OBSERVER(
-      PrinterProviderInternalAPIObserver, observers_,
-      OnGetUsbPrinterInfoResult(extension, request_id, printer_info));
+  for (auto& observer : observers_)
+    observer.OnGetUsbPrinterInfoResult(extension, request_id, printer_info);
 }
 
 PrinterProviderInternalReportPrintResultFunction::

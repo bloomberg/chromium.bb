@@ -463,9 +463,8 @@ void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
 
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   extension_pref_value_map_->UnregisterExtension(extension_id);
-  FOR_EACH_OBSERVER(ExtensionPrefsObserver,
-                    observer_list_,
-                    OnExtensionPrefsDeleted(extension_id));
+  for (auto& observer : observer_list_)
+    observer.OnExtensionPrefsDeleted(extension_id);
   DictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
   base::DictionaryValue* dict = update.Get();
   dict->Remove(extension_id, NULL);
@@ -805,9 +804,8 @@ void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
                         new base::FundamentalValue(new_value));
   }
 
-  FOR_EACH_OBSERVER(ExtensionPrefsObserver,
-                    observer_list_,
-                    OnExtensionDisableReasonsChanged(extension_id, new_value));
+  for (auto& observer : observer_list_)
+    observer.OnExtensionDisableReasonsChanged(extension_id, new_value);
 }
 
 std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() const {
@@ -1126,9 +1124,8 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
                         new base::FundamentalValue(
                             Extension::EXTERNAL_EXTENSION_UNINSTALLED));
     extension_pref_value_map_->SetExtensionState(extension_id, false);
-    FOR_EACH_OBSERVER(ExtensionPrefsObserver,
-                      observer_list_,
-                      OnExtensionStateChanged(extension_id, false));
+    for (auto& observer : observer_list_)
+      observer.OnExtensionStateChanged(extension_id, false);
   } else {
     DeleteExtensionPrefs(extension_id);
   }
@@ -1139,8 +1136,8 @@ void ExtensionPrefs::SetExtensionEnabled(const std::string& extension_id) {
                       new base::FundamentalValue(Extension::ENABLED));
   extension_pref_value_map_->SetExtensionState(extension_id, true);
   UpdateExtensionPref(extension_id, kPrefDisableReasons, nullptr);
-  FOR_EACH_OBSERVER(ExtensionPrefsObserver, observer_list_,
-                    OnExtensionStateChanged(extension_id, true));
+  for (auto& observer : observer_list_)
+    observer.OnExtensionStateChanged(extension_id, true);
 }
 
 void ExtensionPrefs::SetExtensionDisabled(const std::string& extension_id,
@@ -1152,8 +1149,8 @@ void ExtensionPrefs::SetExtensionDisabled(const std::string& extension_id,
   }
   UpdateExtensionPref(extension_id, kPrefDisableReasons,
                       new base::FundamentalValue(disable_reasons));
-  FOR_EACH_OBSERVER(ExtensionPrefsObserver, observer_list_,
-                    OnExtensionStateChanged(extension_id, false));
+  for (auto& observer : observer_list_)
+    observer.OnExtensionStateChanged(extension_id, false);
 }
 
 void ExtensionPrefs::SetExtensionBlacklistState(const std::string& extension_id,
@@ -1906,10 +1903,8 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
     value_map->RegisterExtension(
         *extension_id, install_time, is_enabled, is_incognito_enabled);
 
-    FOR_EACH_OBSERVER(
-        ExtensionPrefsObserver,
-        observer_list_,
-        OnExtensionRegistered(*extension_id, install_time, is_enabled));
+    for (auto& observer : observer_list_)
+      observer.OnExtensionRegistered(*extension_id, install_time, is_enabled);
 
     // Set regular extension controlled prefs.
     LoadExtensionControlledPrefs(
@@ -1923,9 +1918,8 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
     LoadExtensionControlledPrefs(
         this, value_map, *extension_id, kExtensionPrefsScopeRegularOnly);
 
-    FOR_EACH_OBSERVER(ExtensionPrefsObserver,
-                      observer_list_,
-                      OnExtensionPrefsLoaded(*extension_id, this));
+    for (auto& observer : observer_list_)
+      observer.OnExtensionPrefsLoaded(*extension_id, this);
   }
 }
 
@@ -1983,10 +1977,8 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   extension_pref_value_map_->RegisterExtension(
       extension_id, install_time, is_enabled, is_incognito_enabled);
 
-  FOR_EACH_OBSERVER(
-      ExtensionPrefsObserver,
-      observer_list_,
-      OnExtensionRegistered(extension_id, install_time, is_enabled));
+  for (auto& observer : observer_list_)
+    observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
 }
 
 }  // namespace extensions
