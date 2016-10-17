@@ -16,6 +16,7 @@ function start() {
     form1.action = 'javascript:removeImage()';
     form1.appendChild(submit1);
     form1.appendChild(submit2);
+    document.body.appendChild(form1);
     submit1.click();
     testPassed('if not crashed.');
     finishJSTest();

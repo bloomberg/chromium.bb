@@ -347,9 +347,16 @@ void HTMLFormElement::submit(Event* event,
   if (!view || !frame || !frame->page())
     return;
 
-  // See crbug.com/586749.
-  if (!isConnected())
-    UseCounter::count(document(), UseCounter::FormSubmissionNotInDocumentTree);
+  // https://html.spec.whatwg.org/multipage/forms.html#form-submission-algorithm
+  // 2. If form document is not connected, has no associated browsing context,
+  // or its active sandboxing flag set has its sandboxed forms browsing
+  // context flag set, then abort these steps without doing anything.
+  if (!isConnected()) {
+    document().addConsoleMessage(ConsoleMessage::create(
+        JSMessageSource, WarningMessageLevel,
+        "Form submission canceled because the form is not connected"));
+    return;
+  }
 
   if (m_isSubmitting)
     return;

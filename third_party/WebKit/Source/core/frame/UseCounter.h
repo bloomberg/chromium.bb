@@ -1119,7 +1119,6 @@ class CORE_EXPORT UseCounter {
     V8RegExpPrototypeSourceGetter = 1396,
     V8RegExpPrototypeOldFlagGetter = 1397,
     V8DecimalWithLeadingZeroInStrictMode = 1398,
-    FormSubmissionNotInDocumentTree = 1399,
     GetUserMediaPrefixed = 1400,
     GetUserMediaLegacy = 1401,
     GetUserMediaPromise = 1402,
