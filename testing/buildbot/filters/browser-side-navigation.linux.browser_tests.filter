@@ -16,10 +16,7 @@
 -ExtensionBindingsApiTest.ModuleSystem
 -ExtensionBrowserTest.WindowOpenExtension
 -ExtensionResourceRequestPolicyTest.Iframe
--ExtensionWebRequestApiTest.WebRequestComplex
--ExtensionWebRequestApiTest.WebRequestDeclarative2
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
--ExtensionWebRequestApiTest.WebRequestWithWithheldPermissions
 -ExternallyConnectableMessagingTest.FromPopup
 -FindInPageControllerTest.SearchWithinSpecialURL
 -IsolatedAppTest.CookieIsolation
@@ -58,24 +55,15 @@
 -WebNavigationApiTest.RequestOpenTab
 -WebNavigationApiTest.SrcDoc
 -WebNavigationApiTest.UserAction
--WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPI/*
--WebViewTests/WebViewTest.Shim_TestDeclarativeWebRequestAPISendMessage/*
 -WebViewTests/WebViewTest.Shim_TestInlineScriptFromAccessibleResources/*
 -WebViewTests/WebViewTest.Shim_TestMailtoLink/*
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/*
 -WebViewTests/WebViewTest.Shim_TestNestedSubframes/*
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIErrorOccurred/*
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIGoogleProperty/*
--WebViewTests/WebViewTest.Shim_TestWebRequestAPIWithHeaders/*
--WebViewTests/WebViewTest.Shim_TestWebRequestListenerSurvivesReparenting/*
 -WebViewTests/WebViewTest.Shim_TestWebViewInsideFrame/*
 
 # Errors related to forms submission.
 -PhishingDOMFeatureExtractorTest.SubFrames
 -PhishingDOMFeatureExtractorTest.SubframeRemoval
-
-# https://crbug.com/647712: Nested URL blocking needs to work with PlzNavigate
--ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
 
 # Fail in Debug.
 -BookmarkBubbleSignInDelegateTest.*
