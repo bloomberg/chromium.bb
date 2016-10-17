@@ -15,8 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
+#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 
 class GURL;
 struct EmbeddedWorkerHostMsg_ReportConsoleMessage_Params;
@@ -41,7 +43,9 @@ struct ServiceWorkerRegistrationInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
-class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
+class CONTENT_EXPORT ServiceWorkerDispatcherHost
+    : public mojom::ServiceWorkerDispatcherHost,
+      public BrowserMessageFilter {
  public:
   ServiceWorkerDispatcherHost(
       int render_process_id,
@@ -92,6 +96,16 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
 
+  // Called when mojom::ServiceWorkerDispatcherHostPtr is created on the
+  // renderer-side.
+  void AddMojoBinding(mojo::ScopedInterfaceEndpointHandle handle);
+
+  // mojom::ServiceWorkerDispatcherHost implementation
+  void OnProviderCreated(int provider_id,
+                         int route_id,
+                         ServiceWorkerProviderType provider_type,
+                         bool is_parent_frame_secure) override;
+
   // IPC Message handlers
   void OnRegisterServiceWorker(int thread_id,
                                int request_id,
@@ -114,10 +128,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnGetRegistrationForReady(int thread_id,
                                  int request_id,
                                  int provider_id);
-  void OnProviderCreated(int provider_id,
-                         int route_id,
-                         ServiceWorkerProviderType provider_type,
-                         bool is_parent_frame_secure);
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id,
                             int64_t version_id,
@@ -242,6 +252,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   std::vector<std::unique_ptr<IPC::Message>> pending_messages_;
+
+  mojo::AssociatedBindingSet<mojom::ServiceWorkerDispatcherHost> bindings_;
+
+  base::WeakPtrFactory<ServiceWorkerDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };

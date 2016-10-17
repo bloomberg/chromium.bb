@@ -21,6 +21,7 @@
         "blink::mojom::ShapeDetection",
         "blink::mojom::WebSocket",
         "content::mojom::MemoryCoordinatorHandle",
+        "content::mojom::ServiceWorkerDispatcherHost",
         "content::mojom::StoragePartitionService",
         "content::mojom::URLLoaderFactory",
         "content::mojom::VideoCaptureHost",

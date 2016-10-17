@@ -11,6 +11,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -128,8 +129,15 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   context_ = new ServiceWorkerProviderContext(
       provider_id_, provider_type,
       ChildThreadImpl::current()->thread_safe_sender());
-  ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
-      provider_id_, route_id, provider_type, is_parent_frame_secure));
+  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
+    ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
+        &dispatcher_host_);
+    dispatcher_host_->OnProviderCreated(provider_id_, route_id, provider_type,
+                                        is_parent_frame_secure);
+  } else {
+    ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
+        provider_id_, route_id, provider_type, is_parent_frame_secure));
+  }
 }
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(

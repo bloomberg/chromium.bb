@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 
 namespace blink {
@@ -78,6 +79,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
  private:
   const int provider_id_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
+  mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);
 };
 

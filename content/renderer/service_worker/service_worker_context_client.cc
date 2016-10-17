@@ -685,10 +685,10 @@ ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
 
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider(
-      new ServiceWorkerNetworkProvider(MSG_ROUTING_NONE,
-                                       SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
-                                       true /* is_parent_frame_secure */));
+  std::unique_ptr<ServiceWorkerNetworkProvider> provider =
+      base::MakeUnique<ServiceWorkerNetworkProvider>(
+          MSG_ROUTING_NONE, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
+          true /* is_parent_frame_secure */);
   provider_context_ = provider->context();
 
   // Tell the network provider about which version to load.

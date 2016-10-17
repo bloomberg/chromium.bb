@@ -101,7 +101,12 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
       render_process_id_(render_process_id),
       message_port_message_filter_(message_port_message_filter),
       resource_context_(resource_context),
-      channel_ready_(false) {
+      channel_ready_(false),
+      weak_factory_(this) {
+  AddAssociatedInterface(
+      mojom::ServiceWorkerDispatcherHost::Name_,
+      base::Bind(&ServiceWorkerDispatcherHost::AddMojoBinding,
+                 base::Unretained(this)));
 }
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
@@ -217,6 +222,13 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   }
 
   return handled;
+}
+
+void ServiceWorkerDispatcherHost::AddMojoBinding(
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  bindings_.AddBinding(
+      this, mojo::MakeAssociatedRequest<mojom::ServiceWorkerDispatcherHost>(
+                std::move(handle)));
 }
 
 bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {

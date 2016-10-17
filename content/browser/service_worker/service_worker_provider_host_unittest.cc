@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -101,7 +102,10 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
 };
 
-TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
+class ServiceWorkerProviderHostTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerProviderHostTest> {};
+
+TEST_P(ServiceWorkerProviderHostTestP, PotentialRegistration_ProcessStatus) {
   // Matching registrations have already been set by SetDocumentUrl.
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
@@ -130,7 +134,7 @@ TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
   ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));   // host1,2
 }
 
-TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
+TEST_P(ServiceWorkerProviderHostTestP, AssociatedRegistration_ProcessStatus) {
   // Associating the registration will also increase the process refs for
   // the registration's pattern.
   provider_host1_->AssociateRegistration(registration1_.get(),
@@ -143,7 +147,7 @@ TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 }
 
-TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
+TEST_P(ServiceWorkerProviderHostTestP, MatchRegistration) {
   // Match registration should return the longest matching one.
   ASSERT_EQ(registration2_, provider_host1_->MatchRegistration());
   provider_host1_->RemoveMatchingRegistration(registration2_.get());
@@ -166,7 +170,7 @@ TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
   ASSERT_EQ(nullptr, provider_host1_->MatchRegistration());
 }
 
-TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
+TEST_P(ServiceWorkerProviderHostTestP, ContextSecurity) {
   using FrameSecurityLevel = ServiceWorkerProviderHost::FrameSecurityLevel;
   content::ResetSchemesAndOriginsWhitelistForTesting();
 
@@ -198,5 +202,9 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
   provider_host1_->parent_frame_security_level_ = FrameSecurityLevel::INSECURE;
   EXPECT_FALSE(provider_host1_->IsContextSecureForServiceWorker());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerProviderHostTest,
+                        ServiceWorkerProviderHostTestP,
+                        ::testing::Values(false, true));
 
 }  // namespace content

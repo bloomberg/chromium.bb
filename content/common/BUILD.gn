@@ -567,6 +567,8 @@ mojom("mojo_bindings") {
     "service_worker/embedded_worker.mojom",
     "service_worker/embedded_worker_setup.mojom",
     "service_worker/fetch_event_dispatcher.mojom",
+    "service_worker/service_worker.mojom",
+    "service_worker/service_worker_types.mojom",
     "storage_partition_service.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
