@@ -81,9 +81,9 @@ void ScriptWrappableVisitor::performCleanup() {
   m_headersToUnmark.clear();
   m_markingDeque.clear();
   m_verifierDeque.clear();
+  m_reporter = nullptr;
   m_shouldCleanup = false;
   m_tracingInProgress = false;
-  m_reporter = nullptr;
 }
 
 void ScriptWrappableVisitor::scheduleIdleLazyCleanup() {
@@ -137,6 +137,7 @@ void ScriptWrappableVisitor::performLazyCleanup(double deadlineSeconds) {
   CHECK(m_headersToUnmark.isEmpty());
   m_markingDeque.clear();
   m_verifierDeque.clear();
+  m_reporter = nullptr;
   m_shouldCleanup = false;
   m_tracingInProgress = false;
 }
