@@ -8,7 +8,7 @@ that the baseline images are regenerated on the next run.
 
 <html>
 <head>
-<title>OffscreenCanvas 2d commit flow on main thread: blue square on white background.</title>
+<title>OffscreenCanvas 2d commit flow on main thread: Four-color squares on white background.</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -27,10 +27,16 @@ function draw()
 {
   var canvas = document.getElementById("c");
   var offscreenCanvas = canvas.transferControlToOffscreen();
-  var ctx2d = offscreenCanvas.getContext("2d");
-  ctx2d.fillStyle = "blue";
-  ctx2d.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-  ctx2d.commit();
+  var offscreen2d = offscreenCanvas.getContext("2d");
+  offscreen2d.fillStyle = "red";
+  offscreen2d.fillRect(0, 0, 100, 100);
+  offscreen2d.fillStyle = "green";
+  offscreen2d.fillRect(100, 0, 100, 100);
+  offscreen2d.fillStyle = "blue";
+  offscreen2d.fillRect(0, 100, 100, 100);
+  offscreen2d.fillStyle = "black";
+  offscreen2d.fillRect(100, 100, 100, 100);
+  offscreen2d.commit();
 }
 
 function waitForFinish()
@@ -47,10 +53,10 @@ function waitForFinish()
 </script>
 </head>
 <body onload="main()">
-<div style="position:relative; width:350px; height:350px; background-color:white">
+<div style="position:relative; width:300px; height:300px; background-color:white">
 </div>
 <div id="container" style="position:absolute; top:0px; left:0px">
-<canvas id="c" width="320" height="320" class="nomargin"></canvas>
+<canvas id="c" width="200" height="200" class="nomargin"></canvas>
 </div>
 </body>
 </html>
