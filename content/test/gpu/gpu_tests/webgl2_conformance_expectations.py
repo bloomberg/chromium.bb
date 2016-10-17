@@ -203,9 +203,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=641129)
 
-    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
-        ['mac'], bug=618464)
-
     # This is due to "centroid out" / "in" mismatch.
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
@@ -469,6 +466,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
 
+    # Fixed on OSX 10.12
+    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
+        ['mac', 'amd'], bug=618464)
+
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
         ['mac', 'amd'], bug=644360)
 
@@ -526,6 +527,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel'], bug=483282)
+
+    # Fixed on OSX 10.11
+    self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
+        ['mac', 'intel'], bug=618464)
 
     # Linux only.
     self.Fail('conformance2/buffers/get-buffer-sub-data.html',

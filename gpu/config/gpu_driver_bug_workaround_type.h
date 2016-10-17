@@ -181,6 +181,8 @@
          use_non_zero_size_for_client_side_stream_buffers)   \
   GPU_OP(USE_SHADOWED_TEX_LEVEL_PARAMS,                      \
          use_shadowed_tex_level_params)                      \
+  GPU_OP(USE_UNUSED_STANDARD_SHARED_BLOCKS,                  \
+         use_unused_standard_shared_blocks)                  \
   GPU_OP(USE_VIRTUALIZED_GL_CONTEXTS,                        \
          use_virtualized_gl_contexts)                        \
   GPU_OP(VALIDATE_MULTISAMPLE_BUFFER_ALLOCATION,             \

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.08",
+  "version": "9.09",
   "entries": [
     {
       "id": 1,
@@ -2098,6 +2098,17 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "init_two_cube_map_levels_before_copyteximage"
+      ]
+    },
+    {
+      "id": 195,
+      "description": "Insert statements to reference all members in unused std140/shared blocks on Mac",
+      "cr_bugs": [618464],
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "use_unused_standard_shared_blocks"
       ]
     }
   ]
