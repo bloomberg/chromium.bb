@@ -62,6 +62,12 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(
   if (isAttribute())
     return v8::Local<v8::Function>();
 
+  // Getting the handleEvent property can runs script in the getter.
+  if (ScriptForbiddenScope::isScriptForbidden()) {
+    V8ThrowException::throwError(isolate(), "Script execution is forbidden.");
+    return v8::Local<v8::Function>();
+  }
+
   if (listener->IsObject()) {
     // Check that no exceptions were thrown when getting the
     // handleEvent property and that the value is a function.
