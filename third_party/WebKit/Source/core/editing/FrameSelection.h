@@ -253,12 +253,12 @@ class CORE_EXPORT FrameSelection final
 
   enum EndPointsAdjustmentMode {
     AdjustEndpointsAtBidiBoundary,
-    DoNotAdjsutEndpoints
+    DoNotAdjustEndpoints
   };
   void setNonDirectionalSelectionIfNeeded(
       const VisibleSelectionInFlatTree&,
       TextGranularity,
-      EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
+      EndPointsAdjustmentMode = DoNotAdjustEndpoints);
   void setFocusedNodeIfNeeded();
   void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
