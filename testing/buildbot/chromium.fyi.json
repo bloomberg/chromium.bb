@@ -894,6 +894,11 @@
         },
         "test": "vr_shell_unittests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "test": "chrome_public_test_apk"
+      }
     ]
   },
   "Blimp Android Client": {
