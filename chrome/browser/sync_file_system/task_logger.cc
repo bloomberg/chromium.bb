@@ -46,8 +46,8 @@ void TaskLogger::RecordLog(std::unique_ptr<TaskLog> log) {
 
   log_history_.push_back(std::move(log));
 
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnLogRecorded(*log_history_.back()));
+  for (auto& observer : observers_)
+    observer.OnLogRecorded(*log_history_.back());
 }
 
 void TaskLogger::ClearLog() {

@@ -646,11 +646,10 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "OnRemoteServiceStateChanged: %d %s", state, description.c_str());
 
-  FOR_EACH_OBSERVER(
-      SyncEventObserver, observers_,
-      OnSyncStateUpdated(GURL(),
-                         RemoteStateToSyncServiceState(state),
-                         description));
+  for (auto& observer : observers_) {
+    observer.OnSyncStateUpdated(GURL(), RemoteStateToSyncServiceState(state),
+                                description);
+  }
 
   RunForEachSyncRunners(&SyncProcessRunner::Schedule);
 }
@@ -742,9 +741,8 @@ void SyncFileSystemService::OnFileStatusChanged(
     SyncFileStatus sync_status,
     SyncAction action_taken,
     SyncDirection direction) {
-  FOR_EACH_OBSERVER(
-      SyncEventObserver, observers_,
-      OnFileSynced(url, file_type, sync_status, action_taken, direction));
+  for (auto& observer : observers_)
+    observer.OnFileSynced(url, file_type, sync_status, action_taken, direction);
 }
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(

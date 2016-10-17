@@ -94,7 +94,8 @@ void LocalFileSyncStatus::EndWriting(const FileSystemURL& url) {
     writing_[origin_and_type].erase(normalized_path);
     if (writing_[origin_and_type].empty())
       writing_.erase(origin_and_type);
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnSyncEnabled(url));
+    for (auto& observer : observer_list_)
+      observer.OnSyncEnabled(url);
   }
 }
 
@@ -113,8 +114,10 @@ void LocalFileSyncStatus::EndSyncing(const FileSystemURL& url) {
   syncing_[origin_and_type].erase(normalized_path);
   if (syncing_[origin_and_type].empty())
     syncing_.erase(origin_and_type);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnSyncEnabled(url));
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnWriteEnabled(url));
+  for (auto& observer : observer_list_)
+    observer.OnSyncEnabled(url);
+  for (auto& observer : observer_list_)
+    observer.OnWriteEnabled(url);
 }
 
 bool LocalFileSyncStatus::IsWriting(const FileSystemURL& url) const {

@@ -132,10 +132,8 @@ void FakeSyncWorker::SetSyncEnabled(bool enabled) {
 
 void FakeSyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      OnPendingFileListUpdated(10));
+  for (auto& observer : observers_)
+    observer.OnPendingFileListUpdated(10);
   callback.Run();
 }
 
@@ -172,9 +170,8 @@ void FakeSyncWorker::UpdateServiceState(RemoteServiceState state,
                                         const std::string& description) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      UpdateServiceState(state, description));
+  for (auto& observer : observers_)
+    observer.UpdateServiceState(state, description);
 }
 
 }  // namespace drive_backend

@@ -57,15 +57,15 @@ void MockRemoteFileSyncService::SetServiceState(RemoteServiceState state) {
 
 void MockRemoteFileSyncService::NotifyRemoteChangeQueueUpdated(
     int64_t pending_changes) {
-  FOR_EACH_OBSERVER(Observer, service_observers_,
-                    OnRemoteChangeQueueUpdated(pending_changes));
+  for (auto& observer : service_observers_)
+    observer.OnRemoteChangeQueueUpdated(pending_changes);
 }
 
 void MockRemoteFileSyncService::NotifyRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
-  FOR_EACH_OBSERVER(Observer, service_observers_,
-                    OnRemoteServiceStateUpdated(state, description));
+  for (auto& observer : service_observers_)
+    observer.OnRemoteServiceStateUpdated(state, description);
 }
 
 void MockRemoteFileSyncService::NotifyFileStatusChanged(
@@ -74,9 +74,10 @@ void MockRemoteFileSyncService::NotifyFileStatusChanged(
     SyncFileStatus sync_status,
     SyncAction action_taken,
     SyncDirection direction) {
-  FOR_EACH_OBSERVER(FileStatusObserver, file_status_observers_,
-                    OnFileStatusChanged(url, file_type, sync_status,
-                                        action_taken, direction));
+  for (auto& observer : file_status_observers_) {
+    observer.OnFileStatusChanged(url, file_type, sync_status, action_taken,
+                                 direction);
+  }
 }
 
 void MockRemoteFileSyncService::AddServiceObserverStub(Observer* observer) {

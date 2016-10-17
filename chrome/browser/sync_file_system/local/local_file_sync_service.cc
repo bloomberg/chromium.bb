@@ -329,8 +329,8 @@ void LocalFileSyncService::OnChangesAvailableInOrigins(
   if (!need_notification)
     return;
   int64_t num_changes = origin_change_map_.GetTotalChangeCount();
-  FOR_EACH_OBSERVER(Observer, change_observers_,
-                    OnLocalChangeAvailable(num_changes));
+  for (auto& observer : change_observers_)
+    observer.OnLocalChangeAvailable(num_changes);
 }
 
 void LocalFileSyncService::SetOriginEnabled(const GURL& origin, bool enabled) {
@@ -375,8 +375,8 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
     origin_change_map_.SetOriginChangeCount(
         app_origin, backend->change_tracker()->num_changes());
     int64_t num_changes = origin_change_map_.GetTotalChangeCount();
-    FOR_EACH_OBSERVER(Observer, change_observers_,
-                      OnLocalChangeAvailable(num_changes));
+    for (auto& observer : change_observers_)
+      observer.OnLocalChangeAvailable(num_changes);
   }
   callback.Run(status);
 }

@@ -216,12 +216,10 @@ void SyncWorker::SetSyncEnabled(bool enabled) {
   if (old_state == GetCurrentState())
     return;
 
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      UpdateServiceState(
-          GetCurrentState(),
-          enabled ? "Sync is enabled" : "Sync is disabled"));
+  for (auto& observer : observers_) {
+    observer.UpdateServiceState(
+        GetCurrentState(), enabled ? "Sync is enabled" : "Sync is disabled");
+  }
 }
 
 void SyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
@@ -230,10 +228,8 @@ void SyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   MetadataDatabase* metadata_db = GetMetadataDatabase();
   if (metadata_db && metadata_db->HasDemotedDirtyTracker()) {
     metadata_db->PromoteDemotedTrackers();
-    FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnPendingFileListUpdated(metadata_db->CountDirtyTracker()));
+    for (auto& observer : observers_)
+      observer.OnPendingFileListUpdated(metadata_db->CountDirtyTracker());
   }
   callback.Run();
 }
@@ -282,9 +278,10 @@ void SyncWorker::NotifyLastOperationStatus(
   UpdateServiceStateFromSyncStatusCode(status, used_network);
 
   if (GetMetadataDatabase()) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnPendingFileListUpdated(GetMetadataDatabase()->CountDirtyTracker()));
+    for (auto& observer : observers_) {
+      observer.OnPendingFileListUpdated(
+          GetMetadataDatabase()->CountDirtyTracker());
+    }
   }
 }
 
@@ -500,14 +497,11 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
   if (status == SYNC_STATUS_OK) {
     if (syncer->sync_action() != SYNC_ACTION_NONE &&
         syncer->url().is_valid()) {
-      FOR_EACH_OBSERVER(
-          Observer, observers_,
-          OnFileStatusChanged(
-              syncer->url(),
-              syncer->file_type(),
-              SYNC_FILE_STATUS_SYNCED,
-              syncer->sync_action(),
-              SYNC_DIRECTION_REMOTE_TO_LOCAL));
+      for (auto& observer : observers_) {
+        observer.OnFileStatusChanged(
+            syncer->url(), syncer->file_type(), SYNC_FILE_STATUS_SYNCED,
+            syncer->sync_action(), SYNC_DIRECTION_REMOTE_TO_LOCAL);
+      }
     }
 
     if (syncer->sync_action() == SYNC_ACTION_DELETED &&
@@ -533,12 +527,11 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
       updated_url = CreateSyncableFileSystemURL(syncer->url().origin(),
                                                 syncer->target_path());
     }
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnFileStatusChanged(updated_url,
-                                          syncer->file_type(),
-                                          SYNC_FILE_STATUS_SYNCED,
-                                          syncer->sync_action(),
-                                          SYNC_DIRECTION_LOCAL_TO_REMOTE));
+    for (auto& observer : observers_) {
+      observer.OnFileStatusChanged(
+          updated_url, syncer->file_type(), SYNC_FILE_STATUS_SYNCED,
+          syncer->sync_action(), SYNC_DIRECTION_LOCAL_TO_REMOTE);
+    }
   }
 
   if (status == SYNC_STATUS_UNKNOWN_ORIGIN && syncer->url().is_valid()) {
@@ -680,9 +673,8 @@ void SyncWorker::UpdateServiceState(RemoteServiceState state,
             "Service state changed: %d->%d: %s",
             old_state, GetCurrentState(), description.c_str());
 
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      UpdateServiceState(GetCurrentState(), description));
+  for (auto& observer : observers_)
+    observer.UpdateServiceState(GetCurrentState(), description);
 }
 
 void SyncWorker::CallOnIdleForTesting(const base::Closure& callback) {
