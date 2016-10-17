@@ -107,8 +107,9 @@ void WorkerThreadRegistry::DidStartCurrentWorkerThread() {
 void WorkerThreadRegistry::WillStopCurrentWorkerThread() {
   WorkerThreadObservers* observers = g_observers_tls.Pointer()->Get();
   DCHECK(observers);
-  FOR_EACH_OBSERVER(WorkerThread::Observer, *observers,
-                    WillStopCurrentWorkerThread());
+  for (auto& observer : *observers)
+    observer.WillStopCurrentWorkerThread();
+
   {
     base::AutoLock locker(task_runner_map_lock_);
     task_runner_map_.erase(WorkerThread::GetCurrentId());

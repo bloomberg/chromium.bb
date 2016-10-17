@@ -126,23 +126,23 @@ std::set<BluetoothUUID> GetUUIDs(
 // Notifies the adapter's observers for each device id the adapter.
 void NotifyDevicesAdded(MockBluetoothAdapter* adapter) {
   for (BluetoothDevice* device : adapter->GetMockDevices()) {
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
-                      DeviceAdded(adapter, device));
+    for (auto& observer : adapter->GetObservers())
+      observer.DeviceAdded(adapter, device);
   }
 }
 
 // Notifies the adapter's observers that the services have been discovered.
 void NotifyServicesDiscovered(MockBluetoothAdapter* adapter,
                               MockBluetoothDevice* device) {
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
-                    GattServicesDiscovered(adapter, device));
+  for (auto& observer : adapter->GetObservers())
+    observer.GattServicesDiscovered(adapter, device);
 }
 
 // Notifies the adapter's observers that a device has changed.
 void NotifyDeviceChanged(MockBluetoothAdapter* adapter,
                          MockBluetoothDevice* device) {
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
-                    DeviceChanged(adapter, device));
+  for (auto& observer : adapter->GetObservers())
+    observer.DeviceChanged(adapter, device);
 }
 
 }  // namespace
@@ -363,16 +363,16 @@ static void AddDevice(scoped_refptr<NiceMockBluetoothAdapter> adapter,
                       std::unique_ptr<NiceMockBluetoothDevice> new_device) {
   NiceMockBluetoothDevice* new_device_ptr = new_device.get();
   adapter->AddMockDevice(std::move(new_device));
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
-                    DeviceAdded(adapter.get(), new_device_ptr));
+  for (auto& observer : adapter->GetObservers())
+    observer.DeviceAdded(adapter.get(), new_device_ptr);
 }
 
 static void RemoveDevice(scoped_refptr<NiceMockBluetoothAdapter> adapter,
                          const std::string& device_address) {
   std::unique_ptr<MockBluetoothDevice> removed_device =
       adapter->RemoveMockDevice(device_address);
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
-                    DeviceRemoved(adapter.get(), removed_device.get()));
+  for (auto& observer : adapter->GetObservers())
+    observer.DeviceRemoved(adapter.get(), removed_device.get());
 }
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
@@ -736,9 +736,8 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHeartRateAdapter() {
           const std::vector<uint8_t>& value, const base::Closure& success,
           const BluetoothRemoteGattCharacteristic::ErrorCallback& error) {
         device_ptr->SetConnected(false);
-        FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                          adapter_ptr->GetObservers(),
-                          DeviceChanged(adapter_ptr, device_ptr));
+        for (auto& observer : adapter_ptr->GetObservers())
+          observer.DeviceChanged(adapter_ptr, device_ptr);
         success.Run();
       }));
 
@@ -1209,10 +1208,10 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
             location[0] = 1;  // Chest
             // Read a characteristic has a side effect of
             // GattCharacteristicValueChanged being called.
-            FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                              adapter->GetObservers(),
-                              GattCharacteristicValueChanged(
-                                  adapter, location_chest_ptr, location));
+            for (auto& observer : adapter->GetObservers()) {
+              observer.GattCharacteristicValueChanged(
+                  adapter, location_chest_ptr, location);
+            }
             return location;
           }));
 
@@ -1231,10 +1230,10 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
             location[0] = 2;  // Wrist
             // Read a characteristic has a side effect of
             // GattCharacteristicValueChanged being called.
-            FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                              adapter->GetObservers(),
-                              GattCharacteristicValueChanged(
-                                  adapter, location_wrist_ptr, location));
+            for (auto& observer : adapter->GetObservers()) {
+              observer.GattCharacteristicValueChanged(
+                  adapter, location_wrist_ptr, location);
+            }
             return location;
           }));
 

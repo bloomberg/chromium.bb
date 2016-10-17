@@ -59,9 +59,8 @@ MockRenderProcessHost::~MockRenderProcessHost() {
 
   // In unit tests, Cleanup() might not have been called.
   if (!deletion_callback_called_) {
-    FOR_EACH_OBSERVER(RenderProcessHostObserver,
-                      observers_,
-                      RenderProcessHostDestroyed(this));
+    for (auto& observer : observers_)
+      observer.RenderProcessHostDestroyed(this);
     RenderProcessHostImpl::UnregisterHost(GetID());
   }
 }
@@ -74,9 +73,8 @@ void MockRenderProcessHost::SimulateCrash() {
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<RenderProcessHost::RendererClosedDetails>(&details));
 
-  FOR_EACH_OBSERVER(
-      RenderProcessHostObserver, observers_,
-      RenderProcessExited(this, details.status, details.exit_code));
+  for (auto& observer : observers_)
+    observer.RenderProcessExited(this, details.status, details.exit_code);
 
   // Send every routing ID a FrameHostMsg_RenderProcessGone message. To ensure a
   // predictable order for unittests which may assert against the order, we sort
@@ -206,9 +204,8 @@ bool MockRenderProcessHost::IgnoreInputEvents() const {
 
 void MockRenderProcessHost::Cleanup() {
   if (listeners_.IsEmpty()) {
-    FOR_EACH_OBSERVER(RenderProcessHostObserver,
-                      observers_,
-                      RenderProcessHostDestroyed(this));
+    for (auto& observer : observers_)
+      observer.RenderProcessHostDestroyed(this);
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     RenderProcessHostImpl::UnregisterHost(GetID());
     deletion_callback_called_ = true;

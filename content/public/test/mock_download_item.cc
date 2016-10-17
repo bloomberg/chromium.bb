@@ -9,7 +9,8 @@ namespace content {
 MockDownloadItem::MockDownloadItem() {}
 
 MockDownloadItem::~MockDownloadItem() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadDestroyed(this);
 }
 
 void MockDownloadItem::AddObserver(Observer* observer) {
@@ -21,15 +22,18 @@ void MockDownloadItem::RemoveObserver(Observer* observer) {
 }
 
 void MockDownloadItem::NotifyObserversDownloadOpened() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadOpened(this);
 }
 
 void MockDownloadItem::NotifyObserversDownloadRemoved() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadRemoved(this);
 }
 
 void MockDownloadItem::NotifyObserversDownloadUpdated() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
+  for (auto& observer : observers_)
+    observer.OnDownloadUpdated(this);
 }
 
 }
