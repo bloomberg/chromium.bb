@@ -125,23 +125,28 @@ bool AppLifetimeMonitor::HasOtherVisibleAppWindows(
 }
 
 void AppLifetimeMonitor::NotifyAppStart(const std::string& app_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppStart(profile_, app_id));
+  for (auto& observer : observers_)
+    observer.OnAppStart(profile_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyAppActivated(const std::string& app_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppActivated(profile_, app_id));
+  for (auto& observer : observers_)
+    observer.OnAppActivated(profile_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyAppDeactivated(const std::string& app_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppDeactivated(profile_, app_id));
+  for (auto& observer : observers_)
+    observer.OnAppDeactivated(profile_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyAppStop(const std::string& app_id) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppStop(profile_, app_id));
+  for (auto& observer : observers_)
+    observer.OnAppStop(profile_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyChromeTerminating() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnChromeTerminating());
+  for (auto& observer : observers_)
+    observer.OnChromeTerminating();
 }
 
 }  // namespace apps
