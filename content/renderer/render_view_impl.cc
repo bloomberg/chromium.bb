@@ -881,8 +881,10 @@ RenderViewImpl::~RenderViewImpl() {
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
 
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, RenderViewGone());
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnDestruct());
+  for (auto& observer : observers_)
+    observer.RenderViewGone();
+  for (auto& observer : observers_)
+    observer.OnDestruct();
 }
 
 /*static*/
@@ -1256,7 +1258,8 @@ void RenderViewImpl::TransferActiveWheelFlingAnimation(
 // RenderWidgetInputHandlerDelegate -----------------------------------------
 
 void RenderViewImpl::RenderWidgetFocusChangeComplete() {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusChangeComplete());
+  for (auto& observer : observers_)
+    observer.FocusChangeComplete();
 }
 
 bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(
@@ -1628,8 +1631,8 @@ void RenderViewImpl::printPage(WebLocalFrame* frame) {
   UMA_HISTOGRAM_BOOLEAN("PrintPreview.OutOfProcessSubframe",
                         frame->top()->isWebRemoteFrame());
 
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    PrintPage(frame, input_handler().handling_input_event()));
+  for (auto& observer : observers_)
+    observer.PrintPage(frame, input_handler().handling_input_event());
 }
 
 bool RenderViewImpl::enumerateChosenDirectory(
@@ -1643,8 +1646,10 @@ bool RenderViewImpl::enumerateChosenDirectory(
 
 void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
   DCHECK_GE(frames_in_progress_, 0);
-  if (frames_in_progress_ == 0)
-    FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
+  if (frames_in_progress_ == 0) {
+    for (auto& observer : observers_)
+      observer.DidStartLoading();
+  }
   frames_in_progress_++;
 }
 
@@ -1656,7 +1661,8 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
   frames_in_progress_--;
   if (frames_in_progress_ == 0) {
     DidStopLoadingIcons();
-    FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStopLoading());
+    for (auto& observer : observers_)
+      observer.DidStopLoading();
   }
 }
 
@@ -1672,7 +1678,8 @@ void RenderViewImpl::SetZoomLevel(double zoom_level) {
   page_zoom_level_ = zoom_level;
 
   webview()->setZoomLevel(zoom_level);
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnZoomLevelChanged());
+  for (auto& observer : observers_)
+    observer.OnZoomLevelChanged();
 }
 
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
@@ -1852,7 +1859,8 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
                                           node_bounds));
 
   // TODO(estade): remove.
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(toNode));
+  for (auto& observer : observers_)
+    observer.FocusedNodeChanged(toNode);
 
   RenderFrameImpl* previous_frame = nullptr;
   if (!fromNode.isNull())
@@ -1872,7 +1880,8 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
 }
 
 void RenderViewImpl::didUpdateLayout() {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidUpdateLayout());
+  for (auto& observer : observers_)
+    observer.DidUpdateLayout();
 
   // We don't always want to set up a timer, only if we've been put in that
   // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
@@ -1940,8 +1949,8 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
 }
 
 void RenderViewImpl::onMouseDown(const WebNode& mouse_down_node) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, OnMouseDown(mouse_down_node));
+  for (auto& observer : observers_)
+    observer.OnMouseDown(mouse_down_node);
 }
 
 void RenderViewImpl::didHandleGestureEvent(
@@ -1950,8 +1959,8 @@ void RenderViewImpl::didHandleGestureEvent(
   RenderWidget::didHandleGestureEvent(event, event_cancelled);
 
   if (!event_cancelled) {
-    FOR_EACH_OBSERVER(
-        RenderViewObserver, observers_, DidHandleGestureEvent(event));
+    for (auto& observer : observers_)
+      observer.DidHandleGestureEvent(event);
   }
 
   // TODO(ananta): Piggyback off existing IPCs to communicate this information,
@@ -2459,7 +2468,8 @@ void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
 }
 
 void RenderViewImpl::OnClosePage() {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, ClosePage());
+  for (auto& observer : observers_)
+    observer.ClosePage();
   // TODO(creis): We'd rather use webview()->Close() here, but that currently
   // sets the WebView's delegate_ to NULL, preventing any JavaScript dialogs
   // in the onunload handler from appearing.  For now, we're bypassing that and
@@ -2740,10 +2750,8 @@ double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
 }
 
 void RenderViewImpl::draggableRegionsChanged() {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver,
-      observers_,
-      DraggableRegionsChanged(webview()->mainFrame()));
+  for (auto& observer : observers_)
+    observer.DraggableRegionsChanged(webview()->mainFrame());
 }
 
 void RenderViewImpl::pageImportanceSignalsChanged() {
@@ -2981,7 +2989,8 @@ void RenderViewImpl::OnReleaseDisambiguationPopupBitmap(
 
 void RenderViewImpl::DidCommitCompositorFrame() {
   RenderWidget::DidCommitCompositorFrame();
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidCommitCompositorFrame());
+  for (auto& observer : observers_)
+    observer.DidCommitCompositorFrame();
 }
 
 void RenderViewImpl::SendUpdateFaviconURL(const std::vector<FaviconURL>& urls) {

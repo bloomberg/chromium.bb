@@ -1164,8 +1164,10 @@ RenderFrameImpl::~RenderFrameImpl() {
     file_chooser_completions_.pop_front();
   }
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
+  for (auto& observer : observers_)
+    observer.RenderFrameGone();
+  for (auto& observer : observers_)
+    observer.OnDestruct();
 
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
 
@@ -1267,8 +1269,8 @@ RenderWidget* RenderFrameImpl::GetRenderWidget() {
 
 #if defined(ENABLE_PLUGINS)
 void RenderFrameImpl::PepperPluginCreated(RendererPpapiHost* host) {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidCreatePepperPlugin(host));
+  for (auto& observer : observers_)
+    observer.DidCreatePepperPlugin(host);
 }
 
 void RenderFrameImpl::PepperDidChangeCursor(
@@ -2142,8 +2144,8 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
   if (accessibility_mode_ & AccessibilityModeFlagFullTree)
     render_accessibility_ = new RenderAccessibilityImpl(this);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    AccessibilityModeChanged());
+  for (auto& observer : observers_)
+    observer.AccessibilityModeChanged();
 }
 
 void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
@@ -2375,15 +2377,15 @@ void RenderFrameImpl::LoadNavigationErrorPage(
 
 void RenderFrameImpl::DidMeaningfulLayout(
     blink::WebMeaningfulLayout layout_type) {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidMeaningfulLayout(layout_type));
+  for (auto& observer : observers_)
+    observer.DidMeaningfulLayout(layout_type);
 }
 
 void RenderFrameImpl::DidCommitCompositorFrame() {
   if (BrowserPluginManager::Get())
     BrowserPluginManager::Get()->DidCommitCompositorFrame(GetRoutingID());
-  FOR_EACH_OBSERVER(
-      RenderFrameObserver, observers_, DidCommitCompositorFrame());
+  for (auto& observer : observers_)
+    observer.DidCommitCompositorFrame();
 }
 
 void RenderFrameImpl::DidCommitAndDrawCompositorFrame() {
@@ -2981,9 +2983,10 @@ void RenderFrameImpl::frameDetached(blink::WebLocalFrame* frame,
     GetRenderWidget()->set_focused_pepper_plugin(nullptr);
 #endif
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    FrameDetached(frame));
+  for (auto& observer : observers_)
+    observer.FrameDetached();
+  for (auto& observer : render_view_->observers())
+    observer.FrameDetached(frame);
 
   // Send a state update before the frame is detached.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries())
@@ -3035,8 +3038,8 @@ void RenderFrameImpl::frameFocused() {
 void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    WillCommitProvisionalLoad());
+  for (auto& observer : observers_)
+    observer.WillCommitProvisionalLoad();
 }
 
 void RenderFrameImpl::didChangeName(const blink::WebString& name,
@@ -3105,9 +3108,8 @@ void RenderFrameImpl::didMatchCSS(
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   DCHECK_EQ(frame_, frame);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidMatchCSS(newly_matching_selectors,
-                                stopped_matching_selectors));
+  for (auto& observer : observers_)
+    observer.DidMatchCSS(newly_matching_selectors, stopped_matching_selectors);
 }
 
 bool RenderFrameImpl::shouldReportDetailedMessageForSource(
@@ -3141,10 +3143,11 @@ void RenderFrameImpl::didAddMessageToConsole(
   }
 
   if (shouldReportDetailedMessageForSource(source_name)) {
-    FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                      DetailedConsoleMessageAdded(
-                          message.text, source_name, stack_trace, source_line,
-                          static_cast<uint32_t>(log_severity)));
+    for (auto& observer : observers_) {
+      observer.DetailedConsoleMessageAdded(message.text, source_name,
+                                           stack_trace, source_line,
+                                           static_cast<uint32_t>(log_severity));
+    }
   }
 
   Send(new FrameHostMsg_AddMessageToConsole(
@@ -3178,7 +3181,8 @@ blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame() {
 }
 
 void RenderFrameImpl::willSendSubmitEvent(const blink::WebFormElement& form) {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSendSubmitEvent(form));
+  for (auto& observer : observers_)
+    observer.WillSendSubmitEvent(form);
 }
 
 void RenderFrameImpl::willSubmitForm(const blink::WebFormElement& form) {
@@ -3206,7 +3210,8 @@ void RenderFrameImpl::willSubmitForm(const blink::WebFormElement& form) {
         web_searchable_form_data.encoding().utf8());
   }
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WillSubmitForm(form));
+  for (auto& observer : observers_)
+    observer.WillSubmitForm(form);
 }
 
 void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
@@ -3361,9 +3366,10 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
       navigation_state->common_params().navigation_start;
   DCHECK(!navigation_start.is_null());
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidStartProvisionalLoad(frame));
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidStartProvisionalLoad());
+  for (auto& observer : render_view_->observers())
+    observer.DidStartProvisionalLoad(frame);
+  for (auto& observer : observers_)
+    observer.DidStartProvisionalLoad();
 
   Send(new FrameHostMsg_DidStartProvisionalLoad(
       routing_id_, ds->request().url(), navigation_start));
@@ -3398,10 +3404,10 @@ void RenderFrameImpl::didFailProvisionalLoad(
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
   //
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidFailProvisionalLoad(frame, error));
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidFailProvisionalLoad(error));
+  for (auto& observer : render_view_->observers())
+    observer.DidFailProvisionalLoad(frame, error);
+  for (auto& observer : observers_)
+    observer.DidFailProvisionalLoad(error);
 
   SendFailedProvisionalLoad(failed_request, error, frame);
 
@@ -3597,12 +3603,12 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     }
   }
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
-                    DidCommitProvisionalLoad(frame, is_new_navigation));
-  FOR_EACH_OBSERVER(
-      RenderFrameObserver, observers_,
-      DidCommitProvisionalLoad(is_new_navigation,
-                               navigation_state->WasWithinSamePage()));
+  for (auto& observer : render_view_->observers_)
+    observer.DidCommitProvisionalLoad(frame, is_new_navigation);
+  for (auto& observer : observers_) {
+    observer.DidCommitProvisionalLoad(is_new_navigation,
+                                      navigation_state->WasWithinSamePage());
+  }
 
   if (!frame->parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
@@ -3637,9 +3643,10 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 void RenderFrameImpl::didCreateNewDocument(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidCreateNewDocument());
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidCreateNewDocument(frame));
+  for (auto& observer : observers_)
+    observer.DidCreateNewDocument();
+  for (auto& observer : render_view_->observers())
+    observer.DidCreateNewDocument(frame);
 }
 
 void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
@@ -3665,9 +3672,10 @@ void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame);
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidClearWindowObject(frame));
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidClearWindowObject());
+  for (auto& observer : render_view_->observers())
+    observer.DidClearWindowObject(frame);
+  for (auto& observer : observers_)
+    observer.DidClearWindowObject();
 }
 
 void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
@@ -3689,10 +3697,10 @@ void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {
     }
   }
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidCreateDocumentElement());
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidCreateDocumentElement(frame));
+  for (auto& observer : observers_)
+    observer.DidCreateDocumentElement();
+  for (auto& observer : render_view_->observers())
+    observer.DidCreateDocumentElement(frame);
 }
 
 void RenderFrameImpl::runScriptsAtDocumentElementAvailable(
@@ -3748,9 +3756,10 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
 
   Send(new FrameHostMsg_DidFinishDocumentLoad(routing_id_));
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidFinishDocumentLoad(frame));
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishDocumentLoad());
+  for (auto& observer : render_view_->observers())
+    observer.DidFinishDocumentLoad(frame);
+  for (auto& observer : observers_)
+    observer.DidFinishDocumentLoad();
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -3834,8 +3843,8 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidFailLoad(frame, error));
+  for (auto& observer : render_view_->observers())
+    observer.DidFailLoad(frame, error);
 
   const WebURLRequest& failed_request = ds->request();
   base::string16 error_description;
@@ -3866,9 +3875,10 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
     document_state->set_finish_load_time(Time::Now());
   }
 
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    DidFinishLoad(frame));
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishLoad());
+  for (auto& observer : render_view_->observers())
+    observer.DidFinishLoad(frame);
+  for (auto& observer : observers_)
+    observer.DidFinishLoad();
 
   Send(new FrameHostMsg_DidFinishLoad(routing_id_,
                                       ds->request().url()));
@@ -4355,15 +4365,14 @@ void RenderFrameImpl::didRunContentWithCertificateErrors(
 }
 
 void RenderFrameImpl::didChangePerformanceTiming() {
-  FOR_EACH_OBSERVER(RenderFrameObserver,
-                    observers_,
-                    DidChangePerformanceTiming());
+  for (auto& observer : observers_)
+    observer.DidChangePerformanceTiming();
 }
 
 void RenderFrameImpl::didObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidObserveLoadingBehavior(behavior));
+  for (auto& observer : observers_)
+    observer.DidObserveLoadingBehavior(behavior);
 }
 
 void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
@@ -4372,8 +4381,8 @@ void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
                                              int world_id) {
   DCHECK_EQ(frame_, frame);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidCreateScriptContext(context, extension_group, world_id));
+  for (auto& observer : observers_)
+    observer.DidCreateScriptContext(context, extension_group, world_id);
 }
 
 void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
@@ -4381,16 +4390,16 @@ void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
                                                int world_id) {
   DCHECK_EQ(frame_, frame);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver,
-                    observers_,
-                    WillReleaseScriptContext(context, world_id));
+  for (auto& observer : observers_)
+    observer.WillReleaseScriptContext(context, world_id);
 }
 
 void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeScrollOffset());
+  for (auto& observer : observers_)
+    observer.DidChangeScrollOffset();
 }
 
 void RenderFrameImpl::willInsertBody(blink::WebLocalFrame* frame) {
@@ -4565,7 +4574,8 @@ void RenderFrameImpl::handleAccessibilityFindInPageResult(
 }
 
 void RenderFrameImpl::didChangeManifest() {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeManifest());
+  for (auto& observer : observers_)
+    observer.DidChangeManifest();
 }
 
 void RenderFrameImpl::enterFullscreen() {
@@ -4640,14 +4650,18 @@ void RenderFrameImpl::OnStop() {
   if (!weak_this)
     return;
 
-  if (frame_ && !frame_->parent())
-    FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_, OnStop());
+  if (frame_ && !frame_->parent()) {
+    for (auto& observer : render_view_->observers_)
+      observer.OnStop();
+  }
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnStop());
+  for (auto& observer : observers_)
+    observer.OnStop();
 }
 
 void RenderFrameImpl::WasHidden() {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasHidden());
+  for (auto& observer : observers_)
+    observer.WasHidden();
 
 #if defined(ENABLE_PLUGINS)
   for (auto* plugin : active_pepper_instances_)
@@ -4660,7 +4674,8 @@ void RenderFrameImpl::WasHidden() {
 }
 
 void RenderFrameImpl::WasShown() {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasShown());
+  for (auto& observer : observers_)
+    observer.WasShown();
 
 #if defined(ENABLE_PLUGINS)
   for (auto* plugin : active_pepper_instances_)
@@ -4673,7 +4688,8 @@ void RenderFrameImpl::WasShown() {
 }
 
 void RenderFrameImpl::WidgetWillClose() {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WidgetWillClose());
+  for (auto& observer : observers_)
+    observer.WidgetWillClose();
 }
 
 bool RenderFrameImpl::IsMainFrame() {
@@ -4962,7 +4978,8 @@ void RenderFrameImpl::HandleWebAccessibilityEvent(
 }
 
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FocusedNodeChanged(node));
+  for (auto& observer : observers_)
+    observer.FocusedNodeChanged(node);
 }
 
 void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
@@ -5992,8 +6009,8 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
   MaybeHandleDebugURL(url);
 
   if (is_main_frame_) {
-    FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
-                      Navigate(url));
+    for (auto& observer : render_view_->observers_)
+      observer.Navigate(url);
   }
 
   render_view_->history_list_offset_ =

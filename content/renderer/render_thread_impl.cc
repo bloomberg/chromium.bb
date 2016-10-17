@@ -907,8 +907,8 @@ RenderThreadImpl::~RenderThreadImpl() {
 }
 
 void RenderThreadImpl::Shutdown() {
-  FOR_EACH_OBSERVER(
-      RenderThreadObserver, observers_, OnRenderProcessShutdown());
+  for (auto& observer : observers_)
+    observer.OnRenderProcessShutdown();
 
   if (memory_observer_) {
     message_loop()->RemoveTaskObserver(memory_observer_.get());
@@ -1420,7 +1420,8 @@ void RenderThreadImpl::IdleHandler() {
     idle_timer_.Stop();
   }
 
-  FOR_EACH_OBSERVER(RenderThreadObserver, observers_, IdleNotification());
+  for (auto& observer : observers_)
+    observer.IdleNotification();
 }
 
 int64_t RenderThreadImpl::GetIdleNotificationDelayInMs() const {
@@ -2010,7 +2011,8 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   blink::resetPluginCache(reload_pages);
   blink_platform_impl_->set_plugin_refresh_allowed(true);
 
-  FOR_EACH_OBSERVER(RenderThreadObserver, observers_, PluginListChanged());
+  for (auto& observer : observers_)
+    observer.PluginListChanged();
 }
 #endif
 
@@ -2019,8 +2021,8 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
     double max_bandwidth_mbps) {
   bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
   WebNetworkStateNotifier::setOnLine(online);
-  FOR_EACH_OBSERVER(
-      RenderThreadObserver, observers_, NetworkStateChanged(online));
+  for (auto& observer : observers_)
+    observer.NetworkStateChanged(online);
   WebNetworkStateNotifier::setWebConnection(
       NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
 }

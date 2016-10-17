@@ -646,8 +646,8 @@ void RenderWidget::OnWasHidden() {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
   // Go into a mode where we stop generating paint and scrolling events.
   SetHidden(true);
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    WasHidden());
+  for (auto& observer : render_frames_)
+    observer.WasHidden();
 }
 
 void RenderWidget::OnWasShown(bool needs_repainting,
@@ -659,8 +659,8 @@ void RenderWidget::OnWasShown(bool needs_repainting,
 
   // See OnWasHidden
   SetHidden(false);
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    WasShown());
+  for (auto& observer : render_frames_)
+    observer.WasShown();
 
   if (!needs_repainting)
     return;
@@ -713,8 +713,8 @@ void RenderWidget::OnSetFocus(bool enable) {
   if (GetWebWidget())
     GetWebWidget()->setFocus(enable);
 
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    RenderWidgetSetFocus(enable));
+  for (auto& observer : render_frames_)
+    observer.RenderWidgetSetFocus(enable);
 }
 
 void RenderWidget::SetNeedsMainFrame() {
@@ -765,18 +765,18 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // tab_capture_performancetest.cc.
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
 
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    DidCommitAndDrawCompositorFrame());
+  for (auto& observer : render_frames_)
+    observer.DidCommitAndDrawCompositorFrame();
 
   // Notify subclasses that we initiated the paint operation.
   DidInitiatePaint();
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    DidCommitCompositorFrame());
-  FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
-                    DidCommitCompositorFrame());
+  for (auto& observer : render_frames_)
+    observer.DidCommitCompositorFrame();
+  for (auto& observer : render_frame_proxies_)
+    observer.DidCommitCompositorFrame();
   input_handler_->FlushPendingInputEventAck();
 }
 
@@ -843,8 +843,8 @@ void RenderWidget::WillBeginCompositorFrame() {
   UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
   UpdateSelectionBounds();
 
-  FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
-                    WillBeginCompositorFrame());
+  for (auto& observer : render_frame_proxies_)
+    observer.WillBeginCompositorFrame();
 }
 
 std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForLayoutTest(
@@ -1001,8 +1001,8 @@ bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
 }
 
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    RenderWidgetWillHandleMouseEvent());
+  for (auto& observer : render_frames_)
+    observer.RenderWidgetWillHandleMouseEvent();
 
   if (owner_delegate_)
     return owner_delegate_->RenderWidgetWillHandleMouseEvent(event);
@@ -1170,8 +1170,8 @@ void RenderWidget::didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
                  MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
   }
 
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    DidMeaningfulLayout(layout_type));
+  for (auto& observer : render_frames_)
+    observer.DidMeaningfulLayout(layout_type);
 }
 
 void RenderWidget::ScheduleComposite() {
@@ -1276,7 +1276,8 @@ void RenderWidget::DoDeferredClose() {
 }
 
 void RenderWidget::NotifyOnClose() {
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_, WidgetWillClose());
+  for (auto& observer : render_frames_)
+    observer.WidgetWillClose();
 }
 
 void RenderWidget::closeWidgetSoon() {

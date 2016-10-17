@@ -71,7 +71,8 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
       weak_factory_(this) {}
 
 PluginInstanceThrottlerImpl::~PluginInstanceThrottlerImpl() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottlerDestroyed());
+  for (auto& observer : observer_list_)
+    observer.OnThrottlerDestroyed();
   if (state_ != THROTTLER_STATE_MARKED_ESSENTIAL)
     RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_NEVER);
 }
@@ -101,15 +102,19 @@ void PluginInstanceThrottlerImpl::MarkPluginEssential(
   state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
   RecordUnthrottleMethodMetric(method);
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnPeripheralStateChange());
+  for (auto& observer : observer_list_)
+    observer.OnPeripheralStateChange();
 
-  if (was_throttled)
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());
+  if (was_throttled) {
+    for (auto& observer : observer_list_)
+      observer.OnThrottleStateChange();
+  }
 }
 
 void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
   is_hidden_for_placeholder_ = hidden;
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnHiddenForPlaceholder(hidden));
+  for (auto& observer : observer_list_)
+    observer.OnHiddenForPlaceholder(hidden);
 }
 
 PepperWebPluginImpl* PluginInstanceThrottlerImpl::GetWebPlugin() const {
@@ -151,7 +156,8 @@ void PluginInstanceThrottlerImpl::Initialize(
     if (status != RenderFrame::CONTENT_STATUS_PERIPHERAL) {
       DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);
       state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnPeripheralStateChange());
+      for (auto& observer : observer_list_)
+        observer.OnPeripheralStateChange();
 
       if (status == RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG)
         frame->WhitelistContentOrigin(content_origin);
@@ -213,15 +219,16 @@ void PluginInstanceThrottlerImpl::EngageThrottle() {
     return;
 
   if (!last_received_frame_.empty()) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnKeyframeExtracted(&last_received_frame_));
+    for (auto& observer : observer_list_)
+      observer.OnKeyframeExtracted(&last_received_frame_);
 
     // Release our reference to the underlying pixel data.
     last_received_frame_.reset();
   }
 
   state_ = THROTTLER_STATE_PLUGIN_THROTTLED;
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());
+  for (auto& observer : observer_list_)
+    observer.OnThrottleStateChange();
 }
 
 }  // namespace content
