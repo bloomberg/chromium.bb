@@ -194,6 +194,8 @@ blink_core_sources("css") {
     "MediaValues.cpp",
     "MediaValuesCached.cpp",
     "MediaValuesDynamic.cpp",
+    "MediaValuesInitialViewport.cpp",
+    "MediaValuesInitialViewport.h",
     "PageRuleCollector.cpp",
     "PageRuleCollector.h",
     "PropertyRegistration.cpp",

@@ -2696,6 +2696,26 @@ TEST_P(ParameterizedWebFrameTest,
   EXPECT_NEAR(5.0f, webViewHelper.webView()->maximumPageScaleFactor(), 0.01f);
 }
 
+// TODO(rune@opera.com): Does not pass until we collect author @viewport rules
+// before constructing the RuleSets. https://crbug.com/332763
+TEST_P(ParameterizedWebFrameTest,
+       DISABLED_AtViewportInsideAtMediaInitialViewport) {
+  registerMockedHttpURLLoad("viewport-inside-media.html");
+
+  FixedLayoutTestWebViewClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initializeAndLoad(m_baseURL + "viewport-inside-media.html",
+                                  true, nullptr, &client, nullptr,
+                                  enableViewportSettings);
+  webViewHelper.resize(WebSize(640, 480));
+
+  EXPECT_EQ(2000, webViewHelper.webView()
+                      ->mainFrameImpl()
+                      ->frameView()
+                      ->layoutSize()
+                      .width());
+}
+
 class WebFrameResizeTest : public ParameterizedWebFrameTest {
  protected:
   static FloatSize computeRelativeOffset(const IntPoint& absoluteOffset,

@@ -11,7 +11,7 @@ namespace blink {
 
 class Document;
 
-class MediaValuesDynamic final : public MediaValues {
+class CORE_EXPORT MediaValuesDynamic : public MediaValues {
  public:
   static MediaValues* create(Document&);
   static MediaValues* create(LocalFrame*);

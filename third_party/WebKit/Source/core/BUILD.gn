@@ -1005,6 +1005,7 @@ source_set("unit_tests") {
     "css/MediaQueryListTest.cpp",
     "css/MediaQueryMatcherTest.cpp",
     "css/MediaQuerySetTest.cpp",
+    "css/MediaValuesInitialViewportTest.cpp",
     "css/MediaValuesTest.cpp",
     "css/RuleFeatureSetTest.cpp",
     "css/RuleSetTest.cpp",

@@ -33,7 +33,7 @@
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/MediaValuesDynamic.h"
+#include "core/css/MediaValuesInitialViewport.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
@@ -49,10 +49,8 @@ namespace blink {
 ViewportStyleResolver::ViewportStyleResolver(Document& document)
     : m_document(document), m_hasAuthorStyle(false) {
   DCHECK(document.frame());
-  // TODO(rune@opera.com): The MediaValues object passed here should reflect the
-  // initial viewport, not the actual viewport. See https://crbug.com/332763
-  m_initialViewportMedium =
-      new MediaQueryEvaluator(MediaValuesDynamic::create(document.frame()));
+  m_initialViewportMedium = new MediaQueryEvaluator(
+      MediaValuesInitialViewport::create(*document.frame()));
 }
 
 void ViewportStyleResolver::collectViewportRulesFromUASheets() {
