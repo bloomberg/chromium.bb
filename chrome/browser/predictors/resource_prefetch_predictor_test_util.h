@@ -33,10 +33,10 @@ RedirectData CreateRedirectData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
 
 // For printing failures nicely.
-void PrintTo(const PrefetchData& data, ::std::ostream* os);
-void PrintTo(const ResourceData& resource, ::std::ostream* os);
-void PrintTo(const RedirectData& data, ::std::ostream* os);
-void PrintTo(const RedirectStat& redirect, ::std::ostream* os);
+std::ostream& operator<<(std::ostream& stream, const PrefetchData& data);
+std::ostream& operator<<(std::ostream& stream, const ResourceData& resource);
+std::ostream& operator<<(std::ostream& stream, const RedirectData& data);
+std::ostream& operator<<(std::ostream& stream, const RedirectStat& redirect);
 
 bool operator==(const PrefetchData& lhs, const PrefetchData& rhs);
 bool operator==(const ResourceData& lhs, const ResourceData& rhs);

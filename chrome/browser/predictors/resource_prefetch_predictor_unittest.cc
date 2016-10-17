@@ -10,7 +10,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -20,7 +19,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -269,9 +268,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
   void InitializeSampleData();
 
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   net::TestURLRequestContext url_request_context_;
 
@@ -290,9 +287,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 };
 
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
-    : loop_(base::MessageLoop::TYPE_DEFAULT),
-      ui_thread_(content::BrowserThread::UI, &loop_),
-      db_thread_(content::BrowserThread::DB, &loop_),
+    : thread_bundle_(),
       profile_(new TestingProfile()),
       mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()),
       empty_resource_data_(),
