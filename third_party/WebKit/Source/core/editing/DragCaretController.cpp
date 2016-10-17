@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/drag_and_drop/DragCaretController.h"
+#include "core/editing/DragCaretController.h"
 
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/Settings.h"

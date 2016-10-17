@@ -16,6 +16,8 @@ blink_core_sources("page") {
     "CreateWindow.h",
     "CustomContextMenuProvider.cpp",
     "CustomContextMenuProvider.h",
+    "DragController.cpp",
+    "DragData.cpp",
     "EventWithHitTestResults.h",
     "FocusController.cpp",
     "FrameTree.cpp",

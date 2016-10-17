@@ -6,8 +6,8 @@
 #define MouseEventManager_h
 
 #include "core/CoreExport.h"
-#include "core/editing/drag_and_drop/DragActions.h"
 #include "core/input/BoundaryEventDispatcher.h"
+#include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/Timer.h"

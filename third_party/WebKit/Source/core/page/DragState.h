@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,26 +23,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragSession_h
-#define DragSession_h
+#ifndef DragState_h
+#define DragState_h
 
-#include "core/editing/drag_and_drop/DragActions.h"
-#include "wtf/Allocator.h"
+#include "core/page/DragActions.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-struct DragSession {
-  STACK_ALLOCATED();
-  DragOperation operation;
-  bool mouseIsOverFileInput;
-  unsigned numberOfItemsToBeAccepted;
+class DataTransfer;
+class Node;
 
-  DragSession()
-      : operation(DragOperationNone),
-        mouseIsOverFileInput(false),
-        numberOfItemsToBeAccepted(0) {}
+class DragState final : public GarbageCollected<DragState> {
+  WTF_MAKE_NONCOPYABLE(DragState);
+
+ public:
+  DragState() {}
+
+  // Element that may be a drag source, for the current mouse gesture.
+  Member<Node> m_dragSrc;
+  DragSourceAction m_dragType;
+  // Used on only the source side of dragging.
+  Member<DataTransfer> m_dragDataTransfer;
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_dragSrc);
+    visitor->trace(m_dragDataTransfer);
+  }
 };
 
 }  // namespace blink
 
-#endif
+#endif  // DragState_h

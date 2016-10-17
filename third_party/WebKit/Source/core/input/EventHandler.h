@@ -27,7 +27,6 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
-#include "core/editing/drag_and_drop/DragActions.h"
 #include "core/events/TextEventInputType.h"
 #include "core/input/GestureManager.h"
 #include "core/input/KeyboardEventManager.h"
@@ -35,6 +34,7 @@
 #include "core/input/PointerEventManager.h"
 #include "core/input/ScrollManager.h"
 #include "core/layout/HitTestRequest.h"
+#include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
