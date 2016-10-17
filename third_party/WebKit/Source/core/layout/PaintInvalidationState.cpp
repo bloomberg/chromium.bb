@@ -20,6 +20,7 @@
 
 namespace blink {
 
+DISABLE_CFI_PERF
 static bool supportsCachedOffsets(const LayoutObject& object) {
   // Can't compute paint offsets across objects with transforms, but if they are
   // paint invalidation containers, we don't actually need to compute *across*
@@ -417,6 +418,7 @@ static FloatPoint slowLocalToAncestorPoint(const LayoutObject& object,
   return result;
 }
 
+DISABLE_CFI_PERF
 LayoutPoint
 PaintInvalidationState::computePositionFromPaintInvalidationBacking() const {
 #if ENABLE(ASSERT)

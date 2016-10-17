@@ -434,6 +434,7 @@ void ObjectPaintInvalidatorWithContext::fullyInvalidatePaint(
                                 newBounds, reason);
 }
 
+DISABLE_CFI_PERF
 PaintInvalidationReason
 ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   // This is before any early return to ensure the background obscuration status
@@ -504,6 +505,7 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
   return PaintInvalidationIncremental;
 }
 
+DISABLE_CFI_PERF
 void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
     PaintInvalidationReason reason) {
   // Update selection rect when we are doing full invalidation (in case that the
@@ -533,6 +535,7 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
   }
 }
 
+DISABLE_CFI_PERF
 PaintInvalidationReason
 ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
     PaintInvalidationReason reason) {

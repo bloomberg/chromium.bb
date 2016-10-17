@@ -999,6 +999,7 @@ void GraphicsLayer::setNeedsDisplay() {
                           PaintInvalidationFull);
 }
 
+DISABLE_CFI_PERF
 void GraphicsLayer::setNeedsDisplayInRect(
     const IntRect& rect,
     PaintInvalidationReason invalidationReason,

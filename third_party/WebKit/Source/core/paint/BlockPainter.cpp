@@ -27,6 +27,7 @@
 
 namespace blink {
 
+DISABLE_CFI_PERF
 void BlockPainter::paint(const PaintInfo& paintInfo,
                          const LayoutPoint& paintOffset) {
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();
@@ -162,6 +163,7 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox,
       .paintAllPhasesAtomically(paintInfo, childPoint);
 }
 
+DISABLE_CFI_PERF
 void BlockPainter::paintObject(const PaintInfo& paintInfo,
                                const LayoutPoint& paintOffset) {
   const PaintPhase paintPhase = paintInfo.phase;
@@ -261,6 +263,7 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo,
         frame, paintInfo.context, paintOffset);
 }
 
+DISABLE_CFI_PERF
 bool BlockPainter::intersectsPaintRect(
     const PaintInfo& paintInfo,
     const LayoutPoint& adjustedPaintOffset) const {
