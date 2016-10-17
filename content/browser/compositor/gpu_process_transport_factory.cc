@@ -184,8 +184,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
-  // If this fails, then we are leaking compositors.
-  CHECK(per_compositor_data_.empty());
+  DCHECK(per_compositor_data_.empty());
 
   // Make sure the lost context callback doesn't try to run during destruction.
   callback_factory_.InvalidateWeakPtrs();
