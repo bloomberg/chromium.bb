@@ -42,6 +42,7 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage::Streams;
 
 using base::win::ScopedComPtr;
+using mojom::Result;
 
 // Helpers for printing HRESULTs.
 struct PrintHr {

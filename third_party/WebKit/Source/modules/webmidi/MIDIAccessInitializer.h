@@ -77,9 +77,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
                             MIDIAccessor::MIDIPortState) override;
   void didSetOutputPortState(unsigned portIndex,
                              MIDIAccessor::MIDIPortState) override;
-  void didStartSession(bool success,
-                       const String& error,
-                       const String& message) override;
+  void didStartSession(midi::mojom::Result) override;
   void didReceiveMIDIData(unsigned portIndex,
                           const unsigned char* data,
                           size_t length,

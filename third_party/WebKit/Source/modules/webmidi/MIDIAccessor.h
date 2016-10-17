@@ -71,9 +71,7 @@ class MIDIAccessor final : public WebMIDIAccessorClient {
                         MIDIPortState) override;
   void didSetInputPortState(unsigned portIndex, MIDIPortState) override;
   void didSetOutputPortState(unsigned portIndex, MIDIPortState) override;
-  void didStartSession(bool success,
-                       const WebString& error,
-                       const WebString& message) override;
+  void didStartSession(midi::mojom::Result) override;
   void didReceiveMIDIData(unsigned portIndex,
                           const unsigned char* data,
                           size_t length,

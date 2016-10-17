@@ -52,6 +52,8 @@
 namespace midi {
 namespace {
 
+using mojom::Result;
+
 static const size_t kBufferLength = 32 * 1024;
 
 // We assume that nullpter represents an invalid MIDI handle.

@@ -3,3 +3,6 @@
 toyoshim@chromium.org
 yhirano@chromium.org
 yukawa@chromium.org
+
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS

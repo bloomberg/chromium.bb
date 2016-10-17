@@ -2,6 +2,7 @@ include_rules = [
   "+cc",
   "+gin",
   "+gpu/command_buffer/client",
+  "+media/midi/midi_service.mojom.h",
   "+net/base",
   "+skia",
   "+third_party/khronos/GLES2/gl2.h",

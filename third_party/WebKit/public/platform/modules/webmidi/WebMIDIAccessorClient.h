@@ -31,6 +31,7 @@
 #ifndef WebMIDIAccessorClient_h
 #define WebMIDIAccessorClient_h
 
+#include "media/midi/midi_service.mojom-shared.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -59,9 +60,7 @@ class WebMIDIAccessorClient {
   virtual void didSetInputPortState(unsigned portIndex, MIDIPortState) = 0;
   virtual void didSetOutputPortState(unsigned portIndex, MIDIPortState) = 0;
 
-  virtual void didStartSession(bool success,
-                               const WebString& error,
-                               const WebString& message) = 0;
+  virtual void didStartSession(midi::mojom::Result) = 0;
 
   // |timeStamp| is in milliseconds according to the Web MIDI API.
   virtual void didReceiveMIDIData(unsigned portIndex,

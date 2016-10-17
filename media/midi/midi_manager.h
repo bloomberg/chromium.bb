@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_port_info.h"
-#include "media/midi/result.h"
+#include "media/midi/midi_service.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -45,7 +45,7 @@ class MIDI_EXPORT MidiManagerClient {
 
   // CompleteStartSession() is called when platform dependent preparation is
   // finished.
-  virtual void CompleteStartSession(Result result) = 0;
+  virtual void CompleteStartSession(mojom::Result result) = 0;
 
   // ReceiveMidiData() is called when MIDI data has been received from the
   // MIDI system.
@@ -88,8 +88,9 @@ class MIDI_EXPORT MidiManager {
   // A client calls StartSession() to receive and send MIDI data.
   // If the session is ready to start, the MIDI system is lazily initialized
   // and the client is registered to receive MIDI data.
-  // CompleteStartSession() is called with Result::OK if the session is started.
-  // Otherwise CompleteStartSession() is called with proper Result code.
+  // CompleteStartSession() is called with mojom::Result::OK if the session is
+  // started. Otherwise CompleteStartSession() is called with a proper
+  // mojom::Result code.
   // StartSession() and EndSession() can be called on the Chrome_IOThread.
   // CompleteStartSession() will be invoked on the same Chrome_IOThread.
   void StartSession(MidiManagerClient* client);
@@ -120,13 +121,14 @@ class MIDI_EXPORT MidiManager {
 
   // Initializes the platform dependent MIDI system. MidiManager class has a
   // default implementation that synchronously calls CompleteInitialization()
-  // with Result::NOT_SUPPORTED on the caller thread. A derived class for a
-  // specific platform should override this method correctly.
+  // with mojom::Result::NOT_SUPPORTED on the caller thread. A derived class for
+  // a specific platform should override this method correctly.
   // This method is called on Chrome_IOThread thread inside StartSession().
   // Platform dependent initialization can be processed synchronously or
   // asynchronously. When the initialization is completed,
   // CompleteInitialization() should be called with |result|.
-  // |result| should be Result::OK on success, otherwise a proper Result.
+  // |result| should be mojom::Result::OK on success, otherwise a proper
+  // mojom::Result.
   virtual void StartInitialization();
 
   // Finalizes the platform dependent MIDI system. Called on Chrome_IOThread
@@ -139,7 +141,7 @@ class MIDI_EXPORT MidiManager {
   // It invokes CompleteInitializationInternal() on the thread that calls
   // StartSession() and distributes |result| to MIDIManagerClient objects in
   // |pending_clients_|.
-  void CompleteInitialization(Result result);
+  void CompleteInitialization(mojom::Result result);
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
@@ -171,7 +173,7 @@ class MIDI_EXPORT MidiManager {
   const MidiPortInfoList& output_ports() const { return output_ports_; }
 
  private:
-  void CompleteInitializationInternal(Result result);
+  void CompleteInitializationInternal(mojom::Result result);
   void AddInitialPorts(MidiManagerClient* client);
   void ShutdownOnSessionThread();
 
@@ -193,8 +195,8 @@ class MIDI_EXPORT MidiManager {
   bool finalized_;
 
   // Keeps the platform dependent initialization result if initialization is
-  // completed. Otherwise keeps Result::NOT_INITIALIZED.
-  Result result_;
+  // completed. Otherwise keeps mojom::Result::NOT_INITIALIZED.
+  mojom::Result result_;
 
   // Keeps all MidiPortInfo.
   MidiPortInfoList input_ports_;

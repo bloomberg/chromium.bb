@@ -5,13 +5,18 @@
 // IPC messages for access to MIDI hardware.
 // Multiply-included message file, hence no include guard.
 
+// TODO(toyoshim): Mojofication is working in progress. Until the work is
+// finished, this file temporarily depends on midi_service.mojom.h.
+// Once the migration is finished, this file will be removed.
+// http://crbug.com/582327
+
 #include <stdint.h>
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
 #include "media/midi/midi_port_info.h"
-#include "media/midi/result.h"
+#include "media/midi/midi_service.mojom.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -29,7 +34,7 @@ IPC_STRUCT_TRAITS_BEGIN(midi::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(state)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(midi::Result, midi::Result::MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(midi::mojom::Result, midi::mojom::Result::MAX)
 
 // Messages for IPC between MidiMessageFilter and MidiHost.
 
@@ -59,7 +64,7 @@ IPC_MESSAGE_CONTROL2(MidiMsg_SetOutputPortState,
                      uint32_t /* port */,
                      midi::MidiPortState /* state */)
 
-IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, midi::Result /* result */)
+IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, midi::mojom::Result /* result */)
 
 IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
                      uint32_t /* port */,

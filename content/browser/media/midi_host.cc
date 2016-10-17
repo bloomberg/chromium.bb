@@ -44,6 +44,7 @@ bool IsSystemRealTimeMessage(uint8_t data) {
 
 using midi::kSysExByte;
 using midi::kEndOfSysExByte;
+using midi::mojom::Result;
 
 MidiHost::MidiHost(int renderer_process_id,
                    midi::MidiManager* midi_manager)
@@ -141,9 +142,9 @@ void MidiHost::OnEndSession() {
     midi_manager_->EndSession(this);
 }
 
-void MidiHost::CompleteStartSession(midi::Result result) {
+void MidiHost::CompleteStartSession(Result result) {
   DCHECK(is_session_requested_);
-  if (result == midi::Result::OK) {
+  if (result == Result::OK) {
     // ChildSecurityPolicy is set just before OnStartSession by
     // MidiDispatcherHost. So we can safely cache the policy.
     has_sys_ex_permission_ = ChildProcessSecurityPolicyImpl::GetInstance()->

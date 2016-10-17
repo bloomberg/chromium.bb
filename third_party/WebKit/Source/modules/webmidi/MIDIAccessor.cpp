@@ -37,6 +37,7 @@
 #include <memory>
 
 using blink::WebString;
+using midi::mojom::Result;
 
 namespace blink {
 
@@ -90,10 +91,8 @@ void MIDIAccessor::didSetOutputPortState(unsigned portIndex,
   m_client->didSetOutputPortState(portIndex, state);
 }
 
-void MIDIAccessor::didStartSession(bool success,
-                                   const WebString& error,
-                                   const WebString& message) {
-  m_client->didStartSession(success, error, message);
+void MIDIAccessor::didStartSession(Result result) {
+  m_client->didStartSession(result);
 }
 
 void MIDIAccessor::didReceiveMIDIData(unsigned portIndex,

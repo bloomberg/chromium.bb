@@ -115,6 +115,7 @@ component("test_runner") {
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
+    "//media/midi:mojo_cpp_sources",
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",

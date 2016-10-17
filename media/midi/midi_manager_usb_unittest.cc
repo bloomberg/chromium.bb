@@ -22,6 +22,8 @@ namespace midi {
 
 namespace {
 
+using mojom::Result;
+
 template<typename T, size_t N>
 std::vector<T> ToVector(const T (&array)[N]) {
   return std::vector<T>(array, array + N);

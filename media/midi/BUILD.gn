@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -95,6 +96,7 @@ component("midi") {
 
   defines = [ "MIDI_IMPLEMENTATION" ]
   deps = [
+    ":mojo",
     "//base",
   ]
   libs = []
@@ -165,6 +167,13 @@ component("midi") {
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
   }
+}
+
+mojom("mojo") {
+  sources = [
+    "midi_service.mojom",
+  ]
+  use_new_wrapper_types = true
 }
 
 test("midi_unittests") {

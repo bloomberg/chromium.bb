@@ -17,6 +17,7 @@ namespace midi {
 namespace {
 
 using Sample = base::HistogramBase::Sample;
+using midi::mojom::Result;
 
 // If many users have more devices, this number will be increased.
 // But the number is expected to be big enough for now.

@@ -53,9 +53,7 @@ class MIDIAccessorClient {
   virtual void didSetOutputPortState(unsigned portIndex,
                                      MIDIAccessor::MIDIPortState) = 0;
 
-  virtual void didStartSession(bool success,
-                               const String& error,
-                               const String& message) = 0;
+  virtual void didStartSession(midi::mojom::Result) = 0;
   virtual void didReceiveMIDIData(unsigned portIndex,
                                   const unsigned char* data,
                                   size_t length,

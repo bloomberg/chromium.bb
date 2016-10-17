@@ -14,6 +14,8 @@
 
 namespace midi {
 
+using mojom::Result;
+
 MidiManagerUsb::MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory> factory)
     : device_factory_(std::move(factory)) {}
 

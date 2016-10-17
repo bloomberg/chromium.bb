@@ -24,6 +24,8 @@ namespace midi {
 
 namespace {
 
+using mojom::Result;
+
 class FakeMidiManager : public MidiManager {
  public:
   FakeMidiManager()

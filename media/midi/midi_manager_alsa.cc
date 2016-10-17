@@ -32,6 +32,8 @@ namespace midi {
 
 namespace {
 
+using midi::mojom::Result;
+
 // Per-output buffer. This can be smaller, but then large sysex messages
 // will be (harmlessly) split across multiple seq events. This should
 // not have any real practical effect, except perhaps to slightly reorder

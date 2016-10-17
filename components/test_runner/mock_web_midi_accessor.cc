@@ -14,6 +14,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 
+using midi::mojom::Result;
+
 namespace test_runner {
 
 MockWebMIDIAccessor::MockWebMIDIAccessor(blink::WebMIDIAccessorClient* client,
@@ -42,8 +44,8 @@ void MockWebMIDIAccessor::startSession() {
       interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
-void MockWebMIDIAccessor::ReportStartedSession(bool success) {
-  client_->didStartSession(success, "InvalidStateError", "");
+void MockWebMIDIAccessor::ReportStartedSession(Result result) {
+  client_->didStartSession(result);
 }
 
 void MockWebMIDIAccessor::sendMIDIData(unsigned port_index,

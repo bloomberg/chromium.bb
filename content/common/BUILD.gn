@@ -381,6 +381,7 @@ source_set("common") {
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
     "//media/midi",
+    "//media/midi:mojo_cpp_sources",
     "//mojo/common:common_base",
     "//mojo/edk/system",
     "//net",

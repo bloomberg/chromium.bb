@@ -21,6 +21,8 @@ namespace midi {
 
 namespace {
 
+using mojom::Result;
+
 void Noop(const MIDIPacketList*, void*, void*) {}
 
 class FakeMidiManagerClient : public MidiManagerClient {

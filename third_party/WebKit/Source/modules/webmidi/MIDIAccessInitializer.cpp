@@ -24,6 +24,7 @@ namespace blink {
 
 using PortState = WebMIDIAccessorClient::MIDIPortState;
 
+using midi::mojom::Result;
 using mojom::blink::PermissionStatus;
 
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState,
@@ -85,34 +86,26 @@ void MIDIAccessInitializer::didSetOutputPortState(unsigned portIndex,
   NOTREACHED();
 }
 
-void MIDIAccessInitializer::didStartSession(bool success,
-                                            const String& error,
-                                            const String& message) {
+void MIDIAccessInitializer::didStartSession(Result result) {
   DCHECK(m_accessor);
-  if (success) {
-    resolve(MIDIAccess::create(std::move(m_accessor),
-                               m_options.hasSysex() && m_options.sysex(),
-                               m_portDescriptors, getExecutionContext()));
-  } else {
-    // The spec says the name is one of
-    //  - SecurityError
-    //  - AbortError
-    //  - InvalidStateError
-    //  - NotSupportedError
-    // TODO(toyoshim): Do not rely on |error| string. Instead an enum
-    // representing an ExceptionCode should be defined and deliverred.
-    ExceptionCode ec = InvalidStateError;
-    if (error == DOMException::getErrorName(SecurityError)) {
-      ec = SecurityError;
-    } else if (error == DOMException::getErrorName(AbortError)) {
-      ec = AbortError;
-    } else if (error == DOMException::getErrorName(InvalidStateError)) {
-      ec = InvalidStateError;
-    } else if (error == DOMException::getErrorName(NotSupportedError)) {
-      ec = NotSupportedError;
-    }
-    reject(DOMException::create(ec, message));
+  // We would also have AbortError and SecurityError according to the spec.
+  // SecurityError is handled in onPermission(s)Updated().
+  switch (result) {
+    case Result::NOT_INITIALIZED:
+      break;
+    case Result::OK:
+      return resolve(MIDIAccess::create(
+          std::move(m_accessor), m_options.hasSysex() && m_options.sysex(),
+          m_portDescriptors, getExecutionContext()));
+    case Result::NOT_SUPPORTED:
+      return reject(DOMException::create(NotSupportedError));
+    case Result::INITIALIZATION_ERROR:
+      return reject(DOMException::create(
+          InvalidStateError, "Platform dependent initialization failed."));
   }
+  NOTREACHED();
+  reject(DOMException::create(InvalidStateError,
+                              "Unknown internal error occurred."));
 }
 
 ExecutionContext* MIDIAccessInitializer::getExecutionContext() const {

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "media/midi/midi_service.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 
 namespace blink {
@@ -33,7 +34,7 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
                     double timestamp) override;
 
  private:
-  void ReportStartedSession(bool success);
+  void ReportStartedSession(midi::mojom::Result result);
 
   blink::WebMIDIAccessorClient* client_;
   TestInterfaces* interfaces_;

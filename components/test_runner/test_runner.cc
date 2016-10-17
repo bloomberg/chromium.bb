@@ -1356,8 +1356,11 @@ void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
 }
 
 void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
-  if (runner_)
-    runner_->SetMIDIAccessorResult(result);
+  if (runner_) {
+    runner_->SetMIDIAccessorResult(
+        result ? midi::mojom::Result::OK
+               : midi::mojom::Result::INITIALIZATION_ERROR);
+  }
 }
 
 void TestRunnerBindings::SimulateWebNotificationClick(const std::string& title,
@@ -1664,7 +1667,7 @@ void TestRunner::Reset() {
   dump_back_forward_list_ = false;
   test_repaint_ = false;
   sweep_horizontally_ = false;
-  midi_accessor_result_ = true;
+  midi_accessor_result_ = midi::mojom::Result::OK;
   has_custom_text_output_ = false;
   custom_text_output_.clear();
 
@@ -1961,7 +1964,7 @@ bool TestRunner::shouldDumpNavigationPolicy() const {
   return layout_test_runtime_flags_.dump_navigation_policy();
 }
 
-bool TestRunner::midiAccessorResult() {
+midi::mojom::Result TestRunner::midiAccessorResult() {
   return midi_accessor_result_;
 }
 
@@ -2700,7 +2703,7 @@ void TestRunner::SetPOSIXLocale(const std::string& locale) {
   delegate_->SetLocale(locale);
 }
 
-void TestRunner::SetMIDIAccessorResult(bool result) {
+void TestRunner::SetMIDIAccessorResult(midi::mojom::Result result) {
   midi_accessor_result_ = result;
 }
 

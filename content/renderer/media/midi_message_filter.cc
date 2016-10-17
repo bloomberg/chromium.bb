@@ -15,6 +15,7 @@
 #include "ipc/ipc_logging.h"
 
 using base::AutoLock;
+using midi::mojom::Result;
 
 // The maximum number of bytes which we're allowed to send to the browser
 // before getting acknowledgement back from the browser that they've been
@@ -28,9 +29,8 @@ MidiMessageFilter::MidiMessageFilter(
     : sender_(nullptr),
       io_task_runner_(io_task_runner),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      session_result_(midi::Result::NOT_INITIALIZED),
-      unacknowledged_bytes_sent_(0u) {
-}
+      session_result_(Result::NOT_INITIALIZED),
+      unacknowledged_bytes_sent_(0u) {}
 
 MidiMessageFilter::~MidiMessageFilter() {}
 
@@ -38,7 +38,7 @@ void MidiMessageFilter::AddClient(blink::WebMIDIAccessorClient* client) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("midi", "MidiMessageFilter::AddClient");
   clients_waiting_session_queue_.push_back(client);
-  if (session_result_ != midi::Result::NOT_INITIALIZED) {
+  if (session_result_ != Result::NOT_INITIALIZED) {
     HandleClientAdded(session_result_);
   } else if (clients_waiting_session_queue_.size() == 1u) {
     io_task_runner_->PostTask(
@@ -56,7 +56,7 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
   if (it != clients_waiting_session_queue_.end())
     clients_waiting_session_queue_.erase(it);
   if (clients_.empty() && clients_waiting_session_queue_.empty()) {
-    session_result_ = midi::Result::NOT_INITIALIZED;
+    session_result_ = Result::NOT_INITIALIZED;
     inputs_.clear();
     outputs_.clear();
     io_task_runner_->PostTask(
@@ -142,7 +142,7 @@ void MidiMessageFilter::OnChannelClosing() {
   sender_ = nullptr;
 }
 
-void MidiMessageFilter::OnSessionStarted(midi::Result result) {
+void MidiMessageFilter::OnSessionStarted(Result result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnSessionStarted");
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Handle on the main JS thread.
@@ -199,37 +199,17 @@ void MidiMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
                             this, bytes_sent));
 }
 
-void MidiMessageFilter::HandleClientAdded(midi::Result result) {
+void MidiMessageFilter::HandleClientAdded(Result result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::HandleClientAdded");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   session_result_ = result;
-  std::string error;
-  std::string message;
-  switch (result) {
-    case midi::Result::OK:
-      break;
-    case midi::Result::NOT_SUPPORTED:
-      error = "NotSupportedError";
-      break;
-    case midi::Result::INITIALIZATION_ERROR:
-      error = "InvalidStateError";
-      message = "Platform dependent initialization failed.";
-      break;
-    default:
-      NOTREACHED();
-      error = "InvalidStateError";
-      message = "Unknown internal error occurred.";
-      break;
-  }
-  base::string16 error16 = base::UTF8ToUTF16(error);
-  base::string16 message16 = base::UTF8ToUTF16(message);
 
   // A for-loop using iterators does not work because |client| may touch
   // |clients_waiting_session_queue_| in callbacks.
   while (!clients_waiting_session_queue_.empty()) {
     auto* client = clients_waiting_session_queue_.back();
     clients_waiting_session_queue_.pop_back();
-    if (result == midi::Result::OK) {
+    if (result == Result::OK) {
       // Add the client's input and output ports.
       for (const auto& info : inputs_) {
         client->didAddInputPort(
@@ -249,8 +229,7 @@ void MidiMessageFilter::HandleClientAdded(midi::Result result) {
             ToBlinkState(info.state));
       }
     }
-    client->didStartSession(result == midi::Result::OK, error16,
-                            message16);
+    client->didStartSession(result);
     clients_.insert(client);
   }
 }

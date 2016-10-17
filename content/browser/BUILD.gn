@@ -80,6 +80,7 @@ source_set("browser") {
     "//media/capture",
     "//media/gpu/ipc/client",
     "//media/midi",
+    "//media/midi:mojo_cpp_sources",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:image_capture",
     "//mojo/common",

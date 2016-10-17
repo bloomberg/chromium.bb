@@ -17,6 +17,7 @@
 #include "media/midi/usb_midi_device_factory_android.h"
 
 using base::android::JavaParamRef;
+using midi::mojom::Result;
 
 namespace midi {
 

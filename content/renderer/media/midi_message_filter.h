@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "ipc/message_filter.h"
 #include "media/midi/midi_port_info.h"
-#include "media/midi/result.h"
+#include "media/midi/midi_service.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 
 namespace base {
@@ -85,7 +85,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   // Called when the browser process has approved (or denied) access to
   // MIDI hardware.
-  void OnSessionStarted(midi::Result result);
+  void OnSessionStarted(midi::mojom::Result result);
 
   // These functions are called in 2 cases:
   //  (1) Just before calling |OnSessionStarted|, to notify the recipient about
@@ -113,7 +113,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   void OnAcknowledgeSentData(size_t bytes_sent);
 
   // Following methods, Handle*, run on |main_task_runner_|.
-  void HandleClientAdded(midi::Result result);
+  void HandleClientAdded(midi::mojom::Result result);
 
   void HandleAddInputPort(midi::MidiPortInfo info);
   void HandleAddOutputPort(midi::MidiPortInfo info);
@@ -153,7 +153,7 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   ClientsQueue clients_waiting_session_queue_;
 
   // Represents a result on starting a session. Can be accessed only on
-  midi::Result session_result_;
+  midi::mojom::Result session_result_;
 
   // Holds MidiPortInfoList for input ports and output ports.
   midi::MidiPortInfoList inputs_;
