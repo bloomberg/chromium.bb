@@ -13,6 +13,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
@@ -48,6 +49,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::DemuxerStream::Status,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::DemuxerStream::Type,
                           media::DemuxerStream::TYPE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
+                          media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 

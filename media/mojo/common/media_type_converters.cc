@@ -25,32 +25,6 @@
 
 namespace mojo {
 
-#define ASSERT_ENUM_EQ(media_enum, media_prefix, mojo_prefix, value)        \
-  static_assert(media::media_prefix##value ==                               \
-                    static_cast<media::media_enum>(                         \
-                        media::mojom::media_enum::mojo_prefix##value),      \
-                "Mismatched enum: " #media_prefix #value " != " #media_enum \
-                "::" #mojo_prefix #value)
-
-#define ASSERT_ENUM_EQ_RAW(media_enum, media_enum_value, mojo_enum_value)      \
-  static_assert(media::media_enum_value == static_cast<media::media_enum>(     \
-                                               media::mojom::mojo_enum_value), \
-                "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
-
-// CipherMode
-ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
-                   EncryptionScheme::CipherMode::CIPHER_MODE_UNENCRYPTED,
-                   CipherMode::UNENCRYPTED);
-ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
-                   EncryptionScheme::CipherMode::CIPHER_MODE_AES_CTR,
-                   CipherMode::AES_CTR);
-ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
-                   EncryptionScheme::CipherMode::CIPHER_MODE_AES_CBC,
-                   CipherMode::AES_CBC);
-ASSERT_ENUM_EQ_RAW(EncryptionScheme::CipherMode,
-                   EncryptionScheme::CipherMode::CIPHER_MODE_MAX,
-                   CipherMode::MAX);
-
 // CdmException
 #define ASSERT_CDM_EXCEPTION(value)                                        \
   static_assert(                                                           \
@@ -149,8 +123,7 @@ media::mojom::EncryptionSchemePtr TypeConverter<
     media::EncryptionScheme>::Convert(const media::EncryptionScheme& input) {
   media::mojom::EncryptionSchemePtr mojo_encryption_scheme(
       media::mojom::EncryptionScheme::New());
-  mojo_encryption_scheme->mode =
-      static_cast<media::mojom::CipherMode>(input.mode());
+  mojo_encryption_scheme->mode = input.mode();
   mojo_encryption_scheme->pattern =
       media::mojom::Pattern::From(input.pattern());
   return mojo_encryption_scheme;
@@ -161,8 +134,7 @@ media::EncryptionScheme
 TypeConverter<media::EncryptionScheme, media::mojom::EncryptionSchemePtr>::
     Convert(const media::mojom::EncryptionSchemePtr& input) {
   return media::EncryptionScheme(
-      static_cast<media::EncryptionScheme::CipherMode>(input->mode),
-      input->pattern.To<media::EncryptionScheme::Pattern>());
+      input->mode, input->pattern.To<media::EncryptionScheme::Pattern>());
 }
 
 // static

@@ -43,15 +43,6 @@ enum VideoCodec;
 [Native]
 enum VideoCodecProfile;
 
-// See media/base/encryption_scheme.h.
-// Kept in sync with media::CipherMode via static_asserts.
-enum CipherMode {
-  UNENCRYPTED = 0,
-  AES_CTR,
-  AES_CBC,
-  MAX = AES_CBC
-};
-
 // This defines a mojo transport format for media::EncryptionScheme::Pattern
 // See media/base/encryption_scheme.h for description.
 struct Pattern {
@@ -62,6 +53,9 @@ struct Pattern {
 // This defines a mojo transport format for media::EncryptionScheme.
 // See media/base/encryption_scheme.h for description.
 struct EncryptionScheme {
+  [Native]
+  enum CipherMode;
+
   CipherMode mode;
   Pattern pattern;
 };
