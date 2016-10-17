@@ -353,17 +353,20 @@ void V4Store::ApplyUpdate(
 
   if (apply_update_result == APPLY_UPDATE_SUCCESS) {
     RecordApplyUpdateTime(metric, TimeTicks::Now() - before, store_path_);
-    // new_store is done updating, pass it to the callback.
-    callback_task_runner->PostTask(
-        FROM_HERE, base::Bind(callback, base::Passed(&new_store)));
   } else {
+    new_store.reset();
     DVLOG(1) << "Failure: ApplyUpdate: reason: " << apply_update_result
              << "; store: " << *this;
-    // new_store failed updating. Pass a nullptr to the callback.
-    callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
   }
 
   RecordApplyUpdateResult(metric, apply_update_result, store_path_);
+
+  // Posting the task should be the last thing to do in this function.
+  // Otherwise, the posted task can end up running in parallel. If that
+  // happens, the old store will get destoyed and can lead to use-after-free in
+  // this function.
+  callback_task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(&new_store)));
 }
 
 ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
