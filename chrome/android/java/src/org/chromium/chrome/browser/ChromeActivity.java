@@ -319,6 +319,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // Inform the WindowAndroid of the keyboard accessory view.
         mWindowAndroid.setKeyboardAccessoryView((ViewGroup) findViewById(R.id.keyboard_accessory));
         initializeToolbar();
+        mFullscreenManager = createFullscreenManager();
     }
 
     @Override
@@ -1361,14 +1362,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     /**
      * Create a full-screen manager to be used by this activity.
-     * @param controlContainer The control container that will be controlled by the full-screen
-     *                         manager.
+     * Note: This is called during {@link #postInflationStartup}, so native code may not have been
+     * initialized, but Android Views will have been.
      * @return A {@link ChromeFullscreenManager} instance that's been created.
      */
-    protected ChromeFullscreenManager createFullscreenManager(ControlContainer controlContainer) {
-        return new ChromeFullscreenManager(
-                this, controlContainer, getControlContainerHeightResource(), true);
-    }
+    protected abstract ChromeFullscreenManager createFullscreenManager();
 
     /**
      * Exits the fullscreen mode, if any. Does nothing if no fullscreen is present.
@@ -1403,10 +1401,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void initializeCompositorContent(
             LayoutManagerDocument layoutManager, View urlBar, ViewGroup contentContainer,
             ControlContainer controlContainer) {
-        if (controlContainer != null) {
-            mFullscreenManager = createFullscreenManager(controlContainer);
-        }
-
         if (mContextualSearchManager != null) {
             mContextualSearchManager.initialize(contentContainer);
             mContextualSearchManager.setSearchContentViewDelegate(layoutManager);

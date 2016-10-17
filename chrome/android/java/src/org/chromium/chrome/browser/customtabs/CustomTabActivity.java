@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
@@ -274,7 +275,10 @@ public class CustomTabActivity extends ChromeActivity {
         super.postInflationStartup();
         TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
                 getTaskId(), getSavedInstanceState() != null);
-        setTabModelSelector(new TabModelSelectorImpl(this, persistencePolicy, false));
+
+        setTabModelSelector(new TabModelSelectorImpl(this, this, getFullscreenManager(),
+                persistencePolicy, false));
+
         setTabCreators(
                 new CustomTabCreator(
                         this, getWindowAndroid(), false,
@@ -344,11 +348,10 @@ public class CustomTabActivity extends ChromeActivity {
             getTabModelSelector().getModel(false).addTab(mMainTab, 0, mMainTab.getLaunchType());
         }
 
-        ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(
-                R.id.control_container);
         LayoutManagerDocument layoutDriver = new CustomTabLayoutManager(getCompositorViewHolder());
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
-                (ViewGroup) findViewById(android.R.id.content), controlContainer);
+                (ViewGroup) findViewById(android.R.id.content),
+                (ToolbarControlContainer) findViewById(R.id.control_container));
         mFindToolbarManager = new FindToolbarManager(this,
                 getToolbarManager().getActionModeController().getActionModeCallback());
         if (getContextualSearchManager() != null) {
@@ -364,7 +367,6 @@ public class CustomTabActivity extends ChromeActivity {
                     }
                 });
 
-        getFullscreenManager().setTab(mMainTab);
         mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
             public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
@@ -850,5 +852,12 @@ public class CustomTabActivity extends ChromeActivity {
             url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
         }
         return url;
+    }
+
+    @Override
+    protected ChromeFullscreenManager createFullscreenManager() {
+        return new ChromeFullscreenManager(this,
+                (ToolbarControlContainer) findViewById(R.id.control_container),
+                getControlContainerHeightResource(), true);
     }
 }

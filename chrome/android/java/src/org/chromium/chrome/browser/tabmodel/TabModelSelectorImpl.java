@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.app.Activity;
 import android.os.Handler;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -28,7 +28,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TabModelSelectorImpl extends TabModelSelectorBase implements TabModelDelegate {
     public static final int CUSTOM_TABS_SELECTOR_INDEX = -1;
 
-    private final ChromeActivity mActivity;
+    private final TabCreatorManager mTabCreatorManager;
+
+    private FullscreenManager mFullscreenManager;
 
     /** Flag set to false when the asynchronous loading of tabs is finished. */
     private final AtomicBoolean mSessionRestoreInProgress =
@@ -55,14 +57,20 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     /**
      * Builds a {@link TabModelSelectorImpl} instance.
-     * @param activity      The {@link ChromeActivity} this model selector lives in.
-     * @param supportUndo   Whether a tab closure can be undone.
+     *
+     * @param activity An {@link Activity} instance.
+     * @param tabCreatorManager A {@link TabCreatorManager} instance.
+     * @param fullscreenManager A {@link FullscreenManager} instance.
+     * @param persistencePolicy A {@link TabPersistencePolicy} instance.
+     * @param supportUndo Whether a tab closure can be undone.
      */
-    public TabModelSelectorImpl(ChromeActivity activity, TabPersistencePolicy persistencePolicy,
+    public TabModelSelectorImpl(Activity activity, TabCreatorManager tabCreatorManager,
+            FullscreenManager fullscreenManager, TabPersistencePolicy persistencePolicy,
             boolean supportUndo) {
         super();
-        mActivity = activity;
-        mUma = new TabModelSelectorUma(mActivity);
+        mTabCreatorManager = tabCreatorManager;
+        mFullscreenManager = fullscreenManager;
+        mUma = new TabModelSelectorUma(activity);
         final TabPersistentStoreObserver persistentStoreObserver =
                 new TabPersistentStoreObserver() {
             @Override
@@ -72,7 +80,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         };
         mIsUndoSupported = supportUndo;
         mTabSaver = new TabPersistentStore(
-                persistencePolicy, this, mActivity, persistentStoreObserver);
+                persistencePolicy, this, mTabCreatorManager, persistentStoreObserver);
         mOrderController = new TabModelOrderController(this);
     }
 
@@ -122,8 +130,10 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         assert !mActiveState : "onNativeLibraryReady called twice!";
         mTabContentManager = tabContentProvider;
 
-        ChromeTabCreator regularTabCreator = (ChromeTabCreator) mActivity.getTabCreator(false);
-        ChromeTabCreator incognitoTabCreator = (ChromeTabCreator) mActivity.getTabCreator(true);
+        ChromeTabCreator regularTabCreator =
+                (ChromeTabCreator) mTabCreatorManager.getTabCreator(false);
+        ChromeTabCreator incognitoTabCreator =
+                (ChromeTabCreator) mTabCreatorManager.getTabCreator(true);
         TabModelImpl normalModel = new TabModelImpl(false, regularTabCreator, incognitoTabCreator,
                 mUma, mOrderController, mTabContentManager, mTabSaver, this, mIsUndoSupported);
         TabModel incognitoModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
@@ -312,7 +322,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @Override
     public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
             boolean incognito) {
-        return mActivity.getTabCreator(incognito).createNewTab(loadUrlParams, type, parent);
+        return mTabCreatorManager.getTabCreator(incognito).createNewTab(
+                loadUrlParams, type, parent);
     }
 
     /**
@@ -330,7 +341,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         if (mVisibleTab != tab && tab != null && !tab.isNativePage()) {
             TabModelImpl.startTabSwitchLatencyTiming(type);
         }
-        FullscreenManager fullscreenManager = mActivity.getFullscreenManager();
         if (mVisibleTab != null && mVisibleTab != tab && !mVisibleTab.needsReload()) {
             if (mVisibleTab.isInitialized() && !mVisibleTab.isDetachedForReparenting()) {
                 // TODO(dtrainor): Once we figure out why we can't grab a snapshot from the current
@@ -341,7 +351,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                     cacheTabBitmap(mVisibleTab);
                 }
                 mVisibleTab.hide();
-                if (fullscreenManager != null) fullscreenManager.setTab(null);
+                if (mFullscreenManager != null) mFullscreenManager.setTab(null);
                 mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
             mVisibleTab = null;
@@ -359,8 +369,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             tab.loadIfNeeded();
             return;
         }
-
-        if (fullscreenManager != null) fullscreenManager.setTab(tab);
+        if (mFullscreenManager != null) mFullscreenManager.setTab(tab);
         mVisibleTab = tab;
 
         // Don't execute the tab display part if Chrome has just been sent to background. This

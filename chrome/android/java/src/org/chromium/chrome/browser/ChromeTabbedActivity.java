@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -547,13 +548,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 float controlHeight = getResources().getDimension(R.dimen.control_container_height);
                 ((FrameLayout.LayoutParams) mContentContainer.getLayoutParams()).topMargin =
                         (int) controlHeight;
-            }
-
-            // Bootstrap the first tab as it may have been created before initializing the
-            // fullscreen manager.
-            if (mTabModelSelectorImpl != null && mTabModelSelectorImpl.getCurrentTab() != null
-                    && getFullscreenManager() != null) {
-                getFullscreenManager().setTab(mTabModelSelectorImpl.getCurrentTab());
             }
 
             mFindToolbarManager = new FindToolbarManager(this,
@@ -1044,8 +1038,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         boolean startIncognito = savedInstanceState != null
                 && savedInstanceState.getBoolean("is_incognito_selected", false);
         int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
+
         mTabModelSelectorImpl = (TabModelSelectorImpl)
-                TabWindowManager.getInstance().requestSelector(this, index);
+                TabWindowManager.getInstance().requestSelector(this, this, getFullscreenManager(),
+                        index);
         if (mTabModelSelectorImpl == null) {
             Toast.makeText(this, getString(R.string.unsupported_number_of_windows),
                     Toast.LENGTH_LONG).show();
@@ -1646,5 +1642,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     public VrShellDelegate getVrShellDelegate() {
         return mVrShellDelegate;
+    }
+
+    @Override
+    protected ChromeFullscreenManager createFullscreenManager() {
+        return new ChromeFullscreenManager(this,
+                (ToolbarControlContainer) findViewById(R.id.control_container),
+                getControlContainerHeightResource(), true);
     }
 }

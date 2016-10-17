@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 
@@ -71,5 +72,10 @@ public class DocumentActivity extends ChromeActivity {
                 || TextUtils.equals(className, DocumentActivity.class.getName())
                 || TextUtils.equals(className, LEGACY_CLASS_NAME)
                 || TextUtils.equals(className, LEGACY_INCOGNITO_CLASS_NAME);
+    }
+
+    @Override
+    protected ChromeFullscreenManager createFullscreenManager() {
+        return null;
     }
 }

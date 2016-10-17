@@ -29,6 +29,7 @@ import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -226,6 +227,8 @@ public class ChromeFullscreenManager
     public void onWindowFocusChanged(Activity activity, boolean hasFocus) {
         if (mActivity != activity) return;
         onWindowFocusChanged(hasFocus);
+        // {@link ContentVideoView#getContentVideoView} requires native to have been initialized.
+        if (!LibraryLoader.isInitialized()) return;
         ContentVideoView videoView = ContentVideoView.getContentVideoView();
         if (videoView != null) {
             videoView.onFullscreenWindowFocused();

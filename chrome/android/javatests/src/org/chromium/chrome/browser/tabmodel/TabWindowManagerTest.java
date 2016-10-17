@@ -15,6 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -27,7 +28,9 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
     private final TabModelSelectorFactory mMockTabModelSelectorFactory =
             new TabModelSelectorFactory() {
                 @Override
-                public TabModelSelector buildSelector(ChromeActivity activity, int selectorIndex) {
+                public TabModelSelector buildSelector(Activity activity,
+                        TabCreatorManager tabCreatorManager, FullscreenManager fullscreenManager,
+                        int selectorIndex) {
                     return new MockTabModelSelector(0, 0, null);
                 }
     };
@@ -41,7 +44,8 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
     private MockTabModelSelector requestSelector(ChromeActivity activity, int requestedIndex) {
         final TabWindowManager manager = TabWindowManager.getInstance();
         manager.setTabModelSelectorFactory(mMockTabModelSelectorFactory);
-        return (MockTabModelSelector) manager.requestSelector(activity, requestedIndex);
+        return (MockTabModelSelector) manager.requestSelector(activity, activity,
+                activity.getFullscreenManager(), requestedIndex);
     }
 
     /**

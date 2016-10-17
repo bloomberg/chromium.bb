@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.app.Activity;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -11,7 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
@@ -47,8 +48,10 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
             return super.openNewTab(loadUrlParams, type, parent, incognito);
         }
 
-        public RecordingTabModelSelector(ChromeActivity activity, int selectorIndex) {
-            super(activity, new TabbedModeTabPersistencePolicy(selectorIndex, false), true);
+        public RecordingTabModelSelector(Activity activity, TabCreatorManager tabCreatorManager,
+                FullscreenManager fullscreenManager, int selectorIndex) {
+            super(activity, tabCreatorManager, fullscreenManager,
+                    new TabbedModeTabPersistencePolicy(selectorIndex, false), true);
         }
     }
 
@@ -63,9 +66,11 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
                 TabWindowManager.getInstance().setTabModelSelectorFactory(
                         new TabModelSelectorFactory() {
                             @Override
-                            public TabModelSelector buildSelector(ChromeActivity activity,
-                                    int selectorIndex) {
-                                return new RecordingTabModelSelector(activity, selectorIndex);
+                            public TabModelSelector buildSelector(
+                                    Activity activity, TabCreatorManager tabCreatorManager,
+                                    FullscreenManager fullscreenManager, int selectorIndex) {
+                                return new RecordingTabModelSelector(activity, tabCreatorManager,
+                                        fullscreenManager, selectorIndex);
                             }
                         });
             }
