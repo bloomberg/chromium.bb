@@ -115,8 +115,8 @@ TEST_P(ActiveMapRefreshTest, Test) {
   cfg_.rc_end_usage = AOM_CBR;
   cfg_.kf_max_dist = 90000;
 
-  ::libaom_test::Y4mVideoSource video("desktop_credits.y4m", 0, 30);
-  ::libaom_test::Y4mVideoSource video_holder("desktop_credits.y4m", 0, 30);
+  ::libaom_test::Y4mVideoSource video("desktop_credits.y4m", 0, 10);
+  ::libaom_test::Y4mVideoSource video_holder("desktop_credits.y4m", 0, 10);
   video_holder.Begin();
   y4m_holder_ = &video_holder;
 
