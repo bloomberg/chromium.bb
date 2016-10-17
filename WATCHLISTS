@@ -806,6 +806,9 @@
     'safe_browsing': {
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/',
     },
+    'safe_browsing_db': {
+      'filepath': 'components/safe_browsing_db/',
+    },
     'sandbox': {
       'filepath': 'sandbox/'\
                   '|content/browser/bootstrap_sandbox_mac'\
@@ -1939,6 +1942,7 @@
                'gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
     'safe_browsing': ['grt+watch@chromium.org'],
+    'safe_browsing_db': ['vakh+watch@chromium.org'],
     'sandbox': ['rickyz+watch@chromium.org'],
     'scheduler': ['scheduler-bugs@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
