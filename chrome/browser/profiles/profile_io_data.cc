@@ -521,14 +521,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // ShutdownOnUIThread to release these observers on the right thread.
   // Don't pass it in |profile_params_| to make sure it is correctly cleaned up,
   // in particular when this ProfileIOData isn't |initialized_| during deletion.
-  policy::URLBlacklist::SegmentURLCallback callback =
-      static_cast<policy::URLBlacklist::SegmentURLCallback>(
-          url_formatter::SegmentURL);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   url_blacklist_manager_.reset(new policy::URLBlacklistManager(
-      pref_service, background_task_runner, io_task_runner, callback,
+      pref_service, background_task_runner, io_task_runner,
       base::Bind(policy::OverrideBlacklistForURL)));
 
   // The CTPolicyManager shares the same constraints of needing to be cleaned

@@ -94,9 +94,6 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
 
 policy::URLBlacklistManager* CreateURLBlackListManager(
     PrefService* pref_service) {
-  policy::URLBlacklist::SegmentURLCallback segment_url_callback =
-      static_cast<policy::URLBlacklist::SegmentURLCallback>(
-          url_formatter::SegmentURL);
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
@@ -104,7 +101,7 @@ policy::URLBlacklistManager* CreateURLBlackListManager(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
   return new policy::URLBlacklistManager(pref_service, background_task_runner,
-                                         io_task_runner, segment_url_callback,
+                                         io_task_runner,
                                          base::Bind(OverrideBlacklistForURL));
 }
 

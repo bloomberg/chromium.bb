@@ -38,6 +38,7 @@ source_set("internal") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/strings",
+    "//components/url_formatter",
     "//components/url_matcher",
     "//net",
     "//ui/base",

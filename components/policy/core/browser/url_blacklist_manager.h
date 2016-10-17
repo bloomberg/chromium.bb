@@ -49,11 +49,7 @@ class POLICY_EXPORT URLBlacklist {
     URL_NEUTRAL_STATE,
   };
 
-  // This is meant to be bound to url_formatter::SegmentURL. See that function
-  // for documentation on the parameters and return value.
-  typedef std::string (*SegmentURLCallback)(const std::string&, url::Parsed*);
-
-  explicit URLBlacklist(SegmentURLCallback segment_url);
+  URLBlacklist();
   virtual ~URLBlacklist();
 
   // Allows or blocks URLs matching one of the filters, depending on |allow|.
@@ -89,8 +85,7 @@ class POLICY_EXPORT URLBlacklist {
   // |path| does not include query parameters.
   // |query| contains the query parameters ('?' not included).
   // All arguments are mandatory.
-  static bool FilterToComponents(SegmentURLCallback segment_url,
-                                 const std::string& filter,
+  static bool FilterToComponents(const std::string& filter,
                                  std::string* scheme,
                                  std::string* host,
                                  bool* match_subdomains,
@@ -120,7 +115,6 @@ class POLICY_EXPORT URLBlacklist {
   static bool FilterTakesPrecedence(const FilterComponents& lhs,
                                     const FilterComponents& rhs);
 
-  SegmentURLCallback segment_url_;
   url_matcher::URLMatcherConditionSet::ID id_;
   std::map<url_matcher::URLMatcherConditionSet::ID, FilterComponents> filters_;
   std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
@@ -157,12 +151,10 @@ class POLICY_EXPORT URLBlacklistManager {
   // |background_task_runner| is used to build the blacklist in a background
   // thread.
   // |io_task_runner| must be backed by the IO thread.
-  // |segment_url| is used to break a URL spec into its components.
   URLBlacklistManager(
       PrefService* pref_service,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-      URLBlacklist::SegmentURLCallback segment_url,
       OverrideBlacklistCallback override_blacklist);
   virtual ~URLBlacklistManager();
 
@@ -222,9 +214,6 @@ class POLICY_EXPORT URLBlacklistManager {
 
   // Used to post tasks to the IO thread.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-
-  // Used to break a URL into its components.
-  URLBlacklist::SegmentURLCallback segment_url_;
 
   // Used to optionally skip blacklisting for some URLs.
   OverrideBlacklistCallback override_blacklist_;

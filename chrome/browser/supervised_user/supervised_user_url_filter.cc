@@ -140,11 +140,9 @@ URLMatcherConditionSet::ID FilterBuilder::AddPattern(
   std::string path;
   std::string query;
   bool match_subdomains = true;
-  URLBlacklist::SegmentURLCallback callback =
-      static_cast<URLBlacklist::SegmentURLCallback>(url_formatter::SegmentURL);
-  if (!URLBlacklist::FilterToComponents(
-          callback, pattern,
-          &scheme, &host, &match_subdomains, &port, &path, &query)) {
+  if (!URLBlacklist::FilterToComponents(pattern, &scheme, &host,
+                                        &match_subdomains, &port, &path,
+                                        &query)) {
     LOG(ERROR) << "Invalid pattern " << pattern;
     return -1;
   }

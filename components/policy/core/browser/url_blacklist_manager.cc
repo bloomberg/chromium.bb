@@ -25,6 +25,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_formatter/url_fixer.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -66,9 +67,8 @@ const size_t kMaxFiltersPerPolicy = 1000;
 // A task that builds the blacklist on a background thread.
 std::unique_ptr<URLBlacklist> BuildBlacklist(
     std::unique_ptr<base::ListValue> block,
-    std::unique_ptr<base::ListValue> allow,
-    URLBlacklist::SegmentURLCallback segment_url) {
-  std::unique_ptr<URLBlacklist> blacklist(new URLBlacklist(segment_url));
+    std::unique_ptr<base::ListValue> allow) {
+  std::unique_ptr<URLBlacklist> blacklist(new URLBlacklist);
   blacklist->Block(block.get());
   blacklist->Allow(allow.get());
   return blacklist;
@@ -154,8 +154,7 @@ struct URLBlacklist::FilterComponents {
   bool allow;
 };
 
-URLBlacklist::URLBlacklist(SegmentURLCallback segment_url)
-    : segment_url_(segment_url), id_(0), url_matcher_(new URLMatcher) {}
+URLBlacklist::URLBlacklist() : id_(0), url_matcher_(new URLMatcher) {}
 
 URLBlacklist::~URLBlacklist() {}
 
@@ -169,8 +168,7 @@ void URLBlacklist::AddFilters(bool allow,
     DCHECK(success);
     FilterComponents components;
     components.allow = allow;
-    if (!FilterToComponents(segment_url_,
-                            pattern,
+    if (!FilterToComponents(pattern,
                             &components.scheme,
                             &components.host,
                             &components.match_subdomains,
@@ -247,8 +245,7 @@ size_t URLBlacklist::Size() const {
 }
 
 // static
-bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
-                                      const std::string& filter,
+bool URLBlacklist::FilterToComponents(const std::string& filter,
                                       std::string* scheme,
                                       std::string* host,
                                       bool* match_subdomains,
@@ -263,7 +260,7 @@ bool URLBlacklist::FilterToComponents(SegmentURLCallback segment_url,
   DCHECK(query);
   url::Parsed parsed;
   const std::string lc_filter = base::ToLowerASCII(filter);
-  const std::string url_scheme = segment_url(filter, &parsed);
+  const std::string url_scheme = url_formatter::SegmentURL(filter, &parsed);
 
   if (url_scheme == url::kFileScheme) {
     base::FilePath file_path;
@@ -437,15 +434,13 @@ URLBlacklistManager::URLBlacklistManager(
     PrefService* pref_service,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-    URLBlacklist::SegmentURLCallback segment_url,
     OverrideBlacklistCallback override_blacklist)
     : pref_service_(pref_service),
       background_task_runner_(background_task_runner),
       io_task_runner_(io_task_runner),
-      segment_url_(segment_url),
       override_blacklist_(override_blacklist),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      blacklist_(new URLBlacklist(segment_url)),
+      blacklist_(new URLBlacklist),
       ui_weak_ptr_factory_(this),
       io_weak_ptr_factory_(this) {
   pref_change_registrar_.Init(pref_service_);
@@ -511,8 +506,7 @@ void URLBlacklistManager::UpdateOnIO(std::unique_ptr<base::ListValue> block,
       FROM_HERE,
       base::Bind(&BuildBlacklist,
                  base::Passed(&block),
-                 base::Passed(&allow),
-                 segment_url_),
+                 base::Passed(&allow)),
       base::Bind(&URLBlacklistManager::SetBlacklist,
                  io_weak_ptr_factory_.GetWeakPtr()));
 }

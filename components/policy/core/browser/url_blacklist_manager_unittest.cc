@@ -30,11 +30,6 @@ namespace policy {
 
 namespace {
 
-// Helper to get the disambiguated SegmentURL() function.
-URLBlacklist::SegmentURLCallback GetSegmentURLCallback() {
-  return url_formatter::SegmentURL;
-}
-
 bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
   return false;
 }
@@ -45,7 +40,6 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
       : URLBlacklistManager(pref_service,
                             base::ThreadTaskRunnerHandle::Get(),
                             base::ThreadTaskRunnerHandle::Get(),
-                            GetSegmentURLCallback(),
                             base::Bind(OverrideBlacklistForURL)),
         update_called_(0),
         set_blacklist_called_(false) {}
@@ -176,7 +170,7 @@ class URLBlacklistFilterToComponentsTest
 
 // Returns whether |url| matches the |pattern|.
 bool IsMatch(const std::string& pattern, const std::string& url) {
-  URLBlacklist blacklist(GetSegmentURLCallback());
+  URLBlacklist blacklist;
 
   // Add the pattern to blacklist.
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
@@ -191,7 +185,7 @@ bool IsMatch(const std::string& pattern, const std::string& url) {
 policy::URLBlacklist::URLBlacklistState GetMatch(const std::string& pattern,
                                                  const std::string& url,
                                                  const bool use_whitelist) {
-  URLBlacklist blacklist(GetSegmentURLCallback());
+  URLBlacklist blacklist;
 
   // Add the pattern to list.
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
@@ -214,8 +208,7 @@ TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
   std::string path;
   std::string query;
 
-  URLBlacklist::FilterToComponents(GetSegmentURLCallback(),
-                                   GetParam().filter(),
+  URLBlacklist::FilterToComponents(GetParam().filter(),
                                    &scheme,
                                    &host,
                                    &match_subdomains,
@@ -359,7 +352,7 @@ INSTANTIATE_TEST_CASE_P(
                          "/whatever")));
 
 TEST_F(URLBlacklistManagerTest, Filtering) {
-  URLBlacklist blacklist(GetSegmentURLCallback());
+  URLBlacklist blacklist;
 
   // Block domain and all subdomains, for any filtered scheme.
   EXPECT_TRUE(IsMatch("google.com", "http://google.com"));
@@ -495,7 +488,7 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
 }
 
 TEST_F(URLBlacklistManagerTest, QueryParameters) {
-  URLBlacklist blacklist(GetSegmentURLCallback());
+  URLBlacklist blacklist;
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   std::unique_ptr<base::ListValue> allowed(new base::ListValue);
 
@@ -631,7 +624,7 @@ TEST_F(URLBlacklistManagerTest, QueryParameters) {
 }
 
 TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
-  URLBlacklist blacklist(GetSegmentURLCallback());
+  URLBlacklist blacklist;
 
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   std::unique_ptr<base::ListValue> allowed(new base::ListValue);
@@ -658,7 +651,7 @@ TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
 
 TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   std::unique_ptr<URLBlacklist>
-  blacklist(new URLBlacklist(GetSegmentURLCallback()));
+  blacklist(new URLBlacklist);
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   blocked->AppendString("google.com");
   blacklist->Block(blocked.get());
@@ -672,7 +665,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
 }
 
 TEST_F(URLBlacklistManagerTest, DefaultBlacklistExceptions) {
-  URLBlacklist blacklist(GetSegmentURLCallback());
+  URLBlacklist blacklist;
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
 
   // Blacklist everything:
