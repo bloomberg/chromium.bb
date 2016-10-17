@@ -25,6 +25,7 @@
 
 #include "platform/UserGestureIndicator.h"
 
+#include "platform/Histogram.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 
@@ -45,7 +46,7 @@ UserGestureToken::UserGestureToken(Status status)
     m_consumableGestures++;
 }
 
-bool UserGestureToken::hasGestures() {
+bool UserGestureToken::hasGestures() const {
   return m_consumableGestures && !hasTimedOut();
 }
 
@@ -91,6 +92,27 @@ void UserGestureToken::userGestureUtilized() {
   }
 }
 
+// This enum is used in a histogram, so its values shouldn't change.
+enum GestureMergeState {
+  OldTokenHasGesture = 1 << 0,
+  NewTokenHasGesture = 1 << 1,
+  GestureMergeStateEnd = 1 << 2,
+};
+
+// Remove this when user gesture propagation is standardized. See
+// https://crbug.com/404161.
+static void RecordUserGestureMerge(const UserGestureToken& oldToken,
+                                   const UserGestureToken& newToken) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, gestureMergeHistogram,
+                      ("Blink.Gesture.Merged", GestureMergeStateEnd));
+  int sample = 0;
+  if (oldToken.hasGestures())
+    sample |= OldTokenHasGesture;
+  if (newToken.hasGestures())
+    sample |= NewTokenHasGesture;
+  gestureMergeHistogram.count(sample);
+}
+
 UserGestureToken* UserGestureIndicator::s_rootToken = nullptr;
 bool UserGestureIndicator::s_processedUserGestureSinceLoad = false;
 
@@ -100,10 +122,12 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
   if (!isMainThread() || !m_token)
     return;
 
-  if (!s_rootToken)
+  if (!s_rootToken) {
     s_rootToken = m_token.get();
-  else
+  } else {
+    RecordUserGestureMerge(*s_rootToken, *m_token);
     m_token->transferGestureTo(s_rootToken);
+  }
   s_processedUserGestureSinceLoad = true;
 }
 

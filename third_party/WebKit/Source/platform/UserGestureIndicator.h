@@ -66,7 +66,7 @@ class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   }
 
   ~UserGestureToken() {}
-  bool hasGestures();
+  bool hasGestures() const;
   void transferGestureTo(UserGestureToken*);
   bool consumeGesture();
   void setTimeoutPolicy(TimeoutPolicy);
