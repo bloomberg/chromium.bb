@@ -15,7 +15,7 @@ package metrics;
 // Next tag: 7
 message CastLogsProto {
   // Cast specific device information.
-  // Next tag: 5
+  // Next tag: 6
   message CastDeviceInfo {
     // The product type of Cast device sent from Cast-enabled devices.
     // Next tag: 5
@@ -37,6 +37,9 @@ message CastLogsProto {
 
     // The model of the Cast device.
     optional string model = 4;
+
+    // The serial number.
+    optional string serial_number = 5;
   }
   // The device sends this information at least once per day.
   optional CastDeviceInfo cast_device_info = 1;
@@ -168,7 +171,7 @@ message CastLogsProto {
   optional fixed32 virtual_release_track = 4;
 
   // Cast specific device information which is expected to change over time.
-  // Next tag: 2
+  // Next tag: 4
   message CastDeviceMutableInfo {
     // This is the last type of reboot the device encountered
     // Next tag: 9
