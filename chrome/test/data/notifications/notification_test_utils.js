@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var activatedServiceWorkerPromise = null;
+var messagePort = null;
 
 // Returns a promise that will be resolved with an activated Service
 // Worker, or rejects when the Service Worker could not be started. There

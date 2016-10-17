@@ -14,6 +14,10 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 
+namespace base {
+class NullableString16;
+}
+
 class Notification;
 class NotificationHandler;
 class NotificationPlatformBridge;
@@ -41,7 +45,8 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
                                     NotificationCommon::Type notification_type,
                                     const std::string& origin,
                                     const std::string& notification_id,
-                                    int action_index);
+                                    int action_index,
+                                    const base::NullableString16& reply);
 
   // Registers an implementation object to handle notification operations
   // for |notification_type|.

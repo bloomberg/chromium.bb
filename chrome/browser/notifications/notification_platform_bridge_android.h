@@ -47,7 +47,8 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       jboolean incognito,
       const base::android::JavaParamRef<jstring>& java_tag,
       const base::android::JavaParamRef<jstring>& java_webapk_package,
-      jint action_index);
+      jint action_index,
+      const base::android::JavaParamRef<jstring>& java_reply);
 
   // Called by the Java implementation when the notification has been closed.
   void OnNotificationClosed(

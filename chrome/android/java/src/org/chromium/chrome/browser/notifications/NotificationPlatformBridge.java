@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.RemoteInput;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -199,8 +200,8 @@ public class NotificationPlatformBridge {
             }
             int actionIndex = intent.getIntExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_ACTION_INDEX, -1);
-            sInstance.onNotificationClicked(
-                    notificationId, origin, profileId, incognito, tag, webApkPackage, actionIndex);
+            sInstance.onNotificationClicked(notificationId, origin, profileId, incognito, tag,
+                    webApkPackage, actionIndex, getNotificationReply(intent));
             return true;
         } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
             // Notification deleteIntent is executed only "when the notification is explicitly
@@ -213,6 +214,22 @@ public class NotificationPlatformBridge {
 
         Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
         return false;
+    }
+
+    @Nullable
+    private static String getNotificationReply(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            // RemoteInput was added in KITKAT_WATCH.
+            Bundle remoteInputResults = RemoteInput.getResultsFromIntent(intent);
+            if (remoteInputResults != null) {
+                CharSequence reply =
+                        remoteInputResults.getCharSequence(NotificationConstants.KEY_TEXT_REPLY);
+                if (reply != null) {
+                    return reply.toString();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -679,12 +696,15 @@ public class NotificationPlatformBridge {
      * @param webApkPackage The package of the WebAPK associated with the notification.
      *        Empty if the notification is not associated with a WebAPK.
      * @param actionIndex
+     * @param reply User reply to a text action on the notification. Null if the user did not click
+     *              on a text action or if inline replies are not supported.
      */
     private void onNotificationClicked(String notificationId, String origin, String profileId,
-            boolean incognito, String tag, String webApkPackage, int actionIndex) {
+            boolean incognito, String tag, String webApkPackage, int actionIndex,
+            @Nullable String reply) {
         mLastNotificationClickMs = System.currentTimeMillis();
         nativeOnNotificationClicked(mNativeNotificationPlatformBridge, notificationId, origin,
-                profileId, incognito, tag, webApkPackage, actionIndex);
+                profileId, incognito, tag, webApkPackage, actionIndex, reply);
     }
 
     /**
@@ -708,7 +728,7 @@ public class NotificationPlatformBridge {
 
     private native void nativeOnNotificationClicked(long nativeNotificationPlatformBridgeAndroid,
             String notificationId, String origin, String profileId, boolean incognito, String tag,
-            String webApkPackage, int actionIndex);
+            String webApkPackage, int actionIndex, String reply);
     private native void nativeOnNotificationClosed(long nativeNotificationPlatformBridgeAndroid,
             String notificationId, String origin, String profileId, boolean incognito, String tag,
             boolean byUser);

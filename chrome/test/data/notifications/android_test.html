@@ -11,7 +11,15 @@
     <script>
       function showNotification(title, options) {
         GetActivatedServiceWorker('android_test_worker.js', location.pathname)
-            .then(registration => registration.showNotification(title, options))
+            .then(registration => {
+                messagePort.addEventListener('message', function replyListener(event) {
+                  if (event.data.startsWith('reply: ')) {
+                    messagePort.removeEventListener('message', replyListener);
+                    sendToTest(event.data);
+                  }
+                });
+                return registration.showNotification(title, options);
+            })
             .catch(sendToTest);
       }
 

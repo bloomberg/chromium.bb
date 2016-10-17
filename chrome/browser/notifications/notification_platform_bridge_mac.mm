@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -75,7 +76,8 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 
   static_cast<NativeNotificationDisplayService*>(display_service)
       ->ProcessNotificationOperation(operation, notification_type, origin,
-                                     notification_id, action_index);
+                                     notification_id, action_index,
+                                     base::NullableString16() /* reply */);
 }
 
 // Loads the profile and process the Notification response

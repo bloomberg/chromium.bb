@@ -12,6 +12,8 @@ addEventListener('message', function(event) {
 addEventListener('notificationclick', function(event) {
   if (event.notification.data === 'ACTION_CREATE_TAB')
     clients.openWindow('https://chrome.com/');
+  else if (event.notification.data === 'ACTION_REPLY')
+    messagePort.postMessage('reply: ' + event.reply)
 
   event.notification.close();
 });

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/native_notification_display_service.h"
@@ -33,6 +34,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
@@ -71,6 +73,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
                            const std::string& origin,
                            const std::string& notification_id,
                            int action_index,
+                           const base::NullableString16& reply,
                            Profile* profile) {
   if (!profile) {
     // TODO(miguelg): Add UMA for this condition.
@@ -84,7 +87,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 
   static_cast<NativeNotificationDisplayService*>(display_service)
       ->ProcessNotificationOperation(operation, notification_type, origin,
-                                     notification_id, action_index);
+                                     notification_id, action_index, reply);
 }
 
 }  // namespace
@@ -121,13 +124,19 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
     jboolean incognito,
     const JavaParamRef<jstring>& java_tag,
     const JavaParamRef<jstring>& java_webapk_package,
-    jint action_index) {
+    jint action_index,
+    const JavaParamRef<jstring>& java_reply) {
   std::string notification_id =
       ConvertJavaStringToUTF8(env, java_notification_id);
   std::string tag = ConvertJavaStringToUTF8(env, java_tag);
   std::string profile_id = ConvertJavaStringToUTF8(env, java_profile_id);
   std::string webapk_package =
       ConvertJavaStringToUTF8(env, java_webapk_package);
+  base::NullableString16 reply =
+      java_reply
+          ? base::NullableString16(ConvertJavaStringToUTF16(env, java_reply),
+                                   false /* is_null */)
+          : base::NullableString16();
 
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   regenerated_notification_infos_[notification_id] =
@@ -140,7 +149,7 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
       profile_id, incognito,
       base::Bind(&ProfileLoadedCallback, NotificationCommon::CLICK,
                  NotificationCommon::PERSISTENT, origin.spec(), notification_id,
-                 action_index));
+                 action_index, reply));
 }
 
 void NotificationPlatformBridgeAndroid::OnNotificationClosed(
@@ -167,7 +176,7 @@ void NotificationPlatformBridgeAndroid::OnNotificationClosed(
       base::Bind(&ProfileLoadedCallback, NotificationCommon::CLOSE,
                  NotificationCommon::PERSISTENT,
                  ConvertJavaStringToUTF8(env, java_origin), notification_id,
-                 -1 /* action index */));
+                 -1 /* action index */, base::NullableString16() /* reply */));
 }
 
 void NotificationPlatformBridgeAndroid::Display(

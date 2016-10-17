@@ -80,13 +80,13 @@ void NativeNotificationDisplayService::ProcessNotificationOperation(
     NotificationCommon::Type notification_type,
     const std::string& origin,
     const std::string& notification_id,
-    int action_index) {
+    int action_index,
+    const base::NullableString16& reply) {
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   CHECK(handler);
   switch (operation) {
     case NotificationCommon::CLICK:
-      handler->OnClick(profile_, origin, notification_id, action_index,
-                       base::NullableString16() /* reply */);
+      handler->OnClick(profile_, origin, notification_id, action_index, reply);
       break;
     case NotificationCommon::CLOSE:
       handler->OnClose(profile_, origin, notification_id, true /* by_user */);

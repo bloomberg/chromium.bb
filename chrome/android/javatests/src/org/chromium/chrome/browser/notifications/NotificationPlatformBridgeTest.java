@@ -8,11 +8,15 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.RemoteInput;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -239,7 +243,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @MediumTest
     @Feature({"Browser", "Notifications"})
-    public void testNotificationWithTextAction() throws Exception {
+    public void testShowNotificationWithTextAction() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
         Notification notification = showAndGetNotification("MyNotification", "{ "
@@ -254,6 +258,106 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         assertNotNull(notification.actions[0].getRemoteInputs());
         assertEquals(1, action.getRemoteInputs().length);
         assertEquals("hi", action.getRemoteInputs()[0].getLabel());
+    }
+
+    /**
+     * Verifies that setting a reply on the remote input of a notification action with type 'text'
+     * and triggering the action's intent causes the same reply to be received in the subsequent
+     * notificationclick event on the service worker.
+     */
+    @CommandLineFlags.Add("enable-experimental-web-platform-features")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testReplyToNotification() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        Context context = getInstrumentation().getTargetContext();
+
+        Notification notification = showAndGetNotification("MyNotification", "{ "
+                        + " actions: [{action: 'myAction', title: 'reply', type: 'text'}],"
+                        + " data: 'ACTION_REPLY'}");
+
+        // Check the action is present with a remote input attached.
+        Notification.Action action = notification.actions[0];
+        assertEquals("reply", action.title);
+        RemoteInput[] remoteInputs = action.getRemoteInputs();
+        assertNotNull(remoteInputs);
+
+        // Set a reply using the action's remote input key and send it on the intent.
+        sendIntentWithRemoteInput(context, action.actionIntent, remoteInputs,
+                remoteInputs[0].getResultKey(), "My Reply" /* reply */);
+
+        // Check reply was received by the service worker (see android_test_worker.js).
+        waitForTitle("reply: My Reply");
+    }
+
+    /**
+     * Verifies that setting an empty reply on the remote input of a notification action with type
+     * 'text' and triggering the action's intent causes an empty reply string to be received in the
+     * subsequent notificationclick event on the service worker.
+     */
+    @CommandLineFlags.Add("enable-experimental-web-platform-features")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs added in KITKAT_WATCH.
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testReplyToNotificationWithEmptyReply() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+        Context context = getInstrumentation().getTargetContext();
+
+        Notification notification = showAndGetNotification("MyNotification", "{ "
+                        + " actions: [{action: 'myAction', title: 'reply', type: 'text'}],"
+                        + " data: 'ACTION_REPLY'}");
+
+        // Check the action is present with a remote input attached.
+        Notification.Action action = notification.actions[0];
+        assertEquals("reply", action.title);
+        RemoteInput[] remoteInputs = action.getRemoteInputs();
+        assertNotNull(remoteInputs);
+
+        // Set a reply using the action's remote input key and send it on the intent.
+        sendIntentWithRemoteInput(context, action.actionIntent, remoteInputs,
+                remoteInputs[0].getResultKey(), "" /* reply */);
+
+        // Check empty reply was received by the service worker (see android_test_worker.js).
+        waitForTitle("reply:");
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs added in KITKAT_WATCH.
+    private static void sendIntentWithRemoteInput(Context context, PendingIntent pendingIntent,
+            RemoteInput[] remoteInputs, String resultKey, String reply)
+            throws PendingIntent.CanceledException {
+        Bundle results = new Bundle();
+        results.putString(resultKey, reply);
+        Intent fillInIntent = new Intent().addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        RemoteInput.addResultsToIntent(remoteInputs, fillInIntent, results);
+
+        // Send the pending intent filled in with the additional information from the new intent.
+        pendingIntent.send(context, 0 /* code */, fillInIntent);
+    }
+
+    /**
+     * Verifies that *not* setting a reply on the remote input of a notification action with type
+     * 'text' and triggering the action's intent causes a null reply to be received in the
+     * subsequent notificationclick event on the service worker.
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT) // Notification.Action.actionIntent added in Android K.
+    @CommandLineFlags.Add("enable-experimental-web-platform-features")
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testReplyToNotificationWithNoRemoteInput() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification = showAndGetNotification("MyNotification", "{ "
+                        + " actions: [{action: 'myAction', title: 'reply', type: 'text'}],"
+                        + " data: 'ACTION_REPLY'}");
+
+        assertEquals("reply", notification.actions[0].title);
+        notification.actions[0].actionIntent.send();
+
+        // Check reply was received by the service worker (see android_test_worker.js).
+        waitForTitle("reply: null");
     }
 
     /**
