@@ -226,9 +226,8 @@ void AuthService::OnHandleRefreshToken(bool has_refresh_token) {
   access_token_.clear();
   has_refresh_token_ = has_refresh_token;
 
-  FOR_EACH_OBSERVER(AuthServiceObserver,
-                    observers_,
-                    OnOAuth2RefreshTokenChanged());
+  for (auto& observer : observers_)
+    observer.OnOAuth2RefreshTokenChanged();
 }
 
 }  // namespace google_apis

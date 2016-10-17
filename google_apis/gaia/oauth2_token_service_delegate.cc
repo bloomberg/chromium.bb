@@ -58,17 +58,19 @@ bool OAuth2TokenServiceDelegate::IsError(const GoogleServiceAuthError& error) {
 
 void OAuth2TokenServiceDelegate::StartBatchChanges() {
   ++batch_change_depth_;
-  if (batch_change_depth_ == 1)
-    FOR_EACH_OBSERVER(OAuth2TokenService::Observer, observer_list_,
-                      OnStartBatchChanges());
+  if (batch_change_depth_ == 1) {
+    for (auto& observer : observer_list_)
+      observer.OnStartBatchChanges();
+  }
 }
 
 void OAuth2TokenServiceDelegate::EndBatchChanges() {
   --batch_change_depth_;
   DCHECK_LE(0, batch_change_depth_);
-  if (batch_change_depth_ == 0)
-    FOR_EACH_OBSERVER(OAuth2TokenService::Observer, observer_list_,
-                      OnEndBatchChanges());
+  if (batch_change_depth_ == 0) {
+    for (auto& observer : observer_list_)
+      observer.OnEndBatchChanges();
+  }
 }
 
 void OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(
@@ -79,14 +81,14 @@ void OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 OAuth2TokenService::FireRefreshTokenAvailable"));
 
-  FOR_EACH_OBSERVER(OAuth2TokenService::Observer, observer_list_,
-                    OnRefreshTokenAvailable(account_id));
+  for (auto& observer : observer_list_)
+    observer.OnRefreshTokenAvailable(account_id);
 }
 
 void OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(
     const std::string& account_id) {
-  FOR_EACH_OBSERVER(OAuth2TokenService::Observer, observer_list_,
-                    OnRefreshTokenRevoked(account_id));
+  for (auto& observer : observer_list_)
+    observer.OnRefreshTokenRevoked(account_id);
 }
 
 void OAuth2TokenServiceDelegate::FireRefreshTokensLoaded() {
@@ -96,8 +98,8 @@ void OAuth2TokenServiceDelegate::FireRefreshTokensLoaded() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 OAuth2TokenService::FireRefreshTokensLoaded"));
 
-  FOR_EACH_OBSERVER(OAuth2TokenService::Observer, observer_list_,
-                    OnRefreshTokensLoaded());
+  for (auto& observer : observer_list_)
+    observer.OnRefreshTokensLoaded();
 }
 
 net::URLRequestContextGetter* OAuth2TokenServiceDelegate::GetRequestContext()

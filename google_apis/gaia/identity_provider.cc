@@ -48,31 +48,30 @@ void IdentityProvider::OnRefreshTokenAvailable(const std::string& account_id) {
 
   if (account_id != GetActiveAccountId())
     return;
-  FOR_EACH_OBSERVER(OAuth2TokenService::Observer,
-                    token_service_observers_,
-                    OnRefreshTokenAvailable(account_id));
+  for (auto& observer : token_service_observers_)
+    observer.OnRefreshTokenAvailable(account_id);
 }
 
 void IdentityProvider::OnRefreshTokenRevoked(const std::string& account_id) {
   if (account_id != GetActiveAccountId())
     return;
-  FOR_EACH_OBSERVER(OAuth2TokenService::Observer,
-                    token_service_observers_,
-                    OnRefreshTokenRevoked(account_id));
+  for (auto& observer : token_service_observers_)
+    observer.OnRefreshTokenRevoked(account_id);
 }
 
 void IdentityProvider::OnRefreshTokensLoaded() {
-  FOR_EACH_OBSERVER(OAuth2TokenService::Observer,
-                    token_service_observers_,
-                    OnRefreshTokensLoaded());
+  for (auto& observer : token_service_observers_)
+    observer.OnRefreshTokensLoaded();
 }
 
 IdentityProvider::IdentityProvider() : token_service_observer_count_(0) {}
 
 void IdentityProvider::FireOnActiveAccountLogin() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnActiveAccountLogin());
+  for (auto& observer : observers_)
+    observer.OnActiveAccountLogin();
 }
 
 void IdentityProvider::FireOnActiveAccountLogout() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnActiveAccountLogout());
+  for (auto& observer : observers_)
+    observer.OnActiveAccountLogout();
 }

@@ -154,14 +154,14 @@ void AccountTracker::SetAccountStateForTest(AccountIds ids, bool is_signed_in) {
 
 void AccountTracker::NotifyAccountAdded(const AccountState& account) {
   DCHECK(!account.ids.gaia.empty());
-  FOR_EACH_OBSERVER(
-      Observer, observer_list_, OnAccountAdded(account.ids));
+  for (auto& observer : observer_list_)
+    observer.OnAccountAdded(account.ids);
 }
 
 void AccountTracker::NotifyAccountRemoved(const AccountState& account) {
   DCHECK(!account.ids.gaia.empty());
-  FOR_EACH_OBSERVER(
-      Observer, observer_list_, OnAccountRemoved(account.ids));
+  for (auto& observer : observer_list_)
+    observer.OnAccountRemoved(account.ids);
 }
 
 void AccountTracker::NotifySignInChanged(const AccountState& account) {
@@ -172,9 +172,8 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
           "422460 AccountTracker::NotifySignInChanged"));
 
   DCHECK(!account.ids.gaia.empty());
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnAccountSignInChanged(account.ids, account.is_signed_in));
+  for (auto& observer : observer_list_)
+    observer.OnAccountSignInChanged(account.ids, account.is_signed_in);
 }
 
 void AccountTracker::UpdateSignInState(const std::string& account_key,
