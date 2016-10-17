@@ -647,8 +647,11 @@ void LayoutTable::layout() {
           bottomSection->logicalBottom() - topSection->logicalTop();
     }
 
-    distributeExtraLogicalHeight(
-        floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
+    if (!state.isPaginated() ||
+        !crossesPageBoundary(tableBoxLogicalTop, computedLogicalHeight)) {
+      distributeExtraLogicalHeight(
+          floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
+    }
 
     bool isPaginated = view()->layoutState()->isPaginated();
     LayoutUnit logicalOffset =
