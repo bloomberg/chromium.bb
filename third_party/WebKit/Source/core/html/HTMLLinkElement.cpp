@@ -434,19 +434,22 @@ void LinkStyle::setCSSStyleSheet(
     ResourceIntegrityDisposition disposition =
         cachedStyleSheet->integrityDisposition();
 
-    DCHECK(disposition != ResourceIntegrityDisposition::NotChecked ||
-           !cachedStyleSheet->sheetText().isNull());
-
     if (disposition == ResourceIntegrityDisposition::NotChecked &&
         !cachedStyleSheet->loadFailedOrCanceled()) {
-      DCHECK(cachedStyleSheet->resourceBuffer());
-      if (SubresourceIntegrity::CheckSubresourceIntegrity(
-              *m_owner, cachedStyleSheet->resourceBuffer()->data(),
-              cachedStyleSheet->resourceBuffer()->size(), KURL(baseURL, href),
-              *cachedStyleSheet))
-        disposition = ResourceIntegrityDisposition::Passed;
-      else
-        disposition = ResourceIntegrityDisposition::Failed;
+      bool checkResult;
+
+      // cachedStyleSheet->resourceBuffer() can be nullptr on load success.
+      // If response size == 0.
+      const char* data = nullptr;
+      size_t size = 0;
+      if (cachedStyleSheet->resourceBuffer()) {
+        data = cachedStyleSheet->resourceBuffer()->data();
+        size = cachedStyleSheet->resourceBuffer()->size();
+      }
+      checkResult = SubresourceIntegrity::CheckSubresourceIntegrity(
+          *m_owner, data, size, KURL(baseURL, href), *cachedStyleSheet);
+      disposition = checkResult ? ResourceIntegrityDisposition::Passed
+                                : ResourceIntegrityDisposition::Failed;
 
       // TODO(kouhei): Remove this const_cast crbug.com/653502
       const_cast<CSSStyleSheetResource*>(cachedStyleSheet)
