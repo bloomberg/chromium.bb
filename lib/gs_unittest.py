@@ -990,6 +990,13 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
     e = self._getException(['gsutil', 'cat', 'gs://totally/legit/uri'], error)
     self.assertEqual(self.ctx._RetryFilter(e), True)
 
+  def testRetrySSLTimeout(self):
+    """Verify retry behavior when read operation timed out."""
+    error = 'ssl.SSLError: (\'The read operation timed out\',)'
+    e = self._getException(['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH],
+                           error)
+    self.assertEqual(self.ctx._RetryFilter(e), True)
+
 
 class GSContextTest(AbstractGSContextTest):
   """Tests for GSContext()"""
