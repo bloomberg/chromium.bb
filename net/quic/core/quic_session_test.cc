@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -129,7 +130,7 @@ class TestSession : public QuicSpdySession {
   TestStream* CreateOutgoingDynamicStream(SpdyPriority priority) override {
     TestStream* stream = new TestStream(GetNextOutgoingStreamId(), this);
     stream->SetPriority(priority);
-    ActivateStream(stream);
+    ActivateStream(base::WrapUnique(stream));
     return stream;
   }
 
@@ -142,7 +143,7 @@ class TestSession : public QuicSpdySession {
       return nullptr;
     } else {
       TestStream* stream = new TestStream(id, this);
-      ActivateStream(stream);
+      ActivateStream(base::WrapUnique(stream));
       return stream;
     }
   }

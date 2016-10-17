@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_flags.h"
@@ -96,7 +96,7 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingDynamicStream(
   }
 
   QuicSpdyStream* stream = new QuicSimpleServerStream(id, this);
-  ActivateStream(stream);
+  ActivateStream(base::WrapUnique(stream));
   return stream;
 }
 
@@ -109,7 +109,7 @@ QuicSimpleServerStream* QuicSimpleServerSession::CreateOutgoingDynamicStream(
   QuicSimpleServerStream* stream =
       new QuicSimpleServerStream(GetNextOutgoingStreamId(), this);
   stream->SetPriority(priority);
-  ActivateStream(stream);
+  ActivateStream(base::WrapUnique(stream));
   return stream;
 }
 

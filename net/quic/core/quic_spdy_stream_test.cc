@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_utils.h"
@@ -103,10 +104,10 @@ class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_.reset(new testing::StrictMock<MockQuicSpdySession>(connection_));
     stream_ = new TestStream(kClientDataStreamId1, session_.get(),
                              stream_should_process_data);
-    session_->ActivateStream(stream_);
+    session_->ActivateStream(base::WrapUnique(stream_));
     stream2_ = new TestStream(kClientDataStreamId2, session_.get(),
                               stream_should_process_data);
-    session_->ActivateStream(stream2_);
+    session_->ActivateStream(base::WrapUnique(stream2_));
   }
 
  protected:

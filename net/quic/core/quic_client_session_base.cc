@@ -181,7 +181,7 @@ QuicSpdyStream* QuicClientSessionBase::GetPromisedStream(
   }
   DynamicStreamMap::iterator it = dynamic_streams().find(id);
   if (it != dynamic_streams().end()) {
-    return static_cast<QuicSpdyStream*>(it->second);
+    return static_cast<QuicSpdyStream*>(it->second.get());
   }
   QUIC_BUG << "Open promised stream " << id << " is missing!";
   return nullptr;

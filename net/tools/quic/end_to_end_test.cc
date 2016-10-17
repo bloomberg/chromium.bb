@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -2326,8 +2327,9 @@ class ClientSessionThatDropsBody : public QuicClientSession {
 
   ~ClientSessionThatDropsBody() override {}
 
-  QuicSpdyClientStream* CreateClientStream() override {
-    return new ClientStreamThatDropsBody(GetNextOutgoingStreamId(), this);
+  std::unique_ptr<QuicSpdyClientStream> CreateClientStream() override {
+    return base::MakeUnique<ClientStreamThatDropsBody>(
+        GetNextOutgoingStreamId(), this);
   }
 };
 

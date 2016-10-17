@@ -521,7 +521,7 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
   DCHECK(connection()->connected());
   QuicChromiumClientStream* stream =
       new QuicChromiumClientStream(GetNextOutgoingStreamId(), this, net_log_);
-  ActivateStream(stream);
+  ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams",
                        GetNumOpenOutgoingStreams());
@@ -738,7 +738,7 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(QuicStreamId id) {
   QuicChromiumClientStream* stream =
       new QuicChromiumClientStream(id, this, net_log_);
   stream->CloseWriteSide();
-  ActivateStream(stream);
+  ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   return stream;
 }
@@ -1240,7 +1240,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
 
 void QuicChromiumClientSession::CloseAllStreams(int net_error) {
   while (!dynamic_streams().empty()) {
-    ReliableQuicStream* stream = dynamic_streams().begin()->second;
+    ReliableQuicStream* stream = dynamic_streams().begin()->second.get();
     QuicStreamId id = stream->id();
     static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
     CloseStream(id);
@@ -1405,8 +1405,10 @@ bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
 
 bool QuicChromiumClientSession::HasNonMigratableStreams() const {
   for (const auto& stream : dynamic_streams()) {
-    if (!static_cast<QuicChromiumClientStream*>(stream.second)->can_migrate())
+    if (!static_cast<QuicChromiumClientStream*>(stream.second.get())
+             ->can_migrate()) {
       return true;
+    }
   }
   return false;
 }

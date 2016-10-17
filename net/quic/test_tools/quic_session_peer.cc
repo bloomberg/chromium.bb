@@ -73,9 +73,10 @@ std::unordered_set<QuicStreamId>* QuicSessionPeer::GetDrainingStreams(
 }
 
 // static
-void QuicSessionPeer::ActivateStream(QuicSession* session,
-                                     ReliableQuicStream* stream) {
-  return session->ActivateStream(stream);
+void QuicSessionPeer::ActivateStream(
+    QuicSession* session,
+    std::unique_ptr<ReliableQuicStream> stream) {
+  return session->ActivateStream(std::move(stream));
 }
 
 // static
