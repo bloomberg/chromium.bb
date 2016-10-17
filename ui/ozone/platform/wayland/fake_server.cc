@@ -367,10 +367,12 @@ bool FakeServer::Start() {
   (void)server_fd.release();
 
   base::Thread::Options options;
-  options.message_pump_factory =
-      base::Bind(&FakeServer::CreateMessagePump, base::Unretained(this));
+  options.message_loop_type = MessageLoop::TYPE_IO;
   if (!base::Thread::StartWithOptions(options))
     return false;
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&FakeServer::StartWatchingFileDescriptor,
+                                     base::Unretained(this)));
 
   setenv("WAYLAND_SOCKET", base::UintToString(client_fd.release()).c_str(), 1);
 
@@ -395,19 +397,17 @@ void FakeServer::DoPause() {
   resume_event_.Wait();
 }
 
-std::unique_ptr<base::MessagePump> FakeServer::CreateMessagePump() {
-  auto pump = base::WrapUnique(new base::MessagePumpLibevent);
-  pump->WatchFileDescriptor(wl_event_loop_get_fd(event_loop_), true,
-                            base::MessagePumpLibevent::WATCH_READ, &controller_,
-                            this);
-  return std::move(pump);
+void FakeServer::StartWatchingFileDescriptor() {
+  controller_ = base::FileDescriptorWatcher::WatchReadable(
+      wl_event_loop_get_fd(event_loop_),
+      base::Bind(&FakeServer::OnFileCanReadWithoutBlocking,
+                 base::Unretained(this)));
 }
 
-void FakeServer::OnFileCanReadWithoutBlocking(int fd) {
+void FakeServer::OnFileCanReadWithoutBlocking() {
   wl_event_loop_dispatch(event_loop_, 0);
   wl_display_flush_clients(display_.get());
 }
 
-void FakeServer::OnFileCanWriteWithoutBlocking(int fd) {}
 
 }  // namespace wl
