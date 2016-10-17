@@ -1338,6 +1338,8 @@ class CORE_EXPORT UseCounter {
     LongTaskObserver = 1615,
     CSSMotionInEffect = 1616,
     CSSOffsetInEffect = 1617,
+    // The above items are available in M55 branch
+
     VRGetDisplaysInsecureOrigin = 1618,
     VRRequestPresent = 1619,
     VRRequestPresentInsecureOrigin = 1620,
