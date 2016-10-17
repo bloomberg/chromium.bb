@@ -400,19 +400,18 @@ bool ProfileMatchesFullName(const base::string16 full_name,
 }
 
 const PaymentRequestData& GetPaymentRequestData(const std::string& type) {
-  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
-    if (type == kPaymentRequestData[i].card_type)
-      return kPaymentRequestData[i];
+  for (const PaymentRequestData& data : kPaymentRequestData) {
+    if (type == data.card_type)
+      return data;
   }
   return kGenericPaymentRequestData;
 }
 
 const char* GetCardTypeForBasicCardPaymentType(
     const std::string& basic_card_payment_type) {
-  for (size_t i = 0; i < arraysize(kPaymentRequestData); ++i) {
-    if (basic_card_payment_type ==
-        kPaymentRequestData[i].basic_card_payment_type) {
-      return kPaymentRequestData[i].card_type;
+  for (const PaymentRequestData& data : kPaymentRequestData) {
+    if (basic_card_payment_type == data.basic_card_payment_type) {
+      return data.card_type;
     }
   }
   return kGenericPaymentRequestData.card_type;

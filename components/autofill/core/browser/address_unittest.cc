@@ -132,11 +132,10 @@ TEST_F(AddressTest, IsCountry) {
     "United states",
     "us"
   };
-  for (size_t i = 0; i < arraysize(kValidMatches); ++i) {
-    SCOPED_TRACE(kValidMatches[i]);
+  for (const char* valid_match : kValidMatches) {
+    SCOPED_TRACE(valid_match);
     ServerFieldTypeSet matching_types;
-    address.GetMatchingTypes(ASCIIToUTF16(kValidMatches[i]), "US",
-                             &matching_types);
+    address.GetMatchingTypes(ASCIIToUTF16(valid_match), "US", &matching_types);
     ASSERT_EQ(1U, matching_types.size());
     EXPECT_EQ(ADDRESS_HOME_COUNTRY, *matching_types.begin());
   }
@@ -145,9 +144,9 @@ TEST_F(AddressTest, IsCountry) {
     "United",
     "Garbage"
   };
-  for (size_t i = 0; i < arraysize(kInvalidMatches); ++i) {
+  for (const char* invalid_match : kInvalidMatches) {
     ServerFieldTypeSet matching_types;
-    address.GetMatchingTypes(ASCIIToUTF16(kInvalidMatches[i]), "US",
+    address.GetMatchingTypes(ASCIIToUTF16(invalid_match), "US",
                              &matching_types);
     EXPECT_EQ(0U, matching_types.size());
   }

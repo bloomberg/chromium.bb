@@ -80,8 +80,7 @@ StateData kStateData[] = {
 }  // namespace
 
 base::string16 GetAbbreviationForName(const base::string16& name) {
-  for (size_t i = 0; i < arraysize(kStateData); ++i) {
-    const StateData& state = kStateData[i];
+  for (const StateData& state : kStateData) {
     if (base::LowerCaseEqualsASCII(name, state.name))
       return base::ASCIIToUTF16(state.abbreviation);
   }
@@ -89,8 +88,7 @@ base::string16 GetAbbreviationForName(const base::string16& name) {
 }
 
 base::string16 GetNameForAbbreviation(const base::string16& abbreviation) {
-  for (size_t i = 0; i < arraysize(kStateData); ++i) {
-    const StateData& state = kStateData[i];
+  for (const StateData& state : kStateData) {
     if (base::LowerCaseEqualsASCII(abbreviation, state.abbreviation))
       return base::ASCIIToUTF16(state.name);
   }

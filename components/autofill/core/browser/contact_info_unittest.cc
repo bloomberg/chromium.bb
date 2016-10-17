@@ -48,8 +48,7 @@ struct FullNameTestCase {
 };
 
 TEST(NameInfoTest, SetFullName) {
-  for (size_t i = 0; i < arraysize(full_name_test_cases); ++i) {
-    const FullNameTestCase& test_case = full_name_test_cases[i];
+  for (const FullNameTestCase& test_case : full_name_test_cases) {
     SCOPED_TRACE(test_case.full_name_input);
 
     NameInfo name;

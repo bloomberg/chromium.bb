@@ -574,9 +574,8 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   const ServerFieldType types[] = {CREDIT_CARD_NAME_FULL, CREDIT_CARD_NUMBER,
                                    CREDIT_CARD_EXP_MONTH,
                                    CREDIT_CARD_EXP_4_DIGIT_YEAR};
-  for (size_t i = 0; i < arraysize(types); ++i) {
-    int comparison =
-        GetRawInfo(types[i]).compare(credit_card.GetRawInfo(types[i]));
+  for (ServerFieldType type : types) {
+    int comparison = GetRawInfo(type).compare(credit_card.GetRawInfo(type));
     if (comparison != 0)
       return comparison;
   }

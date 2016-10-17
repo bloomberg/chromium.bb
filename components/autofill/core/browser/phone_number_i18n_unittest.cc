@@ -124,24 +124,21 @@ TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
         {true, "(08) 450 777 7777", "DE", "7777777", "8450", "", "DE"},
     };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    SCOPED_TRACE("Testing phone number " + test_cases[i].input);
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE("Testing phone number " + test_case.input);
 
     base::string16 country_code, city_code, number;
     std::string deduced_region;
     ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
-    EXPECT_EQ(test_cases[i].valid,
-              ParsePhoneNumber(ASCIIToUTF16(test_cases[i].input),
-                               test_cases[i].assumed_region,
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &deduced_region,
-                               &unused_i18n_number));
-    EXPECT_EQ(ASCIIToUTF16(test_cases[i].number), number);
-    EXPECT_EQ(ASCIIToUTF16(test_cases[i].city_code), city_code);
-    EXPECT_EQ(ASCIIToUTF16(test_cases[i].country_code), country_code);
-    EXPECT_EQ(test_cases[i].deduced_region, deduced_region);
+    EXPECT_EQ(
+        test_case.valid,
+        ParsePhoneNumber(ASCIIToUTF16(test_case.input),
+                         test_case.assumed_region, &country_code, &city_code,
+                         &number, &deduced_region, &unused_i18n_number));
+    EXPECT_EQ(ASCIIToUTF16(test_case.number), number);
+    EXPECT_EQ(ASCIIToUTF16(test_case.city_code), city_code);
+    EXPECT_EQ(ASCIIToUTF16(test_case.country_code), country_code);
+    EXPECT_EQ(test_case.deduced_region, deduced_region);
   }
 }
 

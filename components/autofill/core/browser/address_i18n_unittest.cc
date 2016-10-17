@@ -61,14 +61,14 @@ TEST(AddressI18nTest, FieldTypeMirrorConversions) {
     {false, NAME_FULL, RECIPIENT},
   };
 
-  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+  for (const auto& test_data : kTestData) {
     AddressField address_field;
-    EXPECT_TRUE(FieldForType(kTestData[i].server_field, &address_field));
-    EXPECT_EQ(kTestData[i].address_field, address_field);
+    EXPECT_TRUE(FieldForType(test_data.server_field, &address_field));
+    EXPECT_EQ(test_data.address_field, address_field);
 
     ServerFieldType server_field =
-        TypeForField(kTestData[i].address_field, kTestData[i].billing);
-    EXPECT_EQ(kTestData[i].server_field, server_field);
+        TypeForField(test_data.address_field, test_data.billing);
+    EXPECT_EQ(test_data.server_field, server_field);
   }
 }
 
@@ -83,10 +83,10 @@ TEST(AddressI18nTest, FieldTypeUnidirectionalConversions) {
     {ADDRESS_HOME_LINE2, STREET_ADDRESS},
   };
 
-  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+  for (const auto& test_data : kTestData) {
     AddressField actual_address_field;
-    FieldForType(kTestData[i].server_field, &actual_address_field);
-    EXPECT_EQ(kTestData[i].expected_address_field, actual_address_field);
+    FieldForType(test_data.server_field, &actual_address_field);
+    EXPECT_EQ(test_data.expected_address_field, actual_address_field);
   }
 }
 

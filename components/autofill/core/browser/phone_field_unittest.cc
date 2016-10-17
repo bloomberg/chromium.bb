@@ -79,10 +79,10 @@ TEST_F(PhoneFieldTest, NonParse) {
 TEST_F(PhoneFieldTest, ParseOneLinePhone) {
   FormFieldData field;
 
-  for (size_t i = 0; i < arraysize(kFieldTypes); ++i) {
+  for (const char* field_type : kFieldTypes) {
     Clear();
 
-    field.form_control_type = kFieldTypes[i];
+    field.form_control_type = field_type;
     field.label = ASCIIToUTF16("Phone");
     field.name = ASCIIToUTF16("phone");
     list_.push_back(new AutofillField(field, ASCIIToUTF16("phone1")));
@@ -98,10 +98,10 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
 TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
   FormFieldData field;
 
-  for (size_t i = 0; i < arraysize(kFieldTypes); ++i) {
+  for (const char* field_type : kFieldTypes) {
     Clear();
 
-    field.form_control_type = kFieldTypes[i];
+    field.form_control_type = field_type;
     field.label = ASCIIToUTF16("Area Code");
     field.name = ASCIIToUTF16("area code");
     list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
@@ -127,10 +127,10 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
   // than 4.
   FormFieldData field;
 
-  for (size_t i = 0; i < arraysize(kFieldTypes); ++i) {
+  for (const char* field_type : kFieldTypes) {
     Clear();
 
-    field.form_control_type = kFieldTypes[i];
+    field.form_control_type = field_type;
     field.label = ASCIIToUTF16("Phone:");
     field.name = ASCIIToUTF16("dayphone1");
     field.max_length = 0;
@@ -168,10 +168,10 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   FormFieldData field;
 
-  for (size_t i = 0; i < arraysize(kFieldTypes); ++i) {
+  for (const char* field_type : kFieldTypes) {
     Clear();
 
-    field.form_control_type = kFieldTypes[i];
+    field.form_control_type = field_type;
     field.label = ASCIIToUTF16("Phone:");
     field.name = ASCIIToUTF16("area");
     list_.push_back(new AutofillField(field, ASCIIToUTF16("areacode1")));
@@ -197,10 +197,10 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
   FormFieldData field;
 
-  for (size_t i = 0; i < arraysize(kFieldTypes); ++i) {
+  for (const char* field_type : kFieldTypes) {
     Clear();
 
-    field.form_control_type = kFieldTypes[i];
+    field.form_control_type = field_type;
     field.label = ASCIIToUTF16("(");
     field.name = ASCIIToUTF16("phone1");
     field.max_length = 3;
@@ -231,10 +231,10 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
   // The |maxlength| is considered, otherwise it's too broad.
   FormFieldData field;
 
-  for (size_t i = 0; i < arraysize(kFieldTypes); ++i) {
+  for (const char* field_type : kFieldTypes) {
     Clear();
 
-    field.form_control_type = kFieldTypes[i];
+    field.form_control_type = field_type;
     field.label = ASCIIToUTF16("Phone Number");
     field.name = ASCIIToUTF16("CountryCode");
     field.max_length = 3;
