@@ -911,3 +911,15 @@ fuzzer_test("media_webm_muxer_fuzzer") {
     "//third_party/libwebm",
   ]
 }
+
+if (proprietary_codecs) {
+  fuzzer_test("media_mp4_avcc_parser_fuzzer") {
+    sources = [
+      "formats/mp4/mp4_avcc_parser_fuzzer.cc",
+    ]
+    deps = [
+      ":media",
+      "//base",
+    ]
+  }
+}
