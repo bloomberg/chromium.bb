@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWGenericContentView () {
   // The size of the view's bounds at the last call to |-layoutSubviews|.
   CGSize _lastLayoutSize;
@@ -25,7 +29,7 @@
   if (self) {
     DCHECK(view);
     _lastLayoutSize = CGSizeZero;
-    _view.reset([view retain]);
+    _view.reset(view);
     _scrollView.reset([[UIScrollView alloc] initWithFrame:CGRectZero]);
     [self addSubview:_scrollView];
     [_scrollView addSubview:_view];

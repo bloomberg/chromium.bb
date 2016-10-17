@@ -12,7 +12,7 @@
 
 // The view that was passed to |-initWithContentView:|.  This is the view that
 // is displayed in |self.scrollView|.
-@property(nonatomic, retain, readonly) UIView* view;
+@property(nonatomic, strong, readonly) UIView* view;
 
 // Initializes the CRWNativeContentContainerView to display |view|, which
 // will be added to the scroll view.

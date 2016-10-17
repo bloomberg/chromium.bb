@@ -21,7 +21,7 @@
 @interface CRWTouchTrackingRecognizer : UIGestureRecognizer
 
 // CRWTouchTrackingRecognizer delegate.
-@property(nonatomic, assign) id<CRWTouchTrackingDelegate> touchTrackingDelegate;
+@property(nonatomic, weak) id<CRWTouchTrackingDelegate> touchTrackingDelegate;
 
 // Designated initializer for CRWTouchTrackingRecognizer.
 - (id)initWithDelegate:(id<CRWTouchTrackingDelegate>)delegate;
