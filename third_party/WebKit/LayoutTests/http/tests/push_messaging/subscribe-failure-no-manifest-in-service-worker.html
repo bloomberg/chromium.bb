@@ -20,9 +20,10 @@ async_test(function(test) {
 
     getActiveServiceWorkerWithMessagePort(test, script, scope)
         .then(function(workerInfo) {
-            // Call subscribe in service worker context. It will fail because although the sender
-            // id has been specified in the manifest, the manifest cannot be read in a service
-            // worker context, and no previous subscription will exist from a document context.
+            // Call subscribe in service worker context. It will fail because
+            // although the sender id has been specified in the manifest, the
+            // manifest cannot be read in a service worker context, and no
+            // previous subscription will exist from a document context.
             workerInfo.port.postMessage({command: 'subscribe'});
 
             workerInfo.port.addEventListener('message', function(event) {

@@ -447,21 +447,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   GetAppIdentifierForServiceWorkerRegistration(0LL);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureBadKey) {
-  std::string script_result;
-
-  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
-
-  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
-
-  ASSERT_TRUE(RunScript("documentSubscribePushBadKey()", &script_result));
-  EXPECT_EQ(
-      "InvalidAccessError - Failed to execute 'subscribe' on 'PushManager': "
-      "The provided applicationServerKey is not valid.",
-      script_result);
-}
-
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        SubscribeFailureNotificationsBlocked) {
   std::string script_result;

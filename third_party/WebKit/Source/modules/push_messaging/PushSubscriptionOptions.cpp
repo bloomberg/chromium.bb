@@ -10,6 +10,7 @@
 #include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
+#include "third_party/WebKit/Source/wtf/ASCIICType.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
@@ -21,10 +22,9 @@ const int kMaxApplicationServerKeyLength = 255;
 String bufferSourceToString(
     const ArrayBufferOrArrayBufferView& applicationServerKey,
     ExceptionState& exceptionState) {
-  // Check the validity of the sender info. It must be a 65-byte uncompressed
-  // key, which has the byte 0x04 as the first byte as a marker.
   unsigned char* input;
   int length;
+  // Convert the input array into a string of bytes.
   if (applicationServerKey.isArrayBuffer()) {
     input = static_cast<unsigned char*>(
         applicationServerKey.getAsArrayBuffer()->data());
@@ -39,9 +39,16 @@ String bufferSourceToString(
     return String();
   }
 
-  // If the key is valid, just treat it as a string of bytes and pass it to
-  // the push service.
-  if (length <= kMaxApplicationServerKeyLength)
+  // Check the validity of the sender info. It must either be a 65-byte
+  // uncompressed VAPID key, which has the byte 0x04 as the first byte or a
+  // numeric sender ID.
+  const bool isVapid = length == 65 && *input == 0x04;
+  const bool isSenderId =
+      length > 0 && length < kMaxApplicationServerKeyLength &&
+      (std::find_if_not(input, input + length,
+                        &WTF::isASCIIDigit<unsigned char>) == input + length);
+
+  if (isVapid || isSenderId)
     return WebString::fromLatin1(input, length);
 
   exceptionState.throwDOMException(

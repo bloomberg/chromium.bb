@@ -112,19 +112,6 @@ function documentSubscribePush() {
   }).catch(sendErrorToTest);
 }
 
-function documentSubscribePushBadKey() {
-  navigator.serviceWorker.ready.then(function(swRegistration) {
-    var invalidApplicationServerKey = new Uint8Array(300);
-    invalidApplicationServerKey.fill('0x05', 1, 300);
-    pushSubscriptionOptions.applicationServerKey =
-        invalidApplicationServerKey.buffer;
-    return swRegistration.pushManager.subscribe(pushSubscriptionOptions)
-        .then(function(subscription) {
-          sendResultToTest(subscription.endpoint);
-        });
-  }).catch(sendErrorToTest);
-}
-
 function workerSubscribePush() {
   // Send the message to the worker for it to subscribe
   navigator.serviceWorker.controller.postMessage({command: 'workerSubscribe'});
