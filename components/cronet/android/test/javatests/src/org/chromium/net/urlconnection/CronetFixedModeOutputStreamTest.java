@@ -109,6 +109,8 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
         try {
             OutputStream out = connection.getOutputStream();
             out.write(1);
+            // Forces OutputStream implementation to flush. crbug.com/653072
+            out.flush();
             fail();
         } catch (IOException e) {
             if (!testingSystemHttpURLConnection()) {
