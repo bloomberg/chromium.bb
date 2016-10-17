@@ -353,8 +353,14 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
 
   const std::vector<net::ProxyServer>& proxy_list =
       config_values_->proxies_for_http();
+
+  net::HostPortPair host_port_pair = proxy_server.host_port_pair();
   const auto proxy_it =
-      std::find(proxy_list.begin(), proxy_list.end(), proxy_server);
+      std::find_if(proxy_list.begin(), proxy_list.end(),
+                   [&host_port_pair](const net::ProxyServer& proxy) {
+                     return proxy.is_valid() &&
+                            proxy.host_port_pair().Equals(host_port_pair);
+                   });
 
   if (proxy_it != proxy_list.end()) {
     if (proxy_info) {

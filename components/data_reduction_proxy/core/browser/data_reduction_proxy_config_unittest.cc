@@ -705,6 +705,25 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
               net::HostPortPair::FromString("otherorigin.net:443")),
           false, std::vector<net::ProxyServer>(), 0,
       },
+      {
+          // Verifies that when determining if a proxy is a valid data reduction
+          // proxy, only the host port pairs are compared.
+          net::ProxyServer::FromURI("origin.net:443",
+                                    net::ProxyServer::SCHEME_QUIC),
+          true, std::vector<net::ProxyServer>(proxies_for_http.begin(),
+                                              proxies_for_http.end()),
+          0,
+      },
+      {
+          net::ProxyServer::FromURI("origin2.net:443",
+                                    net::ProxyServer::SCHEME_HTTPS),
+          false, std::vector<net::ProxyServer>(), 0,
+      },
+      {
+          net::ProxyServer::FromURI("origin2.net:443",
+                                    net::ProxyServer::SCHEME_QUIC),
+          false, std::vector<net::ProxyServer>(), 0,
+      },
   };
 
   std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
