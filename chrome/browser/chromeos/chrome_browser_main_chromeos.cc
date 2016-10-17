@@ -683,8 +683,10 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // available.
   idle_action_warning_observer_.reset(new IdleActionWarningObserver());
 
-  // Start watching for low disk space events to notify the user.
-  low_disk_notification_.reset(new LowDiskNotification());
+  // Start watching for low disk space events to notify the user if it is not a
+  // guest profile.
+  if (!user_manager::UserManager::Get()->IsLoggedInAsGuest())
+    low_disk_notification_.reset(new LowDiskNotification());
 
   // Authenticate the user for PIN quick unlock.
   PinStorage* pin_storage = PinStorageFactory::GetForProfile(profile());
