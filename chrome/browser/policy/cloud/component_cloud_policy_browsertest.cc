@@ -23,6 +23,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_test_utils.h"
@@ -99,8 +100,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     // ExtensionBrowserTest sets the login users to a non-managed value;
     // replace it. This is the default username sent in policy blobs from the
     // testserver.
-    command_line->AppendSwitchASCII(
-        ::chromeos::switches::kLoginUser, "user@example.com");
+    command_line->AppendSwitchASCII(::chromeos::switches::kLoginUser,
+                                    PolicyBuilder::kFakeUsername);
 #endif
   }
 
@@ -175,7 +176,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(signin_manager);
-    signin_manager->SetAuthenticatedAccountInfo("12345", "user@example.com");
+    signin_manager->SetAuthenticatedAccountInfo("12345",
+                                                PolicyBuilder::kFakeUsername);
 
     UserCloudPolicyManager* policy_manager =
         UserCloudPolicyManagerFactory::GetForBrowserContext(
