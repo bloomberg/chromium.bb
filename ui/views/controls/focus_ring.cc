@@ -34,8 +34,8 @@ FocusRing* GetFocusRing(views::View* parent) {
 const char FocusRing::kViewClassName[] = "FocusRing";
 
 // static
-void FocusRing::Install(views::View* parent,
-                        ui::NativeTheme::ColorId override_color_id) {
+views::View* FocusRing::Install(views::View* parent,
+                                ui::NativeTheme::ColorId override_color_id) {
   DCHECK(parent->HasFocus());
   FocusRing* ring = GetFocusRing(parent);
   if (!ring) {
@@ -45,6 +45,7 @@ void FocusRing::Install(views::View* parent,
   ring->override_color_id_ = override_color_id;
   ring->Layout();
   ring->SchedulePaint();
+  return ring;
 }
 
 // static

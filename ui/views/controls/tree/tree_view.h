@@ -24,9 +24,10 @@ class Rect;
 
 namespace views {
 
+class PrefixSelector;
+class ScrollView;
 class Textfield;
 class TreeViewController;
-class PrefixSelector;
 
 // TreeView displays hierarchical data as returned from a TreeModel. The user
 // can expand, collapse and edit the items. A Controller may be attached to
@@ -348,6 +349,11 @@ class VIEWS_EXPORT TreeView : public View,
   // Returns whether |point| is in the bounds of |node|'s expand/collapse
   // control.
   bool IsPointInExpandControl(InternalNode* node, const gfx::Point& point);
+
+  // Sets whether a focus ring is visible on this control or not. This function
+  // does nothing if focus rings aren't enabled in general or if the platform's
+  // style does not use focus rings on TreeViews.
+  void SetHasFocusRing(bool);
 
   // The model, may be null.
   ui::TreeModel* model_;

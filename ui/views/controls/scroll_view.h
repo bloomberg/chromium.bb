@@ -88,6 +88,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   void SetHorizontalScrollBar(ScrollBar* horiz_sb);
   void SetVerticalScrollBar(ScrollBar* vert_sb);
 
+  // Sets whether this ScrollView has a focus ring or not.
+  void SetHasFocusRing(bool has_focus_ring);
+
   // View overrides:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
@@ -180,6 +183,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // If true, never show the horizontal scrollbar (even if the contents is wider
   // than the viewport).
   bool hide_horizontal_scrollbar_;
+
+  // Focus ring, if one is installed.
+  View* focus_ring_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollView);
 };

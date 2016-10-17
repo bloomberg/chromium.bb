@@ -21,7 +21,7 @@ class FocusRing : public View {
   // Create a FocusRing and adds it to |parent|, or updates the one that already
   // exists. |override_color_id| will be used in place of the default coloration
   // when provided.
-  static void Install(views::View* parent,
+  static View* Install(views::View* parent,
                       ui::NativeTheme::ColorId override_color_id =
                           ui::NativeTheme::kColorId_NumColors);
 

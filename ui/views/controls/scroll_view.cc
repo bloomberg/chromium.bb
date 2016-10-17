@@ -12,6 +12,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
@@ -271,6 +272,18 @@ void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
   vert_sb_ = vert_sb;
 }
 
+void ScrollView::SetHasFocusRing(bool has_focus_ring) {
+  if (has_focus_ring == (focus_ring_ != nullptr))
+    return;
+  if (has_focus_ring) {
+    focus_ring_ = FocusRing::Install(this);
+  } else {
+    FocusRing::Uninstall(this);
+    focus_ring_ = nullptr;
+  }
+  SchedulePaint();
+}
+
 gfx::Size ScrollView::GetPreferredSize() const {
   if (!is_bounded())
     return View::GetPreferredSize();
@@ -294,6 +307,9 @@ int ScrollView::GetHeightForWidth(int width) const {
 }
 
 void ScrollView::Layout() {
+  if (focus_ring_)
+    focus_ring_->Layout();
+
   gfx::Rect available_rect = GetContentsBounds();
   if (is_bounded()) {
     int content_width = available_rect.width();

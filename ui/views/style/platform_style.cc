@@ -42,6 +42,7 @@ const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = true;
 const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = false;
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_RELEASE;
+const bool PlatformStyle::kTreeViewHasFocusRing = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kUseRipples = true;
 
