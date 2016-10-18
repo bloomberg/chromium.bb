@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
+
 source_set("browser") {
   sources = [
     "browser_constants.cc",
@@ -33,6 +36,10 @@ source_set("browser") {
     "voice/voice_search_language.mm",
   ]
 
+  public_deps = [
+    ":provider_flags",
+  ]
+
   deps = [
     "//base",
     "//components/autofill/core/browser",
@@ -42,6 +49,11 @@ source_set("browser") {
     "//ios/public/provider/web",
     "//ios/web",
   ]
+}
+
+buildflag_header("provider_flags") {
+  header = "provider_flags.h"
+  flags = [ "USE_IOS_INTERNAL_PROVIDER=$use_ios_internal_provider" ]
 }
 
 source_set("test_support") {
