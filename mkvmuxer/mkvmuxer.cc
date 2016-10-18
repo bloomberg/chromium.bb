@@ -1366,7 +1366,12 @@ bool Projection::SetProjectionPrivate(const uint8_t* data,
     return false;
   }
 
-  uint8_t* new_private_data = new (std::nothrow) uint8_t[data_length];
+  if (data_length != static_cast<size_t>(data_length)) {
+    return false;
+  }
+
+  uint8_t* new_private_data =
+      new (std::nothrow) uint8_t[static_cast<size_t>(data_length)];
   if (new_private_data == NULL) {
     return false;
   }
