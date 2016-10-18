@@ -36,10 +36,7 @@ namespace {
 
 // The default WebAPK server URL.
 const char kDefaultWebApkServerUrl[] =
-    "https://webapk.googleapis.com/v1alpha/webApks/";
-
-// The response format type expected from the WebAPK server.
-const char kDefaultWebApkServerUrlResponseType[] = "?alt=proto";
+    "https://webapk.googleapis.com/v1alpha/webApks/?alt=proto";
 
 // The MIME type of the POST data sent to the server.
 const char kProtoMimeType[] = "application/x-protobuf";
@@ -123,13 +120,6 @@ scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() {
   return content::BrowserThread::GetBlockingPool()
       ->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-}
-
-GURL GetServerUrlForUpdate(const GURL& server_url,
-                           const std::string& webapk_package) {
-  // crbug.com/636552. Simplify the server URL.
-  return GURL(server_url.spec() + webapk_package + "/" +
-              kDefaultWebApkServerUrlResponseType);
 }
 
 // Creates a directory depending on the type of the task, and set permissions.
@@ -353,8 +343,7 @@ void WebApkInstaller::OnGotIconMurmur2Hash(
 
 void WebApkInstaller::SendCreateWebApkRequest(
     std::unique_ptr<webapk::WebApk> webapk) {
-  GURL server_url(server_url_.spec() + kDefaultWebApkServerUrlResponseType);
-  SendRequest(std::move(webapk), net::URLFetcher::POST, server_url);
+  SendRequest(std::move(webapk), net::URLFetcher::POST, server_url_);
 }
 
 void WebApkInstaller::SendUpdateWebApkRequest(
@@ -362,8 +351,7 @@ void WebApkInstaller::SendUpdateWebApkRequest(
   webapk->set_package_name(webapk_package_);
   webapk->set_version(std::to_string(webapk_version_));
 
-  SendRequest(std::move(webapk), net::URLFetcher::PUT,
-              GetServerUrlForUpdate(server_url_, webapk_package_));
+  SendRequest(std::move(webapk), net::URLFetcher::PUT, server_url_);
 }
 
 void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,

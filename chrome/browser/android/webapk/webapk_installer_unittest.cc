@@ -43,9 +43,6 @@ const char* kServerUrl = "/webapkserver/";
 // that the file is not an image.
 const char* kIconUrl = "/simple.html";
 
-// The response format type expected from the WebAPK server.
-const char* kWebApkServerUrlResponseType = "?alt=proto";
-
 // URL of file to download from the WebAPK server. We use a random file in the
 // test data directory.
 const char* kDownloadUrl = "/simple.html";
@@ -236,23 +233,9 @@ class WebApkInstallerTest : public ::testing::Test {
 
   std::unique_ptr<net::test_server::HttpResponse> HandleWebApkRequest(
       const net::test_server::HttpRequest& request) {
-    return (request.relative_url == GetServerUrlForCreateWebApk() ||
-            request.relative_url == GetServerUrlForUpdateWebApk())
+    return (request.relative_url == kServerUrl)
                ? webapk_response_builder_.Run()
                : std::unique_ptr<net::test_server::HttpResponse>();
-  }
-
-  std::string GetServerUrlForCreateWebApk() const {
-    std::string url(kServerUrl);
-    return url.append(kWebApkServerUrlResponseType);
-  }
-
-  std::string GetServerUrlForUpdateWebApk() const {
-    std::string url(kServerUrl);
-    url.append(kDownloadedWebApkPackageName);
-    url.append("/");
-    url.append(kWebApkServerUrlResponseType);
-    return url;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
