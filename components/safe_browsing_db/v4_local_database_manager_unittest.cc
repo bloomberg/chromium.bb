@@ -172,11 +172,12 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
   }
 
   void StopLocalDatabaseManager() {
-    v4_local_database_manager_->StopOnIOThread(true);
+    if (v4_local_database_manager_) {
+      v4_local_database_manager_->StopOnIOThread(true);
+    }
 
     // Force destruction of the database.
-    task_runner_->RunPendingTasks();
-    base::RunLoop().RunUntilIdle();
+    WaitForTasksOnTaskRunner();
   }
 
   void WaitForTasksOnTaskRunner() {
@@ -330,6 +331,36 @@ TEST_F(V4LocalDatabaseManagerTest, PerformFullHashCheckCalledAsync) {
 
   EXPECT_TRUE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
       v4_local_database_manager_));
+}
+
+TEST_F(V4LocalDatabaseManagerTest, UsingWeakPtrDropsCallback) {
+  // StopLocalDatabaseManager before resetting it because that's what
+  // ~V4LocalDatabaseManager expects.
+  StopLocalDatabaseManager();
+  v4_local_database_manager_ =
+      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
+  SetTaskRunnerForTest();
+  StartLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+  net::TestURLFetcherFactory factory;
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  ReplaceV4Database(store_and_hash_prefixes);
+
+  // The fake database returns a matched hash prefix.
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      GURL("http://example.com/a/"), nullptr));
+  v4_local_database_manager_->StopOnIOThread(true);
+
+  // Release the V4LocalDatabaseManager object right away before the callback
+  // gets called. When the callback gets called, without using a weak-ptr
+  // factory, this leads to a use after free. However, using the weak-ptr means
+  // that the callback is simply dropped.
+  v4_local_database_manager_ = nullptr;
+
+  // Wait for the tasks scheduled by StopOnIOThread to complete.
+  WaitForTasksOnTaskRunner();
 }
 
 }  // namespace safe_browsing

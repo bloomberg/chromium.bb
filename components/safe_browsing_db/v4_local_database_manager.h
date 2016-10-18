@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/v4_database.h"
@@ -234,6 +235,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
+
+  base::WeakPtrFactory<V4LocalDatabaseManager> weak_factory_;
 
   friend class base::RefCountedThreadSafe<V4LocalDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
