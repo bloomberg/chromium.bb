@@ -39,7 +39,6 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/preg_parser_win.h"
 #include "components/policy/core/common/schema_map.h"
@@ -753,12 +752,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
                            gpo_list_provider_);
     std::unique_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
-    bool match = loaded->Equals(expected);
-    if (!match) {
-      LOG(ERROR) << "EXPECTED: " << expected;
-      LOG(ERROR) << "ACTUAL: " << *loaded.get();
-    }
-    return match;
+    return loaded->Equals(expected);
   }
 
   void InstallRegistrySentinel() {

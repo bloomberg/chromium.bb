@@ -78,6 +78,9 @@ class POLICY_EXPORT PolicyMap {
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
 
+  // Erase all entries for which |filter| returns true.
+  void EraseMatching(const base::Callback<bool(const const_iterator)>& filter);
+
   // Erase all entries for which |filter| returns false.
   void EraseNonmatching(
       const base::Callback<bool(const const_iterator)>& filter);
@@ -124,6 +127,10 @@ class POLICY_EXPORT PolicyMap {
   // Helper function for Equals().
   static bool MapEntryEquals(const PolicyMapType::value_type& a,
                              const PolicyMapType::value_type& b);
+
+  // Erase all entries for which |filter| returns |deletion_value|.
+  void FilterErase(const base::Callback<bool(const const_iterator)>& filter,
+                   bool deletion_value);
 
   PolicyMapType map_;
 

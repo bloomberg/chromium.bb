@@ -21,111 +21,6 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 
-// Use real existing policies as samples because ConfigDirPolicyLoader does
-// basic verification at load time.  These constants are specific to
-// ConfigDirPolicyLoader and thus are hidden in an anonymous namespace.  (They
-// cannot be applied generally because Windows tests depend on reading GPO
-// sample files containing hard-coded policy names.)
-namespace {
-
-const char kKeyString[] = "HomepageLocation";
-const char kKeyBoolean[] = "HomepageIsNewTabPage";
-const char kKeyInteger[] = "NetworkPredictionOptions";
-const char kKeyStringList[] = "DisabledSchemes";
-const char kKeyDictionary[] = "ProxySettings";
-
-const char kTestChromeSchema[] =
-    "{"
-    "  \"type\": \"object\","
-    "  \"properties\": {"
-    "    \"HomepageLocation\": { \"type\": \"string\" },"
-    "    \"HomepageIsNewTabPage\": { \"type\": \"boolean\" },"
-    "    \"NetworkPredictionOptions\": { \"type\": \"integer\" },"
-    "    \"DisabledSchemes\": {"
-    "      \"type\": \"array\","
-    "      \"items\": { \"type\": \"string\" }"
-    "    },"
-    "    \"ProxySettings\": {"
-    "      \"type\": \"object\","
-    "      \"properties\": {"
-    "        \"bool\": { \"type\": \"boolean\" },"
-    "        \"double\": { \"type\": \"number\" },"
-    "        \"int\": { \"type\": \"integer\" },"
-    "        \"string\": { \"type\": \"string\" },"
-    "        \"array\": {"
-    "          \"type\": \"array\","
-    "          \"items\": { \"type\": \"string\" }"
-    "        },"
-    "        \"dictionary\": {"
-    "          \"type\": \"object\","
-    "          \"properties\": {"
-    "            \"sub\": { \"type\": \"string\" },"
-    "            \"sublist\": {"
-    "              \"type\": \"array\","
-    "              \"items\": {"
-    "                \"type\": \"object\","
-    "                \"properties\": {"
-    "                  \"aaa\": { \"type\": \"integer\" },"
-    "                  \"bbb\": { \"type\": \"integer\" },"
-    "                  \"ccc\": { \"type\": \"string\" },"
-    "                  \"ddd\": { \"type\": \"string\" }"
-    "                }"
-    "              }"
-    "            }"
-    "          }"
-    "        },"
-    "        \"list\": {"
-    "          \"type\": \"array\","
-    "          \"items\": {"
-    "            \"type\": \"object\","
-    "            \"properties\": {"
-    "              \"subdictindex\": { \"type\": \"integer\" },"
-    "              \"subdict\": {"
-    "                \"type\": \"object\","
-    "                \"properties\": {"
-    "                  \"bool\": { \"type\": \"boolean\" },"
-    "                  \"double\": { \"type\": \"number\" },"
-    "                  \"int\": { \"type\": \"integer\" },"
-    "                  \"string\": { \"type\": \"string\" }"
-    "                }"
-    "              }"
-    "            }"
-    "          }"
-    "        },"
-    "        \"dict\": {"
-    "          \"type\": \"object\","
-    "          \"properties\": {"
-    "            \"bool\": { \"type\": \"boolean\" },"
-    "            \"double\": { \"type\": \"number\" },"
-    "            \"int\": { \"type\": \"integer\" },"
-    "            \"string\": { \"type\": \"string\" },"
-    "            \"list\": {"
-    "              \"type\": \"array\","
-    "              \"items\": {"
-    "                \"type\": \"object\","
-    "                \"properties\": {"
-    "                  \"subdictindex\": { \"type\": \"integer\" },"
-    "                  \"subdict\": {"
-    "                    \"type\": \"object\","
-    "                    \"properties\": {"
-    "                      \"bool\": { \"type\": \"boolean\" },"
-    "                      \"double\": { \"type\": \"number\" },"
-    "                      \"int\": { \"type\": \"integer\" },"
-    "                      \"string\": { \"type\": \"string\" }"
-    "                    }"
-    "                  }"
-    "                }"
-    "              }"
-    "            }"
-    "          }"
-    "        }"
-    "      }"
-    "    }"
-    "  }"
-    "}";
-
-}  // anonymous namespace
-
 namespace policy {
 
 namespace {
@@ -181,14 +76,7 @@ TestHarness::TestHarness()
     : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY,
                                 POLICY_SCOPE_MACHINE,
                                 POLICY_SOURCE_PLATFORM),
-      next_policy_file_index_(100) {
-    key_string_ = kKeyString;
-    key_boolean_ = kKeyBoolean;
-    key_integer_ = kKeyInteger;
-    key_stringlist_ = kKeyStringList;
-    key_dictionary_ = kKeyDictionary;
-    test_schema_ = kTestChromeSchema;
-}
+      next_policy_file_index_(100) {}
 
 TestHarness::~TestHarness() {}
 

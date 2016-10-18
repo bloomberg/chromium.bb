@@ -93,16 +93,14 @@ void PolicyMap::Erase(const std::string& policy) {
   map_.erase(policy);
 }
 
+void PolicyMap::EraseMatching(
+    const base::Callback<bool(const const_iterator)>& filter) {
+  FilterErase(filter, true);
+}
+
 void PolicyMap::EraseNonmatching(
     const base::Callback<bool(const const_iterator)>& filter) {
-  PolicyMapType::iterator iter(map_.begin());
-  while (iter != map_.end()) {
-    if (!filter.Run(iter)) {
-      map_.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
+  FilterErase(filter, false);
 }
 
 void PolicyMap::Swap(PolicyMap* other) {
@@ -197,6 +195,19 @@ void PolicyMap::Clear() {
 bool PolicyMap::MapEntryEquals(const PolicyMap::PolicyMapType::value_type& a,
                                const PolicyMap::PolicyMapType::value_type& b) {
   return a.first == b.first && a.second.Equals(b.second);
+}
+
+void PolicyMap::FilterErase(
+    const base::Callback<bool(const const_iterator)>& filter,
+    bool deletion_value) {
+  PolicyMapType::iterator iter(map_.begin());
+  while (iter != map_.end()) {
+    if (filter.Run(iter) == deletion_value) {
+      map_.erase(iter++);
+    } else {
+      ++iter;
+    }
+  }
 }
 
 }  // namespace policy
