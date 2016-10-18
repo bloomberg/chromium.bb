@@ -6,6 +6,7 @@ cr.exportPath('options');
 
 /**
  * @typedef {{actionLinkText: (string|undefined),
+ *            accountInfo: (string|undefined),
  *            childUser: (boolean|undefined),
  *            hasError: (boolean|undefined),
  *            hasUnrecoverableError: (boolean|undefined),
@@ -1184,6 +1185,9 @@ cr.define('options', function() {
                   loadTimeData.getString('syncButtonTextInProgress') :
                   loadTimeData.getString('syncButtonTextSignIn');
       $('start-stop-sync-indicator').hidden = signInButton.hidden;
+
+      $('account-info').textContent = syncData.accountInfo;
+      $('account-info').hidden = !this.signedIn_;
 
       // TODO(estade): can this just be textContent?
       $('sync-status-text').innerHTML = syncData.statusText;

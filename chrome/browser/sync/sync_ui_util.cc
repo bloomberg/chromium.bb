@@ -67,54 +67,29 @@ bool IsChromeDashboardEnabled() {
 base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
                                          StatusLabelStyle style) {
-  std::string user_display_name = signin.GetAuthenticatedAccountInfo().email;
-
-#if defined(OS_CHROMEOS)
-  if (user_manager::UserManager::IsInitialized()) {
-    // On CrOS user email is sanitized and then passed to the signin manager.
-    // Original email (containing dots) is stored as "display email".
-    user_display_name = user_manager::UserManager::Get()->GetUserDisplayEmail(
-        AccountId::FromUserEmail(user_display_name));
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  base::string16 user_name = base::UTF8ToUTF16(user_display_name);
-
-  if (!user_name.empty()) {
-    if (!service || service->IsManaged()) {
-      // User is signed in, but sync is disabled.
-      return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED,
-                                        user_name);
-    } else if (!service->IsSyncRequested()) {
-      // User is signed in, but sync has been stopped.
-      return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
-                                        user_name);
-    }
-  }
-
-  if (!service || !service->IsSyncActive()) {
+  if (!service || service->IsManaged()) {
+    // User is signed in, but sync is disabled.
+    return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
+  } else if (!service->IsSyncRequested()) {
+    // User is signed in, but sync has been stopped.
+    return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
+  } else if (!service->IsSyncActive()) {
     // User is not signed in, or sync is still initializing.
     return base::string16();
   }
 
-  DCHECK(!user_name.empty());
-
   // Message may also carry additional advice with an HTML link, if acceptable.
   switch (style) {
     case PLAIN_TEXT:
-      return l10n_util::GetStringFUTF16(
-          IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
-          user_name);
+      return l10n_util::GetStringUTF16(IDS_SYNC_ACCOUNT_SYNCING);
     case WITH_HTML:
       if (IsChromeDashboardEnabled()) {
         return l10n_util::GetStringFUTF16(
-            IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK_NEW,
-            user_name,
+            IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK_NEW,
             base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
       }
       return l10n_util::GetStringFUTF16(
-          IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK,
-          user_name,
+          IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK,
           base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
     default:
       NOTREACHED();
@@ -298,9 +273,8 @@ MessageType GetStatusInfo(Profile* profile,
     } else if (signin.IsAuthenticated()) {
       // The user is signed in, but sync has been stopped.
       if (status_label) {
-        base::string16 label = l10n_util::GetStringFUTF16(
-            IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
-            base::UTF8ToUTF16(signin.GetAuthenticatedAccountInfo().email));
+        base::string16 label = l10n_util::GetStringUTF16(
+            IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
         status_label->assign(label);
         result_type = PRE_SYNCED;
       }

@@ -19,6 +19,7 @@ cr.exportPath('settings');
  *            setupCompleted: (boolean|undefined),
  *            setupInProgress: (boolean|undefined),
  *            signedIn: (boolean|undefined),
+ *            signedInUsername: (string|undefined),
  *            signinAllowed: (boolean|undefined),
  *            statusText: (string|undefined),
  *            supervisedUser: (boolean|undefined),

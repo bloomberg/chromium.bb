@@ -27,6 +27,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
@@ -75,6 +76,25 @@ GlobalError* GetSignedInServiceError(Profile* profile) {
 }
 
 }  // namespace
+
+base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
+  std::string user_display_name;
+
+  if (signin->IsAuthenticated()) {
+    user_display_name = signin->GetAuthenticatedAccountInfo().email;
+
+#if defined(OS_CHROMEOS)
+    if (user_manager::UserManager::IsInitialized()) {
+      // On CrOS user email is sanitized and then passed to the signin manager.
+      // Original email (containing dots) is stored as "display email".
+      user_display_name = user_manager::UserManager::Get()->GetUserDisplayEmail(
+          AccountId::FromUserEmail(user_display_name));
+    }
+#endif  // defined(OS_CHROMEOS)
+  }
+
+  return base::UTF8ToUTF16(user_display_name);
+}
 
 base::string16 GetSigninMenuLabel(Profile* profile) {
   GlobalError* error = signin_ui_util::GetSignedInServiceError(profile);

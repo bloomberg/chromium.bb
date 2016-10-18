@@ -93,9 +93,12 @@
 <if expr="chromeos">
           <div class="middle two-line" on-tap="onPictureTap_" actionable>
 </if>
-            <span class="flex" id="profile-name">
-              [[profileName_]]
-            </span>
+            <div class="flex">
+              <span id="profile-name">[[profileName_]]</span>
+              <div class="secondary" hidden="[[!syncStatus.signedIn]]">
+                [[syncStatus.signedInUsername]]
+              </div>
+            </div>
             <button class="subpage-arrow" is="paper-icon-button-light"></button>
           </div>
 <if expr="not chromeos">

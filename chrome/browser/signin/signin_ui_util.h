@@ -29,6 +29,10 @@ void GetStatusLabelsForAuthError(Profile* profile,
                                  base::string16* status_label,
                                  base::string16* link_label);
 
+// Returns the username of the authenticated user or an empty string if there is
+// no authenticated user.
+base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin);
+
 // Initializes signin-related preferences.
 void InitializePrefsForProfile(Profile* profile);
 
