@@ -5,6 +5,8 @@
 #ifndef BLIMP_HELIUM_RESULT_H_
 #define BLIMP_HELIUM_RESULT_H_
 
+#include "blimp/helium/blimp_helium_export.h"
+
 namespace blimp {
 namespace helium {
 
@@ -22,7 +24,7 @@ enum Result {
 };
 
 // Gets a human-readable string representation of |result|.
-const char* ResultToString(Result result);
+BLIMP_HELIUM_EXPORT const char* ResultToString(Result result);
 
 }  // namespace helium
 }  // namespace blimp

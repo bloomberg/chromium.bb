@@ -17,7 +17,7 @@ class ResultTest : public testing::Test {
   ~ResultTest() override {}
 };
 
-TEST_F(ResultTest, ResultToString) {
+TEST_F(ResultTest, ResultToStringWorks) {
   // The exhaustive list of errors need not be specified here, but enough are
   // specified that we can verify that the switch/case mapping works as
   // intended.

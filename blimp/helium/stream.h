@@ -48,4 +48,4 @@ class Stream {
 }  // namespace helium
 }  // namespace blimp
 
-#endif  // BLIMP_NET_HELIUM_HELIUM_STREAM_H_
+#endif  // BLIMP_HELIUM_STREAM_H_
