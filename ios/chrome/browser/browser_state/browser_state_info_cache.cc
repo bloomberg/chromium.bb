@@ -54,8 +54,8 @@ void BrowserStateInfoCache::AddBrowserState(
   cache->SetWithoutPathExpansion(key, info.release());
   AddBrowserStateCacheKey(key);
 
-  FOR_EACH_OBSERVER(BrowserStateInfoCacheObserver, observer_list_,
-                    OnBrowserStateAdded(browser_state_path));
+  for (auto& observer : observer_list_)
+    observer.OnBrowserStateAdded(browser_state_path);
 }
 
 void BrowserStateInfoCache::AddObserver(
@@ -82,8 +82,8 @@ void BrowserStateInfoCache::RemoveBrowserState(
   cache->Remove(key, nullptr);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
 
-  FOR_EACH_OBSERVER(BrowserStateInfoCacheObserver, observer_list_,
-                    OnBrowserStateWasRemoved(browser_state_path));
+  for (auto& observer : observer_list_)
+    observer.OnBrowserStateWasRemoved(browser_state_path);
 }
 
 size_t BrowserStateInfoCache::GetNumberOfBrowserStates() const {

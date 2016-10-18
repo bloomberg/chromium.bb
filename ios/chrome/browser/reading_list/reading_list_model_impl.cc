@@ -23,8 +23,8 @@ ReadingListModelImpl::ReadingListModelImpl(
 ReadingListModelImpl::~ReadingListModelImpl() {}
 
 void ReadingListModelImpl::Shutdown() {
-  FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                    ReadingListModelBeingDeleted(this));
+  for (auto& observer : observers_)
+    observer.ReadingListModelBeingDeleted(this);
   loaded_ = false;
 }
 
@@ -92,27 +92,29 @@ void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
 
   auto result = std::find(unread_.begin(), unread_.end(), entry);
   if (result != unread_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillRemoveUnreadEntry(
-                          this, std::distance(unread_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillRemoveUnreadEntry(
+          this, std::distance(unread_.begin(), result));
+    }
     unread_.erase(result);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentUnreadList(unread_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 
   result = std::find(read_.begin(), read_.end(), entry);
   if (result != read_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillRemoveReadEntry(
-                          this, std::distance(read_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillRemoveReadEntry(
+          this, std::distance(read_.begin(), result));
+    }
     read_.erase(result);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentReadList(read_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 }
@@ -123,16 +125,16 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   DCHECK(loaded());
   RemoveEntryByUrl(url);
   ReadingListEntry entry(url, title);
-  FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                    ReadingListWillAddUnreadEntry(this, entry));
+  for (auto& observer : observers_)
+    observer.ReadingListWillAddUnreadEntry(this, entry);
   unread_.insert(unread_.begin(), std::move(entry));
   hasUnseen_ = true;
   if (storageLayer_ && !IsPerformingBatchUpdates()) {
     storageLayer_->SavePersistentUnreadList(unread_);
     storageLayer_->SavePersistentHasUnseen(true);
   }
-  FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                    ReadingListDidApplyChanges(this));
+  for (auto& observer : observers_)
+    observer.ReadingListDidApplyChanges(this);
   return *unread_.begin();
 }
 
@@ -143,9 +145,10 @@ void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
   if (result == unread_.end())
     return;
 
-  FOR_EACH_OBSERVER(
-      ReadingListModelObserver, observers_,
-      ReadingListWillMoveEntry(this, std::distance(unread_.begin(), result)));
+  for (auto& observer : observers_) {
+    observer.ReadingListWillMoveEntry(this,
+                                      std::distance(unread_.begin(), result));
+  }
 
   read_.insert(read_.begin(), std::move(*result));
   unread_.erase(result);
@@ -154,8 +157,8 @@ void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
     storageLayer_->SavePersistentUnreadList(unread_);
     storageLayer_->SavePersistentReadList(read_);
   }
-  FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                    ReadingListDidApplyChanges(this));
+  for (auto& observer : observers_)
+    observer.ReadingListDidApplyChanges(this);
 }
 
 void ReadingListModelImpl::SetEntryTitle(const GURL& url,
@@ -165,27 +168,29 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
 
   auto result = std::find(unread_.begin(), unread_.end(), entry);
   if (result != unread_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillUpdateUnreadEntry(
-                          this, std::distance(unread_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillUpdateUnreadEntry(
+          this, std::distance(unread_.begin(), result));
+    }
     result->SetTitle(title);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentUnreadList(unread_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 
   result = std::find(read_.begin(), read_.end(), entry);
   if (result != read_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillUpdateReadEntry(
-                          this, std::distance(read_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillUpdateReadEntry(
+          this, std::distance(read_.begin(), result));
+    }
     result->SetTitle(title);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentReadList(read_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 }
@@ -197,27 +202,29 @@ void ReadingListModelImpl::SetEntryDistilledURL(const GURL& url,
 
   auto result = std::find(unread_.begin(), unread_.end(), entry);
   if (result != unread_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillUpdateUnreadEntry(
-                          this, std::distance(unread_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillUpdateUnreadEntry(
+          this, std::distance(unread_.begin(), result));
+    }
     result->SetDistilledURL(distilled_url);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentUnreadList(unread_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 
   result = std::find(read_.begin(), read_.end(), entry);
   if (result != read_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillUpdateReadEntry(
-                          this, std::distance(read_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillUpdateReadEntry(
+          this, std::distance(read_.begin(), result));
+    }
     result->SetDistilledURL(distilled_url);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentReadList(read_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 }
@@ -230,27 +237,29 @@ void ReadingListModelImpl::SetEntryDistilledState(
 
   auto result = std::find(unread_.begin(), unread_.end(), entry);
   if (result != unread_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillUpdateUnreadEntry(
-                          this, std::distance(unread_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillUpdateUnreadEntry(
+          this, std::distance(unread_.begin(), result));
+    }
     result->SetDistilledState(state);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentUnreadList(unread_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 
   result = std::find(read_.begin(), read_.end(), entry);
   if (result != read_.end()) {
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListWillUpdateReadEntry(
-                          this, std::distance(read_.begin(), result)));
+    for (auto& observer : observers_) {
+      observer.ReadingListWillUpdateReadEntry(
+          this, std::distance(read_.begin(), result));
+    }
     result->SetDistilledState(state);
     if (storageLayer_ && !IsPerformingBatchUpdates())
       storageLayer_->SavePersistentReadList(read_);
-    FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
-                      ReadingListDidApplyChanges(this));
+    for (auto& observer : observers_)
+      observer.ReadingListDidApplyChanges(this);
     return;
   }
 };

@@ -75,8 +75,8 @@ void SigninManagerFactory::RemoveObserver(
 
 void SigninManagerFactory::NotifyObserversOfSigninManagerCreationForTesting(
     SigninManager* manager) {
-  FOR_EACH_OBSERVER(SigninManagerFactoryObserver, observer_list_,
-                    SigninManagerCreated(manager));
+  for (auto& observer : observer_list_)
+    observer.SigninManagerCreated(manager);
 }
 
 std::unique_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
@@ -91,17 +91,18 @@ std::unique_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
       ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
           chrome_browser_state)));
   service->Initialize(GetApplicationContext()->GetLocalState());
-  FOR_EACH_OBSERVER(SigninManagerFactoryObserver, observer_list_,
-                    SigninManagerCreated(service.get()));
+  for (auto& observer : observer_list_)
+    observer.SigninManagerCreated(service.get());
   return std::move(service);
 }
 
 void SigninManagerFactory::BrowserStateShutdown(web::BrowserState* context) {
   SigninManager* manager =
       static_cast<SigninManager*>(GetServiceForBrowserState(context, false));
-  if (manager)
-    FOR_EACH_OBSERVER(SigninManagerFactoryObserver, observer_list_,
-                      SigninManagerShutdown(manager));
+  if (manager) {
+    for (auto& observer : observer_list_)
+      observer.SigninManagerShutdown(manager);
+  }
   BrowserStateKeyedServiceFactory::BrowserStateShutdown(context);
 }
 

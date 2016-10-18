@@ -392,8 +392,8 @@ void IOSChromeBrowsingDataRemover::NotifyAndDelete() {
 
   GetOnBrowsingDataRemovedCallbacks()->Notify(details);
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnIOSChromeBrowsingDataRemoverDone());
+  for (auto& observer : observer_list_)
+    observer.OnIOSChromeBrowsingDataRemoverDone();
 
   // History requests aren't happy if you delete yourself from the callback.
   // As such, we do a delete later.

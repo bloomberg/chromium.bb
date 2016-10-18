@@ -112,42 +112,42 @@ void GlobalWebStateEventTracker::RemoveObserver(
 void GlobalWebStateEventTracker::NavigationItemsPruned(
     WebState* web_state,
     size_t pruned_item_count) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    NavigationItemsPruned(web_state, pruned_item_count));
+  for (auto& observer : observer_list_)
+    observer.NavigationItemsPruned(web_state, pruned_item_count);
 }
 
 void GlobalWebStateEventTracker::NavigationItemChanged(WebState* web_state) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    NavigationItemChanged(web_state));
+  for (auto& observer : observer_list_)
+    observer.NavigationItemChanged(web_state);
 }
 
 void GlobalWebStateEventTracker::NavigationItemCommitted(
     WebState* web_state,
     const LoadCommittedDetails& load_details) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    NavigationItemCommitted(web_state, load_details));
+  for (auto& observer : observer_list_)
+    observer.NavigationItemCommitted(web_state, load_details);
 }
 
 void GlobalWebStateEventTracker::WebStateDidStartLoading(WebState* web_state) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    WebStateDidStartLoading(web_state));
+  for (auto& observer : observer_list_)
+    observer.WebStateDidStartLoading(web_state);
 }
 
 void GlobalWebStateEventTracker::WebStateDidStopLoading(WebState* web_state) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    WebStateDidStopLoading(web_state));
+  for (auto& observer : observer_list_)
+    observer.WebStateDidStopLoading(web_state);
 }
 
 void GlobalWebStateEventTracker::PageLoaded(
     WebState* web_state,
     PageLoadCompletionStatus load_completion_status) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    PageLoaded(web_state, load_completion_status));
+  for (auto& observer : observer_list_)
+    observer.PageLoaded(web_state, load_completion_status);
 }
 
 void GlobalWebStateEventTracker::WebStateDestroyed(WebState* web_state) {
-  FOR_EACH_OBSERVER(GlobalWebStateObserver, observer_list_,
-                    WebStateDestroyed(web_state));
+  for (auto& observer : observer_list_)
+    observer.WebStateDestroyed(web_state);
 }
 
 }  // namespace web

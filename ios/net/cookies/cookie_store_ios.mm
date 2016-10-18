@@ -87,13 +87,13 @@ void NotificationTrampoline::RemoveObserver(CookieNotificationObserver* obs) {
 }
 
 void NotificationTrampoline::NotifyCookiesChanged() {
-  FOR_EACH_OBSERVER(CookieNotificationObserver, observer_list_,
-                    OnSystemCookiesChanged());
+  for (auto& observer : observer_list_)
+    observer.OnSystemCookiesChanged();
 }
 
 void NotificationTrampoline::NotifyCookiePolicyChanged() {
-  FOR_EACH_OBSERVER(CookieNotificationObserver, observer_list_,
-                    OnSystemCookiePolicyChanged());
+  for (auto& observer : observer_list_)
+    observer.OnSystemCookiePolicyChanged();
 }
 
 NotificationTrampoline::NotificationTrampoline() {

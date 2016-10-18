@@ -11,8 +11,8 @@ namespace ios {
 ChromeIdentityService::ChromeIdentityService() {}
 
 ChromeIdentityService::~ChromeIdentityService() {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnChromeIdentityServiceWillBeDestroyed());
+  for (auto& observer : observer_list_)
+    observer.OnChromeIdentityServiceWillBeDestroyed();
 }
 
 void ChromeIdentityService::DismissDialogs() {}
@@ -131,18 +131,20 @@ bool ChromeIdentityService::IsInvalidGrantError(NSDictionary* user_info) {
 }
 
 void ChromeIdentityService::FireIdentityListChanged() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnIdentityListChanged());
+  for (auto& observer : observer_list_)
+    observer.OnIdentityListChanged();
 }
 
 void ChromeIdentityService::FireAccessTokenRefreshFailed(
     ChromeIdentity* identity,
     NSDictionary* user_info) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnAccessTokenRefreshFailed(identity, user_info));
+  for (auto& observer : observer_list_)
+    observer.OnAccessTokenRefreshFailed(identity, user_info);
 }
 
 void ChromeIdentityService::FireProfileDidUpdate(ChromeIdentity* identity) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnProfileUpdate(identity));
+  for (auto& observer : observer_list_)
+    observer.OnProfileUpdate(identity);
 }
 
 }  // namespace ios

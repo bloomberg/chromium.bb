@@ -76,11 +76,14 @@ WebStateImpl::~WebStateImpl() {
   // layer.
   DCHECK(!facade_delegate_);
 
-  FOR_EACH_OBSERVER(WebStateObserver, observers_, WebStateDestroyed());
-  FOR_EACH_OBSERVER(WebStateObserver, observers_, ResetWebState());
-  FOR_EACH_OBSERVER(WebStatePolicyDecider, policy_deciders_,
-                    WebStateDestroyed());
-  FOR_EACH_OBSERVER(WebStatePolicyDecider, policy_deciders_, ResetWebState());
+  for (auto& observer : observers_)
+    observer.WebStateDestroyed();
+  for (auto& observer : observers_)
+    observer.ResetWebState();
+  for (auto& observer : policy_deciders_)
+    observer.WebStateDestroyed();
+  for (auto& observer : policy_deciders_)
+    observer.ResetWebState();
   DCHECK(script_command_callbacks_.empty());
   if (request_tracker_.get())
     CloseRequestTracker();
@@ -160,11 +163,13 @@ void WebStateImpl::OnNavigationCommitted(const GURL& url) {
 }
 
 void WebStateImpl::OnUrlHashChanged() {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_, UrlHashChanged());
+  for (auto& observer : observers_)
+    observer.UrlHashChanged();
 }
 
 void WebStateImpl::OnHistoryStateChanged() {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_, HistoryStateChanged());
+  for (auto& observer : observers_)
+    observer.HistoryStateChanged();
 }
 
 bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
@@ -192,9 +197,11 @@ void WebStateImpl::SetIsLoading(bool is_loading) {
     facade_delegate_->OnLoadingStateChanged();
 
   if (is_loading) {
-    FOR_EACH_OBSERVER(WebStateObserver, observers_, DidStartLoading());
+    for (auto& observer : observers_)
+      observer.DidStartLoading();
   } else {
-    FOR_EACH_OBSERVER(WebStateObserver, observers_, DidStopLoading());
+    for (auto& observer : observers_)
+      observer.DidStopLoading();
   }
 }
 
@@ -217,8 +224,8 @@ void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
   PageLoadCompletionStatus load_completion_status =
       load_success ? PageLoadCompletionStatus::SUCCESS
                    : PageLoadCompletionStatus::FAILURE;
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    PageLoaded(load_completion_status));
+  for (auto& observer : observers_)
+    observer.PageLoaded(load_completion_status);
 }
 
 void WebStateImpl::OnFormActivityRegistered(const std::string& form_name,
@@ -227,15 +234,16 @@ void WebStateImpl::OnFormActivityRegistered(const std::string& form_name,
                                             const std::string& value,
                                             int key_code,
                                             bool input_missing) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    FormActivityRegistered(form_name, field_name, type, value,
-                                           key_code, input_missing));
+  for (auto& observer : observers_) {
+    observer.FormActivityRegistered(form_name, field_name, type, value,
+                                    key_code, input_missing);
+  }
 }
 
 void WebStateImpl::OnFaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    FaviconUrlUpdated(candidates));
+  for (auto& observer : observers_)
+    observer.FaviconUrlUpdated(candidates);
 }
 
 void WebStateImpl::OnCredentialsRequested(
@@ -244,44 +252,45 @@ void WebStateImpl::OnCredentialsRequested(
     bool unmediated,
     const std::vector<std::string>& federations,
     bool user_interaction) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    CredentialsRequested(request_id, source_url, unmediated,
-                                         federations, user_interaction));
+  for (auto& observer : observers_) {
+    observer.CredentialsRequested(request_id, source_url, unmediated,
+                                  federations, user_interaction);
+  }
 }
 
 void WebStateImpl::OnSignedIn(int request_id,
                               const GURL& source_url,
                               const web::Credential& credential) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    SignedIn(request_id, source_url, credential));
+  for (auto& observer : observers_)
+    observer.SignedIn(request_id, source_url, credential);
 }
 
 void WebStateImpl::OnSignedIn(int request_id, const GURL& source_url) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    SignedIn(request_id, source_url));
+  for (auto& observer : observers_)
+    observer.SignedIn(request_id, source_url);
 }
 
 void WebStateImpl::OnSignedOut(int request_id, const GURL& source_url) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    SignedOut(request_id, source_url));
+  for (auto& observer : observers_)
+    observer.SignedOut(request_id, source_url);
 }
 
 void WebStateImpl::OnSignInFailed(int request_id,
                                   const GURL& source_url,
                                   const web::Credential& credential) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    SignInFailed(request_id, source_url, credential));
+  for (auto& observer : observers_)
+    observer.SignInFailed(request_id, source_url, credential);
 }
 
 void WebStateImpl::OnSignInFailed(int request_id, const GURL& source_url) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    SignInFailed(request_id, source_url));
+  for (auto& observer : observers_)
+    observer.SignInFailed(request_id, source_url);
 }
 
 void WebStateImpl::OnDocumentSubmitted(const std::string& form_name,
                                        bool user_initiated) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    DocumentSubmitted(form_name, user_initiated));
+  for (auto& observer : observers_)
+    observer.DocumentSubmitted(form_name, user_initiated);
 }
 
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
@@ -409,7 +418,8 @@ void WebStateImpl::ClearTransientContentView() {
     interstitial->DontProceed();
     // Don't access |interstitial| after calling |DontProceed()|, as it triggers
     // deletion.
-    FOR_EACH_OBSERVER(WebStateObserver, observers_, InsterstitialDismissed());
+    for (auto& observer : observers_)
+      observer.InsterstitialDismissed();
   }
   [web_controller_ clearTransientContentView];
 }
@@ -660,8 +670,8 @@ id<CRWWebViewProxy> WebStateImpl::GetWebViewProxy() const {
 }
 
 void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    ProvisionalNavigationStarted(url));
+  for (auto& observer : observers_)
+    observer.ProvisionalNavigationStarted(url);
 }
 
 #pragma mark - NavigationManagerDelegate implementation
@@ -678,18 +688,19 @@ void WebStateImpl::LoadURLWithParams(
 }
 
 void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    NavigationItemsPruned(pruned_item_count));
+  for (auto& observer : observers_)
+    observer.NavigationItemsPruned(pruned_item_count);
 }
 
 void WebStateImpl::OnNavigationItemChanged() {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_, NavigationItemChanged());
+  for (auto& observer : observers_)
+    observer.NavigationItemChanged();
 }
 
 void WebStateImpl::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
-  FOR_EACH_OBSERVER(WebStateObserver, observers_,
-                    NavigationItemCommitted(load_details));
+  for (auto& observer : observers_)
+    observer.NavigationItemCommitted(load_details);
 }
 
 WebState* WebStateImpl::GetWebState() {

@@ -27,7 +27,8 @@ ActiveStateManagerImpl::ActiveStateManagerImpl(BrowserState* browser_state)
 }
 
 ActiveStateManagerImpl::~ActiveStateManagerImpl() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, WillBeDestroyed());
+  for (auto& observer : observer_list_)
+    observer.WillBeDestroyed();
   DCHECK(!IsActive());
 }
 
@@ -46,9 +47,11 @@ void ActiveStateManagerImpl::SetActive(bool active) {
   active_ = active;
 
   if (active) {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnActive());
+    for (auto& observer : observer_list_)
+      observer.OnActive();
   } else {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnInactive());
+    for (auto& observer : observer_list_)
+      observer.OnInactive();
   }
 }
 
