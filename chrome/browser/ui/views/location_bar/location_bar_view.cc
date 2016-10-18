@@ -825,7 +825,8 @@ void LocationBarView::RefreshLocationIcon() {
   security_state::SecurityStateModel::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
   SkColor icon_color =
-      (security_level == security_state::SecurityStateModel::NONE)
+      (security_level == security_state::SecurityStateModel::NONE ||
+       security_level == security_state::SecurityStateModel::HTTP_SHOW_WARNING)
           ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
           : GetSecureTextColor(security_level);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
@@ -1014,22 +1015,23 @@ bool LocationBarView::ShouldShowEVBubble() const {
 
 bool LocationBarView::ShouldShowSecurityChip() const {
   using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
-  SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
-  return ((level == SecurityLevel::SECURE ||
-           level == SecurityLevel::EV_SECURE) &&
-          should_show_secure_state_) ||
-         level == SecurityLevel::DANGEROUS;
+  const SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
+  if (level == SecurityLevel::SECURE || level == SecurityLevel::EV_SECURE)
+    return should_show_secure_state_;
+  return level == SecurityLevel::DANGEROUS ||
+         level == SecurityLevel::HTTP_SHOW_WARNING;
 }
 
 bool LocationBarView::ShouldAnimateSecurityChip() const {
   using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
   SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
-  bool is_secure_level =
-      level == SecurityLevel::EV_SECURE || level == SecurityLevel::SECURE;
-  return ShouldShowSecurityChip() &&
-         ((level == SecurityLevel::DANGEROUS &&
-           should_animate_nonsecure_state_) ||
-          (is_secure_level && should_animate_secure_state_));
+  if (!ShouldShowSecurityChip())
+    return false;
+  if (level == SecurityLevel::SECURE || level == SecurityLevel::EV_SECURE)
+    return should_animate_secure_state_;
+  return should_animate_nonsecure_state_ &&
+         (level == SecurityLevel::DANGEROUS ||
+          level == SecurityLevel::HTTP_SHOW_WARNING);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

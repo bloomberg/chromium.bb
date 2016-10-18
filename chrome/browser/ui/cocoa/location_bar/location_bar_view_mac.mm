@@ -688,6 +688,7 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
       GetToolbarModel()->GetSecurityLevel(false);
   bool has_verbose_for_security =
       security == security_state::SecurityStateModel::DANGEROUS ||
+      security == security_state::SecurityStateModel::HTTP_SHOW_WARNING ||
       (IsSecureConnection(security) && should_show_secure_verbose_);
 
   return has_verbose_for_security && !omnibox_view_->IsEditingOrEmpty() &&

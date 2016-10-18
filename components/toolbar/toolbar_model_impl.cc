@@ -110,6 +110,8 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
 
 base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
   switch (GetSecurityLevel(false)) {
+    case SecurityStateModel::HTTP_SHOW_WARNING:
+      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
     case SecurityStateModel::SECURE:
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
     case SecurityStateModel::DANGEROUS:
