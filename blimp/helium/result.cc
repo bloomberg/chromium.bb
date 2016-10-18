@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/helium_result.h"
+#include "blimp/helium/result.h"
 
 #include "base/logging.h"
 
 namespace blimp {
+namespace helium {
 
-const char* HeliumResultToString(HeliumResult result) {
+const char* ResultToString(Result result) {
   switch (result) {
-    case HeliumResult::SUCCESS:
+    case Result::SUCCESS:
       return "SUCCESS";
       break;
 #define HELIUM_ERROR(label, value) \
-  case HeliumResult::ERR_##label:  \
+  case Result::ERR_##label:        \
     return "ERR_" #label;
       break;
-#include "blimp/net/helium/helium_errors.h"
+#include "blimp/helium/errors.h"
 #undef HELIUM_ERROR
   }
 
@@ -25,4 +26,5 @@ const char* HeliumResultToString(HeliumResult result) {
   return "";
 }
 
+}  // namespace helium
 }  // namespace blimp

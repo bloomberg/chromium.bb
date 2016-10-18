@@ -77,40 +77,14 @@ component("net") {
   defines = [ "BLIMP_NET_IMPLEMENTATION=1" ]
 
   deps = [
-    ":helium",
     ":net_export",
     "//base",
     "//blimp/common",
+    "//blimp/helium",
     "//net",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/zlib",
     "//ui/base/ime:text_input_types",
-  ]
-
-  public_deps = [
-    "//blimp/common/proto",
-  ]
-}
-
-source_set("helium") {
-  sources = [
-    "helium/helium_errors.h",
-    "helium/helium_result.cc",
-    "helium/helium_result.h",
-    "helium/helium_stream.h",
-    "helium/helium_sync_manager.cc",
-    "helium/helium_sync_manager.h",
-    "helium/helium_transport.h",
-    "helium/syncable.h",
-    "helium/version_vector.cc",
-    "helium/version_vector.h",
-    "helium/version_vector_generator.h",
-  ]
-  deps = [
-    ":net_export",
-    "//base",
-    "//blimp/common",
-    "//net",
   ]
 
   public_deps = [
@@ -169,10 +143,6 @@ source_set("unit_tests") {
     "delta_encoding_unittest.cc",
     "engine_authentication_handler_unittest.cc",
     "engine_connection_manager_unittest.cc",
-    "helium/helium_result_unittest.cc",
-    "helium/syncable_unittest.cc",
-    "helium/version_vector_generator_unittest.cc",
-    "helium/version_vector_unittest.cc",
     "input_message_unittest.cc",
     "ssl_client_transport_unittest.cc",
     "stream_packet_reader_unittest.cc",
@@ -182,7 +152,6 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":helium",
     ":net",
     ":test_support",
     "//base",
@@ -190,6 +159,7 @@ source_set("unit_tests") {
     "//blimp/common",
     "//blimp/common:test_support",
     "//blimp/common/proto",
+    "//blimp/helium",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

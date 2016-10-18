@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/syncable.h"
+#include "blimp/helium/syncable.h"
+
+#include <utility>
 
 #include <string>
 
@@ -16,6 +18,7 @@
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace blimp {
+namespace helium {
 namespace {
 
 // This is a sample implementation that demostrates the implementation
@@ -226,4 +229,5 @@ TEST_F(SyncableTest, MutateMultipleDiscrete) {
 }
 
 }  // namespace
+}  // namespace helium
 }  // namespace blimp

@@ -2,30 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/helium_result.h"
+#include "blimp/helium/result.h"
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {
+namespace helium {
 namespace {
 
-class HeliumResultTest : public testing::Test {
+class ResultTest : public testing::Test {
  public:
-  HeliumResultTest() {}
-  ~HeliumResultTest() override {}
+  ResultTest() {}
+  ~ResultTest() override {}
 };
 
-TEST_F(HeliumResultTest, HeliumResultToString) {
+TEST_F(ResultTest, ResultToString) {
   // The exhaustive list of errors need not be specified here, but enough are
   // specified that we can verify that the switch/case mapping works as
   // intended.
-  EXPECT_STREQ("SUCCESS", HeliumResultToString(HeliumResult::SUCCESS));
+  EXPECT_STREQ("SUCCESS", ResultToString(Result::SUCCESS));
   EXPECT_STREQ("ERR_INTERNAL_ERROR",
-               HeliumResultToString(HeliumResult::ERR_INTERNAL_ERROR));
-  EXPECT_STREQ("ERR_DISCONNECTED",
-               HeliumResultToString(HeliumResult::ERR_DISCONNECTED));
+               ResultToString(Result::ERR_INTERNAL_ERROR));
+  EXPECT_STREQ("ERR_DISCONNECTED", ResultToString(Result::ERR_DISCONNECTED));
 }
 
 }  // namespace
+}  // namespace helium
 }  // namespace blimp

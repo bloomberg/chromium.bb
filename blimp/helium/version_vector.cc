@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/version_vector.h"
+#include "blimp/helium/version_vector.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
 
 namespace blimp {
+namespace helium {
 
 VersionVector::VersionVector() {}
 
@@ -66,4 +67,5 @@ VersionVector VersionVector::Invert() const {
   return VersionVector(remote_revision_, local_revision_);
 }
 
+}  // namespace helium
 }  // namespace blimp

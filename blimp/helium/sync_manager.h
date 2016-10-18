@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_NET_HELIUM_HELIUM_SYNC_MANAGER_H_
-#define BLIMP_NET_HELIUM_HELIUM_SYNC_MANAGER_H_
+#ifndef BLIMP_HELIUM_SYNC_MANAGER_H_
+#define BLIMP_HELIUM_SYNC_MANAGER_H_
 
 #include <stdint.h>
 #include <memory>
@@ -11,6 +11,7 @@
 #include "base/macros.h"
 
 namespace blimp {
+namespace helium {
 
 class HeliumObject;
 class HeliumTransport;
@@ -21,7 +22,7 @@ using HeliumObjectId = uint32_t;
 // TODO(kmarshall): Define this type.
 class HeliumTransport {};
 
-class HeliumSyncManager {
+class SyncManager {
  public:
   // RAII object for managing the sync control and registration status of a
   // Syncable. When a Syncable is registered, it should hold onto the resulting
@@ -36,8 +37,7 @@ class HeliumSyncManager {
   // tell the SyncManager to exclude or include the Syncable in state sync.
   class SyncRegistration {
    public:
-    explicit SyncRegistration(HeliumSyncManager* sync_manager,
-                              HeliumObjectId id);
+    SyncRegistration(SyncManager* sync_manager, HeliumObjectId id);
     ~SyncRegistration();
 
     // Tells the HeliumSyncManager to pause or unpause synchronization for the
@@ -48,15 +48,15 @@ class HeliumSyncManager {
 
    private:
     HeliumObjectId id_;
-    HeliumSyncManager* sync_manager_;
+    SyncManager* sync_manager_;
 
     DISALLOW_COPY_AND_ASSIGN(SyncRegistration);
   };
 
-  virtual ~HeliumSyncManager() {}
+  virtual ~SyncManager() {}
 
   // Returns a concrete implementation of HeliumSyncManager.
-  static std::unique_ptr<HeliumSyncManager> Create(
+  static std::unique_ptr<SyncManager> Create(
       std::unique_ptr<HeliumTransport> transport);
 
   // Registers a new Syncable for synchronization. The Sync layer allocates a
@@ -74,7 +74,7 @@ class HeliumSyncManager {
       Syncable* syncable) = 0;
 
  protected:
-  friend class HeliumSyncManager::SyncRegistration;
+  friend class SyncManager::SyncRegistration;
 
   // Tells the HeliumSyncManager to pause or unpause synchronization for the
   // HeliumObject associated with |this|.
@@ -89,6 +89,7 @@ class HeliumSyncManager {
   virtual void Unregister(HeliumObjectId id) = 0;
 };
 
+}  // namespace helium
 }  // namespace blimp
 
-#endif  // BLIMP_NET_HELIUM_HELIUM_SYNC_MANAGER_H_
+#endif  // BLIMP_HELIUM_SYNC_MANAGER_H_

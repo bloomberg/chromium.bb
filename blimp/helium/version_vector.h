@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_NET_HELIUM_VERSION_VECTOR_H_
-#define BLIMP_NET_HELIUM_VERSION_VECTOR_H_
+#ifndef BLIMP_HELIUM_VERSION_VECTOR_H_
+#define BLIMP_HELIUM_VERSION_VECTOR_H_
 
 #include <stdint.h>
 
 #include "blimp/common/proto/helium.pb.h"
-#include "blimp/net/blimp_net_export.h"
+#include "blimp/helium/blimp_helium_export.h"
 
 namespace blimp {
+namespace helium {
 
 // Version Vectors are used to store revisions of both client and engine
 // objects. It will allow determining partial ordering between 2 VersionVectors.
@@ -23,7 +24,7 @@ namespace blimp {
 
 typedef uint64_t Revision;
 
-class BLIMP_NET_EXPORT VersionVector {
+class BLIMP_HELIUM_EXPORT VersionVector {
  public:
   enum class Comparison { LessThan, EqualTo, GreaterThan, Conflict };
 
@@ -74,6 +75,7 @@ class BLIMP_NET_EXPORT VersionVector {
   Revision remote_revision_ = 0;
 };
 
+}  // namespace helium
 }  // namespace blimp
 
-#endif  // BLIMP_NET_HELIUM_VERSION_VECTOR_H_
+#endif  // BLIMP_HELIUM_VERSION_VECTOR_H_

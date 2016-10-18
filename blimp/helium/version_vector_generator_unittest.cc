@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/version_vector_generator.h"
+#include "blimp/helium/version_vector_generator.h"
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {
+namespace helium {
 namespace {
 
 class VersionVectorGeneratorTest : public testing::Test {
@@ -36,4 +37,5 @@ TEST_F(VersionVectorGeneratorTest, MonotonicallyIncreasing) {
 }
 
 }  // namespace
+}  // namespace helium
 }  // namespace blimp

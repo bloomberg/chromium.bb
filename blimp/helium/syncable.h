@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_NET_HELIUM_SYNCABLE_H_
-#define BLIMP_NET_HELIUM_SYNCABLE_H_
+#ifndef BLIMP_HELIUM_SYNCABLE_H_
+#define BLIMP_HELIUM_SYNCABLE_H_
 
 #include <stdint.h>
 #include <memory>
@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "blimp/common/mandatory_callback.h"
-#include "blimp/net/helium/version_vector.h"
-#include "blimp/net/helium/version_vector_generator.h"
+#include "blimp/helium/version_vector.h"
+#include "blimp/helium/version_vector_generator.h"
 
 namespace google {
 namespace protobuf {
@@ -24,6 +24,7 @@ class CodedOutputStream;
 }  // namespace google
 
 namespace blimp {
+namespace helium {
 
 namespace proto {
 class ChangesetMessage;
@@ -112,6 +113,7 @@ class TwoPhaseSyncable : public Syncable {
                                   MandatoryClosure&& done) = 0;
 };
 
+}  // namespace helium
 }  // namespace blimp
 
-#endif  // BLIMP_NET_HELIUM_SYNCABLE_H_
+#endif  // BLIMP_HELIUM_SYNCABLE_H_

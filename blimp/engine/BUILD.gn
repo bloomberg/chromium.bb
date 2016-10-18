@@ -309,6 +309,7 @@ source_set("feature") {
     "//blimp/common/proto",
     "//blimp/engine:app_settings",
     "//blimp/engine:common",
+    "//blimp/helium",
     "//blimp/net",
     "//content/public/browser",
     "//content/public/common",

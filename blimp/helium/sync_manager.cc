@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/net/helium/helium_sync_manager.h"
+#include "blimp/helium/sync_manager.h"
 
 #include <utility>
 
@@ -10,12 +10,13 @@
 #include "base/memory/ptr_util.h"
 
 namespace blimp {
+namespace helium {
 namespace {
 
-class HeliumSyncManagerImpl : public HeliumSyncManager {
+class SyncManagerImpl : public SyncManager {
  public:
-  explicit HeliumSyncManagerImpl(std::unique_ptr<HeliumTransport> transport);
-  ~HeliumSyncManagerImpl() override;
+  explicit SyncManagerImpl(std::unique_ptr<HeliumTransport> transport);
+  ~SyncManagerImpl() override;
 
   // HeliumSyncManager implementation.
   std::unique_ptr<SyncRegistration> Register(Syncable* object) override;
@@ -27,58 +28,57 @@ class HeliumSyncManagerImpl : public HeliumSyncManager {
  private:
   std::unique_ptr<HeliumTransport> transport_;
 
-  DISALLOW_COPY_AND_ASSIGN(HeliumSyncManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(SyncManagerImpl);
 };
 
-HeliumSyncManagerImpl::HeliumSyncManagerImpl(
-    std::unique_ptr<HeliumTransport> transport)
+SyncManagerImpl::SyncManagerImpl(std::unique_ptr<HeliumTransport> transport)
     : transport_(std::move(transport)) {
   DCHECK(transport_);
 }
 
-HeliumSyncManagerImpl::~HeliumSyncManagerImpl() {}
+SyncManagerImpl::~SyncManagerImpl() {}
 
-std::unique_ptr<HeliumSyncManager::SyncRegistration>
-HeliumSyncManagerImpl::Register(Syncable* object) {
+std::unique_ptr<SyncManager::SyncRegistration> SyncManagerImpl::Register(
+    Syncable* object) {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-std::unique_ptr<HeliumSyncManager::SyncRegistration>
-HeliumSyncManagerImpl::RegisterExisting(HeliumObjectId id, Syncable* object) {
+std::unique_ptr<SyncManager::SyncRegistration>
+SyncManagerImpl::RegisterExisting(HeliumObjectId id, Syncable* object) {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-void HeliumSyncManagerImpl::Unregister(HeliumObjectId id) {
+void SyncManagerImpl::Unregister(HeliumObjectId id) {
   NOTIMPLEMENTED();
 }
 
-void HeliumSyncManagerImpl::Pause(HeliumObjectId id, bool paused) {
+void SyncManagerImpl::Pause(HeliumObjectId id, bool paused) {
   NOTIMPLEMENTED();
 }
 
 }  // namespace
 
 // static
-std::unique_ptr<HeliumSyncManager> HeliumSyncManager::Create(
+std::unique_ptr<SyncManager> SyncManager::Create(
     std::unique_ptr<HeliumTransport> transport) {
-  return base::MakeUnique<HeliumSyncManagerImpl>(std::move(transport));
+  return base::MakeUnique<SyncManagerImpl>(std::move(transport));
 }
 
-HeliumSyncManager::SyncRegistration::SyncRegistration(
-    HeliumSyncManager* sync_manager,
-    HeliumObjectId id)
+SyncManager::SyncRegistration::SyncRegistration(SyncManager* sync_manager,
+                                                HeliumObjectId id)
     : id_(id), sync_manager_(sync_manager) {
   DCHECK(sync_manager);
 }
 
-HeliumSyncManager::SyncRegistration::~SyncRegistration() {
+SyncManager::SyncRegistration::~SyncRegistration() {
   sync_manager_->Unregister(id_);
 }
 
-void HeliumSyncManager::SyncRegistration::Pause(bool paused) {
+void SyncManager::SyncRegistration::Pause(bool paused) {
   sync_manager_->Pause(id_, paused);
 }
 
+}  // namespace helium
 }  // namespace blimp
