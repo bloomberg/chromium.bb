@@ -22,13 +22,13 @@ namespace content {
 
 #if defined(OS_WIN)
 // These tests are flaky on WebRTC Windows bots: https://crbug.com/633242.
-#define MAYBE_CreateAndGetCapabilities DISABLED_CreateAndGetCapabilities
-#define MAYBE_CreateAndTakePhoto DISABLED_CreateAndTakePhoto
-#define MAYBE_CreateAndGrabFrame DISABLED_CreateAndGrabFrame
+#define MAYBE_GetCapabilities DISABLED_GetCapabilities
+#define MAYBE_TakePhoto DISABLED_TakePhoto
+#define MAYBE_GrabFrame DISABLED_GrabFrame
 #else
-#define MAYBE_CreateAndGetCapabilities CreateAndGetCapabilities
-#define MAYBE_CreateAndTakePhoto CreateAndTakePhoto
-#define MAYBE_CreateAndGrabFrame CreateAndGrabFrame
+#define MAYBE_GetCapabilities GetCapabilities
+#define MAYBE_TakePhoto TakePhoto
+#define MAYBE_GrabFrame GrabFrame
 #endif
 
 namespace {
@@ -36,9 +36,7 @@ namespace {
 static const char kImageCaptureHtmlFile[] = "/media/image_capture_test.html";
 
 // TODO(mcasas): enable real-camera tests by disabling the Fake Device for
-// platforms where the ImageCaptureCode is landed, https://crbug.com/518807.
-// TODO(mcasas): enable in Android when takePhoto() can be specified a (small)
-// capture resolution preventing the test from timeout https://crbug.com/634811.
+// platforms where the ImageCaptureCode is landed, https://crbug.com/656810
 static struct TargetCamera {
   bool use_fake;
 } const kTestParameters[] = {{true}};
@@ -67,15 +65,12 @@ class WebRtcImageCaptureBrowserTest
           switches::kUseFakeDeviceForMediaStream));
     }
 
-    // Enables promised-based navigator.mediaDevices.getUserMedia();
-    // TODO(mcasas): remove after https://crbug.com/503227 is closed.
+    // "GetUserMedia": enables navigator.mediaDevices.getUserMedia();
+    // TODO(mcasas): remove GetUserMedia after https://crbug.com/503227.
+    // "ImageCapture": enables the ImageCapture API.
+    // TODO(mcasas): remove ImageCapture after https://crbug.com/603328.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "GetUserMedia");
-
-    // Specific flag to enable ImageCapture API.
-    // TODO(mcasas): remove after https://crbug.com/603328 is closed.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "ImageCapture");
+        switches::kEnableBlinkFeatures, "GetUserMedia,ImageCapture");
   }
 
   void SetUp() override {
@@ -112,20 +107,17 @@ class WebRtcImageCaptureBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebRtcImageCaptureBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
-                       MAYBE_CreateAndGetCapabilities) {
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_GetCapabilities) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetCapabilities()"));
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
-                       MAYBE_CreateAndTakePhoto) {
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_TakePhoto) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndTakePhoto()"));
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
-                       MAYBE_CreateAndGrabFrame) {
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_GrabFrame) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrame()"));
 }
