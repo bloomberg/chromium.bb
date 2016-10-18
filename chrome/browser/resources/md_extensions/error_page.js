@@ -78,10 +78,13 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!{model:Object}} e
+     * @param {!Event} event
      * @private
      */
-    onDeleteErrorTap_: function(e) {
+    onDeleteErrorTap_: function(event) {
+      // TODO(devlin): It would be cleaner if we could cast this to a
+      // PolymerDomRepeatEvent-type thing, but that doesn't exist yet.
+      var e = /** @type {!{model:Object}} */(event);
       this.delegate.deleteErrors(this.data.id, [e.model.item.id]);
     },
   });
