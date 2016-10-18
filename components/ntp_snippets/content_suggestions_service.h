@@ -25,6 +25,7 @@
 #include "components/ntp_snippets/user_classifier.h"
 
 class PrefService;
+class PrefRegistrySimple;
 
 namespace gfx {
 class Image;
@@ -92,6 +93,8 @@ class ContentSuggestionsService : public KeyedService,
   // Inherited from KeyedService.
   void Shutdown() override;
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   State state() { return state_; }
 
   // Gets all categories for which a provider is registered. The categories
@@ -128,6 +131,9 @@ class ContentSuggestionsService : public KeyedService,
   // Restores all dismissed categories.
   // This will not trigger an update through the observers.
   void RestoreDismissedCategories();
+
+  // Returns whether |category| is dismissed.
+  bool IsCategoryDismissed(Category category) const;
 
   // Observer accessors.
   void AddObserver(Observer* observer);
@@ -212,9 +218,13 @@ class ContentSuggestionsService : public KeyedService,
 
   // Registers the given |provider| for the given |category|, unless it is
   // already registered. Returns true if the category was newly registered or
-  // false if it was present before.
-  bool RegisterCategoryIfRequired(ContentSuggestionsProvider* provider,
-                                  Category category);
+  // false if it is dismissed or was present before.
+  bool TryRegisterProviderForCategory(ContentSuggestionsProvider* provider,
+                                      Category category);
+  void RegisterCategory(Category category,
+                        ContentSuggestionsProvider* provider);
+  void UnregisterCategory(Category category,
+                          ContentSuggestionsProvider* provider);
 
   // Removes a suggestion from the local store |suggestions_by_category_|, if it
   // exists. Returns true if a suggestion was removed.
@@ -224,6 +234,12 @@ class ContentSuggestionsService : public KeyedService,
   void NotifyCategoryStatusChanged(Category category);
 
   void SortCategories();
+
+  // Re-enables a dismissed category, making querying its provider possible.
+  void RestoreDismissedCategory(Category category);
+
+  void RestoreDismissedCategoriesFromPrefs();
+  void StoreDismissedCategoriesToPrefs();
 
   // Whether the content suggestions feature is enabled.
   State state_;
@@ -242,7 +258,9 @@ class ContentSuggestionsService : public KeyedService,
       providers_by_category_;
 
   // All dismissed categories and their providers. These may be restored by
-  // RestoreDismissedCategories().
+  // RestoreDismissedCategories(). The provider can be null if the dismissed
+  // category has received no updates since initialisation.
+  // (see RestoreDismissedCategoriesFromPrefs())
   std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>
       dismissed_providers_by_category_;
 
@@ -271,6 +289,8 @@ class ContentSuggestionsService : public KeyedService,
   // background fetching and debugging calls to it. If the NTPSnippetsService is
   // loaded, it is also present in |providers_|, otherwise this is a nullptr.
   NTPSnippetsService* ntp_snippets_service_;
+
+  PrefService* pref_service_;
 
   UserClassifier user_classifier_;
 

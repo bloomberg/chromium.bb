@@ -15,7 +15,10 @@ namespace ntp_snippets {
 
 class CategoryFactoryTest : public testing::Test {
  public:
-  CategoryFactoryTest() : unused_remote_category_id_(1) {}
+  CategoryFactoryTest()
+      : unused_remote_category_id_(
+            static_cast<int>(KnownCategories::LAST_KNOWN_REMOTE_CATEGORY) + 1) {
+  }
 
   int GetUnusedRemoteCategoryID() { return unused_remote_category_id_++; }
 

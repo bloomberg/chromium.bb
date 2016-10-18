@@ -22,6 +22,10 @@ CategoryFactory::CategoryFactory() {
 
   DCHECK_EQ(static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT),
             ordered_categories_.size());
+
+  // Known remote categories come after. Other remote categories will be ordered
+  // after these depending on when providers notify us about a related change.
+  AddKnownCategory(KnownCategories::ARTICLES);
 }
 
 CategoryFactory::~CategoryFactory() = default;

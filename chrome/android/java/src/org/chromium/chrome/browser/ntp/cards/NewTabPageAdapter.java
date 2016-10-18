@@ -173,8 +173,8 @@ public class NewTabPageAdapter
         int i = 0;
         for (int category : categories) {
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
-            assert categoryStatus != CategoryStatus.NOT_PROVIDED;
             if (categoryStatus == CategoryStatus.LOADING_ERROR
+                    || categoryStatus == CategoryStatus.NOT_PROVIDED
                     || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
                 continue;
 

@@ -46,6 +46,7 @@ extern const char kSnippetThumbnailsRequestsDay[];
 extern const char kDismissedRecentOfflineTabSuggestions[];
 extern const char kDismissedDownloadSuggestions[];
 extern const char kDismissedForeignSessionsSuggestions[];
+extern const char kDismissedCategories[];
 
 // The pref name for the time when M54 was first started on the device.
 extern const char kBookmarksFirstM54Start[];
