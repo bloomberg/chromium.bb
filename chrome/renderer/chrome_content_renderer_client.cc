@@ -1363,11 +1363,11 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
   WebString header_key(ASCIIToUTF16(
       data_reduction_proxy::chrome_proxy_header()));
   if (!response.httpHeaderField(header_key).isNull() &&
-      response.httpHeaderField(header_key).utf8().find(
-          data_reduction_proxy::chrome_proxy_lo_fi_directive()) !=
-              std::string::npos) {
-    (*properties)[data_reduction_proxy::chrome_proxy_header()] =
-        data_reduction_proxy::chrome_proxy_lo_fi_directive();
+      data_reduction_proxy::IsEmptyImagePreview(
+          response.httpHeaderField(header_key).utf8())) {
+    (*properties)[
+        data_reduction_proxy::chrome_proxy_content_transform_header()] =
+            data_reduction_proxy::empty_image_directive();
   }
 }
 

@@ -38,6 +38,130 @@ class DataReductionProxyHeadersTest : public testing::Test {
   std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
 };
 
+TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
+  const struct {
+    const char* headers;
+    bool expected_result;
+  } tests[] = {
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: foo\n",
+          false,
+      },
+      {
+          "HTTP/1.1 200 OK\n", false,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: empty-image\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: empty-image;foo\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: Empty-Image\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: foo;empty-image\n",
+          false,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Another-Header: empty-image\n",
+          false,
+      },
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string headers(tests[i].headers);
+    HeadersToRaw(&headers);
+    scoped_refptr<net::HttpResponseHeaders> parsed(
+        new net::HttpResponseHeaders(headers));
+    EXPECT_EQ(tests[i].expected_result, IsEmptyImagePreview(*parsed));
+  }
+}
+
+TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
+  const struct {
+    const char* header;
+    bool expected_result;
+  } tests[] = {
+      {
+          "foo", false,
+      },
+      {
+          "", false,
+      },
+      {
+          "empty-image", true,
+      },
+      {
+          "empty-image;foo", true,
+      },
+      {
+          "Empty-Image", true,
+      },
+      {
+          "foo;empty-image", false,
+      },
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i)
+    EXPECT_EQ(tests[i].expected_result, IsEmptyImagePreview(tests[i].header));
+}
+
+TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {
+  const struct {
+    const char* headers;
+    bool expected_result;
+  } tests[] = {
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: foo\n",
+          false,
+      },
+      {
+          "HTTP/1.1 200 OK\n", false,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: lite-page\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: lite-page;foo\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: Lite-Page\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: foo;lite-page\n",
+          false,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Another-Header: lite-page\n",
+          false,
+      },
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string headers(tests[i].headers);
+    HeadersToRaw(&headers);
+    scoped_refptr<net::HttpResponseHeaders> parsed(
+        new net::HttpResponseHeaders(headers));
+    EXPECT_EQ(tests[i].expected_result, IsLitePagePreview(*parsed));
+  }
+}
+
 TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
   const struct {
      const char* headers;

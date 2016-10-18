@@ -68,8 +68,8 @@ class PreviewsInfoBarTabHelperUnitTest
   void SimulateWillProcessResponse() {
     std::string headers = base::StringPrintf(
         "HTTP/1.1 200 OK\n%s: %s\n\n",
-        data_reduction_proxy::chrome_proxy_header(),
-        data_reduction_proxy::chrome_proxy_lite_page_directive());
+        data_reduction_proxy::chrome_proxy_content_transform_header(),
+        data_reduction_proxy::lite_page_directive());
     test_handle_->CallWillProcessResponseForTesting(
         main_rfh(),
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));

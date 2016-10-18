@@ -230,6 +230,20 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
   }
 }
 
+void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
+    net::URLRequest* request,
+    const net::CompletionCallback& callback,
+    net::HttpRequestHeaders* headers) {
+  if (!data_reduction_proxy_io_data_)
+    return;
+  if (!data_reduction_proxy_io_data_->lofi_decider())
+    return;
+  if (!data_reduction_proxy_io_data_->IsEnabled())
+    return;
+  data_reduction_proxy_io_data_->lofi_decider()->MaybeSetAcceptTransformHeader(
+      *request, headers);
+}
+
 void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     net::URLRequest* request,
     const net::ProxyInfo& proxy_info,
@@ -252,13 +266,27 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     return;
   }
 
+  bool using_data_reduction_proxy = true;
   // The following checks rule out direct, invalid, and othe connection types.
   if (!proxy_info.is_http() && !proxy_info.is_https() && !proxy_info.is_quic())
-    return;
-  if (proxy_info.proxy_server().host_port_pair().IsEmpty())
-    return;
-  if (!data_reduction_proxy_config_->IsDataReductionProxy(
-          proxy_info.proxy_server(), nullptr)) {
+    using_data_reduction_proxy = false;
+  else if (proxy_info.proxy_server().host_port_pair().IsEmpty())
+    using_data_reduction_proxy = false;
+  else if (!data_reduction_proxy_config_->IsDataReductionProxy(
+               proxy_info.proxy_server(), nullptr)) {
+    using_data_reduction_proxy = false;
+  }
+
+  LoFiDecider* lofi_decider = nullptr;
+  if (data_reduction_proxy_io_data_)
+    lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
+
+  if (!using_data_reduction_proxy) {
+    if (lofi_decider) {
+      // If not using the data reduction proxy, strip the
+      // Chrome-Proxy-Accept-Transform header.
+      lofi_decider->RemoveAcceptTransformHeader(headers);
+    }
     return;
   }
 
@@ -280,23 +308,23 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   if (data_reduction_proxy_io_data_ &&
-      data_reduction_proxy_io_data_->lofi_decider()) {
-    LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
-    const bool is_using_lofi_mode =
-        lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
-
-    if ((request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
-      data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
-          is_using_lofi_mode);
-    }
-
-    if (data)
-      data->set_lofi_requested(lofi_decider->ShouldRecordLoFiUMA(*request));
+      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
+    data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
+        lofi_decider ? lofi_decider->IsSlowPagePreviewRequested(*headers)
+                     : false);
   }
 
-  if (data_reduction_proxy_request_options_) {
-    data_reduction_proxy_request_options_->AddRequestHeader(headers);
+  if (data) {
+    data->set_lofi_requested(
+        lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
   }
+
+  if (!data_reduction_proxy_request_options_)
+    return;
+
+  data_reduction_proxy_request_options_->AddRequestHeader(headers);
+  if (lofi_decider)
+    lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
 }
 
 void DataReductionProxyNetworkDelegate::OnCompletedInternal(
@@ -313,22 +341,19 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
 
   net::HttpRequestHeaders request_headers;
   if (data_reduction_proxy_io_data_ && request->response_headers() &&
-      request->response_headers()->HasHeaderValue(
-          chrome_proxy_header(), chrome_proxy_lo_fi_directive())) {
+      IsEmptyImagePreview(*(request->response_headers()))) {
     data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
         *request);
   } else if (data_reduction_proxy_io_data_ && request->response_headers() &&
-             request->response_headers()->HasHeaderValue(
-                 chrome_proxy_header(), chrome_proxy_lite_page_directive())) {
+             IsLitePagePreview(*(request->response_headers()))) {
     RecordLitePageTransformationType(LITE_PAGE);
-  } else if (request->GetFullRequestHeaders(&request_headers) &&
-             request_headers.HasHeader(chrome_proxy_header())) {
+  } else if (request->GetFullRequestHeaders(&request_headers)) {
+    // TODO(bengr): transform processing logic should happen elsewhere.
     std::string header_value;
-    request_headers.GetHeader(chrome_proxy_header(), &header_value);
-    if (header_value.find(chrome_proxy_lite_page_directive()) !=
-        std::string::npos) {
+    request_headers.GetHeader(chrome_proxy_accept_transform_header(),
+                              &header_value);
+    if (header_value == lite_page_directive())
       RecordLitePageTransformationType(NO_TRANSFORMATION_LITE_PAGE_REQUESTED);
-    }
   }
 
   if (!request->response_info().network_accessed ||

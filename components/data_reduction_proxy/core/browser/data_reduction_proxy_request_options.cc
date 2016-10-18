@@ -91,9 +91,12 @@ void DataReductionProxyRequestOptions::Init() {
 }
 
 void DataReductionProxyRequestOptions::UpdateExperiments() {
+  // TODO(bengr): Simplify this so there's only one way to set experiment via
+  // flags. See crbug.com/656195.
   std::string experiments =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           data_reduction_proxy::switches::kDataReductionProxyExperiment);
+
   if (!experiments.empty()) {
     base::StringTokenizer experiment_tokenizer(experiments, ", ");
     experiment_tokenizer.set_quote_chars("\"");
@@ -104,6 +107,7 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
   } else {
     AddServerExperimentFromFieldTrial();
   }
+
   RegenerateRequestHeaderValue();
 }
 

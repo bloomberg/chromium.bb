@@ -38,7 +38,7 @@ void RecordSettingsEnabledState(
 namespace data_reduction_proxy {
 
 const char kDataReductionPassThroughHeader[] =
-    "Chrome-Proxy: pass-through\nCache-Control: no-cache";
+    "Chrome-Proxy-Accept-Transform: identity\nCache-Control: no-cache";
 
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),

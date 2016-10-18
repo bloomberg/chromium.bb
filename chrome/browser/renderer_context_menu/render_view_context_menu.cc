@@ -1097,9 +1097,10 @@ void RenderViewContextMenu::AppendOpenWithLinkItems() {
 
 void RenderViewContextMenu::AppendImageItems() {
   std::map<std::string, std::string>::const_iterator it =
-      params_.properties.find(data_reduction_proxy::chrome_proxy_header());
+      params_.properties.find(
+          data_reduction_proxy::chrome_proxy_content_transform_header());
   if (it != params_.properties.end() && it->second ==
-      data_reduction_proxy::chrome_proxy_lo_fi_directive()) {
+      data_reduction_proxy::empty_image_directive()) {
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE,
         IDS_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE);

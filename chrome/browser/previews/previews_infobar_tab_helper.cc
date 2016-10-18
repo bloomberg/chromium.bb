@@ -40,9 +40,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
   if (headers &&
-      headers->HasHeaderValue(
-          data_reduction_proxy::chrome_proxy_header(),
-          data_reduction_proxy::chrome_proxy_lite_page_directive())) {
+      data_reduction_proxy::IsLitePagePreview(*headers)) {
     PreviewsInfoBarDelegate::Create(navigation_handle->GetWebContents(),
                                     PreviewsInfoBarDelegate::LITE_PAGE);
   }

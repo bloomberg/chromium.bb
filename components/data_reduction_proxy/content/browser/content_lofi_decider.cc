@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/resource_request_info.h"
@@ -34,18 +36,19 @@ bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
   return false;
 }
 
-bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
+void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
     const net::URLRequest& request,
     net::HttpRequestHeaders* headers) const {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
 
   if (!request_info)
-    return false;
+    return;
 
-  // The Lo-Fi directive should not be added for users in the Lo-Fi field
-  // trial "Control" group. Check that the user is in a group that should
-  // get "q=low".
+  content::ResourceType resource_type = request_info->GetResourceType();
+
+  // The Lo-Fi and Lite Page directives should not be added for users in the
+  // Lo-Fi field trial "Control" group.
   bool lofi_enabled_via_flag_or_field_trial =
       params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
 
@@ -53,39 +56,108 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
       params::AreLitePagesEnabledViaFlags() ||
       params::IsIncludedInLitePageFieldTrial();
 
+  // Previews only operate on HTTP.
+  if (!request.url().SchemeIs("http"))
+    return;
+
+  // Chrome-Proxy-Accept-Transform takes at most one token.
+  if (headers->HasHeader(chrome_proxy_accept_transform_header()))
+    return;
+
+  if (resource_type == content::RESOURCE_TYPE_MEDIA) {
+    headers->SetHeader(chrome_proxy_accept_transform_header(),
+                       compressed_video_directive());
+    return;
+  }
+
   // User is not using Lo-Fi or is part of the "Control" group.
   if (!request_info->IsUsingLoFi() || !lofi_enabled_via_flag_or_field_trial)
-    return false;
+    return;
 
-  std::string header_value;
+  // LoFi is not allowed on the main frame, stylesheet, script, font resource,
+  // media, service worker, or CSP report.
+  bool resource_type_supports_empty_image =
+      !(resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
+        resource_type == content::RESOURCE_TYPE_STYLESHEET ||
+        resource_type == content::RESOURCE_TYPE_SCRIPT ||
+        resource_type == content::RESOURCE_TYPE_FONT_RESOURCE ||
+        resource_type == content::RESOURCE_TYPE_MEDIA ||
+        resource_type == content::RESOURCE_TYPE_CSP_REPORT);
 
-  if (headers->HasHeader(chrome_proxy_header())) {
-    headers->GetHeader(chrome_proxy_header(), &header_value);
-    headers->RemoveHeader(chrome_proxy_header());
-    header_value += ", ";
-  }
-
-  // If in the lite page field trial or flag is enabled, only add the
-  // "q=preview" directive on main frame requests. Do not add Lo-Fi directives
-  // to other requests when lite pages are enabled.
+  // If in the preview field trial or the preview flag is enabled, only add the
+  // "lite-page" directive on main frame requests. Do not add "empty-image"
+  // directives to other requests when Lite Page previews are enabled.
+  std::string accept_transform_value;
   if (lite_page_via_flag_or_field_trial) {
-    if (request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-      if (params::AreLitePagesEnabledViaFlags()) {
-        header_value += chrome_proxy_lite_page_ignore_blacklist_directive();
-        header_value += ", ";
-      }
-      header_value += chrome_proxy_lite_page_directive();
-    }
-  } else if (!(request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
-    // If previews are not enabled, add "q=low" for requests that are not main
-    // frame.
-    header_value += chrome_proxy_lo_fi_directive();
+    if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+      accept_transform_value = lite_page_directive();
+  } else if (resource_type_supports_empty_image) {
+    accept_transform_value = empty_image_directive();
   }
 
-  if (!header_value.empty())
-    headers->SetHeader(chrome_proxy_header(), header_value);
+  if (accept_transform_value.empty())
+    return;
 
-  return true;
+  headers->SetHeader(chrome_proxy_accept_transform_header(),
+                     accept_transform_value);
+}
+
+bool ContentLoFiDecider::IsSlowPagePreviewRequested(
+    const net::HttpRequestHeaders& headers) const {
+  std::string accept_transform_header_value;
+  if (!headers.GetHeader(chrome_proxy_accept_transform_header(),
+                         &accept_transform_header_value)) {
+    return false;
+  }
+
+  std::vector<std::string> tokens =
+      base::SplitString(base::ToLowerASCII(accept_transform_header_value), ";",
+                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  // A slow page preview is a request for any unqualified transform type.
+  if (tokens.size() != 1)
+    return false;
+  std::string transform_type;
+  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &transform_type);
+  return (transform_type == lite_page_directive() ||
+          transform_type == empty_image_directive());
+}
+
+bool ContentLoFiDecider::IsLitePagePreviewRequested(
+    const net::HttpRequestHeaders& headers) const {
+  std::string accept_transform_header_value;
+  if (!headers.GetHeader(chrome_proxy_accept_transform_header(),
+                         &accept_transform_header_value)) {
+    return false;
+  }
+  std::vector<std::string> tokens =
+      base::SplitString(base::ToLowerASCII(accept_transform_header_value), ";",
+                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (tokens.empty())
+    return false;
+  std::string transform_type;
+  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &transform_type);
+  return transform_type == lite_page_directive();
+}
+
+void ContentLoFiDecider::RemoveAcceptTransformHeader(
+    net::HttpRequestHeaders* headers) const {
+  headers->RemoveHeader(chrome_proxy_accept_transform_header());
+}
+
+void ContentLoFiDecider::MaybeSetIgnorePreviewsBlacklistDirective(
+    net::HttpRequestHeaders* headers) const {
+  if (!headers || !params::AreLitePagesEnabledViaFlags() ||
+      !IsLitePagePreviewRequested(*headers)) {
+    return;
+  }
+  std::string chrome_proxy_header_value;
+  headers->GetHeader(chrome_proxy_header(), &chrome_proxy_header_value);
+  headers->RemoveHeader(chrome_proxy_header());
+  if (!chrome_proxy_header_value.empty())
+    chrome_proxy_header_value += ", ";
+  chrome_proxy_header_value +=
+      chrome_proxy_lite_page_ignore_blacklist_directive();
+  headers->SetHeader(chrome_proxy_header(), chrome_proxy_header_value);
 }
 
 bool ContentLoFiDecider::ShouldRecordLoFiUMA(

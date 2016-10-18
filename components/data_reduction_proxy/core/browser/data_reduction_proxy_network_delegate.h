@@ -95,6 +95,14 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
                                   const net::CompletionCallback& callback,
                                   GURL* new_url) override;
 
+  // Called before an HTTP transaction is started. Allows the delegate to
+  // modify the Chrome-Proxy-Accept-Transform header to convey acceptable
+  // content transformations.
+  void OnBeforeStartTransactionInternal(
+      net::URLRequest* request,
+      const net::CompletionCallback& callback,
+      net::HttpRequestHeaders* headers) override;
+
   // Called after connection. Allows the delegate to read/write
   // |headers| before they get sent out. |headers| is valid only until
   // OnCompleted or OnURLRequestDestroyed is called for this request.

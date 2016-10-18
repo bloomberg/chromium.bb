@@ -86,10 +86,11 @@ ContextMenuHelper::CreateJavaContextMenuParams(
       params.page_url : params.frame_url).GetAsReferrer();
 
   std::map<std::string, std::string>::const_iterator it =
-      params.properties.find(data_reduction_proxy::chrome_proxy_header());
+      params.properties.find(
+          data_reduction_proxy::chrome_proxy_content_transform_header());
   bool image_was_fetched_lo_fi =
       it != params.properties.end() &&
-      it->second == data_reduction_proxy::chrome_proxy_lo_fi_directive();
+      it->second == data_reduction_proxy::empty_image_directive();
   bool can_save = params.media_flags & blink::WebContextMenuData::MediaCanSave;
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =

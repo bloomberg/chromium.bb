@@ -482,7 +482,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverEnabledSaveImageAs) {
 
   const std::string& headers =
       content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
-  EXPECT_TRUE(headers.find("Chrome-Proxy: pass-through") != std::string::npos);
+  EXPECT_TRUE(headers.find(
+      "Chrome-Proxy-Accept-Transform: identity") != std::string::npos);
   EXPECT_TRUE(headers.find("Cache-Control: no-cache") != std::string::npos);
 
   DestroyDataReductionProxySettings();
@@ -503,7 +504,8 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
 
   const std::string& headers =
       content::WebContentsTester::For(web_contents())->GetSaveFrameHeaders();
-  EXPECT_TRUE(headers.find("Chrome-Proxy: pass-through") == std::string::npos);
+  EXPECT_TRUE(headers.find(
+      "Chrome-Proxy-Accept-Transform: identity") == std::string::npos);
   EXPECT_TRUE(headers.find("Cache-Control: no-cache") == std::string::npos);
 
   DestroyDataReductionProxySettings();
@@ -514,8 +516,9 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
 TEST_F(RenderViewContextMenuPrefsTest, DataSaverLoadImage) {
   SetupDataReductionProxy(true);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
-  params.properties[data_reduction_proxy::chrome_proxy_header()] =
-      data_reduction_proxy::chrome_proxy_lo_fi_directive();
+  params.properties[
+      data_reduction_proxy::chrome_proxy_content_transform_header()] =
+          data_reduction_proxy::empty_image_directive();
   params.unfiltered_link_url = params.link_url;
   content::WebContents* wc = web_contents();
   std::unique_ptr<TestRenderViewContextMenu> menu(

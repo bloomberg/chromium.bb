@@ -13,6 +13,7 @@
 
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
@@ -26,11 +27,19 @@ using base::TimeDelta;
 namespace {
 
 const char kChromeProxyHeader[] = "chrome-proxy";
+const char kChromeProxyAcceptTransformHeader[] =
+    "chrome-proxy-accept-transform";
+const char kChromeProxyContentTransformHeader[] =
+    "chrome-proxy-content-transform";
 
 const char kActionValueDelimiter = '=';
 
-const char kChromeProxyLoFiDirective[] = "q=low";
-const char kChromeProxyLitePageDirective[] = "q=preview";
+// Previews directives.
+const char kEmptyImageDirective[] = "empty-image";
+const char kLitePageDirective[] = "lite-page";
+const char kCompressedVideoDirective[] = "compressed-video";
+const char kIdentityDirective[] = "identity";
+
 const char kChromeProxyLitePageIngoreBlacklistDirective[] =
     "exp=ignore_preview_blacklist";
 
@@ -67,6 +76,33 @@ bool StartsWithActionPrefix(base::StringPiece header_value,
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
+// Returns true if the provided transform type is specified in the provided
+// Chrome-Proxy-Content-Transform header value.
+bool IsPreviewTypeInHeaderValue(const std::string& header_value,
+                                const std::string& transform_type) {
+  std::vector<std::string> tokens =
+      base::SplitString(base::ToLowerASCII(header_value), ";",
+                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (tokens.empty())
+    return false;
+  std::string header_transform_type;
+  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &header_transform_type);
+  return header_transform_type == transform_type;
+}
+
+// Returns true if the provided transform type is specified in the
+// Chrome-Proxy-Content-Transform-Header.
+bool IsPreviewType(const net::HttpResponseHeaders& headers,
+                   const std::string& transform_type) {
+  std::string header_value;
+  if (!headers.GetNormalizedHeader(
+          data_reduction_proxy::chrome_proxy_content_transform_header(),
+          &header_value)) {
+    return false;
+  }
+  return IsPreviewTypeInHeaderValue(header_value, transform_type);
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -75,16 +111,45 @@ const char* chrome_proxy_header() {
   return kChromeProxyHeader;
 }
 
-const char* chrome_proxy_lo_fi_directive() {
-  return kChromeProxyLoFiDirective;
+const char* chrome_proxy_accept_transform_header() {
+  return kChromeProxyAcceptTransformHeader;
 }
 
-const char* chrome_proxy_lite_page_directive() {
-  return kChromeProxyLitePageDirective;
+const char* chrome_proxy_content_transform_header() {
+  return kChromeProxyContentTransformHeader;
+}
+
+const char* empty_image_directive() {
+  return kEmptyImageDirective;
+}
+
+const char* lite_page_directive() {
+  return kLitePageDirective;
+}
+
+const char* compressed_video_directive() {
+  return kCompressedVideoDirective;
+}
+
+const char* identity_directive() {
+  return kIdentityDirective;
 }
 
 const char* chrome_proxy_lite_page_ignore_blacklist_directive() {
   return kChromeProxyLitePageIngoreBlacklistDirective;
+}
+
+bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers) {
+  return IsPreviewType(headers, kEmptyImageDirective);
+}
+
+bool IsEmptyImagePreview(const std::string& content_transform_value) {
+  return IsPreviewTypeInHeaderValue(content_transform_value,
+                                    kEmptyImageDirective);
+}
+
+bool IsLitePagePreview(const net::HttpResponseHeaders& headers) {
+  return IsPreviewType(headers, kLitePageDirective);
 }
 
 bool GetDataReductionProxyActionValue(const net::HttpResponseHeaders* headers,

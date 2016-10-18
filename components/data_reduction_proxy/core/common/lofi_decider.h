@@ -24,12 +24,37 @@ class LoFiDecider {
   // Lo-Fi header should be added to the given request.
   virtual bool IsUsingLoFiMode(const net::URLRequest& request) const = 0;
 
-  // Returns true when Lo-Fi mode is on for the given |request|. If the
-  // |request| is using Lo-Fi mode, adds the "q=low" directive to the |headers|.
-  // If the |request| is using Lo-Fi mode, lite pages are enabled, and it is a
-  // main frame request adds the "q=preview" directive to the |headers|.
-  virtual bool MaybeAddLoFiDirectiveToHeaders(
+  // Adds a previews-specific directive to the Chrome-Proxy-Accept-Transform
+  // header if needed. If a slow page preview is triggered, adds "lite-page" or
+  // "empty-image", depending on whether the request is for the main frame
+  // and lite pages are enabled, or for a subresource and Lo-Fi mode is enabled,
+  // respectively. If a slow page preview is not triggered, "lite-page;if-heavy"
+  // and "empty-image;if-heavy" are added in the respective aforementioned cases
+  // to request that the server transform the page if it determines it to be
+  // heavy.
+  virtual void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
+      net::HttpRequestHeaders* headers) const = 0;
+
+  // Returns true if |headers| contains the Chrome-Proxy-Accept-Transform
+  // header and a slow page previews directive ("lite-page" or "empty-image")
+  // is present and not conditioned on "if-heavy".
+  virtual bool IsSlowPagePreviewRequested(
+      const net::HttpRequestHeaders& headers) const = 0;
+
+  // Returns true if |headers| contains the Chrome-Proxy-Accept-Transform
+  // header with the "lite-page" directive.
+  virtual bool IsLitePagePreviewRequested(
+      const net::HttpRequestHeaders& headers) const = 0;
+
+  // Unconditionally removes the Chrome-Proxy-Accept-Transform header from
+  // |headers.|
+  virtual void RemoveAcceptTransformHeader(
+      net::HttpRequestHeaders* headers) const = 0;
+
+  // Adds a directive to tell the server to ignore blacklists when a Lite Page
+  // preview is being requested due to command line flags being set.
+  virtual void MaybeSetIgnorePreviewsBlacklistDirective(
       net::HttpRequestHeaders* headers) const = 0;
 
   // Returns true if the Lo-Fi specific UMA should be recorded. It is set to

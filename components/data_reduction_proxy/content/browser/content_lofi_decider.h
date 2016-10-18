@@ -28,8 +28,16 @@ class ContentLoFiDecider : public LoFiDecider {
 
   // LoFiDecider implementation:
   bool IsUsingLoFiMode(const net::URLRequest& request) const override;
-  bool MaybeAddLoFiDirectiveToHeaders(
+  void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
+      net::HttpRequestHeaders* headers) const override;
+  bool IsSlowPagePreviewRequested(
+      const net::HttpRequestHeaders& headers) const override;
+  bool IsLitePagePreviewRequested(
+      const net::HttpRequestHeaders& headers) const override;
+  void RemoveAcceptTransformHeader(
+      net::HttpRequestHeaders* headers) const override;
+  void MaybeSetIgnorePreviewsBlacklistDirective(
       net::HttpRequestHeaders* headers) const override;
   bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override;
 
