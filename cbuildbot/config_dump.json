@@ -15730,7 +15730,6 @@
     },
     "nyan_freon-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "nyan_freon"
         ],
