@@ -39,9 +39,14 @@ foreach(config_file, _bindings_configuration_files) {
   _bindings_configurations += [ read_file(config_file, "scope") ]
 }
 foreach(configuration, _bindings_configurations) {
+  # Check that the mojom field of each typemap refers to a mojom that exists.
   foreach(typemap, configuration.typemaps) {
-    # Check that the mojom field of each typemap refers to a mojom that exists.
     read_file(typemap.mojom, "")
+  }
+  if (is_mac && defined(configuration.typemaps_mac)) {
+    foreach(typemap, configuration.typemaps_mac) {
+      read_file(typemap.mojom, "")
+    }
   }
 }
 
@@ -256,6 +261,13 @@ template("mojom") {
         foreach(typemap, bindings_configuration.typemaps) {
           if (get_path_info(source, "abspath") == typemap.mojom) {
             active_typemaps += [ typemap ]
+          }
+        }
+        if (is_mac && defined(bindings_configuration.typemaps_mac)) {
+          foreach(typemap, bindings_configuration.typemaps_mac) {
+            if (get_path_info(source, "abspath") == typemap.mojom) {
+              active_typemaps += [ typemap ]
+            }
           }
         }
       }

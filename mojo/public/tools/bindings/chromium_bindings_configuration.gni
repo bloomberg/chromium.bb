@@ -30,8 +30,10 @@ _typemap_imports = [
   "//ui/gfx/typemaps.gni",
   "//url/mojo/typemaps.gni",
 ]
-_typemaps = []
 
+_typemap_imports_mac = [ "//content/common/typemaps_mac.gni" ]
+
+_typemaps = []
 foreach(typemap_import, _typemap_imports) {
   # Avoid reassignment error by assigning to empty scope first.
   _imported = {
@@ -43,4 +45,17 @@ foreach(typemap_import, _typemap_imports) {
 typemaps = []
 foreach(typemap, _typemaps) {
   typemaps += [ read_file(typemap, "scope") ]
+}
+
+_typemaps_mac = []
+foreach(typemap_import, _typemap_imports_mac) {
+  _imported = {
+  }
+  _imported = read_file(typemap_import, "scope")
+  _typemaps_mac += _imported.typemaps
+}
+
+typemaps_mac = []
+foreach(typemap, _typemaps_mac) {
+  typemaps_mac += [ read_file(typemap, "scope") ]
 }

@@ -68,7 +68,7 @@ void PluginService::PurgePluginListCache(BrowserContext* browser_context,
        !it.IsAtEnd(); it.Advance()) {
     RenderProcessHost* host = it.GetCurrentValue();
     if (!browser_context || host->GetBrowserContext() == browser_context)
-      host->Send(new ViewMsg_PurgePluginListCache(reload_pages));
+      host->GetRendererInterface()->PurgePluginListCache(reload_pages);
   }
 }
 

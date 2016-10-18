@@ -122,6 +122,14 @@ struct CreateFrameParams {
   CreateFrameWidgetParams widget_params;
 };
 
+struct UpdateScrollbarThemeParams {
+  float initial_button_delay;
+  float autoscroll_button_delay;
+  bool jump_on_track_click;
+  ScrollerStyle preferred_scroller_style;
+  bool redraw;
+  ScrollbarButtonsPlacement button_placement;
+};
 
 // The primordial Channel-associated interface implemented by a render process.
 // This should be used for implementing browser-to-renderer control messages
@@ -143,4 +151,25 @@ interface Renderer {
   CreateFrameProxy(int32 routing_id, int32 render_view_routing_id,
                    int32 opener_routing_id, int32 parent_routing_id,
                    FrameReplicationState replication_state);
+
+  // Tells the renderer that the network type has changed so that
+  // navigator.onLine and navigator.connection can be updated.
+  OnNetworkConnectionChanged(NetworkConnectionType connection_type,
+                             double max_bandwidth_mbps);
+
+  // Tells the renderer to suspend/resume the webkit timers. Only for use on
+  // Android.
+  SetWebKitSharedTimersSuspended(bool suspend);
+
+  // Tells the renderer about a scrollbar appearance change. Only for use on
+  // OS X.
+  UpdateScrollbarTheme(UpdateScrollbarThemeParams params);
+
+  // Notification that the OS X Aqua color preferences changed.
+  OnSystemColorsChanged(int32 aqua_color_variant, string highlight_text_color,
+                        string highlight_color);
+
+  // Tells the renderer to empty its plugin list cache, optional reloading
+  // pages containing plugins.
+  PurgePluginListCache(bool reload_pages);
 };

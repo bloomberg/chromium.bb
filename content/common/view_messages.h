@@ -361,17 +361,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(int, flags)
 IPC_STRUCT_END()
 
-#if defined(OS_MACOSX)
-IPC_STRUCT_BEGIN(ViewMsg_UpdateScrollbarTheme_Params)
-  IPC_STRUCT_MEMBER(float, initial_button_delay)
-  IPC_STRUCT_MEMBER(float, autoscroll_button_delay)
-  IPC_STRUCT_MEMBER(bool, jump_on_track_click)
-  IPC_STRUCT_MEMBER(blink::ScrollerStyle, preferred_scroller_style)
-  IPC_STRUCT_MEMBER(bool, redraw)
-  IPC_STRUCT_MEMBER(blink::WebScrollbarButtonsPlacement, button_placement)
-IPC_STRUCT_END()
-#endif
-
 // Messages sent from the browser to the renderer.
 
 #if defined(OS_ANDROID)
@@ -564,12 +553,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WorkerScriptLoadFailed)
 // This message is sent only if the worker successfully loaded the script.
 IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
 
-// Tells the renderer that the network type has changed so that navigator.onLine
-// and navigator.connection can be updated.
-IPC_MESSAGE_CONTROL2(ViewMsg_NetworkConnectionChanged,
-                     net::NetworkChangeNotifier::ConnectionType /* type */,
-                     double /* max bandwidth mbps */)
-
 // Sent by the browser to synchronize with the next compositor frame. Used only
 // for tests.
 IPC_MESSAGE_ROUTED1(ViewMsg_WaitForNextFrameForTests, int /* routing_id */)
@@ -586,11 +569,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
 // or not.
 IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
-
-// Tells the renderer to empty its plugin list cache, optional reloading
-// pages containing plugins.
-IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
-                     bool /* reload_pages */)
 #endif
 
 // An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
@@ -601,23 +579,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
 // Fetches complete rendered content of a web page as plain text.
 IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
 
-#if defined(OS_MACOSX)
-// Notification of a change in scrollbar appearance and/or behavior.
-IPC_MESSAGE_CONTROL1(ViewMsg_UpdateScrollbarTheme,
-                     ViewMsg_UpdateScrollbarTheme_Params /* params */)
-
-// Notification that the OS X Aqua color preferences changed.
-IPC_MESSAGE_CONTROL3(ViewMsg_SystemColorsChanged,
-                     int /* AppleAquaColorVariant */,
-                     std::string /* AppleHighlightedTextColor */,
-                     std::string /* AppleHighlightColor */)
-#endif
-
 #if defined(OS_ANDROID)
-// Tells the renderer to suspend/resume the webkit timers.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetWebKitSharedTimersSuspended,
-                     bool /* suspend */)
-
 // Notifies the renderer whether hiding/showing the top controls is enabled
 // and whether or not to animate to the proper state.
 IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,

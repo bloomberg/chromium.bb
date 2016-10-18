@@ -1746,22 +1746,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
-    // TODO(port): removed from render_messages_internal.h;
-    // is there a new non-windows message I should add here?
-    IPC_MESSAGE_HANDLER(ViewMsg_NetworkConnectionChanged,
-                        OnNetworkConnectionChanged)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetWebKitSharedTimersSuspended,
-                        OnSetWebKitSharedTimersSuspended)
-#endif
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateScrollbarTheme, OnUpdateScrollbarTheme)
-    IPC_MESSAGE_HANDLER(ViewMsg_SystemColorsChanged, OnSystemColorsChanged)
-#endif
-#if defined(ENABLE_PLUGINS)
-    IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -2115,32 +2100,6 @@ gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   return gpu_channel_.get();
 }
 
-#if defined(ENABLE_PLUGINS)
-void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
-  // The call below will cause a GetPlugins call with refresh=true, but at this
-  // point we already know that the browser has refreshed its list, so disable
-  // refresh temporarily to prevent each renderer process causing the list to be
-  // regenerated.
-  blink_platform_impl_->set_plugin_refresh_allowed(false);
-  blink::resetPluginCache(reload_pages);
-  blink_platform_impl_->set_plugin_refresh_allowed(true);
-
-  for (auto& observer : observers_)
-    observer.PluginListChanged();
-}
-#endif
-
-void RenderThreadImpl::OnNetworkConnectionChanged(
-    net::NetworkChangeNotifier::ConnectionType type,
-    double max_bandwidth_mbps) {
-  bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
-  WebNetworkStateNotifier::setOnLine(online);
-  for (auto& observer : observers_)
-    observer.NetworkStateChanged(online);
-  WebNetworkStateNotifier::setWebConnection(
-      NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
-}
-
 void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
@@ -2194,6 +2153,75 @@ void RenderThreadImpl::CreateFrameProxy(
                                      replicated_state);
 }
 
+void RenderThreadImpl::OnNetworkConnectionChanged(
+    net::NetworkChangeNotifier::ConnectionType type,
+    double max_bandwidth_mbps) {
+  bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
+  WebNetworkStateNotifier::setOnLine(online);
+  for (auto& observer : observers_)
+    observer.NetworkStateChanged(online);
+  WebNetworkStateNotifier::setWebConnection(
+      NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
+}
+
+void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {
+#if defined(OS_ANDROID)
+  if (suspend) {
+    renderer_scheduler_->SuspendTimerQueue();
+  } else {
+    renderer_scheduler_->ResumeTimerQueue();
+  }
+  webkit_shared_timer_suspended_ = suspend;
+#else
+  NOTREACHED();
+#endif
+}
+
+void RenderThreadImpl::UpdateScrollbarTheme(
+    mojom::UpdateScrollbarThemeParamsPtr params) {
+#if defined(OS_MACOSX)
+  static_cast<WebScrollbarBehaviorImpl*>(
+      blink_platform_impl_->scrollbarBehavior())
+      ->set_jump_on_track_click(params->jump_on_track_click);
+
+  blink::WebScrollbarTheme::updateScrollbarsWithNSDefaults(
+      params->initial_button_delay, params->autoscroll_button_delay,
+      params->preferred_scroller_style, params->redraw,
+      params->button_placement);
+#else
+  NOTREACHED();
+#endif
+}
+
+void RenderThreadImpl::OnSystemColorsChanged(
+    int32_t aqua_color_variant,
+    const std::string& highlight_text_color,
+    const std::string& highlight_color) {
+#if defined(OS_MACOSX)
+  SystemColorsDidChange(aqua_color_variant, highlight_text_color,
+                        highlight_color);
+#else
+  NOTREACHED();
+#endif
+}
+
+void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
+#if defined(ENABLE_PLUGINS)
+  // The call below will cause a GetPlugins call with refresh=true, but at this
+  // point we already know that the browser has refreshed its list, so disable
+  // refresh temporarily to prevent each renderer process causing the list to be
+  // regenerated.
+  blink_platform_impl_->set_plugin_refresh_allowed(false);
+  blink::resetPluginCache(reload_pages);
+  blink_platform_impl_->set_plugin_refresh_allowed(true);
+
+  for (auto& observer : observers_)
+    observer.PluginListChanged();
+#else
+  NOTREACHED();
+#endif
+}
+
 void RenderThreadImpl::OnTimeZoneChange(const std::string& zone_id) {
   if (!blink_platform_impl_)
     return;
@@ -2205,39 +2233,6 @@ void RenderThreadImpl::OnTimeZoneChange(const std::string& zone_id) {
   }
   NotifyTimezoneChange();
 }
-
-#if defined(OS_ANDROID)
-void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
-  if (suspend) {
-    renderer_scheduler_->SuspendTimerQueue();
-  } else {
-    renderer_scheduler_->ResumeTimerQueue();
-  }
-  webkit_shared_timer_suspended_ = suspend;
-}
-#endif
-
-#if defined(OS_MACOSX)
-void RenderThreadImpl::OnUpdateScrollbarTheme(
-    const ViewMsg_UpdateScrollbarTheme_Params& params) {
-  static_cast<WebScrollbarBehaviorImpl*>(
-      blink_platform_impl_->scrollbarBehavior())
-      ->set_jump_on_track_click(params.jump_on_track_click);
-
-  blink::WebScrollbarTheme::updateScrollbarsWithNSDefaults(
-      params.initial_button_delay, params.autoscroll_button_delay,
-      params.preferred_scroller_style, params.redraw,
-      params.button_placement);
-}
-
-void RenderThreadImpl::OnSystemColorsChanged(
-    int aqua_color_variant,
-    const std::string& highlight_text_color,
-    const std::string& highlight_color) {
-  SystemColorsDidChange(aqua_color_variant, highlight_text_color,
-                        highlight_color);
-}
-#endif
 
 void RenderThreadImpl::OnCreateNewSharedWorker(
     const WorkerProcessMsg_CreateWorker_Params& params) {

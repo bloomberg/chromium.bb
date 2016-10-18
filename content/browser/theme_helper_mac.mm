@@ -10,6 +10,7 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -36,7 +37,8 @@ blink::WebScrollbarButtonsPlacement GetButtonPlacement() {
     return blink::WebScrollbarButtonsPlacementDoubleEnd;
 }
 
-void FillScrollbarThemeParams(ViewMsg_UpdateScrollbarTheme_Params* params) {
+void FillScrollbarThemeParams(
+    content::mojom::UpdateScrollbarThemeParams* params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
@@ -53,13 +55,13 @@ void FillScrollbarThemeParams(ViewMsg_UpdateScrollbarTheme_Params* params) {
   params->button_placement = GetButtonPlacement();
 }
 
-ViewMsg_SystemColorsChanged* CreateSystemColorsChangedMessage() {
+void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults synchronize];
 
-  return new ViewMsg_SystemColorsChanged(
+  renderer->OnSystemColorsChanged(
       [[defaults stringForKey:@"AppleAquaColorVariant"] intValue],
       base::SysNSStringToUTF8(
           [defaults stringForKey:@"AppleHighlightedTextColor"]),
@@ -139,22 +141,23 @@ ViewMsg_SystemColorsChanged* CreateSystemColorsChangedMessage() {
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
-    it.GetCurrentValue()->Send(CreateSystemColorsChangedMessage());
+    SendSystemColorsChangedMessage(
+        it.GetCurrentValue()->GetRendererInterface());
   }
 }
 
 + (void)notifyPrefsChangedWithRedraw:(BOOL)redraw {
-  ViewMsg_UpdateScrollbarTheme_Params params;
-  FillScrollbarThemeParams(&params);
-  params.redraw = redraw;
-
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
+    content::mojom::UpdateScrollbarThemeParamsPtr params =
+        content::mojom::UpdateScrollbarThemeParams::New();
+    FillScrollbarThemeParams(params.get());
+    params->redraw = redraw;
     RenderProcessHostImpl* rphi =
         static_cast<RenderProcessHostImpl*>(it.GetCurrentValue());
     rphi->RecomputeAndUpdateWebKitPreferences();
-    rphi->Send(new ViewMsg_UpdateScrollbarTheme(params));
+    rphi->GetRendererInterface()->UpdateScrollbarTheme(std::move(params));
   }
 }
 
@@ -190,15 +193,18 @@ void ThemeHelperMac::Observe(int type,
 
   // When a new RenderProcess is created, send it the initial preference
   // parameters.
-  ViewMsg_UpdateScrollbarTheme_Params params;
-  FillScrollbarThemeParams(&params);
-  params.redraw = false;
+  content::mojom::UpdateScrollbarThemeParamsPtr params =
+      content::mojom::UpdateScrollbarThemeParams::New();
+  FillScrollbarThemeParams(params.get());
+  params->redraw = false;
 
   RenderProcessHostImpl* rphi =
       Source<content::RenderProcessHostImpl>(source).ptr();
   rphi->RecomputeAndUpdateWebKitPreferences();
-  rphi->Send(new ViewMsg_UpdateScrollbarTheme(params));
-  rphi->Send(CreateSystemColorsChangedMessage());
+
+  content::mojom::Renderer* renderer = rphi->GetRendererInterface();
+  renderer->UpdateScrollbarTheme(std::move(params));
+  SendSystemColorsChangedMessage(renderer);
 }
 
 }  // namespace content

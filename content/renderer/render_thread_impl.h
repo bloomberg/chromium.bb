@@ -53,7 +53,6 @@
 
 class GrContext;
 class SkBitmap;
-struct ViewMsg_UpdateScrollbarTheme_Params;
 struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
@@ -510,12 +509,6 @@ class CONTENT_EXPORT RenderThreadImpl
       scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
-#if defined(ENABLE_PLUGINS)
-  void OnPurgePluginListCache(bool reload_pages);
-#endif
-  void OnNetworkConnectionChanged(
-      net::NetworkChangeNotifier::ConnectionType type,
-      double max_bandwidth_mbps);
   void OnGetAccessibilityTree();
 
   // mojom::Renderer:
@@ -526,21 +519,22 @@ class CONTENT_EXPORT RenderThreadImpl
                         int32_t opener_routing_id,
                         int32_t parent_routing_id,
                         const FrameReplicationState& replicated_state) override;
+  void OnNetworkConnectionChanged(
+      net::NetworkChangeNotifier::ConnectionType type,
+      double max_bandwidth_mbps) override;
+  void SetWebKitSharedTimersSuspended(bool suspend) override;
+  void UpdateScrollbarTheme(
+      mojom::UpdateScrollbarThemeParamsPtr params) override;
+  void OnSystemColorsChanged(int32_t aqua_color_variant,
+                             const std::string& highlight_text_color,
+                             const std::string& highlight_color) override;
+  void PurgePluginListCache(bool reload_pages) override;
 
   // device::mojom::TimeZoneClient:
   void OnTimeZoneChange(const std::string& zoneId) override;
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-#if defined(OS_ANDROID)
-  void OnSetWebKitSharedTimersSuspended(bool suspend);
-#endif
-#if defined(OS_MACOSX)
-  void OnUpdateScrollbarTheme(
-      const ViewMsg_UpdateScrollbarTheme_Params& params);
-  void OnSystemColorsChanged(int aqua_color_variant,
-                             const std::string& highlight_text_color,
-                             const std::string& highlight_color);
-#endif
+
   void OnCreateNewSharedWorker(
       const WorkerProcessMsg_CreateWorker_Params& params);
   bool RendererIsHidden() const;

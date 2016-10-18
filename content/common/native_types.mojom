@@ -20,5 +20,18 @@ struct RendererPreferences;
 [Native]
 struct ResizeParams;
 
+// NOTE: This type is only mapped and usable on Mac.
+[Native]
+enum ScrollbarButtonsPlacement;
+
+// NOTE: This type is only mapped and usable on Mac.
+[Native]
+enum ScrollerStyle;
+
 [Native]
 struct WebPreferences;
+
+// TODO(rockot): This should most likely be defined by network service mojom,
+// but the network service doesn't exist yet.
+[Native]
+enum NetworkConnectionType;

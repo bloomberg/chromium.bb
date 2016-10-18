@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/android/content_view_statics.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/android/address_parser.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_process_host.h"
@@ -60,7 +61,7 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
          !i.IsAtEnd(); i.Advance()) {
       content::RenderProcessHost* host = i.GetCurrentValue();
       host->AddObserver(this);
-      host->Send(new ViewMsg_SetWebKitSharedTimersSuspended(true));
+      host->GetRendererInterface()->SetWebKitSharedTimersSuspended(true);
       suspended_processes_.push_back(host->GetID());
     }
   }
@@ -73,7 +74,7 @@ class SuspendedProcessWatcher : public content::RenderProcessHostObserver {
           content::RenderProcessHost::FromID(*it);
       DCHECK(host);
       host->RemoveObserver(this);
-      host->Send(new ViewMsg_SetWebKitSharedTimersSuspended(false));
+      host->GetRendererInterface()->SetWebKitSharedTimersSuspended(false);
     }
     suspended_processes_.clear();
   }
