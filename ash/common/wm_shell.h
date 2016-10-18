@@ -54,6 +54,7 @@ class ImmersiveFullscreenController;
 class KeyEventWatcher;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
+class LocaleNotificationController;
 class MaximizeModeController;
 class MruWindowTracker;
 class NewWindowDelegate;
@@ -127,6 +128,10 @@ class ASH_EXPORT WmShell {
   }
 
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
+
+  LocaleNotificationController* locale_notification_controller() {
+    return locale_notification_controller_.get();
+  }
 
   MaximizeModeController* maximize_mode_controller() {
     return maximize_mode_controller_.get();
@@ -472,6 +477,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
+  std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;

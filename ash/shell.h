@@ -87,7 +87,6 @@ class HighContrastController;
 class ImmersiveHandlerFactoryAsh;
 class LaserPointerController;
 class LinkHandlerModelFactory;
-class LocaleNotificationController;
 class LockStateController;
 enum class LoginStatus;
 class MagnificationController;
@@ -494,7 +493,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<DisplayConfigurationController>
       display_configuration_controller_;
 
-  std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 
 #if defined(OS_CHROMEOS)

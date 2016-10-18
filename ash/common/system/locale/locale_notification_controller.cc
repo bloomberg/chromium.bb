@@ -4,6 +4,7 @@
 
 #include "ash/common/system/locale/locale_notification_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/common/system/system_notifier.h"
@@ -28,7 +29,9 @@ const char kLocaleChangeNotificationId[] = "chrome://settings/locale";
 
 class LocaleNotificationDelegate : public message_center::NotificationDelegate {
  public:
-  explicit LocaleNotificationDelegate(LocaleObserver::Delegate* delegate);
+  explicit LocaleNotificationDelegate(
+      const base::Callback<void(ash::mojom::LocaleNotificationResult)>&
+          callback);
 
  protected:
   ~LocaleNotificationDelegate() override;
@@ -40,21 +43,28 @@ class LocaleNotificationDelegate : public message_center::NotificationDelegate {
   void ButtonClick(int button_index) override;
 
  private:
-  LocaleObserver::Delegate* delegate_;
+  base::Callback<void(ash::mojom::LocaleNotificationResult)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LocaleNotificationDelegate);
 };
 
 LocaleNotificationDelegate::LocaleNotificationDelegate(
-    LocaleObserver::Delegate* delegate)
-    : delegate_(delegate) {
-  DCHECK(delegate_);
+    const base::Callback<void(ash::mojom::LocaleNotificationResult)>& callback)
+    : callback_(callback) {}
+
+LocaleNotificationDelegate::~LocaleNotificationDelegate() {
+  if (callback_) {
+    // We're being destroyed but the user didn't click on anything. Run the
+    // callback so that we don't crash.
+    callback_.Run(ash::mojom::LocaleNotificationResult::ACCEPT);
+  }
 }
 
-LocaleNotificationDelegate::~LocaleNotificationDelegate() {}
-
 void LocaleNotificationDelegate::Close(bool by_user) {
-  delegate_->AcceptLocaleChange();
+  if (callback_) {
+    callback_.Run(ash::mojom::LocaleNotificationResult::ACCEPT);
+    callback_.Reset();
+  }
 }
 
 bool LocaleNotificationDelegate::HasClickedListener() {
@@ -62,32 +72,37 @@ bool LocaleNotificationDelegate::HasClickedListener() {
 }
 
 void LocaleNotificationDelegate::Click() {
-  delegate_->AcceptLocaleChange();
+  if (callback_) {
+    callback_.Run(ash::mojom::LocaleNotificationResult::ACCEPT);
+    callback_.Reset();
+  }
 }
 
 void LocaleNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_EQ(0, button_index);
-  delegate_->RevertLocaleChange();
+
+  if (callback_) {
+    callback_.Run(ash::mojom::LocaleNotificationResult::REVERT);
+    callback_.Reset();
+  }
 }
 
 }  // namespace
 
-LocaleNotificationController::LocaleNotificationController() {
-  WmShell::Get()->system_tray_notifier()->AddLocaleObserver(this);
-}
+LocaleNotificationController::LocaleNotificationController() {}
 
-LocaleNotificationController::~LocaleNotificationController() {
-  WmShell::Get()->system_tray_notifier()->RemoveLocaleObserver(this);
+LocaleNotificationController::~LocaleNotificationController() {}
+
+void LocaleNotificationController::BindRequest(
+    mojom::LocaleNotificationControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void LocaleNotificationController::OnLocaleChanged(
-    LocaleObserver::Delegate* delegate,
     const std::string& cur_locale,
     const std::string& from_locale,
-    const std::string& to_locale) {
-  if (!delegate)
-    return;
-
+    const std::string& to_locale,
+    const OnLocaleChangedCallback& callback) {
   base::string16 from =
       l10n_util::GetDisplayNameForLocale(from_locale, cur_locale, true);
   base::string16 to =
@@ -109,7 +124,7 @@ void LocaleNotificationController::OnLocaleChanged(
       base::string16() /* display_source */, GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  system_notifier::kNotifierLocale),
-      optional, new LocaleNotificationDelegate(delegate)));
+      optional, new LocaleNotificationDelegate(callback)));
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

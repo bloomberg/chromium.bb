@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/system/locale/locale_observer.h"
+#include "ash/public/interfaces/locale.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
@@ -32,15 +32,10 @@ namespace chromeos {
 // (based on synchronized user preference).  If so: shows notification that
 // allows user to revert change.
 class LocaleChangeGuard : public content::NotificationObserver,
-                          public ash::LocaleObserver::Delegate,
                           public base::SupportsWeakPtr<LocaleChangeGuard> {
  public:
   explicit LocaleChangeGuard(Profile* profile);
   ~LocaleChangeGuard() override;
-
-  // ash::LocaleChangeDelegate implementation.
-  void AcceptLocaleChange() override;
-  void RevertLocaleChange() override;
 
   // Called just before changing locale.
   void PrepareChangingLocale(
@@ -55,8 +50,14 @@ class LocaleChangeGuard : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(LocaleChangeGuardTest,
                            ShowNotificationLocaleChangedList);
 
+  void ConnectToLocaleNotificationController();
+
   void RevertLocaleChangeCallback(const base::ListValue* list);
   void Check();
+
+  void OnResult(ash::mojom::LocaleNotificationResult result);
+  void AcceptLocaleChange();
+  void RevertLocaleChange();
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -70,6 +71,9 @@ class LocaleChangeGuard : public content::NotificationObserver,
   static const char* const* GetSkipShowNotificationLanguagesForTesting();
   static size_t GetSkipShowNotificationLanguagesSizeForTesting();
 
+  // Ash's mojom::LocaleNotificationController used to display notifications.
+  ash::mojom::LocaleNotificationControllerPtr notification_controller_;
+
   std::string from_locale_;
   std::string to_locale_;
   Profile* profile_;
@@ -78,12 +82,7 @@ class LocaleChangeGuard : public content::NotificationObserver,
   bool main_frame_loaded_;
   content::NotificationRegistrar registrar_;
 
-  // We want to show locale change notification in previous language however
-  // we cannot directly load strings for non-current locale.  So we cache
-  // messages before locale change.
-  base::string16 title_text_;
-  base::string16 message_text_;
-  base::string16 revert_link_text_;
+  DISALLOW_COPY_AND_ASSIGN(LocaleChangeGuard);
 };
 
 }  // namespace chromeos

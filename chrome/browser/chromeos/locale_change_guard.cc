@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,15 +15,17 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;
@@ -61,6 +61,23 @@ void LocaleChangeGuard::OnLogin() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                  content::NotificationService::AllBrowserContextsAndSources());
+}
+
+void LocaleChangeGuard::ConnectToLocaleNotificationController() {
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  service_manager::Connector* connector =
+      connection ? connection->GetConnector() : nullptr;
+  // Unit tests may not have a connector.
+  if (!connector)
+    return;
+
+  if (chrome::IsRunningInMash()) {
+    connector->ConnectToInterface("service:ash", &notification_controller_);
+  } else {
+    connector->ConnectToInterface("service:content_browser",
+                                  &notification_controller_);
+  }
 }
 
 void LocaleChangeGuard::RevertLocaleChange() {
@@ -176,8 +193,23 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  ash::WmShell::Get()->system_tray_notifier()->NotifyLocaleChanged(
-      this, cur_locale, from_locale_, to_locale_);
+  if (!notification_controller_)
+    ConnectToLocaleNotificationController();
+
+  notification_controller_->OnLocaleChanged(
+      cur_locale, from_locale_, to_locale_,
+      base::Bind(&LocaleChangeGuard::OnResult, AsWeakPtr()));
+}
+
+void LocaleChangeGuard::OnResult(ash::mojom::LocaleNotificationResult result) {
+  switch (result) {
+    case ash::mojom::LocaleNotificationResult::ACCEPT:
+      AcceptLocaleChange();
+      break;
+    case ash::mojom::LocaleNotificationResult::REVERT:
+      RevertLocaleChange();
+      break;
+  }
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {
@@ -211,20 +243,6 @@ void LocaleChangeGuard::PrepareChangingLocale(
     from_locale_ = from_locale;
   if (!to_locale.empty())
     to_locale_ = to_locale;
-
-  if (!from_locale_.empty() && !to_locale_.empty()) {
-    base::string16 from = l10n_util::GetDisplayNameForLocale(
-        from_locale_, cur_locale, true);
-    base::string16 to = l10n_util::GetDisplayNameForLocale(
-        to_locale_, cur_locale, true);
-
-    title_text_ = l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE);
-    message_text_ = l10n_util::GetStringFUTF16(
-        IDS_LOCALE_CHANGE_MESSAGE, from, to);
-    revert_link_text_ = l10n_util::GetStringFUTF16(
-        IDS_LOCALE_CHANGE_REVERT_MESSAGE, from);
-  }
 }
 
 // static

@@ -4,7 +4,10 @@
 
 #include "ash/common/mojo_interface_factory.h"
 
+#include <utility>
+
 #include "ash/common/shelf/shelf_controller.h"
+#include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
@@ -13,6 +16,12 @@
 namespace ash {
 
 namespace {
+
+void BindLocaleNotificationControllerOnMainThread(
+    mojom::LocaleNotificationControllerRequest request) {
+  WmShell::Get()->locale_notification_controller()->BindRequest(
+      std::move(request));
+}
 
 void BindShelfControllerRequestOnMainThread(
     mojom::ShelfControllerRequest request) {
@@ -30,6 +39,9 @@ namespace mojo_interface_factory {
 void RegisterInterfaces(
     service_manager::InterfaceRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  registry->AddInterface(
+      base::Bind(&BindLocaleNotificationControllerOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfControllerRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),

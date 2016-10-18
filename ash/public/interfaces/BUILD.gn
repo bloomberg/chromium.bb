@@ -8,6 +8,7 @@ mojom("interfaces") {
   sources = [
     "ash_window_type.mojom",
     "container.mojom",
+    "locale.mojom",
     "shelf.mojom",
     "system_tray.mojom",
     "wallpaper.mojom",

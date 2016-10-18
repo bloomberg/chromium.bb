@@ -26,7 +26,6 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
@@ -475,8 +474,6 @@ Shell::~Shell() {
     root->GetRootWindowController()->GetShelf()->ShutdownShelfWidget();
   wm_shell_->DeleteSystemTrayDelegate();
 
-  locale_notification_controller_.reset();
-
   // Drag-and-drop must be canceled prior to close all windows.
   drag_drop_controller_.reset();
 
@@ -777,8 +774,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   wm_shell_->SetSystemTrayDelegate(
       base::WrapUnique(wm_shell_->delegate()->CreateSystemTrayDelegate()));
-
-  locale_notification_controller_.reset(new LocaleNotificationController);
 
 #if defined(OS_CHROMEOS)
   // Create TouchTransformerController before

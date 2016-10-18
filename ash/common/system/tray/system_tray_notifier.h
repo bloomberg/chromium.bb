@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/system/locale/locale_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -77,14 +76,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveIMEObserver(IMEObserver* observer);
   void NotifyRefreshIME();
   void NotifyRefreshIMEMenu(bool is_active);
-
-  // Locale.
-  void AddLocaleObserver(LocaleObserver* observer);
-  void RemoveLocaleObserver(LocaleObserver* observer);
-  void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
-                           const std::string& cur_locale,
-                           const std::string& from_locale,
-                           const std::string& to_locale);
 
   // OS updates.
   void AddUpdateObserver(UpdateObserver* observer);
@@ -173,7 +164,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<AudioObserver> audio_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
-  base::ObserverList<LocaleObserver> locale_observers_;
   base::ObserverList<UpdateObserver> update_observers_;
   base::ObserverList<UserObserver> user_observers_;
 

@@ -2296,9 +2296,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH">
     Bluetooth
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE">
-    Language
-  </message>
   <message name="IDS_OPTIONS_DEVICE_GROUP_BATTERY_STATUS_LABEL" desc="The prefix to the battery status in the device section.">
     Battery - <ph name="status">$1<ex>56% - 2:03 left</ex></ph>
   </message>
@@ -5694,14 +5691,6 @@ All users must sign out to continue.
   </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_BUTTON_PORTAL" desc="Button caption to open the captive portal login page.">
     Visit captive portal login page
-  </message>
-
-  <!-- Locale Change Notification-->
-  <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">
-    Chrome's language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
-  </message>
-  <message name="IDS_LOCALE_CHANGE_REVERT_MESSAGE" desc="Link to revert a change.">
-    Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires sign-out)
   </message>
 
   <!-- 3G data Notifications -->

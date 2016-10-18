@@ -129,22 +129,6 @@ void SystemTrayNotifier::NotifyRefreshIMEMenu(bool is_active) {
     observer.OnIMEMenuActivationChanged(is_active);
 }
 
-void SystemTrayNotifier::AddLocaleObserver(LocaleObserver* observer) {
-  locale_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveLocaleObserver(LocaleObserver* observer) {
-  locale_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
-                                             const std::string& cur_locale,
-                                             const std::string& from_locale,
-                                             const std::string& to_locale) {
-  for (auto& observer : locale_observers_)
-    observer.OnLocaleChanged(delegate, cur_locale, from_locale, to_locale);
-}
-
 void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
   update_observers_.AddObserver(observer);
 }

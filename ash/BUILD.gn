@@ -320,7 +320,6 @@ component("ash") {
     "common/system/keyboard_brightness_control_delegate.h",
     "common/system/locale/locale_notification_controller.cc",
     "common/system/locale/locale_notification_controller.h",
-    "common/system/locale/locale_observer.h",
     "common/system/networking_config_delegate.cc",
     "common/system/networking_config_delegate.h",
     "common/system/overview/overview_button_tray.cc",

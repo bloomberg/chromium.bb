@@ -23,6 +23,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
+#include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -233,6 +234,8 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       focus_cycler_(base::MakeUnique<FocusCycler>()),
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
+      locale_notification_controller_(
+          base::MakeUnique<LocaleNotificationController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>(
           delegate_->GetShellConnector())),

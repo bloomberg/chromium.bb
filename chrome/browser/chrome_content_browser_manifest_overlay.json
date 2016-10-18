@@ -16,6 +16,7 @@
         "metrics::mojom::CallStackProfileCollector"
       ],
       "ash": [
+        "ash::mojom::LocaleNotificationController",
         "ash::mojom::ShelfController",
         "ash::mojom::SystemTray",
         "ash::mojom::SystemTrayClient"
