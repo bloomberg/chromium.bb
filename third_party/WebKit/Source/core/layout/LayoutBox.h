@@ -207,6 +207,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Use this with caution! No type checking is done!
   LayoutBox* firstChildBox() const;
+  LayoutBox* firstInFlowChildBox() const;
   LayoutBox* lastChildBox() const;
 
   int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
@@ -1573,6 +1574,13 @@ inline LayoutBox* LayoutBox::nextInFlowSiblingBox() const {
 
 inline LayoutBox* LayoutBox::parentBox() const {
   return toLayoutBox(parent());
+}
+
+inline LayoutBox* LayoutBox::firstInFlowChildBox() const {
+  LayoutBox* first = firstChildBox();
+  while (first && first->isOutOfFlowPositioned())
+    first = first->nextInFlowSiblingBox();
+  return first;
 }
 
 inline LayoutBox* LayoutBox::firstChildBox() const {

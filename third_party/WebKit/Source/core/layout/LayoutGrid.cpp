@@ -492,9 +492,9 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
     // computed again in the updateLogicalWidth call bellow.
     if (sizesLogicalWidthToFitContent(styleRef().logicalWidth()) ||
         styleRef().logicalWidth().isIntrinsicOrAuto()) {
-      for (auto* child = firstChildBox(); child;
+      for (auto* child = firstInFlowChildBox(); child;
            child = child->nextInFlowSiblingBox()) {
-        if (child->isOutOfFlowPositioned() || !isOrthogonalChild(*child))
+        if (!isOrthogonalChild(*child))
           continue;
         child->clearOverrideSize();
         child->clearContainingBlockOverrideSize();
@@ -1999,11 +1999,8 @@ void LayoutGrid::populateExplicitGridAndOrderIterator() {
 
   ASSERT(m_gridItemsIndexesMap.isEmpty());
   size_t childIndex = 0;
-  for (LayoutBox* child = firstChildBox(); child;
+  for (LayoutBox* child = firstInFlowChildBox(); child;
        child = child->nextInFlowSiblingBox()) {
-    if (child->isOutOfFlowPositioned())
-      continue;
-
     populator.collectChild(child);
     m_gridItemsIndexesMap.set(child, childIndex++);
 
