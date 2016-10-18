@@ -6,15 +6,6 @@ html {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.ui-button {
-  background: white;
-  border-radius: 6px;
-  overflow: hidden;
-  position: absolute;
-  text-align: center;
-  vertical-align: middle;
-}
-
 .webvr-message-box {
   align-items: center;
   display: flex;
@@ -93,4 +84,62 @@ html {
   padding: 20px;
   text-align: center;
   width: 512px;
+}
+
+.round-button {
+  height: 136px;
+  left: 512px;
+  position: absolute;
+  width: 96px;
+}
+
+.round-button .button {
+  background-color: #eee;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-radius: 50%;
+  height: 96px;
+  opacity: 0.8;
+  position: absolute;
+  top: 0;
+  transition: opacity 150ms ease-in-out;
+  width: 96px;
+}
+
+.round-button .caption {
+  bottom: 0;
+  color: white;
+  font-size: 24px;
+  left: 50%;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(-50%);
+  transition: opacity 150ms ease-in-out;
+  z-index: 100;
+}
+
+#back {
+  top: 0;
+}
+
+#back .button {
+  background-image: url(../../../../ui/webui/resources/images/vr_back.svg);
+}
+
+#reload {
+  top: 138px;
+}
+
+#reload .button {
+  background-image: url(../../../../ui/webui/resources/images/vr_reload.svg);
+}
+
+#forward {
+  top: 276px;
+}
+
+#forward .button {
+  background-image: url(../../../../ui/webui/resources/images/vr_back.svg);
+  transform: scaleX(-1);
 }

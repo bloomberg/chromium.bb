@@ -145,6 +145,13 @@ var api = (function() {
       this.xAnchoring = x;
       this.yAnchoring = y;
     }
+
+    /**
+     * Visibility controls whether the element is rendered.
+     */
+    setVisible(visible) {
+      this.visible = !!visible;
+    }
   };
 
   /**
