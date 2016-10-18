@@ -9,5 +9,13 @@
     "https": [8444],
     "ws": [9001],
     "wss": [9444]
+  },
+  "ssl": {
+    "type": "pregenerated",
+    "encrypt_after_connect": false,
+    "pregenerated": {
+      "host_key_path": "../certs/127.0.0.1.key",
+      "host_cert_path": "../certs/127.0.0.1.pem"
+    }
   }
 }
