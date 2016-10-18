@@ -1762,7 +1762,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
     if (type == ViewHostMsg_TextInputStateChanged::ID) {
       is_input_type_called = true;
       last_input_type = i;
-    } else if (type == ViewHostMsg_SelectionChanged::ID) {
+    } else if (type == FrameHostMsg_SelectionChanged::ID) {
       is_selection_called = true;
       last_selection = i;
     }

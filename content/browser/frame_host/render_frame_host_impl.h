@@ -68,6 +68,10 @@ class WebBluetoothService;
 }
 }
 
+namespace gfx {
+class Range;
+}
+
 namespace content {
 class AppWebMessagePortMessageFilter;
 class AssociatedInterfaceProviderImpl;
@@ -719,6 +723,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       bool success,
       const std::set<std::string>& digests_of_uris_of_serialized_resources,
       base::TimeDelta renderer_main_thread_time);
+  void OnSelectionChanged(const base::string16& text,
+                          uint32_t offset,
+                          const gfx::Range& range);
 
 #if defined(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
@@ -801,10 +808,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Sends a navigate message to the RenderFrame and notifies DevTools about
   // navigation happening. Should be used instead of sending the message
   // directly.
-  void SendNavigateMessage(
-      const content::CommonNavigationParams& common_params,
-      const content::StartNavigationParams& start_params,
-      const content::RequestNavigationParams& request_params);
+  void SendNavigateMessage(const CommonNavigationParams& common_params,
+                           const StartNavigationParams& start_params,
+                           const RequestNavigationParams& request_params);
 
   // Returns the child FrameTreeNode if |child_frame_routing_id| is an
   // immediate child of this FrameTreeNode.  |child_frame_routing_id| is

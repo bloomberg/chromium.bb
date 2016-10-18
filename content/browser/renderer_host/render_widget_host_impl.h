@@ -323,7 +323,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
       const ui::LatencyInfo& ui_latency);
   virtual void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
-      const ui::LatencyInfo& ui_latency); // Virtual for testing.
+      const ui::LatencyInfo& ui_latency);  // Virtual for testing.
 
   // Enables/disables touch emulation using mouse event. See TouchEmulator.
   void SetTouchEventEmulationEnabled(
@@ -518,6 +518,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // a new renderer is created.
   void RendererExited(base::TerminationStatus status, int exit_code);
 
+  // Called from a RenderFrameHost when the text selection has changed.
+  void SelectionChanged(const base::string16& text,
+                        uint32_t offset,
+                        const gfx::Range& range);
+
   // Expose increment/decrement of the in-flight event count, so
   // RenderViewHostImpl can account for in-flight beforeunload/unload events.
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
@@ -601,9 +606,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                  const gfx::Size& size,
                                  const cc::SharedBitmapId& id);
-  void OnSelectionChanged(const base::string16& text,
-                          uint32_t offset,
-                          const gfx::Range& range);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
   void OnForwardCompositorProto(const std::vector<uint8_t>& proto);

@@ -64,7 +64,6 @@
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
-#include "ui/gfx/range/range.h"
 
 #if defined(OS_MACOSX)
 #include "third_party/WebKit/public/platform/WebScrollbarButtonsPlacement.h"
@@ -838,15 +837,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     base::string16 /* tooltip text string */,
                     blink::WebTextDirection /* text direction hint */)
-
-// Notification that the text selection has changed.
-// Note: The secound parameter is the character based offset of the
-// base::string16
-// text in the document.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
-                    base::string16 /* text covers the selection range */,
-                    uint32_t /* the offset of the text in the document */,
-                    gfx::Range /* selection range in the document */)
 
 // Notification that the selection bounds have changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionBoundsChanged,

@@ -487,7 +487,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
                         OnShowDisambiguationPopup)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
@@ -1320,9 +1319,9 @@ const NativeWebKeyboardEvent*
   return input_router_->GetLastKeyboardEvent();
 }
 
-void RenderWidgetHostImpl::OnSelectionChanged(const base::string16& text,
-                                              uint32_t offset,
-                                              const gfx::Range& range) {
+void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
+                                            uint32_t offset,
+                                            const gfx::Range& range) {
   if (view_)
     view_->SelectionChanged(text, static_cast<size_t>(offset), range);
 }

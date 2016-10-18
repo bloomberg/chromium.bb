@@ -229,7 +229,6 @@
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "media/base/android/media_codec_util.h"
-#include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #endif
 
@@ -1531,7 +1530,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnCustomContextMenuAction)
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameMsg_SetPepperVolume, OnSetPepperVolume)
-#endif  //defined(ENABLE_PLUGINS)
+#endif  // defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
     IPC_MESSAGE_HANDLER(InputMsg_Redo, OnRedo)
     IPC_MESSAGE_HANDLER(InputMsg_Cut, OnCut)
@@ -2568,11 +2567,8 @@ void RenderFrameImpl::DetachGuest(int element_instance_id) {
 void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                       size_t offset,
                                       const gfx::Range& range) {
-  // Use the routing id of Render Widget Host.
-  Send(new ViewHostMsg_SelectionChanged(GetRenderWidget()->routing_id(),
-                                        selection_text,
-                                        static_cast<uint32_t>(offset),
-                                        range));
+  Send(new FrameHostMsg_SelectionChanged(routing_id_, selection_text,
+                                         static_cast<uint32_t>(offset), range));
 }
 
 void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(

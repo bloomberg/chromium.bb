@@ -116,7 +116,7 @@
 #include "content/browser/media/android/media_player_renderer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/video_renderer_sink.h"
-#include "media/mojo/services/mojo_renderer_service.h"  //nogncheck
+#include "media/mojo/services/mojo_renderer_service.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -124,9 +124,7 @@
 #endif
 
 #if defined(ENABLE_WEBVR)
-#include "base/command_line.h"
-#include "content/public/common/content_switches.h"
-#include "device/vr/vr_service_impl.h" // nogncheck
+#include "device/vr/vr_service_impl.h"  // nogncheck
 #endif
 
 using base::TimeDelta;
@@ -384,9 +382,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the dtor has run.  (It may also be null in tests.)
   swapout_event_monitor_timeout_.reset();
 
-  for (const auto& iter: visual_state_callbacks_) {
+  for (const auto& iter : visual_state_callbacks_)
     iter.second.Run(false);
-  }
 
   if (render_widget_host_ &&
       render_widget_host_->owned_by_render_frame_host()) {
@@ -709,6 +706,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SerializeAsMHTMLResponse,
                         OnSerializeAsMHTMLResponse)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
 #if defined(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -2128,6 +2126,12 @@ void RenderFrameHostImpl::OnSerializeAsMHTMLResponse(
   MHTMLGenerationManager::GetInstance()->OnSerializeAsMHTMLResponse(
       this, job_id, success, digests_of_uris_of_serialized_resources,
       renderer_main_thread_time);
+}
+
+void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
+                                             uint32_t offset,
+                                             const gfx::Range& range) {
+  GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
 
 #if defined(USE_EXTERNAL_POPUP_MENU)
