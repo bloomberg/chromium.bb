@@ -4,12 +4,12 @@
 
 component("core") {
   sources = [
-    "../session_manager_export.h",
     "session_manager.cc",
     "session_manager.h",
   ]
   deps = [
     "//base",
+    "//components/session_manager:base",
   ]
   defines = [ "SESSION_IMPLEMENTATION" ]
 }

@@ -1136,7 +1136,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   profile->OnLogin();
 
   g_browser_process->platform_part()->SessionManager()->SetSessionState(
-      session_manager::SESSION_STATE_LOGGED_IN_NOT_ACTIVE);
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
 
   // Send the notification before creating the browser so additional objects
   // that need the profile (e.g. the launcher) can be created first.

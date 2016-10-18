@@ -9,38 +9,11 @@
 
 #include "base/macros.h"
 #include "components/session_manager/session_manager_export.h"
+#include "components/session_manager/session_manager_types.h"
 
 namespace session_manager {
 
 class SessionManagerDelegate;
-
-// TODO(nkostylev): Get rid/consolidate with:
-// ash::SessionStateDelegate::SessionState and chromeos::LoggedInState.
-enum SessionState {
-  // Default value, when session state hasn't been initialized yet.
-  SESSION_STATE_UNKNOWN = 0,
-
-  // Running out of box UI.
-  SESSION_STATE_OOBE,
-
-  // Running login UI (primary user) but user sign in hasn't completed yet.
-  SESSION_STATE_LOGIN_PRIMARY,
-
-  // Running login UI (primary or secondary user), user sign in has been
-  // completed but login UI hasn't been hidden yet. This means that either
-  // some session initialization is happening or user has to go through some
-  // UI flow on the same login UI like select avatar, agree to terms of
-  // service etc.
-  SESSION_STATE_LOGGED_IN_NOT_ACTIVE,
-
-  // A user(s) has logged in *and* login UI is hidden i.e. user session is
-  // not blocked.
-  SESSION_STATE_ACTIVE,
-
-  // Same as SESSION_STATE_LOGIN_PRIMARY but for multi-profiles sign in i.e.
-  // when there's at least one user already active in the session.
-  SESSION_STATE_LOGIN_SECONDARY,
-};
 
 class SESSION_EXPORT SessionManager {
  public:

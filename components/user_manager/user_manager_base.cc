@@ -256,7 +256,7 @@ void UserManagerBase::SessionStarted() {
 
   CallUpdateLoginState();
   session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SESSION_STATE_ACTIVE);
+      session_manager::SessionState::ACTIVE);
 
   GetLocalState()->CommitPendingWrite();
 }

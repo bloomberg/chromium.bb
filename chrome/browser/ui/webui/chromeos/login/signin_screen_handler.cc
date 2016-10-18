@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"

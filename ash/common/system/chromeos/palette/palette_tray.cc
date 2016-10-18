@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -76,7 +77,7 @@ bool IsInUserSession() {
       WmShell::Get()->GetSessionStateDelegate();
   return !session_state_delegate->IsUserSessionBlocked() &&
          session_state_delegate->GetSessionState() ==
-             SessionStateDelegate::SESSION_STATE_ACTIVE &&
+             session_manager::SessionState::ACTIVE &&
          WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::KIOSK_APP;
 }
@@ -269,8 +270,7 @@ bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
   return bubble_ && bubble_->bubble_view()->GetBoundsInScreen().Contains(point);
 }
 
-void PaletteTray::SessionStateChanged(
-    SessionStateDelegate::SessionState state) {
+void PaletteTray::SessionStateChanged(session_manager::SessionState state) {
   UpdateIconVisibility();
 }
 

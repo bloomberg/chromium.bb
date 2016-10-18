@@ -93,7 +93,7 @@ TestSessionStateDelegate::TestSessionStateDelegate()
       logged_in_users_(1),
       active_user_index_(0),
       user_manager_(new TestUserManager()),
-      session_state_(SESSION_STATE_LOGIN_PRIMARY) {
+      session_state_(session_manager::SessionState::LOGIN_PRIMARY) {
   // This is intended to be capitalized.
   user_list_.push_back(base::MakeUnique<MockUserInfo>("First@tray"));
   // This is intended to be capitalized.
@@ -125,7 +125,7 @@ int TestSessionStateDelegate::NumberOfLoggedInUsers() const {
 
 bool TestSessionStateDelegate::IsActiveUserSessionStarted() const {
   return user_manager_->IsSessionStarted() &&
-         session_state_ == SESSION_STATE_ACTIVE;
+         session_state_ == session_manager::SessionState::ACTIVE;
 }
 
 bool TestSessionStateDelegate::CanLockScreen() const {
@@ -151,19 +151,20 @@ void TestSessionStateDelegate::UnlockScreen() {
 
 bool TestSessionStateDelegate::IsUserSessionBlocked() const {
   return !IsActiveUserSessionStarted() || IsScreenLocked() ||
-         user_adding_screen_running_ || session_state_ != SESSION_STATE_ACTIVE;
+         user_adding_screen_running_ ||
+         session_state_ != session_manager::SessionState::ACTIVE;
 }
 
-SessionStateDelegate::SessionState TestSessionStateDelegate::GetSessionState()
+session_manager::SessionState TestSessionStateDelegate::GetSessionState()
     const {
   return session_state_;
 }
 
 void TestSessionStateDelegate::SetHasActiveUser(bool has_active_user) {
   if (!has_active_user) {
-    session_state_ = SESSION_STATE_LOGIN_PRIMARY;
+    session_state_ = session_manager::SessionState::LOGIN_PRIMARY;
   } else {
-    session_state_ = SESSION_STATE_ACTIVE;
+    session_state_ = session_manager::SessionState::ACTIVE;
     WmShell::Get()->ShowShelf();
   }
 }
@@ -172,11 +173,11 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
     bool active_user_session_started) {
   if (active_user_session_started) {
     user_manager_->SessionStarted();
-    session_state_ = SESSION_STATE_ACTIVE;
+    session_state_ = session_manager::SessionState::ACTIVE;
     WmShell::Get()->CreateShelf();
     WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   } else {
-    session_state_ = SESSION_STATE_LOGIN_PRIMARY;
+    session_state_ = session_manager::SessionState::LOGIN_PRIMARY;
     user_manager_.reset(new TestUserManager());
   }
 }
@@ -198,9 +199,9 @@ void TestSessionStateDelegate::SetUserAddingScreenRunning(
     bool user_adding_screen_running) {
   user_adding_screen_running_ = user_adding_screen_running;
   if (user_adding_screen_running_)
-    session_state_ = SESSION_STATE_LOGIN_SECONDARY;
+    session_state_ = session_manager::SessionState::LOGIN_SECONDARY;
   else
-    session_state_ = SESSION_STATE_ACTIVE;
+    session_state_ = session_manager::SessionState::ACTIVE;
 }
 
 void TestSessionStateDelegate::SetUserImage(const gfx::ImageSkia& user_image) {

@@ -6,8 +6,8 @@
 #define ASH_COMMON_SESSION_SESSION_STATE_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "base/macros.h"
+#include "components/session_manager/session_manager_types.h"
 
 class AccountId;
 
@@ -22,7 +22,7 @@ class ASH_EXPORT SessionStateObserver {
   virtual void UserAddedToSession(const AccountId& account_id) {}
 
   // Called when session state is changed.
-  virtual void SessionStateChanged(SessionStateDelegate::SessionState state) {}
+  virtual void SessionStateChanged(session_manager::SessionState state) {}
 
  protected:
   virtual ~SessionStateObserver() {}

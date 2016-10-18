@@ -137,10 +137,11 @@ class SessionStateDelegateImpl : public SessionStateDelegate {
   bool IsUserSessionBlocked() const override {
     return !IsActiveUserSessionStarted() || IsScreenLocked();
   }
-  SessionState GetSessionState() const override {
+  session_manager::SessionState GetSessionState() const override {
     // Assume that if session is not active we're at login.
-    return IsActiveUserSessionStarted() ? SESSION_STATE_ACTIVE
-                                        : SESSION_STATE_LOGIN_PRIMARY;
+    return IsActiveUserSessionStarted()
+               ? session_manager::SessionState::ACTIVE
+               : session_manager::SessionState::LOGIN_PRIMARY;
   }
   const user_manager::UserInfo* GetUserInfo(UserIndex index) const override {
     return user_info_.get();

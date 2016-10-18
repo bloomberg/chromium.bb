@@ -12,7 +12,7 @@ namespace session_manager {
 // static
 SessionManager* SessionManager::instance = NULL;
 
-SessionManager::SessionManager() : session_state_(SESSION_STATE_UNKNOWN) {
+SessionManager::SessionManager() : session_state_(SessionState::UNKNOWN) {
   DCHECK(!SessionManager::Get());
   SessionManager::SetInstance(this);
 }
@@ -28,7 +28,7 @@ SessionManager* SessionManager::Get() {
 }
 
 void SessionManager::SetSessionState(SessionState state) {
-  VLOG(1) << "Changing session state to: " << state;
+  VLOG(1) << "Changing session state to: " << static_cast<int>(state);
 
   if (session_state_ != state) {
     // TODO(nkostylev): Notify observers about the state change.

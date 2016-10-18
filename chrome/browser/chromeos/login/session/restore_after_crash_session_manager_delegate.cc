@@ -35,7 +35,7 @@ RestoreAfterCrashSessionManagerDelegate::
 void RestoreAfterCrashSessionManagerDelegate::Start() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  session_manager_->SetSessionState(session_manager::SESSION_STATE_ACTIVE);
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
 
   // TODO(nkostylev): Identify tests that do not set this kLoginUser flag but
   // still rely on "stub user" session. Keeping existing behavior to avoid

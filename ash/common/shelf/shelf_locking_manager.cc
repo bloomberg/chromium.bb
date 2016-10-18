@@ -14,7 +14,7 @@ ShelfLockingManager::ShelfLockingManager(WmShelf* shelf) : shelf_(shelf) {
   WmShell::Get()->AddLockStateObserver(this);
   SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
   session_locked_ =
-      delegate->GetSessionState() != SessionStateDelegate::SESSION_STATE_ACTIVE;
+      delegate->GetSessionState() != session_manager::SessionState::ACTIVE;
   screen_locked_ = delegate->IsScreenLocked();
   delegate->AddSessionStateObserver(this);
   WmShell::Get()->AddShellObserver(this);
@@ -32,8 +32,8 @@ void ShelfLockingManager::OnLockStateChanged(bool locked) {
 }
 
 void ShelfLockingManager::SessionStateChanged(
-    SessionStateDelegate::SessionState state) {
-  session_locked_ = state != SessionStateDelegate::SESSION_STATE_ACTIVE;
+    session_manager::SessionState state) {
+  session_locked_ = state != session_manager::SessionState::ACTIVE;
   UpdateLockedState();
 }
 

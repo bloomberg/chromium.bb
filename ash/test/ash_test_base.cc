@@ -319,7 +319,7 @@ void AshTestBase::SetSessionStarted(bool session_started) {
 
 void AshTestBase::SetSessionStarting() {
   AshTestHelper::GetTestSessionStateDelegate()->set_session_state(
-      SessionStateDelegate::SESSION_STATE_ACTIVE);
+      session_manager::SessionState::ACTIVE);
 }
 
 void AshTestBase::SetUserLoggedIn(bool user_logged_in) {

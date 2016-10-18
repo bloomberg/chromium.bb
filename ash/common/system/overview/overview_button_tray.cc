@@ -78,7 +78,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 }
 
 void OverviewButtonTray::SessionStateChanged(
-    SessionStateDelegate::SessionState state) {
+    session_manager::SessionState state) {
   UpdateIconVisibility();
 }
 
@@ -145,7 +145,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
       session_state_delegate->IsActiveUserSessionStarted() &&
       !session_state_delegate->IsScreenLocked() &&
       session_state_delegate->GetSessionState() ==
-          SessionStateDelegate::SESSION_STATE_ACTIVE &&
+          session_manager::SessionState::ACTIVE &&
       shell->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::KIOSK_APP);
 }

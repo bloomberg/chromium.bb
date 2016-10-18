@@ -148,7 +148,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
   // Overridden from SessionStateObserver:
-  void SessionStateChanged(SessionStateDelegate::SessionState state) override;
+  void SessionStateChanged(session_manager::SessionState state) override;
 
   // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
   ShelfAlignment GetAlignment() const { return shelf_widget_->GetAlignment(); }

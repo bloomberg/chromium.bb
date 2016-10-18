@@ -7,7 +7,7 @@
 namespace ash {
 
 bool SessionStateDelegate::IsInSecondaryLoginScreen() const {
-  return GetSessionState() == SESSION_STATE_LOGIN_SECONDARY;
+  return GetSessionState() == session_manager::SessionState::LOGIN_SECONDARY;
 }
 
 bool SessionStateDelegate::CanAddUserToMultiProfile(

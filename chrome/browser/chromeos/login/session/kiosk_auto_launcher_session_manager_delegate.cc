@@ -23,7 +23,7 @@ KioskAutoLauncherSessionManagerDelegate::
 void KioskAutoLauncherSessionManagerDelegate::Start() {
   // Kiosk app launcher starts with login state.
   session_manager_->SetSessionState(
-      session_manager::SESSION_STATE_LOGIN_PRIMARY);
+      session_manager::SessionState::LOGIN_PRIMARY);
 
   ShowLoginWizard(chromeos::WizardController::kAppLaunchSplashScreenName);
 

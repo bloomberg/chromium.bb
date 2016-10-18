@@ -58,7 +58,9 @@ class SessionStateDelegateStub : public SessionStateDelegate {
     screen_locked_ = false;
   }
   bool IsUserSessionBlocked() const override { return false; }
-  SessionState GetSessionState() const override { return SESSION_STATE_ACTIVE; }
+  session_manager::SessionState GetSessionState() const override {
+    return session_manager::SessionState::ACTIVE;
+  }
   const user_manager::UserInfo* GetUserInfo(UserIndex index) const override {
     return user_info_.get();
   }

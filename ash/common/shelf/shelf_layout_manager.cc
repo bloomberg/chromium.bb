@@ -969,10 +969,10 @@ void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
 }
 
 void ShelfLayoutManager::SessionStateChanged(
-    SessionStateDelegate::SessionState state) {
+    session_manager::SessionState state) {
   // Check transition changes to/from the add user to session and change the
   // shelf alignment accordingly
-  bool add_user = state == SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY;
+  const bool add_user = state == session_manager::SessionState::LOGIN_SECONDARY;
   if (add_user != state_.is_adding_user_screen) {
     state_.is_adding_user_screen = add_user;
     UpdateShelfVisibilityAfterLoginUIChange();

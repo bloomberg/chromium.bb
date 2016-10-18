@@ -33,8 +33,7 @@ bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
       WmShell::Get()->GetSessionStateDelegate();
 
   if (delegate->IsScreenLocked() ||
-      delegate->GetSessionState() !=
-          SessionStateDelegate::SESSION_STATE_ACTIVE) {
+      delegate->GetSessionState() != session_manager::SessionState::ACTIVE) {
     return false;
   }
 

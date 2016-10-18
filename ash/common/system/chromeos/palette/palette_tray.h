@@ -47,7 +47,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   bool PerformAction(const ui::Event& event) override;
 
   // SessionStateObserver:
-  void SessionStateChanged(SessionStateDelegate::SessionState state) override;
+  void SessionStateChanged(session_manager::SessionState state) override;
 
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;

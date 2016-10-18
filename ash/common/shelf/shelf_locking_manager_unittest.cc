@@ -24,7 +24,7 @@ class ShelfLockingManagerTest : public ash::test::AshTestBase {
     GetShelfLockingManager()->OnLockStateChanged(locked);
   }
 
-  void SetSessionState(SessionStateDelegate::SessionState state) {
+  void SetSessionState(session_manager::SessionState state) {
     GetShelfLockingManager()->SessionStateChanged(state);
   }
 
@@ -54,14 +54,14 @@ TEST_F(ShelfLockingManagerTest, AlignmentLockedWhileSessionLocked) {
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf->GetAlignment());
 
-  SetSessionState(SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY);
+  SetSessionState(session_manager::SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, shelf->GetAlignment());
-  SetSessionState(SessionStateDelegate::SESSION_STATE_ACTIVE);
+  SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf->GetAlignment());
 
-  SetSessionState(SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY);
+  SetSessionState(session_manager::SessionState::LOGIN_SECONDARY);
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM_LOCKED, shelf->GetAlignment());
-  SetSessionState(SessionStateDelegate::SESSION_STATE_ACTIVE);
+  SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf->GetAlignment());
 }
 

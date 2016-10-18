@@ -39,16 +39,16 @@ class BrowserLoginTest : public chromeos::LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
   RegisterUser(kTestUser);
-  EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
+  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
-  EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY,
+  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
   LoginUser(kTestUser);
-  EXPECT_EQ(ash::SessionStateDelegate::SESSION_STATE_ACTIVE,
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
             ash::WmShell::Get()->GetSessionStateDelegate()->GetSessionState());
 
   Browser* browser =

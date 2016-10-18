@@ -56,7 +56,7 @@ void UserAddingScreenImpl::Start() {
                  base::Unretained(this)));
 
   g_browser_process->platform_part()->SessionManager()->SetSessionState(
-      session_manager::SESSION_STATE_LOGIN_SECONDARY);
+      session_manager::SessionState::LOGIN_SECONDARY);
   for (auto& observer : observers_)
     observer.OnUserAddingStarted();
 }
@@ -92,7 +92,7 @@ void UserAddingScreenImpl::OnDisplayHostCompletion() {
   display_host_ = NULL;
 
   g_browser_process->platform_part()->SessionManager()->SetSessionState(
-      session_manager::SESSION_STATE_ACTIVE);
+      session_manager::SessionState::ACTIVE);
   for (auto& observer : observers_)
     observer.OnUserAddingFinished();
 }

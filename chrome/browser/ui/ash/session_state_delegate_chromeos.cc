@@ -34,15 +34,23 @@
 #include "ui/gfx/image/image_skia.h"
 
 SessionStateDelegateChromeos::SessionStateDelegateChromeos()
-    : session_state_(SESSION_STATE_LOGIN_PRIMARY) {
+    : session_state_(session_manager::SessionState::LOGIN_PRIMARY) {
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
   chromeos::UserAddingScreen::Get()->AddObserver(this);
 
   // LoginState is not initialized in unit_tests.
   if (chromeos::LoginState::IsInitialized()) {
     chromeos::LoginState::Get()->AddObserver(this);
-    SetSessionState(chromeos::LoginState::Get()->IsUserLoggedIn() ?
-        SESSION_STATE_ACTIVE : SESSION_STATE_LOGIN_PRIMARY, true);
+    // Note that the session state is only set to ACTIVE or LOGIN_PRIMARY
+    // instead of using SessionManager::Get()->session_state(). This is
+    // an intermediate state of replacing SessionStateDelegate with
+    // mojo interfaces. The replacement mojo interface would reflect
+    // real session state in SessionManager and have getters to translate
+    // them in a sensible way to ash code.
+    SetSessionState(chromeos::LoginState::Get()->IsUserLoggedIn()
+                        ? session_manager::SessionState::ACTIVE
+                        : session_manager::SessionState::LOGIN_PRIMARY,
+                    true);
   }
 }
 
@@ -133,8 +141,8 @@ bool SessionStateDelegateChromeos::IsUserSessionBlocked() const {
          chromeos::UserAddingScreen::Get()->IsRunning();
 }
 
-ash::SessionStateDelegate::SessionState
-SessionStateDelegateChromeos::GetSessionState() const {
+session_manager::SessionState SessionStateDelegateChromeos::GetSessionState()
+    const {
   return session_state_;
 }
 
@@ -231,8 +239,10 @@ void SessionStateDelegateChromeos::RemoveSessionStateObserver(
 }
 
 void SessionStateDelegateChromeos::LoggedInStateChanged() {
-  SetSessionState(chromeos::LoginState::Get()->IsUserLoggedIn() ?
-      SESSION_STATE_ACTIVE : SESSION_STATE_LOGIN_PRIMARY, false);
+  SetSessionState(chromeos::LoginState::Get()->IsUserLoggedIn()
+                      ? session_manager::SessionState::ACTIVE
+                      : session_manager::SessionState::LOGIN_PRIMARY,
+                  false);
 }
 
 void SessionStateDelegateChromeos::ActiveUserChanged(
@@ -248,15 +258,16 @@ void SessionStateDelegateChromeos::UserAddedToSession(
 }
 
 void SessionStateDelegateChromeos::OnUserAddingStarted() {
-  SetSessionState(SESSION_STATE_LOGIN_SECONDARY, false);
+  SetSessionState(session_manager::SessionState::LOGIN_SECONDARY, false);
 }
 
 void SessionStateDelegateChromeos::OnUserAddingFinished() {
-  SetSessionState(SESSION_STATE_ACTIVE, false);
+  SetSessionState(session_manager::SessionState::ACTIVE, false);
 }
 
-void SessionStateDelegateChromeos::SetSessionState(SessionState new_state,
-                                                   bool force) {
+void SessionStateDelegateChromeos::SetSessionState(
+    session_manager::SessionState new_state,
+    bool force) {
   if (session_state_ == new_state && !force)
     return;
 

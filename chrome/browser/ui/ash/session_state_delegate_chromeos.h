@@ -37,7 +37,7 @@ class SessionStateDelegateChromeos
   void LockScreen() override;
   void UnlockScreen() override;
   bool IsUserSessionBlocked() const override;
-  SessionState GetSessionState() const override;
+  session_manager::SessionState GetSessionState() const override;
   const user_manager::UserInfo* GetUserInfo(
       ash::UserIndex index) const override;
   bool ShouldShowAvatar(ash::WmWindow* window) const override;
@@ -63,7 +63,7 @@ class SessionStateDelegateChromeos
   // Sets session state to |new_state|.
   // If |force| is true then |new_state| is set even if existing session
   // state is the same (used for explicit initialization).
-  void SetSessionState(SessionState new_state, bool force);
+  void SetSessionState(session_manager::SessionState new_state, bool force);
 
   // Notify observers about session state change.
   void NotifySessionStateChanged();
@@ -76,7 +76,7 @@ class SessionStateDelegateChromeos
   base::ObserverList<ash::SessionStateObserver> session_state_observer_list_;
 
   // Session state (e.g. login screen vs. user session).
-  SessionState session_state_;
+  session_manager::SessionState session_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateChromeos);
 };

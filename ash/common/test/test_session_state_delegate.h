@@ -26,7 +26,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   ~TestSessionStateDelegate() override;
 
   void set_logged_in_users(int users) { logged_in_users_ = users; }
-  void set_session_state(SessionState session_state) {
+  void set_session_state(session_manager::SessionState session_state) {
     session_state_ = session_state;
   }
   void AddUser(const AccountId& account_id);
@@ -42,7 +42,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   void LockScreen() override;
   void UnlockScreen() override;
   bool IsUserSessionBlocked() const override;
-  SessionState GetSessionState() const override;
+  session_manager::SessionState GetSessionState() const override;
   const user_manager::UserInfo* GetUserInfo(
       ash::UserIndex index) const override;
   bool ShouldShowAvatar(WmWindow* window) const override;
@@ -111,7 +111,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
 
   // The current state of the login screen. |session_state_| becomes active
   // before the profile and browser UI are available.
-  SessionState session_state_;
+  session_manager::SessionState session_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionStateDelegate);
 };

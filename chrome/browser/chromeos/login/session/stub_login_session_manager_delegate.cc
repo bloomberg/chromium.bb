@@ -22,7 +22,7 @@ StubLoginSessionManagerDelegate::~StubLoginSessionManagerDelegate() {
 }
 
 void StubLoginSessionManagerDelegate::Start() {
-  session_manager_->SetSessionState(session_manager::SESSION_STATE_ACTIVE);
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
 
   // For dev machines and stub user emulate as if sync has been initialized.
   SigninManagerFactory::GetForProfile(profile())

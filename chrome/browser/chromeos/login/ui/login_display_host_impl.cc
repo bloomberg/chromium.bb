@@ -1275,8 +1275,8 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   g_browser_process->platform_part()->SessionManager()->SetSessionState(
       StartupUtils::IsOobeCompleted()
-          ? session_manager::SESSION_STATE_LOGIN_PRIMARY
-          : session_manager::SESSION_STATE_OOBE);
+          ? session_manager::SessionState::LOGIN_PRIMARY
+          : session_manager::SessionState::OOBE);
 
   LoginDisplayHostImpl* display_host = new LoginDisplayHostImpl(screen_bounds);
 

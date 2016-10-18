@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_types.h"
+#include "components/session_manager/session_manager_types.h"
 
 class AccountId;
 
@@ -36,22 +37,6 @@ class ASH_EXPORT SessionStateDelegate {
     ADD_USER_ERROR_NOT_ALLOWED_PRIMARY_USER = 0,
     ADD_USER_ERROR_OUT_OF_USERS,
     ADD_USER_ERROR_MAXIMUM_USERS_REACHED,
-  };
-
-  // Defines session state i.e. whether session is running or not and
-  // whether user session is blocked by things like multi-profile login.
-  enum SessionState {
-    // When primary user login UI is shown i.e. after boot or sign out,
-    // no active user session exists yet.
-    SESSION_STATE_LOGIN_PRIMARY = 0,
-
-    // Inside user session (including lock screen),
-    // no login UI (primary or multi-profiles) is shown.
-    SESSION_STATE_ACTIVE,
-
-    // When secondary user login UI is shown i.e. other users are
-    // already logged in and is currently adding another user to the session.
-    SESSION_STATE_LOGIN_SECONDARY,
   };
 
   virtual ~SessionStateDelegate() {}
@@ -96,7 +81,7 @@ class ASH_EXPORT SessionStateDelegate {
   virtual bool IsUserSessionBlocked() const = 0;
 
   // Returns current session state.
-  virtual SessionState GetSessionState() const = 0;
+  virtual session_manager::SessionState GetSessionState() const = 0;
 
   // Gets the user info for the user with the given |index|. See session_types.h
   // for a description of UserIndex.
