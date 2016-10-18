@@ -17,6 +17,10 @@
 #include "ui/message_center/notification_delegate.h"
 #include "url/gurl.h"
 
+// These tests are disabled because WebUsbDetector::Initialize is a noop on
+// Windows due to jank and hangs caused by enumerating devices.
+// https://crbug.com/656702
+#if !defined(OS_WIN)
 namespace {
 
 // USB device product name.
@@ -399,3 +403,4 @@ TEST_F(WebUsbDetectorTest, ThreeUsbDeviceAddedAndRemovedDifferentOrder) {
   device_client_.usb_service()->RemoveDevice(device_3);
   EXPECT_EQ(nullptr, message_center_->FindVisibleNotificationById(guid_3));
 }
+#endif  // !OS_WIN
