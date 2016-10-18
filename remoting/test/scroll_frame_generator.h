@@ -10,32 +10,29 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "remoting/protocol/input_event_timestamps.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 namespace test {
 
-class ScrollFrameGenerator
-    : public base::RefCountedThreadSafe<ScrollFrameGenerator> {
+class ScrollFrameGenerator : public protocol::InputEventTimestampsSource {
  public:
   ScrollFrameGenerator();
 
   std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
       webrtc::SharedMemoryFactory* shared_memory_factory);
 
-  base::TimeDelta GetFrameLatency(const webrtc::DesktopFrame& frame);
+  // InputEventTimestampsSource interface.
+  protocol::InputEventTimestamps TakeLastEventTimestamps() override;
 
  private:
-  ~ScrollFrameGenerator();
-  friend class base::RefCountedThreadSafe<ScrollFrameGenerator>;
+  ~ScrollFrameGenerator() override;
 
   std::unique_ptr<webrtc::DesktopFrame> base_frame_;
   base::TimeTicks start_time_;
 
   std::unordered_map<int, base::TimeTicks> frame_timestamp_;
-
-  // Id of the last frame encoded on the barcode.
-  int last_frame_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollFrameGenerator);
 };

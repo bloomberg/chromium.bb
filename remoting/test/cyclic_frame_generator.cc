@@ -48,6 +48,7 @@ void CyclicFrameGenerator::SetTickClock(base::TickClock* tick_clock) {
 std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   base::TimeTicks now = clock_->NowTicks();
+
   int frame_id = (now - started_time_) / cursor_blink_period_;
   int reference_frame =
       ((now - started_time_) / frame_cycle_period_) % reference_frames_.size();
@@ -80,20 +81,15 @@ std::unique_ptr<webrtc::DesktopFrame> CyclicFrameGenerator::GenerateFrame(
     last_frame_type_ = ChangeType::NO_CHANGES;
   }
 
-  if (draw_barcode_)
-    DrawBarcode(frame_id, frame_id != last_frame_id_, frame.get());
-
   last_reference_frame_ = reference_frame;
   last_cursor_state_ = cursor_state;
-  last_frame_id_ = frame_id;
 
   return frame;
 }
 
 CyclicFrameGenerator::ChangeInfoList CyclicFrameGenerator::GetChangeList(
-    webrtc::DesktopFrame* frame) {
-  CHECK(draw_barcode_);
-  int frame_id = ReadBarcode(*frame);
+    base::TimeTicks timestamp) {
+  int frame_id = (timestamp - started_time_) / cursor_blink_period_;
   CHECK_GE(frame_id, last_identifier_frame_);
 
   ChangeInfoList result;
@@ -108,6 +104,11 @@ CyclicFrameGenerator::ChangeInfoList CyclicFrameGenerator::GetChangeList(
   last_identifier_frame_ = frame_id;
 
   return result;
+}
+
+protocol::InputEventTimestamps CyclicFrameGenerator::TakeLastEventTimestamps() {
+  base::TimeTicks now = clock_->NowTicks();
+  return protocol::InputEventTimestamps{now, now};
 }
 
 }  // namespace test

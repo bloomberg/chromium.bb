@@ -15,14 +15,6 @@
 namespace remoting {
 namespace test {
 
-namespace {
-const int kBarcodeCellWidth = 8;
-const int kBarcodeCellHeight = 8;
-const int kBarcodeBits = 10;
-const int kBarcodeBlackThreshold = 85;
-const int kBarcodeWhiteThreshold = 170;
-}  // namespace
-
 std::unique_ptr<webrtc::DesktopFrame> LoadDesktopFrameFromPng(
     const char* name) {
   base::FilePath file_path;
@@ -57,48 +49,6 @@ void DrawRect(webrtc::DesktopFrame* frame,
       data[x] = color;
     }
   }
-}
-
-void DrawBarcode(int value, bool changed, webrtc::DesktopFrame* frame) {
-  CHECK(value < (1 << kBarcodeBits));
-  for (int i = 0; i < kBarcodeBits; ++i) {
-    DrawRect(frame, webrtc::DesktopRect::MakeXYWH(i * kBarcodeCellWidth, 0,
-                                                  kBarcodeCellWidth,
-                                                  kBarcodeCellHeight),
-             (value & 1) ? 0xffffffff : 0xff000000);
-    value >>= 1;
-  }
-  if (changed) {
-    frame->mutable_updated_region()->AddRect(webrtc::DesktopRect::MakeXYWH(
-        0, 0, kBarcodeCellWidth * kBarcodeBits, kBarcodeCellHeight));
-  }
-}
-
-int ReadBarcode(const webrtc::DesktopFrame& frame) {
-  int result = 0;
-  for (int i = kBarcodeBits - 1; i >= 0; --i) {
-    // Sample barcode in the center of the cell for each bit.
-    int x = i * kBarcodeCellWidth + kBarcodeCellWidth / 2;
-    int y = kBarcodeCellHeight / 2;
-    uint8_t* data = frame.GetFrameDataAtPos(webrtc::DesktopVector(x, y));
-    int b = data[0];
-    int g = data[1];
-    int r = data[2];
-    bool bit = 0;
-    if (b > kBarcodeWhiteThreshold && g > kBarcodeWhiteThreshold &&
-        r > kBarcodeWhiteThreshold) {
-      bit = 1;
-    } else if (b < kBarcodeBlackThreshold && g < kBarcodeBlackThreshold &&
-        r < kBarcodeBlackThreshold) {
-      bit = 0;
-    } else {
-      LOG(FATAL) << "Invalid barcode.";
-    }
-    result <<= 1;
-    if (bit)
-      result |= 1;
-  }
-  return result;
 }
 
 }  // namespace test
