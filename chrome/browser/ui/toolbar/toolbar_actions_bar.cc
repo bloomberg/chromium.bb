@@ -149,8 +149,8 @@ ToolbarActionsBar::~ToolbarActionsBar() {
   // the order of deletion between the views and the ToolbarActionsBar.
   DCHECK(toolbar_actions_.empty()) <<
       "Must call DeleteActions() before destruction.";
-  FOR_EACH_OBSERVER(ToolbarActionsBarObserver, observers_,
-                    OnToolbarActionsBarDestroyed());
+  for (ToolbarActionsBarObserver& observer : observers_)
+    observer.OnToolbarActionsBarDestroyed();
 }
 
 // static
@@ -453,8 +453,8 @@ void ToolbarActionsBar::OnDragEnded() {
 
   DCHECK(is_drag_in_progress_);
   is_drag_in_progress_ = false;
-  FOR_EACH_OBSERVER(ToolbarActionsBarObserver,
-                    observers_, OnToolbarActionDragDone());
+  for (ToolbarActionsBarObserver& observer : observers_)
+    observer.OnToolbarActionDragDone();
 }
 
 void ToolbarActionsBar::OnDragDrop(int dragged_index,
@@ -481,8 +481,8 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
 void ToolbarActionsBar::OnAnimationEnded() {
   // Notify the observers now, since showing a bubble or popup could potentially
   // cause another animation to start.
-  FOR_EACH_OBSERVER(ToolbarActionsBarObserver, observers_,
-                    OnToolbarActionsBarAnimationEnded());
+  for (ToolbarActionsBarObserver& observer : observers_)
+    observer.OnToolbarActionsBarAnimationEnded();
 
   // Check if we were waiting for animation to complete to either show a
   // message bubble, or to show a popup.
@@ -735,8 +735,8 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
     delegate_->Redraw(false);
   }
 
-  FOR_EACH_OBSERVER(ToolbarActionsBarObserver,
-                    observers_, OnToolbarActionsBarDidStartResize());
+  for (ToolbarActionsBarObserver& observer : observers_)
+    observer.OnToolbarActionsBarDidStartResize();
 }
 
 void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {

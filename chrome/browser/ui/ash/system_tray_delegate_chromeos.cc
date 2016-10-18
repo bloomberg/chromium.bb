@@ -1060,9 +1060,10 @@ void SystemTrayDelegateChromeOS::OnAppWindowRemoved(
 
 // Overridden from SupervisedUserServiceObserver.
 void SystemTrayDelegateChromeOS::OnCustodianInfoChanged() {
-  FOR_EACH_OBSERVER(
-      ash::CustodianInfoTrayObserver, custodian_info_changed_observers_,
-      OnCustodianInfoChanged());
+  for (ash::CustodianInfoTrayObserver& observer :
+       custodian_info_changed_observers_) {
+    observer.OnCustodianInfoChanged();
+  }
 }
 
 void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
@@ -1076,8 +1077,8 @@ void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
 void SystemTrayDelegateChromeOS::OnShutdownPolicyChanged(
     bool reboot_on_shutdown) {
   // Notify all observers.
-  FOR_EACH_OBSERVER(ash::ShutdownPolicyObserver, shutdown_policy_observers_,
-                    OnShutdownPolicyChanged(reboot_on_shutdown));
+  for (ash::ShutdownPolicyObserver& observer : shutdown_policy_observers_)
+    observer.OnShutdownPolicyChanged(reboot_on_shutdown);
 }
 
 void SystemTrayDelegateChromeOS::ImeMenuActivationChanged(bool is_active) {

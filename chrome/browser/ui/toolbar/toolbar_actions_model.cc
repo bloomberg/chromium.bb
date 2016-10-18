@@ -129,7 +129,8 @@ void ToolbarActionsModel::MoveActionIcon(const std::string& id, size_t index) {
     last_known_positions_.push_back(id);
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarActionMoved(id, index));
+  for (Observer& observer : observers_)
+    observer.OnToolbarActionMoved(id, index);
   UpdatePrefs();
 }
 
@@ -145,7 +146,8 @@ void ToolbarActionsModel::SetVisibleIconCount(size_t count) {
                        visible_icon_count_);
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarVisibleCountChanged());
+  for (Observer& observer : observers_)
+    observer.OnToolbarVisibleCountChanged();
 }
 
 void ToolbarActionsModel::OnExtensionActionUpdated(
@@ -155,8 +157,8 @@ void ToolbarActionsModel::OnExtensionActionUpdated(
   // Notify observers if the extension exists and is in the model.
   if (HasItem(
           ToolbarItem(extension_action->extension_id(), EXTENSION_ACTION))) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarActionUpdated(extension_action->extension_id()));
+    for (Observer& observer : observers_)
+      observer.OnToolbarActionUpdated(extension_action->extension_id());
   }
 }
 
@@ -274,7 +276,8 @@ void ToolbarActionsModel::OnReady() {
   extension_action_observer_.Add(extension_action_api_);
 
   actions_initialized_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
+  for (Observer& observer : observers_)
+    observer.OnToolbarModelInitialized();
 
   if (use_redesign_) {
     // Handle component action migrations.  We must make sure that observers are
@@ -372,8 +375,8 @@ void ToolbarActionsModel::AddItem(const ToolbarItem& item) {
   // to the full list (|toolbar_items_|, there won't be another *visible*
   // browser action, which was what the observers care about.
   if (!is_highlighting()) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarActionAdded(item, new_index));
+    for (Observer& observer : observers_)
+      observer.OnToolbarActionAdded(item, new_index);
 
     int visible_count_delta = 0;
     if (is_new_extension && !all_icons_visible()) {
@@ -423,13 +426,15 @@ void ToolbarActionsModel::RemoveItem(const ToolbarItem& item) {
     pos = std::find(highlighted_items_.begin(), highlighted_items_.end(), item);
     if (pos != highlighted_items_.end()) {
       highlighted_items_.erase(pos);
-      FOR_EACH_OBSERVER(Observer, observers_, OnToolbarActionRemoved(item.id));
+      for (Observer& observer : observers_)
+        observer.OnToolbarActionRemoved(item.id);
       // If the highlighted list is now empty, we stop highlighting.
       if (highlighted_items_.empty())
         StopHighlighting();
     }
   } else {
-    FOR_EACH_OBSERVER(Observer, observers_, OnToolbarActionRemoved(item.id));
+    for (Observer& observer : observers_)
+      observer.OnToolbarActionRemoved(item.id);
   }
 
   UpdatePrefs();
@@ -766,10 +771,12 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
         std::rotate(desired_pos, current_pos, current_pos + 1);
       // Notify the observers to keep them up to date, unless we're highlighting
       // (in which case we're deliberately only showing a subset of actions).
-      if (!is_highlighting())
-        FOR_EACH_OBSERVER(
-            Observer, observers_,
-            OnToolbarActionMoved(id, desired_pos - toolbar_items_.begin()));
+      if (!is_highlighting()) {
+        for (Observer& observer : observers_) {
+          observer.OnToolbarActionMoved(id,
+                                        desired_pos - toolbar_items_.begin());
+        }
+      }
     }
     ++desired_pos;
   }
@@ -800,8 +807,8 @@ bool ToolbarActionsModel::HighlightActions(const std::vector<std::string>& ids,
     // It's important that is_highlighting_ is changed immediately before the
     // observers are notified since it changes the result of toolbar_items().
     highlight_type_ = highlight_type;
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarHighlightModeChanged(true));
+    for (Observer& observer : observers_)
+      observer.OnToolbarHighlightModeChanged(true);
 
     // We set the visible icon count after the highlight mode change because
     // the UI actions are created/destroyed during highlight, and doing that
@@ -824,8 +831,8 @@ void ToolbarActionsModel::StopHighlighting() {
     // It's important that is_highlighting_ is changed immediately before the
     // observers are notified since it changes the result of toolbar_items().
     highlight_type_ = HIGHLIGHT_NONE;
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnToolbarHighlightModeChanged(false));
+    for (Observer& observer : observers_)
+      observer.OnToolbarHighlightModeChanged(false);
 
     // For the same reason, we don't clear highlighted_items_ until after the
     // mode changed.

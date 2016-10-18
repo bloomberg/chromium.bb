@@ -78,6 +78,6 @@ void ChosenObjectRow::ButtonPressed(views::Button* sender,
   delete delete_button_;
   delete_button_ = nullptr;
 
-  FOR_EACH_OBSERVER(ChosenObjectRowObserver, observer_list_,
-                    OnChosenObjectDeleted(*info_));
+  for (ChosenObjectRowObserver& observer : observer_list_)
+    observer.OnChosenObjectDeleted(*info_);
 }

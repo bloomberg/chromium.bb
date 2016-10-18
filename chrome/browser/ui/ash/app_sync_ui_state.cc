@@ -109,9 +109,8 @@ void AppSyncUIState::SetStatus(Status status) {
       break;
   }
 
-  FOR_EACH_OBSERVER(AppSyncUIStateObserver,
-                    observers_,
-                    OnAppSyncUIStatusChanged());
+  for (AppSyncUIStateObserver& observer : observers_)
+    observer.OnAppSyncUIStatusChanged();
 }
 
 void AppSyncUIState::CheckAppSync() {

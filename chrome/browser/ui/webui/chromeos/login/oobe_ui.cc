@@ -601,9 +601,8 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   }
 
   current_screen_ = new_screen;
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnCurrentScreenChanged(current_screen_, new_screen));
+  for (Observer& observer : observer_list_)
+    observer.OnCurrentScreenChanged(current_screen_, new_screen);
 }
 
 }  // namespace chromeos

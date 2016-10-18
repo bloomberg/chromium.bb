@@ -89,7 +89,8 @@ void NetworkDropdownHandler::HandleLaunchAddMobileNetworkDialog() {
 }
 
 void NetworkDropdownHandler::OnConnectToNetworkRequested() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnConnectToNetworkRequested());
+  for (Observer& observer : observers_)
+    observer.OnConnectToNetworkRequested();
 }
 
 void NetworkDropdownHandler::HandleNetworkItemChosen(double id) {

@@ -48,10 +48,8 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
 
 void LoginUIService::SyncConfirmationUIClosed(
     SyncConfirmationUIClosedResult result) {
-  FOR_EACH_OBSERVER(
-      Observer,
-      observer_list_,
-      OnSyncConfirmationUIClosed(result));
+  for (Observer& observer : observer_list_)
+    observer.OnSyncConfirmationUIClosed(result);
 }
 
 void LoginUIService::ShowLoginPopup() {

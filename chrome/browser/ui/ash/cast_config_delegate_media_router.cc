@@ -205,8 +205,8 @@ void CastConfigDelegateMediaRouter::RequestDeviceRefresh() {
     }
   }
 
-  FOR_EACH_OBSERVER(ash::CastConfigDelegate::Observer, observer_list_,
-                    OnDevicesUpdated(items));
+  for (ash::CastConfigDelegate::Observer& observer : observer_list_)
+    observer.OnDevicesUpdated(items);
 }
 
 void CastConfigDelegateMediaRouter::CastToReceiver(

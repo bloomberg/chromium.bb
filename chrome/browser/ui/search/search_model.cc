@@ -34,8 +34,8 @@ void SearchModel::SetState(const State& new_state) {
   const State old_state = state_;
   state_ = new_state;
 
-  FOR_EACH_OBSERVER(SearchModelObserver, observers_,
-                    ModelChanged(old_state, state_));
+  for (SearchModelObserver& observer : observers_)
+    observer.ModelChanged(old_state, state_);
 }
 
 void SearchModel::SetMode(const SearchMode& new_mode) {
@@ -49,8 +49,8 @@ void SearchModel::SetMode(const SearchMode& new_mode) {
   const State old_state = state_;
   state_.mode = new_mode;
 
-  FOR_EACH_OBSERVER(SearchModelObserver, observers_,
-                    ModelChanged(old_state, state_));
+  for (SearchModelObserver& observer : observers_)
+    observer.ModelChanged(old_state, state_);
 }
 
 void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
@@ -63,8 +63,8 @@ void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
 
   const State old_state = state_;
   state_.instant_support = instant_support;
-  FOR_EACH_OBSERVER(SearchModelObserver, observers_,
-                    ModelChanged(old_state, state_));
+  for (SearchModelObserver& observer : observers_)
+    observer.ModelChanged(old_state, state_);
 }
 
 void SearchModel::AddObserver(SearchModelObserver* observer) {

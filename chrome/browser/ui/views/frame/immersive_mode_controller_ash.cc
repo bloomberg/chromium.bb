@@ -272,7 +272,8 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
   UpdateTabIndicators();
   LayoutBrowserRootView();
   CreateMashRevealWidget();
-  FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
+  for (Observer& observer : observers_)
+    observer.OnImmersiveRevealStarted();
 }
 
 void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {

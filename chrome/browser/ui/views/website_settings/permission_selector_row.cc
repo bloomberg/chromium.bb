@@ -366,7 +366,6 @@ void PermissionSelectorRow::PermissionChanged(
     combobox_->UpdateSelectedIndex(use_default);
   }
 
-  FOR_EACH_OBSERVER(PermissionSelectorRowObserver,
-                    observer_list_,
-                    OnPermissionChanged(permission));
+  for (PermissionSelectorRowObserver& observer : observer_list_)
+    observer.OnPermissionChanged(permission);
 }

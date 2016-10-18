@@ -32,11 +32,13 @@ bool TouchViewControllerDelegate::IsMaximizeModeEnabled() const {
 }
 
 void TouchViewControllerDelegate::OnMaximizeModeStarted() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnMaximizeModeStarted());
+  for (Observer& observer : observers_)
+    observer.OnMaximizeModeStarted();
 }
 
 void TouchViewControllerDelegate::OnMaximizeModeEnded() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnMaximizeModeEnded());
+  for (Observer& observer : observers_)
+    observer.OnMaximizeModeEnded();
 }
 
 }  // namespace chromeos

@@ -69,8 +69,8 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   settings_session_map_[profile] = params.browser->session_id().id();
   DCHECK(params.browser->is_trusted_source());
 
-  FOR_EACH_OBSERVER(SettingsWindowManagerObserver,
-                    observers_, OnNewSettingsWindow(params.browser));
+  for (SettingsWindowManagerObserver& observer : observers_)
+    observer.OnNewSettingsWindow(params.browser);
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {

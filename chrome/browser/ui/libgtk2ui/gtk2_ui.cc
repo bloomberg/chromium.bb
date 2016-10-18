@@ -717,9 +717,8 @@ void Gtk2UI::SetWindowButtonOrdering(
   leading_buttons_ = leading_buttons;
   trailing_buttons_ = trailing_buttons;
 
-  FOR_EACH_OBSERVER(views::WindowButtonOrderObserver, observer_list_,
-                    OnWindowButtonOrderingChange(leading_buttons_,
-                                                 trailing_buttons_));
+  for (views::WindowButtonOrderObserver& observer : observer_list_)
+    observer.OnWindowButtonOrderingChange(leading_buttons_, trailing_buttons_);
 }
 
 void Gtk2UI::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {

@@ -7,7 +7,8 @@
 ImmersiveModeController::ImmersiveModeController(Type type) : type_(type) {}
 
 ImmersiveModeController::~ImmersiveModeController() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveModeControllerDestroyed());
+  for (Observer& observer : observers_)
+    observer.OnImmersiveModeControllerDestroyed();
 }
 
 void ImmersiveModeController::AddObserver(Observer* observer) {

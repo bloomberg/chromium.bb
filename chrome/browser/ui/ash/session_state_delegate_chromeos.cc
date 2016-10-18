@@ -237,14 +237,14 @@ void SessionStateDelegateChromeos::LoggedInStateChanged() {
 
 void SessionStateDelegateChromeos::ActiveUserChanged(
     const user_manager::User* active_user) {
-  FOR_EACH_OBSERVER(ash::SessionStateObserver, session_state_observer_list_,
-                    ActiveUserChanged(active_user->GetAccountId()));
+  for (ash::SessionStateObserver& observer : session_state_observer_list_)
+    observer.ActiveUserChanged(active_user->GetAccountId());
 }
 
 void SessionStateDelegateChromeos::UserAddedToSession(
     const user_manager::User* added_user) {
-  FOR_EACH_OBSERVER(ash::SessionStateObserver, session_state_observer_list_,
-                    UserAddedToSession(added_user->GetAccountId()));
+  for (ash::SessionStateObserver& observer : session_state_observer_list_)
+    observer.UserAddedToSession(added_user->GetAccountId());
 }
 
 void SessionStateDelegateChromeos::OnUserAddingStarted() {
@@ -265,9 +265,8 @@ void SessionStateDelegateChromeos::SetSessionState(SessionState new_state,
 }
 
 void SessionStateDelegateChromeos::NotifySessionStateChanged() {
-  FOR_EACH_OBSERVER(ash::SessionStateObserver,
-                    session_state_observer_list_,
-                    SessionStateChanged(session_state_));
+  for (ash::SessionStateObserver& observer : session_state_observer_list_)
+    observer.SessionStateChanged(session_state_);
 }
 
 void DoSwitchUser(const AccountId& account_id) {

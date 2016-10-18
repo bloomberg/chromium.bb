@@ -1191,8 +1191,8 @@ void BookmarkBarView::VisibilityChanged(View* starting_from, bool is_visible) {
   AccessiblePaneView::VisibilityChanged(starting_from, is_visible);
 
   if (starting_from == this) {
-    FOR_EACH_OBSERVER(BookmarkBarViewObserver, observers_,
-                      OnBookmarkBarVisibilityChanged());
+    for (BookmarkBarViewObserver& observer : observers_)
+      observer.OnBookmarkBarVisibilityChanged();
   }
 }
 

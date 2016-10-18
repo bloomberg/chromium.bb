@@ -800,7 +800,8 @@ AppMenu::~AppMenu() {
     if (model)
       model->RemoveObserver(this);
   }
-  FOR_EACH_OBSERVER(AppMenuObserver, observer_list_, AppMenuDestroyed());
+  for (AppMenuObserver& observer : observer_list_)
+    observer.AppMenuDestroyed();
 }
 
 void AppMenu::Init(ui::MenuModel* model) {

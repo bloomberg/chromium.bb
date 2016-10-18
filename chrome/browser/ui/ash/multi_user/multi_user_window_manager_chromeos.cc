@@ -327,7 +327,8 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   AddTransientOwnerRecursive(window, window);
 
   // Notify entry adding.
-  FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryAdded(window));
+  for (Observer& observer : observers_)
+    observer.OnOwnerEntryAdded(window);
 
   if (!IsWindowOnDesktopOfUser(window, current_account_id_))
     SetWindowVisibility(window, false, 0);
@@ -460,7 +461,8 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
   window_to_entry_.erase(window);
 
   // Notify entry change.
-  FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryRemoved(window));
+  for (Observer& observer : observers_)
+    observer.OnOwnerEntryRemoved(window);
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(
@@ -587,7 +589,8 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
   }
 
   // Notify entry change.
-  FOR_EACH_OBSERVER(Observer, observers_, OnOwnerEntryChanged(window));
+  for (Observer& observer : observers_)
+    observer.OnOwnerEntryChanged(window);
   return true;
 }
 
@@ -632,7 +635,8 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
 }
 
 void MultiUserWindowManagerChromeOS::NotifyAfterUserSwitchAnimationFinished() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnUserSwitchAnimationFinished());
+  for (Observer& observer : observers_)
+    observer.OnUserSwitchAnimationFinished();
 }
 
 void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {

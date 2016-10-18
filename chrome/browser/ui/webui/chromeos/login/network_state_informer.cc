@@ -189,8 +189,8 @@ bool NetworkStateInformer::UpdateState() {
   network_type_ = new_network_type;
 
   if (updated && state_ == ONLINE) {
-    FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
-                      OnNetworkReady());
+    for (NetworkStateInformerObserver& observer : observers_)
+      observer.OnNetworkReady();
   }
 
   return updated;
@@ -205,8 +205,8 @@ void NetworkStateInformer::UpdateStateAndNotify() {
 
 void NetworkStateInformer::SendStateToObservers(
     NetworkError::ErrorReason reason) {
-  FOR_EACH_OBSERVER(NetworkStateInformerObserver, observers_,
-      UpdateState(reason));
+  for (NetworkStateInformerObserver& observer : observers_)
+    observer.UpdateState(reason);
 }
 
 }  // namespace chromeos

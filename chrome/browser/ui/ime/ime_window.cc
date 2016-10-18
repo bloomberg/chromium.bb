@@ -132,7 +132,8 @@ int ImeWindow::GetFrameId() const {
 }
 
 void ImeWindow::OnWindowDestroyed() {
-  FOR_EACH_OBSERVER(ImeWindowObserver, observers_, OnWindowDestroyed(this));
+  for (ImeWindowObserver& observer : observers_)
+    observer.OnWindowDestroyed(this);
   native_window_ = nullptr;
   delete this;
 }

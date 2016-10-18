@@ -68,15 +68,13 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
   ~WebContentsModalDialogHostViews() override {
-    FOR_EACH_OBSERVER(ModalDialogHostObserver,
-                      observer_list_,
-                      OnHostDestroying());
+    for (ModalDialogHostObserver& observer : observer_list_)
+      observer.OnHostDestroying();
   }
 
   void NotifyPositionRequiresUpdate() {
-    FOR_EACH_OBSERVER(ModalDialogHostObserver,
-                      observer_list_,
-                      OnPositionRequiresUpdate());
+    for (ModalDialogHostObserver& observer : observer_list_)
+      observer.OnPositionRequiresUpdate();
   }
 
   gfx::Point GetDialogPosition(const gfx::Size& size) override {

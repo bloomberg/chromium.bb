@@ -74,7 +74,8 @@ void AppMenuButton::ShowMenu(bool for_drop) {
   menu_model_.reset(new AppMenuModel(toolbar_view_, browser));
   menu_->Init(menu_model_.get());
 
-  FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
+  for (views::MenuListener& observer : menu_listeners_)
+    observer.OnMenuOpened();
 
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
   menu_->RunMenu(this);
