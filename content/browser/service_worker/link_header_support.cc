@@ -95,9 +95,10 @@ void HandleServiceWorkerLink(
   if (!context_url.is_valid() || !script_url.is_valid() ||
       !scope_url.is_valid())
     return;
-  if (!ServiceWorkerUtils::CanRegisterServiceWorker(context_url, scope_url,
-                                                    script_url))
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+          {context_url, scope_url, script_url})) {
     return;
+  }
   std::string error;
   if (ServiceWorkerUtils::ContainsDisallowedCharacter(scope_url, script_url,
                                                       &error))

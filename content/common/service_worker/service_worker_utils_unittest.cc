@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -162,7 +164,7 @@ TEST(ServiceWorkerUtilsTest, PathRestriction_Basic) {
       GURL("http://example.com/foo/sw.js?key/value")));
 }
 
-TEST(ServiceWorkerUtils, PathRestriction_SelfReference) {
+TEST(ServiceWorkerUtilsTest, PathRestriction_SelfReference) {
   // Self reference is canonicalized.
   ASSERT_EQ(GURL("http://example.com/foo/bar"),
             GURL("http://example.com/././foo/bar"));
@@ -352,7 +354,7 @@ TEST(ServiceWorkerUtilsTest, PathRestriction_DisallowedCharacter) {
       GURL("http://example.com/foo/sw.js?key%5cvalue")));
 }
 
-TEST(ServiceWorkerUtils, PathRestriction_ServiceWorkerAllowed) {
+TEST(ServiceWorkerUtilsTest, PathRestriction_ServiceWorkerAllowed) {
   // Setting header to default max scope changes nothing.
   EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
       GURL("http://example.com/"), GURL("http://example.com/sw.js"),
@@ -392,6 +394,46 @@ TEST(ServiceWorkerUtils, PathRestriction_ServiceWorkerAllowed) {
   EXPECT_TRUE(IsPathRestrictionSatisfiedWithServiceWorkerAllowedHeader(
       GURL("http://example.com/sw.js/hi"), GURL("http://example.com/sw.js"),
       ""));
+}
+
+TEST(ServiceWorkerUtilsTest, AllOriginsMatchAndCanAccessServiceWorkers) {
+  std::vector<GURL> https_same_origin = {GURL("https://example.com/1"),
+                                         GURL("https://example.com/2"),
+                                         GURL("https://example.com/3")};
+  EXPECT_TRUE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      https_same_origin));
+
+  std::vector<GURL> http_same_origin = {GURL("http://example.com/1"),
+                                        GURL("http://example.com/2")};
+  EXPECT_FALSE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      http_same_origin));
+
+  std::vector<GURL> localhost_same_origin = {GURL("http://localhost/1"),
+                                             GURL("http://localhost/2")};
+  EXPECT_TRUE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      localhost_same_origin));
+
+  std::vector<GURL> filesystem_same_origin = {
+      GURL("https://example.com/1"), GURL("https://example.com/2"),
+      GURL("filesystem:https://example.com/3")};
+  EXPECT_FALSE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      filesystem_same_origin));
+
+  std::vector<GURL> https_cross_origin = {GURL("https://example.com/1"),
+                                          GURL("https://example.org/2"),
+                                          GURL("https://example.com/3")};
+  EXPECT_FALSE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      https_cross_origin));
+
+  // Cross-origin access is permitted with --disable-web-security.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kDisableWebSecurity);
+  EXPECT_TRUE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      https_cross_origin));
+
+  // Disallowed schemes are not permitted even with --disable-web-security.
+  EXPECT_FALSE(ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
+      filesystem_same_origin));
 }
 
 }  // namespace content

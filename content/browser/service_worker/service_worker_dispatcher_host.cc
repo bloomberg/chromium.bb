@@ -61,35 +61,6 @@ void RunSoon(const base::Closure& callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
-bool CanUnregisterServiceWorker(const GURL& document_url,
-                                const GURL& pattern) {
-  DCHECK(document_url.is_valid());
-  DCHECK(pattern.is_valid());
-  return ServiceWorkerUtils::PassOriginEqualitySecurityCheck<GURL>(document_url,
-                                                                   pattern) &&
-         OriginCanAccessServiceWorkers(document_url) &&
-         OriginCanAccessServiceWorkers(pattern);
-}
-
-bool CanUpdateServiceWorker(const GURL& document_url, const GURL& pattern) {
-  DCHECK(document_url.is_valid());
-  DCHECK(pattern.is_valid());
-  DCHECK(OriginCanAccessServiceWorkers(document_url));
-  DCHECK(OriginCanAccessServiceWorkers(pattern));
-  return ServiceWorkerUtils::PassOriginEqualitySecurityCheck<GURL>(document_url,
-                                                                   pattern);
-}
-
-bool CanGetRegistration(const GURL& document_url,
-                        const GURL& given_document_url) {
-  DCHECK(document_url.is_valid());
-  DCHECK(given_document_url.is_valid());
-  return ServiceWorkerUtils::PassOriginEqualitySecurityCheck<GURL>(
-             document_url, given_document_url) &&
-         OriginCanAccessServiceWorkers(document_url) &&
-         OriginCanAccessServiceWorkers(given_document_url);
-}
-
 }  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
@@ -335,8 +306,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
-  if (!ServiceWorkerUtils::CanRegisterServiceWorker(
-          provider_host->document_url(), pattern, script_url)) {
+  std::vector<GURL> urls = {provider_host->document_url(), pattern, script_url};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     // Temporary debugging for https://crbug.com/630495
     base::debug::ScopedCrashKey host_url_key(
         "swdh_register_cannot_host_url", provider_host->document_url().spec());
@@ -427,8 +398,9 @@ void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(
     return;
   }
 
-  if (!CanUpdateServiceWorker(provider_host->document_url(),
-                              registration->pattern())) {
+  std::vector<GURL> urls = {provider_host->document_url(),
+                            registration->pattern()};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_UPDATE_CANNOT);
     return;
   }
@@ -508,8 +480,9 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
 
-  if (!CanUnregisterServiceWorker(provider_host->document_url(),
-                                  registration->pattern())) {
+  std::vector<GURL> urls = {provider_host->document_url(),
+                            registration->pattern()};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     // Temporary debugging for https://crbug.com/619294
     base::debug::ScopedCrashKey host_url_key(
         "swdh_unregister_cannot_host_url",
@@ -584,7 +557,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
     return;
   }
 
-  if (!CanGetRegistration(provider_host->document_url(), document_url)) {
+  std::vector<GURL> urls = {provider_host->document_url(), document_url};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     // Temporary debugging for https://crbug.com/630496
     base::debug::ScopedCrashKey host_url_key(
         "swdh_get_registration_cannot_host_url",

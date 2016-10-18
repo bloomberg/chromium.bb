@@ -42,26 +42,14 @@ class ServiceWorkerUtils {
                                           const GURL& script_url,
                                           std::string* error_message);
 
-  static bool CanRegisterServiceWorker(const GURL& context_url,
-                                       const GURL& pattern,
-                                       const GURL& script_url);
-
   static bool IsMojoForServiceWorkerEnabled();
 
-  // Returns true when '--disable-web-security' flag is set. Otherwise returns
-  // whether the all origins of |urls| are same as the origin of |url|.
-  template <typename... Args>
-  static bool PassOriginEqualitySecurityCheck(const GURL& url,
-                                              const Args&... urls) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableWebSecurity))
-      return true;
-    for (const GURL& u : {urls...}) {
-      if (url.GetOrigin() != u.GetOrigin())
-        return false;
-    }
-    return true;
-  }
+  // Returns true if all members of |urls| have the same origin, and
+  // OriginCanAccessServiceWorkers is true for this origin.
+  // If --disable-web-security is enabled, the same origin check is
+  // not performed.
+  CONTENT_EXPORT static bool AllOriginsMatchAndCanAccessServiceWorkers(
+      const std::vector<GURL>& urls);
 
   // PlzNavigate
   // Returns true if the |provider_id| was assigned by the browser process.
