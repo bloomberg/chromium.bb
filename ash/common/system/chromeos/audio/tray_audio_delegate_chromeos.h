@@ -20,6 +20,7 @@ class ASH_EXPORT TrayAudioDelegateChromeOs : public TrayAudioDelegate {
   int GetOutputDefaultVolumeMuteLevel() override;
   int GetOutputVolumeLevel() override;
   int GetActiveOutputDeviceIconId() override;
+  const gfx::VectorIcon& GetActiveOutputDeviceVectorIcon() override;
   bool HasAlternativeSources() override;
   bool IsOutputAudioMuted() override;
   void SetOutputAudioIsMuted(bool is_muted) override;

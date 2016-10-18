@@ -21,6 +21,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -45,6 +46,14 @@ const int kBoxLayoutPadding = 2;
 // four are used for ascending volume levels.
 const int kVolumeLevels = 4;
 
+const gfx::VectorIcon* const kVolumeLevelIcons[] = {
+    &ash::kSystemMenuVolumeMuteIcon,    // Muted.
+    &ash::kSystemMenuVolumeLowIcon,     // Low volume.
+    &ash::kSystemMenuVolumeMediumIcon,  // Medium volume.
+    &ash::kSystemMenuVolumeHighIcon,    // High volume.
+    &ash::kSystemMenuVolumeHighIcon,    // Full volume.
+};
+
 }  // namespace
 
 namespace ash {
@@ -61,8 +70,10 @@ class VolumeButton : public views::ToggleImageButton {
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
         kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
     SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
-    image_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      image_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
+    }
     Update();
   }
 
@@ -71,17 +82,26 @@ class VolumeButton : public views::ToggleImageButton {
   void Update() {
     float level =
         static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
+    int volume_levels = MaterialDesignController::IsSystemTrayMenuMaterial()
+                            ? arraysize(kVolumeLevelIcons) - 1
+                            : kVolumeLevels;
     int image_index =
         audio_delegate_->IsOutputAudioMuted()
             ? 0
-            : (level == 1.0
-                   ? kVolumeLevels
-                   : std::max(1, int(std::ceil(level * (kVolumeLevels - 1)))));
+            : (level == 1.0 ? volume_levels
+                            : std::max(1, static_cast<int>(std::ceil(
+                                              level * (volume_levels - 1)))));
     if (image_index != image_index_) {
-      gfx::Rect region(0, image_index * kVolumeImageHeight, kVolumeImageWidth,
-                       kVolumeImageHeight);
-      gfx::ImageSkia image_skia = gfx::ImageSkiaOperations::ExtractSubset(
-          *(image_.ToImageSkia()), region);
+      gfx::ImageSkia image_skia;
+      if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+        image_skia = gfx::CreateVectorIcon(*kVolumeLevelIcons[image_index],
+                                           kMenuIconColor);
+      } else {
+        gfx::Rect region(0, image_index * kVolumeImageHeight, kVolumeImageWidth,
+                         kVolumeImageHeight);
+        image_skia = gfx::ImageSkiaOperations::ExtractSubset(
+            *(image_.ToImageSkia()), region);
+      }
       SetImage(views::CustomButton::STATE_NORMAL, &image_skia);
       image_index_ = image_index;
     }
@@ -231,20 +251,29 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   }
 
   // Show output device icon if necessary.
-  int device_icon = audio_delegate_->GetActiveOutputDeviceIconId();
-  if (device_icon != system::TrayAudioDelegate::kNoAudioDeviceIcon) {
-    device_type_->SetVisible(true);
-    device_type_->SetImage(ui::ResourceBundle::GetSharedInstance()
-                               .GetImageNamed(device_icon)
-                               .ToImageSkia());
-    more_region_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, kTrayPopupPaddingBetweenItems));
+  device_type_->SetVisible(false);
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    const gfx::VectorIcon& device_icon =
+        audio_delegate_->GetActiveOutputDeviceVectorIcon();
+    if (!device_icon.is_empty()) {
+      device_type_->SetImage(
+          gfx::CreateVectorIcon(device_icon, kMenuIconColor));
+      device_type_->SetVisible(true);
+    }
   } else {
-    device_type_->SetVisible(false);
-    more_region_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0,
-        kTrayPopupPaddingBetweenItems + kExtraPaddingBetweenBarAndMore));
+    int device_icon = audio_delegate_->GetActiveOutputDeviceIconId();
+    if (device_icon != system::TrayAudioDelegate::kNoAudioDeviceIcon) {
+      device_type_->SetImage(ui::ResourceBundle::GetSharedInstance()
+                                 .GetImageNamed(device_icon)
+                                 .ToImageSkia());
+      device_type_->SetVisible(true);
+    }
   }
+  int spacing = kTrayPopupPaddingBetweenItems;
+  if (!device_type_->visible())
+    spacing += kExtraPaddingBetweenBarAndMore;
+  more_region_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, spacing));
   more_region_->SetVisible(true);
 }
 

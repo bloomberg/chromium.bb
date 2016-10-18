@@ -5,6 +5,10 @@
 #ifndef ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_DELEGATE_H_
 #define ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_DELEGATE_H_
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace ash {
 namespace system {
 
@@ -26,8 +30,13 @@ class ASH_EXPORT TrayAudioDelegate {
   // should be muted.
   virtual int GetOutputDefaultVolumeMuteLevel() = 0;
 
-  // Gets the icon to use for the active output device.
+  // Gets the non-MD icon to use for the active output device.
+  // TODO(mohsen): Remove this once material design is enabled by default. See
+  // https://crbug.com/614453.
   virtual int GetActiveOutputDeviceIconId() = 0;
+
+  // Gets the MD icon to use for the active output device.
+  virtual const gfx::VectorIcon& GetActiveOutputDeviceVectorIcon() = 0;
 
   // Returns the volume level of the output device in the range 0%-100%.
   virtual int GetOutputVolumeLevel() = 0;

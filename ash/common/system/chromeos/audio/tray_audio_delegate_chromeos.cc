@@ -4,8 +4,10 @@
 
 #include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "grit/ash_resources.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -39,6 +41,22 @@ int TrayAudioDelegateChromeOs::GetActiveOutputDeviceIconId() {
     return IDR_AURA_UBER_TRAY_AUDIO_HDMI;
   else
     return kNoAudioDeviceIcon;
+}
+
+const gfx::VectorIcon&
+TrayAudioDelegateChromeOs::GetActiveOutputDeviceVectorIcon() {
+  chromeos::AudioDevice device;
+  if (CrasAudioHandler::Get()->GetPrimaryActiveOutputDevice(&device)) {
+    if (device.type == chromeos::AUDIO_TYPE_HEADPHONE)
+      return kSystemMenuHeadsetIcon;
+    if (device.type == chromeos::AUDIO_TYPE_USB)
+      return kSystemMenuUsbIcon;
+    if (device.type == chromeos::AUDIO_TYPE_BLUETOOTH)
+      return kSystemMenuBluetoothIcon;
+    if (device.type == chromeos::AUDIO_TYPE_HDMI)
+      return kSystemMenuHdmiIcon;
+  }
+  return gfx::kNoneIcon;
 }
 
 bool TrayAudioDelegateChromeOs::HasAlternativeSources() {
