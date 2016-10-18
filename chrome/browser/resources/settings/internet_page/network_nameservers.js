@@ -108,13 +108,16 @@ Polymer({
    * @private
    */
   setNameservers_: function(nameserversType, nameservers) {
-    this.nameserversType_ = nameserversType;
     if (nameserversType == 'custom') {
       // Add empty entries for unset custom nameservers.
       for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i)
         nameservers[i] = '';
     }
     this.nameservers_ = nameservers;
+    // Set nameserversType_ after dom-repeat has been stamped.
+    this.async(function() {
+      this.nameserversType_ = nameserversType;
+    }.bind(this));
   },
 
   /**
@@ -142,13 +145,14 @@ Polymer({
   /**
    * Event triggered when the selected type changes. Updates nameservers and
    * sends the change value if necessary.
-   * @param {!{detail: !{selected: string}}} e
+   * @param {!Event} event
    * @private
    */
-  onTypeChange_: function(e) {
+  onTypeChange_: function(event) {
     if (this.nameserversType_ == 'custom')
       this.savedNameservers_ = this.nameservers_;
-    var type = e.detail.selected;
+    let target = /** @type {!HTMLSelectElement} */ (event.target);
+    let type = target.value;
     this.nameserversType_ = type;
     if (type == 'custom') {
       // Restore the saved nameservers.

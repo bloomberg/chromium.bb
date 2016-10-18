@@ -102,9 +102,7 @@ Polymer({
    */
   savedExcludeDomains_: undefined,
 
-  /**
-   * Polymer networkProperties changed method.
-   */
+  /** @private */
   networkPropertiesChanged_: function() {
     if (!this.networkProperties)
       return;
@@ -139,7 +137,10 @@ Polymer({
     proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_;
     proxy.Manual = proxy.Manual || this.savedManual_;
 
-    this.proxy = proxy;
+    // Set this.proxy after dom-repeat has been stamped.
+    this.async(function() {
+      this.proxy = proxy;
+    }.bind(this));
 
     // Set the Web Proxy Auto Discovery URL.
     var ipv4 =
@@ -147,8 +148,14 @@ Polymer({
     this.WPAD = (ipv4 && ipv4.WebProxyAutoDiscoveryUrl) || '';
   },
 
+  /** @private */
+  useSameProxyChanged_: function() {
+    this.sendProxyChange_();
+  },
+
   /**
    * @return {CrOnc.ProxySettings} An empty/default proxy settings object.
+   * @private
    */
   createDefaultProxySettings_: function() {
     return {
@@ -165,14 +172,8 @@ Polymer({
   },
 
   /**
-   * Polymer useSameProxy changed method.
-   */
-  useSameProxyChanged_: function() {
-    this.sendProxyChange_();
-  },
-
-  /**
    * Called when the proxy changes in the UI.
+   * @private
    */
   sendProxyChange_: function() {
     if (this.proxy.Type == CrOnc.ProxySettingsType.MANUAL) {
@@ -205,12 +206,13 @@ Polymer({
 
   /**
    * Event triggered when the selected proxy type changes.
-   * @param {!{detail: !{selected: string}}} e
+   * @param {!Event} event
    * @private
    */
-  onTypeChange_: function(e) {
+  onTypeChange_: function(event) {
+    let target = /** @type {!HTMLSelectElement} */ (event.target);
     var type = /** @type {chrome.networkingPrivate.ProxySettingsType} */ (
-        e.detail.selected);
+        target.value);
     this.set('proxy.Type', type);
     this.sendProxyChange_();
   },
