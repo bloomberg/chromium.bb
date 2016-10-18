@@ -26,9 +26,9 @@ enum class MediaContentType;
 
 namespace content {
 
+class AudioFocusDelegate;
 class AudioFocusManagerTest;
-class MediaSessionDelegate;
-class MediaSessionObserver;
+class MediaSessionPlayerObserver;
 class MediaSessionStateObserver;
 class MediaSessionVisibilityBrowserTest;
 
@@ -77,18 +77,18 @@ class MediaSession : public WebContentsObserver,
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
   // called again later.
-  CONTENT_EXPORT bool AddPlayer(MediaSessionObserver* observer,
+  CONTENT_EXPORT bool AddPlayer(MediaSessionPlayerObserver* observer,
                                 int player_id,
                                 media::MediaContentType media_content_type);
 
   // Removes the given player from the current media session. Abandons audio
   // focus if that was the last player in the session.
-  CONTENT_EXPORT void RemovePlayer(MediaSessionObserver* observer,
+  CONTENT_EXPORT void RemovePlayer(MediaSessionPlayerObserver* observer,
                                    int player_id);
 
   // Removes all the players associated with |observer|. Abandons audio focus if
   // these were the last players in the session.
-  CONTENT_EXPORT void RemovePlayers(MediaSessionObserver* observer);
+  CONTENT_EXPORT void RemovePlayers(MediaSessionPlayerObserver* observer);
 
   // Record that the session was ducked.
   void RecordSessionDuck();
@@ -96,7 +96,7 @@ class MediaSession : public WebContentsObserver,
   // Called when a player is paused in the content.
   // If the paused player is the last player, we suspend the MediaSession.
   // Otherwise, the paused player will be removed from the MediaSession.
-  CONTENT_EXPORT void OnPlayerPaused(MediaSessionObserver* observer,
+  CONTENT_EXPORT void OnPlayerPaused(MediaSessionPlayerObserver* observer,
                                      int player_id);
 
   // Resume the media session.
@@ -156,14 +156,14 @@ class MediaSession : public WebContentsObserver,
   friend class content::MediaSessionStateObserver;
 
   CONTENT_EXPORT void SetDelegateForTests(
-      std::unique_ptr<MediaSessionDelegate> delegate);
+      std::unique_ptr<AudioFocusDelegate> delegate);
   CONTENT_EXPORT bool IsActiveForTest() const;
   CONTENT_EXPORT void RemoveAllPlayersForTest();
   CONTENT_EXPORT MediaSessionUmaHelper* uma_helper_for_test();
 
   // Representation of a player for the MediaSession.
   struct PlayerIdentifier {
-    PlayerIdentifier(MediaSessionObserver* observer, int player_id);
+    PlayerIdentifier(MediaSessionPlayerObserver* observer, int player_id);
     PlayerIdentifier(const PlayerIdentifier&) = default;
 
     void operator=(const PlayerIdentifier&) = delete;
@@ -174,7 +174,7 @@ class MediaSession : public WebContentsObserver,
       size_t operator()(const PlayerIdentifier& player_identifier) const;
     };
 
-    MediaSessionObserver* observer;
+    MediaSessionPlayerObserver* observer;
     int player_id;
   };
   using PlayersMap = base::hash_set<PlayerIdentifier, PlayerIdentifier::Hash>;
@@ -188,7 +188,7 @@ class MediaSession : public WebContentsObserver,
                                         State new_state);
   CONTENT_EXPORT void OnResumeInternal(SuspendType suspend_type);
 
-  // Requests audio focus to the MediaSessionDelegate.
+  // Requests audio focus to the AudioFocusDelegate.
   // Returns whether the request was granted.
   CONTENT_EXPORT bool RequestSystemAudioFocus(
       AudioFocusManager::AudioFocusType audio_focus_type);
@@ -216,10 +216,10 @@ class MediaSession : public WebContentsObserver,
   RegisterMediaSessionStateChangedCallbackForTest(
       const StateChangedCallback& cb);
 
-  CONTENT_EXPORT bool AddPepperPlayer(MediaSessionObserver* observer,
+  CONTENT_EXPORT bool AddPepperPlayer(MediaSessionPlayerObserver* observer,
                                       int player_id);
 
-  std::unique_ptr<MediaSessionDelegate> delegate_;
+  std::unique_ptr<AudioFocusDelegate> delegate_;
   PlayersMap players_;
   PlayersMap pepper_players_;
 

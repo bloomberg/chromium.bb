@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/browser/media/session/media_session.h"
-#include "content/browser/media/session/media_session_observer.h"
+#include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -18,7 +18,7 @@ namespace content {
 
 namespace {
 
-class MockMediaSessionObserver : public MediaSessionObserver {
+class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
   void OnSuspend(int player_id) override {}
   void OnResume(int player_id) override {}
@@ -41,7 +41,7 @@ class AudioFocusManagerTest : public testing::Test {
     rph_factory_.reset(new MockRenderProcessHostFactory());
     SiteInstanceImpl::set_render_process_host_factory(rph_factory_.get());
     browser_context_.reset(new TestBrowserContext());
-    pepper_observer_.reset(new MockMediaSessionObserver());
+    pepper_observer_.reset(new MockMediaSessionPlayerObserver());
   }
 
   void TearDown() override {
@@ -97,7 +97,7 @@ class AudioFocusManagerTest : public testing::Test {
         SiteInstance::SiteInstance::Create(browser_context_.get()));
   }
 
-  std::unique_ptr<MediaSessionObserver> pepper_observer_;
+  std::unique_ptr<MediaSessionPlayerObserver> pepper_observer_;
 
  private:
   base::MessageLoopForUI message_loop_;

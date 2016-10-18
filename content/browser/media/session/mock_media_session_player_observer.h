@@ -5,18 +5,18 @@
 #include <stddef.h>
 #include <vector>
 
-#include "content/browser/media/session/media_session_observer.h"
+#include "content/browser/media/session/media_session_player_observer.h"
 
 namespace content {
 
-// MockMediaSessionObserver is a mock implementation of MediaSessionObserver to
-// be used in tests.
-class MockMediaSessionObserver : public MediaSessionObserver {
+// MockMediaSessionPlayerObserver is a mock implementation of
+// MediaSessionPlayerObserver to be used in tests.
+class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
-  MockMediaSessionObserver();
-  ~MockMediaSessionObserver() override;
+  MockMediaSessionPlayerObserver();
+  ~MockMediaSessionPlayerObserver() override;
 
-  // Implements MediaSessionObserver.
+  // Implements MediaSessionPlayerObserver.
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
@@ -42,8 +42,7 @@ class MockMediaSessionObserver : public MediaSessionObserver {
   struct MockPlayer {
    public:
     MockPlayer(bool is_playing = true, double volume_multiplier = 1.0f)
-        : is_playing_(is_playing),
-          volume_multiplier_(volume_multiplier) {}
+        : is_playing_(is_playing), volume_multiplier_(volume_multiplier) {}
     bool is_playing_;
     double volume_multiplier_;
   };

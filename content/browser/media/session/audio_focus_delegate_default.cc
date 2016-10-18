@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/session/media_session_delegate.h"
+#include "content/browser/media/session/audio_focus_delegate.h"
 
 #include "base/command_line.h"
 #include "content/browser/media/session/audio_focus_manager.h"
@@ -14,14 +14,14 @@ using AudioFocusType = AudioFocusManager::AudioFocusType;
 
 namespace {
 
-// MediaSessionDelegateDefault is the default implementation of
-// MediaSessionDelegate which only handles audio focus between WebContents.
-class MediaSessionDelegateDefault : public MediaSessionDelegate {
+// AudioFocusDelegateDefault is the default implementation of
+// AudioFocusDelegate which only handles audio focus between WebContents.
+class AudioFocusDelegateDefault : public AudioFocusDelegate {
  public:
-  explicit MediaSessionDelegateDefault(MediaSession* media_session);
-  ~MediaSessionDelegateDefault() override;
+  explicit AudioFocusDelegateDefault(MediaSession* media_session);
+  ~AudioFocusDelegateDefault() override;
 
-  // MediaSessionDelegate implementation.
+  // AudioFocusDelegate implementation.
   bool RequestAudioFocus(
       AudioFocusManager::AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
@@ -33,17 +33,16 @@ class MediaSessionDelegateDefault : public MediaSessionDelegate {
 
 }  // anonymous namespace
 
-MediaSessionDelegateDefault::MediaSessionDelegateDefault(
+AudioFocusDelegateDefault::AudioFocusDelegateDefault(
     MediaSession* media_session)
-    : media_session_(media_session) {
-}
+    : media_session_(media_session) {}
 
-MediaSessionDelegateDefault::~MediaSessionDelegateDefault() = default;
+AudioFocusDelegateDefault::~AudioFocusDelegateDefault() = default;
 
-bool MediaSessionDelegateDefault::RequestAudioFocus(
+bool AudioFocusDelegateDefault::RequestAudioFocus(
     AudioFocusManager::AudioFocusType audio_focus_type) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDefaultMediaSession)) {
+          switches::kEnableDefaultMediaSession)) {
     return true;
   }
 
@@ -52,15 +51,15 @@ bool MediaSessionDelegateDefault::RequestAudioFocus(
   return true;
 }
 
-void MediaSessionDelegateDefault::AbandonAudioFocus() {
+void AudioFocusDelegateDefault::AbandonAudioFocus() {
   AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_);
 }
 
 // static
-std::unique_ptr<MediaSessionDelegate> MediaSessionDelegate::Create(
+std::unique_ptr<AudioFocusDelegate> AudioFocusDelegate::Create(
     MediaSession* media_session) {
-  return std::unique_ptr<MediaSessionDelegate>(
-      new MediaSessionDelegateDefault(media_session));
+  return std::unique_ptr<AudioFocusDelegate>(
+      new AudioFocusDelegateDefault(media_session));
 }
 
 }  // namespace content

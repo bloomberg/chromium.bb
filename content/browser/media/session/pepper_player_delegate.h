@@ -6,14 +6,14 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_PEPPER_PLAYER_DELEGATE_H_
 
 #include "base/macros.h"
-#include "content/browser/media/session/media_session_observer.h"
+#include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {
 
 class PepperWebContentsObserver;
 
-class PepperPlayerDelegate : public MediaSessionObserver {
+class PepperPlayerDelegate : public MediaSessionPlayerObserver {
  public:
   // The Id can only be 0 for PepperPlayerDelegate. Declare the constant here so
   // it can be used elsewhere.
@@ -23,7 +23,7 @@ class PepperPlayerDelegate : public MediaSessionObserver {
       WebContentsImpl* contents, int32_t pp_instance);
   ~PepperPlayerDelegate() override;
 
-  // MediaSessionObserver implementation.
+  // MediaSessionPlayerObserver implementation.
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
   void OnSetVolumeMultiplier(int player_id,

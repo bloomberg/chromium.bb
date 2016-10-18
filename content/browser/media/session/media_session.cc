@@ -4,8 +4,8 @@
 
 #include "content/browser/media/session/media_session.h"
 
-#include "content/browser/media/session/media_session_delegate.h"
-#include "content/browser/media/session/media_session_observer.h"
+#include "content/browser/media/session/audio_focus_delegate.h"
+#include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -25,11 +25,10 @@ using MediaSessionSuspendedSource =
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(MediaSession);
 
-MediaSession::PlayerIdentifier::PlayerIdentifier(MediaSessionObserver* observer,
-                                                 int player_id)
-    : observer(observer),
-      player_id(player_id) {
-}
+MediaSession::PlayerIdentifier::PlayerIdentifier(
+    MediaSessionPlayerObserver* observer,
+    int player_id)
+    : observer(observer), player_id(player_id) {}
 
 bool MediaSession::PlayerIdentifier::operator==(
     const PlayerIdentifier& other) const {
@@ -38,7 +37,7 @@ bool MediaSession::PlayerIdentifier::operator==(
 
 size_t MediaSession::PlayerIdentifier::Hash::operator()(
     const PlayerIdentifier& player_identifier) const {
-  size_t hash = BASE_HASH_NAMESPACE::hash<MediaSessionObserver*>()(
+  size_t hash = BASE_HASH_NAMESPACE::hash<MediaSessionPlayerObserver*>()(
       player_identifier.observer);
   hash += BASE_HASH_NAMESPACE::hash<int>()(player_identifier.player_id);
   return hash;
@@ -79,7 +78,7 @@ void MediaSession::SetMetadata(const base::Optional<MediaMetadata>& metadata) {
       ->OnMediaSessionMetadataChanged();
 }
 
-bool MediaSession::AddPlayer(MediaSessionObserver* observer,
+bool MediaSession::AddPlayer(MediaSessionPlayerObserver* observer,
                              int player_id,
                              media::MediaContentType media_content_type) {
   if (media_content_type == media::MediaContentType::Pepper)
@@ -126,7 +125,7 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
   return true;
 }
 
-void MediaSession::RemovePlayer(MediaSessionObserver* observer,
+void MediaSession::RemovePlayer(MediaSessionPlayerObserver* observer,
                                 int player_id) {
   auto it = players_.find(PlayerIdentifier(observer, player_id));
   if (it != players_.end())
@@ -139,7 +138,7 @@ void MediaSession::RemovePlayer(MediaSessionObserver* observer,
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
+void MediaSession::RemovePlayers(MediaSessionPlayerObserver* observer) {
   for (auto it = players_.begin(); it != players_.end(); ) {
     if (it->observer == observer)
       players_.erase(it++);
@@ -162,7 +161,7 @@ void MediaSession::RecordSessionDuck() {
       MediaSessionSuspendedSource::SystemTransientDuck);
 }
 
-void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
+void MediaSession::OnPlayerPaused(MediaSessionPlayerObserver* observer,
                                   int player_id) {
   // If a playback is completed, BrowserMediaPlayerManager will call
   // OnPlayerPaused() after RemovePlayer(). This is a workaround.
@@ -285,7 +284,7 @@ MediaSession::RegisterMediaSessionStateChangedCallbackForTest(
 }
 
 void MediaSession::SetDelegateForTests(
-    std::unique_ptr<MediaSessionDelegate> delegate) {
+    std::unique_ptr<AudioFocusDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
@@ -377,7 +376,7 @@ MediaSession::MediaSession(WebContents* web_contents)
       is_ducking_(false) {}
 
 void MediaSession::Initialize() {
-  delegate_ = MediaSessionDelegate::Create(this);
+  delegate_ = AudioFocusDelegate::Create(this);
 }
 
 bool MediaSession::RequestSystemAudioFocus(
@@ -426,7 +425,7 @@ void MediaSession::SetAudioFocusState(State audio_focus_state) {
   }
 }
 
-bool MediaSession::AddPepperPlayer(MediaSessionObserver* observer,
+bool MediaSession::AddPepperPlayer(MediaSessionPlayerObserver* observer,
                                    int player_id) {
   bool success = RequestSystemAudioFocus(
       AudioFocusManager::AudioFocusType::Gain);

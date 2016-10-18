@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "content/browser/media/session/media_session_observer.h"
+#include "content/browser/media/session/media_session_player_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -23,8 +23,8 @@ class MediaWebContentsObserver;
 // Helper class for controlling a single player's MediaSession instance.  Sends
 // browser side MediaSession commands back to a player hosted in the renderer
 // process.
-class CONTENT_EXPORT MediaSessionController :
-    NON_EXPORTED_BASE(public MediaSessionObserver) {
+class CONTENT_EXPORT MediaSessionController
+    : NON_EXPORTED_BASE(public MediaSessionPlayerObserver) {
  public:
   MediaSessionController(const WebContentsObserver::MediaPlayerId& id,
                          MediaWebContentsObserver* media_web_contents_observer);

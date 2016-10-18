@@ -10,14 +10,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/media/session/media_session.h"
-#include "content/browser/media/session/mock_media_session_observer.h"
+#include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
 
 namespace content {
 
-class MediaSessionDelegateAndroidBrowserTest : public ContentBrowserTest {};
+class AudioFocusDelegateAndroidBrowserTest : public ContentBrowserTest {};
 
 // MAYBE_OnAudioFocusChangeAfterDtorCrash will hit a DCHECK before the crash, it
 // is the only way found to actually reproduce the crash so as a result, the
@@ -31,10 +31,10 @@ class MediaSessionDelegateAndroidBrowserTest : public ContentBrowserTest {};
   DISABLED_OnAudioFocusChangeAfterDtorCrash
 #endif
 
-IN_PROC_BROWSER_TEST_F(MediaSessionDelegateAndroidBrowserTest,
+IN_PROC_BROWSER_TEST_F(AudioFocusDelegateAndroidBrowserTest,
                        MAYBE_OnAudioFocusChangeAfterDtorCrash) {
-  std::unique_ptr<MockMediaSessionObserver> media_session_observer(
-      new MockMediaSessionObserver);
+  std::unique_ptr<MockMediaSessionPlayerObserver> player_observer(
+      new MockMediaSessionPlayerObserver);
 
   MediaSession* media_session = MediaSession::Get(shell()->web_contents());
   ASSERT_TRUE(media_session);
@@ -43,14 +43,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionDelegateAndroidBrowserTest,
   MediaSession* other_media_session = MediaSession::Get(other_web_contents);
   ASSERT_TRUE(other_media_session);
 
-  media_session_observer->StartNewPlayer();
-  media_session->AddPlayer(media_session_observer.get(), 0,
+  player_observer->StartNewPlayer();
+  media_session->AddPlayer(player_observer.get(), 0,
                            media::MediaContentType::Persistent);
   EXPECT_TRUE(media_session->IsActive());
   EXPECT_FALSE(other_media_session->IsActive());
 
-  media_session_observer->StartNewPlayer();
-  other_media_session->AddPlayer(media_session_observer.get(), 1,
+  player_observer->StartNewPlayer();
+  other_media_session->AddPlayer(player_observer.get(), 1,
                                  media::MediaContentType::Persistent);
   EXPECT_TRUE(media_session->IsActive());
   EXPECT_TRUE(other_media_session->IsActive());

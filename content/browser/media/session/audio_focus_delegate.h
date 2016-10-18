@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_
-#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_H_
 
 #include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session.h"
 
 namespace content {
 
-// MediaSessionDelegate is an interface abstracting audio focus handling for the
+// AudioFocusDelegate is an interface abstracting audio focus handling for the
 // MediaSession class.
-class MediaSessionDelegate {
+class AudioFocusDelegate {
  public:
-  // Factory method returning an implementation of MediaSessionDelegate.
-  static std::unique_ptr<MediaSessionDelegate> Create(
+  // Factory method returning an implementation of AudioFocusDelegate.
+  static std::unique_ptr<AudioFocusDelegate> Create(
       MediaSession* media_session);
 
-  virtual ~MediaSessionDelegate() = default;
+  virtual ~AudioFocusDelegate() = default;
 
   virtual bool RequestAudioFocus(
       AudioFocusManager::AudioFocusType audio_focus_type) = 0;
@@ -27,4 +27,4 @@ class MediaSessionDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_H_

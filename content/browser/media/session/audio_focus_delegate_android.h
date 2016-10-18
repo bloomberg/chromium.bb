@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_ANDROID_H_
-#define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_ANDROID_H_
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_ANDROID_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_ANDROID_H_
 
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "content/browser/media/session/media_session_delegate.h"
+#include "content/browser/media/session/audio_focus_delegate.h"
 
 namespace content {
 
-// MediaSessionDelegateAndroid handles the audio focus at a system level on
+// AudioFocusDelegateAndroid handles the audio focus at a system level on
 // Android. It is also proxying the JNI calls.
-class MediaSessionDelegateAndroid : public MediaSessionDelegate {
+class AudioFocusDelegateAndroid : public AudioFocusDelegate {
  public:
   static bool Register(JNIEnv* env);
 
-  explicit MediaSessionDelegateAndroid(MediaSession* media_session);
-  ~MediaSessionDelegateAndroid() override;
+  explicit AudioFocusDelegateAndroid(MediaSession* media_session);
+  ~AudioFocusDelegateAndroid() override;
 
   void Initialize();
 
@@ -48,16 +48,16 @@ class MediaSessionDelegateAndroid : public MediaSessionDelegate {
   // Record when the Android system requests the MediaSession to duck.
   // Called by Java through JNI.
   void RecordSessionDuck(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject> &obj);
+                         const base::android::JavaParamRef<jobject>& obj);
 
  private:
   // Weak pointer because |this| is owned by |media_session_|.
   MediaSession* media_session_;
   base::android::ScopedJavaGlobalRef<jobject> j_media_session_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionDelegateAndroid);
+  DISALLOW_COPY_AND_ASSIGN(AudioFocusDelegateAndroid);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_ANDROID_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_DELEGATE_ANDROID_H_
