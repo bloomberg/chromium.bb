@@ -20,7 +20,7 @@ This site includes resources that were loaded with certificate errors.
 Blocked mixed content
         </DIV>
         <DIV >
-Your page requested insecure resources that were blocked.
+Your page requested non-secure resources that were blocked.
         </DIV>
         <DIV class=security-mixed-content link >
 View 1 request in Network Panel
