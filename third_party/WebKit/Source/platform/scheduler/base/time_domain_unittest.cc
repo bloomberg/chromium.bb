@@ -158,10 +158,6 @@ TEST_F(TimeDomainTest, RequestWakeup_OnlyCalledForEarlierTasks) {
   Mock::VerifyAndClearExpectations(time_domain_.get());
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay4));
   time_domain_->ScheduleDelayedWork(task_queue4.get(), now + delay4, now);
-
-  task_queue2->UnregisterTaskQueue();
-  task_queue3->UnregisterTaskQueue();
-  task_queue4->UnregisterTaskQueue();
 }
 
 TEST_F(TimeDomainTest, UnregisterQueue) {

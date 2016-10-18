@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "platform/scheduler/base/intrusive_heap.h"
 #include "platform/scheduler/base/lazy_now.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 
@@ -135,20 +134,20 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
  private:
   void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
-  struct DelayedWakeup {
-    base::TimeTicks time;
-    internal::TaskQueueImpl* queue;
+  using DelayedWakeupMultimap =
+      std::multimap<base::TimeTicks, internal::TaskQueueImpl*>;
 
-    bool operator<=(const DelayedWakeup& other) const {
-      if (time == other.time)
-        return queue < other.queue;
-      return time <= other.time;
-    }
+  DelayedWakeupMultimap delayed_wakeup_multimap_;
 
-    void SetHeapHandle(HeapHandle handle) { queue->set_heap_handle(handle); }
-  };
+  // This map makes it easy to remove a queue from |delayed_wakeup_multimap_|.
+  // NOTE inserting or removing elements from a std::map does not invalidate any
+  // iterators.
+  using QueueToDelayedWakeupMultimapIteratorMap =
+      std::unordered_map<internal::TaskQueueImpl*,
+                         DelayedWakeupMultimap::iterator>;
 
-  IntrusiveHeap<DelayedWakeup> delayed_wakeup_queue_;
+  QueueToDelayedWakeupMultimapIteratorMap
+      queue_to_delayed_wakeup_multimap_iterator_map_;
 
   // This lock guards only |newly_updatable_|.  It's not expected to be heavily
   // contended.
