@@ -5,30 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-fab/paper-fab.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-
-<!--
-  Material design button that shows an icon.
-
-  Example:
-    <oobe-icon-button icon="close"></oobe-icon-button>
-
-  Attributes:
-    'icon' - a name of icon from material design set to show on button.
-    'disabled' - button is disabled when the attribute is set.
-    'aria-label' - accessibility label.
--->
-<dom-module id="oobe-icon-button">
-  <link rel="stylesheet" href="oobe_icon_button.css">
-  <template>
-    <div on-click="onClick_" on-tap="onClick_">
-      <paper-icon-button id="iconButton" icon="[[icon]]" disabled="[[disabled]]"
-          aria-label="[[ariaLabel]]">
-      </paper-icon-button>
-    </div>
-  </template>
-</dom-module>
 
 <!--
   Material design square button for text-labelled buttons.
@@ -36,24 +13,43 @@
   |inverse| makes text white on a blue background.
 
   Example:
-    <oobe-icon-button label="OK" inverse></oobe-icon-button>
-    <oobe-icon-button label="CANCEL"></oobe-icon-button>
+    <oobe-icon-button i18n-content="oobeOKButtonText" inverse>
+    </oobe-icon-button>
+    <oobe-icon-button i18n-content="oobeCancelButtonText"></oobe-icon-button>
 
   Attributes:
-    'label' - text on a button
     'disabled' - button is disabled when the attribute is set.
     'inverse' - makes text white and background blue
 -->
 <dom-module id="oobe-text-button">
   <link rel="stylesheet" href="oobe_text_button.css">
   <template>
-    <div on-click="onClick_" on-tap="onClick_">
-      <paper-button id="textButton" disabled="[[disabled]]"
-          inverse$="[[inverse]]">
-        [[label]]
-        <content></content>
-      </paper-button>
-    </div>
+    <paper-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
+        inverse$="[[inverse]]">
+      <content></content>
+    </paper-button>
   </template>
 </dom-module>
 
+<!--
+  Material design button that shows an icon and displays text.
+
+  Example:
+    <oobe-welcome-secondary-button icon="close"
+        i18n-content="oobeCloseButtonText">
+    </oobe-icon-button>
+
+  Attributes:
+    'icon' - a name of icon from material design set to show on button.
+    'aria-label' - accessibility label.
+-->
+<dom-module id="oobe-welcome-secondary-button">
+  <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
+  <template>
+    <paper-button id="container" class="layout horizontal center"
+        aria-label="[[ariaLabel]]">
+      <iron-icon icon="[[icon]]" class="oobe-icon"></iron-icon>
+      <content></content>
+    </paper-button>
+  </template>
+</dom-module>

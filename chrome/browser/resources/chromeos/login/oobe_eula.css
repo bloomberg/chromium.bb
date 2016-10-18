@@ -25,7 +25,12 @@ a {
 
 #usageStats {
   --paper-checkbox-size: 16px;
+  /* End padding must be greater than --paper-checkbox-label-spacing */
+  -webkit-padding-end: 16px;
   max-width: 550px;
   padding-bottom: 20px;
-  padding-right: 16px; /* Must be greater than --paper-checkbox-label-spacing */
+}
+
+#accept-button-text {
+  text-transform: uppercase;
 }

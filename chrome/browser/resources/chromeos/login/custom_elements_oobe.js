@@ -30,4 +30,5 @@
 <include src="oobe_eula.js">
 <include src="oobe_update.js">
 <include src="oobe_i18n_dropdown.js">
+<include src="oobe_welcome_dialog.js">
 <include src="oobe_welcome.js">

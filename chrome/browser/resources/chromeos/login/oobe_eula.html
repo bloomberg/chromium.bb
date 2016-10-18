@@ -61,8 +61,10 @@
       </div>
       <div class="bottom-buttons flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="eulaAccepted_"
-            i18n-content="oobeEulaAcceptAndContinueButtonText"
             disabled="[[acceptButtonDisabled]]">
+          <div i18n-content="oobeEulaAcceptAndContinueButtonText"
+              id="accept-button-text">
+          </div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

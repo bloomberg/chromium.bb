@@ -1,0 +1,32 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.vertical-margin {
+  width: 24px;
+}
+
+#bottom-margin {
+  height: 24px;
+}
+
+#title {
+  color: rgba(0, 0, 0, 0.87);
+  font-family: Roboto, sans-serif;
+  font-size: 38px;
+  font-weight: normal;
+  margin: 120px 0 30px 0;
+}
+
+#welcomeIllustration {
+  height: 300px;
+  width: 390px;
+}
+
+oobe-welcome-secondary-button {
+  margin-right: 8px;
+}
+
+#buttons {
+  width: 100%;
+}

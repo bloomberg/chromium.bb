@@ -2,14 +2,24 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:host {
+  --paper-font-subhead: {
+    @apply(--paper-font-common-base);
+    font-family: Roboto;
+    font-size: 13px;
+  };
+}
+
 .selected-icon {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
+  -webkit-padding-start: 8px;
   color: var(--google-blue-500);
-  padding-left: 8px;
 }
 
 paper-item {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 16px;
   min-height: 32px;
 }
 

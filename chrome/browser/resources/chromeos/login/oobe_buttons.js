@@ -3,33 +3,10 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'oobe-icon-button',
-
-  properties: {
-    disabled: {type: Boolean, value: false, reflectToAttribute: true},
-
-    icon: String,
-
-    ariaLabel: String
-  },
-
-  focus: function() {
-    this.$.iconButton.focus();
-  },
-
-  onClick_: function(e) {
-    if (this.disabled)
-      e.stopPropagation();
-  }
-});
-
-Polymer({
   is: 'oobe-text-button',
 
   properties: {
     disabled: {type: Boolean, value: false, reflectToAttribute: true},
-
-    label: String,
 
     inverse: Boolean,
   },
@@ -42,4 +19,14 @@ Polymer({
     if (this.disabled)
       e.stopPropagation();
   }
+});
+
+Polymer({
+  is: 'oobe-welcome-secondary-button',
+
+  properties: {
+    icon: String,
+
+    ariaLabel: String
+  },
 });

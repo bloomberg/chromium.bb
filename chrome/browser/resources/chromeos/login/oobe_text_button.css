@@ -3,8 +3,8 @@
    found in the LICENSE file. */
 
 #textButton {
-  font: 13px 'Roboto Medium', sans-serif;
-  height: 32px;
+  height: 28px;
+  margin: 0;
   padding: 0 16px;
 }
 
@@ -16,4 +16,10 @@
 #textButton[inverse]:not([disabled]) {
   background-color: var(--google-blue-500);
   color: white;
+}
+
+::content * {
+  font: var(--oobe-roboto-medium), sans-serif;
+  font-size: 12px;
+  text-transform: none;
 }

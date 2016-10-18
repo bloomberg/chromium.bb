@@ -23,34 +23,12 @@
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_welcome.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
-    <oobe-dialog id="welcomeScreen" hidden="[[!welcomeScreenShown]]"
-        welcome-screen>
-      <div class="header layout vertical end-justified center">
-        <h1 class="title" i18n-content="networkScreenGreeting"></h1>
-      </div>
-      <div class="footer flex layout vertical center">
-        <img id="welcomeIllustration" src="images/welcome_illustration_1x.png">
-        <oobe-text-button id="welcomeNextButton" inverse
-            on-tap="onWelcomeNextButtonClicked_"
-            i18n-content="welcomeNextButtonText">
-        </oobe-text-button>
-        <div id="welcomeButtons" class="flex horizontal layout justified">
-          <div class="layout vertical relative"
-              on-tap="onWelcomeSelectLanguageButtonClicked_">
-            <iron-icon icon="icons:language" class="action-icon">
-            </iron-icon>
-            <div class="buttonbox-text">[[currentLanguage]]</div>
-          </div>
-          <div class="action-icon-spacer"></div>
-          <div class="layout vertical relative"
-              on-tap="onWelcomeAccessibilityButtonClicked_">
-            <iron-icon icon="icons:accessibility" class="action-icon">
-            </iron-icon>
-            <div class="buttonbox-text" i18n-content="accessibilityLink"></div>
-          </div>
-        </div>
-      </div>
-    </oobe-dialog>
+    <oobe-welcome-dialog id="welcomeScreen" hidden="[[!welcomeScreenShown]]"
+        current-language="[[currentLanguage]]"
+        on-language-button-clicked="onWelcomeSelectLanguageButtonClicked_"
+        on-accessibility-button-clicked="onWelcomeAccessibilityButtonClicked_"
+        on-next-button-clicked="onWelcomeNextButtonClicked_">
+    </oobe-welcome-dialog>
     <oobe-dialog id="languageScreen" hidden="[[!languageSelectionScreenShown]]"
        has-buttons>
       <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
@@ -82,8 +60,8 @@
         </template>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="closeLanguageSection_"
-          i18n-content="oobeOKButtonText">
+        <oobe-text-button inverse on-tap="closeLanguageSection_">
+          <div i18n-content="oobeOKButtonText"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
@@ -142,8 +120,8 @@
         </oobe-a11y-option>
       </div>
       <div class="bottom-buttons layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="closeAccessibilitySection_"
-            i18n-content="oobeOKButtonText">
+        <oobe-text-button inverse on-tap="closeAccessibilitySection_">
+          <div i18n-content="oobeOKButtonText"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>
