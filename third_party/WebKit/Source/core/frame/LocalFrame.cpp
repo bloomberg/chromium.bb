@@ -719,11 +719,7 @@ String LocalFrame::selectedText() const {
 String LocalFrame::selectedTextForClipboard() const {
   if (!document())
     return emptyString();
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
+  DCHECK(!document()->needsLayoutTreeUpdate());
   return selection().selectedTextForClipboard();
 }
 
