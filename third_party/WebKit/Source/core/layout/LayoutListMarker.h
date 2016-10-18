@@ -105,6 +105,10 @@ class LayoutListMarker final : public LayoutBox {
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
   bool anonymousHasStylePropagationOverride() override { return true; }
 
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
+    return false;
+  }
+
   String m_text;
   Persistent<StyleImage> m_image;
   LayoutListItem* m_listItem;
