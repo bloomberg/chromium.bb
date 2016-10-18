@@ -5219,7 +5219,7 @@ bool Projection::Parse(IMkvReader* reader, long long start, long long size,
 
       if (status) {
         delete[] data;
-        return status;
+        return false;
       }
 
       projection_ptr->private_data = data;
