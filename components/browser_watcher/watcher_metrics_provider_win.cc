@@ -130,59 +130,10 @@ void DeleteAllValues(base::win::RegKey* key) {
   }
 }
 
-void DeleteExitFunnels(const base::string16& registry_path) {
-  base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, registry_path.c_str());
-  if (!it.Valid())
-    return;
-
-  // Exit early if no work to do.
-  if (it.SubkeyCount() == 0)
-    return;
-
-  // Open the key we use for deletion preemptively to prevent reporting
-  // multiple times on permission problems.
-  base::win::RegKey key(HKEY_CURRENT_USER,
-                        registry_path.c_str(),
-                        KEY_QUERY_VALUE);
-  if (!key.Valid()) {
-    DVLOG(1) << "Failed to open " << registry_path << " for writing.";
-    return;
-  }
-
-  // Key names to delete.
-  std::vector<base::string16> keys_to_delete;
-  // Constrain the cleanup to 100 exit funnels at a time, as otherwise this may
-  // take a long time to finish where a lot of data has accrued. This will be
-  // the case in particular for non-UMA users, as the exit funnel data will
-  // accrue without bounds for those users.
-  const size_t kMaxCleanup = 100;
-  for (; it.Valid() && keys_to_delete.size() < kMaxCleanup; ++it) {
-    base::win::RegKey sub_key;
-    LONG res =
-        sub_key.Open(key.Handle(), it.Name(), KEY_QUERY_VALUE | KEY_SET_VALUE);
-    if (res != ERROR_SUCCESS) {
-      DVLOG(1) << "Failed to open subkey " << it.Name();
-      return;
-    }
-    DeleteAllValues(&sub_key);
-
-    // Schedule the subkey for deletion.
-    keys_to_delete.push_back(it.Name());
-  }
-
-  for (const base::string16& key_name : keys_to_delete) {
-    LONG res = key.DeleteEmptyKey(key_name.c_str());
-    if (res != ERROR_SUCCESS)
-      DVLOG(1) << "Failed to delete key " << key_name;
-  }
-}
-
 // Called from the blocking pool when metrics reporting is disabled, as there
 // may be a sizable stash of data to delete.
 void DeleteExitCodeRegistryKey(const base::string16& registry_path) {
   CHECK_NE(L"", registry_path);
-
-  DeleteExitFunnels(registry_path);
 
   base::win::RegKey key;
   LONG res = key.Open(HKEY_CURRENT_USER, registry_path.c_str(),
@@ -258,7 +209,6 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   // necessary to implement some form of global locking, which is not worth it
   // here.
   RecordExitCodes(registry_path_);
-  DeleteExitFunnels(registry_path_);
 }
 
 void WatcherMetricsProviderWin::CollectPostmortemReports(

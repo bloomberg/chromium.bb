@@ -18,8 +18,6 @@ static_library("browser_watcher") {
     "endsession_watcher_window_win.h",
     "exit_code_watcher_win.cc",
     "exit_code_watcher_win.h",
-    "exit_funnel_win.cc",
-    "exit_funnel_win.h",
     "window_hang_monitor_win.cc",
     "window_hang_monitor_win.h",
   ]
@@ -90,7 +88,6 @@ source_set("unit_tests") {
   sources = [
     "endsession_watcher_window_win_unittest.cc",
     "exit_code_watcher_win_unittest.cc",
-    "exit_funnel_win_unittest.cc",
     "postmortem_minidump_writer_win_unittest.cc",
     "postmortem_report_collector_unittest.cc",
     "watcher_client_win_unittest.cc",
