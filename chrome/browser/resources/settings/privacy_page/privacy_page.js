@@ -125,4 +125,15 @@ Polymer({
         this.$.spellingServiceToggleButton.checked);
   },
 </if>
+
+  /**
+   * The sub-page title for the site or content settings.
+   * @return {string}
+   * @private
+   */
+  siteSettingsPageTitle_: function() {
+    return loadTimeData.getBoolean('enableSiteSettings') ?
+        loadTimeData.getString('siteSettings') :
+        loadTimeData.getString('contentSettings');
+  },
 });
