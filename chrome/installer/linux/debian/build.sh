@@ -128,6 +128,8 @@ usage() {
   echo "-o dir     package output directory [${OUTPUTDIR}]"
   echo "-b dir     build input directory    [${BUILDDIR}]"
   echo "-d brand   either chromium or google_chrome"
+  echo "-s dir     /path/to/sysroot"
+  echo "-e dir     /path/to/dpkg-dev"
   echo "-h         this help message"
 }
 
@@ -162,7 +164,7 @@ verify_channel() {
 }
 
 process_opts() {
-  while getopts ":o:b:c:a:d:h" OPTNAME
+  while getopts ":e:s:o:b:c:a:d:h" OPTNAME
   do
     case $OPTNAME in
       o )
@@ -180,6 +182,12 @@ process_opts() {
         ;;
       d )
         BRANDING="$OPTARG"
+        ;;
+      s )
+        SYSROOT="$OPTARG"
+        ;;
+      e )
+        DPKG_DEV_DIR="$OPTARG"
         ;;
       h )
         usage
@@ -217,19 +225,20 @@ if [ "$(uname -m)" = "x86_64" ]; then
 else
   TARGETARCH="ia32"
 fi
-if [[ "$(lsb_release -c)" = *"precise" ]]; then
-  HOST_DISTRO="precise"
-elif [[ "$(lsb_release -c)" = *"trusty" ]]; then
-  HOST_DISTRO="trusty"
-else
-  echo "Debian package can only be build on Ubuntu Precise or Trusty"
-  exit 1
-fi
 
 # call cleanup() on exit
 trap cleanup 0
 process_opts "$@"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
+
+if [[ "$(basename ${SYSROOT})" = "debian_wheezy_"*"-sysroot" ]]; then
+  TARGET_DISTRO="wheezy"
+elif [[ "$(basename ${SYSROOT})" = "debian_jessie_"*"-sysroot" ]]; then
+  TARGET_DISTRO="jessie"
+else
+  echo "Debian package can only be built using the wheezy or jessie sysroot."
+  exit 1
+fi
 
 source ${BUILDDIR}/installer/common/installer.include
 
@@ -256,13 +265,6 @@ export DEBEMAIL="${MAINTMAIL}"
 # the LSB sub-packages, to avoid pulling in all that stuff that's not installed
 # by default.
 
-# Need a dummy debian/control file for dpkg-shlibdeps.
-DUMMY_STAGING_DIR="${TMPFILEDIR}/dummy_staging"
-mkdir "$DUMMY_STAGING_DIR"
-cd "$DUMMY_STAGING_DIR"
-mkdir debian
-touch debian/control
-
 # Generate the dependencies,
 # TODO(mmoss): This is a workaround for a problem where dpkg-shlibdeps was
 # resolving deps using some of our build output shlibs (i.e.
@@ -272,33 +274,41 @@ touch debian/control
 # but it seems that we don't currently, so this is the most expediant fix.
 SAVE_LDLP=${LD_LIBRARY_PATH:-}
 unset LD_LIBRARY_PATH
-DPKG_SHLIB_DEPS=$(dpkg-shlibdeps -O "$BUILDDIR/chrome" | \
-  sed 's/^shlibs:Depends=//')
+if [ ${TARGETARCH} = "x64" ]; then
+  SHLIB_ARGS="-l${SYSROOT}/usr/lib/x86_64-linux-gnu"
+  SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/lib/x86_64-linux-gnu"
+else
+  SHLIB_ARGS="-l${SYSROOT}/usr/lib/i386-linux-gnu"
+  SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/lib/i386-linux-gnu"
+fi
+SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/usr/lib"
+# TODO(thomasanderson): Unbundle dpkg-shlibdeps once the Precise->Trusty
+# transition is complete by reverting CL 2411423002 and applying ps40001.
+DPKG_SHLIB_DEPS=$(cd ${SYSROOT} && DPKG_DATADIR=${DPKG_DEV_DIR} \
+  perl -I ${DPKG_DEV_DIR}/scripts ${DPKG_DEV_DIR}/scripts/dpkg-shlibdeps.pl \
+  ${SHLIB_ARGS:-} -O -e"$BUILDDIR/chrome" | sed 's/^shlibs:Depends=//')
 if [ -n "$SAVE_LDLP" ]; then
   LD_LIBRARY_PATH=$SAVE_LDLP
 fi
 
 # Format it nicely and save it for comparison.
-# The grep -v is for a duplicate libc6 dep caused by Lucid glibc silliness.
-echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | \
-  grep -v '^libc6 (>= 2.3.6-6~)$' | LANG=C sort > actual
+echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | LANG=C sort > actual
 
-# Compare the expected dependency list to the generate list.
+# Compare the expected dependency list to the generated list.
 BAD_DIFF=0
-diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}_${HOST_DISTRO}" actual || \
+diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}_${TARGET_DISTRO}" actual || \
   BAD_DIFF=1
 if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo
   echo "ERROR: Shared library dependencies changed!"
   echo "If this is intentional, please update:"
-  echo "chrome/installer/linux/debian/expected_deps_ia32_precise"
-  echo "chrome/installer/linux/debian/expected_deps_ia32_trusty"
-  echo "chrome/installer/linux/debian/expected_deps_x64_precise"
-  echo "chrome/installer/linux/debian/expected_deps_x64_trusty"
+  echo "chrome/installer/linux/debian/expected_deps_ia32_jessie"
+  echo "chrome/installer/linux/debian/expected_deps_ia32_wheezy"
+  echo "chrome/installer/linux/debian/expected_deps_x64_jessie"
+  echo "chrome/installer/linux/debian/expected_deps_x64_wheezy"
   echo
   exit $BAD_DIFF
 fi
-rm -rf "$DUMMY_STAGING_DIR"
 
 # Additional dependencies not in the dpkg-shlibdeps output.
 # ca-certificates: Make sure users have SSL certificates.

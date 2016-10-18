@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/sysroot.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
@@ -107,10 +108,10 @@ copy("deb_packaging_files") {
     "debian/changelog.template",
     "debian/control.template",
     "debian/debian.menu",
-    "debian/expected_deps_ia32_precise",
-    "debian/expected_deps_ia32_trusty",
-    "debian/expected_deps_x64_precise",
-    "debian/expected_deps_x64_trusty",
+    "debian/expected_deps_ia32_jessie",
+    "debian/expected_deps_ia32_wheezy",
+    "debian/expected_deps_x64_jessie",
+    "debian/expected_deps_x64_wheezy",
     "debian/postinst",
     "debian/postrm",
     "debian/prerm",
@@ -283,6 +284,10 @@ template("linux_package") {
       invoker.channel,
       "-d",
       branding_path_component,
+      "-s",
+      rebase_path(sysroot),
+      "-e",
+      rebase_path("//third_party/dpkg-dev"),
     ]
     deps = [
       ":installer_deps",
