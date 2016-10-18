@@ -126,6 +126,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     // restrict the codec to be software only.
     AVDACodecAllocator::TaskType task_type_;
 
+    // Codec specific data (SPS and PPS for H264).
+    std::vector<uint8_t> csd0_;
+    std::vector<uint8_t> csd1_;
+
    protected:
     friend class base::RefCountedThreadSafe<CodecConfig>;
     virtual ~CodecConfig();

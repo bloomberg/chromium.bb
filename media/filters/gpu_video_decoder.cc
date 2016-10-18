@@ -5,6 +5,7 @@
 #include "media/filters/gpu_video_decoder.h"
 
 #include <algorithm>
+#include <array>
 #include <utility>
 
 #include "base/bind.h"
@@ -31,7 +32,44 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+#if defined(USE_PROPRIETARY_CODECS)
+#include "media/formats/mp4/box_definitions.h"
+#endif
+
 namespace media {
+namespace {
+
+// Size of shared-memory segments we allocate.  Since we reuse them we let them
+// be on the beefy side.
+static const size_t kSharedMemorySegmentBytes = 100 << 10;
+
+#if defined(OS_ANDROID) && defined(USE_PROPRIETARY_CODECS)
+// Extract the SPS and PPS lists from |extra_data|. Each SPS and PPS is prefixed
+// with 0x0001, the Annex B framing bytes. The out parameters are not modified
+// on failure.
+void ExtractSpsAndPps(const std::vector<uint8_t>& extra_data,
+                      std::vector<uint8_t>* sps_out,
+                      std::vector<uint8_t>* pps_out) {
+  mp4::AVCDecoderConfigurationRecord record;
+  if (!record.Parse(extra_data.data(), extra_data.size())) {
+    DVLOG(1) << "Failed to extract the SPS and PPS from extra_data";
+    return;
+  }
+
+  constexpr std::array<uint8_t, 4> prefix = {{0, 0, 0, 1}};
+  for (const std::vector<uint8_t>& sps : record.sps_list) {
+    sps_out->insert(sps_out->end(), prefix.begin(), prefix.end());
+    sps_out->insert(sps_out->end(), sps.begin(), sps.end());
+  }
+
+  for (const std::vector<uint8_t>& pps : record.pps_list) {
+    pps_out->insert(pps_out->end(), prefix.begin(), prefix.end());
+    pps_out->insert(pps_out->end(), pps.begin(), pps.end());
+  }
+}
+#endif
+
+}  // namespace
 
 const char GpuVideoDecoder::kDecoderName[] = "GpuVideoDecoder";
 
@@ -39,10 +77,6 @@ const char GpuVideoDecoder::kDecoderName[] = "GpuVideoDecoder";
 // Higher values allow better pipelining in the GPU, but also require more
 // resources.
 enum { kMaxInFlightDecodes = 4 };
-
-// Size of shared-memory segments we allocate.  Since we reuse them we let them
-// be on the beefy side.
-static const size_t kSharedMemorySegmentBytes = 100 << 10;
 
 GpuVideoDecoder::SHMBuffer::SHMBuffer(std::unique_ptr<base::SharedMemory> m,
                                       size_t s)
@@ -299,6 +333,14 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
   vda_config.surface_id = surface_id;
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();
+
+#if defined(OS_ANDROID) && defined(USE_PROPRIETARY_CODECS)
+  // We pass the SPS and PPS on Android because it lets us initialize
+  // MediaCodec more reliably (http://crbug.com/649185).
+  if (config_.codec() == kCodecH264)
+    ExtractSpsAndPps(config_.extra_data(), &vda_config.sps, &vda_config.pps);
+#endif
+
   if (!vda_->Initialize(vda_config, this)) {
     DVLOG(1) << "VDA::Initialize failed.";
     base::ResetAndReturn(&init_cb_).Run(false);

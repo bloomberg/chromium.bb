@@ -27,6 +27,8 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)
   IPC_STRUCT_TRAITS_MEMBER(initial_expected_coded_size)
   IPC_STRUCT_TRAITS_MEMBER(supported_output_formats)
+  IPC_STRUCT_TRAITS_MEMBER(sps)
+  IPC_STRUCT_TRAITS_MEMBER(pps)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::CreateVideoEncoderParams)

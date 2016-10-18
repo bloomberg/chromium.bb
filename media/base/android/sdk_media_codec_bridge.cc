@@ -560,13 +560,16 @@ bool VideoCodecBridge::IsKnownUnaccelerated(const VideoCodec& codec,
 }
 
 // static
-VideoCodecBridge* VideoCodecBridge::CreateDecoder(const VideoCodec& codec,
-                                                  bool is_secure,
-                                                  const gfx::Size& size,
-                                                  jobject surface,
-                                                  jobject media_crypto,
-                                                  bool allow_adaptive_playback,
-                                                  bool require_software_codec) {
+VideoCodecBridge* VideoCodecBridge::CreateDecoder(
+    const VideoCodec& codec,
+    bool is_secure,
+    const gfx::Size& size,
+    jobject surface,
+    jobject media_crypto,
+    const std::vector<uint8_t>& csd0,
+    const std::vector<uint8_t>& csd1,
+    bool allow_adaptive_playback,
+    bool require_software_codec) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return nullptr;
 
@@ -585,6 +588,19 @@ VideoCodecBridge* VideoCodecBridge::CreateDecoder(const VideoCodec& codec,
       Java_MediaCodecBridge_createVideoDecoderFormat(env, j_mime, size.width(),
                                                      size.height()));
   DCHECK(!j_format.is_null());
+
+  if (!csd0.empty()) {
+    ScopedJavaLocalRef<jbyteArray> j_csd0 =
+        base::android::ToJavaByteArray(env, csd0.data(), csd0.size());
+    Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 0, j_csd0);
+  }
+
+  if (!csd1.empty()) {
+    ScopedJavaLocalRef<jbyteArray> j_csd1 =
+        base::android::ToJavaByteArray(env, csd1.data(), csd1.size());
+    Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 1, j_csd1);
+  }
+
   if (!Java_MediaCodecBridge_configureVideo(env, bridge->media_codec(),
                                             j_format, surface, media_crypto, 0,
                                             allow_adaptive_playback)) {
