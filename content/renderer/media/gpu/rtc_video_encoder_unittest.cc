@@ -46,19 +46,28 @@ class RTCVideoEncoderTest
         idle_waiter_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
+  media::MockVideoEncodeAccelerator* ExpectCreateInitAndDestroyVEA() {
+    // The VEA will be owned by the RTCVideoEncoder once
+    // factory.CreateVideoEncodeAccelerator() is called.
+    media::MockVideoEncodeAccelerator* mock_vea =
+        new media::MockVideoEncodeAccelerator();
+
+    EXPECT_CALL(*mock_gpu_factories_.get(), DoCreateVideoEncodeAccelerator())
+        .WillRepeatedly(Return(mock_vea));
+    EXPECT_CALL(*mock_vea, Initialize(_, _, _, _, _))
+        .WillOnce(Invoke(this, &RTCVideoEncoderTest::Initialize));
+    EXPECT_CALL(*mock_vea, UseOutputBitstreamBuffer(_)).Times(3);
+    EXPECT_CALL(*mock_vea, Destroy()).Times(1);
+    return mock_vea;
+  }
+
   void SetUp() override {
     DVLOG(3) << __FUNCTION__;
     ASSERT_TRUE(encoder_thread_.Start());
-    mock_vea_ = new media::MockVideoEncodeAccelerator();
 
     EXPECT_CALL(*mock_gpu_factories_.get(), GetTaskRunner())
         .WillRepeatedly(Return(encoder_thread_.task_runner()));
-    EXPECT_CALL(*mock_gpu_factories_.get(), DoCreateVideoEncodeAccelerator())
-        .WillRepeatedly(Return(mock_vea_));
-    EXPECT_CALL(*mock_vea_, Initialize(_, _, _, _, _))
-        .WillOnce(Invoke(this, &RTCVideoEncoderTest::Initialize));
-    EXPECT_CALL(*mock_vea_, UseOutputBitstreamBuffer(_)).Times(3);
-    EXPECT_CALL(*mock_vea_, Destroy()).Times(1);
+    mock_vea_ = ExpectCreateInitAndDestroyVEA();
   }
 
   void TearDown() override {
@@ -142,6 +151,17 @@ TEST_P(RTCVideoEncoderTest, CreateAndInitSucceeds) {
   CreateEncoder(codec_type);
   webrtc::VideoCodec codec = GetDefaultCodec();
   codec.codecType = codec_type;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
+}
+
+TEST_P(RTCVideoEncoderTest, RepeatedInitSucceeds) {
+  const webrtc::VideoCodecType codec_type = GetParam();
+  CreateEncoder(codec_type);
+  webrtc::VideoCodec codec = GetDefaultCodec();
+  codec.codecType = codec_type;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
+
+  ExpectCreateInitAndDestroyVEA();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
 }
 

@@ -752,7 +752,10 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
            << ", width=" << codec_settings->width
            << ", height=" << codec_settings->height
            << ", startBitrate=" << codec_settings->startBitrate;
-  DCHECK(!impl_.get());
+  if (impl_) {
+    DVLOG(1) << "Release because of reinitialization";
+    Release();
+  }
 
   impl_ = new Impl(gpu_factories_, video_codec_type_);
   const media::VideoCodecProfile profile = WebRTCVideoCodecToVideoCodecProfile(
