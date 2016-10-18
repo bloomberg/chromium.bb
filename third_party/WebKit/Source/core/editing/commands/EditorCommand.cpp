@@ -195,6 +195,7 @@ RangeVector* RangesFromCurrentSelectionOrExtendCaret(
     const LocalFrame& frame,
     SelectionDirection direction,
     TextGranularity granularity) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
   SelectionModifier selectionModifier(frame, frame.selection().selection());
   if (selectionModifier.selection().isCaret())
     selectionModifier.modify(FrameSelection::AlterationExtend, direction,

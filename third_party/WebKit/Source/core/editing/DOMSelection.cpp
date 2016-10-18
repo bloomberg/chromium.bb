@@ -362,6 +362,10 @@ void DOMSelection::modify(const String& alterString,
   else
     return;
 
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   frame()->selection().modify(alter, direction, granularity);
 }
 

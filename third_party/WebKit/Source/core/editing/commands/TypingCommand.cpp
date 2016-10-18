@@ -549,6 +549,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity,
         typingAddedToOpenCommand(DeleteKey);
 
       m_smartDelete = false;
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
 
       SelectionModifier selectionModifier(*frame, endingSelection());
       selectionModifier.modify(FrameSelection::AlterationExtend,
@@ -694,6 +695,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity,
       break;
     case CaretSelection: {
       m_smartDelete = false;
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
 
       // Handle delete at beginning-of-block case.
       // Do nothing in the case that the caret is at the start of a

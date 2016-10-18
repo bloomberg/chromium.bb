@@ -585,10 +585,7 @@ static void setSelectionStart(VisibleSelection* selection,
 bool SelectionModifier::modify(EAlteration alter,
                                SelectionDirection direction,
                                TextGranularity granularity) {
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
+  DCHECK(!frame()->document()->needsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       frame()->document()->lifecycle());
 
