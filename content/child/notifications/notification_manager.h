@@ -56,9 +56,10 @@ class NotificationManager : public blink::WebNotificationManager,
       const blink::WebString& filter_tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebNotificationGetCallbacks* callbacks) override;
-  void close(const blink::WebSecurityOrigin& origin,
-             const blink::WebString& tag,
-             const blink::WebString& notification_id) override;
+  void close(blink::WebNotificationDelegate* delegate) override;
+  void closePersistent(const blink::WebSecurityOrigin& origin,
+                       const blink::WebString& tag,
+                       const blink::WebString& notification_id) override;
   void notifyDelegateDestroyed(
       blink::WebNotificationDelegate* delegate) override;
 
@@ -70,12 +71,10 @@ class NotificationManager : public blink::WebNotificationManager,
                       NotificationDispatcher* notification_dispatcher);
 
   // IPC message handlers.
-  void OnDidShow(int non_persistent_notification_id,
-                 const std::string& notification_id);
+  void OnDidShow(int notification_id);
   void OnDidShowPersistent(int request_id, bool success);
-  void OnDidClose(int non_persistent_notification_id,
-                  const std::string& notification_id);
-  void OnDidClick(int non_persistent_notification_id);
+  void OnDidClose(int notification_id);
+  void OnDidClick(int notification_id);
   void OnDidGetNotifications(
       int request_id,
       const std::vector<PersistentNotificationInfo>& notification_infos);
@@ -91,14 +90,21 @@ class NotificationManager : public blink::WebNotificationManager,
   IDMap<blink::WebNotificationShowCallbacks, IDMapOwnPointer>
       pending_show_notification_requests_;
 
-  // Map from the notification ID to the associated delegate for non-persistent
-  // notifications, for the purposes of triggering events.
-  std::unordered_map<int, blink::WebNotificationDelegate*>
-      non_persistent_notifications_;
+  // Structure holding the information for active non-persistent notifications.
+  struct ActiveNotificationData {
+    ActiveNotificationData() = default;
+    ActiveNotificationData(blink::WebNotificationDelegate* delegate,
+                           const GURL& origin,
+                           const std::string& tag);
+    ~ActiveNotificationData();
 
-  // Association from the notification ID string to the non-persistent
-  // notification ID for non-persistent notifications.
-  std::unordered_map<std::string, int> non_persistent_notification_ids_;
+    blink::WebNotificationDelegate* delegate = nullptr;
+    GURL origin;
+    std::string tag;
+  };
+
+  // Map to store the delegate associated with a notification request Id.
+  std::unordered_map<int, ActiveNotificationData> active_page_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };

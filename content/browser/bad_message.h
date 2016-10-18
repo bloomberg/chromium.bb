@@ -164,7 +164,6 @@ enum BadMessageReason {
   ARH_CREATED_STREAM_WITHOUT_AUTHORIZATION = 140,
   MDDH_INVALID_DEVICE_TYPE_REQUEST = 141,
   MDDH_UNAUTHORIZED_ORIGIN = 142,
-  NMF_INVALID_ID_CLOSE = 143,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

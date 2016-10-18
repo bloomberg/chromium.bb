@@ -90,9 +90,10 @@ class MODULES_EXPORT Notification final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
 
   // WebNotificationDelegate interface.
-  void didShowNotification(const WebString& notificationId) override;
-  void didClickNotification() override;
-  void didCloseNotification() override;
+  void dispatchShowEvent() override;
+  void dispatchClickEvent() override;
+  void dispatchErrorEvent() override;
+  void dispatchCloseEvent() override;
 
   String title() const;
   String dir() const;
@@ -173,10 +174,6 @@ class MODULES_EXPORT Notification final : public EventTargetWithInlineData,
   WebNotificationData m_data;
 
   String m_notificationId;
-
-  // Whether the developer has requested the notification to be closed whilst
-  // it's still in process of being shown.
-  bool m_requestedClose;
 
   Member<AsyncMethodRunner<Notification>> m_prepareShowMethodRunner;
 

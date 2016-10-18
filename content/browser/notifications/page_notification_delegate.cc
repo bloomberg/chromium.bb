@@ -26,8 +26,8 @@ void PageNotificationDelegate::NotificationDisplayed() {
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidShow(
-      non_persistent_notification_id_, notification_id_));
+  sender->Send(
+      new PlatformNotificationMsg_DidShow(non_persistent_notification_id_));
 }
 
 void PageNotificationDelegate::NotificationClosed() {
@@ -35,8 +35,8 @@ void PageNotificationDelegate::NotificationClosed() {
   if (!sender)
     return;
 
-  sender->Send(new PlatformNotificationMsg_DidClose(
-      non_persistent_notification_id_, notification_id_));
+  sender->Send(
+      new PlatformNotificationMsg_DidClose(non_persistent_notification_id_));
 
   static_cast<RenderProcessHostImpl*>(sender)
       ->notification_message_filter()

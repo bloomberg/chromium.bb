@@ -73,9 +73,12 @@ class NotificationMessageFilter : public BrowserMessageFilter {
                           int64_t service_worker_registration_id,
                           const GURL& origin,
                           const std::string& filter_tag);
-  void OnCloseNotification(const GURL& origin,
-                           const std::string& tag,
-                           const std::string& notification_id);
+  void OnClosePlatformNotification(const GURL& origin,
+                                   const std::string& tag,
+                                   int non_persistent_notification_id);
+  void OnClosePersistentNotification(const GURL& origin,
+                                     const std::string& tag,
+                                     const std::string& notification_id);
 
   // Callback to be invoked by the notification context when the notification
   // data for the persistent notification may have been written, as indicated by
