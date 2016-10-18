@@ -326,7 +326,8 @@ void DOMStorageArea::PurgeMemory() {
 }
 
 void DOMStorageArea::Shutdown() {
-  DCHECK(!is_shutdown_);
+  if (is_shutdown_)
+    return;
   is_shutdown_ = true;
 
   if (commit_batch_) {

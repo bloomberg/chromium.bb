@@ -325,6 +325,9 @@ TEST_F(DOMStorageAreaTest, CommitChangesAtShutdown) {
   EXPECT_FALSE(area->backing_.get());
   // The VerifyChangesCommittedDatabase destructor verifies values
   // were committed.
+
+  // A second Shutdown call should be safe.
+  area->Shutdown();
 }
 
 TEST_F(DOMStorageAreaTest, DeleteOrigin) {
@@ -385,6 +388,9 @@ TEST_F(DOMStorageAreaTest, DeleteOrigin) {
   area->Shutdown();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(base::PathExists(db_file_path));
+
+  // A second Shutdown call should be safe.
+  area->Shutdown();
 }
 
 TEST_F(DOMStorageAreaTest, PurgeMemory) {
