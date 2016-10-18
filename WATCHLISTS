@@ -1408,7 +1408,6 @@
                       'je_julie.kim@chromium.org',
                       'nektar+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
-    'activity_log': ['felt@chromium.org'],
     'add_to_homescreen': ['agrieve+watch@chromium.org',
                           'dominickn+watch@chromium.org',
                           'pkotwicz+watch@chromium.org',
