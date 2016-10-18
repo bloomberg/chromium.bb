@@ -943,6 +943,7 @@ void LayoutTableSection::layout() {
   LayoutState state(*this, locationOffset());
 
   const Vector<int>& columnPos = table()->effectiveColumnPositions();
+  LayoutUnit rowLogicalTop;
 
   SubtreeLayoutScope layouter(*this);
   for (unsigned r = 0; r < m_grid.size(); ++r) {
@@ -970,9 +971,18 @@ void LayoutTableSection::layout() {
     }
 
     if (LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject) {
-      if (!rowLayoutObject->needsLayout())
-        markChildForPaginationRelayoutIfNeeded(*rowLayoutObject, layouter);
+      if (state.isPaginated()) {
+        rowLayoutObject->setLogicalTop(rowLogicalTop);
+        if (!rowLayoutObject->needsLayout())
+          markChildForPaginationRelayoutIfNeeded(*rowLayoutObject, layouter);
+      }
       rowLayoutObject->layoutIfNeeded();
+      if (state.isPaginated()) {
+        rowLayoutObject->setLogicalHeight(
+            LayoutUnit(logicalHeightForRow(*rowLayoutObject)));
+        rowLogicalTop = rowLayoutObject->logicalBottom();
+        rowLogicalTop += LayoutUnit(table()->vBorderSpacing());
+      }
     }
   }
 
@@ -1973,6 +1983,27 @@ void LayoutTableSection::relayoutCellIfFlexed(LayoutTableCell& cell,
     if (baseline > cell.borderBefore() + cell.paddingBefore())
       m_grid[rowIndex].baseline = std::max(m_grid[rowIndex].baseline, baseline);
   }
+}
+
+int LayoutTableSection::logicalHeightForRow(
+    const LayoutTableRow& rowObject) const {
+  unsigned rowIndex = rowObject.rowIndex();
+  int logicalHeight = 0;
+  const Row& row = m_grid[rowIndex].row;
+  unsigned cols = row.size();
+  for (unsigned colIndex = 0; colIndex < cols; colIndex++) {
+    const CellStruct& cellStruct = cellAt(rowIndex, colIndex);
+    const LayoutTableCell* cell = cellStruct.primaryCell();
+    if (!cell || cellStruct.inColSpan)
+      continue;
+    // TODO(mstensho): Rowspanned cells also need to contribute to row heights
+    // during the first layout pass, in order to get fragmentation right.
+    if (cell->rowSpan() == 1) {
+      logicalHeight =
+          std::max(logicalHeight, cell->logicalHeightForRowSizing());
+    }
+  }
+  return logicalHeight;
 }
 
 bool LayoutTableSection::isRepeatingHeaderGroup() const {

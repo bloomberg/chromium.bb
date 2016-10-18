@@ -195,6 +195,7 @@ void LayoutTableRow::layout() {
 
   for (LayoutTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
     SubtreeLayoutScope layouter(*cell);
+    cell->setLogicalTop(logicalTop());
     if (!cell->needsLayout())
       markChildForPaginationRelayoutIfNeeded(*cell, layouter);
     if (cell->needsLayout())
