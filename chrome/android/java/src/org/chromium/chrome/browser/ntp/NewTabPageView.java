@@ -92,7 +92,7 @@ public class NewTabPageView extends FrameLayout
 
     private NewTabPageLayout mNewTabPageLayout;
     private LogoView mSearchProviderLogoView;
-    private ViewGroup mSearchBoxView;
+    private View mSearchBoxView;
     private ImageView mVoiceSearchButton;
     private MostVisitedLayout mMostVisitedLayout;
     private View mMostVisitedPlaceholder;
@@ -372,7 +372,7 @@ public class NewTabPageView extends FrameLayout
 
         mSearchProviderLogoView =
                 (LogoView) mNewTabPageLayout.findViewById(R.id.search_provider_logo);
-        mSearchBoxView = (ViewGroup) mNewTabPageLayout.findViewById(R.id.search_box);
+        mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
 
         initializeSearchBoxTextView();
@@ -493,9 +493,7 @@ public class NewTabPageView extends FrameLayout
         if (!mManager.isCurrentPage()) return;
 
         // Disable the search box contents if it is the process of being animated away.
-        for (int i = 0; i < mSearchBoxView.getChildCount(); i++) {
-            mSearchBoxView.getChildAt(i).setEnabled(mSearchBoxView.getAlpha() == 1.0f);
-        }
+        ViewUtils.setEnabledRecursive(mSearchBoxView, mSearchBoxView.getAlpha() == 1.0f);
 
         if (mSearchBoxScrollListener != null) {
             mSearchBoxScrollListener.onNtpScrollChanged(getToolbarTransitionPercentage());
