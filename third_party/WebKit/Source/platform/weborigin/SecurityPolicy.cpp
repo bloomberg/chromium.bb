@@ -202,7 +202,9 @@ void SecurityPolicy::addOriginTrustworthyWhiteList(
 
 bool SecurityPolicy::isOriginWhiteListedTrustworthy(
     const SecurityOrigin& origin) {
-  if (origin.isUnique())
+  // Early return if there are no whitelisted origins to avoid unnecessary
+  // allocations, copies, and frees.
+  if (origin.isUnique() || trustworthyOriginSet().isEmpty())
     return false;
   return trustworthyOriginSet().contains(origin.toRawString());
 }
