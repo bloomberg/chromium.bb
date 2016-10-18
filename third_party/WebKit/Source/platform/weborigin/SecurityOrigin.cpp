@@ -40,6 +40,7 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 #include <memory>
 
 namespace blink {
@@ -386,7 +387,9 @@ bool SecurityOrigin::isLocal() const {
 }
 
 bool SecurityOrigin::isLocalhost() const {
-  // TODO(mkwst): Update this to call into net::IsLocalhost.
+  // Note: net::isLocalhost has looser checks which allow uppercase hosts, as
+  // well as hosts like "a.localhost". The net code is also less optimized and
+  // slower (mainly string and vector allocations).
   if (m_host == "localhost")
     return true;
 
@@ -394,15 +397,15 @@ bool SecurityOrigin::isLocalhost() const {
     return true;
 
   // Test if m_host matches 127.0.0.1/8
-  ASSERT(m_host.containsOnlyASCII());
-  CString hostAscii = m_host.ascii();
+  DCHECK(m_host.containsOnlyASCII());
+  StringUTF8Adaptor utf8(m_host);
   Vector<uint8_t, 4> ipNumber;
   ipNumber.resize(4);
 
   int numComponents;
-  url::Component hostComponent(0, hostAscii.length());
+  url::Component hostComponent(0, utf8.length());
   url::CanonHostInfo::Family family = url::IPv4AddressToNumber(
-      hostAscii.data(), hostComponent, &(ipNumber)[0], &numComponents);
+      utf8.data(), hostComponent, &(ipNumber)[0], &numComponents);
   if (family != url::CanonHostInfo::IPV4)
     return false;
   return ipNumber[0] == 127;
