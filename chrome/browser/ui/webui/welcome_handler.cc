@@ -18,7 +18,6 @@
 
 WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
-      browser_(chrome::FindBrowserWithWebContents(web_ui->GetWebContents())),
       oauth2_token_service_(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)),
       result_(WelcomeResult::DEFAULT) {
@@ -46,7 +45,7 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
     // them away to the NTP instead.
     GoToNewTabPage();
   } else {
-    browser_->ShowModalSigninWindow(
+    GetBrowser()->ShowModalSigninWindow(
         profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
         signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
   }
@@ -69,7 +68,16 @@ void WelcomeHandler::RegisterMessages() {
 }
 
 void WelcomeHandler::GoToNewTabPage() {
-  chrome::NavigateParams params(browser_, GURL(chrome::kChromeUINewTabURL),
+  chrome::NavigateParams params(GetBrowser(), GURL(chrome::kChromeUINewTabURL),
                                 ui::PageTransition::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
+}
+
+Browser* WelcomeHandler::GetBrowser() {
+  DCHECK(web_ui());
+  content::WebContents* contents = web_ui()->GetWebContents();
+  DCHECK(contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  DCHECK(browser);
+  return browser;
 }

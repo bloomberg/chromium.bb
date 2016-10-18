@@ -37,8 +37,9 @@ class WelcomeHandler : public content::WebUIMessageHandler,
   void HandleUserDecline(const base::ListValue* args);
   void GoToNewTabPage();
 
+  Browser* GetBrowser();
+
   Profile* profile_;
-  Browser* browser_;
   ProfileOAuth2TokenService* oauth2_token_service_;
   WelcomeResult result_;
 
