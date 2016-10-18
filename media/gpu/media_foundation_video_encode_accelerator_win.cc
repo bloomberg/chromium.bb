@@ -402,7 +402,7 @@ void MediaFoundationVideoEncodeAccelerator::NotifyError(
 }
 
 void MediaFoundationVideoEncodeAccelerator::EncodeTask(
-    const scoped_refptr<VideoFrame>& frame,
+    scoped_refptr<VideoFrame> frame,
     bool force_keyframe) {
   DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
@@ -430,6 +430,10 @@ void MediaFoundationVideoEncodeAccelerator::EncodeTask(
   input_sample_->SetSampleTime(frame->timestamp().InMicroseconds() *
                                kOneMicrosecondInMFSampleTimeUnits);
   input_sample_->SetSampleDuration(kOneSecondInMFSampleTimeUnits / frame_rate_);
+
+  // Release frame after input is copied.
+  frame = nullptr;
+
   HRESULT hr = encoder_->ProcessInput(0, input_sample_.get(), 0);
   // According to MSDN, if encoder returns MF_E_NOTACCEPTING, we need to try
   // processing the output. This error indicates that encoder does not accept

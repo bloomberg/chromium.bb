@@ -77,7 +77,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   void NotifyError(VideoEncodeAccelerator::Error error);
 
   // Encoding tasks to be run on |encoder_thread_|.
-  void EncodeTask(const scoped_refptr<VideoFrame>& frame, bool force_keyframe);
+  void EncodeTask(scoped_refptr<VideoFrame> frame, bool force_keyframe);
 
   // Checks for and copies encoded output on |encoder_thread_|.
   void ProcessOutput();
