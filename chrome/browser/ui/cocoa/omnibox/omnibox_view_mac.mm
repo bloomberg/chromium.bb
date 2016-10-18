@@ -324,10 +324,7 @@ base::string16 OmniboxViewMac::GetText() const {
 }
 
 NSRange OmniboxViewMac::GetSelectedRange() const {
-  AutocompleteTextFieldEditor* editor =
-      base::mac::ObjCCastStrict<AutocompleteTextFieldEditor>(
-          [field_ currentEditor]);
-  return editor.actualSelectedRange;
+  return [[field_ currentEditor] selectedRange];
 }
 
 NSRange OmniboxViewMac::GetMarkedRange() const {

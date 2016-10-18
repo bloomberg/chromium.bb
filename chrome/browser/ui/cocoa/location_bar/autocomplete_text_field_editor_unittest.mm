@@ -204,43 +204,6 @@ TEST_F(AutocompleteTextFieldEditorTest, GrayText) {
   [editor_ display];
 }
 
-// Test that the text view still responds to the private method
-// _userReplaceRange:withString: in case it's removed in future SDKs.
-TEST_F(AutocompleteTextFieldEditorTest, RespondsToUserReplaceRange) {
-  SEL selector = @selector(_userReplaceRange:withString:);
-  EXPECT_TRUE([editor_ respondsToSelector:selector]);
-}
-
-// Test that deleting with a selection that begins just before a
-// combining character works as expected.
-TEST_F(AutocompleteTextFieldEditorTest, DeletesOriginalRange) {
-  [field_ setStringValue:@"สวัสดี"];
-  [editor_ setSelectedRange:NSMakeRange(2, 4)];
-  [editor_ deleteBackward:nil];
-
-  EXPECT_TRUE([[editor_ string] isEqualToString:@"สว"]);
-}
-
-// Test that inserting text on top of a selection that begins just
-// before a combining character works as expected.
-TEST_F(AutocompleteTextFieldEditorTest, InsertTextUsesOriginalRange) {
-  [field_ setStringValue:@"สวัสดี"];
-  [editor_ setSelectedRange:NSMakeRange(2, 4)];
-  [editor_ insertText:@"น"];
-
-  EXPECT_TRUE([[editor_ string] isEqualToString:@"สวน"]);
-}
-
-// Test that |actualSelectedRange| returns original range.
-TEST_F(AutocompleteTextFieldEditorTest,
-       ActualSelectedRangeReturnsOriginalRange) {
-  [field_ setStringValue:@"สวัสดี"];
-  NSRange range = NSMakeRange(2, 4);
-  [editor_ setSelectedRange:range];
-
-  EXPECT_TRUE(NSEqualRanges(editor_.actualSelectedRange, range));
-}
-
 // Test that -paste: is correctly delegated to the observer.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Paste) {
   EXPECT_CALL(field_observer_, OnPaste());
