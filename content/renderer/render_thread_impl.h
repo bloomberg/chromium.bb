@@ -23,6 +23,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/common/associated_interface_registry_impl.h"
@@ -43,6 +44,7 @@
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/web/WebMemoryStatistics.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)
@@ -545,6 +547,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererHidden();
   void OnRendererVisible();
 
+  void RecordPurgeAndSuspendMetrics() const;
+
   void ReleaseFreeMemory();
 
   void OnSyncMemoryPressure(
@@ -742,6 +746,7 @@ class CONTENT_EXPORT RenderThreadImpl
   mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
 
+  base::CancelableClosure record_purge_suspend_metric_closure_;
   bool is_renderer_suspended_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);

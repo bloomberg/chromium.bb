@@ -23,6 +23,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -209,6 +210,12 @@
 
 #if defined(ENABLE_IPC_FUZZER)
 #include "content/common/external_ipc_dumper.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include <malloc/malloc.h>
+#else
+#include <malloc.h>
 #endif
 
 using base::ThreadRestrictions;
@@ -898,6 +905,8 @@ void RenderThreadImpl::Init(
       base::ThreadPriority::BACKGROUND);
 #endif
 
+  record_purge_suspend_metric_closure_.Reset(base::Bind(
+      &RenderThreadImpl::RecordPurgeAndSuspendMetrics, base::Unretained(this)));
   is_renderer_suspended_ = false;
 
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
@@ -1765,6 +1774,7 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
     renderer_scheduler_->OnRendererBackgrounded();
   } else {
     renderer_scheduler_->OnRendererForegrounded();
+    record_purge_suspend_metric_closure_.Cancel();
     is_renderer_suspended_ = false;
   }
 }
@@ -1776,6 +1786,110 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   // TODO(hajimehoshi): Implement purging e.g. cache (crbug/607077)
   is_renderer_suspended_ = true;
   renderer_scheduler_->SuspendRenderer();
+
+  // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
+  // we need to wait until the task is finished. So wait 15 seconds and
+  // update purge+suspend UMA histogram.
+  // TODO(tasak): use MemoryCoordinator's callback to report purge+suspend
+  // UMA when MemoryCoordinator is available.
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE, record_purge_suspend_metric_closure_.callback(),
+      base::TimeDelta::FromSeconds(15));
+}
+
+// TODO(tasak): Replace the following GetMallocUsage() with memory-infra
+// when it is possible to run memory-infra without tracing.
+#if defined(OS_WIN)
+namespace {
+
+static size_t GetMallocUsage() {
+  DWORD number_of_heaps = ::GetProcessHeaps(0, NULL);
+  if (number_of_heaps <= 0)
+    return 0;
+
+  size_t malloc_usage = 0;
+  std::unique_ptr<HANDLE[]> heaps(new HANDLE[number_of_heaps]);
+  ::GetProcessHeaps(number_of_heaps, heaps.get());
+  for (size_t i = 0; i < number_of_heaps; i++) {
+    PROCESS_HEAP_ENTRY heap_entry;
+    ::HeapLock(heaps[i]);
+    heap_entry.lpData = NULL;
+    while (::HeapWalk(heaps[i], &heap_entry) != 0) {
+      if (heap_entry.lpData == heaps.get())
+        continue;
+      if ((heap_entry.wFlags & PROCESS_HEAP_ENTRY_BUSY) != 0)
+        malloc_usage += heap_entry.cbData;
+    }
+    ::HeapUnlock(heaps[i]);
+  }
+  return malloc_usage;
+}
+
+}  // namespace
+#elif defined(OS_MACOSX) || defined(OS_IOS)
+namespace {
+
+static size_t GetMallocUsage() {
+  malloc_statistics_t stats = {0};
+  malloc_zone_statistics(nullptr, &stats);
+  return stats.size_in_use;
+}
+
+}  // namespace
+#endif
+
+// TODO(tasak): Once it is possible to use memory-infra without tracing,
+// we should collect the metrics using memory-infra.
+// TODO(tasak): We should also report a difference between the memory usages
+// before and after purging by using memory-infra.
+void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
+  // If this renderer is resumed, we should not update UMA.
+  if (!is_renderer_suspended_)
+    return;
+
+  // TODO(tasak): Compare memory metrics between purge-enabled renderers and
+  // purge-disabled renderers (A/B testing).
+  blink::WebMemoryStatistics blink_stats = blink::WebMemoryStatistics::Get();
+  UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.PartitionAllocKB",
+                          blink_stats.partitionAllocTotalAllocatedBytes / 1024);
+  UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.BlinkGCKB",
+                          blink_stats.blinkGCTotalAllocatedBytes / 1024);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  struct mallinfo minfo = mallinfo();
+#if defined(USE_TCMALLOC)
+  size_t malloc_usage = minfo.uordblks;
+#else
+  size_t malloc_usage = minfo.hblkhd + minfo.arena;
+#endif
+#else
+  size_t malloc_usage = GetMallocUsage();
+#endif
+  UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.MallocMB",
+                          malloc_usage / 1024 / 1024);
+
+  ChildDiscardableSharedMemoryManager::Statistics discardable_stats =
+      ChildThreadImpl::discardable_shared_memory_manager()->GetStatistics();
+  size_t discardable_usage =
+      discardable_stats.total_size - discardable_stats.freelist_size;
+  UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.DiscardableKB",
+                          discardable_usage / 1024);
+
+  size_t v8_usage = 0;
+  if (v8::Isolate* isolate = blink::mainThreadIsolate()) {
+    v8::HeapStatistics v8_heap_statistics;
+    isolate->GetHeapStatistics(&v8_heap_statistics);
+    v8_usage = v8_heap_statistics.total_heap_size();
+  }
+  // TODO(tasak): Currently only memory usage of mainThreadIsolate() is
+  // reported. We should collect memory usages of all isolates using
+  // memory-infra.
+  UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.V8MainThreadIsolateMB",
+                          v8_usage / 1024 / 1024);
+  UMA_HISTOGRAM_MEMORY_MB("PurgeAndSuspend.Memory.TotalAllocatedMB",
+                          (blink_stats.partitionAllocTotalAllocatedBytes +
+                           blink_stats.blinkGCTotalAllocatedBytes +
+                           malloc_usage + v8_usage + discardable_usage) /
+                              1024 / 1024);
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {

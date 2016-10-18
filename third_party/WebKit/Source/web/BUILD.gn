@@ -201,6 +201,7 @@ component("web") {
     "WebMediaDeviceChangeObserver.cpp",
     "WebMediaDevicesRequest.cpp",
     "WebMediaStreamRegistry.cpp",
+    "WebMemoryStatistics.cpp",
     "WebMetaElement.cpp",
     "WebNetworkStateNotifier.cpp",
     "WebNode.cpp",

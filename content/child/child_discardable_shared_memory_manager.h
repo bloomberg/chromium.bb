@@ -48,6 +48,13 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
       const char* name,
       base::trace_event::ProcessMemoryDump* pmd) const;
 
+  struct Statistics {
+    size_t total_size;
+    size_t freelist_size;
+  };
+
+  Statistics GetStatistics() const;
+
  private:
   std::unique_ptr<base::DiscardableSharedMemory>
   AllocateLockedDiscardableSharedMemory(size_t size,

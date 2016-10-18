@@ -493,6 +493,7 @@ source_set("blink_headers") {
     "web/WebMediaDevicesRequest.h",
     "web/WebMediaPlayerAction.h",
     "web/WebMediaStreamRegistry.h",
+    "web/WebMemoryStatistics.h",
     "web/WebMenuItemInfo.h",
     "web/WebMetaElement.h",
     "web/WebNavigationPolicy.h",
