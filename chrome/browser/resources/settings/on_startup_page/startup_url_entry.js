@@ -36,14 +36,21 @@ Polymer({
 
   /** @private */
   onRemoveTap_: function() {
-    this.$$('iron-dropdown').close();
+    this.$$('dialog[is=settings-action-menu]').close();
     settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
         this.model.modelIndex);
   },
 
   /** @private */
   onEditTap_: function() {
-    this.$$('iron-dropdown').close();
+    this.$$('dialog[is=settings-action-menu]').close();
     this.fire(settings.EDIT_STARTUP_URL_EVENT, this.model);
+  },
+
+  /** @private */
+  onDotsTap_: function() {
+    var actionMenu = /** @type {!SettingsActionMenuElement} */(
+        this.$.menu.get());
+    actionMenu.showAt(assert(this.$.dots));
   },
 });
