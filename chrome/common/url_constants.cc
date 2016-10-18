@@ -621,6 +621,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUIHistoryHost,
   kChromeUIInvalidationsHost,
   kChromeUILocalStateHost,
+  kChromeUINetExportHost,
   kChromeUINetInternalsHost,
   kChromeUINewTabHost,
   kChromeUIOmniboxHost,
