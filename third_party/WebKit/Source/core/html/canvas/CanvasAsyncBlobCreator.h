@@ -115,7 +115,6 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   void idleTaskStartTimeoutEvent(double quality);
   void idleTaskCompleteTimeoutEvent();
-  void recordIdleTaskStatusHistogram();
 };
 
 }  // namespace blink

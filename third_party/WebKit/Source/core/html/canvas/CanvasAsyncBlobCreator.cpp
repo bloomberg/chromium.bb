@@ -85,6 +85,69 @@ CanvasAsyncBlobCreator::MimeType convertMimeTypeStringToEnum(
   return mimeTypeEnum;
 }
 
+void recordIdleTaskStatusHistogram(
+    CanvasAsyncBlobCreator::IdleTaskStatus status) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, toBlobIdleTaskStatus,
+                      ("Blink.Canvas.ToBlob.IdleTaskStatus",
+                       CanvasAsyncBlobCreator::IdleTaskCount));
+  toBlobIdleTaskStatus.count(status);
+}
+
+// This enum is used in histogram and any more types should be appended at the
+// end of the list.
+enum ElapsedTimeHistogramType {
+  InitiateEncodingDelay,
+  IdleEncodeDuration,
+  ToBlobDuration,
+  NumberOfElapsedTimeHistogramTypes
+};
+
+void recordElapsedTimeHistogram(ElapsedTimeHistogramType type,
+                                CanvasAsyncBlobCreator::MimeType mimeType,
+                                double elapsedTime) {
+  if (type == InitiateEncodingDelay) {
+    if (mimeType == CanvasAsyncBlobCreator::MimeTypePng) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, toBlobPNGInitiateEncodingCounter,
+          ("Blink.Canvas.ToBlob.InitiateEncodingDelay.PNG", 0, 10000000, 50));
+      toBlobPNGInitiateEncodingCounter.count(elapsedTime * 1000000.0);
+    } else if (mimeType == CanvasAsyncBlobCreator::MimeTypeJpeg) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, toBlobJPEGInitiateEncodingCounter,
+          ("Blink.Canvas.ToBlob.InitiateEncodingDelay.JPEG", 0, 10000000, 50));
+      toBlobJPEGInitiateEncodingCounter.count(elapsedTime * 1000000.0);
+    }
+  } else if (type == IdleEncodeDuration) {
+    if (mimeType == CanvasAsyncBlobCreator::MimeTypePng) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, toBlobPNGIdleEncodeCounter,
+          ("Blink.Canvas.ToBlob.IdleEncodeDuration.PNG", 0, 10000000, 50));
+      toBlobPNGIdleEncodeCounter.count(elapsedTime * 1000000.0);
+    } else if (mimeType == CanvasAsyncBlobCreator::MimeTypeJpeg) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, toBlobJPEGIdleEncodeCounter,
+          ("Blink.Canvas.ToBlob.IdleEncodeDuration.JPEG", 0, 10000000, 50));
+      toBlobJPEGIdleEncodeCounter.count(elapsedTime * 1000000.0);
+    }
+  } else if (type == ToBlobDuration) {
+    if (mimeType == CanvasAsyncBlobCreator::MimeTypePng) {
+      DEFINE_STATIC_LOCAL(CustomCountHistogram, toBlobPNGCounter,
+                          ("Blink.Canvas.ToBlobDuration.PNG", 0, 10000000, 50));
+      toBlobPNGCounter.count(elapsedTime * 1000000.0);
+    } else if (mimeType == CanvasAsyncBlobCreator::MimeTypeJpeg) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, toBlobJPEGCounter,
+          ("Blink.Canvas.ToBlobDuration.JPEG", 0, 10000000, 50));
+      toBlobJPEGCounter.count(elapsedTime * 1000000.0);
+    } else if (mimeType == CanvasAsyncBlobCreator::MimeTypeWebp) {
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, toBlobWEBPCounter,
+          ("Blink.Canvas.ToBlobDuration.WEBP", 0, 10000000, 50));
+      toBlobWEBPCounter.count(elapsedTime * 1000000.0);
+    }
+  }
+}
+
 }  // anonymous namespace
 
 CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::create(
@@ -181,12 +244,9 @@ void CanvasAsyncBlobCreator::scheduleInitiateJpegEncoding(
 void CanvasAsyncBlobCreator::initiateJpegEncoding(const double& quality,
                                                   double deadlineSeconds) {
   ASSERT(isMainThread());
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, toBlobJPEGInitiateEncodingCounter,
-      ("Blink.Canvas.ToBlob.InitiateEncodingDelay.JPEG", 0, 10000000, 50));
-  toBlobJPEGInitiateEncodingCounter.count(
-      (WTF::monotonicallyIncreasingTime() - m_scheduleInitiateStartTime) *
-      1000000.0);
+  recordElapsedTimeHistogram(
+      InitiateEncodingDelay, MimeTypeJpeg,
+      WTF::monotonicallyIncreasingTime() - m_scheduleInitiateStartTime);
   if (m_idleTaskStatus == IdleTaskSwitchedToMainThreadTask) {
     return;
   }
@@ -210,12 +270,10 @@ void CanvasAsyncBlobCreator::scheduleInitiatePngEncoding() {
 
 void CanvasAsyncBlobCreator::initiatePngEncoding(double deadlineSeconds) {
   ASSERT(isMainThread());
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, toBlobPNGInitiateEncodingCounter,
-      ("Blink.Canvas.ToBlob.InitiateEncodingDelay.PNG", 0, 10000000, 50));
-  toBlobPNGInitiateEncodingCounter.count(
-      (WTF::monotonicallyIncreasingTime() - m_scheduleInitiateStartTime) *
-      1000000.0);
+  recordElapsedTimeHistogram(
+      InitiateEncodingDelay, MimeTypePng,
+      WTF::monotonicallyIncreasingTime() - m_scheduleInitiateStartTime);
+
   if (m_idleTaskStatus == IdleTaskSwitchedToMainThreadTask) {
     return;
   }
@@ -256,11 +314,7 @@ void CanvasAsyncBlobCreator::idleEncodeRowsPng(double deadlineSeconds) {
 
   m_idleTaskStatus = IdleTaskCompleted;
   m_elapsedTime += (WTF::monotonicallyIncreasingTime() - startTime);
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, toBlobPNGIdleEncodeCounter,
-      ("Blink.Canvas.ToBlob.IdleEncodeDuration.PNG", 0, 10000000, 50));
-  toBlobPNGIdleEncodeCounter.count(m_elapsedTime * 1000000.0);
-
+  recordElapsedTimeHistogram(IdleEncodeDuration, MimeTypePng, m_elapsedTime);
   if (isDeadlineNearOrPassed(deadlineSeconds)) {
     TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
         ->postTask(
@@ -285,10 +339,8 @@ void CanvasAsyncBlobCreator::idleEncodeRowsJpeg(double deadlineSeconds) {
   m_elapsedTime += (WTF::monotonicallyIncreasingTime() - startTime);
   if (m_numRowsCompleted == m_size.height()) {
     m_idleTaskStatus = IdleTaskCompleted;
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, toBlobJPEGIdleEncodeCounter,
-        ("Blink.Canvas.ToBlob.IdleEncodeDuration.JPEG", 0, 10000000, 50));
-    toBlobJPEGIdleEncodeCounter.count(m_elapsedTime * 1000000.0);
+    recordElapsedTimeHistogram(IdleEncodeDuration, MimeTypeJpeg, m_elapsedTime);
+
     if (isDeadlineNearOrPassed(deadlineSeconds)) {
       TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
           ->postTask(
@@ -338,30 +390,12 @@ void CanvasAsyncBlobCreator::encodeRowsJpegOnMainThread() {
   this->signalAlternativeCodePathFinishedForTesting();
 }
 
-void CanvasAsyncBlobCreator::recordIdleTaskStatusHistogram() {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, toBlobIdleTaskStatus,
-                      ("Blink.Canvas.ToBlob.IdleTaskStatus", IdleTaskCount));
-  toBlobIdleTaskStatus.count(m_idleTaskStatus);
-}
-
 void CanvasAsyncBlobCreator::createBlobAndInvokeCallback() {
   ASSERT(isMainThread());
-  recordIdleTaskStatusHistogram();
+  recordIdleTaskStatusHistogram(m_idleTaskStatus);
 
-  double elapsedTime = WTF::monotonicallyIncreasingTime() - m_startTime;
-  if (m_mimeType == MimeTypePng) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, toBlobPNGCounter,
-                        ("Blink.Canvas.ToBlobDuration.PNG", 0, 10000000, 50));
-    toBlobPNGCounter.count(elapsedTime * 1000000.0);
-  } else if (m_mimeType == MimeTypeJpeg) {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, toBlobJPEGCounter,
-                        ("Blink.Canvas.ToBlobDuration.JPEG", 0, 10000000, 50));
-    toBlobJPEGCounter.count(elapsedTime * 1000000.0);
-  } else {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, toBlobWEBPCounter,
-                        ("Blink.Canvas.ToBlobDuration.WEBP", 0, 10000000, 50));
-    toBlobWEBPCounter.count(elapsedTime * 1000000.0);
-  }
+  recordElapsedTimeHistogram(ToBlobDuration, m_mimeType,
+                             WTF::monotonicallyIncreasingTime() - m_startTime);
   Blob* resultBlob =
       Blob::create(m_encodedImage->data(), m_encodedImage->size(),
                    convertMimeTypeEnumToString(m_mimeType));
@@ -375,7 +409,7 @@ void CanvasAsyncBlobCreator::createBlobAndInvokeCallback() {
 
 void CanvasAsyncBlobCreator::createNullAndInvokeCallback() {
   ASSERT(isMainThread());
-  recordIdleTaskStatusHistogram();
+  recordIdleTaskStatusHistogram(m_idleTaskStatus);
   TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, m_document)
       ->postTask(BLINK_FROM_HERE,
                  WTF::bind(&BlobCallback::handleEvent,
