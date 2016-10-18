@@ -64,7 +64,7 @@ FakeISearchHandler.prototype = {
   }
 };
 
-TEST_F('ISearchTest', 'Simple', function() {
+TEST_F('ISearchTest', 'DISABLED_Simple', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function(rootNode) {
     var handler = new FakeISearchHandler(this);
     var search = new ISearch(rootNode);
