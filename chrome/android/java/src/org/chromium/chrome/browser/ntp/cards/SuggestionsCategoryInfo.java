@@ -125,10 +125,9 @@ public class SuggestionsCategoryInfo {
                 Log.wtf(TAG, "Requested description for unsupported category: %d", mCategory);
                 return 0;
             case KnownCategories.ARTICLES:
-            default:
-                // TODO(dgn): For now, we assume any unknown sections are remote sections and just
-                // reuse the string for ARTICLES. crbug.com/656008
                 return R.string.ntp_status_card_no_articles;
+            default:
+                return R.string.ntp_status_card_no_suggestions;
         }
     }
 }
