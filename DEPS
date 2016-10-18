@@ -341,7 +341,7 @@ deps_os = {
   },
   'ios': {
     'src/ios/third_party/earl_grey/src':
-      Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '090aa5fa68d4c422af4ee84912d30bc89a3e8820',
+      Var('chromium_git') + '/external/github.com/google/EarlGrey.git' + '@' + '625b2b7cdaf9371ae2b001d6cdc23b1790d41cd8',
 
     'src/ios/third_party/fishhook/src':
       Var('chromium_git') + '/external/github.com/facebook/fishhook.git' + '@' + 'd172d5247aa590c25d0b1885448bae76036ea22c',
