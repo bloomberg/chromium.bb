@@ -1570,7 +1570,7 @@
     'blink_indexed_db': ['cmumford@chromium.org',
                          'jsbell+idb@chromium.org'],
     'blink_input': ['dtapuska+blinkwatch@chromium.org',
-                    'nzolghadr+blinkwatch@chromium.org'],
+                    'nzolghadr@chromium.org'],
     'blink_layers': ['blink-layers+watch@chromium.org'],
     'blink_layout': ['blink-reviews-layout@chromium.org',
                      'eae+blinkwatch@chromium.org',
