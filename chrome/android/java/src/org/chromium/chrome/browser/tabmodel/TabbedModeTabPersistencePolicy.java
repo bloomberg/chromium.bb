@@ -107,8 +107,12 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     }
 
     @Override
+    public boolean shouldMergeOnStartup() {
+        return mMergeTabs;
+    }
+
+    @Override
     public String getStateToBeMergedFileName() {
-        if (!mMergeTabs) return null;
         return getStateFileName(mOtherSelectorIndex);
     }
 

@@ -223,9 +223,10 @@ public class TabPersistentStore extends TabPersister {
                 startFetchTabListTask(executor, mPersistencePolicy.getStateFileName());
         startPrefetchActiveTabTask(executor);
 
-        String mergedStateFileName = mPersistencePolicy.getStateToBeMergedFileName();
-        if (mergedStateFileName != null) {
-            mPrefetchTabListToMergeTask = startFetchTabListTask(executor, mergedStateFileName);
+        if (mPersistencePolicy.shouldMergeOnStartup()) {
+            assert mPersistencePolicy.getStateToBeMergedFileName() != null;
+            mPrefetchTabListToMergeTask = startFetchTabListTask(
+                    executor, mPersistencePolicy.getStateToBeMergedFileName());
         }
     }
 

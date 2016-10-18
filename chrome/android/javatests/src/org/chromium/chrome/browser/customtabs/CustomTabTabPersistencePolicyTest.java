@@ -363,6 +363,11 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
             }
 
             @Override
+            public boolean shouldMergeOnStartup() {
+                return false;
+            }
+
+            @Override
             public boolean isMergeInProgress() {
                 return false;
             }
