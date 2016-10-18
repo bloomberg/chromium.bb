@@ -190,6 +190,23 @@ config("browser_test_config") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
 
+test("cast_shell_tests") {
+  sources = [
+    "test/cast_media_blocker_test.cc",
+    "test/cast_test_launcher.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//chromecast/app",
+    "//chromecast/base",
+    "//content/test:test_support",
+    "//mojo/edk/system",
+    "//testing/gtest",
+  ]
+}
+
 test("cast_shell_browser_test") {
   sources = [
     "test/chromecast_shell_browser_test.cc",

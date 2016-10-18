@@ -2,3 +2,9 @@ include_rules = [
   "+chromecast/app",
   "+content/public/test",
 ]
+
+specific_include_rules = {
+  "cast_test_launcher\.cc": [
+    "+mojo/edk/embedder/embedder.h",
+  ],
+}
