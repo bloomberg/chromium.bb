@@ -1,9 +1,6 @@
 -ActivityLogApiTest.TriggerEvent
 -BrowserActionApiTest.BrowserActionPopupWithIframe
 -ChromeServiceWorker*
--ContinueWhereILeftOffTest.PostWithPassword
--ContinueWhereILeftOffTest.PostWithPasswordBrowserClose
--ContinueWhereILeftOffTest.PostWithPasswordCloseAllBrowsers
 -CrazyExtensionTest.Crazy
 -DevToolsSanityTest.TestNetworkRawHeadersText
 -ErrorPageTest.IFrameDNSError_JavaScript
@@ -35,7 +32,6 @@
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
 -RedirectTest.ClientServerServer
--RestartTest.PostWithPassword
 -SafeBrowsing*
 -SubresourceFilterBrowserTest.MainFrameActivation
 -SubresourceFilterBrowserTest.MainFrameActivationOnStartup
