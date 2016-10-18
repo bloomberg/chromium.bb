@@ -28,6 +28,7 @@ source_set("unit_tests") {
 
   deps = [
     ":network_time",
+    ":network_time_test_support",
     "//base",
     "//base/test:test_support",
     "//components/client_update_protocol",
@@ -35,6 +36,21 @@ source_set("unit_tests") {
     "//components/variations",
     "//net",
     "//net:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("network_time_test_support") {
+  testonly = true
+  sources = [
+    "network_time_test_utils.cc",
+    "network_time_test_utils.h",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/variations",
     "//testing/gtest",
   ]
 }

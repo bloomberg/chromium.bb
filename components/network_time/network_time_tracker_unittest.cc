@@ -4,26 +4,20 @@
 
 #include "components/network_time/network_time_tracker.h"
 
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/client_update_protocol/ecdsa.h"
 #include "components/network_time/network_time_pref_names.h"
+#include "components/network_time/network_time_test_utils.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -45,7 +39,7 @@ const char kWallClockBackwardsHistogram[] =
     "NetworkTimeTracker.WallClockRanBackwards";
 }  // namespace
 
-class NetworkTimeTrackerTest : public testing::Test {
+class NetworkTimeTrackerTest : public FieldTrialTest {
  public:
   ~NetworkTimeTrackerTest() override {}
 
@@ -180,50 +174,6 @@ class NetworkTimeTrackerTest : public testing::Test {
   }
 
  protected:
-  void SetNetworkQueriesWithVariationsService(bool enable,
-                                              float query_probability) {
-    const std::string kTrialName = "Trial";
-    const std::string kGroupName = "group";
-    const base::Feature kFeature{"NetworkTimeServiceQuerying",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-    // Clear all the things.
-    variations::testing::ClearAllVariationParams();
-
-    std::map<std::string, std::string> params;
-    params["RandomQueryProbability"] = base::DoubleToString(query_probability);
-    params["CheckTimeIntervalSeconds"] = base::Int64ToString(360);
-
-    // There are 3 things here: a FieldTrial, a FieldTrialList, and a
-    // FeatureList.  Don't get confused!  The FieldTrial is reference-counted,
-    // and a reference is held by the FieldTrialList.  The FieldTrialList and
-    // FeatureList are both singletons.  The authorized way to reset the former
-    // for testing is to destruct it (above).  The latter, by contrast, should
-    // should already start in a clean state and can be manipulated via the
-    // ScopedFeatureList helper class. If this comment was useful to you
-    // please send me a postcard.
-
-    field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<base::MockEntropyProvider>()));
-    // refcounted, and reference held by field_trial_list_.
-    base::FieldTrial* trial = base::FieldTrialList::FactoryGetFieldTrial(
-        kTrialName, 100, kGroupName, 1971, 1, 1,
-        base::FieldTrial::SESSION_RANDOMIZED,
-        nullptr /* default_group_number */);
-    ASSERT_TRUE(
-        variations::AssociateVariationParams(kTrialName, kGroupName, params));
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        kFeature.name, enable ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
-                              : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-        trial);
-    scoped_feature_list_.reset(new base::test::ScopedFeatureList);
-    scoped_feature_list_->InitWithFeatureList(std::move(feature_list));
-  }
-
   base::Thread io_thread_;
   base::MessageLoop message_loop_;
   base::TimeDelta resolution_;
@@ -232,10 +182,8 @@ class NetworkTimeTrackerTest : public testing::Test {
   base::SimpleTestClock* clock_;
   base::SimpleTestTickClock* tick_clock_;
   TestingPrefServiceSimple pref_service_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   std::unique_ptr<NetworkTimeTracker> tracker_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 TEST_F(NetworkTimeTrackerTest, Uninitialized) {

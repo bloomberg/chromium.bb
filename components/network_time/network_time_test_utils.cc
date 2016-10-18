@@ -1,0 +1,63 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/network_time/network_time_test_utils.h"
+
+#include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/variations/variations_associated_data.h"
+
+namespace network_time {
+
+FieldTrialTest::FieldTrialTest() : ::testing::Test() {}
+FieldTrialTest::~FieldTrialTest() {}
+
+void FieldTrialTest::SetNetworkQueriesWithVariationsService(
+    bool enable,
+    float query_probability) {
+  const std::string kTrialName = "Trial";
+  const std::string kGroupName = "group";
+  const base::Feature kFeature{"NetworkTimeServiceQuerying",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+  // Clear all the things.
+  variations::testing::ClearAllVariationParams();
+
+  std::map<std::string, std::string> params;
+  params["RandomQueryProbability"] = base::DoubleToString(query_probability);
+  params["CheckTimeIntervalSeconds"] = base::Int64ToString(360);
+
+  // There are 3 things here: a FieldTrial, a FieldTrialList, and a
+  // FeatureList.  Don't get confused!  The FieldTrial is reference-counted,
+  // and a reference is held by the FieldTrialList.  The FieldTrialList and
+  // FeatureList are both singletons.  The authorized way to reset the former
+  // for testing is to destruct it (above).  The latter, by contrast, should
+  // should already start in a clean state and can be manipulated via the
+  // ScopedFeatureList helper class. If this comment was useful to you
+  // please send me a postcard.
+
+  field_trial_list_.reset();  // Averts a CHECK fail in constructor below.
+  field_trial_list_.reset(
+      new base::FieldTrialList(base::MakeUnique<base::MockEntropyProvider>()));
+  // refcounted, and reference held by field_trial_list_.
+  base::FieldTrial* trial = base::FieldTrialList::FactoryGetFieldTrial(
+      kTrialName, 100, kGroupName, 1971, 1, 1,
+      base::FieldTrial::SESSION_RANDOMIZED, nullptr /* default_group_number */);
+  ASSERT_TRUE(
+      variations::AssociateVariationParams(kTrialName, kGroupName, params));
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      kFeature.name, enable ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                            : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+      trial);
+  scoped_feature_list_.reset(new base::test::ScopedFeatureList);
+  scoped_feature_list_->InitWithFeatureList(std::move(feature_list));
+}
+
+}  // namespace network_time

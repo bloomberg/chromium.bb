@@ -38,39 +38,6 @@ using base::TimeDelta;
 namespace ssl_errors {
 namespace {
 
-// Describes the result of getting network time and if it was
-// unavailable, why it was unavailable. This enum is being histogrammed
-// so do not reorder or remove values.
-enum NetworkClockState {
-  // Value 0 was NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC, which is obsolete
-  // in favor of the finer-grained values below.
-
-  // The clock state relative to network time is unknown because the
-  // user's clock has fallen out of sync with the latest information
-  // from the network (due to e.g. suspend/resume).
-  NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST = 1,
-  // The clock is "close enough" to the network time.
-  NETWORK_CLOCK_STATE_OK,
-  // The clock is in the past relative to network time.
-  NETWORK_CLOCK_STATE_CLOCK_IN_PAST,
-  // The clock is in the future relative to network time.
-  NETWORK_CLOCK_STATE_CLOCK_IN_FUTURE,
-  // The clock state relative to network time is unknown because no sync
-  // attempt has been made yet.
-  NETWORK_CLOCK_STATE_UNKNOWN_NO_SYNC_ATTEMPT,
-  // The clock state relative to network time is unknown because one or
-  // more sync attempts has failed.
-  NETWORK_CLOCK_STATE_UNKNOWN_NO_SUCCESSFUL_SYNC,
-  // The clock state relative to network time is unknown because the
-  // first sync attempt is still pending.
-  NETWORK_CLOCK_STATE_UNKNOWN_FIRST_SYNC_PENDING,
-  // The clock state relative to network time is unknown because one or
-  // more time query attempts have failed, and a subsequent sync attempt
-  // is still pending.
-  NETWORK_CLOCK_STATE_UNKNOWN_SUBSEQUENT_SYNC_PENDING,
-  NETWORK_CLOCK_STATE_MAX
-};
-
 // Events for UMA. Do not reorder or change!
 enum SSLInterstitialCause {
   CLOCK_PAST,
@@ -280,8 +247,8 @@ ClockState GetClockState(
     build_time_state = CLOCK_STATE_FUTURE;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network2",
-                            network_time_result, NETWORK_CLOCK_STATE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network3",
+                            network_state, NETWORK_CLOCK_STATE_MAX);
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.build_time",
                             build_time_state, CLOCK_STATE_MAX);
 
