@@ -186,7 +186,7 @@ void CacheStorageManager::DeleteCache(
 
 void CacheStorageManager::EnumerateCaches(
     const GURL& origin,
-    const CacheStorage::StringsAndErrorCallback& callback) {
+    const CacheStorage::StringsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);

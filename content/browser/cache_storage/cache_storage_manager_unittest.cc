@@ -135,11 +135,9 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
-  void StringsAndErrorCallback(base::RunLoop* run_loop,
-                               const std::vector<std::string>& strings,
-                               CacheStorageError error) {
+  void StringsCallback(base::RunLoop* run_loop,
+                       const std::vector<std::string>& strings) {
     callback_strings_ = strings;
-    callback_error_ = error;
     run_loop->Quit();
   }
 
@@ -197,14 +195,13 @@ class CacheStorageManagerTest : public testing::Test {
     return callback_bool_;
   }
 
-  bool Keys(const GURL& origin) {
+  size_t Keys(const GURL& origin) {
     base::RunLoop loop;
     cache_manager_->EnumerateCaches(
-        origin, base::Bind(&CacheStorageManagerTest::StringsAndErrorCallback,
+        origin, base::Bind(&CacheStorageManagerTest::StringsCallback,
                            base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
-    return callback_error_ == CACHE_STORAGE_OK;
+    return callback_strings_.size();
   }
 
   bool StorageMatch(const GURL& origin,
@@ -498,22 +495,19 @@ TEST_P(CacheStorageManagerTestP, DeleteCacheReducesOriginSize) {
 }
 
 TEST_P(CacheStorageManagerTestP, EmptyKeys) {
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_TRUE(callback_strings_.empty());
+  EXPECT_EQ(0u, Keys(origin1_));
 }
 
 TEST_P(CacheStorageManagerTestP, SomeKeys) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin2_, "baz"));
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(2u, callback_strings_.size());
+  EXPECT_EQ(2u, Keys(origin1_));
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
   expected_keys.push_back("bar");
   EXPECT_EQ(expected_keys, callback_strings_);
-  EXPECT_TRUE(Keys(origin2_));
-  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_EQ(1u, Keys(origin2_));
   EXPECT_STREQ("baz", callback_strings_[0].c_str());
 }
 
@@ -522,8 +516,7 @@ TEST_P(CacheStorageManagerTestP, DeletedKeysGone) {
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin2_, "baz"));
   EXPECT_TRUE(Delete(origin1_, "bar"));
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_EQ(1u, Keys(origin1_));
   EXPECT_STREQ("foo", callback_strings_[0].c_str());
 }
 
@@ -669,8 +662,7 @@ TEST_P(CacheStorageManagerTestP, Chinese) {
       std::move(callback_cache_handle_);
   EXPECT_TRUE(Open(origin1_, "你好"));
   EXPECT_EQ(callback_cache_handle_->value(), cache_handle->value());
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_EQ(1u, Keys(origin1_));
   EXPECT_STREQ("你好", callback_strings_[0].c_str());
 }
 
@@ -680,13 +672,11 @@ TEST_F(CacheStorageManagerTest, EmptyKey) {
       std::move(callback_cache_handle_);
   EXPECT_TRUE(Open(origin1_, ""));
   EXPECT_EQ(cache_handle->value(), callback_cache_handle_->value());
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_EQ(1u, Keys(origin1_));
   EXPECT_STREQ("", callback_strings_[0].c_str());
   EXPECT_TRUE(Has(origin1_, ""));
   EXPECT_TRUE(Delete(origin1_, ""));
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(0u, callback_strings_.size());
+  EXPECT_EQ(0u, Keys(origin1_));
 }
 
 TEST_F(CacheStorageManagerTest, DataPersists) {
@@ -697,8 +687,7 @@ TEST_F(CacheStorageManagerTest, DataPersists) {
   EXPECT_TRUE(Delete(origin1_, "bar"));
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(2u, callback_strings_.size());
+  EXPECT_EQ(2u, Keys(origin1_));
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
   expected_keys.push_back("baz");
@@ -710,8 +699,7 @@ TEST_F(CacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {
   EXPECT_TRUE(Open(origin2_, "baz"));
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(0u, callback_strings_.size());
+  EXPECT_EQ(0u, Keys(origin1_));
 }
 
 TEST_F(CacheStorageManagerTest, BadCacheName) {
@@ -719,8 +707,7 @@ TEST_F(CacheStorageManagerTest, BadCacheName) {
   // escape the directory.
   const std::string bad_name = "../../../../../../../../../../../../../../foo";
   EXPECT_TRUE(Open(origin1_, bad_name));
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_EQ(1u, Keys(origin1_));
   EXPECT_STREQ(bad_name.c_str(), callback_strings_[0].c_str());
 }
 
@@ -729,8 +716,7 @@ TEST_F(CacheStorageManagerTest, BadOriginName) {
   // escape the directory.
   GURL bad_origin("http://../../../../../../../../../../../../../../foo");
   EXPECT_TRUE(Open(bad_origin, "foo"));
-  EXPECT_TRUE(Keys(bad_origin));
-  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_EQ(1u, Keys(bad_origin));
   EXPECT_STREQ("foo", callback_strings_[0].c_str());
 }
 
@@ -767,8 +753,7 @@ TEST_P(CacheStorageManagerTestP, CacheWorksAfterDelete) {
   EXPECT_TRUE(CacheMatch(original_handle->value(), kBarURL));
 
   // The cache shouldn't be visible to subsequent storage operations.
-  EXPECT_TRUE(Keys(origin1_));
-  EXPECT_TRUE(callback_strings_.empty());
+  EXPECT_EQ(0u, Keys(origin1_));
 
   // Open a new cache with the same name, it should create a new cache, but not
   // interfere with the original cache.
@@ -940,7 +925,7 @@ TEST_P(CacheStorageManagerTestP, DeleteStorageAccessed) {
 
 TEST_P(CacheStorageManagerTestP, KeysStorageAccessed) {
   EXPECT_EQ(0, quota_manager_proxy_->notify_storage_accessed_count());
-  EXPECT_TRUE(Keys(origin1_));
+  EXPECT_EQ(0u, Keys(origin1_));
   EXPECT_EQ(1, quota_manager_proxy_->notify_storage_accessed_count());
 }
 

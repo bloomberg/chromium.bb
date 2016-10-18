@@ -389,14 +389,7 @@ void CacheStorageDispatcherHost::OnCacheStorageDeleteCallback(
 void CacheStorageDispatcherHost::OnCacheStorageKeysCallback(
     int thread_id,
     int request_id,
-    const std::vector<std::string>& strings,
-    CacheStorageError error) {
-  if (error != CACHE_STORAGE_OK) {
-    Send(new CacheStorageMsg_CacheStorageKeysError(
-        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
-    return;
-  }
-
+    const std::vector<std::string>& strings) {
   std::vector<base::string16> string16s;
   for (size_t i = 0, max = strings.size(); i < max; ++i)
     string16s.push_back(base::UTF8ToUTF16(strings[i]));

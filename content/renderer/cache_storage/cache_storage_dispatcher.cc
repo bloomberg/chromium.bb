@@ -261,8 +261,6 @@ bool CacheStorageDispatcher::OnMessageReceived(const IPC::Message& message) {
                           OnCacheStorageOpenError)
       IPC_MESSAGE_HANDLER(CacheStorageMsg_CacheStorageDeleteError,
                           OnCacheStorageDeleteError)
-      IPC_MESSAGE_HANDLER(CacheStorageMsg_CacheStorageKeysError,
-                          OnCacheStorageKeysError)
       IPC_MESSAGE_HANDLER(CacheStorageMsg_CacheStorageMatchError,
                           OnCacheStorageMatchError)
       IPC_MESSAGE_HANDLER(CacheStorageMsg_CacheMatchSuccess,
@@ -392,18 +390,6 @@ void CacheStorageDispatcher::OnCacheStorageDeleteError(
   callbacks->onError(reason);
   delete_callbacks_.Remove(request_id);
   delete_times_.erase(request_id);
-}
-
-void CacheStorageDispatcher::OnCacheStorageKeysError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
-  DCHECK_EQ(thread_id, CurrentWorkerId());
-  WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks =
-      keys_callbacks_.Lookup(request_id);
-  callbacks->onError(reason);
-  keys_callbacks_.Remove(request_id);
-  keys_times_.erase(request_id);
 }
 
 void CacheStorageDispatcher::OnCacheStorageMatchError(

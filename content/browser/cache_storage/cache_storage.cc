@@ -570,7 +570,7 @@ void CacheStorage::DeleteCache(const std::string& cache_name,
                  cache_name, scheduler_->WrapCallbackToRunNext(callback)));
 }
 
-void CacheStorage::EnumerateCaches(const StringsAndErrorCallback& callback) {
+void CacheStorage::EnumerateCaches(const StringsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!initialized_)
@@ -835,9 +835,8 @@ void CacheStorage::DeleteCacheDidGetSize(
   cache_loader_->CleanUpDeletedCache(cache.get());
 }
 
-void CacheStorage::EnumerateCachesImpl(
-    const StringsAndErrorCallback& callback) {
-  callback.Run(ordered_cache_names_, CACHE_STORAGE_OK);
+void CacheStorage::EnumerateCachesImpl(const StringsCallback& callback) {
+  callback.Run(ordered_cache_names_);
 }
 
 void CacheStorage::MatchCacheImpl(

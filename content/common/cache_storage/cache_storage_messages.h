@@ -152,10 +152,6 @@ IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageDeleteError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageKeysError,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageMatchError,
                      int /* thread_id */,
                      int /* request_id */,

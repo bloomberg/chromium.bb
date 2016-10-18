@@ -47,8 +47,7 @@ class CONTENT_EXPORT CacheStorage {
   typedef base::Callback<void(std::unique_ptr<CacheStorageCacheHandle>,
                               CacheStorageError)>
       CacheAndErrorCallback;
-  typedef base::Callback<void(const StringVector&, CacheStorageError)>
-      StringsAndErrorCallback;
+  using StringsCallback = base::Callback<void(const StringVector&)>;
   using SizeCallback = base::Callback<void(int64_t)>;
 
   static const char kIndexFileName[];
@@ -88,7 +87,7 @@ class CONTENT_EXPORT CacheStorage {
                    const BoolAndErrorCallback& callback);
 
   // Calls the callback with a vector of cache names (keys) available.
-  void EnumerateCaches(const StringsAndErrorCallback& callback);
+  void EnumerateCaches(const StringsCallback& callback);
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
@@ -173,7 +172,7 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCacheDidCleanUp(bool success);
 
   // The EnumerateCache callbacks are below.
-  void EnumerateCachesImpl(const StringsAndErrorCallback& callback);
+  void EnumerateCachesImpl(const StringsCallback& callback);
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,

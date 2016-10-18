@@ -70,9 +70,6 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   void OnCacheStorageDeleteError(int thread_id,
                                  int request_id,
                                  blink::WebServiceWorkerCacheError reason);
-  void OnCacheStorageKeysError(int thread_id,
-                               int request_id,
-                               blink::WebServiceWorkerCacheError reason);
   void OnCacheStorageMatchError(int thread_id,
                                 int request_id,
                                 blink::WebServiceWorkerCacheError reason);
