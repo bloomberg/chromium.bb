@@ -1210,9 +1210,6 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange) {
   // needs to be audited.  see http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      frame()->document()->lifecycle());
-
   frame()->selection().setSelectedRange(
       webRange.createEphemeralRange(frame()), VP_DEFAULT_AFFINITY,
       SelectionDirectionalMode::NonDirectional, NotUserTriggered);
@@ -1331,6 +1328,11 @@ void WebLocalFrameImpl::deleteSurroundingText(int before, int after) {
     plugin->deleteSurroundingText(before, after);
     return;
   }
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   frame()->inputMethodController().deleteSurroundingText(before, after);
 }
 
