@@ -276,7 +276,10 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(
     return emptyString();
 
   Document* document = startPosition.document();
-  document->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  DCHECK(!document->needsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document->lifecycle());
 
   HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup<Strategy>(
       startPosition, endPosition, shouldAnnotate, constrainingAncestor);
