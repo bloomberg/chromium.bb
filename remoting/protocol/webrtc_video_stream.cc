@@ -231,7 +231,7 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
           frame.timestamps->capture_started_time -
           frame.timestamps->input_event_timestamps.host_timestamp;
       stats.latest_event_timestamp =
-          frame.timestamps->input_event_timestamps.host_timestamp;
+          frame.timestamps->input_event_timestamps.client_timestamp;
     }
 
     stats.capture_delay = frame.timestamps->capture_delay;

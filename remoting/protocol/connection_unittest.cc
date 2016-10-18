@@ -534,11 +534,12 @@ TEST_P(ConnectionTest, VideoStats) {
   Connect();
 
   base::TimeTicks start_time = base::TimeTicks::Now();
+  base::TimeTicks event_timestamp = base::TimeTicks::FromInternalValue(42);
 
   scoped_refptr<InputEventTimestampsSourceImpl> input_event_timestamps_source =
       new InputEventTimestampsSourceImpl();
   input_event_timestamps_source->OnEventReceived(
-      InputEventTimestamps{start_time, start_time});
+      InputEventTimestamps{event_timestamp, start_time});
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
@@ -554,30 +555,27 @@ TEST_P(ConnectionTest, VideoStats) {
   const FrameStats& stats =
       client_video_renderer_.GetFrameStatsConsumer()->received_stats().front();
 
-  EXPECT_TRUE(stats.host_stats.frame_size > 0);
+  EXPECT_GT(stats.host_stats.frame_size, 0);
 
-  EXPECT_TRUE(stats.host_stats.latest_event_timestamp == start_time);
-  EXPECT_TRUE(stats.host_stats.capture_delay != base::TimeDelta::Max());
-  EXPECT_TRUE(stats.host_stats.capture_overhead_delay !=
-              base::TimeDelta::Max());
-  EXPECT_TRUE(stats.host_stats.encode_delay != base::TimeDelta::Max());
-  EXPECT_TRUE(stats.host_stats.send_pending_delay != base::TimeDelta::Max());
+  EXPECT_EQ(stats.host_stats.latest_event_timestamp, event_timestamp);
+  EXPECT_NE(stats.host_stats.capture_delay, base::TimeDelta::Max());
+  EXPECT_NE(stats.host_stats.capture_overhead_delay, base::TimeDelta::Max());
+  EXPECT_NE(stats.host_stats.encode_delay, base::TimeDelta::Max());
+  EXPECT_NE(stats.host_stats.send_pending_delay, base::TimeDelta::Max());
 
   EXPECT_FALSE(stats.client_stats.time_received.is_null());
   EXPECT_FALSE(stats.client_stats.time_decoded.is_null());
   EXPECT_FALSE(stats.client_stats.time_rendered.is_null());
 
-  EXPECT_TRUE(start_time + stats.host_stats.capture_pending_delay +
-                  stats.host_stats.capture_delay +
-                  stats.host_stats.capture_overhead_delay +
-                  stats.host_stats.encode_delay +
-                  stats.host_stats.send_pending_delay <=
-              stats.client_stats.time_received);
-  EXPECT_TRUE(stats.client_stats.time_received <=
-              stats.client_stats.time_decoded);
-  EXPECT_TRUE(stats.client_stats.time_decoded <=
-              stats.client_stats.time_rendered);
-  EXPECT_TRUE(stats.client_stats.time_rendered <= finish_time);
+  EXPECT_LE(start_time + stats.host_stats.capture_pending_delay +
+                stats.host_stats.capture_delay +
+                stats.host_stats.capture_overhead_delay +
+                stats.host_stats.encode_delay +
+                stats.host_stats.send_pending_delay,
+            stats.client_stats.time_received);
+  EXPECT_LE(stats.client_stats.time_received, stats.client_stats.time_decoded);
+  EXPECT_LE(stats.client_stats.time_decoded, stats.client_stats.time_rendered);
+  EXPECT_LE(stats.client_stats.time_rendered, finish_time);
 }
 
 TEST_P(ConnectionTest, Audio) {
