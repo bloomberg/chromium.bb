@@ -196,8 +196,14 @@ bool SelectionController::handleMousePressEventSingleClick(
       newSelection.expandUsingGranularity(selection().granularity());
     }
   } else if (m_selectionState != SelectionState::ExtendedSelection) {
-    newSelection = expandSelectionToRespectUserSelectAll(
-        innerNode, createVisibleSelection(visiblePos));
+    if (visiblePos.isNull()) {
+      newSelection = VisibleSelectionInFlatTree();
+    } else {
+      SelectionInFlatTree::Builder builder;
+      builder.collapse(visiblePos.toPositionWithAffinity());
+      newSelection = expandSelectionToRespectUserSelectAll(
+          innerNode, createVisibleSelection(builder.build()));
+    }
   }
 
   // Updating the selection is considered side-effect of the event and so it
@@ -262,7 +268,9 @@ void SelectionController::updateSelectionForMouseDrag(
   if (m_selectionState != SelectionState::ExtendedSelection) {
     // Always extend selection here because it's caused by a mouse drag
     m_selectionState = SelectionState::ExtendedSelection;
-    newSelection = createVisibleSelection(targetPosition);
+    SelectionInFlatTree::Builder builder;
+    builder.collapse(targetPosition.toPositionWithAffinity());
+    newSelection = createVisibleSelection(builder.build());
   }
 
   if (RuntimeEnabledFeatures::userSelectAllEnabled()) {
@@ -380,7 +388,9 @@ void SelectionController::selectClosestWordFromHitTestResult(
   const VisiblePositionInFlatTree& pos =
       visiblePositionOfHitTestResult(adjustedHitTestResult);
   if (pos.isNotNull()) {
-    newSelection = createVisibleSelection(pos);
+    SelectionInFlatTree::Builder builder;
+    builder.collapse(pos.toPositionWithAffinity());
+    newSelection = createVisibleSelection(builder.build());
     newSelection.expandUsingGranularity(WordGranularity);
   }
 
@@ -555,7 +565,9 @@ bool SelectionController::handleMousePressEventTripleClick(
   const VisiblePositionInFlatTree& pos =
       visiblePositionOfHitTestResult(event.hitTestResult());
   if (pos.isNotNull()) {
-    newSelection = createVisibleSelection(pos);
+    SelectionInFlatTree::Builder builder;
+    builder.collapse(pos.toPositionWithAffinity());
+    newSelection = createVisibleSelection(builder.build());
     newSelection.expandUsingGranularity(ParagraphGranularity);
   }
 
@@ -650,7 +662,11 @@ bool SelectionController::handleMouseReleaseEvent(
     if (node && node->layoutObject() && hasEditableStyle(*node)) {
       const VisiblePositionInFlatTree pos =
           visiblePositionOfHitTestResult(event.hitTestResult());
-      newSelection = createVisibleSelection(pos);
+      if (pos.isNotNull()) {
+        SelectionInFlatTree::Builder builder;
+        builder.collapse(pos.toPositionWithAffinity());
+        newSelection = createVisibleSelection(builder.build());
+      }
     }
 
     setSelectionIfNeeded(selection(), newSelection);
@@ -794,8 +810,13 @@ void SelectionController::passMousePressEventToSubframe(
 
   const VisiblePositionInFlatTree& visiblePos =
       visiblePositionOfHitTestResult(mev.hitTestResult());
-  VisibleSelectionInFlatTree newSelection = createVisibleSelection(visiblePos);
-  selection().setSelection(newSelection);
+  if (visiblePos.isNull()) {
+    selection().setSelection(VisibleSelectionInFlatTree());
+    return;
+  }
+  SelectionInFlatTree::Builder builder;
+  builder.collapse(visiblePos.toPositionWithAffinity());
+  selection().setSelection(createVisibleSelection(builder.build()));
 }
 
 void SelectionController::initializeSelectionState() {

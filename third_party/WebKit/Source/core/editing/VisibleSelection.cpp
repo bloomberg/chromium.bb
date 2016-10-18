@@ -151,14 +151,6 @@ VisibleSelectionInFlatTree createVisibleSelection(
 }
 
 VisibleSelectionInFlatTree createVisibleSelection(
-    const VisiblePositionInFlatTree& pos,
-    bool isDirectional) {
-  DCHECK(pos.isValid());
-  return createVisibleSelection(pos.deepEquivalent(), pos.deepEquivalent(),
-                                pos.affinity(), isDirectional);
-}
-
-VisibleSelectionInFlatTree createVisibleSelection(
     const VisiblePositionInFlatTree& base,
     const VisiblePositionInFlatTree& extent,
     bool isDirectional) {

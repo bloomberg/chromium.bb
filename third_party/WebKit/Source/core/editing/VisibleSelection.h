@@ -247,9 +247,6 @@ createVisibleSelection(const EphemeralRangeInFlatTree&,
                        bool isDirectional = false);
 CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const VisiblePositionInFlatTree&,
-                       bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelection(const VisiblePositionInFlatTree&,
                        const VisiblePositionInFlatTree&,
                        bool isDirectional = false);
 
