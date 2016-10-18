@@ -104,9 +104,19 @@ void NGBox::SetFirstChild(NGBox* child) {
 }
 
 void NGBox::PositionUpdated() {
-  if (layout_box_) {
-    layout_box_->setX(fragment_->LeftOffset());
-    layout_box_->setY(fragment_->TopOffset());
+  if (!layout_box_)
+    return;
+  DCHECK(layout_box_->parent()) << "Should be called on children only.";
+
+  layout_box_->setX(fragment_->LeftOffset());
+  layout_box_->setY(fragment_->TopOffset());
+
+  if (layout_box_->isFloating() && layout_box_->parent()->isLayoutBlockFlow()) {
+    FloatingObject* floating_object = toLayoutBlockFlow(layout_box_->parent())
+                                          ->insertFloatingObject(*layout_box_);
+    floating_object->setX(fragment_->LeftOffset());
+    floating_object->setY(fragment_->TopOffset());
+    floating_object->setIsPlaced(true);
   }
 }
 
