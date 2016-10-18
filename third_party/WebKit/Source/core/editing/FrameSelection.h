@@ -122,10 +122,25 @@ class CORE_EXPORT FrameSelection final
   const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
 
   const VisibleSelection& selection() const;
+
+  void setSelection(const SelectionInDOMTree&,
+                    SetSelectionOptions = CloseTyping | ClearTypingStyle,
+                    CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
+                    TextGranularity = CharacterGranularity);
+
+  void setSelection(const SelectionInFlatTree&,
+                    SetSelectionOptions = CloseTyping | ClearTypingStyle,
+                    CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
+                    TextGranularity = CharacterGranularity);
+
+  // TODO(yosin): We should use |SelectionInDOMTree| version instead of
+  // |VisibleSelection| version.
   void setSelection(const VisibleSelection&,
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
                     TextGranularity = CharacterGranularity);
+  // TODO(yosin): We should use |SelectionInFlatTree| version instead of
+  // |VisibleSelectionInFlatTree| version.
   void setSelection(const VisibleSelectionInFlatTree&,
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,

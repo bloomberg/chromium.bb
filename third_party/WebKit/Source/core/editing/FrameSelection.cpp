@@ -373,6 +373,42 @@ void FrameSelection::setSelectionAlgorithm(
       Event::create(EventTypeNames::selectionchange));
 }
 
+// TODO(yosin): We will make |selectionInDOMTree| version of |SetSelection()|
+// as primary function instead of wrapper.
+void FrameSelection::setSelection(const SelectionInDOMTree& newSelection,
+                                  SetSelectionOptions options,
+                                  CursorAlignOnScroll align,
+                                  TextGranularity granularity) {
+  if (!newSelection.isNone()) {
+    // TODO(editing-dev): The use of
+    // updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    newSelection.base()
+        .document()
+        ->updateStyleAndLayoutIgnorePendingStylesheets();
+  }
+  setSelection(createVisibleSelection(newSelection), options, align,
+               granularity);
+}
+
+// TODO(yosin): We will make |selectionInFlatTree| version of |SetSelection()|
+// as primary function instead of wrapper.
+void FrameSelection::setSelection(const SelectionInFlatTree& newSelection,
+                                  SetSelectionOptions options,
+                                  CursorAlignOnScroll align,
+                                  TextGranularity granularity) {
+  if (!newSelection.isNone()) {
+    // TODO(editing-dev): The use of
+    // updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    newSelection.base()
+        .document()
+        ->updateStyleAndLayoutIgnorePendingStylesheets();
+  }
+  setSelection(createVisibleSelection(newSelection), options, align,
+               granularity);
+}
+
 void FrameSelection::setSelection(const VisibleSelection& newSelection,
                                   SetSelectionOptions options,
                                   CursorAlignOnScroll align,
@@ -1134,7 +1170,6 @@ void FrameSelection::setFocusedNodeIfNeeded() {
     }
     document().clearFocusedElement();
   }
-
 }
 
 static String extractSelectedText(const FrameSelection& selection,
