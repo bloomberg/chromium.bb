@@ -33,10 +33,18 @@ class ColorLUTCache {
   unsigned int MakeLUT(const gfx::ColorSpace& from,
                        gfx::ColorSpace to,
                        int lut_samples);
+
   typedef std::pair<gfx::ColorSpace, std::pair<gfx::ColorSpace, size_t>>
       CacheKey;
 
-  base::MRUCache<CacheKey, std::pair<unsigned int, size_t>> lut_cache_;
+  struct CacheVal {
+    CacheVal(unsigned int texture, uint32_t last_used_frame)
+        : texture(texture), last_used_frame(last_used_frame) {}
+    unsigned int texture;
+    uint32_t last_used_frame;
+  };
+
+  base::MRUCache<CacheKey, CacheVal> lut_cache_;
   uint32_t current_frame_;
   gpu::gles2::GLES2Interface* gl_;
   DISALLOW_COPY_AND_ASSIGN(ColorLUTCache);
