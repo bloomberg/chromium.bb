@@ -240,9 +240,8 @@ void ServerConnectionManager::SetServerStatus(
 
 void ServerConnectionManager::NotifyStatusChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(
-      ServerConnectionEventListener, listeners_,
-      OnServerConnectionEvent(ServerConnectionEvent(server_status_)));
+  for (auto& observer : listeners_)
+    observer.OnServerConnectionEvent(ServerConnectionEvent(server_status_));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(

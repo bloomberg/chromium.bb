@@ -282,8 +282,8 @@ void SyncSchedulerImpl::SendInitialSnapshot() {
   std::unique_ptr<SyncCycle> dummy(SyncCycle::Build(cycle_context_, this));
   SyncCycleEvent event(SyncCycleEvent::STATUS_CHANGED);
   event.snapshot = dummy->TakeSnapshot();
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
-                    OnSyncCycleEvent(event));
+  for (auto& observer : *cycle_context_->listeners())
+    observer.OnSyncCycleEvent(event);
 }
 
 namespace {
@@ -844,13 +844,13 @@ void SyncSchedulerImpl::ExponentialBackoffRetry() {
 }
 
 void SyncSchedulerImpl::NotifyRetryTime(base::Time retry_time) {
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
-                    OnRetryTimeChanged(retry_time));
+  for (auto& observer : *cycle_context_->listeners())
+    observer.OnRetryTimeChanged(retry_time);
 }
 
 void SyncSchedulerImpl::NotifyThrottledTypesChanged(ModelTypeSet types) {
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
-                    OnThrottledTypesChanged(types));
+  for (auto& observer : *cycle_context_->listeners())
+    observer.OnThrottledTypesChanged(types);
 }
 
 bool SyncSchedulerImpl::IsBackingOff() const {
@@ -935,8 +935,8 @@ void SyncSchedulerImpl::OnSyncProtocolError(
   }
   if (IsActionableError(sync_protocol_error)) {
     SDVLOG(2) << "OnActionableError";
-    FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
-                      OnActionableError(sync_protocol_error));
+    for (auto& observer : *cycle_context_->listeners())
+      observer.OnActionableError(sync_protocol_error);
   }
 }
 
@@ -947,8 +947,8 @@ void SyncSchedulerImpl::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {
 }
 
 void SyncSchedulerImpl::OnReceivedMigrationRequest(ModelTypeSet types) {
-  FOR_EACH_OBSERVER(SyncEngineEventListener, *cycle_context_->listeners(),
-                    OnMigrationRequested(types));
+  for (auto& observer : *cycle_context_->listeners())
+    observer.OnMigrationRequested(types);
 }
 
 void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {

@@ -695,8 +695,8 @@ void GenericChangeProcessor::UploadAllAttachmentsNotOnServer() {
 void GenericChangeProcessor::NotifyLocalChangeObservers(
     const syncable::Entry* current_entry,
     const SyncChange& change) {
-  FOR_EACH_OBSERVER(LocalChangeObserver, local_change_observers_,
-                    OnLocalChange(current_entry, change));
+  for (auto& observer : local_change_observers_)
+    observer.OnLocalChange(current_entry, change);
 }
 
 std::unique_ptr<AttachmentService>

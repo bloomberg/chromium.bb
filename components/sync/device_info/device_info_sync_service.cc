@@ -224,7 +224,8 @@ int DeviceInfoSyncService::CountActiveDevices() const {
 }
 
 void DeviceInfoSyncService::NotifyObservers() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
+  for (auto& observer : observers_)
+    observer.OnDeviceInfoChange();
 }
 
 SyncData DeviceInfoSyncService::CreateLocalData(const DeviceInfo* info) {

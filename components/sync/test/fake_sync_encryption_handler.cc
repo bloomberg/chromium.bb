@@ -40,14 +40,15 @@ void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
   if (cryptographer_.has_pending_keys()) {
     DVLOG(1) << "OnPassPhraseRequired Sent";
     sync_pb::EncryptedData pending_keys = cryptographer_.GetPendingKeys();
-    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                      OnPassphraseRequired(REASON_DECRYPTION, pending_keys));
+    for (auto& observer : observers_)
+      observer.OnPassphraseRequired(REASON_DECRYPTION, pending_keys);
   } else if (!cryptographer_.is_ready()) {
     DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
              << "ready";
-    FOR_EACH_OBSERVER(
-        SyncEncryptionHandler::Observer, observers_,
-        OnPassphraseRequired(REASON_ENCRYPTION, sync_pb::EncryptedData()));
+    for (auto& observer : observers_) {
+      observer.OnPassphraseRequired(REASON_ENCRYPTION,
+                                    sync_pb::EncryptedData());
+    }
   }
 }
 
@@ -74,9 +75,9 @@ bool FakeSyncEncryptionHandler::SetKeystoreKeys(
   keystore_key_ = new_key;
 
   DVLOG(1) << "Keystore bootstrap token updated.";
-  FOR_EACH_OBSERVER(
-      SyncEncryptionHandler::Observer, observers_,
-      OnBootstrapTokenUpdated(keystore_key_, KEYSTORE_BOOTSTRAP_TOKEN));
+  for (auto& observer : observers_)
+    observer.OnBootstrapTokenUpdated(keystore_key_, KEYSTORE_BOOTSTRAP_TOKEN);
+
   return true;
 }
 
@@ -110,9 +111,8 @@ void FakeSyncEncryptionHandler::EnableEncryptEverything() {
     return;
   encrypt_everything_ = true;
   encrypted_types_ = ModelTypeSet::All();
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
+  for (auto& observer : observers_)
+    observer.OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_);
 }
 
 bool FakeSyncEncryptionHandler::IsEncryptEverythingEnabled() const {

@@ -81,8 +81,8 @@ void BackendMigrator::RemoveMigrationObserver(MigrationObserver* observer) {
 
 void BackendMigrator::ChangeState(State new_state) {
   state_ = new_state;
-  FOR_EACH_OBSERVER(MigrationObserver, migration_observers_,
-                    OnMigrationStateChange());
+  for (auto& observer : migration_observers_)
+    observer.OnMigrationStateChange();
 }
 
 bool BackendMigrator::TryStart() {

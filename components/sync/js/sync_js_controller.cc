@@ -34,8 +34,8 @@ void SyncJsController::AttachJsBackend(
 
 void SyncJsController::HandleJsEvent(const std::string& name,
                                      const JsEventDetails& details) {
-  FOR_EACH_OBSERVER(JsEventHandler, js_event_handlers_,
-                    HandleJsEvent(name, details));
+  for (auto& observer : js_event_handlers_)
+    observer.HandleJsEvent(name, details);
 }
 
 void SyncJsController::UpdateBackendEventHandler() {

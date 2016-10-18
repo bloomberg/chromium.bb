@@ -29,7 +29,8 @@ void SyncErrorController::RemoveObserver(Observer* observer) {
 }
 
 void SyncErrorController::OnStateChanged() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnErrorChanged());
+  for (auto& observer : observer_list_)
+    observer.OnErrorChanged();
 }
 
 }  // namespace syncer

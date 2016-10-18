@@ -46,8 +46,8 @@ CommitCounters* DirectoryTypeDebugInfoEmitter::GetMutableCommitCounters() {
 }
 
 void DirectoryTypeDebugInfoEmitter::EmitCommitCountersUpdate() {
-  FOR_EACH_OBSERVER(TypeDebugInfoObserver, (*type_debug_info_observers_),
-                    OnCommitCountersUpdated(type_, commit_counters_));
+  for (auto& observer : *type_debug_info_observers_)
+    observer.OnCommitCountersUpdated(type_, commit_counters_);
 }
 
 const UpdateCounters& DirectoryTypeDebugInfoEmitter::GetUpdateCounters() const {
@@ -59,8 +59,8 @@ UpdateCounters* DirectoryTypeDebugInfoEmitter::GetMutableUpdateCounters() {
 }
 
 void DirectoryTypeDebugInfoEmitter::EmitUpdateCountersUpdate() {
-  FOR_EACH_OBSERVER(TypeDebugInfoObserver, (*type_debug_info_observers_),
-                    OnUpdateCountersUpdated(type_, update_counters_));
+  for (auto& observer : *type_debug_info_observers_)
+    observer.OnUpdateCountersUpdated(type_, update_counters_);
 }
 
 void DirectoryTypeDebugInfoEmitter::EmitStatusCountersUpdate() {
@@ -83,8 +83,8 @@ void DirectoryTypeDebugInfoEmitter::EmitStatusCountersUpdate() {
     }
   }
 
-  FOR_EACH_OBSERVER(TypeDebugInfoObserver, (*type_debug_info_observers_),
-                    OnStatusCountersUpdated(type_, counters));
+  for (auto& observer : *type_debug_info_observers_)
+    observer.OnStatusCountersUpdated(type_, counters);
 }
 
 }  // namespace syncer

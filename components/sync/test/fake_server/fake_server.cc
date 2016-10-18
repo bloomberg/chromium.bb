@@ -509,8 +509,9 @@ bool FakeServer::HandleCommitRequest(const sync_pb::CommitMessage& commit,
     committed_model_types.Put(iter->second->model_type());
   }
 
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnCommit(invalidator_client_id, committed_model_types));
+  for (auto& observer : observers_)
+    observer.OnCommit(invalidator_client_id, committed_model_types);
+
   return true;
 }
 

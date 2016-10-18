@@ -216,7 +216,8 @@ int DeviceInfoService::CountActiveDevices() const {
 }
 
 void DeviceInfoService::NotifyObservers() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
+  for (auto& observer : observers_)
+    observer.OnDeviceInfoChange();
 }
 
 // Static.

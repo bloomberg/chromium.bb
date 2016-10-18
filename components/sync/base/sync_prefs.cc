@@ -341,8 +341,8 @@ void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
 
 void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncPrefObserver, sync_pref_observers_,
-                    OnSyncManagedPrefChange(*pref_sync_managed_));
+  for (auto& observer : sync_pref_observers_)
+    observer.OnSyncManagedPrefChange(*pref_sync_managed_);
 }
 
 void SyncPrefs::SetManagedForTest(bool is_managed) {
