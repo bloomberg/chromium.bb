@@ -320,7 +320,8 @@ void AudioManagerBase::RemoveOutputDeviceChangeListener(
 void AudioManagerBase::NotifyAllOutputDeviceChangeListeners() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << "Firing OnDeviceChange() notifications.";
-  FOR_EACH_OBSERVER(AudioDeviceListener, output_listeners_, OnDeviceChange());
+  for (auto& observer : output_listeners_)
+    observer.OnDeviceChange();
 }
 
 AudioParameters AudioManagerBase::GetDefaultOutputStreamParameters() {
