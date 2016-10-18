@@ -608,6 +608,14 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(
               : toHTMLQuoteElement(enclosingNodeOfType(
                     Position::firstPositionInNode(context),
                     isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
+
+      // EditingStyle::removeStyleFromRulesAndContext() uses StyleResolver,
+      // which requires clean style.
+      // TODO(editing-dev): There is currently no way to update style without
+      // updating layout. We might want to have updateLifcycleToStyleClean()
+      // similar to FrameView::updateLifecylceToLayoutClean() in Document.
+      document().updateStyleAndLayoutIgnorePendingStylesheets();
+
       if (blockquoteElement)
         newInlineStyle->removeStyleFromRulesAndContext(
             element, document().documentElement());

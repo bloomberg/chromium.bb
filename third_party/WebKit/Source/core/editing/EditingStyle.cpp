@@ -1413,10 +1413,10 @@ void EditingStyle::removeStyleFromRulesAndContext(Element* element,
   if (!m_mutableStyle)
     return;
 
-  // TODO(yosin): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  element->document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(
-      element);
+  // StyleResolver requires clean style.
+  DCHECK_GE(element->document().lifecycle().state(),
+            DocumentLifecycle::StyleClean);
+  DCHECK(element->document().isActive());
 
   // 1. Remove style from matched rules because style remain without repeating
   // it in inline style declaration
