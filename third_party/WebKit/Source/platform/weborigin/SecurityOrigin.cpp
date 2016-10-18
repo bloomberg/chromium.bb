@@ -208,8 +208,7 @@ bool SecurityOrigin::isSecure(const KURL& url) {
                                     extractInnerURL(url).protocol()))
     return true;
 
-  if (SecurityPolicy::isOriginWhiteListedTrustworthy(
-          *SecurityOrigin::create(url).get()))
+  if (SecurityPolicy::isUrlWhiteListedTrustworthy(url))
     return true;
 
   return false;

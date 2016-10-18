@@ -207,6 +207,13 @@ bool SecurityPolicy::isOriginWhiteListedTrustworthy(
   return trustworthyOriginSet().contains(origin.toRawString());
 }
 
+bool SecurityPolicy::isUrlWhiteListedTrustworthy(const KURL& url) {
+  // Early return to avoid initializing the SecurityOrigin.
+  if (trustworthyOriginSet().isEmpty())
+    return false;
+  return isOriginWhiteListedTrustworthy(*SecurityOrigin::create(url).get());
+}
+
 bool SecurityPolicy::isAccessWhiteListed(const SecurityOrigin* activeOrigin,
                                          const SecurityOrigin* targetOrigin) {
   if (OriginAccessWhiteList* list =

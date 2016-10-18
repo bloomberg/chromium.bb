@@ -78,6 +78,7 @@ class PLATFORM_EXPORT SecurityPolicy {
 
   static void addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin>);
   static bool isOriginWhiteListedTrustworthy(const SecurityOrigin&);
+  static bool isUrlWhiteListedTrustworthy(const KURL&);
 
   static bool referrerPolicyFromString(const String& policy,
                                        ReferrerPolicy* result);
