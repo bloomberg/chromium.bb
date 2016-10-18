@@ -34,6 +34,7 @@
       ],
       "ui:window_manager": [
         "display::mojom::DisplayController",
+        "display::mojom::TestDisplayController",
         "ui::mojom::AccessibilityManager",
         "ui::mojom::WindowManagerWindowTreeFactory"
       ],

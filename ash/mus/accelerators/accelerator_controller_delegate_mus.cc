@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
+#include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 
 namespace ash {
 namespace mus {
@@ -51,30 +52,20 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
       return false;
 
 #if defined(OS_CHROMEOS)
-    case DEV_ADD_REMOVE_DISPLAY: {
-      display::mojom::DisplayControllerPtr display_controller;
-      connector_->ConnectToInterface("service:ui", &display_controller);
-      display_controller->ToggleVirtualDisplay();
+    case DEV_ADD_REMOVE_DISPLAY:
+    case SWAP_PRIMARY_DISPLAY:
+    case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
-    }
     case DEV_TOGGLE_UNIFIED_DESKTOP:
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case SWAP_PRIMARY_DISPLAY:
     case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
       NOTIMPLEMENTED();
       return false;
-    case TOUCH_HUD_PROJECTION_TOGGLE: {
-      mash::mojom::LaunchablePtr launchable;
-      connector_->ConnectToInterface("service:touch_hud", &launchable);
-      launchable->Launch(mash::mojom::kWindow,
-                         mash::mojom::LaunchMode::DEFAULT);
-      return true;
-    }
 #endif
 
     default:
@@ -87,14 +78,49 @@ bool AcceleratorControllerDelegateMus::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
+#if defined(OS_CHROMEOS)
+  switch (action) {
+    case DEV_ADD_REMOVE_DISPLAY:
+    case SWAP_PRIMARY_DISPLAY:
+    case TOUCH_HUD_PROJECTION_TOGGLE:
+      return true;
+    default:
+      break;
+  }
+#endif
   return false;
 }
 
 void AcceleratorControllerDelegateMus::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
-  // Should never be hit as HandlesAction() unconditionally returns false.
+#if defined(OS_CHROMEOS)
+  switch (action) {
+    case DEV_ADD_REMOVE_DISPLAY: {
+      display::mojom::TestDisplayControllerPtr test_display_controller;
+      connector_->ConnectToInterface("service:ui", &test_display_controller);
+      test_display_controller->ToggleAddRemoveDisplay();
+      break;
+    }
+    case SWAP_PRIMARY_DISPLAY: {
+      display::mojom::DisplayControllerPtr display_controller;
+      connector_->ConnectToInterface("service:ui", &display_controller);
+      display_controller->SwapPrimaryDisplay();
+      break;
+    }
+    case TOUCH_HUD_PROJECTION_TOGGLE: {
+      mash::mojom::LaunchablePtr launchable;
+      connector_->ConnectToInterface("service:touch_hud", &launchable);
+      launchable->Launch(mash::mojom::kWindow,
+                         mash::mojom::LaunchMode::DEFAULT);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+#else
   NOTREACHED();
+#endif
 }
 
 void AcceleratorControllerDelegateMus::ShowDeprecatedAcceleratorNotification(

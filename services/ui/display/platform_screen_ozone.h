@@ -17,6 +17,7 @@
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/display/platform_screen.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
+#include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display.h"
 #include "ui/display/types/fake_display_controller.h"
@@ -29,7 +30,9 @@ class PlatformScreenOzone
     : public PlatformScreen,
       public ui::DisplayConfigurator::Observer,
       public service_manager::InterfaceFactory<mojom::DisplayController>,
-      public mojom::DisplayController {
+      public service_manager::InterfaceFactory<mojom::TestDisplayController>,
+      public mojom::DisplayController,
+      public mojom::TestDisplayController {
  public:
   PlatformScreenOzone();
   ~PlatformScreenOzone() override;
@@ -40,8 +43,14 @@ class PlatformScreenOzone
   void RequestCloseDisplay(int64_t display_id) override;
   int64_t GetPrimaryDisplayId() const override;
 
+  // mojom::TestDisplayController:
+  void ToggleAddRemoveDisplay() override;
+
   // mojom::DisplayController:
-  void ToggleVirtualDisplay() override;
+  void SwapPrimaryDisplay() override;
+  void SetDisplayWorkArea(int64_t display_id,
+                          const gfx::Size& size,
+                          const gfx::Insets& insets) override;
 
  private:
   // TODO(kylechar): This struct is just temporary until we migrate
@@ -105,6 +114,10 @@ class PlatformScreenOzone
   void Create(const service_manager::Identity& remote_identity,
               mojom::DisplayControllerRequest request) override;
 
+  // mojo::InterfaceFactory<mojom::TestDisplayController>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::TestDisplayControllerRequest request) override;
+
   ui::DisplayConfigurator display_configurator_;
   PlatformScreenDelegate* delegate_ = nullptr;
 
@@ -121,7 +134,8 @@ class PlatformScreenOzone
   std::vector<DisplayInfo> cached_displays_;
   gfx::Point next_display_origin_;
 
-  mojo::BindingSet<mojom::DisplayController> bindings_;
+  mojo::BindingSet<mojom::DisplayController> controller_bindings_;
+  mojo::BindingSet<mojom::TestDisplayController> test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenOzone);
 };
