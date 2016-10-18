@@ -207,5 +207,11 @@ TEST_F(GpuDriverBugListTest, NVIDIANumberingScheme) {
   EXPECT_EQ(0u, bugs.count(DISABLE_D3D11));
 }
 
+TEST_F(GpuDriverBugListTest, DuplicatedBugIDValidation) {
+  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
+  EXPECT_TRUE(list->LoadList(kGpuDriverBugListJson, GpuControlList::kAllOs));
+  EXPECT_FALSE(list->has_duplicated_entry_id());
+}
+
 }  // namespace gpu
 

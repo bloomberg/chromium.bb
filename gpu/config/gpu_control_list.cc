@@ -1580,6 +1580,17 @@ size_t GpuControlList::num_entries() const {
   return entries_.size();
 }
 
+bool GpuControlList::has_duplicated_entry_id() const {
+  std::set<int> ids;
+  for (size_t i = 0; i < entries_.size(); ++i) {
+    if (ids.count(entries_[i]->id()) == 0)
+      ids.insert(entries_[i]->id());
+    else
+      return true;
+  }
+  return false;
+}
+
 uint32_t GpuControlList::max_entry_id() const {
   return max_entry_id_;
 }

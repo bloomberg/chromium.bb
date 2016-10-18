@@ -81,6 +81,13 @@ TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
       kSoftwareRenderingListJson, GpuBlacklist::kAllOs));
 }
 
+TEST_F(GpuBlacklistTest, DuplicatedIDValidation) {
+  std::unique_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
+  EXPECT_TRUE(blacklist->LoadList(
+      kSoftwareRenderingListJson, GpuBlacklist::kAllOs));
+  EXPECT_FALSE(blacklist->has_duplicated_entry_id());
+}
+
 #define GPU_BLACKLIST_FEATURE_TEST(test_name, feature_name, feature_type) \
 TEST_F(GpuBlacklistTest, test_name) {                                     \
   RunFeatureTest(feature_name, feature_type);                             \

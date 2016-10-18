@@ -91,6 +91,9 @@ class GPU_EXPORT GpuControlList {
   // Returns the number of entries.  This is only for tests.
   size_t num_entries() const;
 
+  // This is only for tests.
+  bool has_duplicated_entry_id() const;
+
   // Register a feature to FeatureMap - used to construct a GpuControlList.
   void AddSupportedFeature(const std::string& feature_name, int feature_id);
   // Register whether "all" is recognized as all features.
