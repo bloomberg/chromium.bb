@@ -229,10 +229,6 @@ bool EmbeddedWorkerRegistry::CanHandle(int embedded_worker_id) const {
 
 MessagePortMessageFilter*
 EmbeddedWorkerRegistry::MessagePortMessageFilterForProcess(int process_id) {
-  // TODO(nhiroki): Change this to DCHECK after https://crbug.com/648477 is
-  // fixed.
-  CHECK(
-      base::ContainsKey(process_message_port_message_filter_map_, process_id));
   return process_message_port_message_filter_map_[process_id];
 }
 
