@@ -107,6 +107,29 @@ FontPlatformData* FontCache::getFontPlatformData(
     platformInit();
   }
 
+  if (creationParams.creationType() == CreateFontByFamily) {
+#if OS(MACOSX)
+    if (creationParams.family() == FontCache::legacySystemFontFamily()) {
+      return getFontPlatformData(
+          fontDescription, FontFaceCreationParams(FontFamilyNames::system_ui),
+          true);
+    }
+#else
+    if (creationParams.family() == FontFamilyNames::system_ui) {
+      const AtomicString& actualFamily = FontCache::systemFontFamily();
+#if OS(LINUX)
+      if (actualFamily.isEmpty() || actualFamily == FontFamilyNames::system_ui)
+        return nullptr;
+#else
+      DCHECK(!actualFamily.isEmpty() &&
+             actualFamily != FontFamilyNames::system_ui);
+#endif
+      return getFontPlatformData(fontDescription,
+                                 FontFaceCreationParams(actualFamily), true);
+    }
+#endif
+  }
+
   float size = fontDescription.effectiveFontSize();
   unsigned roundedSize = size * FontCacheKey::precisionMultiplier();
   FontCacheKey key = fontDescription.cacheKey(creationParams);

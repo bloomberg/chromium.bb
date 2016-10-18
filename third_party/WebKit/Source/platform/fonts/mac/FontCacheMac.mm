@@ -61,6 +61,13 @@ namespace blink {
 
 const char* kColorEmojiFontMac = "Apple Color Emoji";
 
+// static
+const AtomicString& FontCache::legacySystemFontFamily() {
+  DEFINE_STATIC_LOCAL(AtomicString, legacySystemFontFamily,
+                      ("BlinkMacSystemFont"));
+  return legacySystemFontFamily;
+}
+
 static void invalidateFontCache() {
   if (!isMainThread()) {
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(

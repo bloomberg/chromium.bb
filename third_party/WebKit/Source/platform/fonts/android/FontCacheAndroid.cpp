@@ -39,6 +39,27 @@
 
 namespace blink {
 
+static AtomicString defaultFontFamily(SkFontMgr* fontManager) {
+  sk_sp<SkTypeface> typeface(
+      fontManager->legacyCreateTypeface(nullptr, SkFontStyle()));
+  SkString familyName;
+  typeface->getFamilyName(&familyName);
+  return familyName.c_str();
+}
+
+static AtomicString defaultFontFamily() {
+  if (SkFontMgr* fontManager = FontCache::fontCache()->fontManager())
+    return defaultFontFamily(fontManager);
+  sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+  return defaultFontFamily(fm.get());
+}
+
+// static
+const AtomicString& FontCache::systemFontFamily() {
+  DEFINE_STATIC_LOCAL(AtomicString, systemFontFamily, (defaultFontFamily()));
+  return systemFontFamily;
+}
+
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     const FontDescription& fontDescription,
     UChar32 c,

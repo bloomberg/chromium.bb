@@ -76,6 +76,11 @@ void FontCache::addSideloadedFontForTesting(SkTypeface* typeface) {
 }
 
 // static
+const AtomicString& FontCache::systemFontFamily() {
+  return menuFontFamily();
+}
+
+// static
 void FontCache::setMenuFontMetrics(const wchar_t* familyName,
                                    int32_t fontHeight) {
   s_menuFontFamilyName = new AtomicString(familyName);

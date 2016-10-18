@@ -32,6 +32,7 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/mac/VersionUtilMac.h"
@@ -125,11 +126,12 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits,
 // exact match comparing the desiredFamily to the PostScript name of the
 // installed fonts.  If that fails we then do a search based on the family
 // names of the installed fonts.
-NSFont* MatchNSFontFamily(NSString* desiredFamily,
+NSFont* MatchNSFontFamily(const AtomicString& desiredFamilyString,
                           NSFontTraitMask desiredTraits,
                           FontWeight desiredWeight,
                           float size) {
-  if ([desiredFamily isEqualToString:@"BlinkMacSystemFont"]) {
+  DCHECK_NE(desiredFamilyString, FontCache::legacySystemFontFamily());
+  if (desiredFamilyString == FontFamilyNames::system_ui) {
     // On OSX 10.9, the default system font depends on the SDK version. When
     // compiled against the OSX 10.10 SDK, the font is .LucidaGrandeUI. When
     // compiled against the OSX 10.6 SDK, the font is Lucida Grande. Layout
@@ -163,6 +165,7 @@ NSFont* MatchNSFontFamily(NSString* desiredFamily,
     return font;
   }
 
+  NSString* desiredFamily = desiredFamilyString;
   NSFontManager* fontManager = [NSFontManager sharedFontManager];
 
   // Do a simple case insensitive search for a matching font family.

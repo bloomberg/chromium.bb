@@ -211,6 +211,7 @@ sk_sp<SkTypeface> FontCache::createTypeface(
 #endif
 
   AtomicString family = creationParams.family();
+  DCHECK_NE(family, FontFamilyNames::system_ui);
   // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the
   // name into the fallback name (like "monospace") that fontconfig understands.
   if (!family.length() || family.startsWith("-webkit-")) {

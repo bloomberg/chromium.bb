@@ -8,3 +8,4 @@ export="PLATFORM_EXPORT"
 -webkit-serif
 -webkit-pictograph
 -webkit-standard
+system-ui

@@ -4,6 +4,8 @@
 
 #import "platform/fonts/mac/FontFamilyMatcherMac.h"
 
+#include "platform/FontFamilyNames.h"
+
 #include <AppKit/AppKit.h>
 #include <gtest/gtest.h>
 
@@ -17,7 +19,8 @@ namespace blink {
 
 void TestSystemFontContainsString(FontWeight desiredWeight,
                                   NSString* substring) {
-  NSFont* font = MatchNSFontFamily(@"BlinkMacSystemFont", 0, desiredWeight, 11);
+  NSFont* font =
+      MatchNSFontFamily(FontFamilyNames::system_ui, 0, desiredWeight, 11);
   EXPECT_TRUE([font.description containsString:substring]);
 }
 
