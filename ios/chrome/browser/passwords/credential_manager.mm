@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/scoped_vector.h"
