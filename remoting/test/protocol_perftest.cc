@@ -163,10 +163,6 @@ class ProtocolPerfTest
 
   // FrameStatsConsumer interface.
   void OnVideoFrameStats(const protocol::FrameStats& frame_stats) override {
-    // Ignore store stats for empty frames.
-    if (!frame_stats.host_stats.frame_size)
-      return;
-
     frame_stats_.push_back(frame_stats);
 
     if (waiting_frame_stats_loop_ &&
@@ -176,14 +172,6 @@ class ProtocolPerfTest
   }
 
   // HostStatusObserver interface.
-  void OnClientAuthenticated(const std::string& jid) override {
-    if (event_timestamp_source_) {
-      auto& session = host_->client_sessions_for_tests().front();
-      session->SetEventTimestampsSourceForTests(
-          std::move(event_timestamp_source_));
-    }
-  }
-
   void OnClientConnected(const std::string& jid) override {
     message_loop_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&ProtocolPerfTest::OnHostConnectedMainThread,
@@ -372,8 +360,6 @@ class ProtocolPerfTest
   base::Thread decode_thread_;
   std::unique_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;
 
-  scoped_refptr<protocol::InputEventTimestampsSource> event_timestamp_source_;
-
   FakeCursorShapeStub cursor_shape_stub_;
 
   std::unique_ptr<protocol::CandidateSessionConfig> protocol_config_;
@@ -450,76 +436,58 @@ INSTANTIATE_TEST_CASE_P(
 void ProtocolPerfTest::MeasureTotalLatency(bool use_webrtc) {
   scoped_refptr<test::CyclicFrameGenerator> frame_generator =
       test::CyclicFrameGenerator::Create();
+  frame_generator->set_draw_barcode(true);
+
   desktop_environment_factory_->set_frame_generator(
       base::Bind(&test::CyclicFrameGenerator::GenerateFrame, frame_generator));
-  event_timestamp_source_ = frame_generator;
 
   StartHostAndClient(use_webrtc);
   ASSERT_NO_FATAL_FAILURE(WaitConnected());
 
-  int total_frames = 0;
-
-  const base::TimeDelta kWarmUpTime = base::TimeDelta::FromSeconds(2);
-  const base::TimeDelta kTestTime = base::TimeDelta::FromSeconds(5);
-
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  while ((base::TimeTicks::Now() - start_time) < (kWarmUpTime + kTestTime)) {
-    ReceiveFrame();
-    ++total_frames;
+  int skipped_frames = 0;
+  while (skipped_frames < 10) {
+    std::unique_ptr<webrtc::DesktopFrame> frame = ReceiveFrame();
+    test::CyclicFrameGenerator::ChangeInfoList changes =
+        frame_generator->GetChangeList(frame.get());
+    skipped_frames += changes.size();
   }
 
-  WaitFrameStats(total_frames);
+  base::TimeDelta total_latency_big_frames;
+  int big_frame_count = 0;
+  base::TimeDelta total_latency_small_frames;
+  int small_frame_count = 0;
 
-  int warm_up_frames = 0;
-
-  int big_update_count = 0;
-  base::TimeDelta total_latency_big_updates;
-  int small_update_count = 0;
-  base::TimeDelta total_latency_small_updates;
-  for (int i = 0; i < total_frames; ++i) {
-    const protocol::FrameStats& stats = frame_stats_[i];
-
-    // CyclicFrameGenerator::TakeLastEventTimestamps() always returns non-null
-    // timestamps.
-    CHECK(!stats.host_stats.latest_event_timestamp.is_null());
-
+  while (big_frame_count + small_frame_count < 30) {
+    std::unique_ptr<webrtc::DesktopFrame> frame = ReceiveFrame();
+    base::TimeTicks frame_received_time = base::TimeTicks::Now();
     test::CyclicFrameGenerator::ChangeInfoList changes =
-        frame_generator->GetChangeList(stats.host_stats.latest_event_timestamp);
-
-    // Allow 2 seconds for the connection to warm-up, e.g. to get bandwidth
-    // estimate, etc. These frames are ignored when calculating stats below.
-    if (stats.client_stats.time_rendered < (start_time + kWarmUpTime)) {
-      ++warm_up_frames;
-      continue;
-    }
-
+        frame_generator->GetChangeList(frame.get());
     for (auto& change_info : changes) {
-      base::TimeDelta latency =
-          stats.client_stats.time_rendered - change_info.timestamp;
+      base::TimeDelta latency = frame_received_time - change_info.timestamp;
       switch (change_info.type) {
         case test::CyclicFrameGenerator::ChangeType::NO_CHANGES:
           NOTREACHED();
           break;
         case test::CyclicFrameGenerator::ChangeType::FULL:
-          total_latency_big_updates += latency;
-          ++big_update_count;
+          total_latency_big_frames += latency;
+          ++big_frame_count;
           break;
         case test::CyclicFrameGenerator::ChangeType::CURSOR:
-          total_latency_small_updates += latency;
-          ++small_update_count;
+          total_latency_small_frames += latency;
+          ++small_frame_count;
           break;
       }
     }
   }
 
-  CHECK(big_update_count);
-  VLOG(0) << "Average latency for big updates: "
-          << (total_latency_big_updates / big_update_count).InMillisecondsF();
+  CHECK(big_frame_count);
+  VLOG(0) << "Average latency for big frames: "
+          << (total_latency_big_frames / big_frame_count).InMillisecondsF();
 
-  if (small_update_count) {
+  if (small_frame_count) {
     VLOG(0)
-        << "Average latency for small updates: "
-        << (total_latency_small_updates / small_update_count).InMillisecondsF();
+        << "Average latency for small frames: "
+        << (total_latency_small_frames / small_frame_count).InMillisecondsF();
   }
 }
 
@@ -536,29 +504,34 @@ TEST_P(ProtocolPerfTest, TotalLatencyWebrtc) {
 void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
   scoped_refptr<test::ScrollFrameGenerator> frame_generator =
       new test::ScrollFrameGenerator();
+
   desktop_environment_factory_->set_frame_generator(
       base::Bind(&test::ScrollFrameGenerator::GenerateFrame, frame_generator));
-  event_timestamp_source_ = frame_generator;
 
   StartHostAndClient(use_webrtc);
   ASSERT_NO_FATAL_FAILURE(WaitConnected());
 
+  int warm_up_frames = 0;
+
+  base::TimeTicks start_time = base::TimeTicks::Now();
   const base::TimeDelta kWarmUpTime = base::TimeDelta::FromSeconds(2);
+  while ((base::TimeTicks::Now() - start_time) < kWarmUpTime) {
+    ReceiveFrame();
+    ++warm_up_frames;
+  }
+
+  client_socket_factory_->ResetStats();
+
+  // Run the test for 2 seconds.
   const base::TimeDelta kTestTime = base::TimeDelta::FromSeconds(2);
 
   int num_frames = 0;
-  int warm_up_frames = 0;
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  while ((base::TimeTicks::Now() - start_time) < (kTestTime + kWarmUpTime)) {
-    ReceiveFrame();
+  base::TimeDelta latency_sum;
+  start_time = base::TimeTicks::Now();
+  while ((base::TimeTicks::Now() - start_time) < kTestTime) {
+    std::unique_ptr<webrtc::DesktopFrame> frame = ReceiveFrame();
     ++num_frames;
-
-    // Allow 2 seconds for the connection to warm-up, e.g. to get bandwidth
-    // estimate, etc. These frames are ignored when calculating stats below.
-    if ((base::TimeTicks::Now() - start_time) < kWarmUpTime) {
-      ++warm_up_frames;
-      client_socket_factory_->ResetStats();
-    }
+    latency_sum += frame_generator->GetFrameLatency(*frame);
   }
 
   base::TimeDelta total_time = (base::TimeTicks::Now() - start_time);
@@ -571,14 +544,6 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
                       [](int sum, const protocol::FrameStats& stats) {
                         return sum + stats.host_stats.frame_size;
                       });
-
-  base::TimeDelta latency_sum = std::accumulate(
-      frame_stats_.begin() + warm_up_frames,
-      frame_stats_.begin() + warm_up_frames + num_frames, base::TimeDelta(),
-      [](base::TimeDelta sum, const protocol::FrameStats& stats) {
-        return sum + (stats.client_stats.time_rendered -
-                      stats.host_stats.latest_event_timestamp);
-      });
 
   VLOG(0) << "FPS: " << num_frames / total_time.InSecondsF();
   VLOG(0) << "Average latency: " << latency_sum.InMillisecondsF() / num_frames
