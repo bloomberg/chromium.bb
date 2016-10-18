@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/scoped_thread_heap_usage.h"
+#include "base/debug/thread_heap_usage_tracker.h"
 
 #include <map>
 
@@ -15,16 +15,18 @@ namespace debug {
 
 namespace {
 
-class TestingScopedThreadHeapUsage : public ScopedThreadHeapUsage {
+class TestingThreadHeapUsageTracker : public ThreadHeapUsageTracker {
  public:
-  using ScopedThreadHeapUsage::DisableHeapTrackingForTesting;
-  using ScopedThreadHeapUsage::GetDispatchForTesting;
+  using ThreadHeapUsageTracker::DisableHeapTrackingForTesting;
+  using ThreadHeapUsageTracker::EnsureTLSInitialized;
+  using ThreadHeapUsageTracker::GetDispatchForTesting;
 };
 
 // A fixture class that allows testing the AllocatorDispatch associated with
-// the ScopedThreadHeapUsage class in isolation against a mocked underlying
+// the ThreadHeapUsageTracker class in isolation against a mocked
+// underlying
 // heap implementation.
-class ScopedThreadHeapUsageTest : public testing::Test {
+class ThreadHeapUsageTrackerTest : public testing::Test {
  public:
   using AllocatorDispatch = base::allocator::AllocatorDispatch;
 
@@ -35,12 +37,12 @@ class ScopedThreadHeapUsageTest : public testing::Test {
     ZERO_SIZE_FUNCTION,
   };
 
-  ScopedThreadHeapUsageTest() : size_function_kind_(EXACT_SIZE_FUNCTION) {
+  ThreadHeapUsageTrackerTest() : size_function_kind_(EXACT_SIZE_FUNCTION) {
     EXPECT_EQ(nullptr, g_self);
     g_self = this;
   }
 
-  ~ScopedThreadHeapUsageTest() override {
+  ~ThreadHeapUsageTrackerTest() override {
     EXPECT_EQ(this, g_self);
     g_self = nullptr;
   }
@@ -50,10 +52,10 @@ class ScopedThreadHeapUsageTest : public testing::Test {
   }
 
   void SetUp() override {
-    ScopedThreadHeapUsage::Initialize();
+    TestingThreadHeapUsageTracker::EnsureTLSInitialized();
 
     dispatch_under_test_ =
-        TestingScopedThreadHeapUsage::GetDispatchForTesting();
+        TestingThreadHeapUsageTracker::GetDispatchForTesting();
     ASSERT_EQ(nullptr, dispatch_under_test_->next);
 
     dispatch_under_test_->next = &g_mock_dispatch;
@@ -186,35 +188,36 @@ class ScopedThreadHeapUsageTest : public testing::Test {
   AllocatorDispatch* dispatch_under_test_;
 
   static base::allocator::AllocatorDispatch g_mock_dispatch;
-  static ScopedThreadHeapUsageTest* g_self;
+  static ThreadHeapUsageTrackerTest* g_self;
 };
 
-const size_t ScopedThreadHeapUsageTest::kAllocationPadding = 23;
+const size_t ThreadHeapUsageTrackerTest::kAllocationPadding = 23;
 
-ScopedThreadHeapUsageTest* ScopedThreadHeapUsageTest::g_self = nullptr;
+ThreadHeapUsageTrackerTest* ThreadHeapUsageTrackerTest::g_self = nullptr;
 
-base::allocator::AllocatorDispatch ScopedThreadHeapUsageTest::g_mock_dispatch =
+base::allocator::AllocatorDispatch ThreadHeapUsageTrackerTest::g_mock_dispatch =
     {
-        &ScopedThreadHeapUsageTest::OnAllocFn,  // alloc_function
-        &ScopedThreadHeapUsageTest::
+        &ThreadHeapUsageTrackerTest::OnAllocFn,  // alloc_function
+        &ThreadHeapUsageTrackerTest::
             OnAllocZeroInitializedFn,  // alloc_zero_initialized_function
-        &ScopedThreadHeapUsageTest::OnAllocAlignedFn,  // alloc_aligned_function
-        &ScopedThreadHeapUsageTest::OnReallocFn,       // realloc_function
-        &ScopedThreadHeapUsageTest::OnFreeFn,          // free_function
-        &ScopedThreadHeapUsageTest::
+        &ThreadHeapUsageTrackerTest::
+            OnAllocAlignedFn,                      // alloc_aligned_function
+        &ThreadHeapUsageTrackerTest::OnReallocFn,  // realloc_function
+        &ThreadHeapUsageTrackerTest::OnFreeFn,     // free_function
+        &ThreadHeapUsageTrackerTest::
             OnGetSizeEstimateFn,  // get_size_estimate_function
         nullptr,                  // next
 };
 
 }  // namespace
 
-TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithExactSizeFunction) {
+TEST_F(ThreadHeapUsageTrackerTest, SimpleUsageWithExactSizeFunction) {
   set_size_function_kind(EXACT_SIZE_FUNCTION);
 
-  ScopedThreadHeapUsage scoped_usage;
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u1 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  ThreadHeapUsage u1 = ThreadHeapUsageTracker::GetUsageSnapshot();
 
   EXPECT_EQ(0U, u1.alloc_ops);
   EXPECT_EQ(0U, u1.alloc_bytes);
@@ -227,8 +230,8 @@ TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithExactSizeFunction) {
   void* ptr = MockMalloc(kAllocSize);
   MockFree(ptr);
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u2 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  usage_tracker.Stop(false);
+  ThreadHeapUsage u2 = usage_tracker.usage();
 
   EXPECT_EQ(1U, u2.alloc_ops);
   EXPECT_EQ(kAllocSize, u2.alloc_bytes);
@@ -238,13 +241,13 @@ TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithExactSizeFunction) {
   EXPECT_EQ(kAllocSize, u2.max_allocated_bytes);
 }
 
-TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithPaddingSizeFunction) {
+TEST_F(ThreadHeapUsageTrackerTest, SimpleUsageWithPaddingSizeFunction) {
   set_size_function_kind(PADDING_SIZE_FUNCTION);
 
-  ScopedThreadHeapUsage scoped_usage;
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u1 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  ThreadHeapUsage u1 = ThreadHeapUsageTracker::GetUsageSnapshot();
 
   EXPECT_EQ(0U, u1.alloc_ops);
   EXPECT_EQ(0U, u1.alloc_bytes);
@@ -257,8 +260,8 @@ TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithPaddingSizeFunction) {
   void* ptr = MockMalloc(kAllocSize);
   MockFree(ptr);
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u2 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  usage_tracker.Stop(false);
+  ThreadHeapUsage u2 = usage_tracker.usage();
 
   EXPECT_EQ(1U, u2.alloc_ops);
   EXPECT_EQ(kAllocSize + kAllocationPadding, u2.alloc_bytes);
@@ -268,13 +271,13 @@ TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithPaddingSizeFunction) {
   EXPECT_EQ(kAllocSize + kAllocationPadding, u2.max_allocated_bytes);
 }
 
-TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithZeroSizeFunction) {
+TEST_F(ThreadHeapUsageTrackerTest, SimpleUsageWithZeroSizeFunction) {
   set_size_function_kind(ZERO_SIZE_FUNCTION);
 
-  ScopedThreadHeapUsage scoped_usage;
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u1 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  ThreadHeapUsage u1 = ThreadHeapUsageTracker::GetUsageSnapshot();
   EXPECT_EQ(0U, u1.alloc_ops);
   EXPECT_EQ(0U, u1.alloc_bytes);
   EXPECT_EQ(0U, u1.alloc_overhead_bytes);
@@ -286,8 +289,8 @@ TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithZeroSizeFunction) {
   void* ptr = MockMalloc(kAllocSize);
   MockFree(ptr);
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u2 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  usage_tracker.Stop(false);
+  ThreadHeapUsage u2 = usage_tracker.usage();
 
   // With a get-size function that returns zero, there's no way to get the size
   // of an allocation that's being freed, hence the shim can't tally freed bytes
@@ -300,16 +303,16 @@ TEST_F(ScopedThreadHeapUsageTest, SimpleUsageWithZeroSizeFunction) {
   EXPECT_EQ(0U, u2.max_allocated_bytes);
 }
 
-TEST_F(ScopedThreadHeapUsageTest, ReallocCorrectlyTallied) {
+TEST_F(ThreadHeapUsageTrackerTest, ReallocCorrectlyTallied) {
   const size_t kAllocSize = 237U;
 
   {
-    ScopedThreadHeapUsage scoped_usage;
+    ThreadHeapUsageTracker usage_tracker;
+    usage_tracker.Start();
 
     // Reallocating nullptr should count as a single alloc.
     void* ptr = MockRealloc(nullptr, kAllocSize);
-    ScopedThreadHeapUsage::ThreadAllocatorUsage usage =
-        ScopedThreadHeapUsage::CurrentUsage();
+    ThreadHeapUsage usage = ThreadHeapUsageTracker::GetUsageSnapshot();
     EXPECT_EQ(1U, usage.alloc_ops);
     EXPECT_EQ(kAllocSize, usage.alloc_bytes);
     EXPECT_EQ(0U, usage.alloc_overhead_bytes);
@@ -321,13 +324,13 @@ TEST_F(ScopedThreadHeapUsageTest, ReallocCorrectlyTallied) {
     // free.
     ptr = MockRealloc(ptr, 0U);
 
-    usage = ScopedThreadHeapUsage::CurrentUsage();
-    EXPECT_EQ(1U, usage.alloc_ops);
-    EXPECT_EQ(kAllocSize, usage.alloc_bytes);
-    EXPECT_EQ(0U, usage.alloc_overhead_bytes);
-    EXPECT_EQ(1U, usage.free_ops);
-    EXPECT_EQ(kAllocSize, usage.free_bytes);
-    EXPECT_EQ(kAllocSize, usage.max_allocated_bytes);
+    usage_tracker.Stop(false);
+    EXPECT_EQ(1U, usage_tracker.usage().alloc_ops);
+    EXPECT_EQ(kAllocSize, usage_tracker.usage().alloc_bytes);
+    EXPECT_EQ(0U, usage_tracker.usage().alloc_overhead_bytes);
+    EXPECT_EQ(1U, usage_tracker.usage().free_ops);
+    EXPECT_EQ(kAllocSize, usage_tracker.usage().free_bytes);
+    EXPECT_EQ(kAllocSize, usage_tracker.usage().max_allocated_bytes);
 
     // Realloc to zero size may or may not return a nullptr - make sure to
     // free the zero-size alloc in the latter case.
@@ -336,11 +339,11 @@ TEST_F(ScopedThreadHeapUsageTest, ReallocCorrectlyTallied) {
   }
 
   {
-    ScopedThreadHeapUsage scoped_usage;
+    ThreadHeapUsageTracker usage_tracker;
+    usage_tracker.Start();
 
     void* ptr = MockMalloc(kAllocSize);
-    ScopedThreadHeapUsage::ThreadAllocatorUsage usage =
-        ScopedThreadHeapUsage::CurrentUsage();
+    ThreadHeapUsage usage = ThreadHeapUsageTracker::GetUsageSnapshot();
     EXPECT_EQ(1U, usage.alloc_ops);
 
     // Now try reallocating a valid pointer to a larger size, this should count
@@ -348,82 +351,171 @@ TEST_F(ScopedThreadHeapUsageTest, ReallocCorrectlyTallied) {
     const size_t kLargerAllocSize = kAllocSize + 928U;
     ptr = MockRealloc(ptr, kLargerAllocSize);
 
-    usage = ScopedThreadHeapUsage::CurrentUsage();
-    EXPECT_EQ(2U, usage.alloc_ops);
-    EXPECT_EQ(kAllocSize + kLargerAllocSize, usage.alloc_bytes);
-    EXPECT_EQ(0U, usage.alloc_overhead_bytes);
-    EXPECT_EQ(1U, usage.free_ops);
-    EXPECT_EQ(kAllocSize, usage.free_bytes);
-    EXPECT_EQ(kLargerAllocSize, usage.max_allocated_bytes);
+    usage_tracker.Stop(false);
+    EXPECT_EQ(2U, usage_tracker.usage().alloc_ops);
+    EXPECT_EQ(kAllocSize + kLargerAllocSize, usage_tracker.usage().alloc_bytes);
+    EXPECT_EQ(0U, usage_tracker.usage().alloc_overhead_bytes);
+    EXPECT_EQ(1U, usage_tracker.usage().free_ops);
+    EXPECT_EQ(kAllocSize, usage_tracker.usage().free_bytes);
+    EXPECT_EQ(kLargerAllocSize, usage_tracker.usage().max_allocated_bytes);
 
     MockFree(ptr);
   }
 }
 
-TEST_F(ScopedThreadHeapUsageTest, NestedMaxWorks) {
-  ScopedThreadHeapUsage outer_scoped_usage;
+TEST_F(ThreadHeapUsageTrackerTest, NestedMaxWorks) {
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
 
   const size_t kOuterAllocSize = 1029U;
   void* ptr = MockMalloc(kOuterAllocSize);
   MockFree(ptr);
 
   EXPECT_EQ(kOuterAllocSize,
-            ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+            ThreadHeapUsageTracker::GetUsageSnapshot().max_allocated_bytes);
 
   {
-    ScopedThreadHeapUsage inner_scoped_usage;
+    ThreadHeapUsageTracker inner_usage_tracker;
+    inner_usage_tracker.Start();
 
     const size_t kInnerAllocSize = 673U;
     ptr = MockMalloc(kInnerAllocSize);
     MockFree(ptr);
 
-    EXPECT_EQ(kInnerAllocSize,
-              ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+    inner_usage_tracker.Stop(false);
+
+    EXPECT_EQ(kInnerAllocSize, inner_usage_tracker.usage().max_allocated_bytes);
   }
 
   // The greater, outer allocation size should have been restored.
   EXPECT_EQ(kOuterAllocSize,
-            ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+            ThreadHeapUsageTracker::GetUsageSnapshot().max_allocated_bytes);
 
   const size_t kLargerInnerAllocSize = kOuterAllocSize + 673U;
   {
-    ScopedThreadHeapUsage inner_scoped_usage;
+    ThreadHeapUsageTracker inner_usage_tracker;
+    inner_usage_tracker.Start();
 
     ptr = MockMalloc(kLargerInnerAllocSize);
     MockFree(ptr);
 
+    inner_usage_tracker.Stop(false);
     EXPECT_EQ(kLargerInnerAllocSize,
-              ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+              inner_usage_tracker.usage().max_allocated_bytes);
   }
 
   // The greater, inner allocation size should have been preserved.
   EXPECT_EQ(kLargerInnerAllocSize,
-            ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+            ThreadHeapUsageTracker::GetUsageSnapshot().max_allocated_bytes);
 
   // Now try the case with an outstanding net alloc size when entering the
   // inner scope.
   void* outer_ptr = MockMalloc(kOuterAllocSize);
   EXPECT_EQ(kLargerInnerAllocSize,
-            ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+            ThreadHeapUsageTracker::GetUsageSnapshot().max_allocated_bytes);
   {
-    ScopedThreadHeapUsage inner_scoped_usage;
+    ThreadHeapUsageTracker inner_usage_tracker;
+    inner_usage_tracker.Start();
 
     ptr = MockMalloc(kLargerInnerAllocSize);
     MockFree(ptr);
 
+    inner_usage_tracker.Stop(false);
     EXPECT_EQ(kLargerInnerAllocSize,
-              ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+              inner_usage_tracker.usage().max_allocated_bytes);
   }
 
   // While the inner scope saw only the inner net outstanding allocation size,
   // the outer scope saw both outstanding at the same time.
   EXPECT_EQ(kOuterAllocSize + kLargerInnerAllocSize,
-            ScopedThreadHeapUsage::CurrentUsage().max_allocated_bytes);
+            ThreadHeapUsageTracker::GetUsageSnapshot().max_allocated_bytes);
 
   MockFree(outer_ptr);
+
+  // Test a net-negative scope.
+  ptr = MockMalloc(kLargerInnerAllocSize);
+  {
+    ThreadHeapUsageTracker inner_usage_tracker;
+    inner_usage_tracker.Start();
+
+    MockFree(ptr);
+
+    const size_t kInnerAllocSize = 1;
+    ptr = MockMalloc(kInnerAllocSize);
+
+    inner_usage_tracker.Stop(false);
+    // Since the scope is still net-negative, the max is clamped at zero.
+    EXPECT_EQ(0U, inner_usage_tracker.usage().max_allocated_bytes);
+  }
+
+  MockFree(ptr);
 }
 
-TEST_F(ScopedThreadHeapUsageTest, AllShimFunctionsAreProvided) {
+TEST_F(ThreadHeapUsageTrackerTest, NoStopImpliesInclusive) {
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
+
+  const size_t kOuterAllocSize = 1029U;
+  void* ptr = MockMalloc(kOuterAllocSize);
+  MockFree(ptr);
+
+  ThreadHeapUsage usage = ThreadHeapUsageTracker::GetUsageSnapshot();
+  EXPECT_EQ(kOuterAllocSize, usage.max_allocated_bytes);
+
+  const size_t kInnerLargerAllocSize = kOuterAllocSize + 673U;
+
+  {
+    ThreadHeapUsageTracker inner_usage_tracker;
+    inner_usage_tracker.Start();
+
+    // Make a larger allocation than the outer scope.
+    ptr = MockMalloc(kInnerLargerAllocSize);
+    MockFree(ptr);
+
+    // inner_usage_tracker goes out of scope without a Stop().
+  }
+
+  ThreadHeapUsage current = ThreadHeapUsageTracker::GetUsageSnapshot();
+  EXPECT_EQ(usage.alloc_ops + 1, current.alloc_ops);
+  EXPECT_EQ(usage.alloc_bytes + kInnerLargerAllocSize, current.alloc_bytes);
+  EXPECT_EQ(usage.free_ops + 1, current.free_ops);
+  EXPECT_EQ(usage.free_bytes + kInnerLargerAllocSize, current.free_bytes);
+  EXPECT_EQ(kInnerLargerAllocSize, current.max_allocated_bytes);
+}
+
+TEST_F(ThreadHeapUsageTrackerTest, ExclusiveScopesWork) {
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
+
+  const size_t kOuterAllocSize = 1029U;
+  void* ptr = MockMalloc(kOuterAllocSize);
+  MockFree(ptr);
+
+  ThreadHeapUsage usage = ThreadHeapUsageTracker::GetUsageSnapshot();
+  EXPECT_EQ(kOuterAllocSize, usage.max_allocated_bytes);
+
+  {
+    ThreadHeapUsageTracker inner_usage_tracker;
+    inner_usage_tracker.Start();
+
+    // Make a larger allocation than the outer scope.
+    ptr = MockMalloc(kOuterAllocSize + 673U);
+    MockFree(ptr);
+
+    // This tracker is exlusive, all activity should be private to this scope.
+    inner_usage_tracker.Stop(true);
+  }
+
+  ThreadHeapUsage current = ThreadHeapUsageTracker::GetUsageSnapshot();
+  EXPECT_EQ(usage.alloc_ops, current.alloc_ops);
+  EXPECT_EQ(usage.alloc_bytes, current.alloc_bytes);
+  EXPECT_EQ(usage.alloc_overhead_bytes, current.alloc_overhead_bytes);
+  EXPECT_EQ(usage.free_ops, current.free_ops);
+  EXPECT_EQ(usage.free_bytes, current.free_bytes);
+  EXPECT_EQ(usage.max_allocated_bytes, current.max_allocated_bytes);
+}
+
+TEST_F(ThreadHeapUsageTrackerTest, AllShimFunctionsAreProvided) {
   const size_t kAllocSize = 100;
   void* alloc = MockMalloc(kAllocSize);
   size_t estimate = MockGetSizeEstimate(alloc);
@@ -446,26 +538,29 @@ TEST_F(ScopedThreadHeapUsageTest, AllShimFunctionsAreProvided) {
 }
 
 #if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
-TEST(ScopedThreadHeapShimTest, HooksIntoMallocWhenShimAvailable) {
-  ScopedThreadHeapUsage::Initialize();
-  ScopedThreadHeapUsage::EnableHeapTracking();
+TEST(ThreadHeapUsageShimTest, HooksIntoMallocWhenShimAvailable) {
+  ASSERT_FALSE(ThreadHeapUsageTracker::IsHeapTrackingEnabled());
+
+  ThreadHeapUsageTracker::EnableHeapTracking();
+
+  ASSERT_TRUE(ThreadHeapUsageTracker::IsHeapTrackingEnabled());
 
   const size_t kAllocSize = 9993;
   // This test verifies that the scoped heap data is affected by malloc &
   // free only when the shim is available.
-  ScopedThreadHeapUsage scoped_usage;
+  ThreadHeapUsageTracker usage_tracker;
+  usage_tracker.Start();
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u1 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  ThreadHeapUsage u1 = ThreadHeapUsageTracker::GetUsageSnapshot();
   void* ptr = malloc(kAllocSize);
   // Prevent the compiler from optimizing out the malloc/free pair.
   ASSERT_NE(nullptr, ptr);
 
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u2 =
-      ScopedThreadHeapUsage::CurrentUsage();
+  ThreadHeapUsage u2 = ThreadHeapUsageTracker::GetUsageSnapshot();
   free(ptr);
-  ScopedThreadHeapUsage::ThreadAllocatorUsage u3 =
-      ScopedThreadHeapUsage::CurrentUsage();
+
+  usage_tracker.Stop(false);
+  ThreadHeapUsage u3 = usage_tracker.usage();
 
   // Verify that at least one allocation operation was recorded, and that free
   // operations are at least monotonically growing.
@@ -479,7 +574,9 @@ TEST(ScopedThreadHeapShimTest, HooksIntoMallocWhenShimAvailable) {
   // Verify that at least the one free operation above was recorded.
   EXPECT_LE(u2.free_ops + 1, u3.free_ops);
 
-  TestingScopedThreadHeapUsage::DisableHeapTrackingForTesting();
+  TestingThreadHeapUsageTracker::DisableHeapTrackingForTesting();
+
+  ASSERT_FALSE(ThreadHeapUsageTracker::IsHeapTrackingEnabled());
 }
 #endif  // BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
 

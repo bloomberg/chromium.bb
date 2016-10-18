@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/debug/scoped_thread_heap_usage.h"
+#include "base/debug/thread_heap_usage_tracker.h"
 
 #include <stdint.h>
 #include <algorithm>
@@ -29,14 +29,14 @@ using base::allocator::AllocatorDispatch;
 
 ThreadLocalStorage::StaticSlot g_thread_allocator_usage = TLS_INITIALIZER;
 
-ScopedThreadHeapUsage::ThreadAllocatorUsage* const kInitializingSentinel =
-    reinterpret_cast<ScopedThreadHeapUsage::ThreadAllocatorUsage*>(-1);
+ThreadHeapUsage* const kInitializingSentinel =
+    reinterpret_cast<ThreadHeapUsage*>(-1);
 
 bool g_heap_tracking_enabled = false;
 
 // Forward declared as it needs to delegate memory allocation to the next
 // lower shim.
-ScopedThreadHeapUsage::ThreadAllocatorUsage* GetOrCreateThreadUsage();
+ThreadHeapUsage* GetOrCreateThreadUsage();
 
 size_t GetAllocSizeEstimate(const AllocatorDispatch* next, void* ptr) {
   if (ptr == nullptr)
@@ -46,28 +46,32 @@ size_t GetAllocSizeEstimate(const AllocatorDispatch* next, void* ptr) {
 }
 
 void RecordAlloc(const AllocatorDispatch* next, void* ptr, size_t size) {
-  ScopedThreadHeapUsage::ThreadAllocatorUsage* usage = GetOrCreateThreadUsage();
+  ThreadHeapUsage* usage = GetOrCreateThreadUsage();
   if (usage == nullptr)
     return;
 
   usage->alloc_ops++;
   size_t estimate = GetAllocSizeEstimate(next, ptr);
   if (size && estimate) {
+    // Only keep track of the net number of bytes allocated in the scope if the
+    // size estimate function returns sane values, e.g. non-zero.
     usage->alloc_bytes += estimate;
     usage->alloc_overhead_bytes += estimate - size;
 
-    // Only keep track of the net number of bytes allocated in the scope if the
-    // size estimate function returns sane values, e.g. non-zero.
-    uint64_t allocated_bytes = usage->alloc_bytes - usage->free_bytes;
-    if (allocated_bytes > usage->max_allocated_bytes)
-      usage->max_allocated_bytes = allocated_bytes;
+    // Record the max outstanding number of bytes, but only if the difference
+    // is net positive (e.g. more bytes allocated than freed in the scope).
+    if (usage->alloc_bytes > usage->free_bytes) {
+      uint64_t allocated_bytes = usage->alloc_bytes - usage->free_bytes;
+      if (allocated_bytes > usage->max_allocated_bytes)
+        usage->max_allocated_bytes = allocated_bytes;
+    }
   } else {
     usage->alloc_bytes += size;
   }
 }
 
 void RecordFree(const AllocatorDispatch* next, void* ptr) {
-  ScopedThreadHeapUsage::ThreadAllocatorUsage* usage = GetOrCreateThreadUsage();
+  ThreadHeapUsage* usage = GetOrCreateThreadUsage();
   if (usage == nullptr)
     return;
 
@@ -130,10 +134,9 @@ AllocatorDispatch allocator_dispatch = {
     &AllocFn, &AllocZeroInitializedFn, &AllocAlignedFn, &ReallocFn,
     &FreeFn,  &GetSizeEstimateFn,      nullptr};
 
-ScopedThreadHeapUsage::ThreadAllocatorUsage* GetOrCreateThreadUsage() {
-  ScopedThreadHeapUsage::ThreadAllocatorUsage* allocator_usage =
-      static_cast<ScopedThreadHeapUsage::ThreadAllocatorUsage*>(
-          g_thread_allocator_usage.Get());
+ThreadHeapUsage* GetOrCreateThreadUsage() {
+  ThreadHeapUsage* allocator_usage =
+      static_cast<ThreadHeapUsage*>(g_thread_allocator_usage.Get());
   if (allocator_usage == kInitializingSentinel)
     return nullptr;  // Re-entrancy case.
 
@@ -141,7 +144,7 @@ ScopedThreadHeapUsage::ThreadAllocatorUsage* GetOrCreateThreadUsage() {
     // Prevent reentrancy due to the allocation below.
     g_thread_allocator_usage.Set(kInitializingSentinel);
 
-    allocator_usage = new ScopedThreadHeapUsage::ThreadAllocatorUsage;
+    allocator_usage = new ThreadHeapUsage;
     memset(allocator_usage, 0, sizeof(*allocator_usage));
     g_thread_allocator_usage.Set(allocator_usage);
   }
@@ -151,61 +154,75 @@ ScopedThreadHeapUsage::ThreadAllocatorUsage* GetOrCreateThreadUsage() {
 
 }  // namespace
 
-ScopedThreadHeapUsage::ScopedThreadHeapUsage() {
-  // Initialize must be called before creating instances of this class.
-  CHECK(g_thread_allocator_usage.initialized());
+ThreadHeapUsageTracker::ThreadHeapUsageTracker() : thread_usage_(nullptr) {
+  static_assert(std::is_pod<ThreadHeapUsage>::value, "Must be POD.");
+}
 
-  ThreadAllocatorUsage* usage = GetOrCreateThreadUsage();
-  usage_at_creation_ = *usage;
+ThreadHeapUsageTracker::~ThreadHeapUsageTracker() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (thread_usage_ != nullptr) {
+    // If this tracker wasn't stopped, make it inclusive so that the
+    // usage isn't lost.
+    Stop(false);
+  }
+}
+
+void ThreadHeapUsageTracker::Start() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(g_thread_allocator_usage.initialized());
+
+  thread_usage_ = GetOrCreateThreadUsage();
+  usage_ = *thread_usage_;
 
   // Reset the stats for our current scope.
   // The per-thread usage instance now tracks this scope's usage, while this
   // instance persists the outer scope's usage stats. On destruction, this
-  // instance will restore the outer scope's usage stats with this scope's usage
-  // added.
-  memset(usage, 0, sizeof(*usage));
-
-  static_assert(std::is_pod<ThreadAllocatorUsage>::value, "Must be POD.");
+  // instance will restore the outer scope's usage stats with this scope's
+  // usage added.
+  memset(thread_usage_, 0, sizeof(*thread_usage_));
 }
 
-ScopedThreadHeapUsage::~ScopedThreadHeapUsage() {
+void ThreadHeapUsageTracker::Stop(bool usage_is_exclusive) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(nullptr, thread_usage_);
 
-  ThreadAllocatorUsage* usage = GetOrCreateThreadUsage();
+  ThreadHeapUsage current = *thread_usage_;
+  if (usage_is_exclusive) {
+    // Restore the outer scope.
+    *thread_usage_ = usage_;
+  } else {
+    // Update the outer scope with the accrued inner usage.
+    if (thread_usage_->max_allocated_bytes) {
+      uint64_t outer_net_alloc_bytes = usage_.alloc_bytes - usage_.free_bytes;
 
-  // Update the outer max.
-  if (usage->max_allocated_bytes) {
-    uint64_t outer_net_alloc_bytes =
-        usage_at_creation_.alloc_bytes - usage_at_creation_.free_bytes;
+      thread_usage_->max_allocated_bytes =
+          std::max(usage_.max_allocated_bytes,
+                   outer_net_alloc_bytes + thread_usage_->max_allocated_bytes);
+    }
 
-    usage->max_allocated_bytes =
-        std::max(usage_at_creation_.max_allocated_bytes,
-                 outer_net_alloc_bytes + usage->max_allocated_bytes);
+    thread_usage_->alloc_ops += usage_.alloc_ops;
+    thread_usage_->alloc_bytes += usage_.alloc_bytes;
+    thread_usage_->alloc_overhead_bytes += usage_.alloc_overhead_bytes;
+    thread_usage_->free_ops += usage_.free_ops;
+    thread_usage_->free_bytes += usage_.free_bytes;
   }
 
-  usage->alloc_ops += usage_at_creation_.alloc_ops;
-  usage->alloc_bytes += usage_at_creation_.alloc_bytes;
-  usage->alloc_overhead_bytes += usage_at_creation_.alloc_overhead_bytes;
-  usage->free_ops += usage_at_creation_.free_ops;
-  usage->free_bytes += usage_at_creation_.free_bytes;
+  thread_usage_ = nullptr;
+  usage_ = current;
 }
 
-ScopedThreadHeapUsage::ThreadAllocatorUsage
-ScopedThreadHeapUsage::CurrentUsage() {
-  ThreadAllocatorUsage* usage = GetOrCreateThreadUsage();
+ThreadHeapUsage ThreadHeapUsageTracker::GetUsageSnapshot() {
+  DCHECK(g_thread_allocator_usage.initialized());
+
+  ThreadHeapUsage* usage = GetOrCreateThreadUsage();
+  DCHECK_NE(nullptr, usage);
   return *usage;
 }
 
-void ScopedThreadHeapUsage::Initialize() {
-  if (!g_thread_allocator_usage.initialized()) {
-    g_thread_allocator_usage.Initialize([](void* allocator_usage) {
-      delete static_cast<ScopedThreadHeapUsage::ThreadAllocatorUsage*>(
-          allocator_usage);
-    });
-  }
-}
+void ThreadHeapUsageTracker::EnableHeapTracking() {
+  EnsureTLSInitialized();
 
-void ScopedThreadHeapUsage::EnableHeapTracking() {
   CHECK_EQ(false, g_heap_tracking_enabled) << "No double-enabling.";
   g_heap_tracking_enabled = true;
 #if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
@@ -215,7 +232,11 @@ void ScopedThreadHeapUsage::EnableHeapTracking() {
 #endif  // BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
 }
 
-void ScopedThreadHeapUsage::DisableHeapTrackingForTesting() {
+bool ThreadHeapUsageTracker::IsHeapTrackingEnabled() {
+  return g_heap_tracking_enabled;
+}
+
+void ThreadHeapUsageTracker::DisableHeapTrackingForTesting() {
 #if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
   base::allocator::RemoveAllocatorDispatchForTesting(&allocator_dispatch);
 #else
@@ -226,8 +247,16 @@ void ScopedThreadHeapUsage::DisableHeapTrackingForTesting() {
 }
 
 base::allocator::AllocatorDispatch*
-ScopedThreadHeapUsage::GetDispatchForTesting() {
+ThreadHeapUsageTracker::GetDispatchForTesting() {
   return &allocator_dispatch;
+}
+
+void ThreadHeapUsageTracker::EnsureTLSInitialized() {
+  if (!g_thread_allocator_usage.initialized()) {
+    g_thread_allocator_usage.Initialize([](void* allocator_usage) {
+      delete static_cast<ThreadHeapUsage*>(allocator_usage);
+    });
+  }
 }
 
 }  // namespace debug
