@@ -60,38 +60,38 @@ class SettingsPrivateGetPrefFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetPrefFunction);
 };
 
-// Implements the chrome.settingsPrivate.getDefaultZoomPercent method.
-class SettingsPrivateGetDefaultZoomPercentFunction
+// Implements the chrome.settingsPrivate.getDefaultZoom method.
+class SettingsPrivateGetDefaultZoomFunction
     : public UIThreadExtensionFunction {
  public:
-  SettingsPrivateGetDefaultZoomPercentFunction() {}
-  DECLARE_EXTENSION_FUNCTION("settingsPrivate.getDefaultZoomPercent",
-                             SETTINGSPRIVATE_GETDEFAULTZOOMPERCENTFUNCTION);
+  SettingsPrivateGetDefaultZoomFunction() {}
+  DECLARE_EXTENSION_FUNCTION("settingsPrivate.getDefaultZoom",
+                             SETTINGSPRIVATE_GETDEFAULTZOOMFUNCTION);
 
  protected:
-  ~SettingsPrivateGetDefaultZoomPercentFunction() override;
+  ~SettingsPrivateGetDefaultZoomFunction() override;
 
   // AsyncExtensionFunction overrides.
   ResponseAction Run() override;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetDefaultZoomPercentFunction);
+  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetDefaultZoomFunction);
 };
 
-// Implements the chrome.settingsPrivate.setDefaultZoomPercent method.
-class SettingsPrivateSetDefaultZoomPercentFunction
+// Implements the chrome.settingsPrivate.setDefaultZoom method.
+class SettingsPrivateSetDefaultZoomFunction
     : public UIThreadExtensionFunction {
  public:
-  SettingsPrivateSetDefaultZoomPercentFunction() {}
-  DECLARE_EXTENSION_FUNCTION("settingsPrivate.setDefaultZoomPercent",
-                             SETTINGSPRIVATE_SETDEFAULTZOOMPERCENTFUNCTION);
+  SettingsPrivateSetDefaultZoomFunction() {}
+  DECLARE_EXTENSION_FUNCTION("settingsPrivate.setDefaultZoom",
+                             SETTINGSPRIVATE_SETDEFAULTZOOMFUNCTION);
 
  protected:
-  ~SettingsPrivateSetDefaultZoomPercentFunction() override;
+  ~SettingsPrivateSetDefaultZoomFunction() override;
 
   // AsyncExtensionFunction overrides.
   ResponseAction Run() override;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetDefaultZoomPercentFunction);
+  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetDefaultZoomFunction);
 };
 
 }  // namespace extensions

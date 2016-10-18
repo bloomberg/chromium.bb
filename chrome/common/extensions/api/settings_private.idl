@@ -57,8 +57,8 @@ namespace settingsPrivate {
   callback OnPrefSetCallback = void (boolean success);
   callback GetAllPrefsCallback = void (PrefObject[] prefs);
   callback GetPrefCallback = void (PrefObject pref);
-  callback GetDefaultZoomPercentCallback = void (double percent);
-  callback SetDefaultZoomPercentCallback = void (boolean success);
+  callback GetDefaultZoomCallback = void (double zoom);
+  callback SetDefaultZoomCallback = void (boolean success);
 
   interface Functions {
     // Sets a settings value.
@@ -75,12 +75,14 @@ namespace settingsPrivate {
     // Gets the value of a specific pref.
     static void getPref(DOMString name, GetPrefCallback callback);
 
-    // Gets the page zoom factor as an integer percentage.
-    static void getDefaultZoomPercent(GetDefaultZoomPercentCallback callback);
+    // Gets the default page zoom factor. Possible values are currently between
+    // 0.25 and 5. For a full list, see zoom::kPresetZoomFactors.
+    static void getDefaultZoom(GetDefaultZoomCallback callback);
 
-    // Sets the page zoom factor from a zoom percentage.
-    static void setDefaultZoomPercent(double percent,
-        optional SetDefaultZoomPercentCallback callback);
+    // Sets the page zoom factor. Must be less than 0.001 different than a value
+    // in zoom::kPresetZoomFactors.
+    static void setDefaultZoom(
+        double zoom, optional SetDefaultZoomCallback callback);
   };
 
   interface Events {

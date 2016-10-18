@@ -54,7 +54,7 @@ Polymer({
 
     /**
      * List of options for the page zoom drop-down menu.
-     * @type {!DropdownMenuOptionList}
+     * @type {!Array<number>}
      */
     pageZoomLevels_: {
       readOnly: true,
@@ -111,16 +111,15 @@ Polymer({
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
     // TODO(dschuyler): Look into adding a listener for the
     // default zoom percent.
-    chrome.settingsPrivate.getDefaultZoomPercent(function(value) {
-      // TODO(dpapad): Non-integer values will cause no <option> to be selected
-      // until crbug.com/655742 is addressed.
-      this.$.zoomLevel.value = value;
+    chrome.settingsPrivate.getDefaultZoom(function(zoom) {
+      this.$.zoomLevel.value = zoom;
     }.bind(this));
   },
 
   /**
    * @param {number} zoom
    * @return {number} A zoom easier read by users.
+   * @private
    */
   formatZoom_: function(zoom) {
     return Math.round(zoom * 100);
@@ -228,8 +227,7 @@ Polymer({
 
   /** @private */
   onZoomLevelChange_: function() {
-    chrome.settingsPrivate.setDefaultZoomPercent(
-        parseFloat(this.$.zoomLevel.value));
+    chrome.settingsPrivate.setDefaultZoom(parseFloat(this.$.zoomLevel.value));
   },
 
   /**

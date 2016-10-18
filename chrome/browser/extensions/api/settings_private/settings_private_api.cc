@@ -106,37 +106,36 @@ ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SettingsPrivateGetDefaultZoomPercentFunction
+// SettingsPrivateGetDefaultZoomFunction
 ////////////////////////////////////////////////////////////////////////////////
 
-SettingsPrivateGetDefaultZoomPercentFunction::
-    ~SettingsPrivateGetDefaultZoomPercentFunction() {
+SettingsPrivateGetDefaultZoomFunction::
+    ~SettingsPrivateGetDefaultZoomFunction() {
 }
 
 ExtensionFunction::ResponseAction
-    SettingsPrivateGetDefaultZoomPercentFunction::Run() {
+    SettingsPrivateGetDefaultZoomFunction::Run() {
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
   if (delegate == nullptr)
     return RespondNow(Error(kDelegateIsNull));
   else
-    return RespondNow(OneArgument(delegate->GetDefaultZoomPercent()));
+    return RespondNow(OneArgument(delegate->GetDefaultZoom()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SettingsPrivateSetDefaultZoomPercentFunction
+// SettingsPrivateSetDefaultZoomFunction
 ////////////////////////////////////////////////////////////////////////////////
 
-SettingsPrivateSetDefaultZoomPercentFunction::
-    ~SettingsPrivateSetDefaultZoomPercentFunction() {
+SettingsPrivateSetDefaultZoomFunction::
+    ~SettingsPrivateSetDefaultZoomFunction() {
 }
 
 ExtensionFunction::ResponseAction
-    SettingsPrivateSetDefaultZoomPercentFunction::Run() {
-  std::unique_ptr<api::settings_private::SetDefaultZoomPercent::Params>
-      parameters =
-          api::settings_private::SetDefaultZoomPercent::Params::Create(*args_);
+    SettingsPrivateSetDefaultZoomFunction::Run() {
+  std::unique_ptr<api::settings_private::SetDefaultZoom::Params> parameters =
+      api::settings_private::SetDefaultZoom::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   SettingsPrivateDelegate* delegate =
@@ -144,7 +143,7 @@ ExtensionFunction::ResponseAction
   if (delegate == nullptr)
     return RespondNow(Error(kDelegateIsNull));
 
-  delegate->SetDefaultZoomPercent(parameters->percent);
+  delegate->SetDefaultZoom(parameters->zoom);
   return RespondNow(
       OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
 }
