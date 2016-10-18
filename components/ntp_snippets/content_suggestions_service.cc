@@ -224,11 +224,6 @@ void ContentSuggestionsService::OnNewSuggestions(
 
   suggestions_by_category_[category] = std::move(suggestions);
 
-  // The positioning of the bookmarks category depends on whether it's empty.
-  // TODO(treib): Remove this temporary hack, crbug.com/640568.
-  if (category.IsKnownCategory(KnownCategories::BOOKMARKS))
-    SortCategories();
-
   FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions(category));
 }
 
@@ -373,11 +368,6 @@ bool ContentSuggestionsService::RemoveSuggestionByID(
     return false;
   suggestions->erase(position);
 
-  // The positioning of the bookmarks category depends on whether it's empty.
-  // TODO(treib): Remove this temporary hack, crbug.com/640568.
-  if (suggestion_id.category().IsKnownCategory(KnownCategories::BOOKMARKS))
-    SortCategories();
-
   return true;
 }
 
@@ -388,23 +378,10 @@ void ContentSuggestionsService::NotifyCategoryStatusChanged(Category category) {
 }
 
 void ContentSuggestionsService::SortCategories() {
-  auto it = suggestions_by_category_.find(
-      category_factory_.FromKnownCategory(KnownCategories::BOOKMARKS));
-  bool bookmarks_empty =
-      (it == suggestions_by_category_.end() || it->second.empty());
-  std::sort(
-      categories_.begin(), categories_.end(),
-      [this, bookmarks_empty](const Category& left, const Category& right) {
-        // If the bookmarks section is empty, put it at the end.
-        // TODO(treib): This is a temporary hack, see crbug.com/640568.
-        if (bookmarks_empty) {
-          if (left.IsKnownCategory(KnownCategories::BOOKMARKS))
-            return false;
-          if (right.IsKnownCategory(KnownCategories::BOOKMARKS))
-            return true;
-        }
-        return category_factory_.CompareCategories(left, right);
-      });
+  std::sort(categories_.begin(), categories_.end(),
+            [this](const Category& left, const Category& right) {
+              return category_factory_.CompareCategories(left, right);
+            });
 }
 
 bool ContentSuggestionsService::IsCategoryDismissed(Category category) const {

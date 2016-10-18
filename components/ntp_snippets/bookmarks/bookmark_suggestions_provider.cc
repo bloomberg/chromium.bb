@@ -43,7 +43,6 @@ const char* kMinBookmarksParamName = "bookmarks_min_count";
 const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
 const char* kUseCreationDateFallbackForDaysParamName =
     "bookmarks_creation_date_fallback_days";
-const char* kShowIfEmptyParamName = "bookmarks_show_if_empty";
 
 // Any bookmark created or visited after this time will be considered recent.
 // Note that bookmarks can be shown that do not meet this threshold.
@@ -76,18 +75,6 @@ int GetMaxCount() {
 int GetMinCount() {
   return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
                        kMinBookmarksParamName, kMinBookmarks);
-}
-
-bool ShouldShowIfEmpty() {
-  std::string show_if_empty = variations::GetVariationParamValueByFeature(
-      ntp_snippets::kBookmarkSuggestionsFeature, kShowIfEmptyParamName);
-  if (show_if_empty.empty() || show_if_empty == "false")
-    return false;
-  if (show_if_empty == "true")
-    return true;
-
-  LOG(WARNING) << "Failed to parse show if empty " << show_if_empty;
-  return false;
 }
 
 }  // namespace
@@ -148,9 +135,7 @@ CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
       l10n_util::GetStringUTF16(IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::MINIMAL_CARD,
       /*has_more_button=*/true,
-      /*show_if_empty=*/ShouldShowIfEmpty() && bookmark_model_->HasBookmarks());
-  // TODO(treib): Setting show_if_empty to true is a temporary hack, see
-  // crbug.com/640568.
+      /*show_if_empty=*/false);
 }
 
 void BookmarkSuggestionsProvider::DismissSuggestion(

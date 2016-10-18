@@ -564,54 +564,6 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRemoveCategoryWhenNotProvided) {
   service()->RemoveObserver(&observer);
 }
 
-// This tests the temporary special-casing of the bookmarks section: If it is
-// empty, it should appear at the end; see crbug.com/640568.
-TEST_F(ContentSuggestionsServiceTest, ShouldPutBookmarksAtEndIfEmpty) {
-  // Register a bookmarks provider and an arbitrary remote provider.
-  Category bookmarks = FromKnownCategory(KnownCategories::BOOKMARKS);
-  MockProvider* bookmarks_provider = RegisterProvider(bookmarks);
-  bookmarks_provider->FireCategoryStatusChangedWithCurrentStatus(bookmarks);
-  Category remote = FromRemoteCategory(123);
-  MockProvider* remote_provider = RegisterProvider(remote);
-  remote_provider->FireCategoryStatusChangedWithCurrentStatus(remote);
-
-  // By default, the bookmarks category is empty, so it should be at the end.
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
-
-  // Add two bookmark suggestions; now bookmarks should be in the front.
-  bookmarks_provider->FireSuggestionsChanged(
-      bookmarks, CreateSuggestions(bookmarks, {1, 2}));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
-  // Dismiss the first suggestion; bookmarks should stay in the front.
-  service()->DismissSuggestion(CreateSuggestion(bookmarks, 1).id());
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
-  // Dismiss the second suggestion; now bookmarks should go back to the end.
-  service()->DismissSuggestion(CreateSuggestion(bookmarks, 2).id());
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
-
-  // Same thing, but invalidate instead of dismissing.
-  bookmarks_provider->FireSuggestionsChanged(
-      bookmarks, CreateSuggestions(bookmarks, {1, 2}));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
-  bookmarks_provider->FireSuggestionInvalidated(
-      ContentSuggestion::ID(bookmarks, "1"));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
-  bookmarks_provider->FireSuggestionInvalidated(
-      ContentSuggestion::ID(bookmarks, "2"));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
-
-  // Same thing, but now the bookmarks category updates "naturally".
-  bookmarks_provider->FireSuggestionsChanged(
-      bookmarks, CreateSuggestions(bookmarks, {1, 2}));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
-  bookmarks_provider->FireSuggestionsChanged(bookmarks,
-                                             CreateSuggestions(bookmarks, {1}));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
-  bookmarks_provider->FireSuggestionsChanged(
-      bookmarks, CreateSuggestions(bookmarks, std::vector<int>()));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
-}
-
 TEST_F(ContentSuggestionsServiceTest, ShouldForwardClearHistory) {
   Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider = RegisterProvider(category);
