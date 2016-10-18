@@ -502,7 +502,8 @@ TEST_F(TaskQueueThrottlerTest, TimeBudgetPool) {
   EXPECT_EQ(time_zero, pool->GetNextAllowedRunTime());
 
   // Run an expensive task and make sure that we're throttled.
-  pool->RecordTaskRunTime(base::TimeDelta::FromMilliseconds(100));
+  pool->RecordTaskRunTime(time_zero,
+                          time_zero + base::TimeDelta::FromMilliseconds(100));
 
   EXPECT_FALSE(pool->HasEnoughBudgetToRun(
       time_zero + base::TimeDelta::FromMilliseconds(500)));
@@ -514,10 +515,11 @@ TEST_F(TaskQueueThrottlerTest, TimeBudgetPool) {
   // Run a cheap task and make sure that it doesn't affect anything.
   EXPECT_TRUE(pool->HasEnoughBudgetToRun(
       time_zero + base::TimeDelta::FromMilliseconds(2000)));
-  pool->RecordTaskRunTime(base::TimeDelta::FromMilliseconds(20));
+  pool->RecordTaskRunTime(time_zero + base::TimeDelta::FromMilliseconds(2000),
+                          time_zero + base::TimeDelta::FromMilliseconds(2020));
   EXPECT_TRUE(pool->HasEnoughBudgetToRun(
-      time_zero + base::TimeDelta::FromMilliseconds(2000)));
-  EXPECT_EQ(time_zero + base::TimeDelta::FromMilliseconds(2000),
+      time_zero + base::TimeDelta::FromMilliseconds(2020)));
+  EXPECT_EQ(time_zero + base::TimeDelta::FromMilliseconds(2020),
             pool->GetNextAllowedRunTime());
 
   pool->Close();
@@ -801,6 +803,34 @@ TEST_F(TaskQueueThrottlerTest,
 
   EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
                                      base::TimeDelta::FromMilliseconds(105)));
+}
+
+TEST_F(TaskQueueThrottlerTest, MaxThrottlingDuration) {
+  std::vector<base::TimeTicks> run_times;
+
+  TaskQueueThrottler::TimeBudgetPool* pool =
+      task_queue_throttler_->CreateTimeBudgetPool("test");
+
+  pool->SetTimeBudget(base::TimeTicks(), 0.001);
+  pool->AddQueue(base::TimeTicks(), timer_queue_.get());
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  for (int i = 0; i < 5; ++i) {
+    timer_queue_->PostDelayedTask(
+        FROM_HERE, base::Bind(&ExpensiveTestTask, &run_times, clock_.get()),
+        base::TimeDelta::FromMilliseconds(200));
+  }
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(62),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(123),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(184),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(245)));
 }
 
 }  // namespace scheduler

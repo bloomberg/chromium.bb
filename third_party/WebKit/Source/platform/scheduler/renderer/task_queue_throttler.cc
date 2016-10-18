@@ -23,7 +23,9 @@ namespace blink {
 namespace scheduler {
 
 namespace {
-const int kMaxBudgetLevelInSeconds = 1;
+constexpr base::TimeDelta kMaxBudgetLevel = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kMaxThrottlingDuration =
+    base::TimeDelta::FromMinutes(1);
 
 base::Optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,
                                                 TaskQueue* queue) {
@@ -70,10 +72,13 @@ base::Optional<T> Max(const base::Optional<T>& a, const base::Optional<T>& b) {
 TaskQueueThrottler::TimeBudgetPool::TimeBudgetPool(
     const char* name,
     TaskQueueThrottler* task_queue_throttler,
-    base::TimeTicks now)
+    base::TimeTicks now,
+    base::Optional<base::TimeDelta> max_budget_level,
+    base::Optional<base::TimeDelta> max_throttling_duration)
     : name_(name),
       task_queue_throttler_(task_queue_throttler),
-      max_budget_level_(base::TimeDelta::FromSeconds(kMaxBudgetLevelInSeconds)),
+      max_budget_level_(max_budget_level),
+      max_throttling_duration_(max_throttling_duration),
       last_checkpoint_(now),
       cpu_percentage_(1),
       is_enabled_(true) {}
@@ -84,6 +89,7 @@ void TaskQueueThrottler::TimeBudgetPool::SetTimeBudget(base::TimeTicks now,
                                                        double cpu_percentage) {
   Advance(now);
   cpu_percentage_ = cpu_percentage;
+  EnforceBudgetLevelRestrictions();
 }
 
 void TaskQueueThrottler::TimeBudgetPool::AddQueue(base::TimeTicks now,
@@ -172,9 +178,14 @@ base::TimeTicks TaskQueueThrottler::TimeBudgetPool::GetNextAllowedRunTime() {
 }
 
 void TaskQueueThrottler::TimeBudgetPool::RecordTaskRunTime(
-    base::TimeDelta task_run_time) {
-  if (is_enabled_)
-    current_budget_level_ -= task_run_time;
+    base::TimeTicks start_time,
+    base::TimeTicks end_time) {
+  DCHECK_LE(start_time, end_time);
+  Advance(end_time);
+  if (is_enabled_) {
+    current_budget_level_ -= (end_time - start_time);
+    EnforceBudgetLevelRestrictions();
+  }
 }
 
 const char* TaskQueueThrottler::TimeBudgetPool::Name() const {
@@ -206,9 +217,8 @@ void TaskQueueThrottler::TimeBudgetPool::AsValueInto(
 void TaskQueueThrottler::TimeBudgetPool::Advance(base::TimeTicks now) {
   if (now > last_checkpoint_) {
     if (is_enabled_) {
-      current_budget_level_ = std::min(
-          current_budget_level_ + cpu_percentage_ * (now - last_checkpoint_),
-          max_budget_level_);
+      current_budget_level_ += cpu_percentage_ * (now - last_checkpoint_);
+      EnforceBudgetLevelRestrictions();
     }
     last_checkpoint_ = now;
   }
@@ -226,6 +236,21 @@ void TaskQueueThrottler::TimeBudgetPool::BlockThrottledQueues(
   }
 }
 
+void TaskQueueThrottler::TimeBudgetPool::EnforceBudgetLevelRestrictions() {
+  if (max_budget_level_) {
+    current_budget_level_ =
+        std::min(current_budget_level_, max_budget_level_.value());
+  }
+  if (max_throttling_duration_) {
+    // Current budget level may be negative.
+    current_budget_level_ =
+        std::max(current_budget_level_,
+                 -max_throttling_duration_.value() * cpu_percentage_);
+  }
+}
+
+// TODO(altimin): Control max_budget_level and max_throttling_duration
+// from Finch.
 TaskQueueThrottler::TaskQueueThrottler(
     RendererSchedulerImpl* renderer_scheduler,
     const char* tracing_category)
@@ -234,6 +259,8 @@ TaskQueueThrottler::TaskQueueThrottler(
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
       time_domain_(new ThrottledTimeDomain(this, tracing_category)),
+      max_budget_level_(kMaxBudgetLevel),
+      max_throttling_duration_(kMaxThrottlingDuration),
       virtual_time_(false),
       weak_factory_(this) {
   pump_throttled_tasks_closure_.Reset(base::Bind(
@@ -503,7 +530,8 @@ void TaskQueueThrottler::EnableVirtualTime() {
 TaskQueueThrottler::TimeBudgetPool* TaskQueueThrottler::CreateTimeBudgetPool(
     const char* name) {
   TimeBudgetPool* time_budget_pool =
-      new TimeBudgetPool(name, this, tick_clock_->NowTicks());
+      new TimeBudgetPool(name, this, tick_clock_->NowTicks(), max_budget_level_,
+                         max_throttling_duration_);
   time_budget_pools_[time_budget_pool] = base::WrapUnique(time_budget_pool);
   return time_budget_pool;
 }
@@ -518,7 +546,7 @@ void TaskQueueThrottler::OnTaskRunTimeReported(TaskQueue* task_queue,
   if (!time_budget_pool)
     return;
 
-  time_budget_pool->RecordTaskRunTime(end_time - start_time);
+  time_budget_pool->RecordTaskRunTime(start_time, end_time);
   if (!time_budget_pool->HasEnoughBudgetToRun(end_time))
     time_budget_pool->BlockThrottledQueues(end_time);
 }

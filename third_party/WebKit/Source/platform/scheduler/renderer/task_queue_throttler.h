@@ -69,7 +69,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
     // is scheduled.
     void RemoveQueue(base::TimeTicks now, TaskQueue* queue);
 
-    void RecordTaskRunTime(base::TimeDelta task_run_time);
+    void RecordTaskRunTime(base::TimeTicks start_time,
+                           base::TimeTicks end_time);
 
     // Enables this time budget pool. Queues from this pool will be
     // throttled based on their run time.
@@ -95,7 +96,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
     TimeBudgetPool(const char* name,
                    TaskQueueThrottler* task_queue_throttler,
-                   base::TimeTicks now);
+                   base::TimeTicks now,
+                   base::Optional<base::TimeDelta> max_budget_level,
+                   base::Optional<base::TimeDelta> max_throttling_duration);
 
     bool HasEnoughBudgetToRun(base::TimeTicks now);
     base::TimeTicks GetNextAllowedRunTime();
@@ -111,12 +114,28 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
     // Disable all associated throttled queues.
     void BlockThrottledQueues(base::TimeTicks now);
 
+    // Increase |current_budget_level_| to satisfy max throttling duration
+    // condition if necessary.
+    // Decrease |current_budget_level_| to satisfy max budget level
+    // condition if necessary.
+    void EnforceBudgetLevelRestrictions();
+
     const char* name_;  // NOT OWNED
 
     TaskQueueThrottler* task_queue_throttler_;
 
+    // Max budget level which we can accrue.
+    // Tasks will be allowed to run for this time before being throttled
+    // after a very long period of inactivity.
+    base::Optional<base::TimeDelta> max_budget_level_;
+    // Max throttling duration places a lower limit on time budget level,
+    // ensuring that one long task does not cause extremely long throttling.
+    // Note that this is not the guarantee that every task will run
+    // after desired run time + max throttling duration, but a guarantee
+    // that at least one task will be run every max_throttling_duration.
+    base::Optional<base::TimeDelta> max_throttling_duration_;
+
     base::TimeDelta current_budget_level_;
-    base::TimeDelta max_budget_level_;
     base::TimeTicks last_checkpoint_;
     double cpu_percentage_;
     bool is_enabled_;
@@ -235,6 +254,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   base::TickClock* tick_clock_;                // NOT OWNED
   const char* tracing_category_;               // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;
+
+  base::Optional<base::TimeDelta> max_budget_level_;
+  base::Optional<base::TimeDelta> max_throttling_duration_;
 
   CancelableClosureHolder pump_throttled_tasks_closure_;
   base::Optional<base::TimeTicks> pending_pump_throttled_tasks_runtime_;
