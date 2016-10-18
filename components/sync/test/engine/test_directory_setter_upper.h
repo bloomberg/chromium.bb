@@ -1,7 +1,28 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
+#ifndef COMPONENTS_SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
+#define COMPONENTS_SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
+
+#include <memory>
+#include <string>
+
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "components/sync/base/test_unrecoverable_error_handler.h"
+#include "components/sync/test/fake_sync_encryption_handler.h"
+#include "components/sync/test/null_directory_change_delegate.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+namespace syncer {
+
+namespace syncable {
+class Directory;
+class DirectoryBackingStore;
+class TestTransactionObserver;
+}
+
 // A handy class that takes care of setting up and destroying a
 // syncable::Directory instance for unit tests that require one.
 //
@@ -25,28 +46,6 @@
 //     ... now use metadb_.directory() to get at syncable::Entry objects ...
 //   }
 //
-
-#ifndef COMPONENTS_SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
-#define COMPONENTS_SYNC_TEST_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
-
-#include <memory>
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "components/sync/base/test_unrecoverable_error_handler.h"
-#include "components/sync/test/fake_sync_encryption_handler.h"
-#include "components/sync/test/null_directory_change_delegate.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-namespace syncer {
-
-namespace syncable {
-class Directory;
-class DirectoryBackingStore;
-class TestTransactionObserver;
-}
-
 class TestDirectorySetterUpper {
  public:
   TestDirectorySetterUpper();

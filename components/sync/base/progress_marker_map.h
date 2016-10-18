@@ -1,8 +1,6 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Definition of ProgressMarkerMap and various utility functions.
 
 #ifndef COMPONENTS_SYNC_BASE_PROGRESS_MARKER_MAP_H_
 #define COMPONENTS_SYNC_BASE_PROGRESS_MARKER_MAP_H_
@@ -12,9 +10,6 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-
-// TODO(akalin,mmontgomery): Move the non-exported functions in this file to a
-// private header.
 
 namespace base {
 class DictionaryValue;

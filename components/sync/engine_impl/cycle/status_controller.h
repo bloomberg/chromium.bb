@@ -2,18 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// StatusController handles all counter and status related number crunching and
-// state tracking on behalf of a SyncCycle.
-//
-// This object may be accessed from many different threads.  It will be accessed
-// most often from the syncer thread.  However, when update application is in
-// progress it may also be accessed from the worker threads.  This is safe
-// because only one of them will run at a time, and the syncer thread will be
-// blocked until update application completes.
-//
-// This object contains only global state.  None of its members are per model
-// type counters.
-
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_STATUS_CONTROLLER_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_STATUS_CONTROLLER_H_
 
@@ -28,6 +16,17 @@
 
 namespace syncer {
 
+// StatusController handles all counter and status related number crunching and
+// state tracking on behalf of a SyncCycle.
+//
+// This object may be accessed from many different threads.  It will be accessed
+// most often from the syncer thread.  However, when update application is in
+// progress it may also be accessed from the worker threads.  This is safe
+// because only one of them will run at a time, and the syncer thread will be
+// blocked until update application completes.
+//
+// This object contains only global state.  None of its members are per model
+// type counters.
 class StatusController {
  public:
   StatusController();

@@ -1,12 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// An UpdateApplicator is used to iterate over a number of unapplied updates,
-// applying them to the client using the given syncer cycle.
-//
-// UpdateApplicator might resemble an iterator, but it actually keeps retrying
-// failed updates until no remaining updates can be successfully applied.
 
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_UPDATE_APPLICATOR_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_UPDATE_APPLICATOR_H_
@@ -29,6 +23,11 @@ class WriteTransaction;
 class Entry;
 }
 
+// An UpdateApplicator is used to iterate over a number of unapplied updates,
+// applying them to the client using the given syncer cycle.
+//
+// UpdateApplicator might resemble an iterator, but it actually keeps retrying
+// failed updates until no remaining updates can be successfully applied.
 class UpdateApplicator {
  public:
   explicit UpdateApplicator(Cryptographer* cryptographer);

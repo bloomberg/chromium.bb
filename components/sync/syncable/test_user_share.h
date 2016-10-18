@@ -1,7 +1,27 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
+#ifndef COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_
+#define COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_
+
+#include <stddef.h>
+
+#include <memory>
+
+#include "base/macros.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/syncable/user_share.h"
+
+namespace syncer {
+
+class SyncEncryptionHandler;
+class TestDirectorySetterUpper;
+
+namespace syncable {
+class TestTransactionObserver;
+}
+
 // A handy class that takes care of setting up and destroying a
 // UserShare instance for unit tests that require one.
 //
@@ -26,27 +46,6 @@
 //     ...
 //   }
 //
-
-#ifndef COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_
-#define COMPONENTS_SYNC_SYNCABLE_TEST_USER_SHARE_H_
-
-#include <stddef.h>
-
-#include <memory>
-
-#include "base/macros.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/syncable/user_share.h"
-
-namespace syncer {
-
-class SyncEncryptionHandler;
-class TestDirectorySetterUpper;
-
-namespace syncable {
-class TestTransactionObserver;
-}
-
 class TestUserShare {
  public:
   TestUserShare();

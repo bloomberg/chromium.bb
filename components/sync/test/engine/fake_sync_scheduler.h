@@ -1,10 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A fake implementation of the SyncScheduler. If needed, we should add default
-// logic needed for tests (invoking callbacks, etc) here rather than in higher
-// level test classes.
 
 #ifndef COMPONENTS_SYNC_TEST_ENGINE_FAKE_SYNC_SCHEDULER_H_
 #define COMPONENTS_SYNC_TEST_ENGINE_FAKE_SYNC_SCHEDULER_H_
@@ -17,6 +13,9 @@
 
 namespace syncer {
 
+// A fake implementation of the SyncScheduler. If needed, we should add default
+// logic needed for tests (invoking callbacks, etc) here rather than in higher
+// level test classes.
 class FakeSyncScheduler : public SyncScheduler {
  public:
   FakeSyncScheduler();

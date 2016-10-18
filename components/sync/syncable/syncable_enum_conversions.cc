@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Keep this file in sync with entry_kernel.h.
-
 #include "components/sync/syncable/syncable_enum_conversions.h"
 
 #include "base/logging.h"

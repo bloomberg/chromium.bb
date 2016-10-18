@@ -1,9 +1,6 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Syncer unit tests. Unfortunately a lot of these tests
-// are outdated and need to be reworked and updated.
 
 #include "components/sync/engine_impl/syncer.h"
 
@@ -175,6 +172,8 @@ void TypeDebugInfoCache::OnStatusCountersUpdated(
 
 }  // namespace
 
+// Syncer unit tests. Unfortunately a lot of these tests
+// are outdated and need to be reworked and updated.
 class SyncerTest : public testing::Test,
                    public SyncCycle::Delegate,
                    public SyncEngineEventListener {

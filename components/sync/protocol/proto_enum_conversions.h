@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_
 #define COMPONENTS_SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_
 
-// Keep this file in sync with the .proto files in this directory.
-
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/client_debug_info.pb.h"
@@ -14,6 +12,8 @@
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
+// Keep this file in sync with the .proto files in this directory.
+//
 // Utility functions to get the string equivalent for some sync proto
 // enums.
 

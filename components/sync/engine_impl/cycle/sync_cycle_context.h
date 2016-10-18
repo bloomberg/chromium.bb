@@ -2,16 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// SyncCycleContext encapsulates the contextual information and engine
-// components specific to a SyncCycle.  Unlike the SyncCycle, the context
-// can be reused across several sync cycles.
-//
-// The context does not take ownership of its pointer members.  It's up to
-// the surrounding classes to ensure those members remain valid while the
-// context is in use.
-//
-// It can only be used from the SyncerThread.
-
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_SYNC_CYCLE_CONTEXT_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_SYNC_CYCLE_CONTEXT_H_
 
@@ -38,6 +28,15 @@ class Directory;
 // Default number of items a client can commit in a single message.
 static const int kDefaultMaxCommitBatchSize = 25;
 
+// SyncCycleContext encapsulates the contextual information and engine
+// components specific to a SyncCycle.  Unlike the SyncCycle, the context
+// can be reused across several sync cycles.
+//
+// The context does not take ownership of its pointer members.  It's up to
+// the surrounding classes to ensure those members remain valid while the
+// context is in use.
+//
+// It can only be used from the SyncerThread.
 class SyncCycleContext {
  public:
   SyncCycleContext(ServerConnectionManager* connection_manager,

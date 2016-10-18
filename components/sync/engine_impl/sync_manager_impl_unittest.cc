@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Unit tests for the SyncApi. Note that a lot of the underlying
-// functionality is provided by the Syncable layer, which has its own
-// unit tests. We'll test SyncApi specific things in this harness.
-
 #include "components/sync/engine_impl/sync_manager_impl.h"
 
 #include <cstddef>
@@ -220,6 +216,9 @@ const char kClientTag[] = "tag";
 
 }  // namespace
 
+// Unit tests for the SyncApi. Note that a lot of the underlying
+// functionality is provided by the Syncable layer, which has its own
+// unit tests. We'll test SyncApi specific things in this harness.
 class SyncApiTest : public testing::Test {
  public:
   void SetUp() override { test_user_share_.SetUp(); }

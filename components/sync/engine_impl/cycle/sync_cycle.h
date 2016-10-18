@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// A class representing an attempt to synchronize the local syncable data
-// store with a sync server. A SyncCycle instance is passed as a stateful
-// bundle throughout the sync cycle.  The SyncCycle is not reused across
-// sync cycles; each cycle starts with a new one.
-
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_SYNC_CYCLE_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_SYNC_CYCLE_H_
 
@@ -33,6 +28,10 @@ class ModelSafeWorker;
 class NudgeTracker;
 class ProtocolEvent;
 
+// A class representing an attempt to synchronize the local syncable data
+// store with a sync server. A SyncCycle instance is passed as a stateful
+// bundle throughout the sync cycle.  The SyncCycle is not reused across
+// sync cycles; each cycle starts with a new one.
 class SyncCycle {
  public:
   // The Delegate services events that occur during the cycle requiring an

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Utilities to verify the state of items in unit tests.
-
 #include "components/sync/test/engine/test_syncable_utils.h"
 
 #include "components/sync/syncable/directory.h"

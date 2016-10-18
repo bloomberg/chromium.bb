@@ -1,9 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Utility functions manipulating syncable::Entries, intended for use by the
-// syncer.
 
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_SYNCER_UTIL_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_SYNCER_UTIL_H_
@@ -33,6 +30,9 @@ class ModelNeutralWriteTransaction;
 }  // namespace syncable
 
 class Cryptographer;
+
+// Utility functions manipulating syncable::Entries, intended for use by the
+// syncer.
 
 // If the server sent down a client-tagged entry, or an entry whose
 // commit response was lost, it is necessary to update a local entry

@@ -1,11 +1,11 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Utility functions that act on syncable::MutableEntry to resolve conflicts.
 
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_CONFLICT_UTIL_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_CONFLICT_UTIL_H_
+
+// Utility functions that act on syncable::MutableEntry to resolve conflicts.
 
 namespace syncer {
 

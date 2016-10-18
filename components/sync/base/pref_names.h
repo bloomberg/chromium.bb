@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Constants for the names of various sync preferences, for easier changing.
-
 #ifndef COMPONENTS_SYNC_BASE_PREF_NAMES_H_
 #define COMPONENTS_SYNC_BASE_PREF_NAMES_H_
 

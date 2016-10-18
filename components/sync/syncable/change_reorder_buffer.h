@@ -1,10 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Defines ChangeReorderBuffer, which can be used to sort a list of item
-// actions to achieve the ordering constraint required by the SyncObserver
-// interface of the SyncAPI.
 
 #ifndef COMPONENTS_SYNC_SYNCABLE_CHANGE_REORDER_BUFFER_H_
 #define COMPONENTS_SYNC_SYNCABLE_CHANGE_REORDER_BUFFER_H_

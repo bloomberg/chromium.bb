@@ -25,9 +25,6 @@ class DictionaryValue;
 
 namespace syncer {
 
-// TODO(akalin): Move the non-exported functions in this file to a
-// private header.
-
 typedef base::Callback<enum SyncerError(void)> WorkCallback;
 
 enum ModelSafeGroup {

@@ -1,8 +1,7 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A class to schedule syncer tasks intelligently.
+
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_SYNC_SCHEDULER_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_SYNC_SCHEDULER_H_
 
@@ -56,6 +55,7 @@ struct ClearParams {
   base::Closure report_success_task;
 };
 
+// A class to schedule syncer tasks intelligently.
 class SyncScheduler : public SyncCycle::Delegate {
  public:
   enum Mode {

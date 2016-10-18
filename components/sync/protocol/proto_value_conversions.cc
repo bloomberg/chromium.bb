@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Keep this file in sync with the .proto files in this directory.
-
 #include "components/sync/protocol/proto_value_conversions.h"
 
 #include <stdint.h>

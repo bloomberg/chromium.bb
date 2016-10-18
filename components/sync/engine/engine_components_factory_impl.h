@@ -1,9 +1,6 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// An EngineComponentsFactory implementation designed for real production /
-// normal use.
 
 #ifndef COMPONENTS_SYNC_ENGINE_ENGINE_COMPONENTS_FACTORY_IMPL_H_
 #define COMPONENTS_SYNC_ENGINE_ENGINE_COMPONENTS_FACTORY_IMPL_H_
@@ -17,6 +14,8 @@
 
 namespace syncer {
 
+// An EngineComponentsFactory implementation designed for real production /
+// normal use.
 class EngineComponentsFactoryImpl : public EngineComponentsFactory {
  public:
   explicit EngineComponentsFactoryImpl(const Switches& switches);

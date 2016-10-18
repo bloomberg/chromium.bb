@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_SYNC_BASE_IMMUTABLE_H_
+#define COMPONENTS_SYNC_BASE_IMMUTABLE_H_
+
+#include <utility>
+
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+
 // Immutable<T> provides an easy, cheap, and thread-safe way to pass
 // large immutable data around.
 //
@@ -60,14 +68,6 @@
 // NOTE: Some complexity is necessary in order to use Immutable<T>
 // with forward-declared types.  See comments on traits below for
 // details.
-
-#ifndef COMPONENTS_SYNC_BASE_IMMUTABLE_H_
-#define COMPONENTS_SYNC_BASE_IMMUTABLE_H_
-
-#include <utility>
-
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
 
 namespace syncer {
 

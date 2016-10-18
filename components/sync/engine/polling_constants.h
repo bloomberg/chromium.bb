@@ -1,8 +1,6 @@
 // Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Constants used by SyncScheduler when polling servers for updates.
 
 #ifndef COMPONENTS_SYNC_ENGINE_POLLING_CONSTANTS_H_
 #define COMPONENTS_SYNC_ENGINE_POLLING_CONSTANTS_H_
@@ -11,6 +9,7 @@
 
 namespace syncer {
 
+// Constants used by SyncScheduler when polling servers for updates.
 extern const int64_t kDefaultShortPollIntervalSeconds;
 extern const int64_t kDefaultLongPollIntervalSeconds;
 extern const int64_t kMaxBackoffSeconds;

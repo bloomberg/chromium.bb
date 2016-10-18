@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_SYNC_SYNCABLE_SYNCABLE_ENUM_CONVERSIONS_H_
 #define COMPONENTS_SYNC_SYNCABLE_SYNCABLE_ENUM_CONVERSIONS_H_
 
-// Keep this file in sync with entry_kernel.h.
-
 #include "components/sync/syncable/entry_kernel.h"
 
+// Keep this file in sync with entry_kernel.h.
+//
 // Utility functions to get the string equivalent for some syncable
 // enums.
 

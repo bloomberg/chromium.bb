@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Mock ServerConnectionManager class for use in client unit tests.
 
 #ifndef COMPONENTS_SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_
 #define COMPONENTS_SYNC_TEST_ENGINE_MOCK_CONNECTION_MANAGER_H_
@@ -27,6 +25,7 @@
 
 namespace syncer {
 
+// Mock ServerConnectionManager class for use in client unit tests.
 class MockConnectionManager : public ServerConnectionManager {
  public:
   class MidCommitObserver {

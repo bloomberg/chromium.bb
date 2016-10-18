@@ -1,8 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A tool making it easier to create IDs for unit testing.
 
 #ifndef COMPONENTS_SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
 #define COMPONENTS_SYNC_TEST_ENGINE_TEST_ID_FACTORY_H_
@@ -16,6 +14,7 @@
 
 namespace syncer {
 
+// A tool making it easier to create IDs for unit testing.
 class TestIdFactory {
  public:
   TestIdFactory() : next_value_(1337000) {}

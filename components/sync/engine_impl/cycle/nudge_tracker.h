@@ -1,9 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A class to track the outstanding work required to bring the client back into
-// sync with the server.
+
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_NUDGE_TRACKER_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_NUDGE_TRACKER_H_
 
@@ -25,6 +23,8 @@ namespace syncer {
 
 class ObjectIdInvalidationMap;
 
+// A class to track the outstanding work required to bring the client back into
+// sync with the server.
 class NudgeTracker {
  public:
   static size_t kDefaultMaxPayloadsPerType;

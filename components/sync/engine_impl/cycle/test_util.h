@@ -1,8 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Utils to simulate various outcomes of a sync cycle.
+
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_TEST_UTIL_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_CYCLE_TEST_UTIL_H_
 
@@ -13,6 +12,8 @@
 
 namespace syncer {
 namespace test_util {
+
+// Utils to simulate various outcomes of a sync cycle.
 
 // Configure sync cycle successes and failures.
 void SimulateGetEncryptionKeyFailed(

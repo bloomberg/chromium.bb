@@ -2,6 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_SYNC_BASE_WEAK_HANDLE_H_
+#define COMPONENTS_SYNC_BASE_WEAK_HANDLE_H_
+
+#include <cstddef>
+#include <utility>
+
+#include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
+
 // Weak handles provides a way to refer to weak pointers from another
 // thread.  This is useful because it is not safe to reference a weak
 // pointer from a thread other than the thread on which it was
@@ -43,22 +59,6 @@
 //   void OnIOEvent(IOEvent e) { DCHECK(CalledOnValidThread(); ... }
 //   void OnIOError(IOError err) { DCHECK(CalledOnValidThread(); ... }
 // };
-
-#ifndef COMPONENTS_SYNC_BASE_WEAK_HANDLE_H_
-#define COMPONENTS_SYNC_BASE_WEAK_HANDLE_H_
-
-#include <cstddef>
-#include <utility>
-
-#include "base/bind.h"
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
-#include "base/location.h"
-#include "base/logging.h"
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 
 namespace tracked_objects {
 class Location;
