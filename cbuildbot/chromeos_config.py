@@ -706,7 +706,6 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'reef-paladin',
         'gale-paladin',
-        'guado_moblab-paladin',
         'lakitu_next-paladin',
 
         # Incremental Builders.
@@ -2278,6 +2277,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       'elm',
       'falco',
       'glados',
+      'guado_moblab',
       'gru',
       'lakitu',
       'leon',
