@@ -304,6 +304,17 @@ def DownloadHostGcc(args):
   args.gcc_toolchain = gcc_dir
 
 
+def AddSvnToPathOnWin():
+  """Download svn.exe and add it to PATH."""
+  if sys.platform != 'win32':
+    return
+  svn_ver = 'svn-1.6.6-win'
+  svn_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, svn_ver)
+  if not os.path.exists(svn_dir):
+    DownloadAndUnpack(CDS_URL + '/tools/%s.zip' % svn_ver, LLVM_BUILD_TOOLS_DIR)
+  os.environ['PATH'] = svn_dir + os.pathsep + os.environ.get('PATH', '')
+
+
 def AddCMakeToPath():
   """Download CMake and add it to PATH."""
   if sys.platform == 'win32':
@@ -440,6 +451,7 @@ def UpdateClang(args):
     return 1
 
   DownloadHostGcc(args)
+  AddSvnToPathOnWin()
   AddCMakeToPath()
   AddGnuWinToPath()
 
