@@ -5,14 +5,20 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 
 #include <stdint.h>
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -21,6 +27,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -45,6 +52,7 @@
 #include "content/test/test_frame_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 
@@ -6509,6 +6517,127 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
+}
+
+namespace {
+
+class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
+ public:
+  RequestMonitoringNavigationBrowserTest() : weak_factory_(this) {}
+
+  const net::test_server::HttpRequest* FindAccumulatedRequest(
+      const GURL& url_to_find) {
+    // net::test_server::HttpRequest::GetURL hardcodes "http://localhost/" part.
+    GURL::Replacements replacements;
+    replacements.SetHostStr("localhost");
+    replacements.ClearPort();
+    replacements.SetSchemeStr("http");
+    DCHECK(url_to_find.SchemeIsHTTPOrHTTPS());
+    GURL canonical_url_to_find = url_to_find.ReplaceComponents(replacements);
+
+    auto it = std::find_if(
+        accumulated_requests_.begin(), accumulated_requests_.end(),
+        [&canonical_url_to_find](const net::test_server::HttpRequest& request) {
+          return request.GetURL() == canonical_url_to_find;
+        });
+    if (it == accumulated_requests_.end())
+      return nullptr;
+    return &*it;
+  }
+
+ protected:
+  void SetUpOnMainThread() override {
+    // Accumulate all http requests made to |embedded_test_server| into
+    // |accumulated_requests_| container.
+    embedded_test_server()->RegisterRequestMonitor(base::Bind(
+        &RequestMonitoringNavigationBrowserTest::MonitorRequestOnIoThread,
+        weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void TearDown() override {
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  }
+
+ private:
+  static void MonitorRequestOnIoThread(
+      const base::WeakPtr<RequestMonitoringNavigationBrowserTest>& weak_this,
+      const scoped_refptr<base::SequencedTaskRunner>& postback_task_runner,
+      const net::test_server::HttpRequest& request) {
+    postback_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &RequestMonitoringNavigationBrowserTest::MonitorRequestOnMainThread,
+            weak_this, request));
+  }
+
+  void MonitorRequestOnMainThread(
+      const net::test_server::HttpRequest& request) {
+    accumulated_requests_.push_back(request);
+  }
+
+  std::vector<net::test_server::HttpRequest> accumulated_requests_;
+  base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_;
+};
+
+// Helper for waiting until the main frame of |web_contents| has loaded
+// |expected_url| (and all subresources have finished loading).
+class WebContentsLoadFinishedWaiter : public WebContentsObserver {
+ public:
+  WebContentsLoadFinishedWaiter(WebContents* web_contents,
+                                const GURL& expected_url)
+      : WebContentsObserver(web_contents),
+        expected_url_(expected_url),
+        message_loop_runner_(new MessageLoopRunner) {
+    EXPECT_TRUE(web_contents != NULL);
+  }
+
+  void Wait() { message_loop_runner_->Run(); }
+
+ private:
+  void DidFinishLoad(RenderFrameHost* render_frame_host,
+                     const GURL& url) override {
+    bool is_main_frame = !render_frame_host->GetParent();
+    if (url == expected_url_ && is_main_frame)
+      message_loop_runner_->Quit();
+  }
+
+  GURL expected_url_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+};
+
+}  // namespace {
+
+// Check that NavigationController::LoadURLParams::extra_headers are not copied
+// to subresource requests.
+IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
+                       ExtraHeadersVsSubresources) {
+  GURL page_url = embedded_test_server()->GetURL("/page_with_image.html");
+  GURL image_url = embedded_test_server()->GetURL("/blank.jpg");
+
+  // Navigate via LoadURLWithParams (setting |extra_headers| field).
+  WebContentsLoadFinishedWaiter waiter(shell()->web_contents(), page_url);
+  NavigationController::LoadURLParams load_url_params(page_url);
+  load_url_params.extra_headers = "X-ExtraHeadersVsSubresources: 1";
+  shell()->web_contents()->GetController().LoadURLWithParams(load_url_params);
+  waiter.Wait();
+  EXPECT_EQ(page_url, shell()->web_contents()->GetLastCommittedURL());
+
+  // Verify that the extra header was present for the page.
+  const net::test_server::HttpRequest* page_request =
+      FindAccumulatedRequest(page_url);
+  ASSERT_TRUE(page_request);
+  EXPECT_THAT(page_request->headers,
+              testing::Contains(testing::Key("X-ExtraHeadersVsSubresources")));
+
+  // Verify that the extra header was NOT present for the subresource.
+  const net::test_server::HttpRequest* image_request =
+      FindAccumulatedRequest(image_url);
+  ASSERT_TRUE(image_request);
+  EXPECT_THAT(image_request->headers,
+              testing::Not(testing::Contains(
+                  testing::Key("X-ExtraHeadersVsSubresources"))));
 }
 
 }  // namespace content

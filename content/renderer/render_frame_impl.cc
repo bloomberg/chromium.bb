@@ -4225,6 +4225,8 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
       navigation_state->common_params().allow_download);
   extra_data->set_transition_type(transition_type);
   extra_data->set_should_replace_current_entry(should_replace_current_entry);
+  // TODO(lukasza): https://crbug.com/656179: Navigational things (e.g.
+  // StartNavigationParams) should not apply to subresource requests.
   extra_data->set_transferred_request_child_id(
       navigation_state->start_params().transferred_request_child_id);
   extra_data->set_transferred_request_request_id(
@@ -4259,7 +4261,12 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
   request.setRequestorID(render_view_->GetRoutingID());
   request.setHasUserGesture(WebUserGestureIndicator::isProcessingUserGesture());
 
-  if (!navigation_state->start_params().extra_headers.empty()) {
+  // StartNavigationParams should only apply to navigational requests (and not
+  // to subresource requests).  For example - Content-Type header provided via
+  // OpenURLParams::extra_headers should only be applied to the original POST
+  // navigation request (and not to subresource requests).
+  if (!navigation_state->start_params().extra_headers.empty() &&
+      request.getFrameType() != WebURLRequest::FrameTypeNone) {
     for (net::HttpUtil::HeadersIterator i(
              navigation_state->start_params().extra_headers.begin(),
              navigation_state->start_params().extra_headers.end(), "\n");
