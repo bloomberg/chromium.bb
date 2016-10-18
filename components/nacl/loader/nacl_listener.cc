@@ -42,7 +42,6 @@
 #include "native_client/src/public/nacl_desc.h"
 
 #if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
 #endif
@@ -117,13 +116,12 @@ void SetUpIPCAdapter(
     int nacl_fd,
     NaClIPCAdapter::ResolveFileTokenCallback resolve_file_token_cb,
     NaClIPCAdapter::OpenResourceCallback open_resource_cb) {
-  scoped_refptr<NaClIPCAdapter> ipc_adapter(new NaClIPCAdapter(
-      *handle, task_runner.get(), resolve_file_token_cb, open_resource_cb));
+  mojo::MessagePipe pipe;
+  scoped_refptr<NaClIPCAdapter> ipc_adapter(
+      new NaClIPCAdapter(pipe.handle0.release(), task_runner,
+                         resolve_file_token_cb, open_resource_cb));
   ipc_adapter->ConnectChannel();
-#if defined(OS_POSIX)
-  handle->socket =
-      base::FileDescriptor(ipc_adapter->TakeClientFileDescriptor());
-#endif
+  *handle = pipe.handle1.release();
 
   // Pass a NaClDesc to the untrusted side. This will hold a ref to the
   // NaClIPCAdapter.
@@ -246,7 +244,6 @@ void NaClListener::Listen() {
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kMojoChannelToken)));
   DCHECK(handle.is_valid());
-  IPC::ChannelHandle channel_handle(handle.release());
 
   channel_ = IPC::SyncChannel::Create(this, io_thread_.task_runner().get(),
                                       &shutdown_event_);
@@ -255,7 +252,7 @@ void NaClListener::Listen() {
   IPC::AttachmentBroker* global = IPC::AttachmentBroker::GetGlobal();
   if (global && !global->IsPrivilegedBroker())
     global->RegisterBrokerCommunicationChannel(channel_.get());
-  channel_->Init(channel_handle, IPC::Channel::MODE_CLIENT, true);
+  channel_->Init(handle.release(), IPC::Channel::MODE_CLIENT, true);
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::RunLoop().Run();
 }
@@ -336,12 +333,9 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     LOG(FATAL) << "NaClAppCreate() failed";
   }
 
-  IPC::ChannelHandle browser_handle =
-      IPC::Channel::GenerateVerifiedChannelID("nacl");
-  IPC::ChannelHandle ppapi_renderer_handle =
-      IPC::Channel::GenerateVerifiedChannelID("nacl");
-  IPC::ChannelHandle manifest_service_handle =
-      IPC::Channel::GenerateVerifiedChannelID("nacl");
+  IPC::ChannelHandle browser_handle;
+  IPC::ChannelHandle ppapi_renderer_handle;
+  IPC::ChannelHandle manifest_service_handle;
 
   // Create the PPAPI IPC channels between the NaCl IRT and the host
   // (browser/renderer) processes. The IRT uses these channels to
@@ -360,13 +354,12 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
       base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
 
+  mojo::MessagePipe trusted_pipe;
   trusted_listener_ =
-      new NaClTrustedListener(IPC::Channel::GenerateVerifiedChannelID("nacl"),
+      new NaClTrustedListener(trusted_pipe.handle0.release(),
                               io_thread_.task_runner().get(), &shutdown_event_);
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
-          browser_handle,
-          ppapi_renderer_handle,
-          trusted_listener_->TakeClientChannelHandle(),
+          browser_handle, ppapi_renderer_handle, trusted_pipe.handle1.release(),
           manifest_service_handle)))
     LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 

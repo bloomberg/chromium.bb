@@ -109,10 +109,10 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   // plugin's main thread. We just pass the FDs to plugin side.
   // The FDs are created in the browser process. Following check can fail
   // if the preparation for sending NaClProcessMsg_Start were incomplete.
-  CHECK_NE(params.ppapi_browser_channel_handle.socket.fd, -1);
-  CHECK_NE(params.ppapi_renderer_channel_handle.socket.fd, -1);
-  CHECK_NE(params.trusted_service_channel_handle.socket.fd, -1);
-  CHECK_NE(params.manifest_service_channel_handle.socket.fd, -1);
+  CHECK(params.ppapi_browser_channel_handle.is_mojo_channel_handle());
+  CHECK(params.ppapi_renderer_channel_handle.is_mojo_channel_handle());
+  CHECK(params.trusted_service_channel_handle.is_mojo_channel_handle());
+  CHECK(params.manifest_service_channel_handle.is_mojo_channel_handle());
 
   ppapi::SetIPCChannelHandles(
       params.ppapi_browser_channel_handle,

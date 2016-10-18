@@ -297,12 +297,11 @@ class IPC_EXPORT Channel : public Endpoint {
   static std::string GenerateVerifiedChannelID(const std::string& prefix);
 #endif
 
-  // Generates a pair of channel handles that can be used as the client and
-  // server ends of a ChannelMojo. |name_postfix| is appended to the end of the
-  // handle name to help identify the handles.
+  // Deprecated: Create a mojo::MessagePipe directly and release() its handles
+  // instead.
   //
-  // Note, when using ChannelMojo, |ChannelHandle::name| serves no functional
-  // purpose other than to identify the channel in logging.
+  // Generates a pair of channel handles that can be used as the client and
+  // server ends of a ChannelMojo. |name_postfix| is ignored.
   static void GenerateMojoChannelHandlePair(
       const std::string& name_postfix,
       IPC::ChannelHandle* handle0,

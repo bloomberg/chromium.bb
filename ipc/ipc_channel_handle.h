@@ -50,6 +50,17 @@ struct ChannelHandle {
 #endif  // defined(OS_POSIX)
   ChannelHandle(mojo::MessagePipeHandle h) : mojo_handle(h) {}
 
+  bool is_mojo_channel_handle() const {
+#if defined(OS_WIN)
+    if (pipe.handle)
+      return false;
+#elif defined(OS_POSIX)
+    if (socket.fd != -1)
+      return false;
+#endif  // defined(OS_POSIX)
+    return mojo_handle.is_valid() && name.empty();
+  }
+
   std::string name;
 #if defined(OS_POSIX)
   base::FileDescriptor socket;

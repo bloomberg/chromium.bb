@@ -55,22 +55,9 @@ void Channel::GenerateMojoChannelHandlePair(
     IPC::ChannelHandle* handle0,
     IPC::ChannelHandle* handle1) {
   DCHECK_NE(handle0, handle1);
-  // |name| is only used for logging and to aid developers in debugging. It
-  // doesn't _need_ to be unique, but this string is probably more useful than a
-  // generic "ChannelMojo".
-#if !defined(OS_NACL_SFI)
-  std::string name = "ChannelMojo-" + GenerateUniqueRandomChannelID();
-#else
-  std::string name = "ChannelMojo";
-#endif
-  if (!name_postfix.empty()) {
-    name += "-" + name_postfix;
-  }
   mojo::MessagePipe message_pipe;
-  *handle0 = ChannelHandle(name);
-  handle0->mojo_handle = message_pipe.handle0.release();
-  *handle1 = ChannelHandle(name);
-  handle1->mojo_handle = message_pipe.handle1.release();
+  *handle0 = ChannelHandle(message_pipe.handle0.release());
+  *handle1 = ChannelHandle(message_pipe.handle1.release());
 }
 
 Channel::~Channel() {

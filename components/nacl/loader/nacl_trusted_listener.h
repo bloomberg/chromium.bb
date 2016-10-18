@@ -22,8 +22,6 @@ class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
                       base::SingleThreadTaskRunner* ipc_task_runner,
                       base::WaitableEvent* shutdown_event);
 
-  IPC::ChannelHandle TakeClientChannelHandle();
-
   // Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 

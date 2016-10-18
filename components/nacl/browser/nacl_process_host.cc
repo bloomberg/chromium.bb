@@ -211,73 +211,6 @@ void CloseFile(base::File file) {
 unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
     ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
 
-// Unfortunately, we cannot use ScopedGeneric directly for IPC::ChannelHandle,
-// because there is neither operator== nor operator != definition for it.
-// Instead, define a simple wrapper for IPC::ChannelHandle with an assumption
-// that this only takes a transferred IPC::ChannelHandle or one to be
-// transferred via IPC.
-class NaClProcessHost::ScopedChannelHandle {
- public:
-  ScopedChannelHandle() {
-  }
-  explicit ScopedChannelHandle(const IPC::ChannelHandle& handle)
-      : handle_(handle) {
-    DCHECK(IsSupportedHandle(handle_));
-  }
-  ScopedChannelHandle(ScopedChannelHandle&& other) : handle_(other.handle_) {
-    other.handle_ = IPC::ChannelHandle();
-    DCHECK(IsSupportedHandle(handle_));
-  }
-  ~ScopedChannelHandle() {
-    CloseIfNecessary();
-  }
-
-  const IPC::ChannelHandle& get() const { return handle_; }
-  IPC::ChannelHandle release() WARN_UNUSED_RESULT {
-    IPC::ChannelHandle result = handle_;
-    handle_ = IPC::ChannelHandle();
-    return result;
-  }
-
-  void reset(const IPC::ChannelHandle& handle = IPC::ChannelHandle()) {
-    DCHECK(IsSupportedHandle(handle));
-#if defined(OS_POSIX)
-    // Following the manner of base::ScopedGeneric, we do not support
-    // reset() with same handle for simplicity of the implementation.
-    CHECK(handle.socket.fd == -1 || handle.socket.fd != handle_.socket.fd);
-#endif
-    CloseIfNecessary();
-    handle_ = handle;
-  }
-
- private:
-  // Returns true if the given handle is closable automatically by this
-  // class. This function is just a helper for validation.
-  static bool IsSupportedHandle(const IPC::ChannelHandle& handle) {
-#if defined(OS_WIN)
-    // On Windows, it is not supported to marshal the |pipe.handle|.
-    // In our case, we wrap a transferred ChannelHandle (or one to be
-    // transferred) via IPC, so we can assume |handle.pipe.handle| is NULL.
-    return handle.pipe.handle == NULL;
-#else
-    return true;
-#endif
-  }
-
-  void CloseIfNecessary() {
-#if defined(OS_POSIX)
-    if (handle_.socket.auto_close) {
-      // Defer closing task to the ScopedFD.
-      base::ScopedFD(handle_.socket.fd);
-    }
-#endif
-  }
-
-  IPC::ChannelHandle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedChannelHandle);
-};
-
 NaClProcessHost::NaClProcessHost(
     const GURL& manifest_url,
     base::File nexe_file,
@@ -721,9 +654,9 @@ void NaClProcessHost::OnResourcesReady() {
 }
 
 void NaClProcessHost::ReplyToRenderer(
-    ScopedChannelHandle ppapi_channel_handle,
-    ScopedChannelHandle trusted_channel_handle,
-    ScopedChannelHandle manifest_service_channel_handle) {
+    mojo::ScopedMessagePipeHandle ppapi_channel_handle,
+    mojo::ScopedMessagePipeHandle trusted_channel_handle,
+    mojo::ScopedMessagePipeHandle manifest_service_channel_handle) {
   // Hereafter, we always send an IPC message with handles created above
   // which, on Windows, are not closable in this process.
   std::string error_message;
@@ -968,86 +901,38 @@ void NaClProcessHost::StartNaClFileResolved(
   // This is for security hardening. We can then prohibit the socketpair()
   // system call in nacl_helper and nacl_helper_nonsfi.
   if (uses_nonsfi_mode_) {
-    // Note: here, because some FDs/handles for the NaCl loader process are
-    // already opened, they are transferred to NaCl loader process even if
-    // an error occurs first. It is because this is the simplest way to
-    // ensure that these FDs/handles don't get leaked and that the NaCl loader
-    // process will exit properly.
-    bool has_error = false;
+    mojo::MessagePipe ppapi_browser_channel;
+    mojo::MessagePipe ppapi_renderer_channel;
+    mojo::MessagePipe trusted_service_channel;
+    mojo::MessagePipe manifest_service_channel;
 
-    ScopedChannelHandle ppapi_browser_server_channel_handle;
-    ScopedChannelHandle ppapi_browser_client_channel_handle;
-    ScopedChannelHandle ppapi_renderer_server_channel_handle;
-    ScopedChannelHandle ppapi_renderer_client_channel_handle;
-    ScopedChannelHandle trusted_service_server_channel_handle;
-    ScopedChannelHandle trusted_service_client_channel_handle;
-    ScopedChannelHandle manifest_service_server_channel_handle;
-    ScopedChannelHandle manifest_service_client_channel_handle;
-
-    if (!CreateChannelHandlePair(&ppapi_browser_server_channel_handle,
-                                 &ppapi_browser_client_channel_handle) ||
-        !CreateChannelHandlePair(&ppapi_renderer_server_channel_handle,
-                                 &ppapi_renderer_client_channel_handle) ||
-        !CreateChannelHandlePair(&trusted_service_server_channel_handle,
-                                 &trusted_service_client_channel_handle) ||
-        !CreateChannelHandlePair(&manifest_service_server_channel_handle,
-                                 &manifest_service_client_channel_handle)) {
-      SendErrorToRenderer("Failed to create socket pairs.");
-      has_error = true;
-    }
-
-    if (!has_error &&
-        !StartPPAPIProxy(std::move(ppapi_browser_client_channel_handle))) {
+    if (!StartPPAPIProxy(std::move(ppapi_browser_channel.handle1))) {
       SendErrorToRenderer("Failed to start browser PPAPI proxy.");
-      has_error = true;
+      return;
     }
 
-    if (!has_error) {
-      // On success, send back a success message to the renderer process,
-      // and transfer the channel handles for the NaCl loader process to
-      // |params|.
-      ReplyToRenderer(std::move(ppapi_renderer_client_channel_handle),
-                      std::move(trusted_service_client_channel_handle),
-                      std::move(manifest_service_client_channel_handle));
-      params.ppapi_browser_channel_handle =
-          ppapi_browser_server_channel_handle.release();
-      params.ppapi_renderer_channel_handle =
-          ppapi_renderer_server_channel_handle.release();
-      params.trusted_service_channel_handle =
-          trusted_service_server_channel_handle.release();
-      params.manifest_service_channel_handle =
-          manifest_service_server_channel_handle.release();
-    }
+    // On success, send back a success message to the renderer process,
+    // and transfer the channel handles for the NaCl loader process to
+    // |params|.
+    ReplyToRenderer(std::move(ppapi_renderer_channel.handle1),
+                    std::move(trusted_service_channel.handle1),
+                    std::move(manifest_service_channel.handle1));
+    params.ppapi_browser_channel_handle =
+        ppapi_browser_channel.handle0.release();
+    params.ppapi_renderer_channel_handle =
+        ppapi_renderer_channel.handle0.release();
+    params.trusted_service_channel_handle =
+        trusted_service_channel.handle0.release();
+    params.manifest_service_channel_handle =
+        manifest_service_channel.handle0.release();
   }
 #endif
 
   process_->Send(new NaClProcessMsg_Start(params));
 }
 
-#if defined(OS_LINUX)
-// static
-bool NaClProcessHost::CreateChannelHandlePair(
-    ScopedChannelHandle* channel_handle1,
-    ScopedChannelHandle* channel_handle2) {
-  DCHECK(channel_handle1);
-  DCHECK(channel_handle2);
-
-  int fd1 = -1;
-  int fd2 = -1;
-  if (!IPC::SocketPair(&fd1, &fd2)) {
-    return false;
-  }
-
-  IPC::ChannelHandle handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
-  handle.socket = base::FileDescriptor(fd1, true);
-  channel_handle1->reset(handle);
-  handle.socket = base::FileDescriptor(fd2, true);
-  channel_handle2->reset(handle);
-  return true;
-}
-#endif
-
-bool NaClProcessHost::StartPPAPIProxy(ScopedChannelHandle channel_handle) {
+bool NaClProcessHost::StartPPAPIProxy(
+    mojo::ScopedMessagePipeHandle channel_handle) {
   if (ipc_proxy_channel_.get()) {
     // Attempt to open more than 1 browser channel is not supported.
     // Shut down the NaCl process.
@@ -1109,14 +994,19 @@ void NaClProcessHost::OnPpapiChannelsCreated(
     const IPC::ChannelHandle& raw_ppapi_renderer_channel_handle,
     const IPC::ChannelHandle& raw_trusted_renderer_channel_handle,
     const IPC::ChannelHandle& raw_manifest_service_channel_handle) {
-  ScopedChannelHandle ppapi_browser_channel_handle(
-      raw_ppapi_browser_channel_handle);
-  ScopedChannelHandle ppapi_renderer_channel_handle(
-      raw_ppapi_renderer_channel_handle);
-  ScopedChannelHandle trusted_renderer_channel_handle(
-      raw_trusted_renderer_channel_handle);
-  ScopedChannelHandle manifest_service_channel_handle(
-      raw_manifest_service_channel_handle);
+  DCHECK(raw_ppapi_browser_channel_handle.is_mojo_channel_handle());
+  DCHECK(raw_ppapi_renderer_channel_handle.is_mojo_channel_handle());
+  DCHECK(raw_trusted_renderer_channel_handle.is_mojo_channel_handle());
+  DCHECK(raw_manifest_service_channel_handle.is_mojo_channel_handle());
+
+  mojo::ScopedMessagePipeHandle ppapi_browser_channel_handle(
+      raw_ppapi_browser_channel_handle.mojo_handle);
+  mojo::ScopedMessagePipeHandle ppapi_renderer_channel_handle(
+      raw_ppapi_renderer_channel_handle.mojo_handle);
+  mojo::ScopedMessagePipeHandle trusted_renderer_channel_handle(
+      raw_trusted_renderer_channel_handle.mojo_handle);
+  mojo::ScopedMessagePipeHandle manifest_service_channel_handle(
+      raw_manifest_service_channel_handle.mojo_handle);
 
   if (!StartPPAPIProxy(std::move(ppapi_browser_channel_handle))) {
     SendErrorToRenderer("Browser PPAPI proxy could not start.");

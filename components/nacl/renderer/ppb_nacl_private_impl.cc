@@ -194,17 +194,8 @@ int GetRoutingID(PP_Instance instance) {
 
 // Returns whether the channel_handle is valid or not.
 bool IsValidChannelHandle(const IPC::ChannelHandle& channel_handle) {
-  if (channel_handle.name.empty()) {
-    return false;
-  }
-
-#if defined(OS_POSIX)
-  if (channel_handle.socket.fd == -1) {
-    return false;
-  }
-#endif
-
-  return true;
+  DCHECK(channel_handle.is_mojo_channel_handle());
+  return channel_handle.is_mojo_channel_handle();
 }
 
 void PostPPCompletionCallback(PP_CompletionCallback callback,

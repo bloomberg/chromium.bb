@@ -48,15 +48,6 @@ NaClTrustedListener::NaClTrustedListener(
 NaClTrustedListener::~NaClTrustedListener() {
 }
 
-IPC::ChannelHandle NaClTrustedListener::TakeClientChannelHandle() {
-  IPC::ChannelHandle handle = channel_handle_;
-#if defined(OS_POSIX)
-  handle.socket =
-      base::FileDescriptor(channel_->TakeClientFileDescriptor());
-#endif
-  return handle;
-}
-
 bool NaClTrustedListener::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }

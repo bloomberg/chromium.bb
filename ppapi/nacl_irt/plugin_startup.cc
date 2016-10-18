@@ -27,8 +27,15 @@ base::Thread* g_io_thread = NULL;
 ManifestService* g_manifest_service = NULL;
 
 bool IsValidChannelHandle(IPC::ChannelHandle* handle) {
-  // ChannelMojo not yet supported.
-  return handle && handle->socket.fd != -1 && !handle->mojo_handle.is_valid();
+  // In SFI mode the underlying handle is wrapped by a NaClIPCAdapter, which is
+  // exposed as an FD. Otherwise, the handle is the underlying mojo message
+  // pipe.
+  return handle &&
+#if defined(OS_NACL_SFI)
+         handle->socket.fd != -1;
+#else
+         handle->is_mojo_channel_handle();
+#endif
 }
 
 // Creates the manifest service on IO thread so that its Listener's thread and
