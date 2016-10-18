@@ -22,6 +22,7 @@ import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content_public.browser.MessagePort;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -255,9 +256,9 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 // set a web event handler, this puts the port in a started state.
-                channel[1].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[1].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {}
+                    public void onMessage(String message, MessagePort[] sentPorts) {}
                 }, null);
                 try {
                     mAwContents.postMessageToFrame(null, "2", mWebServer.getBaseUrl(),
@@ -308,9 +309,9 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 AppWebMessagePort[] channel1 = mAwContents.createMessageChannel();
                 // set a web event handler, this puts the port in a started state.
-                channel1[1].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel1[1].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {}
+                    public void onMessage(String message, MessagePort[] sentPorts) {}
                 }, null);
                 AppWebMessagePort[] channel2 = mAwContents.createMessageChannel();
                 try {
@@ -584,9 +585,9 @@ public class PostMessageTest extends AwTestBase {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 // verify communication from JS to Java.
                 channelContainer.set(channel);
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -659,9 +660,9 @@ public class PostMessageTest extends AwTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -689,9 +690,9 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -716,9 +717,9 @@ public class PostMessageTest extends AwTestBase {
             @Override
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
-                channel[1].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[1].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -783,12 +784,12 @@ public class PostMessageTest extends AwTestBase {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 mAwContents.postMessageToFrame(
                         null, "1", mWebServer.getBaseUrl(), new AppWebMessagePort[] {channel[1]});
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, final AppWebMessagePort[] p) {
-                        p[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                    public void onMessage(String message, final MessagePort[] p) {
+                        p[0].setMessageCallback(new MessagePort.MessageCallback() {
                             @Override
-                            public void onMessage(String message, AppWebMessagePort[] q) {
+                            public void onMessage(String message, MessagePort[] q) {
                                 assertEquals("3", message);
                                 p[0].postMessage("4", null);
                             }
@@ -850,7 +851,7 @@ public class PostMessageTest extends AwTestBase {
             mPort.onMessage(message, sentPorts);
         }
         @Override
-        public void postMessage(String message, AppWebMessagePort[] sentPorts)
+        public void postMessage(String message, MessagePort[] sentPorts)
                 throws IllegalStateException {
             mPort.postMessage(message, sentPorts);
         }
@@ -976,9 +977,9 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 channelContainer.set(channel);
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -1006,9 +1007,9 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 channelContainer.set(channel);
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -1047,9 +1048,9 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 channelContainer.set(channel);
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);
@@ -1083,9 +1084,9 @@ public class PostMessageTest extends AwTestBase {
             public void run() {
                 AppWebMessagePort[] channel = mAwContents.createMessageChannel();
                 channelContainer.set(channel);
-                channel[0].setMessageCallback(new AppWebMessagePort.MessageCallback() {
+                channel[0].setMessageCallback(new MessagePort.MessageCallback() {
                     @Override
-                    public void onMessage(String message, AppWebMessagePort[] sentPorts) {
+                    public void onMessage(String message, MessagePort[] sentPorts) {
                         channelContainer.setMessage(message);
                     }
                 }, null);

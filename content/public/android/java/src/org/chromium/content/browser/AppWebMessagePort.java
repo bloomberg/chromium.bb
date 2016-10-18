@@ -9,6 +9,9 @@ import android.os.Looper;
 import android.os.Message;
 
 import org.chromium.base.Log;
+import org.chromium.content_public.browser.MessagePort;
+
+import java.util.Arrays;
 
 /**
  * Represents the MessageChannel MessagePort object. Inspired from
@@ -70,15 +73,7 @@ import org.chromium.base.Log;
  * transferring data. As a return, it simplifies implementation and prevents hard
  * to debug, racy corner cases while receiving/sending data.
  */
-public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDelegate {
-    /**
-     * The message callback for receiving messages. Called on UI thread or if
-     * provided, on the handler that is provided.
-     */
-    public abstract static class MessageCallback {
-        public abstract void onMessage(String message, AppWebMessagePort[] sentPorts);
-    }
-
+public class AppWebMessagePort implements MessagePort, PostMessageSender.PostMessageSenderDelegate {
     private static final String TAG = "MessagePort";
     private static final int PENDING = -1;
 
@@ -136,6 +131,7 @@ public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDel
         mMessagePortService.addObserver(mPostMessageSender);
     }
 
+    @Override
     public boolean isReady() {
         return mPortId != PENDING;
     }
@@ -149,6 +145,7 @@ public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDel
         releaseMessages();
     }
 
+    @Override
     public void close() {
         if (mTransferred) {
             throw new IllegalStateException("Port is already transferred");
@@ -166,10 +163,12 @@ public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDel
         }
     }
 
+    @Override
     public boolean isClosed() {
         return mClosed;
     }
 
+    @Override
     public boolean isTransferred() {
         return mTransferred;
     }
@@ -178,11 +177,13 @@ public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDel
         mTransferred = true;
     }
 
+    @Override
     public boolean isStarted() {
         return mStarted;
     }
 
     // Only called on UI thread
+    @Override
     public void setMessageCallback(MessageCallback messageCallback, Handler handler) {
         mStarted = true;
         synchronized (mLock) {
@@ -228,20 +229,22 @@ public class AppWebMessagePort implements PostMessageSender.PostMessageSenderDel
         }
     }
 
-    public void postMessage(String message, AppWebMessagePort[] sentPorts)
-            throws IllegalStateException {
+    @Override
+    public void postMessage(String message, MessagePort[] sentPorts) throws IllegalStateException {
         if (isClosed() || isTransferred()) {
             throw new IllegalStateException("Port is already closed or transferred");
         }
+        AppWebMessagePort[] ports = null;
         if (sentPorts != null) {
-            for (AppWebMessagePort port : sentPorts) {
+            for (MessagePort port : sentPorts) {
                 if (port.equals(this)) {
                     throw new IllegalStateException("Source port cannot be transferred");
                 }
             }
+            ports = Arrays.copyOf(sentPorts, sentPorts.length, AppWebMessagePort[].class);
         }
         mStarted = true;
-        mPostMessageSender.postMessage(null, message, null, sentPorts);
+        mPostMessageSender.postMessage(null, message, null, ports);
     }
 
     // Implements PostMessageSender.PostMessageSenderDelegate interface method.

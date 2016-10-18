@@ -66,6 +66,7 @@ import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
@@ -86,7 +87,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 
@@ -2246,7 +2246,7 @@ public class AwContents implements SmartClipProvider,
      *                  message ports to pass.
      */
     public void postMessageToFrame(
-            String frameName, String message, String targetOrigin, AppWebMessagePort[] sentPorts) {
+            String frameName, String message, String targetOrigin, MessagePort[] sentPorts) {
         if (isDestroyed(WARN)) return;
         if (mPostMessageSender == null) {
             AppWebMessagePortService service = mBrowserContext.getMessagePortService();
@@ -2254,7 +2254,7 @@ public class AwContents implements SmartClipProvider,
             service.addObserver(mPostMessageSender);
         }
         mPostMessageSender.postMessage(frameName, message, targetOrigin,
-                sentPorts);
+                (AppWebMessagePort[]) sentPorts);
     }
 
     // Implements PostMessageSender.PostMessageSenderDelegate interface method.

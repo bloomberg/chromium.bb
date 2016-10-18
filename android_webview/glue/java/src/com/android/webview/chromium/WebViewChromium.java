@@ -1351,7 +1351,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        return WebMessagePortAdapter.fromAppWebMessagePorts(mAwContents.createMessageChannel());
+        return WebMessagePortAdapter.fromMessagePorts(mAwContents.createMessageChannel());
     }
 
     @Override
@@ -1367,7 +1367,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return;
         }
         mAwContents.postMessageToFrame(null, message.getData(), targetOrigin.toString(),
-                WebMessagePortAdapter.toAppWebMessagePorts(message.getPorts()));
+                WebMessagePortAdapter.toMessagePorts(message.getPorts()));
     }
 
     @Override

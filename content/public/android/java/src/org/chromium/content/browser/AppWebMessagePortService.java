@@ -10,6 +10,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.MessagePortService;
 
 /**
  * Provides the Message Channel functionality for Android Apps
@@ -33,7 +34,7 @@ import org.chromium.base.annotations.JNINamespace;
  * All methods are called on UI thread except as noted.
  */
 @JNINamespace("content")
-public class AppWebMessagePortService {
+public class AppWebMessagePortService implements MessagePortService {
     private static final String TAG = "AppWebMessagePortService";
 
     /**
@@ -109,6 +110,7 @@ public class AppWebMessagePortService {
         }
     }
 
+    @Override
     public AppWebMessagePort[] createMessageChannel() {
         return new AppWebMessagePort[] {new AppWebMessagePort(this), new AppWebMessagePort(this)};
     }

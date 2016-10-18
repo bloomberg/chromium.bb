@@ -133,12 +133,18 @@ class CONTENT_EXPORT WebContentsAndroid
       jint level,
       const base::android::JavaParamRef<jstring>& message);
 
-  void SendMessageToFrame(
+  void PostMessageToFrame(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& frame_name,
-      const base::android::JavaParamRef<jstring>& message,
-      const base::android::JavaParamRef<jstring>& target_origin);
+      const base::android::JavaParamRef<jstring>& jframe_name,
+      const base::android::JavaParamRef<jstring>& jmessage,
+      const base::android::JavaParamRef<jstring>& jtarget_origin,
+      const base::android::JavaParamRef<jintArray>& jsent_ports);
+
+  void CreateMessageChannel(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobjectArray>& ports);
 
   jboolean HasAccessedInitialDocument(
       JNIEnv* env,

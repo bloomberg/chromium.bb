@@ -17,11 +17,14 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.AppWebMessagePort;
+import org.chromium.content.browser.AppWebMessagePortService;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
+import org.chromium.content_public.browser.MessagePortService;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -334,8 +337,18 @@ import java.util.UUID;
     }
 
     @Override
-    public void sendMessageToFrame(String frameName, String message, String targetOrigin) {
-        nativeSendMessageToFrame(mNativeWebContentsAndroid, frameName, message, targetOrigin);
+    public void postMessageToFrame(
+            String frameName, String message, String targetOrigin, int[] sentPortIds) {
+        nativePostMessageToFrame(
+                mNativeWebContentsAndroid, frameName, message, targetOrigin, sentPortIds);
+    }
+
+    @Override
+    public AppWebMessagePort[] createMessageChannel(MessagePortService service)
+            throws IllegalStateException {
+        AppWebMessagePort[] ports = ((AppWebMessagePortService) service).createMessageChannel();
+        nativeCreateMessageChannel(mNativeWebContentsAndroid, ports);
+        return ports;
     }
 
     @Override
@@ -525,8 +538,10 @@ import java.util.UUID;
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);
-    private native void nativeSendMessageToFrame(long nativeWebContentsAndroid,
-            String frameName, String message, String targetOrigin);
+    private native void nativePostMessageToFrame(long nativeWebContentsAndroid, String frameName,
+            String message, String targetOrigin, int[] sentPortIds);
+    private native void nativeCreateMessageChannel(
+            long nativeWebContentsAndroid, AppWebMessagePort[] ports);
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);

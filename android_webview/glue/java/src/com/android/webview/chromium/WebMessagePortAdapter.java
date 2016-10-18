@@ -10,7 +10,7 @@ import android.os.Handler;
 import android.webkit.WebMessage;
 import android.webkit.WebMessagePort;
 
-import org.chromium.content.browser.AppWebMessagePort;
+import org.chromium.content_public.browser.MessagePort;
 
 /**
  * This class is used to convert a WebMessagePort to a MessagePort in chromium
@@ -18,14 +18,14 @@ import org.chromium.content.browser.AppWebMessagePort;
  */
 @TargetApi(Build.VERSION_CODES.M)
 public class WebMessagePortAdapter extends WebMessagePort {
-    private AppWebMessagePort mPort;
+    private MessagePort mPort;
 
-    public WebMessagePortAdapter(AppWebMessagePort port) {
+    public WebMessagePortAdapter(MessagePort port) {
         mPort = port;
     }
 
     public void postMessage(WebMessage message) {
-        mPort.postMessage(message.getData(), toAppWebMessagePorts(message.getPorts()));
+        mPort.postMessage(message.getData(), toMessagePorts(message.getPorts()));
     }
 
     public void close() {
@@ -37,20 +37,20 @@ public class WebMessagePortAdapter extends WebMessagePort {
     }
 
     public void setWebMessageCallback(final WebMessageCallback callback, final Handler handler) {
-        mPort.setMessageCallback(new AppWebMessagePort.MessageCallback() {
+        mPort.setMessageCallback(new MessagePort.MessageCallback() {
             @Override
-            public void onMessage(String message, AppWebMessagePort[] ports) {
+            public void onMessage(String message, MessagePort[] ports) {
                 callback.onMessage(WebMessagePortAdapter.this,
-                        new WebMessage(message, fromAppWebMessagePorts(ports)));
+                        new WebMessage(message, fromMessagePorts(ports)));
             }
         }, handler);
     }
 
-    public AppWebMessagePort getPort() {
+    public MessagePort getPort() {
         return mPort;
     }
 
-    public static WebMessagePort[] fromAppWebMessagePorts(AppWebMessagePort[] messagePorts) {
+    public static WebMessagePort[] fromMessagePorts(MessagePort[] messagePorts) {
         if (messagePorts == null) return null;
         WebMessagePort[] ports = new WebMessagePort[messagePorts.length];
         for (int i = 0; i < messagePorts.length; i++) {
@@ -59,9 +59,9 @@ public class WebMessagePortAdapter extends WebMessagePort {
         return ports;
     }
 
-    public static AppWebMessagePort[] toAppWebMessagePorts(WebMessagePort[] webMessagePorts) {
+    public static MessagePort[] toMessagePorts(WebMessagePort[] webMessagePorts) {
         if (webMessagePorts == null) return null;
-        AppWebMessagePort[] ports = new AppWebMessagePort[webMessagePorts.length];
+        MessagePort[] ports = new MessagePort[webMessagePorts.length];
         for (int i = 0; i < webMessagePorts.length; i++) {
             ports[i] = ((WebMessagePortAdapter) webMessagePorts[i]).getPort();
         }
