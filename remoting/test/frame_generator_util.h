@@ -24,13 +24,6 @@ void DrawRect(webrtc::DesktopFrame* frame,
               webrtc::DesktopRect rect,
               uint32_t color);
 
-// Draws barcode that encodes |value| on the |frame|. If |changed| is true then
-// frame->updated_region() will be updated as well.
-void DrawBarcode(int value, bool changed, webrtc::DesktopFrame* frame);
-
-// Reads barcode from the frame.
-int ReadBarcode(const webrtc::DesktopFrame& frame);
-
 }  // namespace test
 }  // namespace remoting
 

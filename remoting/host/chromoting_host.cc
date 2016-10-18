@@ -177,30 +177,24 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 
   login_backoff_.Reset();
 
-  // Disconnect all other clients. |it| should be advanced before Disconnect()
-  // is called to avoid it becoming invalid when the client is removed from
-  // the list.
-  ClientList::iterator it = clients_.begin();
+  // Disconnect all clients, except |client|.
   base::WeakPtr<ChromotingHost> self = weak_factory_.GetWeakPtr();
-  while (it != clients_.end()) {
-    ClientSession* other_client = *it++;
-    if (other_client != client) {
-      other_client->DisconnectSession(protocol::OK);
+  while (clients_.size() > 1) {
+    clients_[(clients_.front().get() == client) ? 1 : 0]->DisconnectSession(
+        protocol::OK);
 
-      // Quit if the host was destroyed.
-      if (!self)
-        return;
-    }
+    // Quit if the host was destroyed.
+    if (!self)
+      return;
   }
 
   // Disconnects above must have destroyed all other clients.
   DCHECK_EQ(clients_.size(), 1U);
+  DCHECK(clients_.front().get() == client);
 
   // Notify observers that there is at least one authenticated client.
-  const std::string& jid = client->client_jid();
-
   for (auto& observer : status_observers_)
-    observer.OnClientAuthenticated(jid);
+    observer.OnClientAuthenticated(client->client_jid());
 }
 
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
@@ -222,13 +216,16 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
   DCHECK(CalledOnValidThread());
 
-  ClientList::iterator it = std::find(clients_.begin(), clients_.end(), client);
+  ClientSessions::iterator it =
+      std::find_if(clients_.begin(), clients_.end(),
+                   [client](const std::unique_ptr<ClientSession>& item) {
+                     return item.get() == client;
+                   });
   CHECK(it != clients_.end());
 
   bool was_authenticated = client->is_authenticated();
   std::string jid = client->client_jid();
   clients_.erase(it);
-  delete client;
 
   if (was_authenticated) {
     for (auto& observer : status_observers_)
@@ -277,11 +274,9 @@ void ChromotingHost::OnIncomingSession(
   }
 
   // Create a ClientSession object.
-  ClientSession* client = new ClientSession(
+  clients_.push_back(base::MakeUnique<ClientSession>(
       this, std::move(connection), desktop_environment_factory_,
-      max_session_duration_, pairing_registry_, extensions_.get());
-
-  clients_.push_back(client);
+      max_session_duration_, pairing_registry_, extensions_.get()));
 }
 
 void ChromotingHost::DisconnectAllClients() {

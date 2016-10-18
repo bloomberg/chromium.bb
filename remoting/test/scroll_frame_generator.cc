@@ -41,19 +41,12 @@ std::unique_ptr<webrtc::DesktopFrame> ScrollFrameGenerator::GenerateFrame(
   result->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeSize(result->size()));
 
-  ++last_frame_id_;
-  frame_timestamp_[last_frame_id_] = now;
-  DrawBarcode(last_frame_id_, true, result.get());
-
   return result;
 }
 
-base::TimeDelta ScrollFrameGenerator::GetFrameLatency(
-    const webrtc::DesktopFrame& frame) {
-  int frame_id = ReadBarcode(frame);
-  if (!frame_timestamp_.count(frame_id))
-    LOG(FATAL) << "Unknown frame_id.";
-  return base::TimeTicks::Now() - frame_timestamp_[frame_id];
+protocol::InputEventTimestamps ScrollFrameGenerator::TakeLastEventTimestamps() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  return protocol::InputEventTimestamps{now, now};
 }
 
 }  // namespace test

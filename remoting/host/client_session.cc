@@ -295,6 +295,9 @@ void ClientSession::CreateMediaStreams() {
 
   // Pause capturing if necessary.
   video_stream_->Pause(pause_video_);
+
+  if (event_timestamp_source_for_tests_)
+    video_stream_->SetEventTimestampsSource(event_timestamp_source_for_tests_);
 }
 
 void ClientSession::OnConnectionChannelsConnected() {
@@ -404,9 +407,17 @@ ClientSessionControl* ClientSession::session_control() {
   return this;
 }
 
+void ClientSession::SetEventTimestampsSourceForTests(
+    scoped_refptr<protocol::InputEventTimestampsSource>
+        event_timestamp_source) {
+  DCHECK(CalledOnValidThread());
+  event_timestamp_source_for_tests_ = event_timestamp_source;
+  if (video_stream_)
+    video_stream_->SetEventTimestampsSource(event_timestamp_source_for_tests_);
+}
+
 std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK(CalledOnValidThread());
-
   return base::MakeUnique<protocol::ClipboardThreadProxy>(
       client_clipboard_factory_.GetWeakPtr(),
       base::ThreadTaskRunnerHandle::Get());
