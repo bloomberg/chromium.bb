@@ -364,7 +364,8 @@ class AudioManagerTest : public ::testing::Test {
 };
 
 #if defined(USE_CRAS)
-TEST_F(AudioManagerTest, EnumerateInputDevicesCras) {
+// TODO(warx): enable the test once crbug.com/554168 is fixed.
+TEST_F(AudioManagerTest, DISABLED_EnumerateInputDevicesCras) {
   // Setup the devices without internal mic, so that it doesn't exist
   // beamforming capable mic.
   AudioNodeList audio_nodes;
@@ -393,7 +394,8 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesCras) {
   CheckDeviceNamesCras(device_names, expectation);
 }
 
-TEST_F(AudioManagerTest, EnumerateOutputDevicesCras) {
+// TODO(warx): enable the test once crbug.com/554168 is fixed.
+TEST_F(AudioManagerTest, DISABLED_EnumerateOutputDevicesCras) {
   // Setup the devices without internal mic, so that it doesn't exist
   // beamforming capable mic.
   AudioNodeList audio_nodes;

@@ -6929,6 +6929,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables an experiment to switch menu labels that use 'Save as...' to 'Download'.
       </message>
 
+      <message name="IDS_FLAGS_ENABLE_ENUMERATING_AUDIO_DEVICES_NAME" desc="Name of the flag to experimentally enable enumerating audio devices on ChromeOS.">
+        Experimentally enable enumerating audio devices.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ENUMERATING_AUDIO_DEVICES_DESCRIPTION" desc="Description of the flag that experimentally enables enumerating audio devices on ChromeOS.">
+        Experimentally enable the use of enumerating audio devices.
+      </message>
+
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">
         WebRTC logs

@@ -19,6 +19,7 @@
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_features.h"
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
@@ -159,12 +160,15 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
     AddBeamformingDevices(device_names);
   else
     device_names->push_back(media::AudioDeviceName::CreateDefault());
-  chromeos::AudioDeviceList devices;
-  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-  for (const auto& device : devices) {
-    if (device.is_input == is_input && device.is_for_simple_usage()) {
-      device_names->emplace_back(device.display_name,
-                                 base::Uint64ToString(device.id));
+
+  if (base::FeatureList::IsEnabled(features::kEnumerateAudioDevices)) {
+    chromeos::AudioDeviceList devices;
+    chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+    for (const auto& device : devices) {
+      if (device.is_input == is_input && device.is_for_simple_usage()) {
+        device_names->emplace_back(device.display_name,
+                                   base::Uint64ToString(device.id));
+      }
     }
   }
 }
