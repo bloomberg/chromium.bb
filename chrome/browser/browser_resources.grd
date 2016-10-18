@@ -163,6 +163,8 @@
         <include name="IDR_MD_EXTENSIONS_DETAIL_VIEW_JS" file="resources\md_extensions\detail_view.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_DROP_OVERLAY_HTML" file="resources\md_extensions\drop_overlay.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_DROP_OVERLAY_JS" file="resources\md_extensions\drop_overlay.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_ERROR_PAGE_HTML" file="resources\md_extensions\error_page.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_ERROR_PAGE_JS" file="resources\md_extensions\error_page.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML" file="resources\md_extensions\keyboard_shortcuts.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_JS" file="resources\md_extensions\keyboard_shortcuts.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_MANAGER_HTML" file="resources\md_extensions\manager.html" type="BINDATA" />

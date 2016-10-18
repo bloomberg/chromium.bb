@@ -119,6 +119,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SIDEBAR_DEVELOPER_MODE);
   source->AddLocalizedString("dropToInstall",
                              IDS_EXTENSIONS_INSTALL_DROP_TARGET);
+  source->AddLocalizedString("errorsPageHeading",
+                             IDS_MD_EXTENSIONS_ERROR_PAGE_HEADING);
   source->AddLocalizedString("getMoreExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS);
   source->AddLocalizedString("keyboardShortcuts",
@@ -135,6 +137,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemDependentEntry",
                              IDS_MD_EXTENSIONS_DEPENDENT_ENTRY);
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
+  source->AddLocalizedString("itemErrors", IDS_MD_EXTENSIONS_ITEM_ERRORS);
   source->AddLocalizedString("itemPermissions",
                              IDS_MD_EXTENSIONS_ITEM_PERMISSIONS);
   source->AddLocalizedString("itemPermissionsEmpty",
@@ -221,6 +224,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("drop_overlay.html",
                           IDR_MD_EXTENSIONS_DROP_OVERLAY_HTML);
   source->AddResourcePath("drop_overlay.js", IDR_MD_EXTENSIONS_DROP_OVERLAY_JS);
+  source->AddResourcePath("error_page.html", IDR_MD_EXTENSIONS_ERROR_PAGE_HTML);
+  source->AddResourcePath("error_page.js", IDR_MD_EXTENSIONS_ERROR_PAGE_JS);
   source->AddResourcePath("keyboard_shortcuts.html",
                           IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML);
   source->AddResourcePath("keyboard_shortcuts.js",

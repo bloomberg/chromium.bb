@@ -38,10 +38,10 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Called when the details for a given item are about to be shown.
+     * Called when a subpage for a given item is about to be shown.
      * @param {string} id
      */
-    willShowItemDetails: function(id) {
+    willShowItemSubpage: function(id) {
       this.sharedElements = {hero: this.$$('#' + id)};
     },
 

@@ -11,6 +11,7 @@ var Page = {
   ITEM_LIST: '0',
   DETAIL_VIEW: '1',
   KEYBOARD_SHORTCUTS: '2',
+  ERROR_PAGE: '3',
 };
 
 cr.define('extensions', function() {
@@ -77,6 +78,7 @@ cr.define('extensions', function() {
 
     listeners: {
       'items-list.extension-item-show-details': 'onShouldShowItemDetails_',
+      'items-list.extension-item-show-errors': 'onShouldShowItemErrors_',
     },
 
     created: function() {
@@ -104,12 +106,16 @@ cr.define('extensions', function() {
       return this.$['options-dialog'];
     },
 
+    get errorPage() {
+      return this.$['error-page'];
+    },
+
     /**
      * Shows the details view for a given item.
      * @param {!chrome.developerPrivate.ExtensionInfo} data
      */
     showItemDetails: function(data) {
-      this.$['items-list'].willShowItemDetails(data.id);
+      this.$['items-list'].willShowItemSubpage(data.id);
       this.$['details-view'].data = data;
       this.changePage(Page.DETAIL_VIEW);
     },
@@ -226,6 +232,8 @@ cr.define('extensions', function() {
           return this.$['details-view'];
         case Page.KEYBOARD_SHORTCUTS:
           return this.$['keyboard-shortcuts'];
+        case Page.ERROR_PAGE:
+          return this.$['error-page'];
       }
       assertNotReached();
     },
@@ -240,7 +248,8 @@ cr.define('extensions', function() {
         return;
       var entry;
       var exit;
-      if (fromPage == Page.ITEM_LIST && toPage == Page.DETAIL_VIEW) {
+      if (fromPage == Page.ITEM_LIST && (toPage == Page.DETAIL_VIEW ||
+                                         toPage == Page.ERROR_PAGE)) {
         entry = extensions.Animation.HERO;
         exit = extensions.Animation.HERO;
       } else if (toPage == Page.ITEM_LIST) {
@@ -266,8 +275,25 @@ cr.define('extensions', function() {
       this.showItemDetails(e.detail.element.data);
     },
 
+    /**
+     * Handles the event for the user clicking on the errors button.
+     * @param {!CustomEvent} e
+     * @private
+     */
+    onShouldShowItemErrors_: function(e) {
+      var data = e.detail.data;
+      this.$['items-list'].willShowItemSubpage(data.id);
+      this.$['error-page'].data = data;
+      this.changePage(Page.ERROR_PAGE);
+    },
+
     /** @private */
     onDetailsViewClose_: function() {
+      this.changePage(Page.ITEM_LIST);
+    },
+
+    /** @private */
+    onErrorPageClose_: function() {
       this.changePage(Page.ITEM_LIST);
     }
   });

@@ -216,6 +216,10 @@
             <paper-button id="details-button" on-tap="onDetailsTap_">
               $i18n{itemDetails}
             </paper-button>
+            <paper-button id="errors-button" on-tap="onErrorsTap_"
+                hidden$="[[computeErrorsHidden_(data.*)]]">
+              $i18n{itemErrors}
+            </paper-button>
             <paper-button id="remove-button" on-tap="onRemoveTap_">
               $i18n{itemRemove}
             </paper-button>

@@ -38,6 +38,7 @@ CrExtensionsBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'extension_test_util.js',
     'extension_detail_view_test.js',
+    'extension_error_page_test.js',
     'extension_item_test.js',
     'extension_item_list_test.js',
     'extension_keyboard_shortcuts_test.js',
@@ -274,4 +275,13 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionOptionsDialogInteractionTest',
        function() {
   extension_options_dialog_tests.registerTests();
   mocha.grep(assert(extension_options_dialog_tests.TestNames.Layout)).run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Error Page Tests
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionErrorPageLayoutTest',
+       function() {
+  extension_error_page_tests.registerTests();
+  mocha.grep(assert(extension_error_page_tests.TestNames.Layout)).run();
 });

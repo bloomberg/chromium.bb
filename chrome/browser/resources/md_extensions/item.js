@@ -100,6 +100,15 @@ cr.define('extensions', function() {
       this.fire('extension-item-size-changed', {item: this.data});
     },
 
+    /**
+     * @return {boolean}
+     * @private
+     */
+    computeErrorsHidden_: function() {
+      return !this.data.manifestErrors.length &&
+             !this.data.runtimeErrors.length;
+    },
+
     /** @private */
     onRemoveTap_: function() {
       this.delegate.deleteItem(this.data.id);
@@ -109,6 +118,11 @@ cr.define('extensions', function() {
     onEnableChange_: function() {
       this.delegate.setItemEnabled(this.data.id,
                                    this.$['enable-toggle'].checked);
+    },
+
+    /** @private */
+    onErrorsTap_: function() {
+      this.fire('extension-item-show-errors', {data: this.data});
     },
 
     /** @private */
