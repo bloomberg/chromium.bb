@@ -943,11 +943,7 @@ WebContents* DevToolsWindow::OpenURLFromTab(
     return inspected_web_contents ?
         inspected_web_contents->OpenURL(params) : NULL;
   }
-
-  bindings_->Reattach();
-
-  content::NavigationController::LoadURLParams load_url_params(params.url);
-  main_web_contents_->GetController().LoadURLWithParams(load_url_params);
+  bindings_->Reload();
   return main_web_contents_;
 }
 

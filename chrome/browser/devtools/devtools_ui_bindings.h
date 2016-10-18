@@ -76,7 +76,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                           const base::Value* arg2,
                           const base::Value* arg3);
   void AttachTo(const scoped_refptr<content::DevToolsAgentHost>& agent_host);
-  void Reattach();
+  void Reload();
   void Detach();
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
 
@@ -145,6 +145,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                      const std::string& value) override;
   void RemovePreference(const std::string& name) override;
   void ClearPreferences() override;
+  void Reattach(const DispatchCallback& callback) override;
   void ReadyForTest() override;
 
   // net::URLFetcherDelegate overrides.
@@ -221,7 +222,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   bool devices_updates_enabled_;
   bool frontend_loaded_;
-  bool reattaching_;
+  bool reloading_;
   std::unique_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   std::unique_ptr<PortForwardingStatusSerializer> port_status_serializer_;
   PrefChangeRegistrar pref_change_registrar_;

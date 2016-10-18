@@ -88,6 +88,7 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void SendJsonRequest(const DispatchCallback& callback,
                                  const std::string& browser_id,
                                  const std::string& url) = 0;
+    virtual void Reattach(const DispatchCallback& callback) = 0;
     virtual void ReadyForTest() = 0;
   };
 

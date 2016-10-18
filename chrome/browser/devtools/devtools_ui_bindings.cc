@@ -402,7 +402,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       devices_updates_enabled_(false),
       frontend_loaded_(false),
-      reattaching_(false),
+      reloading_(false),
       weak_factory_(this) {
   g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
@@ -856,6 +856,13 @@ void DevToolsUIBindings::ClearPreferences() {
   update.Get()->Clear();
 }
 
+void DevToolsUIBindings::Reattach(const DispatchCallback& callback) {
+  DCHECK(agent_host_.get());
+  agent_host_->DetachClient(this);
+  agent_host_->AttachClient(this);
+  callback.Run(nullptr);
+}
+
 void DevToolsUIBindings::ReadyForTest() {
   delegate_->ReadyForTest();
 }
@@ -1106,9 +1113,10 @@ void DevToolsUIBindings::AttachTo(
   agent_host_->ForceAttachClient(this);
 }
 
-void DevToolsUIBindings::Reattach() {
+void DevToolsUIBindings::Reload() {
   DCHECK(agent_host_.get());
-  reattaching_ = true;
+  reloading_ = true;
+  web_contents_->GetController().Reload(false);
 }
 
 void DevToolsUIBindings::Detach() {
@@ -1145,9 +1153,9 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
 }
 
 void DevToolsUIBindings::DocumentAvailableInMainFrame() {
-  if (!reattaching_)
+  if (!reloading_)
     return;
-  reattaching_ = false;
+  reloading_ = false;
   agent_host_->DetachClient(this);
   agent_host_->AttachClient(this);
 }
