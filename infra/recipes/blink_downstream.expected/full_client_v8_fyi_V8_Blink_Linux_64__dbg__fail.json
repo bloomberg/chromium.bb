@@ -579,6 +579,23 @@
     ]
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_PACKAGE_REPO[build]/scripts/slave/chromium/archive_layout_test_retry_summary.py",
+      "--retry-summary-json",
+      "{\"failures\": [], \"ignored\": [\"bad/totally-bad-probably.html\", \"tricky/totally-maybe-not-awesome.html\"]}",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "V8-Blink Linux 64 (dbg)",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives"
+    ],
+    "cwd": "[BUILDER_CACHE]/V8_Blink_Linux_64__dbg_",
+    "name": "archive_retry_summary"
+  },
+  {
     "name": "$result",
     "recipe_result": null,
     "status_code": 0
