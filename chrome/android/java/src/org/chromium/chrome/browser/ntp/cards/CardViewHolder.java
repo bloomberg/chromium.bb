@@ -138,13 +138,16 @@ public class CardViewHolder extends NewTabPageViewHolder {
         // Nothing to do for dismissed cards.
         if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
 
+        NewTabPageAdapter adapter = mRecyclerView.getNewTabPageAdapter();
+
         // Each card has the full elevation effect (the shadow) in the 9-patch. If the next item is
         // a card a negative bottom margin is set so the next card is overlaid slightly on top of
         // this one and hides the bottom shadow.
-        boolean hasCardAbove =
-                isCard(mRecyclerView.getAdapter().getItemViewType(getAdapterPosition() - 1));
-        boolean hasCardBelow =
-                isCard(mRecyclerView.getAdapter().getItemViewType(getAdapterPosition() + 1));
+        int abovePosition = getAdapterPosition() - 1;
+        boolean hasCardAbove = abovePosition >= 0 && isCard(adapter.getItemViewType(abovePosition));
+        int belowPosition = getAdapterPosition() + 1;
+        boolean hasCardBelow = belowPosition < adapter.getItemCount()
+                && isCard(adapter.getItemViewType(belowPosition));
 
         getParams().bottomMargin = hasCardBelow ? -mCards9PatchAdjustment : 0;
 

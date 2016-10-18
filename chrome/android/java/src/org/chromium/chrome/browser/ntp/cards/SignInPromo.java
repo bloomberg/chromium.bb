@@ -155,9 +155,12 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
 
             if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
 
+            int precedingPosition = getAdapterPosition() - 1;
+            if (precedingPosition < 0) return; // Invalid adapter position, just do nothing.
+
             @ItemViewType
             int precedingCardType =
-                    getRecyclerView().getAdapter().getItemViewType(getAdapterPosition() - 1);
+                    getRecyclerView().getAdapter().getItemViewType(precedingPosition);
 
             // The sign in promo should stick to the articles of the preceding section, but have
             // some space otherwise.
