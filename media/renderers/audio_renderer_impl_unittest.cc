@@ -748,7 +748,13 @@ TEST_F(AudioRendererImplTest, CurrentMediaTimeBehavior) {
   StopTicking();
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
   tick_clock_->Advance(kConsumptionDuration * 2);
-  timestamp_helper.AddFrames(frames_to_consume.value);
+
+  // TODO(chcunningham): Uncomment the AddFrames() call below. AudioClock should
+  // be expected to advance time through the last rendered buffer's samples, but
+  // we've currently capped it to not advance time after ticking stops as a
+  // short term workaround for messy blink code. See longterm solution at
+  // http://crrev.com/2425463002.
+  // timestamp_helper.AddFrames(frames_to_consume.value);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 }
 
