@@ -164,8 +164,11 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   if (is_range_request())
     SetupRangeResponse(http_info_io_buffer_->response_data_size);
   http_info_io_buffer_ = nullptr;
-  if (request_->url() == version_->script_url())
+  if (is_main_script()) {
+    // TODO(nhiroki): Temporary check for debugging (https://crbug.com/485900).
+    CHECK_EQ(request_->url(), version_->script_url());
     version_->SetMainScriptHttpResponseInfo(*http_info_);
+  }
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerReadFromCacheJob::ReadInfo",
                          this,
