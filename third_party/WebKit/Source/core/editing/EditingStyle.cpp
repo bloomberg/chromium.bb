@@ -1528,10 +1528,7 @@ EditingStyle* EditingStyle::styleAtSelectionStart(
 
   Document& document = *selection.start().document();
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited. see http://crbug.com/590369 for more details.
-  document.updateStyleAndLayoutIgnorePendingStylesheets();
-
+  DCHECK(!document.needsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       document.lifecycle());
 

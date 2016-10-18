@@ -347,6 +347,11 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
     }
   }
 
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // Plain text extraction requires clean layout.
+  selectedFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "ltr") !=
       FalseTriState)
     data.writingDirectionLeftToRight |=

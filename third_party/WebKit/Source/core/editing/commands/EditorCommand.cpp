@@ -432,6 +432,7 @@ static TriState selectionListState(const FrameSelection& selection,
 static TriState stateStyle(LocalFrame& frame,
                            CSSPropertyID propertyID,
                            const char* desiredValue) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
   if (frame.editor().behavior().shouldToggleStyleBasedOnStartOfSelection())
     return frame.editor().selectionStartHasStyle(propertyID, desiredValue)
                ? TrueTriState
@@ -440,6 +441,8 @@ static TriState stateStyle(LocalFrame& frame,
 }
 
 static String valueStyle(LocalFrame& frame, CSSPropertyID propertyID) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // FIXME: Rather than retrieving the style at the start of the current
   // selection, we should retrieve the style present throughout the selection
   // for non-Mac platforms.
