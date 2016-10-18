@@ -209,13 +209,15 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for ClaimClients().
   ClaimClientsCallbacksMap claim_clients_callbacks;
 
-  // Pending callbacks for Background Sync Events
+  // Pending callbacks for Background Sync Events.
   SyncEventCallbacksMap sync_event_callbacks;
 
-  // Pending callbacks for Fetch Events
+  // Pending callbacks for Fetch Events.
   FetchEventCallbacksMap fetch_event_callbacks;
 
   service_manager::InterfaceRegistry interface_registry;
+  // This is not used when mojo for the service workers is enabled. At that
+  // time, remote interfaces are stored in EmbeddedWorkerInstanceClientImpl.
   service_manager::InterfaceProvider remote_interfaces;
 
   base::ThreadChecker thread_checker;
@@ -434,6 +436,12 @@ void ServiceWorkerContextClient::workerContextStarted(
       base::Bind(&BackgroundSyncClientImpl::Create));
   context_->interface_registry.AddInterface(
       base::Bind(&FetchEventDispatcherImpl::Create));
+
+  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
+    DCHECK(embedded_worker_client_);
+    embedded_worker_client_->ExposeInterfacesToBrowser(
+        &context_->interface_registry);
+  }
 
   SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
 

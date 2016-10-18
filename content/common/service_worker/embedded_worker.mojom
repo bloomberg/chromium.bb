@@ -12,6 +12,8 @@ struct EmbeddedWorkerStartParams;
 
 // Interface to control a renderer-side worker's environment.
 interface EmbeddedWorkerInstanceClient {
-  StartWorker(EmbeddedWorkerStartParams params);
+  StartWorker(EmbeddedWorkerStartParams params,
+              service_manager.mojom.InterfaceProvider browser_interfaces,
+              service_manager.mojom.InterfaceProvider& renderer_request);
   StopWorker() => ();
 };

@@ -84,7 +84,7 @@ class ServiceWorkerContextClient
       const GURL& service_worker_scope,
       const GURL& script_url,
       int worker_devtools_agent_route_id,
-      std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker);
+      std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
   ~ServiceWorkerContextClient() override;
 
   void OnMessageReceived(int thread_id,

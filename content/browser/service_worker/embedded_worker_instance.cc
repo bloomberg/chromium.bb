@@ -603,7 +603,14 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 
 void EmbeddedWorkerInstance::SendMojoStartWorker(
     std::unique_ptr<EmbeddedWorkerStartParams> params) {
-  client_->StartWorker(*params);
+  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
+  service_manager::mojom::InterfaceProviderRequest request =
+      mojo::GetProxy(&remote_interfaces);
+  remote_interfaces_->Bind(std::move(remote_interfaces));
+  service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
+  interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
+  client_->StartWorker(*params, std::move(exposed_interfaces),
+                       std::move(request));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
   TRACE_EVENT_ASYNC_STEP_PAST1("ServiceWorker", "EmbeddedWorkerInstance::Start",
                                this, "SendStartWorker", "Status", "mojo");
@@ -706,17 +713,22 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   for (auto& observer : listener_list_)
     observer.OnThreadStarted();
 
-  service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
-  interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
-  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
-  service_manager::mojom::InterfaceProviderRequest request =
-      mojo::GetProxy(&remote_interfaces);
-  remote_interfaces_->Bind(std::move(remote_interfaces));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(SetupMojoOnUIThread, process_id(), thread_id_,
-                 base::Passed(&request),
-                 base::Passed(exposed_interfaces.PassInterface())));
+  // This code is for BackgroundSync and FetchEvent, which have been already
+  // mojofied. Interfaces are exchanged at StartWorker when mojo for the service
+  // worker is enabled, so this code isn't necessary when the flag is enabled.
+  if (!ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
+    service_manager::mojom::InterfaceProviderPtr exposed_interfaces;
+    interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
+    service_manager::mojom::InterfaceProviderPtr remote_interfaces;
+    service_manager::mojom::InterfaceProviderRequest request =
+        mojo::GetProxy(&remote_interfaces);
+    remote_interfaces_->Bind(std::move(remote_interfaces));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(SetupMojoOnUIThread, process_id(), thread_id_,
+                   base::Passed(&request),
+                   base::Passed(exposed_interfaces.PassInterface())));
+  }
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {

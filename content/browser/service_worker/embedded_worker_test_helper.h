@@ -23,6 +23,8 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -82,11 +84,18 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
    protected:
     // Implementation of mojo interfaces.
-    void StartWorker(const EmbeddedWorkerStartParams& params) override;
+    void StartWorker(
+        const EmbeddedWorkerStartParams& params,
+        service_manager::mojom::InterfaceProviderPtr browser_interfaces,
+        service_manager::mojom::InterfaceProviderRequest renderer_request)
+        override;
     void StopWorker(const StopWorkerCallback& callback) override;
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
     mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
+
+    service_manager::InterfaceRegistry local_interfaces_;
+    service_manager::InterfaceProvider remote_interfaces_;
 
     base::Optional<int> embedded_worker_id_;
 

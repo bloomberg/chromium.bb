@@ -726,7 +726,10 @@ class FailEmbeddedWorkerInstanceClientImpl
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
  private:
-  void StartWorker(const EmbeddedWorkerStartParams& /* unused */) override {
+  void StartWorker(
+      const EmbeddedWorkerStartParams& /* unused */,
+      service_manager::mojom::InterfaceProviderPtr /* unused */,
+      service_manager::mojom::InterfaceProviderRequest /* unused */) override {
     helper_->mock_instance_clients()->clear();
   }
 };

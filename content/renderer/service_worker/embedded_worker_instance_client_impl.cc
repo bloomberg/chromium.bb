@@ -12,6 +12,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
 
@@ -23,6 +24,12 @@ void EmbeddedWorkerInstanceClientImpl::Create(
     mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request) {
   // This won't be leaked because the lifetime will be managed internally.
   new EmbeddedWorkerInstanceClientImpl(dispatcher, std::move(request));
+}
+
+void EmbeddedWorkerInstanceClientImpl::ExposeInterfacesToBrowser(
+    service_manager::InterfaceRegistry* interface_registry) {
+  DCHECK(renderer_request_.is_pending());
+  interface_registry->Bind(std::move(renderer_request_));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted() {
@@ -37,10 +44,15 @@ void EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted() {
 }
 
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
-    const EmbeddedWorkerStartParams& params) {
+    const EmbeddedWorkerStartParams& params,
+    service_manager::mojom::InterfaceProviderPtr browser_interfaces,
+    service_manager::mojom::InterfaceProviderRequest renderer_request) {
+  DCHECK(ChildThreadImpl::current());
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   embedded_worker_id_ = params.embedded_worker_id;
+  remote_interfaces_.Bind(std::move(browser_interfaces));
+  renderer_request_ = std::move(renderer_request);
 
   std::unique_ptr<EmbeddedWorkerDispatcher::WorkerWrapper> wrapper =
       dispatcher_->StartWorkerContext(
@@ -55,6 +67,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker(
     const StopWorkerCallback& callback) {
+  DCHECK(ChildThreadImpl::current());
   DCHECK(embedded_worker_id_);
   DCHECK(!stop_callback_);
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");

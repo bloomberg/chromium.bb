@@ -7,14 +7,17 @@
 
 #include "base/id_map.h"
 #include "base/optional.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 
 // This class exposes interfaces of WebEmbeddedWorker to the browser process.
-// All methods should be called on the main thread.
+// Unless otherwise noted, all methods should be called on the main thread.
 class EmbeddedWorkerInstanceClientImpl
     : public mojom::EmbeddedWorkerInstanceClient {
  public:
@@ -24,7 +27,11 @@ class EmbeddedWorkerInstanceClientImpl
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 
-  // Called from ServiceWorkerContextClient. Must call on the main thread.
+  // This method can be called from any threads.
+  void ExposeInterfacesToBrowser(
+      service_manager::InterfaceRegistry* interface_registry);
+
+  // Called from ServiceWorkerContextClient.
   void StopWorkerCompleted();
 
  private:
@@ -33,24 +40,31 @@ class EmbeddedWorkerInstanceClientImpl
       mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request);
 
   // mojom::EmbeddedWorkerInstanceClient implementation
-  void StartWorker(const EmbeddedWorkerStartParams& params) override;
+  void StartWorker(
+      const EmbeddedWorkerStartParams& params,
+      service_manager::mojom::InterfaceProviderPtr browser_interfaces,
+      service_manager::mojom::InterfaceProviderRequest renderer_request)
+      override;
   void StopWorker(const StopWorkerCallback& callback) override;
 
   // Handler of connection error bound to |binding_|
   void OnError();
 
   EmbeddedWorkerDispatcher* dispatcher_;
-  // This object will be bound to the main thread.
   mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
+  service_manager::InterfaceProvider remote_interfaces_;
 
   // This is valid before StartWorker is called. After that, this object
   // will be passed to ServiceWorkerContextClient.
   std::unique_ptr<EmbeddedWorkerInstanceClientImpl> temporal_self_;
 
+  // This is drained by ServiceWorkerContextClient after the worker thread is
+  // launched.
+  service_manager::mojom::InterfaceProviderRequest renderer_request_;
+
   base::Optional<int> embedded_worker_id_;
   EmbeddedWorkerDispatcher::WorkerWrapper* wrapper_;
 
-  // Stores callbacks
   StopWorkerCallback stop_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClientImpl);

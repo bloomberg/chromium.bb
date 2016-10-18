@@ -93,11 +93,15 @@ EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     ~MockEmbeddedWorkerInstanceClient() {}
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-    const EmbeddedWorkerStartParams& params) {
+    const EmbeddedWorkerStartParams& params,
+    service_manager::mojom::InterfaceProviderPtr browser_interfaces,
+    service_manager::mojom::InterfaceProviderRequest renderer_request) {
   if (!helper_)
     return;
 
   embedded_worker_id_ = params.embedded_worker_id;
+  local_interfaces_.Bind(std::move(renderer_request));
+  remote_interfaces_.Bind(std::move(browser_interfaces));
 
   EmbeddedWorkerInstance* worker =
       helper_->registry()->GetWorker(params.embedded_worker_id);
