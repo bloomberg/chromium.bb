@@ -34,16 +34,40 @@
 
   {{struct.name}}.validate = function(messageValidator, offset) {
     var err;
-    err = messageValidator.validateStructHeader(offset, {{struct.name}}.encodedSize, {{struct.versions[-1].version}});
+    err = messageValidator.validateStructHeader(offset, codec.kStructHeaderSize);
     if (err !== validator.validationError.NONE)
         return err;
 
+    var kVersionSizes = [
+{%- for version in struct.versions %}
+      {version: {{version.version}}, numBytes: {{version.num_bytes}}}{% if not loop.last %},
+      {%- endif -%}
+{%  endfor %}
+    ];
+    err = messageValidator.validateStructVersion(offset, kVersionSizes);
+    if (err !== validator.validationError.NONE)
+        return err;
+
+{#- Before validating fields introduced at a certain version, we need to add
+    a version check, which makes sure we skip further validation if |object|
+    is from an earlier version. |last_checked_version| records the last
+    version that we have added such version check. #}
 {%- from "validation_macros.tmpl" import validate_struct_field %}
-{%- for packed_field in struct.packed.packed_fields %}
+{%- set last_checked_version = 0 %}
+{%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set offset = packed_field|field_offset %}
 {%-   set field = packed_field.field %}
 {%-   set name = struct.name ~ '.' ~ field.name %}
+{%    if field|is_object_field or field|is_any_handle_or_interface_field or
+          field|is_enum_field %}
+{%      if packed_field.min_version > last_checked_version %}
+{%        set last_checked_version = packed_field.min_version %}
+    // version check {{name}}
+    if (!messageValidator.isFieldInStructVersion({{packed_field.min_version}}))
+      return validator.validationError.NONE;
+{%-     endif -%}
 {{validate_struct_field(field, offset, name)|indent(4)}}
+{%-   endif %}
 {%- endfor %}
 
     return validator.validationError.NONE;

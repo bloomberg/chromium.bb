@@ -38,7 +38,7 @@ define([
 
     TestMessageParserFailure.prototype.toString = function() {
       return 'Error: ' + this.message + ' for "' + this.input + '"';
-    }
+    };
 
     function checkData(data, expectedData, input) {
       if (data.byteLength != expectedData.byteLength) {
@@ -225,8 +225,6 @@ define([
     for (var i = 0; i < testFiles.length; i++) {
       // TODO(hansmuller) Temporarily skipping array pointer overflow tests
       // because JS numbers are limited to 53 bits.
-      // TODO(yzshen) Skipping struct versioning tests (tests with "mthd11"
-      // in the name) because the feature is not supported in JS yet.
       // TODO(rudominer): Temporarily skipping 'no-such-method',
       // 'invalid_request_flags', and 'invalid_response_flags' until additional
       // logic in *RequestValidator and *ResponseValidator is ported from
@@ -234,7 +232,6 @@ define([
       // TODO(crbug/640298): Implement max recursion depth for JS.
       // TODO(crbug/628104): Support struct map keys for JS.
       if (testFiles[i].indexOf("overflow") != -1 ||
-          testFiles[i].indexOf("mthd11") != -1 ||
           testFiles[i].indexOf("conformance_mthd19") != -1 ||
           testFiles[i].indexOf("conformance_mthd20") != -1 ||
           testFiles[i].indexOf("no_such_method") != -1 ||
@@ -302,7 +299,7 @@ define([
       var validationError = noError;
       testConnection.router_.validationErrorHandler = function(err) {
         validationError = err;
-      }
+      };
 
       testConnection.router_.connector_.waitForNextMessage();
       checkValidationResult(testFiles[i], validationError);

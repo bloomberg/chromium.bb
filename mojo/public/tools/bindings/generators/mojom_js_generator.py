@@ -354,33 +354,44 @@ def IsUnionField(field):
 def IsBoolField(field):
   return mojom.IsBoolKind(field.kind)
 
+def IsObjectField(field):
+  return mojom.IsObjectKind(field.kind)
+
+def IsAnyHandleOrInterfaceField(field):
+  return mojom.IsAnyHandleOrInterfaceKind(field.kind)
+
+def IsEnumField(field):
+  return mojom.IsEnumKind(field.kind)
+
 
 class Generator(generator.Generator):
 
   js_filters = {
-    "default_value": JavaScriptDefaultValue,
-    "payload_size": JavaScriptPayloadSize,
     "decode_snippet": JavaScriptDecodeSnippet,
+    "default_value": JavaScriptDefaultValue,
     "encode_snippet": JavaScriptEncodeSnippet,
-    "union_decode_snippet": JavaScriptUnionDecodeSnippet,
-    "union_encode_snippet": JavaScriptUnionEncodeSnippet,
     "expression_to_text": ExpressionToText,
     "field_offset": JavaScriptFieldOffset,
     "has_callbacks": mojom.HasCallbacks,
+    "is_any_handle_or_interface_field": IsAnyHandleOrInterfaceField,
     "is_array_pointer_field": IsArrayPointerField,
     "is_bool_field": IsBoolField,
     "is_enum_field": IsEnumField,
-    "is_map_pointer_field": IsMapPointerField,
-    "is_struct_pointer_field": IsStructPointerField,
-    "is_string_pointer_field": IsStringPointerField,
-    "is_union_field": IsUnionField,
     "is_handle_field": IsHandleField,
     "is_interface_field": IsInterfaceField,
     "is_interface_request_field": IsInterfaceRequestField,
-    "js_type": JavaScriptType,
+    "is_map_pointer_field": IsMapPointerField,
+    "is_object_field": IsObjectField,
+    "is_string_pointer_field": IsStringPointerField,
+    "is_struct_pointer_field": IsStructPointerField,
+    "is_union_field": IsUnionField,
     "js_proxy_method_parameter_value": JavaScriptProxyMethodParameterValue,
     "js_stub_method_parameter_value": JavaScriptStubMethodParameterValue,
+    "js_type": JavaScriptType,
+    "payload_size": JavaScriptPayloadSize,
     "stylize_method": generator.StudlyCapsToCamel,
+    "union_decode_snippet": JavaScriptUnionDecodeSnippet,
+    "union_encode_snippet": JavaScriptUnionEncodeSnippet,
     "validate_array_params": JavaScriptValidateArrayParams,
     "validate_enum_params": JavaScriptValidateEnumParams,
     "validate_handle_params": JavaScriptValidateHandleParams,
