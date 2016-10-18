@@ -414,14 +414,6 @@ class JPEGImageReader final {
           case JCS_RGB:
             // libjpeg can convert GRAYSCALE image pixels to RGB.
             m_info.out_color_space = rgbOutputColorSpace();
-#if defined(TURBO_JPEG_RGB_SWIZZLE)
-            if (m_info.saw_JFIF_marker)
-              break;
-            // FIXME: Swizzle decoding does not support Adobe transform=0
-            // images (yet), so revert to using JSC_RGB in that case.
-            if (m_info.saw_Adobe_marker && !m_info.Adobe_transform)
-              m_info.out_color_space = JCS_RGB;
-#endif
             break;
           case JCS_CMYK:
           case JCS_YCCK:
