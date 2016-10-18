@@ -29,9 +29,7 @@
     <paper-submenu id="category" hidden
         on-paper-submenu-open="onToggle_" on-paper-submenu-close="onToggle_">
       <div class="menu-trigger settings-box" hidden$="[[allSites]]" actionable>
-        <div class="flex" id="header">
-          [[computeSiteListHeader_(sites, categoryEnabled)]]
-        </div>
+        <div class="flex" id="header">[[categoryHeader]]</div>
         <iron-icon id="icon" icon="cr:expand-more"></iron-icon>
       </div>
 

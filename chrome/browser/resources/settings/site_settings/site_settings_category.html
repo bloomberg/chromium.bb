@@ -85,18 +85,21 @@
         category="[[category]]"
         category-subtype="[[PermissionValues.BLOCK]]"
         category-enabled="[[categoryEnabled]]"
-        selected-site="{{selectedSite}}">
-    </site-list>
-    <site-list
-        category="[[category]]"
-        category-subtype="[[PermissionValues.ALLOW]]"
-        category-enabled="[[categoryEnabled]]"
+        category-header="$i18n{siteSettingsBlock}"
         selected-site="{{selectedSite}}">
     </site-list>
     <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.SESSION_ONLY]]"
         category-enabled="[[categoryEnabled]]"
+        category-header="$i18n{siteSettingsSessionOnly}"
+        selected-site="{{selectedSite}}">
+    </site-list>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[PermissionValues.ALLOW]]"
+        category-enabled="[[categoryEnabled]]"
+        category-header="$i18n{siteSettingsAllow}"
         selected-site="{{selectedSite}}">
     </site-list>
 

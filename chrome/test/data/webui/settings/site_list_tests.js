@@ -401,7 +401,6 @@ cr.define('site_list', function() {
 
               assertEquals(
                   settings.PermissionValues.ALLOW, testElement.categorySubtype);
-              assertEquals('Allow - 0', testElement.$.header.innerText.trim());
 
               assertFalse(testElement.$.category.hidden);
               browserProxy.resetResolver('getExceptionList');
@@ -409,8 +408,6 @@ cr.define('site_list', function() {
               return browserProxy.whenCalled('getExceptionList');
             }).then(function(contentType) {
               assertFalse(testElement.$.category.hidden);
-              assertEquals('Exceptions - 0',
-                  testElement.$.header.innerText.trim());
             });
       });
 
@@ -430,7 +427,6 @@ cr.define('site_list', function() {
               Polymer.dom.flush();  // Populates action menu.
               openActionMenu(0);
               assertMenu(['Block', 'Remove'], testElement);
-              assertEquals('Allow - 2', testElement.$.header.innerText.trim());
 
               // Site list should show, no matter what category default is set
               // to.
@@ -440,8 +436,6 @@ cr.define('site_list', function() {
               return browserProxy.whenCalled('getExceptionList');
             }).then(function(contentType) {
               assertFalse(testElement.$.category.hidden);
-              assertEquals('Exceptions - 2',
-                  testElement.$.header.innerText.trim());
             });
       });
 
@@ -462,7 +456,6 @@ cr.define('site_list', function() {
               Polymer.dom.flush();  // Populates action menu.
               openActionMenu(0);
               assertMenu(['Allow', 'Remove'], testElement);
-              assertEquals('Block - 2', testElement.$.header.innerText.trim());
 
               // Site list should only show when category default is enabled.
               assertFalse(testElement.$.category.hidden);
@@ -491,8 +484,6 @@ cr.define('site_list', function() {
               Polymer.dom.flush();  // Populates action menu.
               openActionMenu(0);
               assertMenu(['Allow', 'Block', 'Remove'], testElement);
-              assertEquals('Clear on exit - 1',
-                  testElement.$.header.innerText.trim());
 
               // Site list should show, no matter what category default is set
               // to.
@@ -502,7 +493,6 @@ cr.define('site_list', function() {
               return browserProxy.whenCalled('getExceptionList');
             }).then(function(contentType) {
               assertFalse(testElement.$.category.hidden);
-              assertEquals('Clear on exit - 1', testElement.$.header.innerText);
             });
       });
 
@@ -523,8 +513,6 @@ cr.define('site_list', function() {
               openActionMenu(0);
               // 'Clear on exit' is visible as this is not an incognito item.
               assertMenu(['Allow', 'Clear on exit', 'Remove'], testElement);
-              assertEquals('Block - 1',
-                  testElement.$.header.innerText.trim());
 
               // Select 'Remove from menu'.
               var menuItems = getMenuItems(testElement.$.listContainer, 0);
@@ -560,8 +548,6 @@ cr.define('site_list', function() {
               openActionMenu(0);
               // 'Clear on exit' is hidden for incognito items.
               assertMenu(['Block', 'Remove'], testElement);
-              assertEquals('Allow - 2',
-                  testElement.$.header.innerText.trim());
 
               // Select 'Remove' from menu on 'foo.com'.
               openActionMenu(1);

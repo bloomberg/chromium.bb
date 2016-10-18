@@ -474,29 +474,6 @@ Polymer({
   },
 
   /**
-   * Returns the appropriate header value for display.
-   * @param {Array<string>} siteList The list of all sites to display for this
-   *     category subtype.
-   * @param {boolean} toggleState The state of the global toggle for this
-   *     category.
-   * @private
-   */
-  computeSiteListHeader_: function(siteList, toggleState) {
-    var title = '';
-    if (this.categorySubtype == settings.PermissionValues.ALLOW) {
-      title = loadTimeData.getString(
-          toggleState ? 'siteSettingsAllow' : 'siteSettingsExceptions');
-    } else if (this.categorySubtype == settings.PermissionValues.BLOCK) {
-      title = loadTimeData.getString('siteSettingsBlock');
-    } else if (this.categorySubtype == settings.PermissionValues.SESSION_ONLY) {
-      title = loadTimeData.getString('siteSettingsSessionOnly');
-    } else {
-      return title;
-    }
-    return loadTimeData.getStringF('titleAndCount', title, siteList.length);
-  },
-
-  /**
    * Returns the appropriate site description to display. This can, for example,
    * be blank, an 'embedded on <site>' or 'Current incognito session' (or a
    * mix of the last two).
