@@ -29,6 +29,10 @@ class InterfaceRegistry;
 class InterfaceProvider;
 }
 
+namespace ui {
+struct AXActionData;
+}
+
 namespace content {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
@@ -143,17 +147,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript) = 0;
 
-  // Accessibility actions - these send a message to the RenderFrame
-  // to trigger an action on an accessibility object.
-  virtual void AccessibilitySetFocus(int acc_obj_id) = 0;
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-  virtual void AccessibilityScrollToMakeVisible(
-      int acc_obj_id, const gfx::Rect& subfocus) = 0;
-  virtual void AccessibilityShowContextMenu(int acc_obj_id) = 0;
-  virtual void AccessibilitySetSelection(int anchor_object_id,
-                                         int anchor_offset,
-                                         int focus_object_id,
-                                         int focus_offset) = 0;
+  // Send a message to the RenderFrame to trigger an action on an
+  // accessibility object.
+  virtual void AccessibilityPerformAction(const ui::AXActionData& data) = 0;
 
   // This is called when the user has committed to the given find in page
   // request (e.g. by pressing enter or by clicking on the next / previous

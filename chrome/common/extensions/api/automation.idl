@@ -216,6 +216,20 @@
     visited
   };
 
+  // Actions that can be taken on an $(ref:automation.AutomationNode).
+  enum ActionType {
+    doDefault,
+    hitTest,
+    scrollToMakeVisible,
+    scrollToPoint,
+    setAccessibilityFocus,
+    setFocus,
+    setScrollOffset,
+    setSelection,
+    setValue,
+    showContextMenu
+  };
+
   // Possible changes to the automation tree. For any given atomic change
   // to the tree, each node that's added, removed, or changed, will appear
   // in exactly one TreeChange, with one of these types.

@@ -34,7 +34,7 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
         shell()->web_contents(), AccessibilityModeComplete, ui::AX_EVENT_HOVER);
     for (FrameTreeNode* node : frame_tree->Nodes())
       hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
-    manager->delegate()->AccessibilityHitTest(point);
+    manager->HitTest(point);
     hover_waiter.WaitForNotification();
 
     RenderFrameHostImpl* target_frame = hover_waiter.event_render_frame_host();
