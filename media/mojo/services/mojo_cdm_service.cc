@@ -127,24 +127,21 @@ void MojoCdmService::SetServerCertificate(
 }
 
 void MojoCdmService::CreateSessionAndGenerateRequest(
-    mojom::ContentDecryptionModule::SessionType session_type,
-    mojom::ContentDecryptionModule::InitDataType init_data_type,
+    SessionType session_type,
+    EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     const CreateSessionAndGenerateRequestCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->CreateSessionAndGenerateRequest(
-      static_cast<MediaKeys::SessionType>(session_type),
-      static_cast<EmeInitDataType>(init_data_type), init_data,
+      session_type, init_data_type, init_data,
       base::MakeUnique<NewSessionMojoCdmPromise>(callback));
 }
 
-void MojoCdmService::LoadSession(
-    mojom::ContentDecryptionModule::SessionType session_type,
-    const std::string& session_id,
-    const LoadSessionCallback& callback) {
+void MojoCdmService::LoadSession(SessionType session_type,
+                                 const std::string& session_id,
+                                 const LoadSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
-  cdm_->LoadSession(static_cast<MediaKeys::SessionType>(session_type),
-                    session_id,
+  cdm_->LoadSession(session_type, session_id,
                     base::MakeUnique<NewSessionMojoCdmPromise>(callback));
 }
 
@@ -184,7 +181,7 @@ void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
   // populated. See http://crbug.com/469366
   if (!cdm || !context_) {
     cdm_promise_result->success = false;
-    cdm_promise_result->exception = mojom::CdmException::NOT_SUPPORTED_ERROR;
+    cdm_promise_result->exception = MediaKeys::Exception::NOT_SUPPORTED_ERROR;
     cdm_promise_result->system_code = 0;
     cdm_promise_result->error_message = error_message;
     callback.Run(std::move(cdm_promise_result), 0, nullptr);
@@ -219,8 +216,7 @@ void MojoCdmService::OnSessionMessage(const std::string& session_id,
                                       MediaKeys::MessageType message_type,
                                       const std::vector<uint8_t>& message) {
   DVLOG(2) << __FUNCTION__ << "(" << message_type << ")";
-  client_->OnSessionMessage(
-      session_id, static_cast<mojom::CdmMessageType>(message_type), message);
+  client_->OnSessionMessage(session_id, message_type, message);
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,

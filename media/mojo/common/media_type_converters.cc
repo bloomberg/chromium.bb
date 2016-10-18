@@ -16,7 +16,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/encryption_scheme.h"
-#include "media/base/media_keys.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -24,67 +23,6 @@
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace mojo {
-
-// CdmException
-#define ASSERT_CDM_EXCEPTION(value)                                        \
-  static_assert(                                                           \
-      media::MediaKeys::value == static_cast<media::MediaKeys::Exception>( \
-                                     media::mojom::CdmException::value),   \
-      "Mismatched CDM Exception")
-ASSERT_CDM_EXCEPTION(NOT_SUPPORTED_ERROR);
-ASSERT_CDM_EXCEPTION(INVALID_STATE_ERROR);
-ASSERT_CDM_EXCEPTION(INVALID_ACCESS_ERROR);
-ASSERT_CDM_EXCEPTION(QUOTA_EXCEEDED_ERROR);
-ASSERT_CDM_EXCEPTION(UNKNOWN_ERROR);
-ASSERT_CDM_EXCEPTION(CLIENT_ERROR);
-ASSERT_CDM_EXCEPTION(OUTPUT_ERROR);
-
-// CDM Session Type
-#define ASSERT_CDM_SESSION_TYPE(value)                                    \
-  static_assert(                                                          \
-      media::MediaKeys::value ==                                          \
-          static_cast<media::MediaKeys::SessionType>(                     \
-              media::mojom::ContentDecryptionModule::SessionType::value), \
-      "Mismatched CDM Session Type")
-ASSERT_CDM_SESSION_TYPE(TEMPORARY_SESSION);
-ASSERT_CDM_SESSION_TYPE(PERSISTENT_LICENSE_SESSION);
-ASSERT_CDM_SESSION_TYPE(PERSISTENT_RELEASE_MESSAGE_SESSION);
-
-// CDM InitDataType
-#define ASSERT_CDM_INIT_DATA_TYPE(value)                                   \
-  static_assert(                                                           \
-      media::EmeInitDataType::value ==                                     \
-          static_cast<media::EmeInitDataType>(                             \
-              media::mojom::ContentDecryptionModule::InitDataType::value), \
-      "Mismatched CDM Init Data Type")
-ASSERT_CDM_INIT_DATA_TYPE(UNKNOWN);
-ASSERT_CDM_INIT_DATA_TYPE(WEBM);
-ASSERT_CDM_INIT_DATA_TYPE(CENC);
-ASSERT_CDM_INIT_DATA_TYPE(KEYIDS);
-
-// CDM Key Status
-#define ASSERT_CDM_KEY_STATUS(value)                                  \
-  static_assert(media::CdmKeyInformation::value ==                    \
-                    static_cast<media::CdmKeyInformation::KeyStatus>( \
-                        media::mojom::CdmKeyStatus::value),           \
-                "Mismatched CDM Key Status")
-ASSERT_CDM_KEY_STATUS(USABLE);
-ASSERT_CDM_KEY_STATUS(INTERNAL_ERROR);
-ASSERT_CDM_KEY_STATUS(EXPIRED);
-ASSERT_CDM_KEY_STATUS(OUTPUT_RESTRICTED);
-ASSERT_CDM_KEY_STATUS(OUTPUT_DOWNSCALED);
-ASSERT_CDM_KEY_STATUS(KEY_STATUS_PENDING);
-ASSERT_CDM_KEY_STATUS(RELEASED);
-
-// CDM Message Type
-#define ASSERT_CDM_MESSAGE_TYPE(value)                                       \
-  static_assert(                                                             \
-      media::MediaKeys::value == static_cast<media::MediaKeys::MessageType>( \
-                                     media::mojom::CdmMessageType::value),   \
-      "Mismatched CDM Message Type")
-ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
-ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);
-ASSERT_CDM_MESSAGE_TYPE(LICENSE_RELEASE);
 
 template <>
 struct TypeConverter<media::mojom::PatternPtr,
@@ -256,11 +194,10 @@ media::AudioDecoderConfig
 TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
     Convert(const media::mojom::AudioDecoderConfigPtr& input) {
   media::AudioDecoderConfig config;
-  config.Initialize(
-      input->codec, static_cast<media::SampleFormat>(input->sample_format),
-      input->channel_layout, input->samples_per_second, input->extra_data,
-      input->encryption_scheme.To<media::EncryptionScheme>(),
-      input->seek_preroll, input->codec_delay);
+  config.Initialize(input->codec, input->sample_format, input->channel_layout,
+                    input->samples_per_second, input->extra_data,
+                    input->encryption_scheme.To<media::EncryptionScheme>(),
+                    input->seek_preroll, input->codec_delay);
   return config;
 }
 
@@ -302,7 +239,7 @@ media::mojom::CdmKeyInformationPtr TypeConverter<
   media::mojom::CdmKeyInformationPtr info(
       media::mojom::CdmKeyInformation::New());
   info->key_id = input.key_id;
-  info->status = static_cast<media::mojom::CdmKeyStatus>(input.status);
+  info->status = input.status;
   info->system_code = input.system_code;
   return info;
 }
@@ -313,9 +250,7 @@ TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
               media::mojom::CdmKeyInformationPtr>::
     Convert(const media::mojom::CdmKeyInformationPtr& input) {
   return base::MakeUnique<media::CdmKeyInformation>(
-      input->key_id,
-      static_cast<media::CdmKeyInformation::KeyStatus>(input->status),
-      input->system_code);
+      input->key_id, input->status, input->system_code);
 }
 
 // static
@@ -378,9 +313,9 @@ TypeConverter<scoped_refptr<media::AudioBuffer>, media::mojom::AudioBufferPtr>::
     channel_ptrs[i] = input->data.data() + i * size_per_channel;
 
   return media::AudioBuffer::CopyFrom(
-      static_cast<media::SampleFormat>(input->sample_format),
-      input->channel_layout, input->channel_count, input->sample_rate,
-      input->frame_count, &channel_ptrs[0], input->timestamp);
+      input->sample_format, input->channel_layout, input->channel_count,
+      input->sample_rate, input->frame_count, &channel_ptrs[0],
+      input->timestamp);
 }
 
 // static

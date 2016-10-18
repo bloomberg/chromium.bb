@@ -21,7 +21,7 @@ static mojom::CdmPromiseResultPtr GetRejectResult(
     const std::string& error_message) {
   mojom::CdmPromiseResultPtr cdm_promise_result(mojom::CdmPromiseResult::New());
   cdm_promise_result->success = false;
-  cdm_promise_result->exception = static_cast<mojom::CdmException>(exception);
+  cdm_promise_result->exception = exception;
   cdm_promise_result->system_code = system_code;
   cdm_promise_result->error_message = error_message;
   return cdm_promise_result;

@@ -28,8 +28,6 @@
 #include "content/common/manifest_manager_messages.h"
 #include "content/common/media/aec_dump_messages.h"
 #include "content/common/media/audio_messages.h"
-// TODO(xhwang): Move this to a new ifdef block.
-#include "content/common/media/cdm_messages.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_track_metrics_host_messages.h"

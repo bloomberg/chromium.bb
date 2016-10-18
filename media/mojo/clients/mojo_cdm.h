@@ -36,6 +36,8 @@ class MojoCdm : public MediaKeys,
                 public CdmContext,
                 public mojom::ContentDecryptionModuleClient {
  public:
+  using MessageType = MediaKeys::MessageType;
+
   static void Create(
       const std::string& key_system,
       const GURL& security_origin,
@@ -90,7 +92,7 @@ class MojoCdm : public MediaKeys,
 
   // mojom::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const std::string& session_id,
-                        mojom::CdmMessageType message_type,
+                        MessageType message_type,
                         const std::vector<uint8_t>& message) final;
   void OnSessionClosed(const std::string& session_id) final;
   void OnSessionKeysChange(

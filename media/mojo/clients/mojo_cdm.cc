@@ -28,8 +28,8 @@ namespace media {
 template <typename PromiseType>
 static void RejectPromise(std::unique_ptr<PromiseType> promise,
                           mojom::CdmPromiseResultPtr result) {
-  promise->reject(static_cast<MediaKeys::Exception>(result->exception),
-                  result->system_code, result->error_message);
+  promise->reject(result->exception, result->system_code,
+                  result->error_message);
 }
 
 // static
@@ -153,10 +153,9 @@ void MojoCdm::CreateSessionAndGenerateRequest(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_cdm_->CreateSessionAndGenerateRequest(
-      static_cast<mojom::ContentDecryptionModule::SessionType>(session_type),
-      static_cast<mojom::ContentDecryptionModule::InitDataType>(init_data_type),
-      init_data, base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult,
-                            base::Unretained(this), base::Passed(&promise)));
+      session_type, init_data_type, init_data,
+      base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult, base::Unretained(this),
+                 base::Passed(&promise)));
 }
 
 void MojoCdm::LoadSession(SessionType session_type,
@@ -166,9 +165,9 @@ void MojoCdm::LoadSession(SessionType session_type,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_cdm_->LoadSession(
-      static_cast<mojom::ContentDecryptionModule::SessionType>(session_type),
-      session_id, base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult,
-                             base::Unretained(this), base::Passed(&promise)));
+      session_type, session_id,
+      base::Bind(&MojoCdm::OnNewSessionCdmPromiseResult, base::Unretained(this),
+                 base::Passed(&promise)));
 }
 
 void MojoCdm::UpdateSession(const std::string& session_id,
@@ -235,13 +234,12 @@ int MojoCdm::GetCdmId() const {
 }
 
 void MojoCdm::OnSessionMessage(const std::string& session_id,
-                               mojom::CdmMessageType message_type,
+                               MessageType message_type,
                                const std::vector<uint8_t>& message) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  session_message_cb_.Run(
-      session_id, static_cast<MediaKeys::MessageType>(message_type), message);
+  session_message_cb_.Run(session_id, message_type, message);
 }
 
 void MojoCdm::OnSessionClosed(const std::string& session_id) {

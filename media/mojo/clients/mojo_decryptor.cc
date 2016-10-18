@@ -176,7 +176,7 @@ void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (buffer.is_null()) {
-    decrypt_cb.Run(static_cast<Decryptor::Status>(status), nullptr);
+    decrypt_cb.Run(status, nullptr);
     return;
   }
 
@@ -187,7 +187,7 @@ void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
     return;
   }
 
-  decrypt_cb.Run(static_cast<Decryptor::Status>(status), media_buffer);
+  decrypt_cb.Run(status, media_buffer);
 }
 
 void MojoDecryptor::OnAudioDecoded(
@@ -202,7 +202,7 @@ void MojoDecryptor::OnAudioDecoded(
   for (size_t i = 0; i < audio_buffers.size(); ++i)
     audio_frames.push_back(audio_buffers[i].To<scoped_refptr<AudioBuffer>>());
 
-  audio_decode_cb.Run(static_cast<Decryptor::Status>(status), audio_frames);
+  audio_decode_cb.Run(status, audio_frames);
 }
 
 void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
@@ -213,7 +213,7 @@ void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (video_frame.is_null()) {
-    video_decode_cb.Run(static_cast<Decryptor::Status>(status), nullptr);
+    video_decode_cb.Run(status, nullptr);
     return;
   }
 
@@ -228,7 +228,7 @@ void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
         &MojoDecryptor::ReleaseSharedBuffer, weak_factory_.GetWeakPtr()));
   }
 
-  video_decode_cb.Run(static_cast<Decryptor::Status>(status), frame);
+  video_decode_cb.Run(status, frame);
 }
 
 void MojoDecryptor::ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,

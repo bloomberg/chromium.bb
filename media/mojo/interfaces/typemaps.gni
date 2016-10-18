@@ -4,6 +4,7 @@
 
 typemaps = [
   "//media/mojo/interfaces/audio_parameters.typemap",
+  "//media/mojo/interfaces/content_decryption_module.typemap",
   "//media/mojo/interfaces/decryptor.typemap",
   "//media/mojo/interfaces/demuxer_stream.typemap",
   "//media/mojo/interfaces/media_types.typemap",

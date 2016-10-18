@@ -9,16 +9,21 @@
 #include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/buffering_state.h"
+#include "media/base/cdm_key_information.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decode_status.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/eme_constants.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
+
+// Enum traits.
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioCodec, media::AudioCodec::kAudioCodecMax)
 
@@ -30,6 +35,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
                           media::BufferingState::BUFFERING_STATE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmKeyInformation::KeyStatus,
+                          media::CdmKeyInformation::KEY_STATUS_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 
@@ -50,8 +58,19 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::DemuxerStream::Status,
 IPC_ENUM_TRAITS_MAX_VALUE(media::DemuxerStream::Type,
                           media::DemuxerStream::TYPE_MAX)
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::EmeInitDataType, media::EmeInitDataType::MAX)
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
                           media::EncryptionScheme::CipherMode::CIPHER_MODE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::Exception,
+                          media::MediaKeys::EXCEPTION_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::MessageType,
+                          media::MediaKeys::MESSAGE_TYPE_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaKeys::SessionType,
+                          media::MediaKeys::SESSION_TYPE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 
@@ -64,6 +83,14 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
+
+// Struct traits.
+
+IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
+  IPC_STRUCT_TRAITS_MEMBER(key_id)
+  IPC_STRUCT_TRAITS_MEMBER(status)
+  IPC_STRUCT_TRAITS_MEMBER(system_code)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
   IPC_STRUCT_TRAITS_MEMBER(clear_bytes)

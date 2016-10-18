@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -30,6 +31,8 @@ class CdmFactory;
 class MEDIA_MOJO_EXPORT MojoCdmService
     : NON_EXPORTED_BASE(public mojom::ContentDecryptionModule) {
  public:
+  using SessionType = MediaKeys::SessionType;
+
   // Get the CDM associated with |cdm_id|, which is unique per process.
   // Can be called on any thread. The returned CDM is not guaranteed to be
   // thread safe.
@@ -55,11 +58,11 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   void SetServerCertificate(const std::vector<uint8_t>& certificate_data,
                             const SetServerCertificateCallback& callback) final;
   void CreateSessionAndGenerateRequest(
-      mojom::ContentDecryptionModule::SessionType session_type,
-      mojom::ContentDecryptionModule::InitDataType init_data_type,
+      SessionType session_type,
+      EmeInitDataType init_data_type,
       const std::vector<uint8_t>& init_data,
       const CreateSessionAndGenerateRequestCallback& callback) final;
-  void LoadSession(mojom::ContentDecryptionModule::SessionType session_type,
+  void LoadSession(SessionType session_type,
                    const std::string& session_id,
                    const LoadSessionCallback& callback) final;
   void UpdateSession(const std::string& session_id,
