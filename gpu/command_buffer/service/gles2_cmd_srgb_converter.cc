@@ -198,6 +198,10 @@ void SRGBConverter::Blit(
   // If we need to blit from linear to srgb or vice versa, some steps will be
   // skipped.
   DCHECK(srgb_converter_initialized_);
+  // Use RGBA32F as the temp texture's internalformat to prevent precision
+  // loss during srgb conversion. But it is not color-renderable and
+  // texture-filterable in ES context.
+  DCHECK(!feature_info_->gl_version_info().is_es);
 
   // Set the states
   glActiveTexture(GL_TEXTURE0);
@@ -239,7 +243,7 @@ void SRGBConverter::Blit(
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
     glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
                  c.width(), c.height(),
                  0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glBindFramebufferEXT(GL_FRAMEBUFFER, srgb_decoder_fbo_);
@@ -272,7 +276,7 @@ void SRGBConverter::Blit(
     height_draw = dstY1 > dstY0 ? dstY1 - dstY0 : dstY0 - dstY1;
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glTexImage2D(
-        GL_TEXTURE_2D, 0, decode ? GL_RGBA : src_framebuffer_internal_format,
+        GL_TEXTURE_2D, 0, decode ? GL_RGBA32F : src_framebuffer_internal_format,
         width_draw, height_draw, 0,
         decode ? GL_RGBA : src_framebuffer_format,
         decode ? GL_UNSIGNED_BYTE : src_framebuffer_type,
