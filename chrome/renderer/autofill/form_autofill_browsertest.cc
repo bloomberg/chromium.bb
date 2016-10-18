@@ -4452,7 +4452,7 @@ TEST_F(FormAutofillTest,
       &form, nullptr));
 
   EXPECT_TRUE(form.name.empty());
-  EXPECT_EQ(frame->document().url(), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_FALSE(form.action.is_valid());
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -4512,7 +4512,7 @@ TEST_F(FormAutofillTest,
       &form, nullptr));
 
   EXPECT_TRUE(form.name.empty());
-  EXPECT_EQ(frame->document().url(), form.origin);
+  EXPECT_EQ(GURL(frame->document().url()), form.origin);
   EXPECT_FALSE(form.action.is_valid());
 
   const std::vector<FormFieldData>& fields = form.fields;

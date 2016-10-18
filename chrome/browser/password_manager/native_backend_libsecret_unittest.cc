@@ -908,7 +908,8 @@ TEST_F(NativeBackendLibsecretTest, DisableAutoSignInForOrigins) {
 
   PasswordStoreChangeList changes;
   EXPECT_TRUE(backend.DisableAutoSignInForOrigins(
-      base::Bind(&GURL::operator==, base::Unretained(&form_facebook_.origin)),
+      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+                 form_facebook_.origin),
       &changes));
   CheckPasswordChanges(expected_changes, changes);
 

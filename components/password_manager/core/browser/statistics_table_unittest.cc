@@ -143,7 +143,8 @@ TEST_F(StatisticsTableTest, RemoveStatsByOriginAndTime) {
   // Remove the entries with the timestamp 2 that are NOT matching
   // |kTestDomain3|.
   EXPECT_TRUE(db()->RemoveStatsByOriginAndTime(
-      base::Bind(&GURL::operator!=, base::Unretained(&stats3.origin_domain)),
+      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator!=),
+                 stats3.origin_domain),
       base::Time::FromTimeT(2), base::Time()));
   EXPECT_THAT(db()->GetRows(stats1.origin_domain), IsEmpty());
   EXPECT_THAT(db()->GetRows(stats2.origin_domain), IsEmpty());

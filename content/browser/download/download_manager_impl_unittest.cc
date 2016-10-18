@@ -767,7 +767,8 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
 namespace {
 
 base::Callback<bool(const GURL&)> GetSingleURLFilter(const GURL& url) {
-  return base::Bind(&GURL::operator==, base::Owned(new GURL(url)));
+  return base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+                    GURL(url));
 }
 
 }  // namespace

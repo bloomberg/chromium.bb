@@ -1029,11 +1029,13 @@ TEST_P(NativeBackendKWalletTest, DisableAutoSignInForOrigins) {
   PasswordStoreChangeList changes;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendKWallet::DisableAutoSignInForOrigins,
-                 base::Unretained(&backend),
-                 base::Bind(&GURL::operator==,
-                            base::Unretained(&form_google_.origin)),
-                 &changes),
+      base::Bind(
+          &NativeBackendKWallet::DisableAutoSignInForOrigins,
+          base::Unretained(&backend),
+          base::Bind(
+              static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+              form_google_.origin),
+          &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
   RunDBThread();
 

@@ -326,7 +326,8 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeaconsWithFilter) {
   // Delete the beacons for |origin1|.
   monitor_.ClearBrowsingData(
       CLEAR_BEACONS,
-      base::Bind(&GURL::operator==, base::Unretained(&origin1)));
+      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+                 origin1));
 
   // Beacons for |context1| were cleared. Beacons for |context2| and
   // the contexts themselves were not.
@@ -360,7 +361,8 @@ TEST_F(DomainReliabilityMonitorTest, ClearContextsWithFilter) {
   // Delete the contexts for |origin1|.
   monitor_.ClearBrowsingData(
       CLEAR_CONTEXTS,
-      base::Bind(&GURL::operator==, base::Unretained(&origin1)));
+      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+                 origin1));
 
   // Only one of the contexts should have been deleted.
   EXPECT_EQ(1u, monitor_.contexts_size_for_testing());

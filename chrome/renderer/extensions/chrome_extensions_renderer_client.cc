@@ -287,7 +287,7 @@ bool ChromeExtensionsRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   // subframes, so this check only makes sense for top-level frames.
   // TODO(alexmos,nasko): Figure out how this check should work when reloading
   // subframes in --site-per-process mode.
-  if (!frame->parent() && frame->document().url() == url) {
+  if (!frame->parent() && GURL(frame->document().url()) == url) {
     if (is_extension_url != IsStandaloneExtensionProcess())
       return true;
   }

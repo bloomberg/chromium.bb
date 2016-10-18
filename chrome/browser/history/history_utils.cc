@@ -25,7 +25,7 @@ bool CanAddURLToHistory(const GURL& url) {
       url.SchemeIs(dom_distiller::kDomDistillerScheme))
     return false;
 
-  if (url == GURL(url::kAboutBlankURL))
+  if (url == url::kAboutBlankURL)
     return false;
 
   return true;

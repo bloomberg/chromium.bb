@@ -4759,7 +4759,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   // Set the URL to be displayed in the browser UI to the user.
   params.url = GetLoadingUrl();
-  if (frame->document().baseURL() != params.url)
+  if (GURL(frame->document().baseURL()) != params.url)
     params.base_url = frame->document().baseURL();
 
   GetRedirectChain(ds, &params.redirects);

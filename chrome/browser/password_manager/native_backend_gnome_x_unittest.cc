@@ -1210,11 +1210,13 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
   PasswordStoreChangeList changes;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::DisableAutoSignInForOrigins,
-                 base::Unretained(&backend),
-                 base::Bind(&GURL::operator==,
-                            base::Unretained(&form_facebook_.origin)),
-                 &changes),
+      base::Bind(
+          &NativeBackendGnome::DisableAutoSignInForOrigins,
+          base::Unretained(&backend),
+          base::Bind(
+              static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+              form_facebook_.origin),
+          &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
   RunBothThreads();
 

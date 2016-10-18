@@ -97,8 +97,8 @@ TEST(OriginPowerMapTest, ClearOriginMap) {
   EXPECT_DOUBLE_EQ(10, origin_power_map.GetPowerForOrigin(url5));
 
   // Delete |url1|.
-  origin_power_map.ClearOriginMap(
-      base::Bind(&GURL::operator==, base::Unretained(&url1)));
+  origin_power_map.ClearOriginMap(base::Bind(
+      static_cast<bool (*)(const GURL&, const GURL&)>(operator==), url1));
   EXPECT_DOUBLE_EQ(0, origin_power_map.GetPowerForOrigin(url1));
   EXPECT_DOUBLE_EQ(40, origin_power_map.GetPowerForOrigin(url2));
   EXPECT_DOUBLE_EQ(30, origin_power_map.GetPowerForOrigin(url3));

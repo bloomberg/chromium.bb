@@ -1798,8 +1798,9 @@ TEST_F(PasswordStoreMacTest, TestDisableAutoSignInForOrigins) {
   EXPECT_FALSE(forms[1]->skip_zero_click);
 
   store()->DisableAutoSignInForOrigins(
-    base::Bind(&GURL::operator==, base::Unretained(&form_google->origin)),
-    base::Closure());
+      base::Bind(static_cast<bool (*)(const GURL&, const GURL&)>(operator==),
+                 form_google->origin),
+      base::Closure());
   FinishAsyncProcessing();
 
   EXPECT_TRUE(login_db()->GetAutoSignInLogins(&forms));
