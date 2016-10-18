@@ -21,6 +21,9 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.DeviceFormFactor;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  *  An Instrumentation test runner that optionally spawns a test HTTP server.
  *  The server's root directory is the device's external storage directory.
@@ -52,6 +55,29 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
             super(targetContext);
         }
 
+        private boolean isDaydreamReady() {
+            // Might be compiled without the GVR SDK, and thus the NDK, so
+            // use reflection to try to get the class and call its static
+            // method.
+            Class<?> daydreamApi;
+            try {
+                daydreamApi = Class.forName("com.google.vr.ndk.base.DaydreamApi");
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+
+            try {
+                Method platformCheck = daydreamApi.getMethod(
+                        "isDaydreamReadyPlatform", Context.class);
+                Boolean isDaydream = (Boolean) platformCheck.invoke(
+                        daydreamApi, getTargetContext());
+                return isDaydream.booleanValue();
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException e) {
+                return false;
+            }
+        }
+
         @Override
         protected boolean restrictionApplies(String restriction) {
             if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_PHONE)
@@ -73,15 +99,20 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     && (!ChromeVersionInfo.isOfficialBuild())) {
                 return true;
             }
-            // TODO(bsheedy): Implement restriction logic when VR NDK is updated to
-            //                allow Daydream-readiness checking
             if (TextUtils.equals(restriction,
-                    ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)) {
-                return true;
-            }
-            if (TextUtils.equals(restriction,
+                    ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)
+                    || TextUtils.equals(restriction,
                     ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)) {
-                return true;
+                boolean isDaydream = isDaydreamReady();
+                if (TextUtils.equals(restriction,
+                        ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)
+                        && !isDaydream) {
+                    return true;
+                } else if (TextUtils.equals(restriction,
+                        ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)
+                        && isDaydream) {
+                    return true;
+                }
             }
             return false;
         }
