@@ -366,6 +366,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(int embedded_worker_id,
                     int fetch_event_id,
                     const ServiceWorkerFetchRequest& request,
+                    mojom::FetchEventPreloadHandlePtr preload_handle,
                     const FetchCallback& callback) override {
     context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
@@ -449,6 +450,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(int embedded_worker_id,
                     int fetch_event_id,
                     const ServiceWorkerFetchRequest& request,
+                    mojom::FetchEventPreloadHandlePtr preload_handle,
                     const FetchCallback& callback) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
         embedded_worker_id, fetch_event_id,
@@ -531,6 +533,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(int embedded_worker_id,
                     int fetch_event_id,
                     const ServiceWorkerFetchRequest& request,
+                    mojom::FetchEventPreloadHandlePtr preload_handle,
                     const FetchCallback& callback) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
         embedded_worker_id, fetch_event_id,
@@ -844,6 +847,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(int embedded_worker_id,
                     int fetch_event_id,
                     const ServiceWorkerFetchRequest& request,
+                    mojom::FetchEventPreloadHandlePtr preload_handle,
                     const FetchCallback& callback) override {
     SimulateWorkerStopped(embedded_worker_id);
     callback.Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
@@ -956,6 +960,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(int embedded_worker_id,
                     int fetch_event_id,
                     const ServiceWorkerFetchRequest& request,
+                    mojom::FetchEventPreloadHandlePtr preload_handle,
                     const FetchCallback& callback) override {
     callback_ = callback;
     SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
@@ -1030,6 +1035,7 @@ class DelayedResponseHelper : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(int embedded_worker_id,
                     int fetch_event_id,
                     const ServiceWorkerFetchRequest& request,
+                    mojom::FetchEventPreloadHandlePtr preload_handle,
                     const FetchCallback& callback) override {
     embedded_worker_id_ = embedded_worker_id;
     fetch_event_id_ = fetch_event_id;

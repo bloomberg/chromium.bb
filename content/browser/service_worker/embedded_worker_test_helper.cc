@@ -166,10 +166,12 @@ class EmbeddedWorkerTestHelper::MockFetchEventDispatcher
 
   void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
+                          mojom::FetchEventPreloadHandlePtr preload_handle,
                           const DispatchFetchEventCallback& callback) override {
     if (!helper_)
       return;
-    helper_->OnFetchEventStub(thread_id_, fetch_event_id, request, callback);
+    helper_->OnFetchEventStub(thread_id_, fetch_event_id, request,
+                              std::move(preload_handle), callback);
   }
 
  private:
@@ -337,6 +339,7 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
     int embedded_worker_id,
     int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
+    mojom::FetchEventPreloadHandlePtr preload_handle,
     const FetchCallback& callback) {
   SimulateSend(new ServiceWorkerHostMsg_FetchEventResponse(
       embedded_worker_id, fetch_event_id,
@@ -498,12 +501,13 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int thread_id,
     int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
+    mojom::FetchEventPreloadHandlePtr preload_handle,
     const FetchCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
                  thread_id_embedded_worker_id_map_[thread_id], fetch_event_id,
-                 request, callback));
+                 request, base::Passed(&preload_handle), callback));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEventStub(

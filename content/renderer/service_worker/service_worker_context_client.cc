@@ -237,11 +237,17 @@ class ServiceWorkerContextClient::FetchEventDispatcherImpl
 
   void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
+                          mojom::FetchEventPreloadHandlePtr preload_handle,
                           const DispatchFetchEventCallback& callback) override {
     ServiceWorkerContextClient* client =
         ServiceWorkerContextClient::ThreadSpecificInstance();
     if (!client) {
       callback.Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+      return;
+    }
+    if (preload_handle) {
+      // TODO(horo): Implement this to pass |preload_handle| to FetchEvent.
+      NOTIMPLEMENTED();
       return;
     }
     client->DispatchFetchEvent(fetch_event_id, request, callback);

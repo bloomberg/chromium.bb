@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
+#include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
@@ -181,6 +182,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnFetchEvent(int embedded_worker_id,
                             int fetch_event_id,
                             const ServiceWorkerFetchRequest& request,
+                            mojom::FetchEventPreloadHandlePtr preload_handle,
                             const FetchCallback& callback);
   virtual void OnPushEvent(int embedded_worker_id,
                            int request_id,
@@ -221,6 +223,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnFetchEventStub(int thread_id,
                         int fetch_event_id,
                         const ServiceWorkerFetchRequest& request,
+                        mojom::FetchEventPreloadHandlePtr preload_handle,
                         const FetchCallback& callback);
   void OnPushEventStub(int request_id, const PushEventPayload& payload);
   void OnSetupMojoStub(

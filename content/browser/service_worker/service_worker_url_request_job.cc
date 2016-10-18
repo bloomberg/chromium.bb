@@ -893,6 +893,7 @@ void ServiceWorkerURLRequestJob::RequestBodyBlobsCompleted(bool success) {
       base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
   worker_start_time_ = base::TimeTicks::Now();
+  fetch_dispatcher_->MaybeStartNavigationPreload(request());
   fetch_dispatcher_->Run();
 }
 

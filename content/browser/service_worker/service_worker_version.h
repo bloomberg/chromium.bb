@@ -170,6 +170,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     foreign_fetch_origins_ = origins;
   }
 
+  bool navigation_preload_enabled() const {
+    return navigation_preload_enabled_;
+  }
+  void set_navigation_preload_enabled(bool enabled) {
+    navigation_preload_enabled_ = enabled;
+  }
+
   ServiceWorkerMetrics::Site site_for_uma() const { return site_for_uma_; }
 
   // This sets the new status and also run status change callbacks
@@ -722,6 +729,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<GURL> foreign_fetch_scopes_;
   std::vector<url::Origin> foreign_fetch_origins_;
   FetchHandlerExistence fetch_handler_existence_;
+  bool navigation_preload_enabled_ = false;
   ServiceWorkerMetrics::Site site_for_uma_;
 
   Status status_ = NEW;
