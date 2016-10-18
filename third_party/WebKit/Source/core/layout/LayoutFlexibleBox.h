@@ -179,8 +179,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool hasAutoMarginsInCrossAxis(const LayoutBox& child) const;
   bool updateAutoMarginsInCrossAxis(LayoutBox& child,
                                     LayoutUnit availableAlignmentSpace);
-  void repositionLogicalHeightDependentFlexItems(Vector<LineContext>&,
-                                                 LayoutObject* childToExclude);
+  void repositionLogicalHeightDependentFlexItems(Vector<LineContext>&);
   LayoutUnit clientLogicalBottomAfterRepositioning();
 
   LayoutUnit availableAlignmentSpaceForChild(LayoutUnit lineCrossAxisExtent,
@@ -243,7 +242,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                            LayoutUnit crossAxisOffset,
                            LayoutUnit availableFreeSpace);
   void alignFlexLines(Vector<LineContext>&);
-  void alignChildren(const Vector<LineContext>&, LayoutObject* childToExclude);
+  void alignChildren(const Vector<LineContext>&);
   void applyStretchAlignmentToChild(LayoutBox& child,
                                     LayoutUnit lineCrossAxisExtent);
   void flipForRightToLeftColumn(const Vector<LineContext>& lineContexts);

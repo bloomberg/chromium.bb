@@ -447,13 +447,12 @@ void LayoutFlexibleBox::paintChildren(const PaintInfo& paintInfo,
 }
 
 void LayoutFlexibleBox::repositionLogicalHeightDependentFlexItems(
-    Vector<LineContext>& lineContexts,
-    LayoutObject* childToExclude) {
+    Vector<LineContext>& lineContexts) {
   LayoutUnit crossAxisStartEdge =
       lineContexts.isEmpty() ? LayoutUnit() : lineContexts[0].crossAxisOffset;
   alignFlexLines(lineContexts);
 
-  alignChildren(lineContexts, childToExclude);
+  alignChildren(lineContexts);
 
   if (style()->flexWrap() == FlexWrapReverse)
     flipForWrapReverse(lineContexts, crossAxisStartEdge);
@@ -1061,7 +1060,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
   }
 
   updateLogicalHeight();
-  repositionLogicalHeightDependentFlexItems(lineContexts, childToExclude);
+  repositionLogicalHeightDependentFlexItems(lineContexts);
 }
 
 LayoutUnit LayoutFlexibleBox::autoMarginOffsetInMainAxis(
@@ -2133,8 +2132,7 @@ void LayoutFlexibleBox::adjustAlignmentForChild(LayoutBox& child,
                                           LayoutSize(LayoutUnit(), delta));
 }
 
-void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts,
-                                      LayoutObject* childToExclude) {
+void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts) {
   // Keep track of the space between the baseline edge and the after edge of
   // the box for each line.
   Vector<LayoutUnit> minMarginAfterBaselines;
@@ -2149,8 +2147,6 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts,
     for (size_t childNumber = 0; childNumber < lineContext.flexItems.size();
          ++childNumber) {
       const FlexItem& flexItem = lineContext.flexItems[childNumber];
-      if (flexItem.box == childToExclude)
-        continue;
       if (flexItem.box->isOutOfFlowPositioned()) {
         continue;
       }
