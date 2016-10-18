@@ -53,6 +53,8 @@ class CONTENT_EXPORT MemoryCoordinator {
   // Called when ChildMemoryCoordinator calls AddChild().
   virtual void OnChildAdded(int render_process_id) {}
 
+  virtual base::MemoryState GetCurrentMemoryState() const;
+
  protected:
   // Constructor. Protected as this is a singleton, but accessible for
   // unittests.

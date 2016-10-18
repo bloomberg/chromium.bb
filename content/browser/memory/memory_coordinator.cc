@@ -120,6 +120,10 @@ mojom::MemoryState MemoryCoordinator::GetMemoryState(
   return iter->second.memory_state;
 }
 
+base::MemoryState MemoryCoordinator::GetCurrentMemoryState() const {
+  return base::MemoryState::UNKNOWN;
+}
+
 void MemoryCoordinator::AddChildForTesting(
     int dummy_render_process_id, mojom::ChildMemoryCoordinatorPtr child) {
   mojom::MemoryCoordinatorHandlePtr mch;

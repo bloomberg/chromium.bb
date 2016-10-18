@@ -102,6 +102,10 @@ void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
   SetMemoryState(render_process_id, ToMojomMemoryState(current_state_));
 }
 
+base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
+  return current_state_;
+}
+
 base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
   using MemoryState = base::MemoryState;
 

@@ -47,6 +47,8 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
 
   MemoryMonitor* memory_monitor() { return memory_monitor_.get(); }
 
+  base::MemoryState GetCurrentMemoryState() const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextState);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateState);
