@@ -81,25 +81,25 @@ class LayerTreeHostTest : public LayerTreeTest {};
 
 class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestHasImplThreadTest() : threaded_(false) {}
+  LayerTreeHostTestHasImplThreadTest() : single_threaded_(false) {}
 
   void RunTest(CompositorMode mode) override {
-    threaded_ = mode == CompositorMode::THREADED;
+    single_threaded_ = mode == CompositorMode::SINGLE_THREADED;
     LayerTreeHostTest::RunTest(mode);
   }
 
   void BeginTest() override {
-    EXPECT_EQ(threaded_, HasImplThread());
+    EXPECT_EQ(single_threaded_, !HasImplThread());
     EndTest();
   }
 
-  void AfterTest() override { EXPECT_EQ(threaded_, HasImplThread()); }
+  void AfterTest() override { EXPECT_EQ(single_threaded_, !HasImplThread()); }
 
  private:
-  bool threaded_;
+  bool single_threaded_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestHasImplThreadTest);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestHasImplThreadTest);
 
 class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
  protected:
@@ -118,7 +118,7 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
   void AfterTest() override {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommitInsideLayout);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsCommitInsideLayout);
 
 class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
  protected:
@@ -193,7 +193,7 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
   ImplOrder impl_ = IMPL_START;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameOrdering);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestFrameOrdering);
 
 class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
@@ -212,7 +212,7 @@ class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
   void AfterTest() override {}
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsUpdateInsideLayout);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsUpdateInsideLayout);
 
 // Test if the LTHI receives ReadyToActivate notifications from the TileManager
 // when no raster tasks get scheduled.
@@ -256,7 +256,7 @@ class LayerTreeHostTestReadyToActivateEmpty : public LayerTreeHostTest {
   size_t required_for_activation_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateEmpty);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestReadyToActivateEmpty);
 
 // Test if the LTHI receives ReadyToActivate notifications from the TileManager
 // when some raster tasks flagged as REQUIRED_FOR_ACTIVATION got scheduled.
@@ -285,9 +285,9 @@ class LayerTreeHostTestReadyToActivateNonEmpty
   FakeContentLayerClient client_;
 };
 
-// Multi-thread only because in single thread the commit goes directly to the
-// active tree, so notify ready to activate is skipped.
-MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
+// No single thread test because the commit goes directly to the active tree in
+// single thread mode, so notify ready to activate is skipped.
+REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // no raster tasks get scheduled.
@@ -327,7 +327,7 @@ class LayerTreeHostTestReadyToDrawEmpty : public LayerTreeHostTest {
   size_t required_for_draw_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToDrawEmpty);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestReadyToDrawEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // some raster tasks flagged as REQUIRED_FOR_DRAW got scheduled.
@@ -434,6 +434,8 @@ class LayerTreeHostTestReadyToDrawVisibility : public LayerTreeHostTest {
 // single threaded mode.
 SINGLE_THREAD_TEST_F(LayerTreeHostTestReadyToDrawVisibility);
 
+// Since the LayerTreeHostContextCacheTests exclusively tests the behavior of
+// LayerTreeHostImpl, they don't need to run for the remote mode.
 class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
  public:
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
@@ -654,7 +656,7 @@ class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {
   int num_draws_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit1);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsCommit1);
 
 // A SetNeedsCommit should lead to 1 commit. Issuing a second commit after that
 // first committed frame draws should lead to another commit.
@@ -690,7 +692,7 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
   int num_draws_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
+REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 
 // Verify that we pass property values in PushPropertiesTo.
 class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
@@ -785,7 +787,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
   int index_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesTo);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestPushPropertiesTo);
 
 class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
  protected:
@@ -907,6 +909,11 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
   scoped_refptr<Layer> child_;
 };
 
+// This test compares the value of tree indexes from Layers on the engine to the
+// resulting PropertyTrees copied to the pending tree after the commit on the
+// client. This will result in a failure for LTH remote test since while the
+// client side Layers would have the correct values for these indexes, but the
+// engine will never build PropertyTrees in LTH remote. See crbug.com/655795.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushNodeOwnerToNodeIdMap);
 
 class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
@@ -988,6 +995,12 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
   scoped_refptr<Layer> grand_child_;
 };
 
+// This test changes properties on the Layer and ensures that the subtree damage
+// is tracked correctly on the resulting RenderSurfaceImpl for the corresponding
+// LayerImpl. Since the remote code path currently synchronizes the hierarchy
+// between the engine and client for every frame, all Layers on the client end
+// up being marked as damaged.
+// Enable this when crbug.com/605170 is fixed.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
 // Verify damage status of property trees is preserved after commit.
@@ -1199,6 +1212,9 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
   FilterOperations sepia_filter_;
 };
 
+// This test verifies that correct values are retained on the impl thread in
+// cases where they are animated on that thread. Since remote mode doesn't
+// support threaded animations, we don't need to run this in remote mode.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestEffectTreeSync);
 
 class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
@@ -1276,6 +1292,9 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
   scoped_refptr<Layer> root_;
 };
 
+// This test verifies that correct values are retained on the impl thread in
+// cases where they are animated on that thread. Since remote mode doesn't
+// support threaded animations, we don't need to run this in remote mode.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeSync);
 
 // Verify damage status is updated even when the transform tree doesn't need
@@ -1350,6 +1369,9 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
   scoped_refptr<Layer> grand_child_;
 };
 
+// This test verifies that correct values are retained on the impl thread in
+// cases where they are animated on that thread. Since remote mode doesn't
+// support threaded animations, we don't need to run this in remote mode.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeDamageIsUpdated);
 
 // Test that when mask layers switches layers, this gets pushed onto impl.
@@ -1420,6 +1442,12 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   int index_;
 };
 
+// This test also verifies that the Layers updated in a main frame correspond
+// only to the Layers that need updates computed using
+// draw_property_utils::FindLayersThatNeedUpdates. Since LayerTreeHostRemote
+// currently updates all Layers during the main frame, the test fails for remote
+// mode.
+// TODO(xingliu): Revisit enabling this when crbug.com/650885 is resolved.
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSwitchMaskLayer);
 
 // 1 setNeedsRedraw after the first commit has completed should lead to 1
@@ -1456,7 +1484,7 @@ class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {
   int num_draws_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedraw);
+REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedraw);
 
 // After setNeedsRedrawRect(invalid_rect) the final damage_rect
 // must contain invalid_rect.
@@ -1514,7 +1542,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> root_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
+SINGLE_MULTI_AND_REMOTE_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
 
 // Ensure the texture size of the pending and active trees are identical when a
 // layer is not in the viewport and a resize happens on the viewport

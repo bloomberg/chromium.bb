@@ -68,9 +68,7 @@ class LayerTreeHostRemoteForTesting::LayerTreeHostInProcessClient
   }
   void BeginMainFrameNotExpectedSoon() override {}
   void DidBeginMainFrame() override {}
-  void UpdateLayerTreeHost() override {
-    layer_tree_host_remote_->UpdateStateOnInProcessHost();
-  }
+  void UpdateLayerTreeHost() override {}
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
@@ -290,26 +288,35 @@ void LayerTreeHostRemoteForTesting::RemoteHostNeedsMainFrame() {
 
 void LayerTreeHostRemoteForTesting::ProcessRemoteCompositorUpdate(
     std::unique_ptr<CompositorProtoState> compositor_proto_state) {
-  pending_compositor_proto_state_ = std::move(compositor_proto_state);
-}
+  DCHECK(layer_tree_host_in_process_->CommitRequested());
+  // Deserialize the update from the remote host into client side LTH in
+  // process. This bypasses the network layer.
+  const proto::LayerTreeHost& layer_tree_host_proto =
+      compositor_proto_state->compositor_message->layer_tree_host();
+  compositor_state_deserializer_->DeserializeCompositorUpdate(
+      layer_tree_host_proto);
 
-void LayerTreeHostRemoteForTesting::UpdateStateOnInProcessHost() {
-  // When the InProcess host asks us to update, we de-serialize the update from
-  // the remote host.
-  if (pending_compositor_proto_state_) {
-    const proto::LayerTreeHost& layer_tree_host_proto =
-        pending_compositor_proto_state_->compositor_message->layer_tree_host();
-    compositor_state_deserializer_->DeserializeCompositorUpdate(
-        layer_tree_host_proto);
+  const proto::LayerUpdate& layer_updates =
+      compositor_proto_state->compositor_message->layer_tree_host()
+          .layer_updates();
+  for (int i = 0; i < layer_updates.layers_size(); ++i) {
+    int engine_layer_id = layer_updates.layers(i).id();
+    Layer* engine_layer = GetLayerTree()->LayerById(engine_layer_id);
+    Layer* client_layer =
+        compositor_state_deserializer_->GetLayerForEngineId(engine_layer_id);
 
-    pending_compositor_proto_state_ = nullptr;
-
-    // The only case where the remote host would give a compositor update is if
-    // they wanted the main frame to go till the commit pipeline stage. So
-    // request one to make sure that the in process main frame also goes till
-    // the commit step.
-    layer_tree_host_in_process_->SetNeedsCommit();
+    // Copy test only layer data that are not serialized into network messages.
+    // So in test cases, layers on the client have the same states as their
+    // corresponding layers on the engine.
+    client_layer->SetForceRenderSurfaceForTesting(
+        engine_layer->force_render_surface_for_testing());
   }
+
+  // The only case where the remote host would give a compositor update is if
+  // they wanted the main frame to go till the commit pipeline stage. So
+  // request one to make sure that the in process main frame also goes till
+  // the commit step.
+  layer_tree_host_in_process_->SetNeedsCommit();
 }
 
 }  // namespace cc

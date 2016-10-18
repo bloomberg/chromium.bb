@@ -94,12 +94,10 @@ class LayerTreeHostRemoteForTesting : public LayerTreeHostRemote,
   void RemoteHostNeedsMainFrame();
   void ProcessRemoteCompositorUpdate(
       std::unique_ptr<CompositorProtoState> compositor_proto_state);
-  void UpdateStateOnInProcessHost();
 
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_in_process_;
   std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
 
-  std::unique_ptr<CompositorProtoState> pending_compositor_proto_state_;
   ScrollOffsetMap layers_scrolled_;
 
   std::unique_ptr<LayerTreeHostInProcessClient>
