@@ -162,3 +162,7 @@ QUIC_FLAG(bool, FLAGS_quic_send_push_stream_timed_out_error, true)
 // If true, enable bugfix for FHOL experiment (fin-only
 // WritevStreamData).
 QUIC_FLAG(bool, FLAGS_quic_bugfix_fhol_writev_fin_only_v2, true)
+
+// If true, v33 QUIC client uses 1 bit to specify 8-byte connection id in
+// public flag.
+QUIC_FLAG(bool, FLAGS_quic_remove_v33_hacks2, false)
