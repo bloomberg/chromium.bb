@@ -1113,6 +1113,18 @@ wl_global_destroy(struct wl_global *global)
 	free(global);
 }
 
+WL_EXPORT const struct wl_interface *
+wl_global_get_interface(const struct wl_global *global)
+{
+	return global->interface;
+}
+
+WL_EXPORT void *
+wl_global_get_user_data(const struct wl_global *global)
+{
+	return global->data;
+}
+
 /** Get the current serial number
  *
  * \param display The display object
