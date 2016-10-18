@@ -1226,6 +1226,9 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
 
 String Internals::rangeAsText(const Range* range) {
   ASSERT(range);
+  // Clean layout is required by plain text extraction.
+  range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
+
   return range->text();
 }
 

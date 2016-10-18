@@ -104,6 +104,12 @@ void SurroundingText::initialize(const Position& startPosition,
   DCHECK(m_contentRange);
 }
 
+Document* SurroundingText::document() const {
+  if (m_contentRange)
+    return &m_contentRange->ownerDocument();
+  return nullptr;
+}
+
 String SurroundingText::content() const {
   if (m_contentRange)
     return m_contentRange->text();

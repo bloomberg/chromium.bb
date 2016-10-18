@@ -302,14 +302,10 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
       data.frameHistoryItem = WebHistoryItem(historyItem);
   }
 
+  // HitTestResult::isSelected() ensures clean layout by performing a hit test.
   if (r.isSelected()) {
     if (!isHTMLInputElement(*r.innerNode()) ||
         toHTMLInputElement(r.innerNode())->type() != InputTypeNames::password) {
-      // TODO(xiaochengh): Use of updateStyleAndLayoutIgnorePendingStylesheets
-      // needs to be audited.  See http://crbug.com/590369 for more details.
-      // Plain text extraction requires clean layout.
-      selectedFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
       data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
     }
   }
@@ -346,11 +342,6 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
         data.keywordURL = ws.url();
     }
   }
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // Plain text extraction requires clean layout.
-  selectedFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (selectedFrame->editor().selectionHasStyle(CSSPropertyDirection, "ltr") !=
       FalseTriState)
