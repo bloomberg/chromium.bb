@@ -38,6 +38,7 @@
 namespace blink {
 
 class Document;
+class DocumentStyleSheetCollection;
 class MutableStylePropertySet;
 class StyleRuleViewport;
 
@@ -48,29 +49,45 @@ class CORE_EXPORT ViewportStyleResolver
     return new ViewportStyleResolver(document);
   }
 
+  void initialViewportChanged();
+  void setNeedsCollectRules();
+  void updateViewport(DocumentStyleSheetCollection&);
+
+  void collectViewportRulesFromAuthorSheet(const CSSStyleSheet&);
+
   enum Origin { UserAgentOrigin, AuthorOrigin };
 
   void collectViewportRules();
   void collectViewportRules(RuleSet*, Origin);
-  void resolve();
 
   DECLARE_TRACE();
 
  private:
   explicit ViewportStyleResolver(Document&);
 
+  void reset();
+  void resolve();
+
+  enum UpdateType { NoUpdate, Resolve, CollectRules };
+
   void collectViewportRulesFromUASheets();
   void collectViewportChildRules(const HeapVector<Member<StyleRuleBase>>&,
                                  Origin);
+  void collectViewportRulesFromImports(StyleSheetContents&);
+  void collectViewportRulesFromAuthorSheetContents(StyleSheetContents&);
   void addViewportRule(StyleRuleViewport&, Origin);
 
   float viewportArgumentValue(CSSPropertyID) const;
-  Length viewportLengthValue(CSSPropertyID) const;
+  Length viewportLengthValue(CSSPropertyID);
 
   Member<Document> m_document;
   Member<MutableStylePropertySet> m_propertySet;
   Member<MediaQueryEvaluator> m_initialViewportMedium;
-  bool m_hasAuthorStyle;
+  MediaQueryResultList m_viewportDependentMediaQueryResults;
+  MediaQueryResultList m_deviceDependentMediaQueryResults;
+  bool m_hasAuthorStyle = false;
+  bool m_hasViewportUnits = false;
+  UpdateType m_needsUpdate = CollectRules;
 };
 
 }  // namespace blink

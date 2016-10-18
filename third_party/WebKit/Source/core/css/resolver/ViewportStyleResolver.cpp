@@ -32,13 +32,16 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/MediaValuesInitialViewport.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/Settings.h"
@@ -47,10 +50,19 @@
 namespace blink {
 
 ViewportStyleResolver::ViewportStyleResolver(Document& document)
-    : m_document(document), m_hasAuthorStyle(false) {
+    : m_document(document) {
   DCHECK(document.frame());
   m_initialViewportMedium = new MediaQueryEvaluator(
       MediaValuesInitialViewport::create(*document.frame()));
+}
+
+void ViewportStyleResolver::reset() {
+  m_viewportDependentMediaQueryResults.clear();
+  m_deviceDependentMediaQueryResults.clear();
+  m_propertySet = nullptr;
+  m_hasAuthorStyle = false;
+  m_hasViewportUnits = false;
+  m_needsUpdate = NoUpdate;
 }
 
 void ViewportStyleResolver::collectViewportRulesFromUASheets() {
@@ -82,6 +94,7 @@ void ViewportStyleResolver::collectViewportRulesFromUASheets() {
 }
 
 void ViewportStyleResolver::collectViewportRules() {
+  reset();
   collectViewportRulesFromUASheets();
   if (ScopedStyleResolver* scopedResolver = m_document->scopedStyleResolver())
     scopedResolver->collectViewportRulesTo(this);
@@ -98,7 +111,9 @@ void ViewportStyleResolver::collectViewportChildRules(
     } else if (rule->isMediaRule()) {
       StyleRuleMedia* mediaRule = toStyleRuleMedia(rule);
       if (!mediaRule->mediaQueries() ||
-          m_initialViewportMedium->eval(mediaRule->mediaQueries()))
+          m_initialViewportMedium->eval(mediaRule->mediaQueries(),
+                                        &m_viewportDependentMediaQueryResults,
+                                        &m_deviceDependentMediaQueryResults))
         collectViewportChildRules(mediaRule->childRules(), origin);
     } else if (rule->isSupportsRule()) {
       StyleRuleSupports* supportsRule = toStyleRuleSupports(rule);
@@ -106,6 +121,42 @@ void ViewportStyleResolver::collectViewportChildRules(
         collectViewportChildRules(supportsRule->childRules(), origin);
     }
   }
+}
+
+void ViewportStyleResolver::collectViewportRulesFromImports(
+    StyleSheetContents& contents) {
+  for (const auto& importRule : contents.importRules()) {
+    if (!importRule->styleSheet())
+      continue;
+    if (!importRule->styleSheet()->hasViewportRule())
+      continue;
+    if (importRule->mediaQueries() &&
+        m_initialViewportMedium->eval(importRule->mediaQueries(),
+                                      &m_viewportDependentMediaQueryResults,
+                                      &m_deviceDependentMediaQueryResults))
+      collectViewportRulesFromAuthorSheetContents(*importRule->styleSheet());
+  }
+}
+
+void ViewportStyleResolver::collectViewportRulesFromAuthorSheetContents(
+    StyleSheetContents& contents) {
+  collectViewportRulesFromImports(contents);
+  if (contents.hasViewportRule())
+    collectViewportChildRules(contents.childRules(), AuthorOrigin);
+}
+
+void ViewportStyleResolver::collectViewportRulesFromAuthorSheet(
+    const CSSStyleSheet& sheet) {
+  DCHECK(sheet.contents());
+  StyleSheetContents& contents = *sheet.contents();
+  if (!contents.hasViewportRule() && contents.importRules().isEmpty())
+    return;
+  if (sheet.mediaQueries() &&
+      !m_initialViewportMedium->eval(sheet.mediaQueries(),
+                                     &m_viewportDependentMediaQueryResults,
+                                     &m_deviceDependentMediaQueryResults))
+    return;
+  collectViewportRulesFromAuthorSheetContents(contents);
 }
 
 void ViewportStyleResolver::collectViewportRules(RuleSet* rules,
@@ -163,9 +214,6 @@ void ViewportStyleResolver::resolve() {
   description.orientation = viewportArgumentValue(CSSPropertyOrientation);
 
   m_document->setViewportDescription(description);
-
-  m_propertySet = nullptr;
-  m_hasAuthorStyle = false;
 }
 
 float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const {
@@ -226,7 +274,7 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const {
   return defaultValue;
 }
 
-Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
+Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) {
   ASSERT(id == CSSPropertyMaxHeight || id == CSSPropertyMinHeight ||
          id == CSSPropertyMaxWidth || id == CSSPropertyMinWidth);
 
@@ -256,17 +304,57 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
 
   Length result = primitiveValue->convertToLength(
       CSSToLengthConversionData(documentStyle, fontSizes, viewportSize, 1.0f));
-  if (documentStyle->hasViewportUnits())
+  if (documentStyle->hasViewportUnits()) {
+    // TODO (rune@opera.com): remove the setHasViewportUnit when
+    // initialViewportChanged() goes live.
     m_document->setHasViewportUnits();
+    m_hasViewportUnits = true;
+  }
   documentStyle->setHasViewportUnits(documentStyleHasViewportUnits);
 
   return result;
+}
+
+void ViewportStyleResolver::initialViewportChanged() {
+  if (m_needsUpdate == CollectRules)
+    return;
+
+  auto& results = m_viewportDependentMediaQueryResults;
+  for (unsigned i = 0; i < results.size(); i++) {
+    if (m_initialViewportMedium->eval(results[i]->expression()) !=
+        results[i]->result()) {
+      m_needsUpdate = CollectRules;
+      return;
+    }
+  }
+  if (m_hasViewportUnits)
+    m_needsUpdate = Resolve;
+}
+
+void ViewportStyleResolver::setNeedsCollectRules() {
+  m_needsUpdate = CollectRules;
+}
+
+void ViewportStyleResolver::updateViewport(
+    DocumentStyleSheetCollection& collection) {
+  if (m_needsUpdate == NoUpdate)
+    return;
+  if (m_needsUpdate == CollectRules) {
+    reset();
+    collectViewportRulesFromUASheets();
+    if (RuntimeEnabledFeatures::cssViewportEnabled())
+      collection.collectViewportRules(*this);
+  }
+  resolve();
+  m_needsUpdate = NoUpdate;
 }
 
 DEFINE_TRACE(ViewportStyleResolver) {
   visitor->trace(m_document);
   visitor->trace(m_propertySet);
   visitor->trace(m_initialViewportMedium);
+  visitor->trace(m_viewportDependentMediaQueryResults);
+  visitor->trace(m_deviceDependentMediaQueryResults);
 }
 
 }  // namespace blink

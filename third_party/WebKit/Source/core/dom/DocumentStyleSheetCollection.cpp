@@ -29,6 +29,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/ProcessingInstruction.h"
@@ -128,6 +129,24 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(
 
   collection->swap(*this);
   collection->dispose();
+}
+
+void DocumentStyleSheetCollection::collectViewportRules(
+    ViewportStyleResolver& viewportResolver) {
+  for (Node* node : m_styleSheetCandidateNodes) {
+    StyleSheetCandidate candidate(*node);
+
+    if (candidate.isImport())
+      continue;
+    StyleSheet* sheet = candidate.sheet();
+    if (!sheet)
+      continue;
+    if (!candidate.canBeActivated(
+            document().styleEngine().preferredStylesheetSetName()))
+      continue;
+    viewportResolver.collectViewportRulesFromAuthorSheet(
+        *toCSSStyleSheet(sheet));
+  }
 }
 
 }  // namespace blink
