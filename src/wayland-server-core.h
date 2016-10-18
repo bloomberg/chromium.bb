@@ -28,6 +28,7 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "wayland-util.h"
 #include "wayland-version.h"
 
@@ -167,6 +168,30 @@ wl_global_create(struct wl_display *display,
 
 void
 wl_global_destroy(struct wl_global *global);
+
+/** A filter function for wl_global objects
+ *
+ * \param client The client object
+ * \param global The global object to show or hide
+ * \param data   The user data pointer
+ *
+ * A filter function enables the server to decide which globals to
+ * advertise to each client.
+ *
+ * When a wl_global filter is set, the given callback funtion will be
+ * called during wl_global advertisment and binding.
+ *
+ * This function should return true if the global object should be made
+ * visible to the client or false otherwise.
+ */
+typedef bool (*wl_display_global_filter_func_t)(const struct wl_client *client,
+						const struct wl_global *global,
+						void *data);
+
+void
+wl_display_set_global_filter(struct wl_display *display,
+			     wl_display_global_filter_func_t filter,
+			     void *data);
 
 struct wl_client *
 wl_client_create(struct wl_display *display, int fd);

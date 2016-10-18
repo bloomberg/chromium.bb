@@ -101,6 +101,9 @@ struct wl_display {
 	struct wl_signal create_client_signal;
 
 	struct wl_array additional_shm_formats;
+
+	wl_display_global_filter_func_t global_filter;
+	void *global_filter_data;
 };
 
 struct wl_global {
@@ -769,6 +772,21 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
+/* Check if a global filter is registered and use it if any.
+ *
+ * If no wl_global filter has been registered, this funtion will
+ * return true, allowing the wl_global to be visible to the wl_client
+ */
+static bool
+wl_global_is_visible(const struct wl_client *client,
+	      const struct wl_global *global)
+{
+	struct wl_display *display = client->display;
+
+	return (display->global_filter == NULL ||
+		display->global_filter(client, global, display->global_filter_data));
+}
+
 static void
 registry_bind(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t name,
@@ -795,6 +813,10 @@ registry_bind(struct wl_client *client,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid version for global %s (%d): have %d, wanted %d",
 				       interface, name, global->version, version);
+	else if (!wl_global_is_visible(client, global))
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid global %s (%d)", interface, name);
 	else
 		global->bind(client, global->data, version, id);
 }
@@ -850,11 +872,12 @@ display_get_registry(struct wl_client *client,
 		       &registry_resource->link);
 
 	wl_list_for_each(global, &display->global_list, link)
-		wl_resource_post_event(registry_resource,
-				       WL_REGISTRY_GLOBAL,
-				       global->name,
-				       global->interface->name,
-				       global->version);
+		if (wl_global_is_visible(client, global))
+			wl_resource_post_event(registry_resource,
+					       WL_REGISTRY_GLOBAL,
+					       global->name,
+					       global->interface->name,
+					       global->version);
 }
 
 static const struct wl_display_interface display_interface = {
@@ -924,6 +947,9 @@ wl_display_create(void)
 
 	display->id = 1;
 	display->serial = 0;
+
+	display->global_filter = NULL;
+	display->global_filter_data = NULL;
 
 	wl_array_init(&display->additional_shm_formats);
 
@@ -997,6 +1023,37 @@ wl_display_destroy(struct wl_display *display)
 	wl_list_remove(&display->protocol_loggers);
 
 	free(display);
+}
+
+/** Set a filter function for global objects
+ *
+ * \param display The Wayland display object.
+ * \param filter  The global filter funtion.
+ * \param data User data to be associated with the global filter.
+ * \return None.
+ *
+ * Set a filter for the wl_display to advertise or hide global objects
+ * to clients.
+ * The set filter will be used during wl_global advertisment to
+ * determine whether a global object should be advertised to a
+ * given client, and during wl_global binding to determine whether
+ * a given client should be allowed to bind to a global.
+ *
+ * Clients that try to bind to a global that was filtered out will
+ * have an error raised.
+ *
+ * Setting the filter NULL will result in all globals being
+ * advertised to all clients. The default is no filter.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT void
+wl_display_set_global_filter(struct wl_display *display,
+			     wl_display_global_filter_func_t filter,
+			     void *data)
+{
+	display->global_filter = filter;
+	display->global_filter_data = data;
 }
 
 WL_EXPORT struct wl_global *
