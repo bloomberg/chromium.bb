@@ -1051,7 +1051,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     AvoidBreaks    // Preferably avoid breaks. If not possible, examine children
                    // to find possible break points.
   };
-  PaginationBreakability getPaginationBreakability() const;
+  virtual PaginationBreakability getPaginationBreakability() const;
 
   LayoutRect localCaretRect(
       InlineBox*,

@@ -259,6 +259,19 @@ bool LayoutTableRow::nodeAtPoint(HitTestResult& result,
   return false;
 }
 
+LayoutBox::PaginationBreakability LayoutTableRow::getPaginationBreakability()
+    const {
+  PaginationBreakability breakability =
+      LayoutTableBoxComponent::getPaginationBreakability();
+  if (breakability == AllowAnyBreaks) {
+    // Even if the row allows us to break inside, we will want to prevent that
+    // if we have a header group that wants to appear at the top of each page.
+    if (const LayoutTableSection* header = table()->header())
+      breakability = header->getPaginationBreakability();
+  }
+  return breakability;
+}
+
 void LayoutTableRow::paint(const PaintInfo& paintInfo,
                            const LayoutPoint& paintOffset) const {
   TableRowPainter(*this).paint(paintInfo, paintOffset);

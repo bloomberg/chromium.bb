@@ -123,6 +123,8 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
                    const LayoutPoint& accumulatedOffset,
                    HitTestAction) override;
 
+  PaginationBreakability getPaginationBreakability() const final;
+
   void computeOverflow();
 
   const char* name() const override { return "LayoutTableRow"; }
