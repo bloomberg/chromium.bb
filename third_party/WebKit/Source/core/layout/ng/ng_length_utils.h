@@ -28,14 +28,14 @@ enum class LengthResolveType {
 
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
-CORE_EXPORT LayoutUnit resolveInlineLength(const NGConstraintSpace&,
+CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            const ComputedStyle&,
                                            const Length&,
                                            LengthResolveType);
 
 // Convert a block-axis length to a layout unit using the given constraint
 // space and content size.
-CORE_EXPORT LayoutUnit resolveBlockLength(const NGConstraintSpace&,
+CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
                                           const ComputedStyle&,
                                           const Length&,
                                           LayoutUnit contentSize,
@@ -44,24 +44,24 @@ CORE_EXPORT LayoutUnit resolveBlockLength(const NGConstraintSpace&,
 // Resolves the given length to a layout unit, constraining it by the min
 // logical width and max logical width properties from the ComputedStyle
 // object.
-CORE_EXPORT LayoutUnit computeInlineSizeForFragment(const NGConstraintSpace&,
+CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(const NGConstraintSpace&,
                                                     const ComputedStyle&);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical height and max logical height properties from the ComputedStyle
 // object.
-CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
+CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
                                                    LayoutUnit contentSize);
 
-CORE_EXPORT NGBoxStrut computeMargins(const NGConstraintSpace&,
+CORE_EXPORT NGBoxStrut ComputeMargins(const NGConstraintSpace&,
                                       const ComputedStyle&,
                                       const NGWritingMode writing_mode,
                                       const NGDirection direction);
 
-CORE_EXPORT NGBoxStrut computeBorders(const ComputedStyle&);
+CORE_EXPORT NGBoxStrut ComputeBorders(const ComputedStyle&);
 
-CORE_EXPORT NGBoxStrut computePadding(const NGConstraintSpace&,
+CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
 
 // Resolves margin: auto in the inline direction after a box has been laid out.

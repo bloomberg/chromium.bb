@@ -41,15 +41,15 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
   switch (state_) {
     case kStateInit: {
       border_and_padding_ =
-          computeBorders(*style_) + computePadding(*constraint_space, *style_);
+          ComputeBorders(*style_) + ComputePadding(*constraint_space, *style_);
 
       LayoutUnit inline_size =
-          computeInlineSizeForFragment(*constraint_space, *style_);
+          ComputeInlineSizeForFragment(*constraint_space, *style_);
       LayoutUnit adjusted_inline_size =
           inline_size - border_and_padding_.InlineSum();
       // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
       // -1?
-      LayoutUnit block_size = computeBlockSizeForFragment(
+      LayoutUnit block_size = ComputeBlockSizeForFragment(
           *constraint_space, *style_, NGSizeIndefinite);
       LayoutUnit adjusted_block_size(block_size);
       // Our calculated block-axis size may be indefinite at this point.
@@ -76,7 +76,7 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
         NGFragment* fragment;
         if (!current_child_->Layout(constraint_space_for_children_, &fragment))
           return false;
-        NGBoxStrut child_margins = computeMargins(
+        NGBoxStrut child_margins = ComputeMargins(
             *constraint_space_for_children_, *current_child_->Style(),
             constraint_space_for_children_->WritingMode(),
             constraint_space_for_children_->Direction());
@@ -108,7 +108,7 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
       content_size_ += border_and_padding_.block_end;
 
       // Recompute the block-axis size now that we know our content size.
-      LayoutUnit block_size = computeBlockSizeForFragment(
+      LayoutUnit block_size = ComputeBlockSizeForFragment(
           *constraint_space, *style_, content_size_);
 
       builder_->SetBlockSize(block_size)
@@ -137,8 +137,8 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
 
   // Calculate borders and padding for the current child.
   NGBoxStrut border_and_padding =
-      computeBorders(*current_child_->Style()) +
-      computePadding(space, *current_child_->Style());
+      ComputeBorders(*current_child_->Style()) +
+      ComputePadding(space, *current_child_->Style());
 
   // Collapse BLOCK-START margins if there is no padding or border between
   // parent (current child) and its first in-flow child.

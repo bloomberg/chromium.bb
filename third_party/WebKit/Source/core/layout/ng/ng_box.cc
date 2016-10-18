@@ -125,7 +125,7 @@ void NGBox::CopyFragmentDataToLayoutBox(
   layout_box_->setWidth(fragment_->Width());
   layout_box_->setHeight(fragment_->Height());
   NGBoxStrut border_and_padding =
-      computeBorders(*Style()) + computePadding(constraint_space, *Style());
+      ComputeBorders(*Style()) + ComputePadding(constraint_space, *Style());
   LayoutUnit intrinsic_logical_height =
       layout_box_->style()->isHorizontalWritingMode()
           ? fragment_->HeightOverflow()

@@ -56,7 +56,7 @@ NGBoxStrut ToLogicalDimensions(const NGPhysicalDimensions& physical_dim,
 
 }  // namespace
 
-LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
+LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraintSpace,
                                const ComputedStyle& style,
                                const Length& length,
                                LengthResolveType type) {
@@ -75,14 +75,14 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   NGBoxStrut border_and_padding;
   if (type != LengthResolveType::MarginBorderPaddingSize) {
     border_and_padding =
-        computeBorders(style) + computePadding(constraintSpace, style);
+        ComputeBorders(style) + ComputePadding(constraintSpace, style);
   }
   LayoutUnit container_size = constraintSpace.ContainerSize().inline_size;
   switch (length.type()) {
     case Auto:
     case FillAvailable: {
       NGBoxStrut margins =
-          computeMargins(constraintSpace, style,
+          ComputeMargins(constraintSpace, style,
                          FromPlatformWritingMode(style.getWritingMode()),
                          FromPlatformDirection(style.direction()));
       return std::max(border_and_padding.InlineSum(),
@@ -115,7 +115,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   }
 }
 
-LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
+LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraintSpace,
                               const ComputedStyle& style,
                               const Length& length,
                               LayoutUnit contentSize,
@@ -137,13 +137,13 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
   NGBoxStrut border_and_padding;
   if (type != LengthResolveType::MarginBorderPaddingSize) {
     border_and_padding =
-        computeBorders(style) + computePadding(constraintSpace, style);
+        ComputeBorders(style) + ComputePadding(constraintSpace, style);
   }
   LayoutUnit container_size = constraintSpace.ContainerSize().block_size;
   switch (length.type()) {
     case FillAvailable: {
       NGBoxStrut margins =
-          computeMargins(constraintSpace, style,
+          ComputeMargins(constraintSpace, style,
                          FromPlatformWritingMode(style.getWritingMode()),
                          FromPlatformDirection(style.direction()));
       return std::max(border_and_padding.BlockSum(),
@@ -180,38 +180,38 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
   }
 }
 
-LayoutUnit computeInlineSizeForFragment(
+LayoutUnit ComputeInlineSizeForFragment(
     const NGConstraintSpace& constraintSpace,
     const ComputedStyle& style) {
   if (constraintSpace.FixedInlineSize())
     return constraintSpace.ContainerSize().inline_size;
 
   LayoutUnit extent =
-      resolveInlineLength(constraintSpace, style, style.logicalWidth(),
+      ResolveInlineLength(constraintSpace, style, style.logicalWidth(),
                           LengthResolveType::ContentSize);
 
   Length maxLength = style.logicalMaxWidth();
   if (!maxLength.isMaxSizeNone()) {
-    LayoutUnit max = resolveInlineLength(constraintSpace, style, maxLength,
+    LayoutUnit max = ResolveInlineLength(constraintSpace, style, maxLength,
                                          LengthResolveType::MaxSize);
     extent = std::min(extent, max);
   }
 
   LayoutUnit min =
-      resolveInlineLength(constraintSpace, style, style.logicalMinWidth(),
+      ResolveInlineLength(constraintSpace, style, style.logicalMinWidth(),
                           LengthResolveType::MinSize);
   extent = std::max(extent, min);
   return extent;
 }
 
-LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
+LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
                                        const ComputedStyle& style,
                                        LayoutUnit contentSize) {
   if (constraintSpace.FixedBlockSize())
     return constraintSpace.ContainerSize().block_size;
 
   LayoutUnit extent =
-      resolveBlockLength(constraintSpace, style, style.logicalHeight(),
+      ResolveBlockLength(constraintSpace, style, style.logicalHeight(),
                          contentSize, LengthResolveType::ContentSize);
   if (extent == NGSizeIndefinite) {
     DCHECK_EQ(contentSize, NGSizeIndefinite);
@@ -221,19 +221,19 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
   Length maxLength = style.logicalMaxHeight();
   if (!maxLength.isMaxSizeNone()) {
     LayoutUnit max =
-        resolveBlockLength(constraintSpace, style, maxLength, contentSize,
+        ResolveBlockLength(constraintSpace, style, maxLength, contentSize,
                            LengthResolveType::MaxSize);
     extent = std::min(extent, max);
   }
 
   LayoutUnit min =
-      resolveBlockLength(constraintSpace, style, style.logicalMinHeight(),
+      ResolveBlockLength(constraintSpace, style, style.logicalMinHeight(),
                          contentSize, LengthResolveType::MinSize);
   extent = std::max(extent, min);
   return extent;
 }
 
-NGBoxStrut computeMargins(const NGConstraintSpace& constraintSpace,
+NGBoxStrut ComputeMargins(const NGConstraintSpace& constraintSpace,
                           const ComputedStyle& style,
                           const NGWritingMode writing_mode,
                           const NGDirection direction) {
@@ -241,21 +241,21 @@ NGBoxStrut computeMargins(const NGConstraintSpace& constraintSpace,
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
   NGPhysicalDimensions physical_dim;
   physical_dim.left =
-      resolveInlineLength(constraintSpace, style, style.marginLeft(),
+      ResolveInlineLength(constraintSpace, style, style.marginLeft(),
                           LengthResolveType::MarginBorderPaddingSize);
   physical_dim.right =
-      resolveInlineLength(constraintSpace, style, style.marginRight(),
+      ResolveInlineLength(constraintSpace, style, style.marginRight(),
                           LengthResolveType::MarginBorderPaddingSize);
   physical_dim.top =
-      resolveInlineLength(constraintSpace, style, style.marginTop(),
+      ResolveInlineLength(constraintSpace, style, style.marginTop(),
                           LengthResolveType::MarginBorderPaddingSize);
   physical_dim.bottom =
-      resolveInlineLength(constraintSpace, style, style.marginBottom(),
+      ResolveInlineLength(constraintSpace, style, style.marginBottom(),
                           LengthResolveType::MarginBorderPaddingSize);
   return ToLogicalDimensions(physical_dim, writing_mode, direction);
 }
 
-NGBoxStrut computeBorders(const ComputedStyle& style) {
+NGBoxStrut ComputeBorders(const ComputedStyle& style) {
   NGBoxStrut borders;
   borders.inline_start = LayoutUnit(style.borderStartWidth());
   borders.inline_end = LayoutUnit(style.borderEndWidth());
@@ -264,22 +264,22 @@ NGBoxStrut computeBorders(const ComputedStyle& style) {
   return borders;
 }
 
-NGBoxStrut computePadding(const NGConstraintSpace& constraintSpace,
+NGBoxStrut ComputePadding(const NGConstraintSpace& constraintSpace,
                           const ComputedStyle& style) {
   // Padding always gets computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
   NGBoxStrut padding;
   padding.inline_start =
-      resolveInlineLength(constraintSpace, style, style.paddingStart(),
+      ResolveInlineLength(constraintSpace, style, style.paddingStart(),
                           LengthResolveType::MarginBorderPaddingSize);
   padding.inline_end =
-      resolveInlineLength(constraintSpace, style, style.paddingEnd(),
+      ResolveInlineLength(constraintSpace, style, style.paddingEnd(),
                           LengthResolveType::MarginBorderPaddingSize);
   padding.block_start =
-      resolveInlineLength(constraintSpace, style, style.paddingBefore(),
+      ResolveInlineLength(constraintSpace, style, style.paddingBefore(),
                           LengthResolveType::MarginBorderPaddingSize);
   padding.block_end =
-      resolveInlineLength(constraintSpace, style, style.paddingAfter(),
+      ResolveInlineLength(constraintSpace, style, style.paddingAfter(),
                           LengthResolveType::MarginBorderPaddingSize);
   return padding;
 }
