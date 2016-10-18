@@ -43,6 +43,8 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
     scoped_refptr<Context> context_;
     mojo::Watcher handle_watcher_;
     Client* client_;
+
+    DISALLOW_COPY_AND_ASSIGN(ReaderImpl);
   };
   std::unique_ptr<Reader> obtainReader(Client* client) override;
 
@@ -53,6 +55,8 @@ class CONTENT_EXPORT WebDataConsumerHandleImpl final
   const char* debugName() const override;
 
   scoped_refptr<Context> context_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDataConsumerHandleImpl);
 };
 
 }  // namespace content
