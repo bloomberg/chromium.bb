@@ -347,6 +347,7 @@ TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret) {
   // should be Position(HTML, 0).
   EXPECT_EQ(Position(document().documentElement(), 1), selection().start());
   EXPECT_EQ(selection().start(), caretPosition().position());
+  document().updateStyleAndLayout();
   selection().updateIfNeeded();
 
   // TODO(yosin): Once lazy canonicalization implemented, selection.start

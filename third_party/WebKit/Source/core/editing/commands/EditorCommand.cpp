@@ -1826,6 +1826,8 @@ static bool enabled(LocalFrame&, Event*, EditorCommandSource) {
 static bool enabledVisibleSelection(LocalFrame& frame,
                                     Event* event,
                                     EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // The term "visible" here includes a caret in editable text or a range in any
   // text.
   const VisibleSelection& selection = frame.editor().selectionForCommand(event);
@@ -1836,6 +1838,8 @@ static bool enabledVisibleSelection(LocalFrame& frame,
 static bool enabledVisibleSelectionAndMark(LocalFrame& frame,
                                            Event* event,
                                            EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   const VisibleSelection& selection = frame.editor().selectionForCommand(event);
   return ((selection.isCaret() && selection.isContentEditable()) ||
           selection.isRange()) &&
@@ -1845,6 +1849,8 @@ static bool enabledVisibleSelectionAndMark(LocalFrame& frame,
 static bool enableCaretInEditableText(LocalFrame& frame,
                                       Event* event,
                                       EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   const VisibleSelection& selection = frame.editor().selectionForCommand(event);
   return selection.isCaret() && selection.isContentEditable();
 }
@@ -1864,6 +1870,8 @@ static bool enabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
 static bool enabledInEditableText(LocalFrame& frame,
                                   Event* event,
                                   EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
@@ -1888,6 +1896,8 @@ static bool enabledDelete(LocalFrame& frame,
 static bool enabledInRichlyEditableText(LocalFrame& frame,
                                         Event*,
                                         EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
@@ -1907,6 +1917,8 @@ static bool enabledPaste(LocalFrame& frame,
 static bool enabledRangeInEditableText(LocalFrame& frame,
                                        Event*,
                                        EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
@@ -1916,6 +1928,8 @@ static bool enabledRangeInEditableText(LocalFrame& frame,
 static bool enabledRangeInRichlyEditableText(LocalFrame& frame,
                                              Event*,
                                              EditorCommandSource) {
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // We should update selection to canonicalize with current layout and style,
   // before accessing |FrameSelection::selection()|.
   frame.selection().updateIfNeeded();
