@@ -217,8 +217,6 @@ void SchedulerWorker::WakeUp() {
 }
 
 void SchedulerWorker::JoinForTesting() {
-  // It's not possible to have concurrent calls to this method because a DCHECK
-  // fails when AtomicFlag::Set() calls aren't sequenced.
   DCHECK(!should_exit_for_testing_.IsSet());
   should_exit_for_testing_.Set();
 
