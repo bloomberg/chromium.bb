@@ -218,7 +218,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       hung_renderer_delay_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       hang_monitor_reason_(
-          RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_UNKNOWN),
+          RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN),
+      hang_monitor_event_type_(blink::WebInputEvent::Undefined),
+      last_event_type_(blink::WebInputEvent::Undefined),
       new_content_rendering_delay_(
           base::TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
       weak_factory_(this) {
@@ -561,7 +563,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   if (in_flight_event_count_) {
     RestartHangMonitorTimeout();
     hang_monitor_reason_ =
-        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
+        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
   }
 
   // Always repaint on restore.
@@ -903,9 +905,13 @@ bool RenderWidgetHostImpl::ScheduleComposite() {
 
 void RenderWidgetHostImpl::StartHangMonitorTimeout(
     base::TimeDelta delay,
-    RenderWidgetHostDelegate::RendererUnresponsiveType hang_monitor_reason) {
+    blink::WebInputEvent::Type event_type,
+    RendererUnresponsiveType hang_monitor_reason) {
   if (!hang_monitor_timeout_)
     return;
+  if (!hang_monitor_timeout_->IsRunning())
+    hang_monitor_event_type_ = event_type;
+  last_event_type_ = event_type;
   hang_monitor_timeout_->Start(delay);
   hang_monitor_reason_ = hang_monitor_reason;
 }
@@ -924,7 +930,7 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   if (hang_monitor_timeout_) {
     hang_monitor_timeout_->Stop();
     hang_monitor_reason_ =
-        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_UNKNOWN;
+        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN;
   }
   RendererIsResponsive();
 }
@@ -1498,10 +1504,9 @@ void RenderWidgetHostImpl::RendererIsUnresponsive() {
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;
-  RenderWidgetHostDelegate::RendererUnresponsiveType reason =
-      hang_monitor_reason_;
+  RendererUnresponsiveType reason = hang_monitor_reason_;
   hang_monitor_reason_ =
-      RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_UNKNOWN;
+      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_UNKNOWN;
 
   if (delegate_)
     delegate_->RendererUnresponsive(this, reason);
@@ -1893,12 +1898,13 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
                : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostImpl::IncrementInFlightEventCount() {
+void RenderWidgetHostImpl::IncrementInFlightEventCount(
+    blink::WebInputEvent::Type event_type) {
   increment_in_flight_event_count();
   if (!is_hidden_) {
     StartHangMonitorTimeout(
-        hung_renderer_delay_,
-        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS);
+        hung_renderer_delay_, event_type,
+        RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS);
   }
 }
 
@@ -1910,8 +1916,9 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount() {
     // The renderer is responsive, but there are in-flight events to wait for.
     if (!is_hidden_) {
       RestartHangMonitorTimeout();
+      hang_monitor_event_type_ = blink::WebInputEvent::Undefined;
       hang_monitor_reason_ =
-          RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
+          RendererUnresponsiveType::RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS;
     }
   }
 }

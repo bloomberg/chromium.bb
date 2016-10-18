@@ -43,7 +43,8 @@ void TabDialogsCocoa::ShowCollectedCookies() {
   new CollectedCookiesMac(web_contents_);
 }
 
-void TabDialogsCocoa::ShowHungRendererDialog() {
+void TabDialogsCocoa::ShowHungRendererDialog(
+    const content::WebContentsUnresponsiveState& unresponsive_state) {
   [HungRendererController showForWebContents:web_contents_];
 }
 

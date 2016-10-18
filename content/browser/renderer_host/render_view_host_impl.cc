@@ -572,7 +572,8 @@ void RenderViewHostImpl::ClosePage() {
   is_waiting_for_close_ack_ = true;
   GetWidget()->StartHangMonitorTimeout(
       TimeDelta::FromMilliseconds(kUnloadTimeoutMS),
-      RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_CLOSE_PAGE);
+      blink::WebInputEvent::Undefined,
+      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_CLOSE_PAGE);
 
   bool is_javascript_dialog_showing = delegate_->IsJavaScriptDialogShowing();
 

@@ -40,8 +40,9 @@ void TabDialogsViews::ShowCollectedCookies() {
   new CollectedCookiesViews(web_contents_);
 }
 
-void TabDialogsViews::ShowHungRendererDialog() {
-  HungRendererDialogView::Show(web_contents_);
+void TabDialogsViews::ShowHungRendererDialog(
+    const content::WebContentsUnresponsiveState& unresponsive_state) {
+  HungRendererDialogView::Show(web_contents_, unresponsive_state);
 }
 
 void TabDialogsViews::HideHungRendererDialog() {

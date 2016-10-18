@@ -292,9 +292,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
-  void StartHangMonitorTimeout(
-      base::TimeDelta delay,
-      RenderWidgetHostDelegate::RendererUnresponsiveType hang_monitor_reason);
+  void StartHangMonitorTimeout(base::TimeDelta delay,
+                               blink::WebInputEvent::Type event_type,
+                               RendererUnresponsiveType hang_monitor_reason);
 
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
@@ -526,6 +526,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     return --in_flight_event_count_;
   }
 
+  size_t in_flight_event_count() const { return in_flight_event_count_; }
+  blink::WebInputEvent::Type hang_monitor_event_type() const {
+    return hang_monitor_event_type_;
+  }
+  blink::WebInputEvent::Type last_event_type() const {
+    return last_event_type_;
+  }
+
   bool renderer_initialized() const { return renderer_initialized_; }
 
   bool needs_begin_frames() const { return needs_begin_frames_; }
@@ -616,7 +624,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& event,
       const ui::LatencyInfo& latency_info) override;
-  void IncrementInFlightEventCount() override;
+  void IncrementInFlightEventCount(
+      blink::WebInputEvent::Type event_type) override;
   void DecrementInFlightEventCount() override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidFlush() override;
@@ -834,7 +843,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Stores the reason the hang_monitor_timeout_ has been started. Used to
   // report histograms if the renderer is hung.
-  RenderWidgetHostDelegate::RendererUnresponsiveType hang_monitor_reason_;
+  RendererUnresponsiveType hang_monitor_reason_;
+
+  // Type of the last blocking event that started the hang monitor.
+  blink::WebInputEvent::Type hang_monitor_event_type_;
+
+  // Type of the last blocking event sent to the renderer.
+  blink::WebInputEvent::Type last_event_type_;
 
   // This value indicates how long to wait for a new compositor frame from a
   // renderer process before clearing any previously displayed content.

@@ -108,6 +108,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_unresponsive_state.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -4678,7 +4679,7 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 
 void WebContentsImpl::RendererUnresponsive(
     RenderWidgetHostImpl* render_widget_host,
-    RenderWidgetHostDelegate::RendererUnresponsiveType type) {
+    RendererUnresponsiveType type) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     OnRendererUnresponsive(render_widget_host));
 
@@ -4698,7 +4699,7 @@ void WebContentsImpl::RendererUnresponsive(
   // Record histograms about the type of renderer hang.
   UMA_HISTOGRAM_ENUMERATION(
       "ChildProcess.HangRendererType", type,
-      RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_MAX);
+      RendererUnresponsiveType::RENDERER_UNRESPONSIVE_MAX);
 
   // We might have been waiting for both beforeunload and unload ACK.
   // Check if tab is to be unloaded first.
@@ -4728,8 +4729,16 @@ void WebContentsImpl::RendererUnresponsive(
   if (!GetRenderViewHost() || !GetRenderViewHost()->IsRenderViewLive())
     return;
 
-  if (delegate_)
-    delegate_->RendererUnresponsive(this);
+  if (delegate_) {
+    WebContentsUnresponsiveState unresponsive_state;
+    unresponsive_state.reason = type;
+    unresponsive_state.outstanding_ack_count =
+        render_widget_host->in_flight_event_count();
+    unresponsive_state.outstanding_event_type =
+        render_widget_host->hang_monitor_event_type();
+    unresponsive_state.last_event_type = render_widget_host->last_event_type();
+    delegate_->RendererUnresponsive(this, unresponsive_state);
+  }
 }
 
 void WebContentsImpl::RendererResponsive(

@@ -17,7 +17,8 @@ class TabDialogsViews : public TabDialogs {
   // TabDialogs:
   gfx::NativeView GetDialogParentView() const override;
   void ShowCollectedCookies() override;
-  void ShowHungRendererDialog() override;
+  void ShowHungRendererDialog(
+      const content::WebContentsUnresponsiveState& unresponsive_state) override;
   void HideHungRendererDialog() override;
   void ShowProfileSigninConfirmation(
       Browser* browser,

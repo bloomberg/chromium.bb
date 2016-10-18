@@ -46,6 +46,11 @@ constexpr char kGPUPixelShaderVersion[] = "gpu-psver";
 constexpr char kGPUVertexShaderVersion[] = "gpu-vsver";
 
 constexpr char kHungAudioThreadDetails[] = "hung-audio-thread-details";
+constexpr char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
+constexpr char kHungRendererOutstandingEventType[] =
+    "hung-outstanding-event-type";
+constexpr char kHungRendererLastEventType[] = "hung-last-event-type";
+constexpr char kHungRendererReason[] = "hung-reason";
 
 constexpr char kViewCount[] = "view-count";
 constexpr char kZeroEncodeDetails[] = "zero-encode-details";
@@ -99,6 +104,10 @@ size_t RegisterCrashKeysHelper() {
       {"total-discardable-memory-allocated", kSmallSize},
       {kBug464926CrashKey, kSmallSize},
       {kViewCount, kSmallSize},
+      {kHungRendererOutstandingAckCount, kSmallSize},
+      {kHungRendererOutstandingEventType, kSmallSize},
+      {kHungRendererLastEventType, kSmallSize},
+      {kHungRendererReason, kSmallSize},
 
       // media/:
       {kHungAudioThreadDetails, kSmallSize},

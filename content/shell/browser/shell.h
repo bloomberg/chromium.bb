@@ -158,7 +158,9 @@ class Shell : public WebContentsDelegate,
                            const base::string16& message,
                            int32_t line_no,
                            const base::string16& source_id) override;
-  void RendererUnresponsive(WebContents* source) override;
+  void RendererUnresponsive(
+      WebContents* source,
+      const WebContentsUnresponsiveState& unresponsive_state) override;
   void ActivateContents(WebContents* contents) override;
 
   static gfx::Size GetShellDefaultSize();

@@ -33,7 +33,7 @@ class CONTENT_EXPORT InputRouterClient {
       const ui::LatencyInfo& latency_info) = 0;
 
   // Called each time a WebInputEvent IPC is sent.
-  virtual void IncrementInFlightEventCount() = 0;
+  virtual void IncrementInFlightEventCount(blink::WebInputEvent::Type type) = 0;
 
   // Called each time a WebInputEvent ACK IPC is received.
   virtual void DecrementInFlightEventCount() = 0;

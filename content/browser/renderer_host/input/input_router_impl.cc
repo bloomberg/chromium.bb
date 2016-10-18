@@ -433,7 +433,7 @@ bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
     // renderer. Consequently, such event types should not affect event time
     // or in-flight event count metrics.
     if (dispatch_type == InputEventDispatchType::DISPATCH_TYPE_BLOCKING)
-      client_->IncrementInFlightEventCount();
+      client_->IncrementInFlightEventCount(input_event.type);
     return true;
   }
   return false;

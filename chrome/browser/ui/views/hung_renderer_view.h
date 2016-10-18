@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_unresponsive_state.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_grouper.h"
@@ -107,13 +109,17 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static HungRendererDialogView* GetInstance();
 
   // Shows or hides the hung renderer dialog for the given WebContents.
-  static void Show(content::WebContents* contents);
+  static void Show(
+      content::WebContents* contents,
+      const content::WebContentsUnresponsiveState& unresponsive_state);
   static void Hide(content::WebContents* contents);
 
   // Returns true if the frame is in the foreground.
   static bool IsFrameActive(content::WebContents* contents);
 
-  virtual void ShowForWebContents(content::WebContents* contents);
+  virtual void ShowForWebContents(
+      content::WebContents* contents,
+      const content::WebContentsUnresponsiveState& unresponsive_state);
   virtual void EndForWebContents(content::WebContents* contents);
 
   // views::DialogDelegateView overrides:
@@ -167,6 +173,10 @@ class HungRendererDialogView : public views::DialogDelegateView,
   bool initialized_;
 
   bool kill_button_clicked_;
+
+  // A copy of the unresponsive state which ShowForWebContents was
+  // called with.
+  content::WebContentsUnresponsiveState unresponsive_state_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogView);
 };

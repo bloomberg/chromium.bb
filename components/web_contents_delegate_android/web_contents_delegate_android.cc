@@ -34,6 +34,7 @@ using content::ColorChooser;
 using content::RenderWidgetHostView;
 using content::WebContents;
 using content::WebContentsDelegate;
+using content::WebContentsUnresponsiveState;
 
 namespace web_contents_delegate_android {
 
@@ -163,7 +164,9 @@ void WebContentsDelegateAndroid::LoadProgressChanged(WebContents* source,
   Java_WebContentsDelegateAndroid_notifyLoadProgressChanged(env, obj, progress);
 }
 
-void WebContentsDelegateAndroid::RendererUnresponsive(WebContents* source) {
+void WebContentsDelegateAndroid::RendererUnresponsive(
+    WebContents* source,
+    const WebContentsUnresponsiveState& unresponsive_state) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

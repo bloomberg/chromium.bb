@@ -85,6 +85,12 @@ extern const char kGPURenderer[];
 
 #if defined(OS_WIN)
 extern const char kHungAudioThreadDetails[];
+
+// Hung renderer crash reports are only sent on Windows.
+extern const char kHungRendererOutstandingAckCount[];
+extern const char kHungRendererOutstandingEventType[];
+extern const char kHungRendererLastEventType[];
+extern const char kHungRendererReason[];
 #endif
 
 // The user's printers, up to kPrinterInfoCount. Should be set with

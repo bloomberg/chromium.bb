@@ -50,6 +50,11 @@ const char kGPURenderer[] = "gpu-gl-renderer";
 
 #if defined(OS_WIN)
 const char kHungAudioThreadDetails[] = "hung-audio-thread-details";
+
+const char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
+const char kHungRendererOutstandingEventType[] = "hung-outstanding-event-type";
+const char kHungRendererLastEventType[] = "hung-last-event-type";
+const char kHungRendererReason[] = "hung-reason";
 #endif
 
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
@@ -126,6 +131,12 @@ size_t RegisterChromeCrashKeys() {
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
     { "total-discardable-memory-allocated", kSmallSize },
+#if defined(OS_WIN)
+    { kHungRendererOutstandingAckCount, kSmallSize },
+    { kHungRendererOutstandingEventType, kSmallSize },
+    { kHungRendererLastEventType, kSmallSize },
+    { kHungRendererReason, kSmallSize },
+#endif
 #if defined(OS_CHROMEOS)
     { kNumberOfUsers, kSmallSize },
 #endif
