@@ -17,15 +17,11 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -45,30 +41,8 @@ namespace ntp_tiles {
 
 namespace {
 
-// Identifiers for the various tile sources.
-const char kHistogramClientName[] = "client";
-const char kHistogramServerName[] = "server";
-const char kHistogramPopularName[] = "popular";
-const char kHistogramWhitelistName[] = "whitelist";
-
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Log an event for a given |histogram| at a given element |position|. This
-// routine exists because regular histogram macros are cached thus can't be used
-// if the name of the histogram will change at a given call site.
-void LogHistogramEvent(const std::string& histogram,
-                       int position,
-                       int num_sites) {
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      histogram,
-      1,
-      num_sites,
-      num_sites + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  if (counter)
-    counter->Add(position);
-}
 
 bool ShouldShowPopularSites() {
   // Note: It's important to query the field trial state first, to ensure that
@@ -104,21 +78,6 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
   return url1.host() == url2.host() && url1.path() == url2.path();
 }
 
-std::string GetSourceHistogramName(NTPTileSource source) {
-  switch (source) {
-    case NTPTileSource::TOP_SITES:
-      return kHistogramClientName;
-    case NTPTileSource::POPULAR:
-      return kHistogramPopularName;
-    case NTPTileSource::WHITELIST:
-      return kHistogramWhitelistName;
-    case NTPTileSource::SUGGESTIONS_SERVICE:
-      return kHistogramServerName;
-  }
-  NOTREACHED();
-  return std::string();
-}
-
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(PrefService* prefs,
@@ -135,7 +94,7 @@ MostVisitedSites::MostVisitedSites(PrefService* prefs,
       num_sites_(0),
       waiting_for_most_visited_sites_(true),
       waiting_for_popular_sites_(true),
-      recorded_uma_(false),
+      recorded_impressions_(false),
       top_sites_observer_(this),
       mv_source_(NTPTileSource::SUGGESTIONS_SERVICE),
       weak_ptr_factory_(this) {
@@ -205,48 +164,6 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
     else
       suggestions_service_->UndoBlacklistURL(url);
   }
-}
-
-void MostVisitedSites::RecordTileTypeMetrics(
-    const std::vector<MostVisitedTileType>& tile_types,
-    const std::vector<NTPTileSource>& sources) {
-  int counts_per_type[NUM_TILE_TYPES] = {0};
-  for (size_t i = 0; i < tile_types.size(); ++i) {
-    MostVisitedTileType tile_type = tile_types[i];
-    ++counts_per_type[tile_type];
-
-    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type, NUM_TILE_TYPES);
-
-    std::string histogram = base::StringPrintf(
-        "NewTabPage.TileType.%s",
-        GetSourceHistogramName(sources[i]).c_str());
-    LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
-  }
-
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
-                              counts_per_type[ICON_REAL]);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
-                              counts_per_type[ICON_COLOR]);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
-                              counts_per_type[ICON_DEFAULT]);
-}
-
-void MostVisitedSites::RecordOpenedMostVisitedItem(
-    int index,
-    MostVisitedTileType tile_type,
-    NTPTileSource source) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, num_sites_);
-
-  std::string histogram = base::StringPrintf(
-      "NewTabPage.MostVisited.%s", GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(histogram, index, num_sites_);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.TileTypeClicked", tile_type, NUM_TILE_TYPES);
-
-  histogram = base::StringPrintf("NewTabPage.TileTypeClicked.%s",
-                                 GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
 void MostVisitedSites::OnBlockedSitesChanged() {
@@ -474,9 +391,9 @@ NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   if (!waiting_for_most_visited_sites_ && !waiting_for_popular_sites_ &&
-      !recorded_uma_) {
-    RecordImpressionUMAMetrics();
-    recorded_uma_ = true;
+      !recorded_impressions_) {
+    metrics::RecordImpressions(current_tiles_);
+    recorded_impressions_ = true;
   }
 
   if (!observer_)
@@ -499,21 +416,6 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
 
   // Re-build the tile list. Once done, this will notify the observer.
   BuildCurrentTiles();
-}
-
-void MostVisitedSites::RecordImpressionUMAMetrics() {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles",
-                              current_tiles_.size());
-
-  for (size_t i = 0; i < current_tiles_.size(); i++) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "NewTabPage.SuggestionsImpression", static_cast<int>(i), num_sites_);
-
-    std::string histogram = base::StringPrintf(
-        "NewTabPage.SuggestionsImpression.%s",
-        GetSourceHistogramName(current_tiles_[i].source).c_str());
-    LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
-  }
 }
 
 void MostVisitedSites::TopSitesLoaded(TopSites* top_sites) {}

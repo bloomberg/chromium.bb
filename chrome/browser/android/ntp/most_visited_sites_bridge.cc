@@ -25,6 +25,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +42,7 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaIntArray;
 using content::BrowserThread;
+using ntp_tiles::metrics::MostVisitedTileType;
 using ntp_tiles::MostVisitedSites;
 using ntp_tiles::MostVisitedSitesSupervisor;
 using ntp_tiles::NTPTileSource;
@@ -209,10 +211,9 @@ void MostVisitedSitesBridge::RecordTileTypeMetrics(
     const JavaParamRef<jintArray>& jsources) {
   std::vector<int> int_tile_types;
   base::android::JavaIntArrayToIntVector(env, jtile_types, &int_tile_types);
-  std::vector<MostVisitedSites::MostVisitedTileType> tile_types;
+  std::vector<MostVisitedTileType> tile_types;
   for (int source : int_tile_types) {
-    tile_types.push_back(
-        static_cast<MostVisitedSites::MostVisitedTileType>(source));
+    tile_types.push_back(static_cast<MostVisitedTileType>(source));
   }
 
   std::vector<int> int_sources;
@@ -222,7 +223,7 @@ void MostVisitedSitesBridge::RecordTileTypeMetrics(
     sources.push_back(static_cast<NTPTileSource>(source));
   }
 
-  most_visited_.RecordTileTypeMetrics(tile_types, sources);
+  ntp_tiles::metrics::RecordImpressionTileTypes(tile_types, sources);
 }
 
 void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
@@ -231,9 +232,9 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
     jint index,
     jint tile_type,
     jint source) {
-  most_visited_.RecordOpenedMostVisitedItem(
-      index, static_cast<MostVisitedSites::MostVisitedTileType>(tile_type),
-      static_cast<NTPTileSource>(source));
+  ntp_tiles::metrics::RecordClick(index,
+                                  static_cast<MostVisitedTileType>(tile_type),
+                                  static_cast<NTPTileSource>(source));
 }
 
 // static

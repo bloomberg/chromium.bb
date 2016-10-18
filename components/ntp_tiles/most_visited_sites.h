@@ -82,25 +82,6 @@ class MostVisitedSites : public history::TopSitesObserver,
  public:
   using PopularSitesVector = std::vector<PopularSites::Site>;
 
-  // The visual type of a most visited tile.
-  //
-  // These values must stay in sync with the MostVisitedTileType enum
-  // in histograms.xml.
-  //
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp
-  enum MostVisitedTileType {
-    // The icon or thumbnail hasn't loaded yet.
-    NONE,
-    // The item displays a site's actual favicon or touch icon.
-    ICON_REAL,
-    // The item displays a color derived from the site's favicon or touch icon.
-    ICON_COLOR,
-    // The item displays a default gray box in place of an icon.
-    ICON_DEFAULT,
-    NUM_TILE_TYPES,
-  };
-
   // The observer to be notified when the list of most visited sites changes.
   class Observer {
    public:
@@ -129,11 +110,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   void SetMostVisitedURLsObserver(Observer* observer, int num_sites);
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
-  void RecordTileTypeMetrics(const std::vector<MostVisitedTileType>& tile_types,
-                             const std::vector<NTPTileSource>& sources);
-  void RecordOpenedMostVisitedItem(int index,
-                                   MostVisitedTileType tile_type,
-                                   NTPTileSource source);
 
   // MostVisitedSitesSupervisor::Observer implementation.
   void OnBlockedSitesChanged() override;
@@ -186,9 +162,6 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   void OnPopularSitesAvailable(bool success);
 
-  // Records UMA histogram metrics related to the number of impressions.
-  void RecordImpressionUMAMetrics();
-
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;
   void TopSitesChanged(history::TopSites* top_sites,
@@ -213,9 +186,9 @@ class MostVisitedSites : public history::TopSitesObserver,
   // to false if popular sites are disabled, or are not required.
   bool waiting_for_popular_sites_;
 
-  // True if we have recorded one-shot UMA metrics such as impressions. They are
-  // recorded once both the previous flags are true.
-  bool recorded_uma_;
+  // True if we have recorded impression metrics. They are recorded once both
+  // the previous flags are false.
+  bool recorded_impressions_;
 
   std::unique_ptr<
       suggestions::SuggestionsService::ResponseCallbackList::Subscription>

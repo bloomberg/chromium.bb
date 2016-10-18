@@ -10,6 +10,8 @@ static_library("ntp_tiles") {
   sources = [
     "constants.cc",
     "constants.h",
+    "metrics.cc",
+    "metrics.h",
     "most_visited_sites.cc",
     "most_visited_sites.h",
     "ntp_tile.cc",
@@ -57,7 +59,7 @@ source_set("unit_tests") {
 if (is_android) {
   java_cpp_enum("ntp_tiles_enums_java") {
     sources = [
-      "most_visited_sites.h",
+      "metrics.h",
       "ntp_tile.h",
     ]
   }
