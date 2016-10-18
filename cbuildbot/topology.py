@@ -16,6 +16,7 @@ import collections
 
 BUILDBUCKET_HOST_KEY = '/buildbucket/host'
 BUILDBUCKET_TEST_HOST_KEY = '/buildbucket/test/host'
+DATASTORE_WRITER_CREDS_KEY = '/datastore/creds_file'
 STATSD_HOST_KEY = '/statsd/host'
 STATSD_PORT_KEY = '/statsd/port'
 ELASTIC_SEARCH_HOST_KEY = '/statsd/es_host'
