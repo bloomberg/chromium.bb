@@ -124,7 +124,6 @@ extern const char kEnableFastUnload[];
 extern const char kEnableMaterialDesignFeedback[];
 extern const char kEnableMaterialDesignPolicyPage[];
 extern const char kEnableNaCl[];
-extern const char kEnableNativeNotifications[];
 extern const char kEnableNavigationTracing[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNewBookmarkApps[];

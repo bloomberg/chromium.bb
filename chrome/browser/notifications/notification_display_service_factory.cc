@@ -11,7 +11,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
@@ -39,8 +39,8 @@ NotificationDisplayServiceFactory::NotificationDisplayServiceFactory()
 // Selection of the implementation works as follows:
 //   - Android always uses the NativeNotificationDisplayService.
 //   - Mac uses the MessageCenterDisplayService by default, but can use the
-//     NativeNotificationDisplayService by using the chrome://flags or the
-//     --enable-native-notifications command line flag.
+//     NativeNotificationDisplayService by using the chrome://flags or via
+//     the --enable-features=NativeNotifications command line flag.
 //   - All other platforms always use the MessageCenterDisplayService.
 KeyedService* NotificationDisplayServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
@@ -49,8 +49,7 @@ KeyedService* NotificationDisplayServiceFactory::BuildServiceInstanceFor(
       Profile::FromBrowserContext(context),
       g_browser_process->notification_platform_bridge());
 #elif defined(OS_MACOSX)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeNotifications)) {
+  if (base::FeatureList::IsEnabled(features::kNativeNotifications)) {
     return new NativeNotificationDisplayService(
         Profile::FromBrowserContext(context),
         g_browser_process->notification_platform_bridge());

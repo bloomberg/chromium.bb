@@ -108,6 +108,13 @@ const base::Feature kMaterialDesignHistory{
 const base::Feature kMaterialDesignSettings{
     "MaterialDesignSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of native notification centers instead of using the Message
+// Center for displaying the toasts.
+#if defined(OS_MACOSX)
+const base::Feature kNativeNotifications{"NativeNotifications",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_MACOSX)
+
 #if defined(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728

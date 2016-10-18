@@ -1285,7 +1285,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_MACOSX)
     {"enable-native-notifications", IDS_NOTIFICATIONS_NATIVE_FLAG,
      IDS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION, kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableNativeNotifications)},
+     FEATURE_VALUE_TYPE(features::kNativeNotifications)},
 #endif  // OS_MACOSX
 #if defined(TOOLKIT_VIEWS)
     {"disable-views-rect-based-targeting",
@@ -2042,7 +2042,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_NAME,
      IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
-     {"security-chip", IDS_FLAGS_SECURITY_CHIP_NAME,
+    {"security-chip", IDS_FLAGS_SECURITY_CHIP_NAME,
      IDS_FLAGS_SECURITY_CHIP_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kSecurityChipChoices)},
     {"security-chip-animation", IDS_FLAGS_SECURITY_CHIP_ANIMATION_NAME,

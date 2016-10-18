@@ -61,6 +61,10 @@ extern const base::Feature kMaterialDesignHistory;
 
 extern const base::Feature kMaterialDesignSettings;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kNativeNotifications;
+#endif  // defined(OS_MACOSX)
+
 #if defined(ENABLE_PLUGINS)
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif
