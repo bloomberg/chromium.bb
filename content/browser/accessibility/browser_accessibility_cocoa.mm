@@ -2796,13 +2796,14 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
     return;
 
   // TODO(dmazzoni): Support more actions.
-  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
   if ([action isEqualToString:NSAccessibilityPressAction]) {
-    manager->DoDefaultAction(*browserAccessibility_);
+    [self delegate]->AccessibilityDoDefaultAction(
+        browserAccessibility_->GetId());
   } else if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
-    manager->ShowContextMenu(*browserAccessibility_);
+    [self delegate]->AccessibilityShowContextMenu(
+        browserAccessibility_->GetId());
   } else if ([action isEqualToString:NSAccessibilityScrollToVisibleAction]) {
-    manager->ScrollToMakeVisible(
+    browserAccessibility_->manager()->ScrollToMakeVisible(
         *browserAccessibility_, gfx::Rect());
   }
 }
@@ -2838,9 +2839,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];
-    BrowserAccessibilityManager* manager = browserAccessibility_->manager();
-    manager->SetTextSelection(
-        *browserAccessibility_, range.location, range.location + range.length);
+    [self delegate]->AccessibilitySetSelection(
+        browserAccessibility_->GetId(), range.location,
+        browserAccessibility_->GetId(), range.location + range.length);
   }
 }
 

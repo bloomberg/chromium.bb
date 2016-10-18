@@ -724,9 +724,50 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
       this, interface_name, std::move(handle));
 }
 
-void RenderFrameHostImpl::AccessibilityPerformAction(
-    const ui::AXActionData& action_data) {
-  Send(new AccessibilityMsg_PerformAction(routing_id_, action_data));
+void RenderFrameHostImpl::AccessibilitySetFocus(int object_id) {
+  Send(new AccessibilityMsg_SetFocus(routing_id_, object_id));
+}
+
+void RenderFrameHostImpl::AccessibilityDoDefaultAction(int object_id) {
+  Send(new AccessibilityMsg_DoDefaultAction(routing_id_, object_id));
+}
+
+void RenderFrameHostImpl::AccessibilityShowContextMenu(int acc_obj_id) {
+  Send(new AccessibilityMsg_ShowContextMenu(routing_id_, acc_obj_id));
+}
+
+void RenderFrameHostImpl::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, const gfx::Rect& subfocus) {
+  Send(new AccessibilityMsg_ScrollToMakeVisible(
+      routing_id_, acc_obj_id, subfocus));
+}
+
+void RenderFrameHostImpl::AccessibilityScrollToPoint(
+    int acc_obj_id, const gfx::Point& point) {
+  Send(new AccessibilityMsg_ScrollToPoint(
+      routing_id_, acc_obj_id, point));
+}
+
+void RenderFrameHostImpl::AccessibilitySetScrollOffset(
+    int acc_obj_id, const gfx::Point& offset) {
+  Send(new AccessibilityMsg_SetScrollOffset(
+      routing_id_, acc_obj_id, offset));
+}
+
+void RenderFrameHostImpl::AccessibilitySetSelection(int anchor_object_id,
+                                                    int anchor_offset,
+                                                    int focus_object_id,
+                                                    int focus_offset) {
+  Send(new AccessibilityMsg_SetSelection(routing_id_,
+                                         anchor_object_id,
+                                         anchor_offset,
+                                         focus_object_id,
+                                         focus_offset));
+}
+
+void RenderFrameHostImpl::AccessibilitySetValue(
+    int object_id, const base::string16& value) {
+  Send(new AccessibilityMsg_SetValue(routing_id_, object_id, value));
 }
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
@@ -750,6 +791,14 @@ gfx::Point RenderFrameHostImpl::AccessibilityOriginInScreen(
   if (view)
     return view->AccessibilityOriginInScreen(bounds);
   return gfx::Point();
+}
+
+void RenderFrameHostImpl::AccessibilityHitTest(const gfx::Point& point) {
+  Send(new AccessibilityMsg_HitTest(routing_id_, point));
+}
+
+void RenderFrameHostImpl::AccessibilitySetAccessibilityFocus(int acc_obj_id) {
+  Send(new AccessibilityMsg_SetAccessibilityFocus(routing_id_, acc_obj_id));
 }
 
 void RenderFrameHostImpl::AccessibilityReset() {

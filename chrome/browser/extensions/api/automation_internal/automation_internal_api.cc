@@ -37,7 +37,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "ui/accessibility/ax_action_data.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -163,8 +162,26 @@ class RenderFrameHostActionAdapter : public AutomationActionAdapter {
   virtual ~RenderFrameHostActionAdapter() {}
 
   // AutomationActionAdapter implementation.
-  void PerformAction(const ui::AXActionData& data) override {
-    rfh_->AccessibilityPerformAction(data);
+  void DoDefault(int32_t id) override {
+    rfh_->AccessibilityDoDefaultAction(id);
+  }
+
+  void Focus(int32_t id) override { rfh_->AccessibilitySetFocus(id); }
+
+  void MakeVisible(int32_t id) override {
+    rfh_->AccessibilityScrollToMakeVisible(id, gfx::Rect());
+  }
+
+  void SetSelection(int32_t anchor_id,
+                    int32_t anchor_offset,
+                    int32_t focus_id,
+                    int32_t focus_offset) override {
+    rfh_->AccessibilitySetSelection(anchor_id, anchor_offset, focus_id,
+                                    focus_offset);
+  }
+
+  void ShowContextMenu(int32_t id) override {
+    rfh_->AccessibilityShowContextMenu(id);
   }
 
  private:
@@ -349,42 +366,29 @@ ExtensionFunction::ResponseAction
 AutomationInternalPerformActionFunction::RouteActionToAdapter(
     api::automation_internal::PerformAction::Params* params,
     AutomationActionAdapter* adapter) {
-  ui::AXActionData action;
-  action.target_node_id = params->args.automation_node_id;
+  int32_t automation_id = params->args.automation_node_id;
   switch (params->args.action_type) {
     case api::automation_internal::ACTION_TYPE_DODEFAULT:
-      action.action = ui::AX_ACTION_DO_DEFAULT;
-      adapter->PerformAction(action);
+      adapter->DoDefault(automation_id);
       break;
     case api::automation_internal::ACTION_TYPE_FOCUS:
-      action.action = ui::AX_ACTION_SET_FOCUS;
-      adapter->PerformAction(action);
+      adapter->Focus(automation_id);
       break;
     case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:
-      action.action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
-      adapter->PerformAction(action);
+      adapter->MakeVisible(automation_id);
       break;
     case api::automation_internal::ACTION_TYPE_SETSELECTION: {
       api::automation_internal::SetSelectionParams selection_params;
       EXTENSION_FUNCTION_VALIDATE(
           api::automation_internal::SetSelectionParams::Populate(
               params->opt_args.additional_properties, &selection_params));
-      action.anchor_node_id = params->args.automation_node_id;
-      action.anchor_offset = selection_params.anchor_offset;
-      action.focus_node_id = selection_params.focus_node_id;
-      action.focus_offset = selection_params.focus_offset;
-      action.action = ui::AX_ACTION_SET_SELECTION;
-      adapter->PerformAction(action);
+      adapter->SetSelection(automation_id, selection_params.anchor_offset,
+                            selection_params.focus_node_id,
+                            selection_params.focus_offset);
       break;
     }
     case api::automation_internal::ACTION_TYPE_SHOWCONTEXTMENU: {
-      action.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
-      adapter->PerformAction(action);
-      break;
-    }
-    case api::automation_internal::ACTION_TYPE_SETACCESSIBILITYFOCUS: {
-      action.action = ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS;
-      adapter->PerformAction(action);
+      adapter->ShowContextMenu(automation_id);
       break;
     }
     default:

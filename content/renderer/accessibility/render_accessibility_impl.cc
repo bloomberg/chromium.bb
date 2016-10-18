@@ -118,9 +118,19 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   during_action_ = true;
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetFocus, OnSetFocus)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_DoDefaultAction, OnDoDefaultAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Events_ACK, OnEventsAck)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToMakeVisible,
+                        OnScrollToMakeVisible)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToPoint, OnScrollToPoint)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetScrollOffset, OnSetScrollOffset)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetSelection, OnSetSelection)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetValue, OnSetValue)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetAccessibilityFocus,
+                        OnSetAccessibilityFocus)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -433,66 +443,20 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   Send(new AccessibilityHostMsg_LocationChanges(routing_id(), messages));
 }
 
-void RenderAccessibilityImpl::OnPerformAction(
-    const ui::AXActionData& data) {
+void RenderAccessibilityImpl::OnDoDefaultAction(int acc_obj_id) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
 
-  WebAXObject root = document.accessibilityObject();
-  if (!root.updateLayoutAndCheckValidity())
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "DoDefaultAction on invalid object id " << acc_obj_id;
+#endif
     return;
-
-  WebAXObject target = document.accessibilityObjectFromID(data.target_node_id);
-  WebAXObject anchor = document.accessibilityObjectFromID(data.anchor_node_id);
-  WebAXObject focus = document.accessibilityObjectFromID(data.focus_node_id);
-
-  switch (data.action) {
-    case ui::AX_ACTION_DO_DEFAULT:
-      target.performDefaultAction();
-      break;
-    case ui::AX_ACTION_HIT_TEST:
-      OnHitTest(data.target_point);
-      break;
-    case ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE:
-      target.scrollToMakeVisibleWithSubFocus(
-          WebRect(data.target_rect.x(), data.target_rect.y(),
-                  data.target_rect.width(), data.target_rect.height()));
-      break;
-    case ui::AX_ACTION_SCROLL_TO_POINT:
-      target.scrollToGlobalPoint(
-          WebPoint(data.target_point.x(), data.target_point.y()));
-      break;
-    case ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS:
-      OnSetAccessibilityFocus(target);
-      break;
-    case ui::AX_ACTION_SET_FOCUS:
-      // By convention, calling SetFocus on the root of the tree should
-      // clear the current focus. Otherwise set the focus to the new node.
-      if (data.target_node_id == root.axID())
-        render_frame_->GetRenderView()->GetWebView()->clearFocusedElement();
-      else
-        target.setFocused(true);
-      break;
-    case ui::AX_ACTION_SET_SCROLL_OFFSET:
-      target.setScrollOffset(
-          WebPoint(data.target_point.x(), data.target_point.y()));
-      break;
-    case ui::AX_ACTION_SET_SELECTION:
-      anchor.setSelection(anchor, data.anchor_offset, focus, data.focus_offset);
-      HandleAXEvent(root, ui::AX_EVENT_LAYOUT_COMPLETE);
-      break;
-    case ui::AX_ACTION_SET_VALUE:
-      target.setValue(data.value);
-      HandleAXEvent(target, ui::AX_EVENT_VALUE_CHANGED);
-      break;
-    case ui::AX_ACTION_SHOW_CONTEXT_MENU:
-      target.showContextMenu();
-      break;
-    case ui::AX_ACTION_NONE:
-      NOTREACHED();
-      break;
   }
+
+  obj.performDefaultAction();
 }
 
 void RenderAccessibilityImpl::OnEventsAck(int ack_token) {
@@ -509,7 +473,7 @@ void RenderAccessibilityImpl::OnFatalError() {
   CHECK(false) << "Invalid accessibility tree.";
 }
 
-void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point) {
+void RenderAccessibilityImpl::OnHitTest(gfx::Point point) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -539,17 +503,18 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point) {
   HandleAXEvent(obj, ui::AX_EVENT_HOVER);
 }
 
-void RenderAccessibilityImpl::OnSetAccessibilityFocus(
-    const blink::WebAXObject& obj) {
+void RenderAccessibilityImpl::OnSetAccessibilityFocus(int acc_obj_id) {
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
-  if (tree_source_.accessibility_focus_id() == obj.axID())
+  if (tree_source_.accessibility_focus_id() == acc_obj_id)
     return;
 
-  tree_source_.set_accessibility_focus_id(obj.axID());
+  tree_source_.set_accessibility_focus_id(acc_obj_id);
 
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
 
   // This object may not be a leaf node. Force the whole subtree to be
   // re-serialized.
@@ -572,6 +537,174 @@ void RenderAccessibilityImpl::OnReset(int reset_token) {
         ? ui::AX_EVENT_LOAD_COMPLETE : ui::AX_EVENT_LAYOUT_COMPLETE;
     HandleAXEvent(document.accessibilityObject(), evt);
   }
+}
+
+void RenderAccessibilityImpl::OnScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
+  if (plugin_tree_source_ && plugin_tree_source_->GetFromId(acc_obj_id)) {
+    ScrollPlugin(acc_obj_id);
+    return;
+  }
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "ScrollToMakeVisible on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  obj.scrollToMakeVisibleWithSubFocus(
+      WebRect(subfocus.x(), subfocus.y(), subfocus.width(), subfocus.height()));
+
+  // Make sure the browser gets an event when the scroll
+  // position actually changes.
+  // TODO(dmazzoni): remove this once this bug is fixed:
+  // https://bugs.webkit.org/show_bug.cgi?id=73460
+  HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
+}
+
+void RenderAccessibilityImpl::OnScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "ScrollToPoint on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  obj.scrollToGlobalPoint(WebPoint(point.x(), point.y()));
+
+  // Make sure the browser gets an event when the scroll
+  // position actually changes.
+  // TODO(dmazzoni): remove this once this bug is fixed:
+  // https://bugs.webkit.org/show_bug.cgi?id=73460
+  HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_LAYOUT_COMPLETE);
+}
+
+void RenderAccessibilityImpl::OnSetScrollOffset(int acc_obj_id,
+                                              gfx::Point offset) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached())
+    return;
+
+  obj.setScrollOffset(WebPoint(offset.x(), offset.y()));
+}
+
+void RenderAccessibilityImpl::OnSetFocus(int acc_obj_id) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "OnSetAccessibilityFocus on invalid object id "
+                 << acc_obj_id;
+#endif
+    return;
+  }
+
+  WebAXObject root = document.accessibilityObject();
+  if (root.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "OnSetAccessibilityFocus but root is invalid";
+#endif
+    return;
+  }
+
+  // By convention, calling SetFocus on the root of the tree should clear the
+  // current focus. Otherwise set the focus to the new node.
+  if (acc_obj_id == root.axID())
+    render_frame_->GetRenderView()->GetWebView()->clearFocusedElement();
+  else
+    obj.setFocused(true);
+}
+
+void RenderAccessibilityImpl::OnSetSelection(int anchor_acc_obj_id,
+                                           int anchor_offset,
+                                           int focus_acc_obj_id,
+                                           int focus_offset) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject anchor_obj =
+      document.accessibilityObjectFromID(anchor_acc_obj_id);
+  if (anchor_obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "SetTextSelection on invalid object id "
+                 << anchor_acc_obj_id;
+#endif
+    return;
+  }
+
+  WebAXObject focus_obj = document.accessibilityObjectFromID(focus_acc_obj_id);
+  if (focus_obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "SetTextSelection on invalid object id "
+                 << focus_acc_obj_id;
+#endif
+    return;
+  }
+
+  anchor_obj.setSelection(anchor_obj, anchor_offset, focus_obj, focus_offset);
+  WebAXObject root = document.accessibilityObject();
+  if (root.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "OnSetAccessibilityFocus but root is invalid";
+#endif
+    return;
+  }
+  HandleAXEvent(root, ui::AX_EVENT_LAYOUT_COMPLETE);
+}
+
+void RenderAccessibilityImpl::OnSetValue(
+    int acc_obj_id,
+    base::string16 value) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "SetTextSelection on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  obj.setValue(value);
+  HandleAXEvent(obj, ui::AX_EVENT_VALUE_CHANGED);
+}
+
+void RenderAccessibilityImpl::OnShowContextMenu(int acc_obj_id) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "ShowContextMenu on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  obj.showContextMenu();
 }
 
 void RenderAccessibilityImpl::OnDestruct() {

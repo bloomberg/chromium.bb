@@ -459,10 +459,7 @@ void BrowserAccessibilityManager::OnChildFrameHitTestResult(
   if (!child_manager || !child_manager->delegate())
     return;
 
-  ui::AXActionData action_data;
-  action_data.target_point = point;
-  action_data.action = ui::AX_ACTION_HIT_TEST;
-  return child_manager->delegate()->AccessibilityPerformAction(action_data);
+  return child_manager->delegate()->AccessibilityHitTest(point);
 }
 
 void BrowserAccessibilityManager::ActivateFindInPageResult(
@@ -560,13 +557,8 @@ BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() {
 }
 
 void BrowserAccessibilityManager::SetFocus(const BrowserAccessibility& node) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_SET_FOCUS;
-  action_data.target_node_id = node.GetId();
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_)
+    delegate_->AccessibilitySetFocus(node.GetId());
 }
 
 void BrowserAccessibilityManager::SetFocusLocallyForTesting(
@@ -584,110 +576,46 @@ void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
 
 void BrowserAccessibilityManager::DoDefaultAction(
     const BrowserAccessibility& node) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_DO_DEFAULT;
-  action_data.target_node_id = node.GetId();
-  delegate_->AccessibilityPerformAction(action_data);
-}
-
-void BrowserAccessibilityManager::ShowContextMenu(
-    const BrowserAccessibility& node) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
-  action_data.target_node_id = node.GetId();
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_)
+    delegate_->AccessibilityDoDefaultAction(node.GetId());
 }
 
 void BrowserAccessibilityManager::ScrollToMakeVisible(
     const BrowserAccessibility& node, gfx::Rect subfocus) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.target_node_id = node.GetId();
-  action_data.action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
-  action_data.target_rect = subfocus;
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_) {
+    delegate_->AccessibilityScrollToMakeVisible(node.GetId(), subfocus);
+  }
 }
 
 void BrowserAccessibilityManager::ScrollToPoint(
     const BrowserAccessibility& node, gfx::Point point) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.target_node_id = node.GetId();
-  action_data.action = ui::AX_ACTION_SCROLL_TO_POINT;
-  action_data.target_point = point;
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_) {
+    delegate_->AccessibilityScrollToPoint(node.GetId(), point);
+  }
 }
 
 void BrowserAccessibilityManager::SetScrollOffset(
     const BrowserAccessibility& node, gfx::Point offset) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.target_node_id = node.GetId();
-  action_data.action = ui::AX_ACTION_SET_SCROLL_OFFSET;
-  action_data.target_point = offset;
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_) {
+    delegate_->AccessibilitySetScrollOffset(node.GetId(), offset);
+  }
 }
 
 void BrowserAccessibilityManager::SetValue(
     const BrowserAccessibility& node,
     const base::string16& value) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.target_node_id = node.GetId();
-  action_data.action = ui::AX_ACTION_SET_VALUE;
-  action_data.value = value;
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_)
+    delegate_->AccessibilitySetValue(node.GetId(), value);
 }
 
 void BrowserAccessibilityManager::SetTextSelection(
     const BrowserAccessibility& node,
     int start_offset,
     int end_offset) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.anchor_node_id = node.GetId();
-  action_data.anchor_offset = start_offset;
-  action_data.focus_node_id = node.GetId();
-  action_data.focus_offset = end_offset;
-  action_data.action = ui::AX_ACTION_SET_SELECTION;
-  delegate_->AccessibilityPerformAction(action_data);
-}
-
-void BrowserAccessibilityManager::SetAccessibilityFocus(
-    const BrowserAccessibility& node) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS;
-  action_data.target_node_id = node.GetId();
-  delegate_->AccessibilityPerformAction(action_data);
-}
-
-void BrowserAccessibilityManager::HitTest(const gfx::Point& point) {
-  if (!delegate_)
-    return;
-
-  ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_HIT_TEST;
-  action_data.target_point = point;
-  delegate_->AccessibilityPerformAction(action_data);
+  if (delegate_) {
+    delegate_->AccessibilitySetSelection(node.GetId(), start_offset,
+                                         node.GetId(), end_offset);
+  }
 }
 
 gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
@@ -1174,7 +1102,8 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   if (delegate()) {
     // This triggers an asynchronous request to compute the true object that's
     // under |screen_point|.
-    HitTest(screen_point - GetViewBounds().OffsetFromOrigin());
+    gfx::Point local_point = screen_point - GetViewBounds().OffsetFromOrigin();
+    delegate()->AccessibilityHitTest(local_point);
 
     // Unfortunately we still have to return an answer synchronously because
     // the APIs were designed that way. The best case scenario is that the

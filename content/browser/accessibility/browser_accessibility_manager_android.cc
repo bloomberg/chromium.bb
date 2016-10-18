@@ -359,7 +359,8 @@ void BrowserAccessibilityManagerAndroid::HitTest(
     const JavaParamRef<jobject>& obj,
     jint x,
     jint y) {
-  BrowserAccessibilityManager::HitTest(gfx::Point(x, y));
+  if (delegate())
+    delegate()->AccessibilityHitTest(gfx::Point(x, y));
 }
 
 jboolean BrowserAccessibilityManagerAndroid::IsEditableText(
@@ -908,7 +909,10 @@ void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
   if (!node)
     return;
 
-  node->manager()->SetAccessibilityFocus(*node);
+  if (node->manager()->delegate()) {
+    node->manager()->delegate()->AccessibilitySetAccessibilityFocus(
+        node->GetId());
+  }
 }
 
 bool BrowserAccessibilityManagerAndroid::IsSlider(

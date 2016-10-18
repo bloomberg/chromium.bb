@@ -19,7 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
-#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -65,12 +64,28 @@ CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
 class CONTENT_EXPORT BrowserAccessibilityDelegate {
  public:
   virtual ~BrowserAccessibilityDelegate() {}
-
-  virtual void AccessibilityPerformAction(const ui::AXActionData& data) = 0;
+  virtual void AccessibilitySetFocus(int acc_obj_id) = 0;
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
+  virtual void AccessibilityShowContextMenu(int acc_obj_id) = 0;
+  virtual void AccessibilityScrollToMakeVisible(
+      int acc_obj_id, const gfx::Rect& subfocus) = 0;
+  virtual void AccessibilityScrollToPoint(
+      int acc_obj_id, const gfx::Point& point) = 0;
+  virtual void AccessibilitySetScrollOffset(
+      int acc_obj_id, const gfx::Point& offset) = 0;
+  virtual void AccessibilitySetSelection(int anchor_obj_id,
+                                         int anchor_offset,
+                                         int focus_obj_id,
+                                         int focus_offset) = 0;
+  virtual void AccessibilitySetValue(
+      int acc_obj_id, const base::string16& value) = 0;
   virtual bool AccessibilityViewHasFocus() const = 0;
   virtual gfx::Rect AccessibilityGetViewBounds() const = 0;
   virtual gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const = 0;
+  virtual void AccessibilityHitTest(
+      const gfx::Point& point) = 0;
+  virtual void AccessibilitySetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
@@ -186,9 +201,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
 
-  // Tell the renderer to show the context menu for a given node.
-  void ShowContextMenu(const BrowserAccessibility& node);
-
   // Tell the renderer to scroll to make |node| visible.
   // In addition, if it's not possible to make the entire object visible,
   // scroll so that the |subfocus| rect is visible at least. The subfocus
@@ -212,13 +224,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Tell the renderer to set the text selection on a node.
   void SetTextSelection(
       const BrowserAccessibility& node, int start_offset, int end_offset);
-
-  // Tell the renderer to set accessibility focus to this node.
-  void SetAccessibilityFocus(const BrowserAccessibility& node);
-
-  // Tell the renderer to do a hit test on a point in global screen coordinates
-  // and fire a HOVER event on the node that's hit.
-  void HitTest(const gfx::Point& point);
 
   // Retrieve the bounds of the parent View in screen coordinates.
   gfx::Rect GetViewBounds();
