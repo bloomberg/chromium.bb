@@ -54,14 +54,8 @@ PepperBrokerDispatcherWrapper::~PepperBrokerDispatcherWrapper() {}
 bool PepperBrokerDispatcherWrapper::Init(
     base::ProcessId broker_pid,
     const IPC::ChannelHandle& channel_handle) {
-  if (channel_handle.name.empty())
+  if (!channel_handle.is_mojo_channel_handle())
     return false;
-
-#if defined(OS_POSIX)
-  DCHECK_NE(-1, channel_handle.socket.fd);
-  if (channel_handle.socket.fd == -1)
-    return false;
-#endif
 
   dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
   dispatcher_.reset(new ppapi::proxy::BrokerHostDispatcher());

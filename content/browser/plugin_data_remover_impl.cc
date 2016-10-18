@@ -139,7 +139,7 @@ class PluginDataRemoverImpl::Context
   void OnPpapiChannelOpened(const IPC::ChannelHandle& channel_handle,
                             base::ProcessId /* peer_pid */,
                             int /* child_id */) override {
-    if (!channel_handle.name.empty())
+    if (channel_handle.is_mojo_channel_handle())
       ConnectToChannel(channel_handle);
 
     // Balancing the AddRef call.

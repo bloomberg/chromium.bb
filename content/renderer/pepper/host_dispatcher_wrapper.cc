@@ -37,17 +37,8 @@ bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
                                  PP_GetInterface_Func local_get_interface,
                                  const ppapi::Preferences& preferences,
                                  scoped_refptr<PepperHungPluginFilter> filter) {
-  if (channel_handle.name.empty() && !channel_handle.is_mojo_channel_handle())
+  if (!channel_handle.is_mojo_channel_handle())
     return false;
-
-#if defined(OS_POSIX)
-  DCHECK(channel_handle.socket.fd != -1 ||
-         channel_handle.is_mojo_channel_handle());
-  if (channel_handle.socket.fd == -1 &&
-      !channel_handle.is_mojo_channel_handle()) {
-    return false;
-  }
-#endif
 
   dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
   dispatcher_.reset(new ppapi::proxy::HostDispatcher(

@@ -39,23 +39,10 @@ TEST_F(PepperBrokerTest, InitFailure) {
 // On valid ChannelHandle, initialization should succeed.
 TEST_F(PepperBrokerTest, InitSuccess) {
   PepperBrokerDispatcherWrapper dispatcher_wrapper;
-  const char kChannelName[] = "PepperHelperImplTestChannelName";
-#if defined(OS_POSIX)
-  int fds[2] = {-1, -1};
-  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM, 0, fds));
-  // Channel::ChannelImpl::CreatePipe needs the fd to be non-blocking.
-  ASSERT_EQ(0, fcntl(fds[1], F_SETFL, O_NONBLOCK));
-  base::FileDescriptor file_descriptor(fds[1], true);  // Auto close.
-  IPC::ChannelHandle valid_channel(kChannelName, file_descriptor);
-#else
-  IPC::ChannelHandle valid_channel(kChannelName);
-#endif  // defined(OS_POSIX));
+  mojo::MessagePipe pipe;
+  IPC::ChannelHandle valid_channel(pipe.handle0.release());
 
   EXPECT_TRUE(dispatcher_wrapper.Init(base::kNullProcessId, valid_channel));
-
-#if defined(OS_POSIX)
-  EXPECT_EQ(0, ::close(fds[0]));
-#endif  // defined(OS_POSIX));
 }
 
 }  // namespace content

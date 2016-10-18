@@ -488,10 +488,7 @@ bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,
                                bool incognito,
                                IPC::ChannelHandle* handle) {
   DCHECK(is_broker_ == (connect_instance_func_ != NULL));
-  IPC::ChannelHandle plugin_handle;
-  plugin_handle.name = IPC::Channel::GenerateVerifiedChannelID(
-      base::StringPrintf(
-          "%d.r%d", base::GetCurrentProcId(), renderer_child_id));
+  mojo::MessagePipe pipe;
 
   ppapi::proxy::ProxyChannel* dispatcher = NULL;
   bool init_result = false;
@@ -500,10 +497,8 @@ bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,
     BrokerProcessDispatcher* broker_dispatcher =
         new BrokerProcessDispatcher(plugin_entry_points_.get_interface,
                                     connect_instance_func_, peer_is_browser);
-    init_result = broker_dispatcher->InitBrokerWithChannel(this,
-                                                           renderer_pid,
-                                                           plugin_handle,
-                                                           false);
+    init_result = broker_dispatcher->InitBrokerWithChannel(
+        this, renderer_pid, pipe.handle0.release(), false);
     dispatcher = broker_dispatcher;
   } else {
     DCHECK_NE(base::kNullProcessId, renderer_pid);
@@ -511,10 +506,8 @@ bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,
         new PluginProcessDispatcher(plugin_entry_points_.get_interface,
                                     permissions_,
                                     incognito);
-    init_result = plugin_dispatcher->InitPluginWithChannel(this,
-                                                           renderer_pid,
-                                                           plugin_handle,
-                                                           false);
+    init_result = plugin_dispatcher->InitPluginWithChannel(
+        this, renderer_pid, pipe.handle0.release(), false);
     dispatcher = plugin_dispatcher;
   }
 
@@ -522,16 +515,7 @@ bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,
     delete dispatcher;
     return false;
   }
-
-  handle->name = plugin_handle.name;
-#if defined(OS_POSIX)
-  // On POSIX, transfer ownership of the renderer-side (client) FD.
-  // This ensures this process will be notified when it is closed even if a
-  // connection is not established.
-  handle->socket = base::FileDescriptor(dispatcher->TakeRendererFD());
-  if (handle->socket.fd == -1)
-    return false;
-#endif
+  *handle = pipe.handle1.release();
 
   // From here, the dispatcher will manage its own lifetime according to the
   // lifetime of the attached channel.

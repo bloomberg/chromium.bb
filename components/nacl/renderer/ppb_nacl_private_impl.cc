@@ -130,14 +130,11 @@ class NaClPluginInstance {
   explicit NaClPluginInstance(PP_Instance instance)
       : nexe_load_manager(instance), pexe_size(0) {}
   ~NaClPluginInstance() {
-    // Make sure that we do not leak a file descriptor if the NaCl loader
+    // Make sure that we do not leak a mojo handle if the NaCl loader
     // process never called ppapi_start() to initialize PPAPI.
     if (instance_info) {
-#if defined(OS_WIN)
-      base::win::ScopedHandle closer(instance_info->channel_handle.pipe.handle);
-#else
-      base::ScopedFD closer(instance_info->channel_handle.socket.fd);
-#endif
+      DCHECK(instance_info->channel_handle.is_mojo_channel_handle());
+      instance_info->channel_handle.mojo_handle.Close();
     }
   }
 

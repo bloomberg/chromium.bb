@@ -801,7 +801,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
   int plugin_child_id = 0;
   render_frame->Send(new FrameHostMsg_OpenChannelToPepperPlugin(
       path, &channel_handle, &peer_pid, &plugin_child_id));
-  if (channel_handle.name.empty()) {
+  if (!channel_handle.is_mojo_channel_handle()) {
     // Couldn't be initialized.
     return scoped_refptr<PluginModule>();
   }
