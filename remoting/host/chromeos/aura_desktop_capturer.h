@@ -32,7 +32,7 @@ class AuraDesktopCapturer : public webrtc::DesktopCapturer {
 
   // webrtc::DesktopCapturer implementation.
   void Start(webrtc::DesktopCapturer::Callback* callback) override;
-  void Capture(const webrtc::DesktopRegion& region) override;
+  void CaptureFrame() override;
 
  private:
   friend class AuraDesktopCapturerTest;

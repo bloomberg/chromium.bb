@@ -185,13 +185,13 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
       case DesktopMediaID::TYPE_SCREEN:
         if (!screen_capturer_->SelectScreen(id.id))
           continue;
-        screen_capturer_->Capture(webrtc::DesktopRegion());
+        screen_capturer_->CaptureFrame();
         break;
 
       case DesktopMediaID::TYPE_WINDOW:
         if (!window_capturer_->SelectWindow(id.id))
           continue;
-        window_capturer_->Capture(webrtc::DesktopRegion());
+        window_capturer_->CaptureFrame();
         break;
 
       default:

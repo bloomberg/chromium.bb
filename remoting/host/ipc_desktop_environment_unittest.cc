@@ -556,7 +556,7 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
 
   // Capture a single frame.
-  video_capturer_->Capture(webrtc::DesktopRegion());
+  video_capturer_->CaptureFrame();
 }
 
 // Tests that attaching to a new desktop works.

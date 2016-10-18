@@ -76,7 +76,7 @@ class TestScreenCapturer : public webrtc::DesktopCapturer {
   void Start(Callback* callback) override {
     callback_ = callback;
   }
-  void Capture(const webrtc::DesktopRegion& region) override {
+  void CaptureFrame() override {
     // Return black 100x100 frame.
     std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(100, 100)));

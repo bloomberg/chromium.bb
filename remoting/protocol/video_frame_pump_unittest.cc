@@ -110,7 +110,7 @@ class ThreadCheckDesktopCapturer : public webrtc::DesktopCapturer {
     callback_ = callback;
   }
 
-  void Capture(const webrtc::DesktopRegion& rect) override {
+  void CaptureFrame() override {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
 
     std::unique_ptr<webrtc::DesktopFrame> frame(

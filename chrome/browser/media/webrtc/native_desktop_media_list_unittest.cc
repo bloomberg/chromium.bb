@@ -66,7 +66,7 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   // webrtc::ScreenCapturer implementation.
   void Start(Callback* callback) override { callback_ = callback; }
 
-  void Capture(const webrtc::DesktopRegion& region) override {
+  void CaptureFrame() override {
     DCHECK(callback_);
     std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10)));
@@ -115,7 +115,7 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   // webrtc::WindowCapturer implementation.
   void Start(Callback* callback) override { callback_ = callback; }
 
-  void Capture(const webrtc::DesktopRegion& region) override {
+  void CaptureFrame() override {
     DCHECK(callback_);
 
     base::AutoLock lock(frame_values_lock_);

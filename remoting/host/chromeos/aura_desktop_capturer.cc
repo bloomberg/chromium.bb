@@ -41,7 +41,7 @@ void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
   DCHECK(callback_);
 }
 
-void AuraDesktopCapturer::Capture(const webrtc::DesktopRegion&) {
+void AuraDesktopCapturer::CaptureFrame() {
   std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
           &AuraDesktopCapturer::OnFrameCaptured, weak_factory_.GetWeakPtr()));

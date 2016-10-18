@@ -464,7 +464,7 @@ void DesktopSessionAgent::OnCaptureFrame() {
   // |video_capture_task_runner()| task runner. If the client issues more
   // requests, pixel data in captured frames will likely be corrupted but
   // stability of webrtc::DesktopCapturer will not be affected.
-  video_capturer_->Capture(webrtc::DesktopRegion());
+  video_capturer_->CaptureFrame();
 }
 
 void DesktopSessionAgent::OnInjectClipboardEvent(

@@ -192,7 +192,7 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   // VideoFrameCapturer interface.
   void Start(Callback* callback) override { callback_ = callback; }
 
-  void Capture(const webrtc::DesktopRegion& region) override {
+  void CaptureFrame() override {
     webrtc::DesktopSize size;
     if (frame_index_ % 2 == 0) {
       size = webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1);

@@ -349,7 +349,7 @@ void DesktopCaptureDevice::Core::DoCapture() {
   DCHECK(!capture_in_progress_);
 
   capture_in_progress_ = true;
-  desktop_capturer_->Capture(webrtc::DesktopRegion());
+  desktop_capturer_->CaptureFrame();
 
   // Currently only synchronous implementations of DesktopCapturer are
   // supported.

@@ -27,7 +27,7 @@ void IpcVideoFrameCapturer::Start(Callback* callback) {
   desktop_session_proxy_->SetVideoCapturer(weak_factory_.GetWeakPtr());
 }
 
-void IpcVideoFrameCapturer::Capture(const webrtc::DesktopRegion& region) {
+void IpcVideoFrameCapturer::CaptureFrame() {
   DCHECK(!capture_pending_);
   capture_pending_ = true;
   desktop_session_proxy_->CaptureFrame();

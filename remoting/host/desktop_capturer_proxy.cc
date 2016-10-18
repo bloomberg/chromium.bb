@@ -40,7 +40,7 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
   void Start();
   void SetSharedMemoryFactory(
       std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
-  void Capture(const webrtc::DesktopRegion& rect);
+  void CaptureFrame();
 
  private:
   // webrtc::DesktopCapturer::Callback implementation.
@@ -93,10 +93,10 @@ void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
   }
 }
 
-void DesktopCapturerProxy::Core::Capture(const webrtc::DesktopRegion& rect) {
+void DesktopCapturerProxy::Core::CaptureFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (capturer_) {
-    capturer_->Capture(rect);
+    capturer_->CaptureFrame();
   } else {
     OnCaptureResult(webrtc::DesktopCapturer::Result::ERROR_PERMANENT, nullptr);
   }
@@ -155,7 +155,7 @@ void DesktopCapturerProxy::SetSharedMemoryFactory(
           base::Passed(base::WrapUnique(shared_memory_factory.release()))));
 }
 
-void DesktopCapturerProxy::Capture(const webrtc::DesktopRegion& rect) {
+void DesktopCapturerProxy::CaptureFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Start() must be called before Capture().
@@ -163,7 +163,7 @@ void DesktopCapturerProxy::Capture(const webrtc::DesktopRegion& rect) {
 
   capture_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::Capture, base::Unretained(core_.get()), rect));
+      base::Bind(&Core::CaptureFrame, base::Unretained(core_.get())));
 }
 
 void DesktopCapturerProxy::OnFrameCaptured(

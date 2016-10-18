@@ -146,7 +146,7 @@ void VideoFramePump::CaptureNextFrame() {
         event_timestamps_source_->TakeLastEventTimestamps();
   }
 
-  capturer_->Capture(webrtc::DesktopRegion());
+  capturer_->CaptureFrame();
 }
 
 // static
