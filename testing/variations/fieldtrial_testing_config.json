@@ -913,6 +913,7 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "content_suggestions_backend": "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch",
                         "quota_SuggestionFetcher": "2"
                     },
                     "enable_features": [
