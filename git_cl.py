@@ -650,6 +650,7 @@ class BuildbucketResponseException(Exception):
 class Settings(object):
   def __init__(self):
     self.default_server = None
+    self.server_override = None
     self.cc = None
     self.root = None
     self.is_git_svn = None
@@ -1738,6 +1739,10 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     self._rpc_server = None
 
   def GetCodereviewServer(self):
+    global settings
+    if settings and settings.server_override:
+      return gclient_utils.UpgradeToHttps(settings.server_override)
+
     if not self._rietveld_server:
       # If we're on a branch then get the server potentially associated
       # with that branch.
@@ -2211,6 +2216,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return urlparse.urlparse(self.GetRemoteUrl()).netloc
 
   def GetCodereviewServer(self):
+    global settings
+    if settings and settings.server_override:
+      return gclient_utils.UpgradeToHttps(settings.server_override)
+
     if not self._gerrit_server:
       # If we're on a branch then get the server potentially associated
       # with that branch.
@@ -2819,6 +2828,9 @@ def _add_codereview_select_options(parser):
   parser.codereview_group.add_option(
       '--rietveld', action='store_true',
       help='Force the use of Rietveld for codereview')
+  parser.codereview_group.add_option(
+      '--force-codereview-server', action='store', metavar='URL',
+      help='Use this codereview server instead of the default.')
 
 
 def _process_codereview_select_options(parser, options):
@@ -2829,6 +2841,11 @@ def _process_codereview_select_options(parser, options):
     options.forced_codereview = 'gerrit'
   elif options.rietveld:
     options.forced_codereview = 'rietveld'
+
+  if options.force_codereview_server:
+    global settings
+    if settings:
+      settings.server_override = options.force_codereview_server
 
 
 def _get_bug_line_values(default_project, bugs):
@@ -3518,6 +3535,7 @@ def CMDstatus(parser, args):
     parser, 'Must be in conjunction with --field.')
   options, args = parser.parse_args(args)
   _process_codereview_issue_select_options(parser, options)
+  _process_codereview_select_options(parser, options)
   if args:
     parser.error('Unsupported args: %s' % args)
   auth_config = auth.extract_auth_config_from_options(options)
