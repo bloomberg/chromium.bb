@@ -1754,12 +1754,12 @@ class DiskCache(LocalCache):
     """Removes the lastest recently used file and returns its size."""
     self._lock.assert_locked()
     try:
-      digest, size = self._lru.get_oldest()
+      digest, (size, _) = self._lru.get_oldest()
       if not allow_protected and digest == self._protected:
         raise Error('Not enough space to map the whole isolated tree')
     except KeyError:
       raise Error('Nothing to remove')
-    digest, size = self._lru.pop_oldest()
+    digest, (size, _) = self._lru.pop_oldest()
     logging.debug("Removing LRU file %s", digest)
     self._delete_file(digest, size)
     return size
