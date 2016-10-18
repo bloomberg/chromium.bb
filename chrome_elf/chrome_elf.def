@@ -7,6 +7,7 @@ LIBRARY  "chrome_elf.dll"
 EXPORTS
   IsBlacklistInitialized
   SignalChromeElf
+  SignalInitializeCrashReporting
   SuccessfullyBlocked
   GetBlacklistIndex
   AddDllToBlacklist

@@ -204,6 +204,8 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 int main() {
   HINSTANCE instance = GetModuleHandle(nullptr);
 #endif
+  SignalInitializeCrashReporting();
+
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);
   const base::CommandLine* command_line =
