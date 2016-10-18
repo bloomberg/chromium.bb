@@ -65,8 +65,6 @@ const char kClientRedirectFirstPaintToNavigation[] =
     "PageLoad.Internal.ClientRedirect.FirstPaintToNavigation";
 const char kClientRedirectWithoutPaint[] =
     "PageLoad.Internal.ClientRedirect.NavigationWithoutPaint";
-const char kCommitToCompleteNoTimingIPCs[] =
-    "PageLoad.Internal.CommitToComplete.NoTimingIPCs";
 const char kPageLoadCompletedAfterAppBackground[] =
     "PageLoad.Internal.PageLoadCompleted.AfterAppBackground";
 
@@ -302,8 +300,7 @@ PageLoadTracker::PageLoadTracker(
     : did_stop_tracking_(false),
       app_entered_background_(false),
       navigation_start_(navigation_handle->NavigationStart()),
-      url_(navigation_handle->GetURL()),
-      start_url_(url_),
+      start_url_(navigation_handle->GetURL()),
       abort_type_(ABORT_NONE),
       abort_user_initiated_(false),
       started_in_foreground_(in_foreground),
@@ -337,7 +334,7 @@ PageLoadTracker::~PageLoadTracker() {
   if (did_stop_tracking_)
     return;
 
-  if (commit_time_.is_null()) {
+  if (committed_url_.is_empty()) {
     if (!failed_provisional_load_info_)
       RecordInternalError(ERR_NO_COMMIT_OR_FAILED_PROVISIONAL_LOAD);
 
@@ -349,15 +346,13 @@ PageLoadTracker::~PageLoadTracker() {
     }
   } else if (timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
-    PAGE_LOAD_HISTOGRAM(internal::kCommitToCompleteNoTimingIPCs,
-                        base::TimeTicks::Now() - commit_time_);
   }
 
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
     if (failed_provisional_load_info_) {
       observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
-    } else if (info.time_to_commit) {
+    } else if (!info.committed_url.is_empty()) {
       observer->OnComplete(timing_, info);
     }
   }
@@ -379,7 +374,7 @@ void PageLoadTracker::LogAbortChainHistograms(
   }
 
   // The following is only executed for committing trackers.
-  DCHECK(!commit_time_.is_null());
+  DCHECK(!committed_url_.is_empty());
 
   // Note that histograms could be separated out by this commit's transition
   // type, but for simplicity they will all be bucketed together.
@@ -452,11 +447,7 @@ void PageLoadTracker::WebContentsShown() {
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
-  // TODO(bmcquade): To improve accuracy, consider adding commit time to
-  // NavigationHandle. Taking a timestamp here should be close enough for now.
-  commit_time_ = base::TimeTicks::Now();
-  ClampBrowserTimestampIfInterProcessTimeTickSkew(&commit_time_);
-  url_ = navigation_handle->GetURL();
+  committed_url_ = navigation_handle->GetURL();
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
   page_transition_ = navigation_handle->GetPageTransition();
   user_gesture_ = navigation_handle->HasUserGesture();
@@ -527,7 +518,7 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
       metadata_.behavior_flags;
   if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent &&
       valid_behavior_descendent) {
-    DCHECK(!commit_time_.is_null());  // OnCommit() must be called first.
+    DCHECK(!committed_url_.is_empty());  // OnCommit() must be called first.
     // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
     // must be called before DispatchObserverTimingCallbacks, but its
     // implementation depends on the state of metadata_, so we need to update
@@ -598,7 +589,6 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
   base::Optional<base::TimeDelta> first_background_time;
   base::Optional<base::TimeDelta> first_foreground_time;
   base::Optional<base::TimeDelta> time_to_abort;
-  base::Optional<base::TimeDelta> time_to_commit;
 
   if (!background_time_.is_null()) {
     DCHECK_GE(background_time_, navigation_start_);
@@ -617,18 +607,13 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
     DCHECK(abort_time_.is_null());
   }
 
-  if (!commit_time_.is_null()) {
-    DCHECK_GE(commit_time_, navigation_start_);
-    time_to_commit = commit_time_ - navigation_start_;
-  }
-
   // abort_type_ == ABORT_NONE implies !abort_user_initiated_.
   DCHECK(abort_type_ != ABORT_NONE || !abort_user_initiated_);
   return PageLoadExtraInfo(
       first_background_time, first_foreground_time, started_in_foreground_,
-      user_gesture_, commit_time_.is_null() ? GURL() : url_, start_url_,
-      time_to_commit, abort_type_, abort_user_initiated_, time_to_abort,
-      num_cache_requests_, num_network_requests_, metadata_);
+      user_gesture_, committed_url_, start_url_, abort_type_,
+      abort_user_initiated_, time_to_abort, num_cache_requests_,
+      num_network_requests_, metadata_);
 }
 
 void PageLoadTracker::NotifyAbort(UserAbortType abort_type,
@@ -671,8 +656,8 @@ bool PageLoadTracker::MatchesOriginalNavigation(
     content::NavigationHandle* navigation_handle) {
   // Neither navigation should have committed.
   DCHECK(!navigation_handle->HasCommitted());
-  DCHECK(commit_time_.is_null());
-  return navigation_handle->GetURL() == url_;
+  DCHECK(committed_url_.is_empty());
+  return navigation_handle->GetURL() == start_url_;
 }
 
 void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,

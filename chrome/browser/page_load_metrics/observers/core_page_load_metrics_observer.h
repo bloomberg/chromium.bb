@@ -13,7 +13,6 @@ namespace internal {
 // specified by the ".Background" suffix. For these events, we put them into the
 // background histogram if the web contents was ever in the background from
 // navigation start to the event in question.
-extern const char kHistogramCommit[];
 extern const char kHistogramFirstLayout[];
 extern const char kHistogramFirstPaint[];
 extern const char kHistogramFirstTextPaint[];
@@ -26,7 +25,6 @@ extern const char kHistogramParseBlockedOnScriptLoad[];
 extern const char kHistogramParseBlockedOnScriptExecution[];
 extern const char kHistogramParseStartToFirstMeaningfulPaint[];
 
-extern const char kBackgroundHistogramCommit[];
 extern const char kBackgroundHistogramFirstLayout[];
 extern const char kBackgroundHistogramFirstTextPaint[];
 extern const char kBackgroundHistogramDomContentLoaded[];

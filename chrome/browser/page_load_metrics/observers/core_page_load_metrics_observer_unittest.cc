@@ -53,13 +53,8 @@ TEST_F(CorePageLoadMetricsObserverTest, SamePageNoTriggerUntilTrueNavCommit) {
   SimulateTimingUpdate(timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
-  // A same page navigation shouldn't trigger logging UMA for the original.
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
 
-  // But we should keep the timing info and log it when we get another
-  // navigation.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 1);
@@ -90,12 +85,9 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
-
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 1);
@@ -152,8 +144,6 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 2);
-
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 2);
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstLayout,
                                        first_layout_1.InMilliseconds(), 1);
@@ -197,7 +187,6 @@ TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
-  histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramLoad, 0);
@@ -209,52 +198,10 @@ TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
   histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramFirstTextPaint, 0);
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
-}
-
-TEST_F(CorePageLoadMetricsObserverTest,
-       BackgroundCommitHistogramClockResolutionNonDeterministic) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
-
-  page_load_metrics::PageLoadTiming timing;
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_layout = first_layout;
-  PopulateRequiredTimingFields(&timing);
-
-  // Start a provisional load.
-  GURL url(kDefaultTestUrl2);
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->SimulateNavigationStart(url);
-
-  // Background and then commit.
-  web_contents()->WasHidden();
-  rfh_tester->SimulateNavigationCommit(url);
-  SimulateTimingUpdate(timing);
-  rfh_tester->SimulateNavigationStop();
-
-  page_load_metrics::PageLoadExtraInfo info =
-      GetPageLoadExtraInfoForCommittedLoad();
-
-  // Navigate again to force histograms to be logged.
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  // If the system clock is low resolution PageLoadTracker's commit_time_ may
-  // be = first_background_time_.
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          info.time_to_commit, info)) {
-    histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit,
-                                        0);
-    histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
-  } else {
-    histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit,
-                                        1);
-    histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
-  }
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
@@ -287,8 +234,6 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
-  histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit, 0);
-
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.dom_content_loaded_event_start, info)) {
     histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded,
@@ -312,7 +257,6 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
       internal::kBackgroundHistogramFirstTextPaint,
       timing.first_text_paint.value().InMilliseconds(), 1);
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
 }
@@ -342,7 +286,6 @@ TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
   // Navigate again to see if the timing updated for the foregrounded load.
   NavigateAndCommit(GURL(kDefaultTestUrl));
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 1);
@@ -359,7 +302,6 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
   rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
   rfh_tester->SimulateNavigationStop();
 
-  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);

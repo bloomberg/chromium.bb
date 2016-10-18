@@ -45,8 +45,10 @@ void HttpsEngagementPageLoadMetricsObserver::OnShown() {
 void HttpsEngagementPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!extra_info.committed_url.is_valid() || !extra_info.time_to_commit)
+  if (!extra_info.committed_url.is_valid() ||
+      extra_info.committed_url.is_empty()) {
     return;
+  }
 
   // Don't record anything if the user never saw it.
   if (!currently_in_foreground_ && foreground_time_.is_zero())

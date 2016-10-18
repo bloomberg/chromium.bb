@@ -201,8 +201,8 @@ class PageLoadTracker {
 
   // Only valid to call post-commit.
   const GURL& committed_url() const {
-    DCHECK(!commit_time_.is_null());
-    return url_;
+    DCHECK(!committed_url_.is_empty());
+    return committed_url_;
   }
 
   base::TimeTicks navigation_start() const { return navigation_start_; }
@@ -242,13 +242,8 @@ class PageLoadTracker {
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
-  // Time this page load was committed. If this page load hasn't committed,
-  // |commit_time_| will be zero.
-  base::TimeTicks commit_time_;
-
-  // The URL of this page load. This is the provisional url before commit
-  // (before redirects), and the committed url after commit.
-  GURL url_;
+  // The committed URL of this page load.
+  GURL committed_url_;
 
   // The start URL for this page load (before redirects).
   GURL start_url_;

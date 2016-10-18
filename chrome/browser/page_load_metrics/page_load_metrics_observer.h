@@ -73,7 +73,6 @@ struct PageLoadExtraInfo {
       bool user_gesture,
       const GURL& committed_url,
       const GURL& start_url,
-      const base::Optional<base::TimeDelta>& time_to_commit,
       UserAbortType abort_type,
       bool abort_user_initiated,
       const base::Optional<base::TimeDelta>& time_to_abort,
@@ -104,9 +103,6 @@ struct PageLoadExtraInfo {
 
   // The URL that started the navigation, before redirects.
   const GURL start_url;
-
-  // Time from navigation start until commit.
-  const base::Optional<base::TimeDelta> time_to_commit;
 
   // The abort time and time to abort for this page load. If the page was not
   // aborted, |abort_type| will be |ABORT_NONE|.
@@ -234,10 +230,10 @@ class PageLoadMetricsObserver {
   // the application may be killed at any time after this method is invoked
   // without further notification. Note that this may be called both for
   // provisional loads as well as committed loads. Implementations that only
-  // want to track committed loads should check extra_info.time_to_commit to
-  // determine if the load had committed. If the implementation returns
-  // CONTINUE_OBSERVING, this method may be called multiple times per observer,
-  // once for each time that the application enters the backround.
+  // want to track committed loads should check whether extra_info.committed_url
+  // is empty to determine if the load had committed. If the implementation
+  // returns CONTINUE_OBSERVING, this method may be called multiple times per
+  // observer, once for each time that the application enters the backround.
   //
   // The default implementation does nothing, and returns CONTINUE_OBSERVING.
   virtual ObservePolicy FlushMetricsOnAppEnterBackground(

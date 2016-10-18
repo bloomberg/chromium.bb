@@ -73,11 +73,6 @@ void RecordFirstMeaningfulPaintStatus(
 
 namespace internal {
 
-const char kHistogramCommit[] = "PageLoad.Timing2.NavigationToCommit";
-
-const char kBackgroundHistogramCommit[] =
-    "PageLoad.Timing2.NavigationToCommit.Background";
-
 const char kHistogramDomContentLoaded[] =
     "PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired";
 const char kBackgroundHistogramDomContentLoaded[] =
@@ -558,14 +553,6 @@ void CorePageLoadMetricsObserver::OnUserInput(
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  const base::TimeDelta time_to_commit = info.time_to_commit.value();
-  if (WasStartedInForegroundOptionalEventInForeground(info.time_to_commit,
-                                                      info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramCommit, time_to_commit);
-  } else {
-    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramCommit, time_to_commit);
-  }
-
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
   if (!info.started_in_foreground) {
@@ -594,9 +581,8 @@ void CorePageLoadMetricsObserver::RecordRappor(
   rappor::RapporService* rappor_service = g_browser_process->rappor_service();
   if (!rappor_service)
     return;
-  if (!info.time_to_commit)
+  if (info.committed_url.is_empty())
     return;
-  DCHECK(!info.committed_url.is_empty());
 
   // Log the eTLD+1 of sites that show poor loading performance.
   if (WasStartedInForegroundOptionalEventInForeground(

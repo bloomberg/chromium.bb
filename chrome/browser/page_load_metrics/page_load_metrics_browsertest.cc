@@ -114,7 +114,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   NavigateToUntrackedUrl();
 
   // We expect one histogram sample for each navigation to title1.html.
-  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 2);
