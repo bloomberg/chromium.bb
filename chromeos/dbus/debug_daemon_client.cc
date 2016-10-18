@@ -120,7 +120,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.AppendBool(is_compressed);
     writer.AppendFileDescriptor(file_descriptor);
     debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kBigLogsDBusTimeoutMS,
         base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
