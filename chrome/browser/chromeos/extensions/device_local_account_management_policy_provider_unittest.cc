@@ -415,6 +415,27 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     error.clear();
   }
 
+  // Verify that an extension with remote URL permissions cannot be installed.
+  {
+    base::ListValue* const permissions = new base::ListValue();
+    permissions->AppendString("https://example.com/");
+    permissions->AppendString("http://example.com/");
+    permissions->AppendString("ftp://example.com/");
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kPermissions, permissions);
+
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
+
   // Verify that a platform app with a local URL permission cannot be installed.
   {
     base::ListValue* const permissions = new base::ListValue();

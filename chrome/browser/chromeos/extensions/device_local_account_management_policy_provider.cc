@@ -17,6 +17,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -790,14 +791,22 @@ bool IsSafeForPublicSession(const extensions::Extension* extension) {
         if (ArrayContains(kSafePermissionStrings, permission_string)) {
           continue;
         }
-        // Allow arbitrary web requests.  Don't include <all_urls> because that
-        // also matches file:// schemes.
+        // Web requests (origin permissions).  Don't include <all_urls> because
+        // that also matches file:// schemes.
         if (base::StartsWith(permission_string, "https://",
                              base::CompareCase::SENSITIVE) ||
             base::StartsWith(permission_string, "http://",
                              base::CompareCase::SENSITIVE) ||
             base::StartsWith(permission_string, "ftp://",
                              base::CompareCase::SENSITIVE)) {
+          // Allow origin permissions if the extension is isolated from the main
+          // browser session (so it can't access user cookies, etc.).
+          if (!extensions::AppIsolationInfo::HasIsolatedStorage(extension)) {
+            LOG(ERROR) << extension->id() << " does not have isolated storage "
+                       "and it requested origin permission: "
+                       << permission_string;
+            safe = false;
+          }
           continue;
         }
         LOG(ERROR) << extension->id()
