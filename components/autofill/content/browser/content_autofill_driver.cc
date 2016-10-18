@@ -170,6 +170,15 @@ gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return new_box;
 }
 
+void ContentAutofillDriver::DidInteractWithCreditCardForm() {
+  // Notify the WebContents about credit card inputs on HTTP pages.
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host_);
+  if (contents->GetVisibleURL().SchemeIsCryptographic())
+    return;
+  contents->OnCreditCardInputShownOnHttp();
+}
+
 // mojom::AutofillDriver:
 void ContentAutofillDriver::FirstUserGestureObserved() {
   client_->OnFirstUserGestureObserved();

@@ -82,6 +82,8 @@ void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
 }
 
+void AutofillDriverIOS::DidInteractWithCreditCardForm() {}
+
 void AutofillDriverIOS::RendererShouldClearFilledForm() {
 }
 

@@ -99,6 +99,10 @@ class AutofillDriver {
   // renderers cannot do this transformation themselves.
   virtual gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) = 0;
+
+  // Called when the user interacted with a credit card form, so that
+  // the current page's security state can be updated appropriately.
+  virtual void DidInteractWithCreditCardForm() = 0;
 };
 
 }  // namespace autofill

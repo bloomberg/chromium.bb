@@ -471,7 +471,8 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
 
 class MockAutofillDriver : public TestAutofillDriver {
  public:
-  MockAutofillDriver() : is_off_the_record_(false) {}
+  MockAutofillDriver()
+      : is_off_the_record_(false), did_interact_with_credit_card_form_(false) {}
 
   // Mock methods to enable testability.
   MOCK_METHOD3(SendFormDataToRenderer, void(int query_id,
@@ -484,8 +485,21 @@ class MockAutofillDriver : public TestAutofillDriver {
 
   bool IsOffTheRecord() const override { return is_off_the_record_; }
 
+  void DidInteractWithCreditCardForm() override {
+    did_interact_with_credit_card_form_ = true;
+  };
+
+  void ClearDidInteractWithCreditCardForm() {
+    did_interact_with_credit_card_form_ = false;
+  };
+
+  bool did_interact_with_credit_card_form() const {
+    return did_interact_with_credit_card_form_;
+  }
+
  private:
   bool is_off_the_record_;
+  bool did_interact_with_credit_card_form_;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
 };
 
@@ -5244,6 +5258,38 @@ TEST_F(AutofillManagerTest,
   for (const FormFieldData& field : mixed_form.fields) {
     GetAutofillSuggestions(mixed_form, field);
     EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+  }
+}
+
+// Tests that querying for credit card field suggestions notifies the
+// driver of an interaction with a credit card field.
+TEST_F(AutofillManagerTest, NotifyDriverOfCreditCardInteraction) {
+  // Set up a credit card form.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  field.should_autocomplete = true;
+  form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Month", "ccexpiresmonth", "", "text",
+                            &field);
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  EXPECT_FALSE(autofill_driver_->did_interact_with_credit_card_form());
+
+  // The driver should always be notified.
+  for (const FormFieldData& field : form.fields) {
+    GetAutofillSuggestions(form, field);
+    EXPECT_TRUE(autofill_driver_->did_interact_with_credit_card_form());
+    autofill_driver_->ClearDidInteractWithCreditCardForm();
   }
 }
 

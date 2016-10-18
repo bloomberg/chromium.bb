@@ -77,4 +77,6 @@ gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
+void TestAutofillDriver::DidInteractWithCreditCardForm() {}
+
 }  // namespace autofill

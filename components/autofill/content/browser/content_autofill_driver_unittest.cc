@@ -22,6 +22,8 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -445,6 +447,36 @@ TEST_F(ContentAutofillDriverTest, PreviewFieldWithValue) {
 
   EXPECT_TRUE(fake_agent_.GetString16PreviewFieldWithValue(&output_value));
   EXPECT_EQ(input_value, output_value);
+}
+
+// Tests that credit card form interactions are recorded on the current
+// NavigationEntry's SSLStatus if the page is HTTP.
+TEST_F(ContentAutofillDriverTest, CreditCardFormInteraction) {
+  GURL url("http://example.test");
+  NavigateAndCommit(url);
+  driver_->DidInteractWithCreditCardForm();
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP));
+}
+
+// Tests that credit card form interactions are *not* recorded on the current
+// NavigationEntry's SSLStatus if the page is *not* HTTP.
+TEST_F(ContentAutofillDriverTest, CreditCardFormInteractionOnHTTPS) {
+  GURL url("https://example.test");
+  NavigateAndCommit(url);
+  driver_->DidInteractWithCreditCardForm();
+
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+  EXPECT_FALSE(!!(entry->GetSSL().content_status &
+                  content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP));
 }
 
 }  // namespace autofill
