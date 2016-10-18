@@ -95,6 +95,9 @@ crbug.com/623265 http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 # layout_test_runtime_flags_.have_top_loading_frame()
 crbug.com/645641 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 
+# https://crbug.com/657081 - Allow-CSP-From header test (experimental feature)
+crbug.com/657081 http/tests/security/contentSecurityPolicy/embeddedEnforcement/allow_csp_from-header.html [ Failure ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) fast/frames/cached-frame-counter.html [ Timeout ]
 Bug(none) fast/frames/frame-limit.html [ Timeout ]
