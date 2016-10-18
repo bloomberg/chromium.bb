@@ -142,7 +142,9 @@ void V4Database::UpdatedStoreReady(ListIdentifier identifier,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(pending_store_updates_);
   if (new_store) {
-    (*store_map_)[identifier] = std::move(new_store);
+    (*store_map_)[identifier].swap(new_store);
+    // |new_store| now is the store that needs to be destroyed on task runner.
+    V4Store::Destroy(std::move(new_store));
   }
 
   pending_store_updates_--;

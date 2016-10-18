@@ -198,7 +198,9 @@ V4Store::V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                  const base::FilePath& store_path)
     : store_path_(store_path), task_runner_(task_runner) {}
 
-V4Store::~V4Store() {}
+V4Store::~V4Store() {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+}
 
 std::string V4Store::DebugString() const {
   std::string state_base64;
@@ -206,6 +208,14 @@ std::string V4Store::DebugString() const {
 
   return base::StringPrintf("path: %" PRIsFP "; state: %s",
                             store_path_.value().c_str(), state_base64.c_str());
+}
+
+// static
+void V4Store::Destroy(std::unique_ptr<V4Store> v4_store) {
+  V4Store* v4_store_raw = v4_store.release();
+  if (v4_store_raw) {
+    v4_store_raw->task_runner_->DeleteSoon(FROM_HERE, v4_store_raw);
+  }
 }
 
 void V4Store::Reset() {

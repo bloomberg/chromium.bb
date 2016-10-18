@@ -176,6 +176,10 @@ class V4Store {
 
   std::string DebugString() const;
 
+  // Schedules the destruction of the V4Store object pointed to by |v4_store|,
+  // on the task runner.
+  static void Destroy(std::unique_ptr<V4Store> v4_store);
+
   // Reads the store file from disk and populates the in-memory representation
   // of the hash prefixes.
   void Initialize();
