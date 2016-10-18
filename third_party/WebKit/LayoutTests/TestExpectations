@@ -1182,6 +1182,8 @@ crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
+crbug.com/655955 [ Win Linux ] fast/transforms/transform-update-frame-overflow.html [ Pass Failure ]
+
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
