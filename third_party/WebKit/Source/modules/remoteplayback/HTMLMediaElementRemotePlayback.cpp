@@ -44,6 +44,7 @@ HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::from(
 
 // static
 RemotePlayback* HTMLMediaElementRemotePlayback::remote(
+    ScriptState* scriptState,
     HTMLMediaElement& element) {
   HTMLMediaElementRemotePlayback& self =
       HTMLMediaElementRemotePlayback::from(element);
@@ -52,7 +53,7 @@ RemotePlayback* HTMLMediaElementRemotePlayback::remote(
     return nullptr;
 
   if (!self.m_remote)
-    self.m_remote = RemotePlayback::create(element);
+    self.m_remote = RemotePlayback::create(scriptState, element);
 
   return self.m_remote;
 }

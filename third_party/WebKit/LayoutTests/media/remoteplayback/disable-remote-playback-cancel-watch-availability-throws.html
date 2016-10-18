@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test that calling cancelWatchAvailability() when disableRemotePlayback attribute is set throws an exception</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <script>
+            async_test(function(t)
+            {
+                var v = document.createElement('video');
+                var invalidStateErrorException = new DOMException(
+                    'disableRemotePlayback attribute is present.',
+                    'InvalidStateError');
+                v.src = findMediaFile('video', 'content/test');
+                document.body.appendChild(v);
+
+                v.remote.watchAvailability(function() {})
+                    .then(function(id) {
+                        v.disableRemotePlayback = true;
+                        v.remote.cancelWatchAvailability(id).then(
+                            t.unreached_func(),
+                            t.step_func(function(e) {
+                                assert_equals(e.name, invalidStateErrorException.name);
+                                assert_equals(e.message, invalidStateErrorException.message);
+                                v.remote.cancelWatchAvailability().then(
+                                    t.unreached_func(),
+                                    t.step_func_done(function(e) {
+                                        assert_equals(e.name, invalidStateErrorException.name);
+                                        assert_equals(e.message, invalidStateErrorException.message);
+                                    })
+                                );
+                            }));
+                    },
+                    t.unreached_func());
+            }, 'Test that calling cancelWatchAvailability() when disableRemotePlayback attribute is set throws an exception.');
+        </script>
+    </body>
+</html>

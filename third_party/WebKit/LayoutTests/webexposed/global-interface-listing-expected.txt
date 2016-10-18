@@ -4835,18 +4835,13 @@ interface RemotePlayback : EventTarget
     getter onconnecting
     getter ondisconnect
     getter state
+    method cancelWatchAvailability
     method constructor
-    method getAvailability
     method prompt
+    method watchAvailability
     setter onconnect
     setter onconnecting
     setter ondisconnect
-interface RemotePlaybackAvailability : EventTarget
-    attribute @@toStringTag
-    getter onchange
-    getter value
-    method constructor
-    setter onchange
 interface Request
     attribute @@toStringTag
     getter bodyUsed

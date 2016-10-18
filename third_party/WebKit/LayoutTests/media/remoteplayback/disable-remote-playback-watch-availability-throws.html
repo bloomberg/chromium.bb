@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Test that calling prompt() when disableRemotePlayback attribute is set throws an exception</title>
+        <title>Test that calling watchAvailability() when disableRemotePlayback attribute is set throws an exception</title>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
         <script src="../media-file.js"></script>
@@ -18,8 +18,8 @@
                 return promise_rejects(
                     test,
                     new DOMException('disableRemotePlayback attribute is present.', 'InvalidStateError'),
-                    v.remote.prompt());
-            }, 'Test that calling prompt() when disableRemotePlayback attribute is set throws an exception.');
+                    v.remote.watchAvailability(function() {}));
+            }, 'Test that calling watchAvailability() when disableRemotePlayback attribute is set throws an exception.');
         </script>
     </body>
 </html>

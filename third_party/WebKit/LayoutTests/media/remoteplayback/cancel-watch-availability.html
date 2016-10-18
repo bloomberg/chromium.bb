@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Tests various ways to call cancelWatchAvailability()</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <script>
+            var notFoundErrorException = new DOMException(
+                'A callback with the given id is not found.',
+                'NotFoundError');
+
+            async_test(function(t) {
+                var v = document.createElement('video');
+                v.src = findMediaFile('video', 'content/test');
+                document.body.appendChild(v);
+
+                v.remote.watchAvailability(function() {})
+                    .then(t.step_func(function(id) {
+                        v.remote.cancelWatchAvailability(id).then(t.step_func(function() {
+                            v.remote.cancelWatchAvailability(id).then(
+                                t.unreached_func(), t.step_func_done(function(e) {
+                                    assert_equals(e.name, notFoundErrorException.name);
+                                    assert_equals(e.message, notFoundErrorException.message);
+                                })
+                            );
+                        }),
+                        t.unreached_func());
+                    }),
+                    t.unreached_func());
+            }, 'Test that calling cancelWatchAvailability() with an id does remove the callback.');
+
+            async_test(function(t) {
+                var v = document.createElement('video');
+                v.src = findMediaFile('video', 'content/test');
+                document.body.appendChild(v);
+
+                Promise.all([
+                    v.remote.watchAvailability(function() {}),
+                    v.remote.watchAvailability(function() {})
+                ]).then(t.step_func(function(ids) {
+                    v.remote.cancelWatchAvailability().then(t.step_func(function() {
+                        v.remote.cancelWatchAvailability(ids[0]).then(t.unreached_func(), t.step_func(function(e) {
+                            assert_equals(e.name, notFoundErrorException.name);
+                            assert_equals(e.message, notFoundErrorException.message);
+                            v.remote.cancelWatchAvailability(ids[1])
+                                .then(t.unreached_func(), t.step_func_done(function(e) {
+                                    assert_equals(e.name, notFoundErrorException.name);
+                                    assert_equals(e.message, notFoundErrorException.message);
+                                }));
+                        }));
+                    }),
+                    t.unreached_func());
+                }),
+                t.unreached_func());
+            }, 'Test that calling cancelWatchAvailability() without an id removes all the callbacks.');
+        </script>
+    </body>
+</html>

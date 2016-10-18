@@ -59,7 +59,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   auto pageHolder = DummyPageHolder::create();
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
-  RemotePlayback* remotePlayback = RemotePlayback::create(*element);
+  RemotePlayback* remotePlayback =
+      RemotePlayback::create(scope.getScriptState(), *element);
 
   MockFunction* resolve = MockFunction::create(scope.getScriptState());
   MockFunction* reject = MockFunction::create(scope.getScriptState());
@@ -67,8 +68,7 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   EXPECT_CALL(*resolve, call(::testing::_)).Times(0);
   EXPECT_CALL(*reject, call(::testing::_)).Times(1);
 
-  remotePlayback->prompt(scope.getScriptState())
-      .then(resolve->bind(), reject->bind());
+  remotePlayback->prompt().then(resolve->bind(), reject->bind());
   cancelPrompt(remotePlayback);
 }
 
@@ -78,7 +78,8 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   auto pageHolder = DummyPageHolder::create();
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
-  RemotePlayback* remotePlayback = RemotePlayback::create(*element);
+  RemotePlayback* remotePlayback =
+      RemotePlayback::create(scope.getScriptState(), *element);
 
   auto connectingHandler = new ::testing::StrictMock<MockEventListener>();
   auto connectHandler = new ::testing::StrictMock<MockEventListener>();

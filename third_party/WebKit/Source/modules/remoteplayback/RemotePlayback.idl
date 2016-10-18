@@ -9,8 +9,11 @@ enum RemotePlaybackState {
     "disconnected"
 };
 
+callback RemotePlaybackAvailabilityCallback = void(boolean available);
+
 [
     ActiveScriptWrappable,
+    Custom=VisitDOMWrapper,
     DependentLifetime,
     RuntimeEnabled=RemotePlayback
 ] interface RemotePlayback : EventTarget {
@@ -19,6 +22,7 @@ enum RemotePlaybackState {
     attribute EventHandler onconnect;
     attribute EventHandler ondisconnect;
 
-    [CallWith=ScriptState] Promise<RemotePlaybackAvailability> getAvailability();
-    [CallWith=ScriptState] Promise<void> prompt();
+    Promise<long> watchAvailability(RemotePlaybackAvailabilityCallback callback);
+    Promise<void> cancelWatchAvailability(optional long id);
+    Promise<void> prompt();
 };

@@ -5,13 +5,14 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/modules/v8/RemotePlaybackAvailabilityCallback.h"
 #include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/EventTargetModules.h"
-#include "modules/remoteplayback/RemotePlaybackAvailability.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -39,17 +40,21 @@ const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state) {
 }  // anonymous namespace
 
 // static
-RemotePlayback* RemotePlayback::create(HTMLMediaElement& element) {
-  ASSERT(element.document().frame());
+RemotePlayback* RemotePlayback::create(ScriptState* scriptState,
+                                       HTMLMediaElement& element) {
+  DCHECK(element.document().frame());
+  DCHECK(scriptState);
 
-  RemotePlayback* remotePlayback = new RemotePlayback(element);
+  RemotePlayback* remotePlayback = new RemotePlayback(scriptState, element);
   element.setRemotePlaybackClient(remotePlayback);
 
   return remotePlayback;
 }
 
-RemotePlayback::RemotePlayback(HTMLMediaElement& element)
+RemotePlayback::RemotePlayback(ScriptState* scriptState,
+                               HTMLMediaElement& element)
     : ActiveScriptWrappable(this),
+      m_scriptState(scriptState),
       m_state(element.isPlayingRemotely()
                   ? WebRemotePlaybackState::Connected
                   : WebRemotePlaybackState::Disconnected),
@@ -64,27 +69,88 @@ ExecutionContext* RemotePlayback::getExecutionContext() const {
   return &m_mediaElement->document();
 }
 
-ScriptPromise RemotePlayback::getAvailability(ScriptState* scriptState) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+ScriptPromise RemotePlayback::watchAvailability(
+    RemotePlaybackAvailabilityCallback* callback) {
+  ScriptPromiseResolver* resolver =
+      ScriptPromiseResolver::create(m_scriptState.get());
   ScriptPromise promise = resolver->promise();
+
+  if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "disableRemotePlayback attribute is present."));
+    return promise;
+  }
+
+  // TODO(avayvod): implement steps 4 and 5 of the algorithm.
+  // https://crbug.com/655233
+  int id;
+  do {
+    id = getExecutionContext()->circularSequentialID();
+  } while (!m_availabilityCallbacks.add(id, callback).isNewEntry);
+
+  // Report the current availability via the callback.
+  getExecutionContext()->postTask(
+      BLINK_FROM_HERE,
+      createSameThreadTask(&RemotePlayback::notifyInitialAvailability,
+                           wrapPersistent(this), id),
+      "watchAvailabilityCallback");
 
   // TODO(avayvod): Currently the availability is tracked for each media element
   // as soon as it's created, we probably want to limit that to when the
   // page/element is visible (see https://crbug.com/597281) and has default
   // controls. If there are no default controls, we should also start tracking
-  // availability on demand meaning the Promise returned by getAvailability()
+  // availability on demand meaning the Promise returned by watchAvailability()
   // will be resolved asynchronously.
-  RemotePlaybackAvailability* availability =
-      RemotePlaybackAvailability::take(resolver, m_availability);
-  m_availabilityObjects.append(availability);
-  resolver->resolve(availability);
+  resolver->resolve(id);
   return promise;
 }
 
-ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
-  // TODO(avayvod): implement steps 4, 5, 8, 9 of the algorithm.
+ScriptPromise RemotePlayback::cancelWatchAvailability(int id) {
+  ScriptPromiseResolver* resolver =
+      ScriptPromiseResolver::create(m_scriptState.get());
+  ScriptPromise promise = resolver->promise();
+
+  if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "disableRemotePlayback attribute is present."));
+    return promise;
+  }
+
+  auto iter = m_availabilityCallbacks.find(id);
+  if (iter == m_availabilityCallbacks.end()) {
+    resolver->reject(DOMException::create(
+        NotFoundError, "A callback with the given id is not found."));
+    return promise;
+  }
+
+  m_availabilityCallbacks.remove(iter);
+
+  resolver->resolve();
+  return promise;
+}
+
+ScriptPromise RemotePlayback::cancelWatchAvailability() {
+  ScriptPromiseResolver* resolver =
+      ScriptPromiseResolver::create(m_scriptState.get());
+  ScriptPromise promise = resolver->promise();
+
+  if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "disableRemotePlayback attribute is present."));
+    return promise;
+  }
+
+  m_availabilityCallbacks.clear();
+
+  resolver->resolve();
+  return promise;
+}
+
+ScriptPromise RemotePlayback::prompt() {
+  // TODO(avayvod): implement steps 5, 8, 9 of the algorithm.
   // https://crbug.com/647441
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromiseResolver* resolver =
+      ScriptPromiseResolver::create(m_scriptState.get());
   ScriptPromise promise = resolver->promise();
 
   if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
@@ -126,8 +192,17 @@ String RemotePlayback::state() const {
 }
 
 bool RemotePlayback::hasPendingActivity() const {
-  return hasEventListeners() || !m_availabilityObjects.isEmpty() ||
+  return hasEventListeners() || !m_availabilityCallbacks.isEmpty() ||
          m_promptPromiseResolver;
+}
+
+void RemotePlayback::notifyInitialAvailability(int callbackId) {
+  // May not find the callback if the website cancels it fast enough.
+  auto iter = m_availabilityCallbacks.find(callbackId);
+  if (iter == m_availabilityCallbacks.end())
+    return;
+
+  iter->value->call(m_scriptState.get(), this, m_availability);
 }
 
 void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
@@ -167,8 +242,8 @@ void RemotePlayback::availabilityChanged(bool available) {
     return;
 
   m_availability = available;
-  for (auto& availabilityObject : m_availabilityObjects)
-    availabilityObject->availabilityChanged(available);
+  for (auto& callback : m_availabilityCallbacks.values())
+    callback->call(m_scriptState.get(), this, m_availability);
 }
 
 void RemotePlayback::promptCancelled() {
@@ -180,8 +255,15 @@ void RemotePlayback::promptCancelled() {
   m_promptPromiseResolver = nullptr;
 }
 
+void RemotePlayback::setV8ReferencesForCallbacks(
+    v8::Isolate* isolate,
+    const v8::Persistent<v8::Object>& wrapper) {
+  for (auto callback : m_availabilityCallbacks.values())
+    callback->setWrapperReference(isolate, wrapper);
+}
+
 DEFINE_TRACE(RemotePlayback) {
-  visitor->trace(m_availabilityObjects);
+  visitor->trace(m_availabilityCallbacks);
   visitor->trace(m_promptPromiseResolver);
   visitor->trace(m_mediaElement);
   EventTargetWithInlineData::trace(visitor);

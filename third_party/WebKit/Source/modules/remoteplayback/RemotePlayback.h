@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
@@ -21,7 +22,7 @@ namespace blink {
 class ExecutionContext;
 class HTMLMediaElement;
 class LocalFrame;
-class RemotePlaybackAvailability;
+class RemotePlaybackAvailabilityCallback;
 class ScriptPromiseResolver;
 
 class MODULES_EXPORT RemotePlayback final
@@ -32,14 +33,27 @@ class MODULES_EXPORT RemotePlayback final
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
  public:
-  static RemotePlayback* create(HTMLMediaElement&);
+  static RemotePlayback* create(ScriptState*, HTMLMediaElement&);
 
   // EventTarget implementation.
   const WTF::AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  ScriptPromise getAvailability(ScriptState*);
-  ScriptPromise prompt(ScriptState*);
+  // Starts notifying the page about the changes to the remote playback devices
+  // availability via the provided callback. May start the monitoring of remote
+  // playback devices if it isn't running yet.
+  ScriptPromise watchAvailability(RemotePlaybackAvailabilityCallback*);
+
+  // Cancels updating the page via the callback specified by its id.
+  ScriptPromise cancelWatchAvailability(int id);
+
+  // Cancels all the callbacks watching remote playback availability changes
+  // registered with this element.
+  ScriptPromise cancelWatchAvailability();
+
+  // Shows the UI allowing user to change the remote playback state of the media
+  // element (by picking a remote playback device from the list, for example).
+  ScriptPromise prompt();
 
   String state() const;
 
@@ -53,18 +67,31 @@ class MODULES_EXPORT RemotePlayback final
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class V8RemotePlayback;
   friend class RemotePlaybackTest;
 
-  explicit RemotePlayback(HTMLMediaElement&);
+  explicit RemotePlayback(ScriptState*, HTMLMediaElement&);
+
+  // Calls the specified availability callback with the current availability.
+  // Need a void() method to post it as a task.
+  void notifyInitialAvailability(int callbackId);
 
   // WebRemotePlaybackClient implementation.
   void stateChanged(WebRemotePlaybackState) override;
   void availabilityChanged(bool available) override;
   void promptCancelled() override;
 
+  // Prevent v8 from garbage collecting the availability callbacks.
+  // TODO(avayvod): remove when crbug.com/468240 is fixed and the references
+  // are maintained automatically.
+  void setV8ReferencesForCallbacks(v8::Isolate*,
+                                   const v8::Persistent<v8::Object>& wrapper);
+
+  RefPtr<ScriptState> m_scriptState;
   WebRemotePlaybackState m_state;
   bool m_availability;
-  HeapVector<Member<RemotePlaybackAvailability>> m_availabilityObjects;
+  HeapHashMap<int, Member<RemotePlaybackAvailabilityCallback>>
+      m_availabilityCallbacks;
   Member<HTMLMediaElement> m_mediaElement;
   Member<ScriptPromiseResolver> m_promptPromiseResolver;
 };

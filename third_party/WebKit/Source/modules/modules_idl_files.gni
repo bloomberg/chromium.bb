@@ -219,7 +219,6 @@ modules_idl_files =
                     "quota/StorageQuotaCallback.idl",
                     "quota/StorageUsageCallback.idl",
                     "remoteplayback/RemotePlayback.idl",
-                    "remoteplayback/RemotePlaybackAvailability.idl",
                     "screen_orientation/ScreenOrientation.idl",
                     "sensor/AmbientLightSensor.idl",
                     "sensor/AmbientLightSensorReading.idl",
