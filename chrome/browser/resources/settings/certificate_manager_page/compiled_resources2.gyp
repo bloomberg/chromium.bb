@@ -42,9 +42,11 @@
     {
       'target_name': 'certificate_subentry',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         'certificate_manager_types',
         'certificates_browser_proxy',
+        '../compiled_resources2.gyp:settings_action_menu',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
