@@ -446,6 +446,7 @@
       "blessed_extension",
       "blessed_web_page",
       "content_script",
+      "extension_service_worker",
       "unblessed_extension"
     ]
   }, {

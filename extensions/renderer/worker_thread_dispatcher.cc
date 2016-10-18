@@ -24,8 +24,10 @@ void OnResponseOnWorkerThread(int request_id,
                               bool succeeded,
                               const std::unique_ptr<base::ListValue>& response,
                               const std::string& error) {
-  WorkerThreadDispatcher::GetRequestSender()->HandleResponse(
-      request_id, succeeded, *response, error);
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  WorkerThreadDispatcher::GetRequestSender()->HandleWorkerResponse(
+      request_id, data->service_worker_version_id(), succeeded, *response,
+      error);
 }
 
 }  // namespace
@@ -52,7 +54,7 @@ V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
 }
 
 // static
-RequestSender* WorkerThreadDispatcher::GetRequestSender() {
+ServiceWorkerRequestSender* WorkerThreadDispatcher::GetRequestSender() {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK(data);
   return data->request_sender();
@@ -84,19 +86,20 @@ void WorkerThreadDispatcher::OnResponseWorker(int worker_thread_id,
                  base::Passed(response.CreateDeepCopy()), error));
 }
 
-void WorkerThreadDispatcher::AddWorkerData(int embedded_worker_id) {
+void WorkerThreadDispatcher::AddWorkerData(int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
     ServiceWorkerData* new_data =
-        new ServiceWorkerData(this, embedded_worker_id);
+        new ServiceWorkerData(this, service_worker_version_id);
     g_data_tls.Pointer()->Set(new_data);
   }
 }
 
-void WorkerThreadDispatcher::RemoveWorkerData(int embedded_worker_id) {
+void WorkerThreadDispatcher::RemoveWorkerData(
+    int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (data) {
-    DCHECK_EQ(embedded_worker_id, data->embedded_worker_id());
+    DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
     delete data;
     g_data_tls.Pointer()->Set(nullptr);
   }

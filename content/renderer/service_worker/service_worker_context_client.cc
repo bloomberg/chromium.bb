@@ -459,7 +459,7 @@ void ServiceWorkerContextClient::didInitializeWorkerContext(
   GetContentClient()
       ->renderer()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
-          context, embedded_worker_id_, script_url_);
+          context, service_worker_version_id_, script_url_);
 }
 
 void ServiceWorkerContextClient::willDestroyWorkerContext(
@@ -492,7 +492,7 @@ void ServiceWorkerContextClient::willDestroyWorkerContext(
   g_worker_client_tls.Pointer()->Set(NULL);
 
   GetContentClient()->renderer()->WillDestroyServiceWorkerContextOnWorkerThread(
-      context, embedded_worker_id_, script_url_);
+      context, service_worker_version_id_, script_url_);
 }
 
 void ServiceWorkerContextClient::workerContextDestroyed() {

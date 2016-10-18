@@ -23,6 +23,7 @@
 #include "content/public/common/console_message_level.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "ipc/ipc_message.h"
@@ -518,8 +519,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return dispatcher_.get();
   }
 
-  void set_is_from_service_worker(bool value) {
-    is_from_service_worker_ = value;
+  void set_service_worker_version_id(int64_t version_id) {
+    service_worker_version_id_ = version_id;
   }
 
   // Gets the "current" web contents if any. If there is no associated web
@@ -557,15 +558,20 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   void Destruct() const override;
 
+  bool is_from_service_worker() const {
+    return service_worker_version_id_ !=
+           extensions::kInvalidServiceWorkerVersionId;
+  }
+
   // The dispatcher that will service this extension function call.
   base::WeakPtr<extensions::ExtensionFunctionDispatcher> dispatcher_;
 
   // The RenderFrameHost we will send responses to.
   content::RenderFrameHost* render_frame_host_;
 
-  // Whether or not this ExtensionFunction was called by an extension Service
-  // Worker.
-  bool is_from_service_worker_;
+  // If this ExtensionFunction was called by an extension Service Worker, then
+  // this contains the worker's version id.
+  int64_t service_worker_version_id_;
 
   std::unique_ptr<RenderFrameHostTracker> tracker_;
 

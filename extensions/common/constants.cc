@@ -87,6 +87,8 @@ const int kWebstoreSignaturesPublicKeySize =
 const char kMimeTypeJpeg[] = "image/jpeg";
 const char kMimeTypePng[] = "image/png";
 
+const int64_t kInvalidServiceWorkerVersionId = -1;
+
 }  // namespace extensions
 
 namespace extension_misc {

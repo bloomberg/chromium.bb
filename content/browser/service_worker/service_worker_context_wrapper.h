@@ -105,6 +105,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& url,
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) override;
+  void CountExternalRequestsForTest(
+      const GURL& url,
+      const CountExternalRequestsCallback& callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
   void ClearAllServiceWorkersForTest(const base::Closure& callback) override;
   void StartServiceWorkerForNavigationHint(
@@ -112,6 +115,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       blink::WebNavigationHintType type,
       int render_process_id,
       const ResultCallback& callback) override;
+  bool StartingExternalRequest(int64_t service_worker_version_id,
+                               const std::string& request_uuid) override;
+  bool FinishedExternalRequest(int64_t service_worker_version_id,
+                               const std::string& request_uuid) override;
 
   // These methods must only be called from the IO thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);

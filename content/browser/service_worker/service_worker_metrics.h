@@ -110,6 +110,9 @@ class ServiceWorkerMetrics {
     NAVIGATION_HINT_LINK_MOUSE_DOWN = 18,
     NAVIGATION_HINT_LINK_TAP_UNCONFIRMED = 19,
     NAVIGATION_HINT_LINK_TAP_DOWN = 20,
+    // Used when external consumers want to add a request to
+    // ServiceWorkerVersion to keep it alive.
+    EXTERNAL_REQUEST = 21,
     // Add new events to record here.
     NUM_TYPES
   };

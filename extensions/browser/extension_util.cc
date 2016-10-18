@@ -4,6 +4,8 @@
 
 #include "extensions/browser/extension_util.h"
 
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
@@ -41,6 +43,17 @@ bool CanBeIncognitoEnabled(const Extension* extension) {
   return IncognitoInfo::IsIncognitoAllowed(extension) &&
          (!extension->is_platform_app() ||
           extension->location() == Manifest::COMPONENT);
+}
+
+content::StoragePartition* GetStoragePartitionForExtensionId(
+    const std::string& extension_id,
+    content::BrowserContext* browser_context) {
+  GURL site_url = content::SiteInstance::GetSiteForURL(
+      browser_context, Extension::GetBaseURLFromExtensionId(extension_id));
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetStoragePartitionForSite(browser_context,
+                                                          site_url);
+  return storage_partition;
 }
 
 }  // namespace util

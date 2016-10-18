@@ -19,15 +19,18 @@ class WorkerThreadDispatcher;
 // TODO(lazyboy): Also put worker ScriptContexts in this.
 class ServiceWorkerData {
  public:
-  ServiceWorkerData(WorkerThreadDispatcher* dispatcher, int embedded_worker_id);
+  ServiceWorkerData(WorkerThreadDispatcher* dispatcher,
+                    int64_t service_worker_version_id);
   ~ServiceWorkerData();
 
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }
-  RequestSender* request_sender() { return request_sender_.get(); }
-  int embedded_worker_id() const { return embedded_worker_id_; }
+  ServiceWorkerRequestSender* request_sender() { return request_sender_.get(); }
+  int64_t service_worker_version_id() const {
+    return service_worker_version_id_;
+  }
 
  private:
-  const int embedded_worker_id_;
+  const int64_t service_worker_version_id_;
 
   std::unique_ptr<V8SchemaRegistry> v8_schema_registry_;
   std::unique_ptr<ServiceWorkerRequestSender> request_sender_;

@@ -566,6 +566,24 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   return request_id;
 }
 
+bool ServiceWorkerVersion::StartExternalRequest(
+    const std::string& request_uuid) {
+  // It's possible that the renderer is lying or the version started stopping
+  // right around the time of the IPC.
+  if (running_status() != EmbeddedWorkerStatus::RUNNING)
+    return false;
+
+  if (external_request_uuid_to_request_id_.count(request_uuid) > 0u)
+    return false;
+
+  int request_id =
+      StartRequest(ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
+                   base::Bind(&ServiceWorkerVersion::CleanUpExternalRequest,
+                              this, request_uuid));
+  external_request_uuid_to_request_id_[request_uuid] = request_id;
+  return true;
+}
+
 bool ServiceWorkerVersion::FinishRequest(int request_id,
                                          bool was_handled,
                                          base::Time dispatch_event_time) {
@@ -590,6 +608,27 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
       observer.OnNoWork(this);
   }
 
+  return true;
+}
+
+bool ServiceWorkerVersion::FinishExternalRequest(
+    const std::string& request_uuid) {
+  // It's possible that the renderer is lying or the version started stopping
+  // right around the time of the IPC.
+  if (running_status() != EmbeddedWorkerStatus::RUNNING)
+    return false;
+
+  RequestUUIDToRequestIDMap::iterator iter =
+      external_request_uuid_to_request_id_.find(request_uuid);
+  if (iter != external_request_uuid_to_request_id_.end()) {
+    int request_id = iter->second;
+    external_request_uuid_to_request_id_.erase(iter);
+    return FinishRequest(request_id, true, base::Time::Now());
+  }
+
+  // It is possible that the request was cancelled or timed out before and we
+  // won't find it in |external_request_uuid_to_request_id_|.
+  // Return true so we don't kill the process.
   return true;
 }
 
@@ -1792,6 +1831,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
     iter.Advance();
   }
   pending_requests_.Clear();
+  external_request_uuid_to_request_id_.clear();
 
   // Close all mojo services. This will also fire and clear all callbacks
   // for messages that are still outstanding for those services.
@@ -1829,6 +1869,14 @@ void ServiceWorkerVersion::OnBeginEvent() {
 void ServiceWorkerVersion::FinishStartWorker(ServiceWorkerStatusCode status) {
   start_worker_first_purpose_ = base::nullopt;
   RunCallbacks(this, &start_callbacks_, status);
+}
+
+void ServiceWorkerVersion::CleanUpExternalRequest(
+    const std::string& request_uuid,
+    ServiceWorkerStatusCode status) {
+  if (status == SERVICE_WORKER_OK)
+    return;
+  external_request_uuid_to_request_id_.erase(request_uuid);
 }
 
 }  // namespace content

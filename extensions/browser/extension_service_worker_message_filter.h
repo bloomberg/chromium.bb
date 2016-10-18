@@ -12,6 +12,7 @@ struct ExtensionHostMsg_Request_Params;
 
 namespace content {
 class BrowserContext;
+class ServiceWorkerContext;
 }
 
 namespace extensions {
@@ -22,8 +23,10 @@ class ExtensionFunctionDispatcher;
 class ExtensionServiceWorkerMessageFilter
     : public content::BrowserMessageFilter {
  public:
-  ExtensionServiceWorkerMessageFilter(int render_process_id,
-                                      content::BrowserContext* context);
+  ExtensionServiceWorkerMessageFilter(
+      int render_process_id,
+      content::BrowserContext* context,
+      content::ServiceWorkerContext* service_worker_context);
 
   // content::BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -33,9 +36,17 @@ class ExtensionServiceWorkerMessageFilter
  private:
   ~ExtensionServiceWorkerMessageFilter() override;
 
+  // Message handlers.
   void OnRequestWorker(const ExtensionHostMsg_Request_Params& params);
+  void OnIncrementServiceWorkerActivity(int64_t service_worker_version_id,
+                                        const std::string& request_uuid);
+  void OnDecrementServiceWorkerActivity(int64_t service_worker_version_id,
+                                        const std::string& request_uuid);
 
   const int render_process_id_;
+
+  // Owned by the StoragePartition of our profile.
+  content::ServiceWorkerContext* service_worker_context_;
 
   std::unique_ptr<ExtensionFunctionDispatcher,
                   content::BrowserThread::DeleteOnUIThread>

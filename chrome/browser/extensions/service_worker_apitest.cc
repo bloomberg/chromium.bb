@@ -24,6 +24,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
@@ -160,6 +162,24 @@ class ServiceWorkerTest : public ExtensionApiTest {
   // tab's WebContents' main frame.
   std::string NavigateAndExtractInnerText(const GURL& url) {
     return ExtractInnerText(Navigate(url));
+  }
+
+  size_t GetWorkerRefCount(const GURL& origin) {
+    content::ServiceWorkerContext* sw_context =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())
+            ->GetServiceWorkerContext();
+    base::RunLoop run_loop;
+    size_t ref_count = 0;
+    auto set_ref_count = [](size_t* ref_count, base::RunLoop* run_loop,
+                            size_t external_request_count) {
+      *ref_count = external_request_count;
+      run_loop->Quit();
+    };
+    sw_context->CountExternalRequestsForTest(
+        origin, base::Bind(set_ref_count, &ref_count, &run_loop));
+    run_loop.Run();
+    return ref_count;
   }
 
  private:
@@ -628,6 +648,63 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
   // Check extension shutdown path.
   UnloadExtension(extension->id());
   EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+}
+
+// Tests that worker ref count increments while extension API function is
+// active.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WorkerRefCount) {
+  // Extensions APIs from SW are only enabled on trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("service_worker/api_worker_ref_count"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("page.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ExtensionTestMessageListener worker_start_listener("WORKER STARTED", false);
+  worker_start_listener.set_failure_message("FAILURE");
+  ASSERT_TRUE(
+      content::ExecuteScript(web_contents, "window.runServiceWorker()"));
+  ASSERT_TRUE(worker_start_listener.WaitUntilSatisfied());
+
+  // Service worker should have no pending requests because it hasn't peformed
+  // any extension API request yet.
+  EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
+
+  ExtensionTestMessageListener worker_listener("CHECK_REF_COUNT", true);
+  worker_listener.set_failure_message("FAILURE");
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "window.testSendMessage()"));
+  ASSERT_TRUE(worker_listener.WaitUntilSatisfied());
+
+  // Service worker should have exactly one pending request because
+  // chrome.test.sendMessage() API call is in-flight.
+  EXPECT_EQ(1u, GetWorkerRefCount(extension->url()));
+
+  // Peform another extension API request while one is ongoing.
+  {
+    ExtensionTestMessageListener listener("CHECK_REF_COUNT", true);
+    listener.set_failure_message("FAILURE");
+    ASSERT_TRUE(
+        content::ExecuteScript(web_contents, "window.testSendMessage()"));
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+    // Service worker currently has two extension API requests in-flight.
+    EXPECT_EQ(2u, GetWorkerRefCount(extension->url()));
+    // Finish executing the nested chrome.test.sendMessage() first.
+    listener.Reply("Hello world");
+  }
+
+  ExtensionTestMessageListener extension_listener("SUCCESS", false);
+  extension_listener.set_failure_message("FAILURE");
+  // Finish executing chrome.test.sendMessage().
+  worker_listener.Reply("Hello world");
+  ASSERT_TRUE(extension_listener.WaitUntilSatisfied());
+
+  // The ref count should drop to 0.
+  EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
 }
 
 // This test loads a web page that has an iframe pointing to a

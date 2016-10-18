@@ -236,6 +236,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                     const base::TimeDelta& timeout,
                                     TimeoutBehavior timeout_behavior);
 
+  // Starts a request of type EventType::EXTERNAL_REQUEST.
+  // Provides a mechanism to external clients to keep the worker running.
+  // |request_uuid| is a GUID for clients to identify the request.
+  // Returns true if the request was successfully scheduled to starrt.
+  bool StartExternalRequest(const std::string& request_uuid);
+
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
   // Returns false if no pending requests with the provided id exist, for
   // example if the request has already timed out.
@@ -245,6 +251,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool FinishRequest(int request_id,
                      bool was_handled,
                      base::Time dispatch_event_time);
+
+  // Finishes an external request that was started by StartExternalRequest().
+  // Returns false if there was an error finishing the request: e.g. the request
+  // was not found or the worker already terminated.
+  bool FinishExternalRequest(const std::string& request_uuid);
 
   // Connects to a specific mojo service exposed by the (running) service
   // worker. If a connection to a service for the same Interface already exists
@@ -382,6 +393,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Returns true if the service worker has work to do: it has pending
   // requests, in-progress streaming URLRequestJobs, or pending start callbacks.
   bool HasWork() const;
+
+  // Returns the number of pending external request count of this worker.
+  size_t GetExternalRequestCountForTest() const {
+    return external_request_uuid_to_request_id_.size();
+  }
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
@@ -695,6 +711,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // callbacks.
   void FinishStartWorker(ServiceWorkerStatusCode status);
 
+  // Removes any pending external request that has GUID of |request_uuid|.
+  void CleanUpExternalRequest(const std::string& request_uuid,
+                              ServiceWorkerStatusCode status);
+
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;
@@ -713,6 +733,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Holds in-flight requests, including requests due to outstanding push,
   // fetch, sync, etc. events.
   IDMap<PendingRequest, IDMapOwnPointer> pending_requests_;
+
+  // Container for pending external requests for this service worker.
+  // (key, value): (request uuid, request id).
+  using RequestUUIDToRequestIDMap = std::map<std::string, int>;
+  RequestUUIDToRequestIDMap external_request_uuid_to_request_id_;
 
   // Stores all open connections to mojo services. Maps the service name to
   // the actual interface pointer. When a connection is closed it is removed

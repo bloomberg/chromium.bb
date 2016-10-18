@@ -116,9 +116,9 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // id. Otherwise, this is -1.
   IPC_STRUCT_MEMBER(int, worker_thread_id)
 
-  // If this API call is for a service worker, then this is the embedded
-  // worker id. Otherwise, this is -1.
-  IPC_STRUCT_MEMBER(int, embedded_worker_id)
+  // If this API call is for a service worker, then this is the service
+  // worker version id. Otherwise, this is -1.
+  IPC_STRUCT_MEMBER(int64_t, service_worker_version_id)
 IPC_STRUCT_END()
 
 // Allows an extension to execute code in a tab.
@@ -887,3 +887,20 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_ResponseWorker,
                      bool /* success */,
                      base::ListValue /* response wrapper (see comment above) */,
                      std::string /* error */)
+
+// Asks the browser to increment the pending activity count for
+// the worker with version id |service_worker_version_id|.
+// Each request to increment must use unique |request_uuid|. If a request with
+// |request_uuid| is already in progress (due to race condition or renderer
+// compromise), browser process ignores the IPC.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_IncrementServiceWorkerActivity,
+                     int64_t /* service_worker_version_id */,
+                     std::string /* request_uuid */)
+
+// Asks the browser to decrement the pending activity count for
+// the worker with version id |service_worker_version_id|.
+// |request_uuid| must match the GUID of a previous request, otherwise the
+// browser process ignores the IPC.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DecrementServiceWorkerActivity,
+                     int64_t /* service_worker_version_id */,
+                     std::string /* request_uuid */)

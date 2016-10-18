@@ -346,14 +346,14 @@ class CONTENT_EXPORT ContentRendererClient {
   // is called from the worker thread.
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
-      int embedded_worker_id,
+      int64_t service_worker_version_id,
       const GURL& url) {}
 
   // Notifies that a service worker context will be destroyed. This function
   // is called from the worker thread.
   virtual void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
-      int embedded_worker_id,
+      int64_t service_worker_version_id,
       const GURL& url) {}
 
   // Whether this renderer should enforce preferences related to the WebRTC

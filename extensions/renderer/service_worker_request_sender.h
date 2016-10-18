@@ -14,16 +14,24 @@ class WorkerThreadDispatcher;
 class ServiceWorkerRequestSender : public RequestSender {
  public:
   ServiceWorkerRequestSender(WorkerThreadDispatcher* dispatcher,
-                             int embedded_worker_id);
+                             int64_t service_worker_version_id);
   ~ServiceWorkerRequestSender() override;
 
   void SendRequest(content::RenderFrame* render_frame,
                    bool for_io_thread,
                    ExtensionHostMsg_Request_Params& params) override;
+  void HandleWorkerResponse(int request_id,
+                            int64_t service_worker_version_id,
+                            bool success,
+                            const base::ListValue& response,
+                            const std::string& error);
 
  private:
   WorkerThreadDispatcher* const dispatcher_;
-  const int embedded_worker_id_;
+  const int64_t service_worker_version_id_;
+
+  // request id -> GUID map for each outstanding requests.
+  std::map<int, std::string> request_id_to_guid_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestSender);
 };

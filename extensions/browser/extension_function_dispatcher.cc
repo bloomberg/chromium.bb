@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -32,11 +33,13 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
@@ -58,6 +61,12 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
                              content::BrowserContext* browser_context) {
   activity_monitor::OnApiFunctionCalled(browser_context, extension_id, api_name,
                                         args);
+}
+
+bool IsRequestFromServiceWorker(
+    const ExtensionHostMsg_Request_Params& request_params) {
+  return request_params.service_worker_version_id !=
+         extensions::kInvalidServiceWorkerVersionId;
 }
 
 // Separate copy of ExtensionAPI used for IO thread extension functions. We need
@@ -277,17 +286,18 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
 };
 
 struct ExtensionFunctionDispatcher::WorkerResponseCallbackMapKey {
-  WorkerResponseCallbackMapKey(int render_process_id, int embedded_worker_id)
+  WorkerResponseCallbackMapKey(int render_process_id,
+                               int64_t service_worker_version_id)
       : render_process_id(render_process_id),
-        embedded_worker_id(embedded_worker_id) {}
+        service_worker_version_id(service_worker_version_id) {}
 
   bool operator<(const WorkerResponseCallbackMapKey& other) const {
-    return std::tie(render_process_id, embedded_worker_id) <
-           std::tie(other.render_process_id, other.embedded_worker_id);
+    return std::tie(render_process_id, service_worker_version_id) <
+           std::tie(other.render_process_id, other.service_worker_version_id);
   }
 
   int render_process_id;
-  int embedded_worker_id;
+  int64_t service_worker_version_id;
 };
 
 WindowController*
@@ -418,9 +428,9 @@ void ExtensionFunctionDispatcher::Dispatch(
         callback_wrapper->CreateCallback(params.request_id));
   } else {
     // Extension API from Service Worker.
-    DCHECK_GE(params.embedded_worker_id, 0);
+    DCHECK_NE(kInvalidServiceWorkerVersionId, params.service_worker_version_id);
     WorkerResponseCallbackMapKey key(render_process_id,
-                                     params.embedded_worker_id);
+                                     params.service_worker_version_id);
     UIThreadWorkerResponseCallbackWrapperMap::const_iterator iter =
         ui_thread_response_callback_wrappers_for_worker_.find(key);
     UIThreadWorkerResponseCallbackWrapper* callback_wrapper = nullptr;
@@ -472,8 +482,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     NOTREACHED();
     return;
   }
-  if (params.embedded_worker_id != -1) {
-    function_ui->set_is_from_service_worker(true);
+  if (IsRequestFromServiceWorker(params)) {
+    function_ui->set_service_worker_version_id(
+        params.service_worker_version_id);
   } else {
     function_ui->SetRenderFrameHost(render_frame_host);
   }
@@ -536,13 +547,16 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!registry->enabled_extensions().GetByID(params.extension_id))
     return;
 
-  // We only adjust the keepalive count for UIThreadExtensionFunction for
-  // now, largely for simplicity's sake. This is OK because currently, only
-  // the webRequest API uses IOThreadExtensionFunction, and that API is not
-  // compatible with lazy background pages.
-  // TODO(lazyboy): API functions from extension Service Worker will incorrectly
-  // change keepalive count below.
-  process_manager->IncrementLazyKeepaliveCount(extension);
+  if (!IsRequestFromServiceWorker(params)) {
+    // Increment ref count for non-service worker extension API. Ref count for
+    // service worker extension API is handled separately on IO thread via IPC.
+
+    // We only adjust the keepalive count for UIThreadExtensionFunction for
+    // now, largely for simplicity's sake. This is OK because currently, only
+    // the webRequest API uses IOThreadExtensionFunction, and that API is not
+    // compatible with lazy background pages.
+    process_manager->IncrementLazyKeepaliveCount(function->extension());
+  }
 }
 
 void ExtensionFunctionDispatcher::RemoveWorkerCallbacksForProcess(
@@ -560,10 +574,12 @@ void ExtensionFunctionDispatcher::RemoveWorkerCallbacksForProcess(
 }
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
-    const Extension* extension) {
-  // TODO(lazyboy): API functions from extension Service Worker will incorrectly
-  // change keepalive count below.
-  if (extension) {
+    const Extension* extension,
+    bool is_from_service_worker) {
+  if (extension && !is_from_service_worker) {
+    // Decrement ref count for non-service worker extension API. Service
+    // worker extension API ref counts are handled separately on IO thread
+    // directly via IPC.
     ProcessManager::Get(browser_context_)
         ->DecrementLazyKeepaliveCount(extension);
   }

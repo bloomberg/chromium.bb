@@ -8,6 +8,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -118,7 +119,7 @@ bool RequestSender::StartRequest(Source* source,
 
   // Set Service Worker specific params to default values.
   params.worker_thread_id = -1;
-  params.embedded_worker_id = -1;
+  params.service_worker_version_id = kInvalidServiceWorkerVersionId;
 
   SendRequest(render_frame, for_io_thread, params);
   return true;

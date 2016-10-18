@@ -29,6 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -560,7 +561,8 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
   host->AddFilter(new ExtensionsGuestViewMessageFilter(id, profile));
   if (extensions::ExtensionsClient::Get()
           ->ExtensionAPIEnabledInExtensionServiceWorkers()) {
-    host->AddFilter(new ExtensionServiceWorkerMessageFilter(id, profile));
+    host->AddFilter(new ExtensionServiceWorkerMessageFilter(
+        id, profile, host->GetStoragePartition()->GetServiceWorkerContext()));
   }
   extension_web_request_api_helpers::SendExtensionWebRequestStatusToHost(host);
 }

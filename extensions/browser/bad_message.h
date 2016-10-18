@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_BAD_MESSAGE_H_
 
 namespace content {
+class BrowserMessageFilter;
 class RenderProcessHost;
 }
 
@@ -28,6 +29,8 @@ enum BadMessageReason {
   AVG_BAD_INST_ID = 4,
   AVG_BAD_EXT_ID = 5,
   AVG_NULL_AVG = 6,
+  // Invalid decrement of an Extensions SW ref count.
+  ESWMF_INVALID_DECREMENT_ACTIVIY = 7,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
   // reason. After making changes, you MUST update histograms.xml by running:
@@ -39,6 +42,12 @@ enum BadMessageReason {
 // Logs the event, records a histogram metric for the |reason|, and terminates
 // the process for |host|.
 void ReceivedBadMessage(content::RenderProcessHost* host,
+                        BadMessageReason reason);
+
+// Called when a browser message filter receives a bad IPC message from a
+// renderer or other child process. Logs the event, records a histogram metric
+// for the |reason|, and terminates the process for |filter|.
+void ReceivedBadMessage(content::BrowserMessageFilter* filter,
                         BadMessageReason reason);
 
 }  // namespace bad_message

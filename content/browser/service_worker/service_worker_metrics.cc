@@ -78,6 +78,8 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_NAVIGATION_HINT_LINK_TAP_UNCONFIRMED";
     case ServiceWorkerMetrics::EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
       return "_NAVIGATION_HINT_LINK_TAP_DOWN";
+    case ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST:
+      return "_EXTERNAL_REQUEST";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -227,6 +229,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Navigation Hint Link Tap Unconfirmed";
     case EventType::NAVIGATION_HINT_LINK_TAP_DOWN:
       return "Navigation Hint Link Tap Down";
+    case EventType::EXTERNAL_REQUEST:
+      return "External Request";
     case EventType::NUM_TYPES:
       break;
   }
@@ -564,6 +568,9 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::MESSAGE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ExtendableMessageEvent.Time",
                                  time);
+      break;
+    case EventType::EXTERNAL_REQUEST:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ExternalRequest.Time", time);
       break;
     // Those navigation hints should not be sent as request events.
     case EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN:

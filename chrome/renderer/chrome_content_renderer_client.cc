@@ -1392,23 +1392,23 @@ void ChromeContentRendererClient::RunScriptsAtDocumentEnd(
 void ChromeContentRendererClient::
     DidInitializeServiceWorkerContextOnWorkerThread(
         v8::Local<v8::Context> context,
-        int embedded_worker_id,
+        int64_t service_worker_version_id,
         const GURL& url) {
 #if defined(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()
       ->extension_dispatcher()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
-          context, embedded_worker_id, url);
+          context, service_worker_version_id, url);
 #endif
 }
 
 void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context,
-    int embedded_worker_id,
+    int64_t service_worker_version_id,
     const GURL& url) {
 #if defined(ENABLE_EXTENSIONS)
   extensions::Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
-      context, embedded_worker_id, url);
+      context, service_worker_version_id, url);
 #endif
 }
 

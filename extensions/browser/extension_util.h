@@ -11,6 +11,7 @@ class GURL;
 
 namespace content {
 class BrowserContext;
+class StoragePartition;
 }
 
 namespace extensions {
@@ -33,6 +34,10 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
 
 // Returns true if the extension can be enabled in incognito mode.
 bool CanBeIncognitoEnabled(const Extension* extension);
+
+content::StoragePartition* GetStoragePartitionForExtensionId(
+    const std::string& extension_id,
+    content::BrowserContext* browser_context);
 
 }  // namespace util
 }  // namespace extensions

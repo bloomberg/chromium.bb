@@ -87,6 +87,7 @@
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/script_injection_manager.h"
 #include "extensions/renderer/send_request_natives.h"
+#include "extensions/renderer/service_worker_request_sender.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/test_features_native_handler.h"
@@ -397,7 +398,7 @@ void Dispatcher::DidCreateScriptContext(
 
 void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
-    int embedded_worker_id,
+    int64_t service_worker_version_id,
     const GURL& url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -443,7 +444,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   context->set_url(url);
 
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
-    WorkerThreadDispatcher::Get()->AddWorkerData(embedded_worker_id);
+    WorkerThreadDispatcher::Get()->AddWorkerData(service_worker_version_id);
     {
       // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
       // safe.
@@ -537,7 +538,7 @@ void Dispatcher::WillReleaseScriptContext(
 // static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
-    int embedded_worker_id,
+    int64_t service_worker_version_id,
     const GURL& url) {
   if (url.SchemeIs(kExtensionScheme) ||
       url.SchemeIs(kExtensionResourceScheme)) {
@@ -545,7 +546,7 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     g_worker_script_context_set.Get().Remove(v8_context, url);
   }
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
-    WorkerThreadDispatcher::Get()->RemoveWorkerData(embedded_worker_id);
+    WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {

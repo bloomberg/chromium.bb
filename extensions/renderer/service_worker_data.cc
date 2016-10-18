@@ -10,11 +10,12 @@
 namespace extensions {
 
 ServiceWorkerData::ServiceWorkerData(WorkerThreadDispatcher* dispatcher,
-                                     int embedded_worker_id)
-    : embedded_worker_id_(embedded_worker_id),
+                                     int64_t service_worker_version_id)
+    : service_worker_version_id_(service_worker_version_id),
       v8_schema_registry_(new V8SchemaRegistry),
       request_sender_(
-          new ServiceWorkerRequestSender(dispatcher, embedded_worker_id)) {}
+          new ServiceWorkerRequestSender(dispatcher,
+                                         service_worker_version_id)) {}
 
 ServiceWorkerData::~ServiceWorkerData() {}
 

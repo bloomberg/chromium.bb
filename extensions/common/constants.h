@@ -104,6 +104,11 @@ extern const char kAuthUserQueryKey[];
 extern const char kMimeTypeJpeg[];
 extern const char kMimeTypePng[];
 
+// TODO(lazyboy): This is a hack and it is copied from service_worker_types.cc,
+// which is not available to extensions/ code. Move the constant to
+// content/public/common.
+extern const int64_t kInvalidServiceWorkerVersionId;
+
 // The extension id of the Web Store component application.
 extern const char kWebStoreAppId[];
 
