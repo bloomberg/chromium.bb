@@ -35,6 +35,21 @@ var lsoView = null;
 var termsView = null;
 
 /**
+ * @type {MetricsPreferenceCheckbox}
+ */
+var metricsCheckbox = null;
+
+/**
+ * @type {PreferenceCheckbox}
+ */
+var backupRestoreCheckbox = null;
+
+/**
+ * @type {PreferenceCheckbox}
+ */
+var locationServiceCheckbox = null;
+
+/**
  * Used for bidirectional communication with native code.
  * @type {chrome.runtime.Port}
  */
@@ -57,12 +72,6 @@ var termsAccepted = false;
  * @type {boolean}
  */
 var arcManaged = false;
-
-/**
- * Tooltip text used in 'controlled by policy' indicator.
- * @type {boolean}
- */
-var controlledByPolicyText = '';
 
 /**
  * Host window inner default width.
@@ -88,31 +97,140 @@ function sendNativeMessage(event, opt_props) {
 }
 
 /**
- * Helper function that sets inner content for an option which includes text,
- * link to 'learn more' section. This also creates an indicator showing that
- * option is controlled by policy and inserts it before link element.
- * @param {string} textId Id of the label element to process.
- * @param {string} learnMoreLinkId Id inner link to 'learn more' element.
- * @param {string} indicatorId Id of indicator to create.
- * @param {string} text Inner text to set. Includes link declaration.
- * @param {function} callback Callback to call on user action.
+ * Class to handle checkbox corresponding to a preference.
  */
-function createConsentOption(
-    textId, learnMoreLinkId, indicatorId, text, callback) {
-  var doc = appWindow.contentWindow.document;
-  var textElement = doc.getElementById(textId);
-  textElement.innerHTML = text;
-  var linkLearnMoreElement = doc.getElementById(learnMoreLinkId);
-  linkLearnMoreElement.addEventListener('click', callback);
+class PreferenceCheckbox {
 
-  // Create controlled by policy indicator.
-  var policyIndicator = new appWindow.contentWindow.cr.ui.ControlledIndicator();
-  policyIndicator.id = indicatorId;
-  policyIndicator.getBubbleText = function() {
-    return controlledByPolicyText;
-  };
-  textElement.insertBefore(policyIndicator, linkLearnMoreElement);
-}
+  /**
+   * Creates a Checkbox which handles the corresponding preference update.
+   * @param {Element} container The container this checkbox corresponds to.
+   *     The element must have <input type="checkbox" class="checkbox-option">
+   *     for the checkbox itself, and <p class="checkbox-text"> for its label.
+   * @param {string} learnMoreContent I18n content which is shown when "Learn
+   *     More" link is clicked.
+   * @param {string?} learnMoreLinkId The ID for the "Learn More" link element.
+   *     TODO: Get rid of this. The element can have class so that it can be
+   *     identified easily. Also, it'd be better to extract the link element
+   *     (tag) from the i18n text, and let i18n focus on the content.
+   * @param {string?} policyText The content of the policy indicator.
+   */
+  constructor(container, learnMoreContent, learnMoreLinkId, policyText) {
+    this.container_ = container;
+    this.learnMoreContent_ = learnMoreContent;
+
+    this.checkbox_ = container.querySelector('.checkbox-option');
+    this.label_ = container.querySelector('.checkbox-text');
+
+    var learnMoreLink = this.label_.querySelector(learnMoreLinkId);
+    if (learnMoreLink) {
+      learnMoreLink.addEventListener(
+          'click', (event) => this.onLearnMoreLinkClicked(event));
+    }
+
+    // Create controlled indicator for policy if necessary.
+    if (policyText) {
+      this.policyIndicator_ =
+          new appWindow.contentWindow.cr.ui.ControlledIndicator();
+      this.policyIndicator_.setAttribute('textpolicy', policyText);
+      // TODO: better to have a dedicated element for this place.
+      this.label_.insertBefore(this.policyIndicator_, learnMoreLink);
+    } else {
+      this.policyIndicator_ = null;
+    }
+  }
+
+  /**
+   * Returns if the checkbox is checked or not. Note that this *may* be
+   * different from the preference value, because the user's check is
+   * not propagated to the preference until the user clicks "AGREE" button.
+   */
+  isChecked() { return this.checkbox_.checked; }
+
+  /**
+   * Called when the preference value in native code is updated.
+   */
+  onPreferenceChanged(isEnabled, isManaged) {
+    this.checkbox_.checked = isEnabled;
+    this.checkbox_.disabled = isManaged;
+    this.label_.disabled = isManaged;
+
+    if (this.policyIndicator_) {
+      if (isManaged) {
+        this.policyIndicator_.setAttribute('controlled-by', 'policy');
+      } else {
+        this.policyIndicator_.removeAttribute('controlled-by');
+      }
+    }
+  }
+
+  /**
+   * Called when the "Learn More" link is clicked.
+   */
+  onLearnMoreLinkClicked() {
+    showLearnMoreOverlay(this.learnMoreContent_);
+  }
+};
+
+/**
+ * Handles the checkbox action of metrics preference.
+ * This has special customization e.g. show/hide the checkbox based on
+ * the native preference.
+ */
+class MetricsPreferenceCheckbox extends PreferenceCheckbox {
+  constructor(
+      container, learnMoreContent, learnMoreLinkId, isOwner,
+      textDisabled, textEnabled, textManagedDisabled, textManagedEnabled) {
+    // Do not use policy indicator.
+    // Learn More link handling is done by this class.
+    // So pass |null| intentionally.
+    super(container, learnMoreContent, null, null);
+
+    this.learnMoreLinkId_ = learnMoreLinkId;
+    this.isOwner_ = isOwner;
+
+    // Two dimensional array. First dimension is whether it is managed or not,
+    // the second one is whether it is enabled or not.
+    this.texts_ = [
+        [textDisabled, textEnabled],
+        [textManagedDisabled, textManagedEnabled]
+    ];
+  }
+
+  onPreferenceChanged(isEnabled, isManaged) {
+    isManaged = isManaged || !this.isOwner_;
+    super.onPreferenceChanged(isEnabled, isManaged);
+
+    // Hide the checkbox if it is not allowed to (re-)enable.
+    var canEnable = !isEnabled && !isManaged;
+    this.checkbox_.hidden = !canEnable;
+
+    // Update the label.
+    this.label_.innerHTML = this.texts_[isManaged ? 1 : 0][isEnabled ? 1 : 0];
+
+    // Work around for the current translation text.
+    // The translation text has tags for following links, although those
+    // tags are not the target of the translation (but those content text is
+    // the translation target).
+    // So, meanwhile, we set the link everytime we update the text.
+    // TODO: fix the translation text, and main html.
+    var learnMoreLink = this.label_.querySelector(this.learnMoreLinkId_);
+    learnMoreLink.addEventListener(
+        'click', (event) => this.onLearnMoreLinkClicked(event));
+    var settingsLink = this.label_.querySelector('#settings-link');
+    settingsLink.addEventListener(
+        'click', (event) => this.onSettingsLinkClicked(event));
+
+    // Applying metrics mode changes page layout, update terms height.
+    updateTermsHeight();
+  }
+
+  /** Called when "settings" link is clicked. */
+  onSettingsLinkClicked(event) {
+    chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
+    event.preventDefault();
+  }
+};
+
 
 /**
  * Applies localization for html content and sets terms webview.
@@ -125,22 +243,30 @@ function initialize(data, deviceId) {
   var loadTimeData = appWindow.contentWindow.loadTimeData;
   loadTimeData.data = data;
   appWindow.contentWindow.i18nTemplate.process(doc, loadTimeData);
+
+  // Initialize preference connected checkboxes in terms of service page.
+  metricsCheckbox = new MetricsPreferenceCheckbox(
+      doc.getElementById('metrics-preference'),
+      data.learnMoreStatistics,
+      '#learn-more-link-metrics',
+      data.isOwnerProfile,
+      data.textMetricsDisabled,
+      data.textMetricsEnabled,
+      data.textMetricsManagedDisabled,
+      data.textMetricsManagedEnabled);
+  backupRestoreCheckbox = new PreferenceCheckbox(
+      doc.getElementById('backup-restore-preference'),
+      data.learnMoreBackupAndRestore,
+      '#learn-more-link-backup-restore',
+      data.controlledByPolicy);
+  locationServiceCheckbox = new PreferenceCheckbox(
+      doc.getElementById('location-service-preference'),
+      data.learnMoreLocationServices,
+      '#learn-more-link-location-service',
+      data.controlledByPolicy);
+
+  // Initialize terms of service view.
   var countryCode = data.countryCode.toLowerCase();
-  controlledByPolicyText = data.controlledByPolicy;
-  arcManaged = data.arcManaged;
-  setTermsVisible(!arcManaged);
-
-  createConsentOption('text-backup-restore',
-                      'learn-more-link-backup-restore',
-                      'policy-indicator-backup-restore',
-                      data.textBackupRestore,
-                      onLearnMoreBackupAndRestore);
-  createConsentOption('text-location-service',
-                      'learn-more-link-location-service',
-                      'policy-indicator-location-service',
-                      data.textLocationService,
-                      onLearnMoreLocationServices);
-
   var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
   termsView.addContentScripts([
       { name: 'preProcess',
@@ -154,97 +280,8 @@ function initialize(data, deviceId) {
         js: { files: ['playstore.js'] },
         run_at: 'document_end'
       }]);
-}
-
-/**
- * Handles the event when the user clicks on a learn more metrics link. Opens
- * the pop up dialog with a help.
- */
-var onLearnMoreMetrics = function() {
-  var loadTimeData = appWindow.contentWindow.loadTimeData;
-  showLearnModeOverlay(loadTimeData.getString('learnMoreStatistics'));
-};
-
-/**
- * Handles the event when the user clicks on a learn more backup and restore
- * link. Opens the pop up dialog with a help.
- */
-var onLearnMoreBackupAndRestore = function() {
-  var loadTimeData = appWindow.contentWindow.loadTimeData;
-  showLearnModeOverlay(loadTimeData.getString('learnMoreBackupAndRestore'));
-};
-
-/**
- * Handles the event when the user clicks on a learn more location services
- * link. Opens the pop up dialog with a help.
- */
-var onLearnMoreLocationServices = function() {
-  var loadTimeData = appWindow.contentWindow.loadTimeData;
-  showLearnModeOverlay(loadTimeData.getString('learnMoreLocationServices'));
-};
-
-/**
- * Sets current metrics mode.
- * @param {string} text Describes current metrics state.
- * @param {boolean} canEnable Defines if user is allowed to change this metrics
- *                            option.
- * @param {boolean} on Defines if metrics are active currently.
- */
-function setMetricsMode(text, canEnable, on) {
-  var doc = appWindow.contentWindow.document;
-  var enableMetrics = doc.getElementById('enable-metrics');
-  enableMetrics.hidden = !canEnable;
-  enableMetrics.checked = on;
-
-  var onSettings = function(event) {
-    chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
-    event.preventDefault();
-  };
-
-  doc.getElementById('text-metrics').innerHTML = text;
-  doc.getElementById('settings-link').addEventListener('click', onSettings);
-  doc.getElementById('learn-more-link-metrics').addEventListener('click',
-      onLearnMoreMetrics);
-
-  // Applying metrics mode changes page layout, update terms height.
-  updateTermsHeight();
-}
-
-/**
- * Sets current backup and restore mode.
- * @param {boolean} enabled Defines the value for backup and restore checkbox.
- * @param {boolean} managed Defines whether this setting is set by policy.
- */
-function setBackupRestoreMode(enabled, managed) {
-  var doc = appWindow.contentWindow.document;
-  doc.getElementById('enable-backup-restore').checked = enabled;
-  doc.getElementById('enable-backup-restore').disabled = managed;
-  doc.getElementById('text-backup-restore').disabled = managed;
-  var policyIconElement = doc.getElementById('policy-indicator-backup-restore');
-  if (managed) {
-    policyIconElement.setAttribute('controlled-by', 'policy');
-  } else {
-    policyIconElement.removeAttribute('controlled-by');
-  }
-}
-
-/**
- * Sets current usage of location service opt in mode.
- * @param {boolean} enabled Defines the value for location service opt in.
- * @param {boolean} managed Defines whether this setting is set by policy.
- */
-function setLocationServiceMode(enabled, managed) {
-  var doc = appWindow.contentWindow.document;
-  doc.getElementById('enable-location-service').checked = enabled;
-  doc.getElementById('enable-location-service').disabled = managed;
-  doc.getElementById('text-location-service').disabled = managed;
-  var policyIconElement = doc.getElementById(
-      'policy-indicator-location-service');
-  if (managed) {
-    policyIconElement.setAttribute('controlled-by', 'policy');
-  } else {
-    policyIconElement.removeAttribute('controlled-by');
-  }
+  arcManaged = data.arcManaged;
+  setTermsVisible(!arcManaged);
 }
 
 /**
@@ -293,11 +330,12 @@ function onNativeMessage(message) {
   if (message.action == 'initialize') {
     initialize(message.data, message.deviceId);
   } else if (message.action == 'setMetricsMode') {
-    setMetricsMode(message.text, message.canEnable, message.on);
+    metricsCheckbox.onPreferenceChanged(message.enabled, message.managed);
   } else if (message.action == 'setBackupAndRestoreMode') {
-    setBackupRestoreMode(message.enabled, message.managed);
+    backupRestoreCheckbox.onPreferenceChanged(message.enabled, message.managed);
   } else if (message.action == 'setLocationServiceMode') {
-    setLocationServiceMode(message.enabled, message.managed);
+    locationServiceCheckbox.onPreferenceChanged(
+        message.enabled, message.managed);
   } else if (message.action == 'closeWindow') {
     if (appWindow) {
       appWindow.close();
@@ -328,7 +366,7 @@ function showPage(pageDivId) {
     return;
   }
 
-  hideLearnModeOverlay();
+  hideLearnMoreOverlay();
   var doc = appWindow.contentWindow.document;
   var pages = doc.getElementsByClassName('section');
   var sendFeedbackElement = doc.getElementById('button-send-feedback');
@@ -374,7 +412,7 @@ function setErrorMessage(error) {
  * Sets learn more content text and shows it as overlay dialog.
  * @param {string} content HTML formatted text to show.
  */
-function showLearnModeOverlay(content) {
+function showLearnMoreOverlay(content) {
   var doc = appWindow.contentWindow.document;
   var learnMoreContainer = doc.getElementById('learn-more-container');
   var learnMoreContent = doc.getElementById('learn-more-content');
@@ -385,7 +423,7 @@ function showLearnModeOverlay(content) {
 /**
  * Hides learn more overlay dialog.
  */
-function hideLearnModeOverlay() {
+function hideLearnMoreOverlay() {
   var doc = appWindow.contentWindow.document;
   var learnMoreContainer = doc.getElementById('learn-more-container');
   learnMoreContainer.hidden = true;
@@ -571,13 +609,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
     var onAgree = function() {
       termsAccepted = true;
 
-      var enableMetrics = doc.getElementById('enable-metrics');
-      var enableBackupRestore = doc.getElementById('enable-backup-restore');
-      var enableLocationService = doc.getElementById('enable-location-service');
       sendNativeMessage('onAgreed', {
-        isMetricsEnabled: enableMetrics.checked,
-        isBackupRestoreEnabled: enableBackupRestore.checked,
-        isLocationServiceEnabled: enableLocationService.checked
+        isMetricsEnabled: metricsCheckbox.isChecked(),
+        isBackupRestoreEnabled: backupRestoreCheckbox.isChecked(),
+        isLocationServiceEnabled: locationServiceCheckbox.isChecked()
       });
     };
 
@@ -606,13 +641,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
     doc.getElementById('button-retry').addEventListener('click', onRetry);
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);
-    doc.getElementById('learn-more-close').addEventListener('click',
-        hideLearnModeOverlay);
+    doc.getElementById('learn-more-close').addEventListener(
+        'click', hideLearnMoreOverlay);
 
     var overlay = doc.getElementById('learn-more-container');
     appWindow.contentWindow.cr.ui.overlay.setupOverlay(overlay);
     appWindow.contentWindow.cr.ui.overlay.globalInitialization();
-    overlay.addEventListener('cancelOverlay', hideLearnModeOverlay);
+    overlay.addEventListener('cancelOverlay', hideLearnMoreOverlay);
 
     connectPort();
   };

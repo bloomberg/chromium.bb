@@ -52,11 +52,25 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   void OnMetricsPreferenceChanged();
   void OnBackupAndRestorePreferenceChanged();
   void OnLocationServicePreferenceChanged();
+
+  // Utilities on preference update.
   void SendMetricsMode();
   void SendBackupAndRestoreMode();
   void SendLocationServicesMode();
   void SendOptionMode(const std::string& action_name,
                       const std::string& pref_name);
+
+  // Sends a preference update to the extension.
+  // The message will be
+  // {
+  //   'action': action_name,
+  //   'enabled': is_enabled,
+  //   'managed': is_managed
+  // }
+  void SendPreferenceUpdate(const std::string& action_name,
+                            bool is_enabled,
+                            bool is_managed);
+
   void EnableMetrics(bool is_enabled);
   void EnableBackupRestore(bool is_enabled);
   void EnableLocationService(bool is_enabled);

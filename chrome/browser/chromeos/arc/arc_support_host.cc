@@ -31,15 +31,10 @@
 namespace {
 constexpr char kAction[] = "action";
 constexpr char kArcManaged[] = "arcManaged";
-constexpr char kCanEnable[] = "canEnable";
 constexpr char kData[] = "data";
 constexpr char kDeviceId[] = "deviceId";
-constexpr char kEnabled[] = "enabled";
-constexpr char kManaged[] = "managed";
-constexpr char kOn[] = "on";
 constexpr char kPage[] = "page";
 constexpr char kStatus[] = "status";
-constexpr char kText[] = "text";
 constexpr char kActionInitialize[] = "initialize";
 constexpr char kActionSetMetricsMode[] = "setMetricsMode";
 constexpr char kActionBackupAndRestoreMode[] = "setBackupAndRestoreMode";
@@ -47,6 +42,10 @@ constexpr char kActionLocationServiceMode[] = "setLocationServiceMode";
 constexpr char kActionSetWindowBounds[] = "setWindowBounds";
 constexpr char kActionCloseWindow[] = "closeWindow";
 constexpr char kActionShowPage[] = "showPage";
+
+// The preference update should have those two fields.
+constexpr char kEnabled[] = "enabled";
+constexpr char kManaged[] = "managed";
 
 // The JSON data sent from the extension should have at least "event" field.
 // Each event data is defined below.
@@ -201,6 +200,18 @@ bool ArcSupportHost::Initialize() {
       "termsOfService",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_TERMS_OF_SERVICE));
   loadtime_data->SetString(
+      "textMetricsEnabled",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_METRICS_ENABLED));
+  loadtime_data->SetString(
+      "textMetricsDisabled",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED));
+  loadtime_data->SetString(
+      "textMetricsManagedEnabled",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_ENABLED));
+  loadtime_data->SetString("textMetricsManagedDisabled",
+                           l10n_util::GetStringUTF16(
+                               IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED));
+  loadtime_data->SetString(
       "textBackupRestore",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE));
   loadtime_data->SetString(
@@ -235,6 +246,9 @@ bool ArcSupportHost::Initialize() {
   const std::string device_id = user_manager::known_user::GetDeviceId(
       multi_user_util::GetAccountIdFromProfile(arc_auth_service->profile()));
   DCHECK(!device_id.empty());
+  loadtime_data->SetBoolean(
+      "isOwnerProfile",
+      chromeos::ProfileHelper::IsOwnerProfile(arc_auth_service->profile()));
 
   base::DictionaryValue request;
   std::string request_string;
@@ -273,52 +287,10 @@ void ArcSupportHost::OnLocationServicePreferenceChanged() {
 }
 
 void ArcSupportHost::SendMetricsMode() {
-  arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  DCHECK(arc_auth_service && arc_auth_service->IsAllowed());
-  const Profile* profile = arc_auth_service->profile();
-
-  const bool metrics_managed = IsMetricsReportingPolicyManaged();
-  const bool owner_profile =
-      profile && chromeos::ProfileHelper::IsOwnerProfile(profile);
-  const bool metrics_on =
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
-
-  int message_id;
-  if (metrics_managed || !owner_profile) {
-    message_id = metrics_on ? IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_ENABLED
-                            : IDS_ARC_OPT_IN_DIALOG_METRICS_MANAGED_DISABLED;
-  } else {
-    message_id = metrics_on ? IDS_ARC_OPT_IN_DIALOG_METRICS_ENABLED
-                            : IDS_ARC_OPT_IN_DIALOG_METRICS_DISABLED;
-  }
-
-  base::DictionaryValue request;
-  std::string request_string;
-  request.SetString(kAction, kActionSetMetricsMode);
-  request.SetString(kText, l10n_util::GetStringUTF16(message_id));
-  request.SetBoolean(kCanEnable,
-                     !metrics_on && !metrics_managed && owner_profile);
-  request.SetBoolean(kOn, metrics_on);
-  base::JSONWriter::Write(request, &request_string);
-  client_->PostMessageFromNativeHost(request_string);
-}
-
-void ArcSupportHost::SendOptionMode(const std::string& action_name,
-                                    const std::string& pref_name) {
-  const arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
-  DCHECK(arc_auth_service);
-  const bool enabled =
-      arc_auth_service->profile()->GetPrefs()->GetBoolean(pref_name);
-  const bool managed =
-      arc_auth_service->profile()->GetPrefs()->IsManagedPreference(pref_name);
-
-  base::DictionaryValue request;
-  std::string request_string;
-  request.SetString(kAction, action_name);
-  request.SetBoolean(kEnabled, enabled);
-  request.SetBoolean(kManaged, managed);
-  base::JSONWriter::Write(request, &request_string);
-  client_->PostMessageFromNativeHost(request_string);
+  SendPreferenceUpdate(
+      kActionSetMetricsMode,
+      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
+      IsMetricsReportingPolicyManaged());
 }
 
 void ArcSupportHost::SendBackupAndRestoreMode() {
@@ -327,6 +299,28 @@ void ArcSupportHost::SendBackupAndRestoreMode() {
 
 void ArcSupportHost::SendLocationServicesMode() {
   SendOptionMode(kActionLocationServiceMode, prefs::kArcLocationServiceEnabled);
+}
+
+void ArcSupportHost::SendOptionMode(const std::string& action_name,
+                                    const std::string& pref_name) {
+  const arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
+  DCHECK(arc_auth_service);
+  SendPreferenceUpdate(
+      action_name,
+      arc_auth_service->profile()->GetPrefs()->GetBoolean(pref_name),
+      arc_auth_service->profile()->GetPrefs()->IsManagedPreference(pref_name));
+}
+
+void ArcSupportHost::SendPreferenceUpdate(const std::string& action_name,
+                                          bool is_enabled,
+                                          bool is_managed) {
+  base::DictionaryValue request;
+  std::string request_string;
+  request.SetString(kAction, action_name);
+  request.SetBoolean(kEnabled, is_enabled);
+  request.SetBoolean(kManaged, is_managed);
+  base::JSONWriter::Write(request, &request_string);
+  client_->PostMessageFromNativeHost(request_string);
 }
 
 void ArcSupportHost::OnOptInUIClose() {
