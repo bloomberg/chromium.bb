@@ -10,6 +10,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "wtf/StringHasher.h"
@@ -93,9 +94,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   RefPtr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::create(reinterpret_cast<const char*>(data), size);
   serializedScriptValue->deserialize(isolate, messagePorts, blobs);
-
-  // Clean up.
   CHECK(!tryCatch.HasCaught())
       << "deserialize() should return null rather than throwing an exception.";
+
+  // Clean up. We have to periodically run pending tasks so that scheduled
+  // Oilpan GC occurs.
+  static int iterations = 0;
+  if (iterations++ == 2048) {
+    testing::runPendingTasks();
+    iterations = 0;
+  }
+
   return 0;
 }
