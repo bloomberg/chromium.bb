@@ -46,14 +46,15 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy,
 bool CSPSourceList::matches(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus) const {
-  // Wildcards match network schemes ('http', 'https', 'ws', 'wss'), and the
-  // scheme of the protected resource:
-  // https://w3c.github.io/webappsec-csp/#match-url-to-source-expression.  Other
+  // Wildcards match network schemes ('http', 'https', 'ftp', 'ws', 'wss'), and
+  // the scheme of the protected resource:
+  // https://w3c.github.io/webappsec-csp/#match-url-to-source-expression. Other
   // schemes, including custom schemes, must be explicitly listed in a source
   // list.
   if (m_allowStar) {
-    if (url.protocolIsInHTTPFamily() || url.protocolIs("ws") ||
-        url.protocolIs("wss") || m_policy->protocolMatchesSelf(url))
+    if (url.protocolIsInHTTPFamily() || url.protocolIs("ftp") ||
+        url.protocolIs("ws") || url.protocolIs("wss") ||
+        m_policy->protocolMatchesSelf(url))
       return true;
 
     return hasSourceMatchInList(url, redirectStatus);

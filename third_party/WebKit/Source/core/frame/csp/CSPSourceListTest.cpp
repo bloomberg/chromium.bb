@@ -75,6 +75,7 @@ TEST_F(CSPSourceListTest, BasicMatchingStar) {
   EXPECT_TRUE(sourceList.matches(KURL(base, "http://example.com/bar")));
   EXPECT_TRUE(sourceList.matches(KURL(base, "http://foo.example.com/")));
   EXPECT_TRUE(sourceList.matches(KURL(base, "http://foo.example.com/bar")));
+  EXPECT_TRUE(sourceList.matches(KURL(base, "ftp://example.com/")));
 
   EXPECT_FALSE(sourceList.matches(KURL(base, "data:https://example.test/")));
   EXPECT_FALSE(sourceList.matches(KURL(base, "blob:https://example.test/")));
