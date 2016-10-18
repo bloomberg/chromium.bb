@@ -132,7 +132,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   buffer->SetToBlack();
 
   source()->SinkInterfaceForTest()->OnFrame(
-      cricket::WebRtcVideoFrame(buffer, 1, webrtc::kVideoRotation_0));
+      cricket::WebRtcVideoFrame(buffer, webrtc::kVideoRotation_0, 1000));
   run_loop.Run();
 
   EXPECT_EQ(1, sink.number_of_frames());
