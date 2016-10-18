@@ -255,20 +255,29 @@
       done();
     });
 
+    audit.defineTask('disabled-outputs', function (taskDone) {
+      // See crbug.com/656652
+      var context = new OfflineAudioContext(2, 1024, 44100);
+      var g1 = context.createGain();
+      var g2 = context.createGain();
+      g1.connect(g2);
+      g1.disconnect(g2);
+      var g3 = context.createGain();
+      g2.connect(g3);
+      g1.connect(g2);
+      context.startRendering().then(function () {
+        // If we make it here, we passed.
+        Should("Disabled outputs handled", true)
+          .summarize("correctly", "inccorrectly");
+      }).then(taskDone);
+    });
+
     audit.defineTask('finish', function (done) {
       finishJSTest();
       done();
     });
 
-    audit.runTasks(
-      'disconnect()',
-      'disconnect(output)',
-      'disconnect(AudioNode)',
-      'disconnect(AudioNode, output)',
-      'disconnect(AudioNode, output, input)',
-      'exceptions',
-      'finish'
-    );
+    audit.runTasks();
 
     successfullyParsed = true;
   </script>

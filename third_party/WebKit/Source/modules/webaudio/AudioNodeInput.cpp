@@ -94,11 +94,13 @@ void AudioNodeInput::disable(AudioNodeOutput& output) {
 
 void AudioNodeInput::enable(AudioNodeOutput& output) {
   ASSERT(deferredTaskHandler().isGraphOwner());
-  DCHECK(m_disabledOutputs.contains(&output));
 
   // Move output from disabled list to active list.
   m_outputs.add(&output);
-  m_disabledOutputs.remove(&output);
+  if (m_disabledOutputs.size() > 0) {
+    DCHECK(m_disabledOutputs.contains(&output));
+    m_disabledOutputs.remove(&output);
+  }
   changedOutputs();
 
   // Propagate enabled state to outputs.

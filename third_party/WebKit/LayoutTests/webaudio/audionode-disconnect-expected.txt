@@ -18,6 +18,7 @@ PASS splitter.disconnect(gain2, 2) threw IndexSizeError: Failed to execute 'disc
 PASS splitter.disconnect(gain1, 0) threw InvalidAccessError: Failed to execute 'disconnect' on 'AudioNode': output (0) is not connected to the given destination..
 PASS splitter.disconnect(gain3, 0, 0) threw InvalidAccessError: Failed to execute 'disconnect' on 'AudioNode': output (0) is not connected to the input (0) of the destination..
 PASS splitter.disconnect(merger, 3, 0) threw IndexSizeError: Failed to execute 'disconnect' on 'AudioNode': The output index provided (3) is outside the range [0, 1]..
+PASS Disabled outputs handled correctly.
 PASS successfullyParsed is true
 
 TEST COMPLETE
