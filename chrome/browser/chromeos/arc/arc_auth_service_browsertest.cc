@@ -31,7 +31,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_bridge_bootstrap.h"
+#include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -140,8 +140,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     // Mock out ARC bridge.
     auto service = base::MakeUnique<ArcBridgeServiceImpl>();
-    service->SetArcBridgeBootstrapFactoryForTesting(
-        base::Bind(FakeArcBridgeBootstrap::Create));
+    service->SetArcSessionFactoryForTesting(base::Bind(FakeArcSession::Create));
     ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
   }
 

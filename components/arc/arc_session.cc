@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/arc_bridge_bootstrap.h"
+#include "components/arc/arc_session.h"
 
 #include <fcntl.h>
 #include <grp.h>
@@ -106,11 +106,11 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 
 // TODO(hidehiko): Refactor more to make this class unittest-able, for at least
 // state-machine part.
-class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
-                               public chromeos::SessionManagerClient::Observer {
+class ArcSessionImpl : public ArcSession,
+                       public chromeos::SessionManagerClient::Observer {
  public:
-  // The possible states of the bootstrap connection.  In the normal flow,
-  // the state changes in the following sequence:
+  // The possible states of the session.  In the normal flow, the state changes
+  // in the following sequence:
   //
   // NOT_STARTED
   //   Start() ->
@@ -199,16 +199,16 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
     STOPPED,
   };
 
-  ArcBridgeBootstrapImpl();
-  ~ArcBridgeBootstrapImpl() override;
+  ArcSessionImpl();
+  ~ArcSessionImpl() override;
 
-  // ArcBridgeBootstrap:
+  // ArcSession overrides:
   void Start() override;
   void Stop() override;
 
  private:
-  // Creates the UNIX socket on the bootstrap thread and then processes its
-  // file descriptor.
+  // Creates the UNIX socket on a worker pool and then processes its file
+  // descriptor.
   static base::ScopedFD CreateSocket();
   void OnSocketCreated(base::ScopedFD fd);
 
@@ -231,7 +231,7 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   // Completes the termination procedure.
   void OnStopped(ArcBridgeService::StopReason reason);
 
-  // The state of the bootstrap connection.
+  // The state of the session.
   State state_ = State::NOT_STARTED;
 
   // When Stop() is called, this flag is set.
@@ -247,21 +247,20 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   base::ThreadChecker thread_checker_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcBridgeBootstrapImpl> weak_factory_;
+  base::WeakPtrFactory<ArcSessionImpl> weak_factory_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcBridgeBootstrapImpl);
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionImpl);
 };
 
-ArcBridgeBootstrapImpl::ArcBridgeBootstrapImpl()
-    : weak_factory_(this) {
+ArcSessionImpl::ArcSessionImpl() : weak_factory_(this) {
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client == nullptr)
     return;
   client->AddObserver(this);
 }
 
-ArcBridgeBootstrapImpl::~ArcBridgeBootstrapImpl() {
+ArcSessionImpl::~ArcSessionImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(hidehiko): CHECK if |state_| is in NOT_STARTED or STOPPED.
   // Currently, specifically on shutdown, the state_ can be any value.
@@ -271,7 +270,7 @@ ArcBridgeBootstrapImpl::~ArcBridgeBootstrapImpl() {
   client->RemoveObserver(this);
 }
 
-void ArcBridgeBootstrapImpl::Start() {
+void ArcSessionImpl::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, State::NOT_STARTED);
   VLOG(2) << "Starting ARC session.";
@@ -280,13 +279,12 @@ void ArcBridgeBootstrapImpl::Start() {
   state_ = State::CREATING_SOCKET;
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
-      base::Bind(&ArcBridgeBootstrapImpl::CreateSocket),
-      base::Bind(&ArcBridgeBootstrapImpl::OnSocketCreated,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&ArcSessionImpl::CreateSocket),
+      base::Bind(&ArcSessionImpl::OnSocketCreated, weak_factory_.GetWeakPtr()));
 }
 
 // static
-base::ScopedFD ArcBridgeBootstrapImpl::CreateSocket() {
+base::ScopedFD ArcSessionImpl::CreateSocket() {
   base::FilePath socket_path(kArcBridgeSocketPath);
 
   int raw_fd = -1;
@@ -323,7 +321,7 @@ base::ScopedFD ArcBridgeBootstrapImpl::CreateSocket() {
   return socket_fd;
 }
 
-void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
+void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, State::CREATING_SOCKET);
 
@@ -352,14 +350,13 @@ void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StartArcInstance(
-      cryptohome_id,
-      disable_boot_completed_broadcast,
-      base::Bind(&ArcBridgeBootstrapImpl::OnInstanceStarted,
-                 weak_factory_.GetWeakPtr(), base::Passed(&socket_fd)));
+      cryptohome_id, disable_boot_completed_broadcast,
+      base::Bind(&ArcSessionImpl::OnInstanceStarted, weak_factory_.GetWeakPtr(),
+                 base::Passed(&socket_fd)));
 }
 
-void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
-                                               StartArcInstanceResult result) {
+void ArcSessionImpl::OnInstanceStarted(base::ScopedFD socket_fd,
+                                       StartArcInstanceResult result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == State::STOPPED) {
     // This is the case that error is notified via DBus before the
@@ -401,15 +398,14 @@ void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
 
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
-      base::Bind(&ArcBridgeBootstrapImpl::ConnectMojo, base::Passed(&socket_fd),
+      base::Bind(&ArcSessionImpl::ConnectMojo, base::Passed(&socket_fd),
                  base::Passed(&cancel_fd)),
-      base::Bind(&ArcBridgeBootstrapImpl::OnMojoConnected,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&ArcSessionImpl::OnMojoConnected, weak_factory_.GetWeakPtr()));
 }
 
 // static
-base::ScopedFD ArcBridgeBootstrapImpl::ConnectMojo(base::ScopedFD socket_fd,
-                                                   base::ScopedFD cancel_fd) {
+base::ScopedFD ArcSessionImpl::ConnectMojo(base::ScopedFD socket_fd,
+                                           base::ScopedFD cancel_fd) {
   if (!WaitForSocketReadable(socket_fd.get(), cancel_fd.get())) {
     VLOG(1) << "Mojo connection was cancelled.";
     return base::ScopedFD();
@@ -444,7 +440,7 @@ base::ScopedFD ArcBridgeBootstrapImpl::ConnectMojo(base::ScopedFD socket_fd,
   return scoped_fd;
 }
 
-void ArcBridgeBootstrapImpl::OnMojoConnected(base::ScopedFD fd) {
+void ArcSessionImpl::OnMojoConnected(base::ScopedFD fd) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == State::STOPPED) {
@@ -487,7 +483,7 @@ void ArcBridgeBootstrapImpl::OnMojoConnected(base::ScopedFD fd) {
     observer.OnReady();
 }
 
-void ArcBridgeBootstrapImpl::Stop() {
+void ArcSessionImpl::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "Stopping ARC session is requested.";
 
@@ -536,7 +532,7 @@ void ArcBridgeBootstrapImpl::Stop() {
   }
 }
 
-void ArcBridgeBootstrapImpl::StopArcInstance() {
+void ArcSessionImpl::StopArcInstance() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == State::STARTING_INSTANCE ||
          state_ == State::CONNECTING_MOJO || state_ == State::RUNNING);
@@ -549,7 +545,7 @@ void ArcBridgeBootstrapImpl::StopArcInstance() {
       base::Bind(&DoNothingInstanceStopped));
 }
 
-void ArcBridgeBootstrapImpl::ArcInstanceStopped(bool clean) {
+void ArcSessionImpl::ArcInstanceStopped(bool clean) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "Notified that ARC instance is stopped "
           << (clean ? "cleanly" : "uncleanly");
@@ -575,7 +571,7 @@ void ArcBridgeBootstrapImpl::ArcInstanceStopped(bool clean) {
   OnStopped(reason);
 }
 
-void ArcBridgeBootstrapImpl::OnStopped(ArcBridgeService::StopReason reason) {
+void ArcSessionImpl::OnStopped(ArcBridgeService::StopReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // OnStopped() should be called once per instance.
   DCHECK_NE(state_, State::STOPPED);
@@ -588,20 +584,20 @@ void ArcBridgeBootstrapImpl::OnStopped(ArcBridgeService::StopReason reason) {
 
 }  // namespace
 
-ArcBridgeBootstrap::ArcBridgeBootstrap() = default;
-ArcBridgeBootstrap::~ArcBridgeBootstrap() = default;
+ArcSession::ArcSession() = default;
+ArcSession::~ArcSession() = default;
 
-void ArcBridgeBootstrap::AddObserver(Observer* observer) {
+void ArcSession::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void ArcBridgeBootstrap::RemoveObserver(Observer* observer) {
+void ArcSession::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
 // static
-std::unique_ptr<ArcBridgeBootstrap> ArcBridgeBootstrap::Create() {
-  return base::MakeUnique<ArcBridgeBootstrapImpl>();
+std::unique_ptr<ArcSession> ArcSession::Create() {
+  return base::MakeUnique<ArcSessionImpl>();
 }
 
 }  // namespace arc

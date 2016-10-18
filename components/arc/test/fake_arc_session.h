@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_TEST_FAKE_ARC_BRIDGE_BOOTSTRAP_H_
-#define COMPONENTS_ARC_TEST_FAKE_ARC_BRIDGE_BOOTSTRAP_H_
+#ifndef COMPONENTS_ARC_TEST_FAKE_ARC_SESSION_H_
+#define COMPONENTS_ARC_TEST_FAKE_ARC_SESSION_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_bootstrap.h"
+#include "components/arc/arc_session.h"
 
 namespace arc {
 
-// A fake ArcBridgeBootstrap that creates a local connection.
-class FakeArcBridgeBootstrap : public ArcBridgeBootstrap {
+// A fake ArcSession that creates a local connection.
+class FakeArcSession : public ArcSession {
  public:
-  FakeArcBridgeBootstrap();
-  ~FakeArcBridgeBootstrap() override;
+  FakeArcSession();
+  ~FakeArcSession() override;
 
-  // ArcBridgeBootstrap:
+  // ArcSession overrides:
   void Start() override;
   void Stop() override;
 
@@ -34,9 +34,9 @@ class FakeArcBridgeBootstrap : public ArcBridgeBootstrap {
   // Emulate Start() is suspended at some phase, before OnReady() is invoked.
   void SuspendBoot();
 
-  // Returns FakeArcBridgeBootstrap instance. This can be used for a factory
+  // Returns FakeArcSession instance. This can be used for a factory
   // in ArcBridgeServiceImpl.
-  static std::unique_ptr<ArcBridgeBootstrap> Create();
+  static std::unique_ptr<ArcSession> Create();
 
  private:
   bool boot_failure_emulation_enabled_ = false;
@@ -44,9 +44,9 @@ class FakeArcBridgeBootstrap : public ArcBridgeBootstrap {
 
   bool boot_suspended_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeArcBridgeBootstrap);
+  DISALLOW_COPY_AND_ASSIGN(FakeArcSession);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_TEST_FAKE_ARC_BRIDGE_BOOTSTRAP_H_
+#endif  // COMPONENTS_ARC_TEST_FAKE_ARC_SESSION_H_

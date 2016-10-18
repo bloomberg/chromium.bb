@@ -12,8 +12,8 @@
 #include "base/files/scoped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_session.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -25,12 +25,11 @@ namespace arc {
 
 // Real IPC based ArcBridgeService that is used in production.
 class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public ArcBridgeBootstrap::Observer {
+                             public ArcSession::Observer {
  public:
-  // This is the factory interface to inject ArcBridgeBootstrap instance
+  // This is the factory interface to inject ArcSession instance
   // for testing purpose.
-  using ArcBridgeBootstrapFactory =
-      base::Callback<std::unique_ptr<ArcBridgeBootstrap>()>;
+  using ArcSessionFactory = base::Callback<std::unique_ptr<ArcSession>()>;
 
   ArcBridgeServiceImpl();
   ~ArcBridgeServiceImpl() override;
@@ -39,13 +38,12 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
   void Shutdown() override;
 
-  // Inject a factory to create ArcBridgeBootstrap instance for testing
-  // purpose. |factory| must not be null.
-  void SetArcBridgeBootstrapFactoryForTesting(
-      const ArcBridgeBootstrapFactory& factory);
+  // Inject a factory to create ArcSession instance for testing purpose.
+  // |factory| must not be null.
+  void SetArcSessionFactoryForTesting(const ArcSessionFactory& factory);
 
-  // Returns the current bootstrap instance for testing purpose.
-  ArcBridgeBootstrap* GetBootstrapForTesting() { return bootstrap_.get(); }
+  // Returns the current ArcSession instance for testing purpose.
+  ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
 
   // Normally, reconnecting after connection shutdown happens after a short
   // delay. When testing, however, we'd like it to happen immediately to avoid
@@ -65,11 +63,11 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // Stops the running instance.
   void StopInstance();
 
-  // ArcBridgeBootstrap::Observer:
+  // ArcSession::Observer:
   void OnReady() override;
   void OnStopped(StopReason reason) override;
 
-  std::unique_ptr<ArcBridgeBootstrap> bootstrap_;
+  std::unique_ptr<ArcSession> arc_session_;
 
   // If the user's session has started.
   bool session_started_;
@@ -81,8 +79,8 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // Delay the reconnection.
   bool use_delay_before_reconnecting_ = true;
 
-  // Factory to inject a fake ArcBridgeBootstrap instance for testing.
-  ArcBridgeBootstrapFactory factory_;
+  // Factory to inject a fake ArcSession instance for testing.
+  ArcSessionFactory factory_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcBridgeServiceImpl> weak_factory_;

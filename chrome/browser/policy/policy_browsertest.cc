@@ -216,7 +216,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_bridge_bootstrap.h"
+#include "components/arc/test/fake_arc_session.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -4191,8 +4191,8 @@ class ArcPolicyTest : public PolicyTest {
             fake_session_manager_client_));
 
     auto service = base::MakeUnique<arc::ArcBridgeServiceImpl>();
-    service->SetArcBridgeBootstrapFactoryForTesting(
-        base::Bind(arc::FakeArcBridgeBootstrap::Create));
+    service->SetArcSessionFactoryForTesting(
+        base::Bind(arc::FakeArcSession::Create));
     arc::ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
   }
 

@@ -7,8 +7,6 @@ import("//testing/test.gni")
 
 static_library("arc") {
   sources = [
-    "arc_bridge_bootstrap.cc",
-    "arc_bridge_bootstrap.h",
     "arc_bridge_host_impl.cc",
     "arc_bridge_host_impl.h",
     "arc_bridge_service_impl.cc",
@@ -17,6 +15,8 @@ static_library("arc") {
     "arc_features.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
+    "arc_session.cc",
+    "arc_session.h",
     "audio/arc_audio_bridge.cc",
     "audio/arc_audio_bridge.h",
     "bluetooth/arc_bluetooth_bridge.cc",
@@ -167,10 +167,10 @@ static_library("arc_test_support") {
   sources = [
     "test/fake_app_instance.cc",
     "test/fake_app_instance.h",
-    "test/fake_arc_bridge_bootstrap.cc",
-    "test/fake_arc_bridge_bootstrap.h",
     "test/fake_arc_bridge_service.cc",
     "test/fake_arc_bridge_service.h",
+    "test/fake_arc_session.cc",
+    "test/fake_arc_session.h",
     "test/fake_bluetooth_instance.cc",
     "test/fake_bluetooth_instance.h",
     "test/fake_intent_helper_instance.cc",

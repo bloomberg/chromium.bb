@@ -30,15 +30,15 @@ constexpr int64_t kReconnectDelayInSeconds = 5;
 
 ArcBridgeServiceImpl::ArcBridgeServiceImpl()
     : session_started_(false),
-      factory_(base::Bind(ArcBridgeBootstrap::Create)),
+      factory_(base::Bind(ArcSession::Create)),
       weak_factory_(this) {
   DCHECK(!g_arc_bridge_service);
   g_arc_bridge_service = this;
 }
 
 ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
-  if (bootstrap_)
-    bootstrap_->RemoveObserver(this);
+  if (arc_session_)
+    arc_session_->RemoveObserver(this);
 
   DCHECK(g_arc_bridge_service == this);
   g_arc_bridge_service = nullptr;
@@ -62,8 +62,8 @@ void ArcBridgeServiceImpl::Shutdown() {
   PrerequisitesChanged();
 }
 
-void ArcBridgeServiceImpl::SetArcBridgeBootstrapFactoryForTesting(
-    const ArcBridgeBootstrapFactory& factory) {
+void ArcBridgeServiceImpl::SetArcSessionFactoryForTesting(
+    const ArcSessionFactory& factory) {
   DCHECK(!factory.is_null());
   factory_ = factory;
 }
@@ -84,13 +84,13 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
     VLOG(0) << "Prerequisites met, starting ARC";
     SetStopReason(StopReason::SHUTDOWN);
 
-    if (bootstrap_)
-      bootstrap_->RemoveObserver(this);
+    if (arc_session_)
+      arc_session_->RemoveObserver(this);
 
     SetState(State::CONNECTING);
-    bootstrap_ = factory_.Run();
-    bootstrap_->AddObserver(this);
-    bootstrap_->Start();
+    arc_session_ = factory_.Run();
+    arc_session_->AddObserver(this);
+    arc_session_->Start();
   } else {
     if (session_started_)
       return;
@@ -110,11 +110,11 @@ void ArcBridgeServiceImpl::StopInstance() {
   reconnect_ = false;
 
   VLOG(1) << "Stopping ARC";
-  DCHECK(bootstrap_.get());
+  DCHECK(arc_session_.get());
   SetState(State::STOPPING);
 
   // Note: this can call OnStopped() internally as a callback.
-  bootstrap_->Stop();
+  arc_session_->Stop();
 }
 
 void ArcBridgeServiceImpl::OnReady() {
@@ -134,8 +134,8 @@ void ArcBridgeServiceImpl::OnReady() {
 void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
   VLOG(0) << "ARC stopped: " << stop_reason;
-  bootstrap_->RemoveObserver(this);
-  bootstrap_.reset();
+  arc_session_->RemoveObserver(this);
+  arc_session_.reset();
   SetStopReason(stop_reason);
   SetState(State::STOPPED);
 

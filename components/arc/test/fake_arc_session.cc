@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/test/fake_arc_bridge_bootstrap.h"
+#include "components/arc/test/fake_arc_session.h"
 
 #include <memory>
 
@@ -11,11 +11,11 @@
 
 namespace arc {
 
-FakeArcBridgeBootstrap::FakeArcBridgeBootstrap() = default;
+FakeArcSession::FakeArcSession() = default;
 
-FakeArcBridgeBootstrap::~FakeArcBridgeBootstrap() = default;
+FakeArcSession::~FakeArcSession() = default;
 
-void FakeArcBridgeBootstrap::Start() {
+void FakeArcSession::Start() {
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
       observer.OnStopped(boot_failure_reason_);
@@ -25,17 +25,16 @@ void FakeArcBridgeBootstrap::Start() {
   }
 }
 
-void FakeArcBridgeBootstrap::Stop() {
+void FakeArcSession::Stop() {
   StopWithReason(ArcBridgeService::StopReason::SHUTDOWN);
 }
 
-void FakeArcBridgeBootstrap::StopWithReason(
-    ArcBridgeService::StopReason reason) {
+void FakeArcSession::StopWithReason(ArcBridgeService::StopReason reason) {
   for (auto& observer : observer_list_)
     observer.OnStopped(reason);
 }
 
-void FakeArcBridgeBootstrap::EnableBootFailureEmulation(
+void FakeArcSession::EnableBootFailureEmulation(
     ArcBridgeService::StopReason reason) {
   DCHECK(!boot_failure_emulation_enabled_);
   DCHECK(!boot_suspended_);
@@ -44,7 +43,7 @@ void FakeArcBridgeBootstrap::EnableBootFailureEmulation(
   boot_failure_reason_ = reason;
 }
 
-void FakeArcBridgeBootstrap::SuspendBoot() {
+void FakeArcSession::SuspendBoot() {
   DCHECK(!boot_failure_emulation_enabled_);
   DCHECK(!boot_suspended_);
 
@@ -52,8 +51,8 @@ void FakeArcBridgeBootstrap::SuspendBoot() {
 }
 
 // static
-std::unique_ptr<ArcBridgeBootstrap> FakeArcBridgeBootstrap::Create() {
-  return base::MakeUnique<FakeArcBridgeBootstrap>();
+std::unique_ptr<ArcSession> FakeArcSession::Create() {
+  return base::MakeUnique<FakeArcSession>();
 }
 
 }  // namespace arc

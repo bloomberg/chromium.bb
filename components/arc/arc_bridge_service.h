@@ -172,7 +172,7 @@ class ArcBridgeService {
   //   OnConnectionEstablished() ->
   // READY
   //
-  // The ArcBridgeBootstrap state machine can be thought of being substates of
+  // The ArcSession state machine can be thought of being substates of
   // ArcBridgeService's CONNECTING state.
   //
   // *

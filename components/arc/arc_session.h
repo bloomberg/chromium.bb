@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_ARC_BRIDGE_BOOTSTRAP_H_
-#define COMPONENTS_ARC_ARC_BRIDGE_BOOTSTRAP_H_
+#ifndef COMPONENTS_ARC_ARC_SESSION_H_
+#define COMPONENTS_ARC_ARC_SESSION_H_
 
 #include <memory>
 
@@ -22,9 +22,7 @@ namespace arc {
 // OnStopped() is called.
 // The number of instances must be at most one. Otherwise, ARC instances will
 // conflict.
-// TODO(hidehiko): This class manages more than "bootstrap" procedure now.
-// Rename this to ArcSession.
-class ArcBridgeBootstrap {
+class ArcSession {
  public:
   class Observer {
    public:
@@ -42,14 +40,13 @@ class ArcBridgeBootstrap {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // Creates a default instance of ArcBridgeBootstrap.
-  static std::unique_ptr<ArcBridgeBootstrap> Create();
-  virtual ~ArcBridgeBootstrap();
+  // Creates a default instance of ArcSession.
+  static std::unique_ptr<ArcSession> Create();
+  virtual ~ArcSession();
 
-  // Starts and bootstraps a connection with the instance. The Delegate's
-  // OnConnectionEstablished() will be called if the bootstrapping is
-  // successful, or OnStopped() if it is not.
-  // Start() should not be called twice or more.
+  // Starts and bootstraps a connection with the instance. The Observer's
+  // OnReady() will be called if the bootstrapping is successful, or
+  // OnStopped() if it is not. Start() should not be called twice or more.
   virtual void Start() = 0;
 
   // Requests to stop the currently-running instance.
@@ -60,14 +57,14 @@ class ArcBridgeBootstrap {
   void RemoveObserver(Observer* observer);
 
  protected:
-  ArcBridgeBootstrap();
+  ArcSession();
 
   base::ObserverList<Observer> observer_list_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcBridgeBootstrap);
+  DISALLOW_COPY_AND_ASSIGN(ArcSession);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_ARC_BRIDGE_BOOTSTRAP_H_
+#endif  // COMPONENTS_ARC_ARC_SESSION_H_
