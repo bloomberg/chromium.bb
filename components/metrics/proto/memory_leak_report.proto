@@ -109,7 +109,9 @@ message MemoryLeakReportProto {
   //
   // |num_rising_intervals| equals timeslot_now - timeslot_drop,
   // where timeslot_drop is the timeslot number of the last frame that saw
-  // a drop in the number of allocations (or 0 if there were no drops).
+  // a drop in the number of allocations, or the first frame in the history
+  // if there were no drops (history is cleared when the net number of
+  // allocations hits 0).
   // If it is < 32, it will be visible in the allocation history graph.
   // If it is >= 32, it will not be seen in the graph.
   // E.g. for history [3,2,4,4,7] |num_rising_intervals| equals 3.

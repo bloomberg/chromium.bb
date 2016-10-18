@@ -31,6 +31,8 @@ void MojoToParams(const mojom::LeakDetectorParams& mojo_params,
 void ReportToMojo(const MemoryLeakReportProto& report,
                   mojom::MemoryLeakReport* mojo_report) {
   mojo_report->size_bytes = report.size_bytes();
+  mojo_report->num_rising_intervals = report.num_rising_intervals();
+  mojo_report->num_allocs_increase = report.num_allocs_increase();
   for (auto call_stack_value : report.call_stack()) {
     mojo_report->call_stack.push_back(call_stack_value);
   }
@@ -50,6 +52,8 @@ void ReportToMojo(const MemoryLeakReportProto& report,
 void MojoToReport(const mojom::MemoryLeakReport& mojo_report,
                   MemoryLeakReportProto* report) {
   report->set_size_bytes(mojo_report.size_bytes);
+  report->set_num_rising_intervals(mojo_report.num_rising_intervals);
+  report->set_num_allocs_increase(mojo_report.num_allocs_increase);
   for (auto call_stack_addr : mojo_report.call_stack)
     report->add_call_stack(call_stack_addr);
 

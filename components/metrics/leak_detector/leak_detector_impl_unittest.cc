@@ -184,7 +184,7 @@ class LeakDetectorImplTest : public ::testing::Test {
     total_alloced_size_ += size;
     if (total_alloced_size_ >= next_analysis_total_alloced_size_) {
       InternalVector<InternalLeakReport> reports;
-      detector_->TestForLeaks(&reports);
+      detector_->TestForLeaks(&reports, 1024);
       for (const InternalLeakReport& report : reports) {
         auto iter = stored_reports_.find(report);
         if (iter == stored_reports_.end()) {

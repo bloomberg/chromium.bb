@@ -360,5 +360,99 @@ TEST_F(CallStackTableTest, GetTopCallStacks) {
   EXPECT_EQ(stack2_, iter->value.call_stack());
 }
 
+TEST_F(CallStackTableTest, GetLastUptrendInfo) {
+  CallStackTable table(kDefaultLeakThreshold);
+
+  // Add some |stack0_| and |stack1_|.
+  for (int i = 0; i < 60; ++i)
+    table.Add(stack0_);
+  for (int i = 0; i < 60; ++i)
+    table.Add(stack1_);
+  table.UpdateLastDropInfo(100);
+
+  size_t timestamp_delta;
+  uint32_t count_delta;
+  table.GetLastUptrendInfo(stack0_, 100, &timestamp_delta, &count_delta);
+  EXPECT_EQ(0U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+
+  // Remove |stack0_| and add |stack1_|.
+  for (int i = 0; i < 30; ++i)
+    table.Remove(stack0_);
+  for (int i = 0; i < 30; ++i)
+    table.Add(stack1_);
+  table.UpdateLastDropInfo(200);
+
+  table.GetLastUptrendInfo(stack0_, 200, &timestamp_delta, &count_delta);
+  EXPECT_EQ(0U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+
+  table.GetLastUptrendInfo(stack1_, 200, &timestamp_delta, &count_delta);
+  EXPECT_EQ(100U, timestamp_delta);
+  EXPECT_EQ(30U, count_delta);
+
+  // Check if previous drop of |stack0_| was recorded and introduce |stack2_|.
+  for (int i = 0; i < 30; ++i)
+    table.Add(stack0_);
+  for (int i = 0; i < 60; ++i)
+    table.Add(stack2_);
+  table.UpdateLastDropInfo(300);
+
+  table.GetLastUptrendInfo(stack0_, 300, &timestamp_delta, &count_delta);
+  EXPECT_EQ(100U, timestamp_delta);
+  EXPECT_EQ(30U, count_delta);
+
+  table.GetLastUptrendInfo(stack2_, 300, &timestamp_delta, &count_delta);
+  EXPECT_EQ(0U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+
+  // Introduce more variation between updates. Decrease |stack2_| to 0.
+  // All the history for |stack2_| should be forgotten.
+  for (int i = 0; i < 30; ++i)
+    table.Add(stack0_);
+  for (int i = 0; i < 40; ++i)
+    table.Remove(stack0_);
+  for (int i = 0; i < 40; ++i)
+    table.Add(stack1_);
+  for (int i = 0; i < 30; ++i)
+    table.Remove(stack1_);
+  for (int i = 0; i < 30; ++i)
+    table.Remove(stack2_);
+  for (int i = 0; i < 30; ++i)
+    table.Remove(stack2_);
+  table.UpdateLastDropInfo(400);
+
+  table.GetLastUptrendInfo(stack0_, 400, &timestamp_delta, &count_delta);
+  EXPECT_EQ(0U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+
+  table.GetLastUptrendInfo(stack1_, 400, &timestamp_delta, &count_delta);
+  EXPECT_EQ(300U, timestamp_delta);
+  EXPECT_EQ(40U, count_delta);
+
+  table.GetLastUptrendInfo(stack2_, 400, &timestamp_delta, &count_delta);
+  EXPECT_EQ(400U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+
+  // Make a 0-sum sequence for |stack0_|. Introduce |stack2_| again.
+  for (int i = 0; i < 30; ++i)
+    table.Add(stack0_);
+  for (int i = 0; i < 30; ++i)
+    table.Remove(stack0_);
+  for (int i = 0; i < 40; ++i)
+    table.Add(stack2_);
+  for (int i = 0; i < 30; ++i)
+    table.Remove(stack2_);
+  table.UpdateLastDropInfo(500);
+
+  table.GetLastUptrendInfo(stack0_, 500, &timestamp_delta, &count_delta);
+  EXPECT_EQ(100U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+
+  table.GetLastUptrendInfo(stack2_, 500, &timestamp_delta, &count_delta);
+  EXPECT_EQ(0U, timestamp_delta);
+  EXPECT_EQ(0U, count_delta);
+}
+
 }  // namespace leak_detector
 }  // namespace metrics
