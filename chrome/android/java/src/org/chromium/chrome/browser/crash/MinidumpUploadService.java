@@ -15,6 +15,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -334,7 +335,8 @@ public class MinidumpUploadService extends IntentService {
      */
     @VisibleForTesting
     MinidumpUploadCallable createMinidumpUploadCallable(File minidumpFile, File logfile) {
-        return new MinidumpUploadCallable(minidumpFile, logfile, getApplicationContext());
+        return new MinidumpUploadCallable(
+                minidumpFile, logfile, PrivacyPreferencesManager.getInstance());
     }
 
     /**

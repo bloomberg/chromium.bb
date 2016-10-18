@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
 /**
  * Reads, writes, and migrates preferences related to network usage and privacy.

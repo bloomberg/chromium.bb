@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.crash;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
 
@@ -12,8 +11,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactoryImpl;
 
@@ -71,19 +69,19 @@ public class MinidumpUploadCallable implements Callable<Integer> {
     private final HttpURLConnectionFactory mHttpURLConnectionFactory;
     private final CrashReportingPermissionManager mPermManager;
 
-    public MinidumpUploadCallable(File fileToUpload, File logfile, Context context) {
-        this(fileToUpload, logfile, new HttpURLConnectionFactoryImpl(),
-                PrivacyPreferencesManager.getInstance());
+    public MinidumpUploadCallable(
+            File fileToUpload, File logfile, CrashReportingPermissionManager permissionManager) {
+        this(fileToUpload, logfile, new HttpURLConnectionFactoryImpl(), permissionManager);
         removeOutdatedPrefs(ContextUtils.getAppSharedPreferences());
     }
 
     public MinidumpUploadCallable(File fileToUpload, File logfile,
             HttpURLConnectionFactory httpURLConnectionFactory,
-            CrashReportingPermissionManager permManager) {
+            CrashReportingPermissionManager permissionManager) {
         mFileToUpload = fileToUpload;
         mLogfile = logfile;
         mHttpURLConnectionFactory = httpURLConnectionFactory;
-        mPermManager = permManager;
+        mPermManager = permissionManager;
     }
 
     @Override
