@@ -27,6 +27,9 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor() {}
 
 void ScriptWrappableVisitor::TracePrologue(
     v8::EmbedderReachableReferenceReporter* reporter) {
+  // This CHECK ensures that wrapper tracing is not started from scopes
+  // that forbid GC execution, e.g., constructors.
+  CHECK(!ThreadState::current()->isGCForbidden());
   performCleanup();
 
   DCHECK(!m_tracingInProgress);

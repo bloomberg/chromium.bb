@@ -169,7 +169,12 @@ HTMLCollection::HTMLCollection(ContainerNode& ownerNode,
                        type),
       m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter),
       m_shouldOnlyIncludeDirectChildren(
-          shouldTypeOnlyIncludeDirectChildren(type)) {}
+          shouldTypeOnlyIncludeDirectChildren(type)) {
+  // Keep this in the child class because |registerNodeList| requires wrapper
+  // tracing and potentially calls virtual methods which is not allowed in a
+  // base class constructor.
+  document().registerNodeList(this);
+}
 
 HTMLCollection* HTMLCollection::create(ContainerNode& base,
                                        CollectionType type) {

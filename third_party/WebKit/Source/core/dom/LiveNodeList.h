@@ -46,7 +46,12 @@ class CORE_EXPORT LiveNodeList : public NodeList, public LiveNodeListBase {
       : LiveNodeListBase(ownerNode,
                          rootType,
                          invalidationType,
-                         collectionType) {}
+                         collectionType) {
+    // Keep this in the child class because |registerNodeList| requires wrapper
+    // tracing and potentially calls virtual methods which is not allowed in a
+    // base class constructor.
+    document().registerNodeList(this);
+  }
 
   unsigned length() const final;
   Element* item(unsigned offset) const final;

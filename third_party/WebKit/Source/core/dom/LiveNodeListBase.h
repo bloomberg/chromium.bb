@@ -52,8 +52,6 @@ class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
     DCHECK_EQ(m_rootType, static_cast<unsigned>(rootType));
     DCHECK_EQ(m_invalidationType, static_cast<unsigned>(invalidationType));
     DCHECK_EQ(m_collectionType, static_cast<unsigned>(collectionType));
-
-    document().registerNodeList(this);
   }
 
   virtual ~LiveNodeListBase() {}
