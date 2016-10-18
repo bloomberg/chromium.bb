@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
@@ -59,6 +60,26 @@ void AssociateParamsFromExperiment(
         experiment.disable_features[i],
         base::FeatureList::OVERRIDE_DISABLE_FEATURE, trial);
   }
+}
+
+// Chooses an experiment taking into account the command line. Defaults to
+// picking the first experiment.
+const FieldTrialTestingExperiment& ChooseExperiment(
+    const FieldTrialTestingExperiment experiments[],
+    size_t experiment_size) {
+  DCHECK_GT(experiment_size, 0ul);
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  size_t chosen_index = 0;
+  for (size_t i = 1; i < experiment_size && chosen_index == 0; ++i) {
+    const auto& experiment = experiments[i];
+    if (experiment.forcing_flag &&
+        command_line.HasSwitch(experiment.forcing_flag)) {
+      chosen_index = i;
+      break;
+    }
+  }
+  DCHECK_GT(experiment_size, chosen_index);
+  return experiments[chosen_index];
 }
 
 } // namespace
@@ -116,7 +137,9 @@ void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
     const FieldTrialTestingStudy& study = config.studies[i];
     if (study.experiments_size > 0) {
       AssociateParamsFromExperiment(
-          study.name, study.experiments[0], feature_list);
+          study.name,
+          ChooseExperiment(study.experiments, study.experiments_size),
+          feature_list);
     } else {
       DLOG(ERROR) << "Unexpected empty study: " << study.name;
     }

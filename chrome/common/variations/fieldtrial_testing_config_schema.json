@@ -41,6 +41,10 @@
                 "field": "disable_features",
                 "type": "array",
                 "contents": { "type": "string"}
+              },
+              {
+                "field": "forcing_flag",
+                "type": "string"
               }
             ]
           }

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -18,7 +19,7 @@ namespace chrome_variations {
 
 class VariationsUtilTest : public ::testing::Test {
  public:
-  VariationsUtilTest() : field_trial_list_(NULL) {}
+  VariationsUtilTest() : field_trial_list_(nullptr) {}
 
   ~VariationsUtilTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
@@ -61,13 +62,16 @@ TEST_F(VariationsUtilTest, AssociateParamsFromFieldTrialConfig) {
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_0[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", array_kFieldTrialConfig_params_0, 2, NULL, 0, NULL, 0},
+      {"TestGroup1", array_kFieldTrialConfig_params_0, 2, nullptr, 0,
+       nullptr, 0, nullptr},
   };
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_1[] =
       {{"x", "3"}, {"y", "4"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", array_kFieldTrialConfig_params_0, 2, NULL, 0, NULL, 0},
-      {"TestGroup2-2", array_kFieldTrialConfig_params_1, 2, NULL, 0, NULL, 0},
+      {"TestGroup2", array_kFieldTrialConfig_params_0, 2, nullptr, 0,
+       nullptr, 0, nullptr},
+      {"TestGroup2-2", array_kFieldTrialConfig_params_1, 2, nullptr, 0,
+       nullptr, 0, nullptr},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
@@ -103,11 +107,11 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   const char* disable_features[] = {"C", "D"};
 
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", NULL, 0, enable_features, 2, NULL, 0},
+      {"TestGroup1", nullptr, 0, enable_features, 2, nullptr, 0, nullptr},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", NULL, 0, NULL, 0, disable_features, 2},
-      {"TestGroup2-2", NULL, 0, NULL, 0, NULL, 0},
+      {"TestGroup2", nullptr, 0, nullptr, 0, disable_features, 2, nullptr},
+      {"TestGroup2-2", nullptr, 0, nullptr, 0, nullptr, 0, nullptr},
   };
 
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
@@ -135,6 +139,39 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFeatureC));
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFeatureD));
   EXPECT_TRUE(base::FieldTrialList::IsTrialActive("TestTrial2"));
+}
+
+TEST_F(VariationsUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
+      {"TestGroup1", nullptr, 0, nullptr, 0, nullptr, 0, nullptr}
+  };
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
+      {"TestGroup2", nullptr, 0, nullptr, 0, nullptr, 0, nullptr},
+      {"ForcedGroup2", nullptr, 0, nullptr, 0, nullptr, 0, "flag-2"},
+  };
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
+      {"TestGroup3", nullptr, 0, nullptr, 0, nullptr, 0, nullptr},
+      {"ForcedGroup3", nullptr, 0, nullptr, 0, nullptr, 0, "flag-3"},
+      {"ForcedGroup3-2", nullptr, 0, nullptr, 0, nullptr, 0, "flag-3-2"},
+  };
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
+      {"TestTrial2", array_kFieldTrialConfig_experiments_1, 2},
+      {"TestTrial3", array_kFieldTrialConfig_experiments_2, 3},
+  };
+  const FieldTrialTestingConfig kConfig = {
+      array_kFieldTrialConfig_studies, 3
+  };
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("flag-2");
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("flag-3");
+
+  base::FeatureList feature_list;
+  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list);
+
+  EXPECT_EQ("TestGroup1", base::FieldTrialList::FindFullName("TestTrial1"));
+  EXPECT_EQ("ForcedGroup2", base::FieldTrialList::FindFullName("TestTrial2"));
+  EXPECT_EQ("ForcedGroup3", base::FieldTrialList::FindFullName("TestTrial3"));
 }
 
 }  // namespace chrome_variations
