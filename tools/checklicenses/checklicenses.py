@@ -234,9 +234,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
-    'third_party/dpkg-dev': [
-        'GPL (v2 or later)',
-    ],
     'third_party/catapult/firefighter/default/tracing/third_party/devscripts': [
         'GPL (v2 or later)',
     ],
