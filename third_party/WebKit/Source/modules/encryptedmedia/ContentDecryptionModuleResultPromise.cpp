@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -17,21 +18,15 @@ namespace blink {
 ExceptionCode WebCdmExceptionToExceptionCode(
     WebContentDecryptionModuleException cdmException) {
   switch (cdmException) {
+    case WebContentDecryptionModuleExceptionTypeError:
+      return V8TypeError;
     case WebContentDecryptionModuleExceptionNotSupportedError:
       return NotSupportedError;
     case WebContentDecryptionModuleExceptionInvalidStateError:
       return InvalidStateError;
-    case WebContentDecryptionModuleExceptionInvalidAccessError:
-      return InvalidAccessError;
     case WebContentDecryptionModuleExceptionQuotaExceededError:
       return QuotaExceededError;
     case WebContentDecryptionModuleExceptionUnknownError:
-      return UnknownError;
-    case WebContentDecryptionModuleExceptionClientError:
-    case WebContentDecryptionModuleExceptionOutputError:
-      // Currently no matching DOMException for these 2 errors.
-      // FIXME: Update DOMException to handle these if actually added to
-      // the EME spec.
       return UnknownError;
   }
 
@@ -98,7 +93,10 @@ void ContentDecryptionModuleResultPromise::reject(ExceptionCode code,
                                                   const String& errorMessage) {
   DCHECK(isValidToFulfillPromise());
 
-  m_resolver->reject(DOMException::create(code, errorMessage));
+  ScriptState::Scope scope(m_resolver->getScriptState());
+  v8::Isolate* isolate = m_resolver->getScriptState()->isolate();
+  m_resolver->reject(
+      V8ThrowException::createDOMException(isolate, code, errorMessage));
   m_resolver.clear();
 }
 

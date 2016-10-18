@@ -48,7 +48,7 @@
                     mediaKeySession.update(jwkSetArray).then(function() {
                         forceTestFailureFromPromise(test, 'Error: update() succeeded');
                     }, function(error) {
-                        assert_equals(error.name, 'InvalidAccessError');
+                        assert_equals(error.name, 'TypeError');
                         test.done();
                     });
                 }

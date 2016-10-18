@@ -10,7 +10,7 @@
         <script>
             // Create a session and call generateRequest() with |initDataType|
             // and |initData|. generateRequest() should fail with an
-            // InvalidAccessError. Returns a promise that resolves successfully
+            // TypeError. Returns a promise that resolves successfully
             // if the error happened, rejects otherwise.
             function test_session(initDataType, initData)
             {
@@ -27,7 +27,7 @@
                     }).then(function() {
                         assert_unreached('generateRequest() succeeded');
                     }, function(error) {
-                        assert_equals(error.name, 'InvalidAccessError');
+                        assert_equals(error.name, 'TypeError');
                         return Promise.resolve('success');
                     });
                 })

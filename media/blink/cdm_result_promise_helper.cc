@@ -38,16 +38,21 @@ blink::WebContentDecryptionModuleException ConvertCdmException(
       return blink::WebContentDecryptionModuleExceptionNotSupportedError;
     case MediaKeys::INVALID_STATE_ERROR:
       return blink::WebContentDecryptionModuleExceptionInvalidStateError;
+
+    // TODO(jrummell): Since InvalidAccess is not returned, thus should be
+    // renamed to TYPE_ERROR. http://crbug.com/570216#c11.
     case MediaKeys::INVALID_ACCESS_ERROR:
-      return blink::WebContentDecryptionModuleExceptionInvalidAccessError;
+      return blink::WebContentDecryptionModuleExceptionTypeError;
     case MediaKeys::QUOTA_EXCEEDED_ERROR:
       return blink::WebContentDecryptionModuleExceptionQuotaExceededError;
     case MediaKeys::UNKNOWN_ERROR:
       return blink::WebContentDecryptionModuleExceptionUnknownError;
+
+    // These are deprecated, and should be removed.
+    // http://crbug.com/570216#c11.
     case MediaKeys::CLIENT_ERROR:
-      return blink::WebContentDecryptionModuleExceptionClientError;
     case MediaKeys::OUTPUT_ERROR:
-      return blink::WebContentDecryptionModuleExceptionOutputError;
+      break;
   }
   NOTREACHED();
   return blink::WebContentDecryptionModuleExceptionUnknownError;

@@ -4,8 +4,10 @@
 
 #include "modules/encryptedmedia/NavigatorRequestMediaKeySystemAccess.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -312,21 +314,21 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
   // When this method is invoked, the user agent must run the following steps:
-  // 1. If keySystem is an empty string, return a promise rejected with a
-  //    new DOMException whose name is InvalidAccessError.
+  // 1. If keySystem is the empty string, return a promise rejected with a
+  //    newly created TypeError.
   if (keySystem.isEmpty()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(InvalidAccessError,
+    return ScriptPromise::reject(
+        scriptState,
+        V8ThrowException::createTypeError(scriptState->isolate(),
                                           "The keySystem parameter is empty."));
   }
 
-  // 2. If supportedConfigurations was provided and is empty, return a
-  //    promise rejected with a new DOMException whose name is
-  //    InvalidAccessError.
+  // 2. If supportedConfigurations is empty, return a promise rejected with
+  //    a newly created TypeError.
   if (!supportedConfigurations.size()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState, DOMException::create(
-                         InvalidAccessError,
+    return ScriptPromise::reject(
+        scriptState, V8ThrowException::createTypeError(
+                         scriptState->isolate(),
                          "The supportedConfigurations parameter is empty."));
   }
 

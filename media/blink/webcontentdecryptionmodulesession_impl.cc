@@ -256,10 +256,10 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // From https://w3c.github.io/encrypted-media/#generateRequest.
-  // 5. If the Key System implementation represented by this object's cdm
+  // 6. If the Key System implementation represented by this object's cdm
   //    implementation value does not support initDataType as an Initialization
-  //    Data Type, return a promise rejected with a new DOMException whose name
-  //    is NotSupportedError. String comparison is case-sensitive.
+  //    Data Type, return a promise rejected with a NotSupportedError.
+  //    String comparison is case-sensitive.
   EmeInitDataType eme_init_data_type = ConvertToEmeInitDataType(init_data_type);
   if (!IsSupportedKeySystemWithInitDataType(adapter_->GetKeySystem(),
                                             eme_init_data_type)) {
@@ -271,39 +271,50 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     return;
   }
 
-  // 9.1 If the init data is not valid for initDataType, reject promise with a
-  //     new DOMException whose name is InvalidAccessError.
-  // 9.2 Let sanitized init data be a validated and sanitized version of init
-  //     data. The user agent must thoroughly validate the Initialization Data
-  //     before passing it to the CDM. This includes verifying that the length
-  //     and values of fields are reasonable, verifying that values are within
-  //     reasonable limits, and stripping irrelevant, unsupported, or unknown
-  //     data or fields. It is recommended that user agents pre-parse, sanitize,
-  //     and/or generate a fully sanitized version of the Initialization Data.
-  //     If the Initialization Data format specified by initDataType support
-  //     multiple entries, the user agent should remove entries that are not
-  //     needed by the CDM.
-  // 9.3 If the previous step failed, reject promise with a new DOMException
-  //     whose name is InvalidAccessError.
+  // 10.1 If the init data is not valid for initDataType, reject promise with
+  //      a newly created TypeError.
+  // 10.2 Let sanitized init data be a validated and sanitized version of init
+  //      data. The user agent must thoroughly validate the Initialization Data
+  //      before passing it to the CDM. This includes verifying that the length
+  //      and values of fields are reasonable, verifying that values are within
+  //      reasonable limits, and stripping irrelevant, unsupported, or unknown
+  //      data or fields. It is recommended that user agents pre-parse,
+  //      sanitize, and/or generate a fully sanitized version of the
+  //      Initialization Data. If the Initialization Data format specified by
+  //      initDataType supports multiple entries, the user agent should remove
+  //      entries that are not needed by the CDM. The user agent must not
+  //      re-order entries within the Initialization Data.
+  // 10.3 If the preceding step failed, reject promise with a newly created
+  //      TypeError.
   std::vector<uint8_t> sanitized_init_data;
   std::string message;
   if (!SanitizeInitData(eme_init_data_type, init_data, init_data_length,
                         &sanitized_init_data, &message)) {
     result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidAccessError, 0,
+        blink::WebContentDecryptionModuleExceptionTypeError, 0,
         blink::WebString::fromUTF8(message));
     return;
   }
 
-  // 9.4 Let session id be the empty string.
-  //     (Done in constructor.)
+  // 10.4 If sanitized init data is empty, reject promise with a
+  //      NotSupportedError.
+  if (sanitized_init_data.empty()) {
+    result.completeWithError(
+        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
+        "No initialization data provided.");
+    return;
+  }
 
-  // 9.5 Let message be null.
-  //     (Done by CDM.)
+  // 10.5 Let session id be the empty string.
+  //      (Done in constructor.)
 
-  // 9.6 Let cdm be the CDM instance represented by this object's cdm
-  //     instance value.
-  // 9.7 Use the cdm to execute the following steps:
+  // 10.6 Let message be null.
+  // 10.7 Let message type be null.
+  //      (Done by CDM.)
+
+  // 10.8 Let cdm be the CDM instance represented by this object's cdm
+  //      instance value.
+  // 10.9 Use the cdm to execute the following steps:
   adapter_->InitializeNewSession(
       eme_init_data_type, sanitized_init_data, convertSessionType(session_type),
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
@@ -320,10 +331,17 @@ void WebContentDecryptionModuleSessionImpl::load(
   DCHECK(session_id_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // From https://w3c.github.io/encrypted-media/#load.
+  // 8.1 Let sanitized session ID be a validated and/or sanitized version of
+  //     sessionId. The user agent should thoroughly validate the sessionId
+  //     value before passing it to the CDM. At a minimum, this should include
+  //     checking that the length and value (e.g. alphanumeric) are reasonable.
+  // 8.2 If the preceding step failed, or if sanitized session ID is empty,
+  //     reject promise with a newly created TypeError.
   std::string sanitized_session_id;
   if (!SanitizeSessionId(session_id, &sanitized_session_id)) {
     result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidAccessError, 0,
+        blink::WebContentDecryptionModuleExceptionTypeError, 0,
         "Invalid session ID.");
     return;
   }
@@ -348,11 +366,21 @@ void WebContentDecryptionModuleSessionImpl::update(
   DCHECK(!session_id_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // From https://w3c.github.io/encrypted-media/#update.
+  // 6.1 Let sanitized response be a validated and/or sanitized version of
+  //     response copy. The user agent should thoroughly validate the response
+  //     before passing it to the CDM. This may include verifying values are
+  //     within reasonable limits, stripping irrelevant data or fields,
+  //     pre-parsing it, sanitizing it, and/or generating a fully sanitized
+  //     version. The user agent should check that the length and values of
+  //     fields are reasonable. Unknown fields should be rejected or removed.
+  // 6.2 If the preceding step failed, or if sanitized response is empty,
+  //     reject promise with a newly created TypeError.
   std::vector<uint8_t> sanitized_response;
   if (!SanitizeResponse(adapter_->GetKeySystem(), response, response_length,
                         &sanitized_response)) {
     result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidAccessError, 0,
+        blink::WebContentDecryptionModuleExceptionTypeError, 0,
         "Invalid response.");
     return;
   }

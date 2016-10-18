@@ -72,11 +72,11 @@
                     func: function() { return navigator.requestMediaKeySystemAccess(1, [{}]); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function() { return navigator.requestMediaKeySystemAccess(new Uint8Array(0), [{}]); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function() { return navigator.requestMediaKeySystemAccess('', [{}]); }
                 },
                 {
@@ -90,7 +90,7 @@
                 },
                 // Empty sequence of MediaKeySystemConfiguration.
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function() { return navigator.requestMediaKeySystemAccess('org.w3.clearkey', []); }
                 },
                 // Invalid sequences of MediaKeySystemConfigurations.
@@ -283,7 +283,7 @@
                 },
                 // Invalid parameters.
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk8, _, initData) { return mk8.createSession().generateRequest('', initData); }
                 },
                 // Not supported initDataTypes.
@@ -300,7 +300,7 @@
                     func: function(mk11, _, initData) { return mk11.createSession().generateRequest(1, initData); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk12, _, initData) { return mk12.createSession().generateRequest(new Uint8Array(0), initData); }
                 },
                 {
@@ -356,7 +356,7 @@
                     func: function(mk5, type) { return mk5.createSession().generateRequest(type, 1); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk6, type) { return mk6.createSession().generateRequest(type, new Uint8Array(0)); }
                 }
             ];
@@ -413,21 +413,21 @@
                     func: function(mk1) { return mk1.createSession('temporary').load(); }
                 },
                 // 'temporary' sessions are never allowed, so always return
-                // 'InvalidAccessError'.
+                // 'TypeError'.
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk3) { return mk3.createSession('temporary').load(''); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk4) { return mk4.createSession('temporary').load(1); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk5) { return mk5.createSession('temporary').load('!@#$%^&*()'); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk6) { return mk6.createSession('temporary').load('1234'); }
                 }
             ];
@@ -616,7 +616,7 @@
                     func: function(s) { return s.update(1); }
                 },
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(s) { return s.update(new Uint8Array(0)); }
                 }
             ];
@@ -822,7 +822,7 @@
                 }).then(function(result) {
                     assert_unreached('remove() should not succeed for temporary sessions');
                 }, function(error) {
-                    assert_equals(error.name, 'InvalidAccessError');
+                    assert_equals(error.name, 'TypeError');
                 });
             }
 
@@ -933,7 +933,7 @@
                 },
                 // Empty array.
                 {
-                    exception: 'InvalidAccessError',
+                    exception: 'TypeError',
                     func: function(mk) { return mk.setServerCertificate(new Uint8Array(0)); }
                 }
             ];

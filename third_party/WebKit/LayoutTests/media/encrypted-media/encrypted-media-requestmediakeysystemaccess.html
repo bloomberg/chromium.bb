@@ -38,7 +38,7 @@
             }
 
             // Tests for keySystem.
-            expect_error('', [{}], 'InvalidAccessError', 'Empty keySystem');
+            expect_error('', [{}], 'TypeError', 'Empty keySystem');
             expect_error('com.example.unsupported', [{}], 'NotSupportedError', 'Unsupported keySystem');
             expect_error('org.w3.clearkey.', [{}], 'NotSupportedError', 'keySystem ends with "."');
             expect_error('org.w3.ClearKey', [{}], 'NotSupportedError', 'Capitalized keySystem');
@@ -77,7 +77,7 @@
             expect_error('Org.w3.clearkey', [{}], 'NotSupportedError', 'Key system name is case sensitive');
 
             // Tests for trivial configurations.
-            expect_error('org.w3.clearkey', [], 'InvalidAccessError', 'Empty supportedConfigurations');
+            expect_error('org.w3.clearkey', [], 'TypeError', 'Empty supportedConfigurations');
             expect_config('org.w3.clearkey', [{}], {}, 'Empty configuration');
 
             // Various combinations of supportedConfigurations.

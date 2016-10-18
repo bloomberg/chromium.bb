@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
@@ -58,7 +58,7 @@ typedef Function<void()> SuccessCallback;
 typedef Function<void(ExceptionCode, const String&)> FailureCallback;
 
 // Represents the result used when setContentDecryptionModule() is called.
-// Calls |success| if result is resolved, |failure| is result is rejected.
+// Calls |success| if result is resolved, |failure| if result is rejected.
 class SetContentDecryptionModuleResult final
     : public ContentDecryptionModuleResult {
  public:
@@ -96,6 +96,7 @@ class SetContentDecryptionModuleResult final
       result.appendNumber(systemCode);
       result.append(')');
     }
+
     (*m_failureCallback)(WebCdmExceptionToExceptionCode(code),
                          result.toString());
   }
@@ -250,7 +251,9 @@ void SetMediaKeysHandler::fail(ExceptionCode code, const String& errorMessage) {
       !HTMLMediaElementEncryptedMedia::from(*m_element).m_isAttachingMediaKeys);
 
   // Reject promise with an appropriate error.
-  reject(DOMException::create(code, errorMessage));
+  ScriptState::Scope scope(getScriptState());
+  v8::Isolate* isolate = getScriptState()->isolate();
+  reject(V8ThrowException::createDOMException(isolate, code, errorMessage));
 }
 
 void SetMediaKeysHandler::clearFailed(ExceptionCode code,

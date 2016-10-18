@@ -25,7 +25,9 @@
 
 #include "modules/encryptedmedia/MediaKeys.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -190,19 +192,20 @@ ScriptPromise MediaKeys::setServerCertificate(
   // The setServerCertificate(serverCertificate) method provides a server
   // certificate to be used to encrypt messages to the license server.
   // It must run the following steps:
-  // 1. If serverCertificate is an empty array, return a promise rejected
-  //    with a new DOMException whose name is "InvalidAccessError".
+  // 1. If the Key System implementation represented by this object's cdm
+  //    implementation value does not support server certificates, return
+  //    a promise resolved with false.
+  // TODO(jrummell): Provide a way to determine if the CDM supports this.
+  // http://crbug.com/647816.
+  //
+  // 2. If serverCertificate is an empty array, return a promise rejected
+  //    with a new a newly created TypeError.
   if (!serverCertificate.byteLength()) {
-    return ScriptPromise::rejectWithDOMException(
-        scriptState,
-        DOMException::create(InvalidAccessError,
-                             "The serverCertificate parameter is empty."));
+    return ScriptPromise::reject(
+        scriptState, V8ThrowException::createTypeError(
+                         scriptState->isolate(),
+                         "The serverCertificate parameter is empty."));
   }
-
-  // 2. If the keySystem does not support server certificates, return a
-  //    promise rejected with a new DOMException whose name is
-  //    "NotSupportedError".
-  //    (Let the CDM decide whether to support this or not.)
 
   // 3. Let certificate be a copy of the contents of the serverCertificate
   //    parameter.
