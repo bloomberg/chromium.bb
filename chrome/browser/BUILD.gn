@@ -1419,6 +1419,7 @@ split_static_library("browser") {
     "//crypto:platform",
     "//device/base",
     "//device/bluetooth:mojo",
+    "//device/power_save_blocker",
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
     "//google_apis",

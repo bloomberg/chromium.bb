@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "device/power_save_blocker/power_save_blocker.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -57,6 +58,8 @@ PepperFlashBrowserHost::PepperFlashBrowserHost(BrowserPpapiHost* host,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       host_(host),
+      delay_timer_(FROM_HERE, base::TimeDelta::FromSeconds(45), this,
+                   &PepperFlashBrowserHost::OnDelayTimerFired),
       weak_factory_(this) {
   int unused;
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_, &unused);
@@ -78,21 +81,24 @@ int32_t PepperFlashBrowserHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
+void PepperFlashBrowserHost::OnDelayTimerFired() {
+  power_save_blocker_.reset();
+}
+
 int32_t PepperFlashBrowserHost::OnUpdateActivity(
     ppapi::host::HostMessageContext* host_context) {
-#if defined(OS_WIN)
-  // Reading then writing back the same value to the screensaver timeout system
-  // setting resets the countdown which prevents the screensaver from turning
-  // on "for a while". As long as the plugin pings us with this message faster
-  // than the screensaver timeout, it won't go on.
-  int value = 0;
-  if (SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &value, 0))
-    SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, value, NULL, 0);
-#elif defined(OS_MACOSX)
-  UpdateSystemActivity(OverallAct);
-#else
-// TODO(brettw) implement this for other platforms.
-#endif
+  if (!power_save_blocker_) {
+    power_save_blocker_.reset(new device::PowerSaveBlocker(
+        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+        device::PowerSaveBlocker::kReasonOther, "Requested By PepperFlash",
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
+  }
+  // There is no specification for how long OnUpdateActivity should prevent the
+  // screen from going to sleep. Empirically, twitch.tv calls this method every
+  // 10 seconds. Be conservative and allow 45 seconds (set in |delay_timer_|'s
+  // ctor) before deleting the block.
+  delay_timer_.Reset();
   return PP_OK;
 }
 

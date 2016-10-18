@@ -18,6 +18,7 @@ include_rules = [
   "+device/geolocation",
   "+device/hid",
   "+device/media_transfer_protocol",
+  "+device/power_save_blocker",
   "+device/usb",
   "+extensions/browser",
   "+extensions/common",
