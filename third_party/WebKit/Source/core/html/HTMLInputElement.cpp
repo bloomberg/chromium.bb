@@ -320,14 +320,8 @@ void HTMLInputElement::updateFocusAppearance(
     // case of RangeSelection. crbug.com/443061.
     if (layoutObject())
       layoutObject()->scrollRectToVisible(boundingBox());
-    if (document().frame()) {
-      // TODO(xiaochengh): The use of
-      // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
-      // http://crbug.com/590369 for more details.
-      document().updateStyleAndLayoutIgnorePendingStylesheets();
-
+    if (document().frame())
       document().frame()->selection().revealSelection();
-    }
   } else {
     HTMLTextFormControlElement::updateFocusAppearance(selectionBehavior);
   }

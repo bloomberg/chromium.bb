@@ -370,10 +370,6 @@ void FrameSelection::setSelectionAlgorithm(
                       ? ScrollAlignment::alignTopAlways
                       : ScrollAlignment::alignToEdgeIfNeeded;
 
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-
     revealSelection(alignment, RevealExtent);
   }
 
@@ -1264,7 +1260,11 @@ HTMLFormElement* FrameSelection::currentForm() const {
 void FrameSelection::revealSelection(const ScrollAlignment& alignment,
                                      RevealExtentOption revealExtentOption) {
   DCHECK(isAvailable());
-  DCHECK(!document().needsLayoutTreeUpdate());
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // Calculation of absolute caret bounds requires clean layout.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   LayoutRect rect;
 

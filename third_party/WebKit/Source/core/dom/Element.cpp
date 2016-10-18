@@ -2644,11 +2644,6 @@ void Element::updateFocusAppearance(
                                     FrameSelection::CloseTyping |
                                         FrameSelection::ClearTypingStyle |
                                         FrameSelection::DoNotSetFocus);
-
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-
     frame->selection().revealSelection();
   } else if (layoutObject() && !layoutObject()->isLayoutPart()) {
     layoutObject()->scrollRectToVisible(boundingBox());

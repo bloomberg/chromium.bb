@@ -145,12 +145,6 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
   DCHECK(m_editor->m_preventRevealSelection);
   --m_editor->m_preventRevealSelection;
   if (!m_editor->m_preventRevealSelection) {
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    m_editor->frame()
-        .document()
-        ->updateStyleAndLayoutIgnorePendingStylesheets();
-
     m_editor->frame().selection().revealSelection(
         ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
   }
@@ -970,13 +964,6 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text,
     if (Page* page = editedFrame->page()) {
       LocalFrame* focusedOrMainFrame =
           toLocalFrame(page->focusController().focusedOrMainFrame());
-
-      // TODO(xiaochengh): The use of
-      // updateStyleAndLayoutIgnorePendingStylesheets
-      // needs to be audited.  See http://crbug.com/590369 for more details.
-      focusedOrMainFrame->document()
-          ->updateStyleAndLayoutIgnorePendingStylesheets();
-
       focusedOrMainFrame->selection().revealSelection(
           ScrollAlignment::alignCenterIfNeeded);
     }
@@ -1273,11 +1260,6 @@ void Editor::revealSelectionAfterEditingOperation(
     RevealExtentOption revealExtentOption) {
   if (m_preventRevealSelection)
     return;
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
   frame().selection().revealSelection(alignment, revealExtentOption);
 }
 
