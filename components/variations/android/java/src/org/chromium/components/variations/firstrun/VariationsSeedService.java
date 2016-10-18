@@ -22,7 +22,7 @@ import java.net.URL;
 public class VariationsSeedService extends IntentService {
     private static final String TAG = "VariationsSeedServ";
     private static final String VARIATIONS_SERVER_URL =
-            "https://clients4.google.com/chrome-variations/seed?osname=android";
+            "https://clientservices.googleapis.com/chrome-variations/seed?osname=android";
     private static final int BUFFER_SIZE = 4096;
     private static final int READ_TIMEOUT = 10000; // time in ms
     private static final int REQUEST_TIMEOUT = 15000; // time in ms
