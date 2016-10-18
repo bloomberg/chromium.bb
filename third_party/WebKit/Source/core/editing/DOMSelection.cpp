@@ -240,7 +240,9 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {
   // no longer performs synchronous layout by itself.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  frame()->selection().moveTo(selection.end(), SelDefaultAffinity);
+  SelectionInDOMTree::Builder builder;
+  builder.collapse(selection.end());
+  frame()->selection().setSelection(createVisibleSelection(builder.build()));
 }
 
 void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
@@ -262,7 +264,9 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
   // no longer performs synchronous layout by itself.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  frame()->selection().moveTo(selection.start(), SelDefaultAffinity);
+  SelectionInDOMTree::Builder builder;
+  builder.collapse(selection.start());
+  frame()->selection().setSelection(createVisibleSelection(builder.build()));
 }
 
 void DOMSelection::empty() {

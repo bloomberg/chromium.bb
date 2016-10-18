@@ -111,11 +111,12 @@ class CORE_EXPORT FrameSelection final
     return selection().isContentRichlyEditable();
   }
 
-  // TODO(xiaochengh): Remove the |moveTo(VisiblePosition)| overload.
+  // TODO(yosin): We should make and rename |moveTo()| as implementation of
+  // |WebLoalFrameImpl::moveCaretSeleciton()|, since there is only one call
+  // site.
   void moveTo(const VisiblePosition&,
               EUserTriggered = NotUserTriggered,
               CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
-  void moveTo(const Position&, TextAffinity);
 
   template <typename Strategy>
   const VisibleSelectionTemplate<Strategy>& visibleSelection() const;

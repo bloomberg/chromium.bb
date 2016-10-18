@@ -162,13 +162,6 @@ void FrameSelection::moveTo(const VisiblePosition& pos,
                options, align);
 }
 
-void FrameSelection::moveTo(const Position& pos, TextAffinity affinity) {
-  SetSelectionOptions options = CloseTyping | ClearTypingStyle;
-  setSelection(
-      createVisibleSelection(pos, affinity, selection().isDirectional()),
-      options);
-}
-
 // TODO(xiaochengh): We should not use reference to return value.
 template <typename Strategy>
 static void adjustEndpointsAtBidiBoundary(
