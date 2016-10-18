@@ -29,6 +29,23 @@ Polymer({
     },
   },
 
+  ready: function() {
+    // When a <paper-submenu> is created with the [opened] attribute as true,
+    // its _active member isn't correctly initialized. See this bug for more
+    // info: https://github.com/PolymerElements/paper-menu/issues/88. This means
+    // the first tap to close an opened Advanced section does nothing (because
+    // it calls .open() on an opened menu instead of .close(). This is a fix for
+    // that bug without changing that code through its public API.
+    //
+    // TODO(dbeam): we're currently deciding whether <paper-{,sub}menu> are
+    // right for our needs (there have been minor a11y problems). If we decide
+    // to keep <paper-{,sub}menu>, fix this bug with a local Chrome CL (ex:
+    // https://codereview.chromium.org/2412343004) or a Polymer PR (ex:
+    // https://github.com/PolymerElements/paper-menu/pull/107).
+    if (this.advancedOpened)
+      this.$.advancedPage.open();
+  },
+
   /**
    * @param {!settings.Route} newRoute
    */

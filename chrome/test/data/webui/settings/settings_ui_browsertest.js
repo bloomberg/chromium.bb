@@ -32,6 +32,12 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
 
     suiteSetup(function() {
       ui = assert(document.querySelector('settings-ui'));
+      ui.$.drawerTemplate.restamp = true;
+    });
+
+    setup(function() {
+      ui.$.drawerTemplate.if = false;
+      Polymer.dom.flush();
     });
 
     test('basic', function() {
@@ -73,6 +79,37 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
         assertTrue(!!ui.$$('settings-menu'));
         done();
       });
+    });
+
+    test('advanced UIs stay in sync', function() {
+      var main = ui.$$('settings-main');
+      assertTrue(!!main);
+
+      assertFalse(!!ui.$$('settings-menu'));
+      assertFalse(ui.advancedOpened_);
+      assertFalse(main.advancedToggleExpanded);
+
+      main.advancedToggleExpanded = true;
+      Polymer.dom.flush();
+
+      assertFalse(!!ui.$$('settings-menu'));
+      assertTrue(ui.advancedOpened_);
+      assertTrue(main.advancedToggleExpanded);
+
+      ui.$.drawerTemplate.if = true;
+      Polymer.dom.flush();
+
+      var menu = ui.$$('settings-menu');
+      assertTrue(!!menu);
+      assertTrue(menu.advancedOpened);
+
+      MockInteractions.tap(menu.$$('#advancedPage .menu-trigger'));
+      Polymer.dom.flush();
+
+      // Check that all values are updated in unison.
+      assertFalse(menu.advancedOpened);
+      assertFalse(ui.advancedOpened_);
+      assertFalse(main.advancedToggleExpanded);
     });
   });
 
