@@ -198,7 +198,14 @@ TEST_F(ChildTracingTest, MAYBE_BrowserInitiatedMemoryDumps) {
 
 // Covers the case of one simple child-initiated memory dump without callback,
 // simulating a global memory dump request to the browser (+ response).
-TEST_F(ChildTracingTest, SingleChildInitiatedMemoryDump) {
+#if defined(OS_ANDROID)
+// Flaky on Android. http://crbug.com/656729.
+#define MAYBE_SingleChildInitiatedMemoryDump \
+  DISABLED_SingleChildInitiatedMemoryDump
+#else
+#define MAYBE_SingleChildInitiatedMemoryDump SingleChildInitiatedMemoryDump
+#endif
+TEST_F(ChildTracingTest, MAYBE_SingleChildInitiatedMemoryDump) {
   EnableTracingWithMemoryDumps();
 
   // Expect that our mock dump provider is called when the emulated memory dump
@@ -230,7 +237,15 @@ TEST_F(ChildTracingTest, SingleChildInitiatedMemoryDump) {
 // Covers the case of a global memory dump being requested while another one is
 // in progress and has not been acknowledged by the browser. The second request
 // is expected to fail immediately, while the first one is expected to suceed.
-TEST_F(ChildTracingTest, OverlappingChildInitiatedMemoryDumps) {
+#if defined(OS_ANDROID)
+// Flaky on Android. http://crbug.com/656729.
+#define MAYBE_OverlappingChildInitiatedMemoryDumps \
+  DISABLED_OverlappingChildInitiatedMemoryDumps
+#else
+#define MAYBE_OverlappingChildInitiatedMemoryDumps \
+  OverlappingChildInitiatedMemoryDumps
+#endif
+TEST_F(ChildTracingTest, MAYBE_OverlappingChildInitiatedMemoryDumps) {
   EnableTracingWithMemoryDumps();
 
   // Expect that our mock dump provider is called only once.
@@ -285,7 +300,15 @@ TEST_F(ChildTracingTest, OverlappingChildInitiatedMemoryDumps) {
 
 // Covers the case of five child-initiated global memory dumps. Each global dump
 // request has a callback, which is expected to fail for 3 out of 5 cases.
-TEST_F(ChildTracingTest, MultipleChildInitiatedMemoryDumpWithFailures) {
+#if defined(OS_ANDROID)
+// Flaky on Android. http://crbug.com/656729.
+#define MAYBE_MultipleChildInitiatedMemoryDumpWithFailures \
+  DISABLED_MultipleChildInitiatedMemoryDumpWithFailures
+#else
+#define MAYBE_MultipleChildInitiatedMemoryDumpWithFailures \
+  MultipleChildInitiatedMemoryDumpWithFailures
+#endif
+TEST_F(ChildTracingTest, MAYBE_MultipleChildInitiatedMemoryDumpWithFailures) {
   const uint32_t kNumRequests = 5;
   MemoryDumpType kDumpType = MemoryDumpType::EXPLICITLY_TRIGGERED;
 
