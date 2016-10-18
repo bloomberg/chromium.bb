@@ -19,6 +19,9 @@
     --settings-disabled-opacity: .65;
     --settings-error-color: var(--paper-red-700);
 
+    --settings-icon-ripple-size: 36px;
+    --settings-icon-size: 20px;
+
     --settings-list-frame-padding: {
       -webkit-padding-end: var(--settings-box-row-padding);
       -webkit-padding-start: 56px;
@@ -59,13 +62,13 @@
     --checkbox-size: 16px;
     --checkbox-spacing: 18px;
     --iron-icon-fill-color: var(--paper-grey-600);
-    --iron-icon-height: 20px;
-    --iron-icon-width: 20px;
+    --iron-icon-height: var(--settings-icon-size);
+    --iron-icon-width: var(--settings-icon-size);
     --paper-checkbox-label-color: inherit;
     --paper-dialog-color: inherit;
     --paper-icon-button: {
-      height: 36px;
-      width: 36px;
+      height: var(--settings-icon-ripple-size);
+      width: var(--settings-icon-ripple-size);
     };
     --paper-input-container-input: {
       color: inherit;

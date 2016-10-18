@@ -29,39 +29,34 @@
           <div class="middle">
             [[getPointersTitle_(hasMouse_, hasTouchpad_)]]
           </div>
-          <button class="icon-arrow-right" is="paper-icon-button-light">
-          </button>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
         <div id="keyboardRow" class="settings-box" on-tap="onKeyboardTap_"
             actionable>
           <iron-icon icon="settings:keyboard"></iron-icon>
           <div class="middle">$i18n{keyboardTitle}</div>
-          <button class="icon-arrow-right" is="paper-icon-button-light">
-          </button>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
         <template is="dom-if" if="[[stylusAllowed_]]">
           <div id="stylusRow" class="settings-box" on-tap="onStylusTap_"
               actionable>
             <iron-icon icon="settings:note"></iron-icon>
             <div class="middle">$i18n{stylusTitle}</div>
-          <button class="icon-arrow-right" is="paper-icon-button-light">
-          </button>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
           </div>
         </template>
         <div id="displayRow" class="settings-box" on-tap="onDisplayTap_"
             actionable>
           <iron-icon icon="settings:desktop-windows"></iron-icon>
           <div class="middle">$i18n{displayTitle}</div>
-          <button class="icon-arrow-right" is="paper-icon-button-light">
-          </button>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
         <template is="dom-if" if="[[showStorageManager_]]">
           <div id="storageRow" class="settings-box" on-tap="onStorageTap_"
               actionable>
             <iron-icon icon="settings:storage"></iron-icon>
             <div class="middle">$i18n{storageTitle}</div>
-            <button class="icon-arrow-right" is="paper-icon-button-light">
-            </button>
+            <button class="subpage-arrow" is="paper-icon-button-light"></button>
           </div>
         </template>
       </neon-animatable>

@@ -6,21 +6,21 @@
   <template>
     <style include="cr-shared-style">
       button[is='paper-icon-button-light'] {
-        --paper-icon-button-light-ripple: {
-          /* Center the ripple on the icon button. */
-          height: 36px;
-          left: -8px;
-          top: -8px;
-          width: 36px;
-        };
+        -webkit-margin-end: -8px;  /* Allow ripple to overlap the end. */
         -webkit-margin-start: 16px;
-        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: var(--settings-icon-size);
         flex-shrink: 0;
-        height: 20px;
-        width: 20px;
+        height: var(--settings-icon-ripple-size);
+        width: var(--settings-icon-ripple-size);
       }
 
-      [actionable] button[is="paper-icon-button-light"].icon-arrow-right {
+      :host-context([dir=rtl]) button[is='paper-icon-button-light'] {
+        transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
+      }
+
+      [actionable] button[is="paper-icon-button-light"].subpage-arrow {
         background-image: url(images/arrow_right.svg);
       }
 
