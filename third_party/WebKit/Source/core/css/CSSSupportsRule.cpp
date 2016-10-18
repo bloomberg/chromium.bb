@@ -36,7 +36,7 @@ namespace blink {
 
 CSSSupportsRule::CSSSupportsRule(StyleRuleSupports* supportsRule,
                                  CSSStyleSheet* parent)
-    : CSSGroupingRule(supportsRule, parent) {}
+    : CSSConditionRule(supportsRule, parent) {}
 
 String CSSSupportsRule::cssText() const {
   StringBuilder result;
@@ -48,10 +48,6 @@ String CSSSupportsRule::cssText() const {
   result.append('}');
 
   return result.toString();
-}
-
-String CSSSupportsRule::conditionText() const {
-  return toStyleRuleSupports(m_groupRule.get())->conditionText();
 }
 
 }  // namespace blink

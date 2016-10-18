@@ -20,7 +20,7 @@
 
 // http://dev.w3.org/csswg/cssom/#the-cssmediarule-interface
 
-interface CSSMediaRule : CSSGroupingRule {
+interface CSSMediaRule : CSSConditionRule {
     // TODO(foolip): media should have [PutForwards=mediaText].
     [SameObject] readonly attribute MediaList media;
 };

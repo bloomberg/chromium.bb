@@ -28,7 +28,7 @@
 namespace blink {
 
 CSSMediaRule::CSSMediaRule(StyleRuleMedia* mediaRule, CSSStyleSheet* parent)
-    : CSSGroupingRule(mediaRule, parent) {}
+    : CSSConditionRule(mediaRule, parent) {}
 
 CSSMediaRule::~CSSMediaRule() {}
 
@@ -49,6 +49,12 @@ String CSSMediaRule::cssText() const {
   return result.toString();
 }
 
+String CSSMediaRule::conditionText() const {
+  if (!mediaQueries())
+    return String();
+  return mediaQueries()->mediaText();
+}
+
 MediaList* CSSMediaRule::media() const {
   if (!mediaQueries())
     return nullptr;
@@ -59,13 +65,13 @@ MediaList* CSSMediaRule::media() const {
 }
 
 void CSSMediaRule::reattach(StyleRuleBase* rule) {
-  CSSGroupingRule::reattach(rule);
+  CSSConditionRule::reattach(rule);
   if (m_mediaCSSOMWrapper && mediaQueries())
     m_mediaCSSOMWrapper->reattach(mediaQueries());
 }
 
 DEFINE_TRACE(CSSMediaRule) {
   visitor->trace(m_mediaCSSOMWrapper);
-  CSSGroupingRule::trace(visitor);
+  CSSConditionRule::trace(visitor);
 }
 }  // namespace blink

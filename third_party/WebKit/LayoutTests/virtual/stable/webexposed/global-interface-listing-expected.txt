@@ -248,6 +248,10 @@ interface CSS
     static method supports
     attribute @@toStringTag
     method constructor
+interface CSSConditionRule : CSSGroupingRule
+    attribute @@toStringTag
+    getter conditionText
+    method constructor
 interface CSSFontFaceRule : CSSRule
     attribute @@toStringTag
     getter style
@@ -279,7 +283,7 @@ interface CSSKeyframesRule : CSSRule
     method deleteRule
     method findRule
     setter name
-interface CSSMediaRule : CSSGroupingRule
+interface CSSMediaRule : CSSConditionRule
     attribute @@toStringTag
     getter media
     method constructor
@@ -352,13 +356,9 @@ interface CSSStyleSheet : StyleSheet
     method deleteRule
     method insertRule
     method removeRule
-interface CSSSupportsRule : CSSRule
+interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
-    getter conditionText
-    getter cssRules
     method constructor
-    method deleteRule
-    method insertRule
 interface CSSViewportRule : CSSRule
     attribute @@toStringTag
     getter style

@@ -298,32 +298,45 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleGroup) {
   StyleRuleBase::traceAfterDispatch(visitor);
 }
 
+StyleRuleCondition::StyleRuleCondition(
+    RuleType type,
+    HeapVector<Member<StyleRuleBase>>& adoptRules)
+    : StyleRuleGroup(type, adoptRules) {}
+
+StyleRuleCondition::StyleRuleCondition(
+    RuleType type,
+    const String& conditionText,
+    HeapVector<Member<StyleRuleBase>>& adoptRules)
+    : StyleRuleGroup(type, adoptRules), m_conditionText(conditionText) {}
+
+StyleRuleCondition::StyleRuleCondition(const StyleRuleCondition& condition)
+    : StyleRuleGroup(condition), m_conditionText(condition.m_conditionText) {}
+
 StyleRuleMedia::StyleRuleMedia(MediaQuerySet* media,
                                HeapVector<Member<StyleRuleBase>>& adoptRules)
-    : StyleRuleGroup(Media, adoptRules), m_mediaQueries(media) {}
+    : StyleRuleCondition(Media, adoptRules), m_mediaQueries(media) {}
 
-StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& o) : StyleRuleGroup(o) {
-  if (o.m_mediaQueries)
-    m_mediaQueries = o.m_mediaQueries->copy();
+StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& media)
+    : StyleRuleCondition(media) {
+  if (media.m_mediaQueries)
+    m_mediaQueries = media.m_mediaQueries->copy();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleMedia) {
   visitor->trace(m_mediaQueries);
-  StyleRuleGroup::traceAfterDispatch(visitor);
+  StyleRuleCondition::traceAfterDispatch(visitor);
 }
 
 StyleRuleSupports::StyleRuleSupports(
     const String& conditionText,
     bool conditionIsSupported,
     HeapVector<Member<StyleRuleBase>>& adoptRules)
-    : StyleRuleGroup(Supports, adoptRules),
-      m_conditionText(conditionText),
+    : StyleRuleCondition(Supports, conditionText, adoptRules),
       m_conditionIsSupported(conditionIsSupported) {}
 
-StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
-    : StyleRuleGroup(o),
-      m_conditionText(o.m_conditionText),
-      m_conditionIsSupported(o.m_conditionIsSupported) {}
+StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& supports)
+    : StyleRuleCondition(supports),
+      m_conditionIsSupported(supports.m_conditionIsSupported) {}
 
 StyleRuleViewport::StyleRuleViewport(StylePropertySet* properties)
     : StyleRuleBase(Viewport), m_properties(properties) {}

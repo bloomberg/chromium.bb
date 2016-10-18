@@ -37,6 +37,7 @@ core_idl_files = get_path_info([
                                  "clipboard/DataTransfer.idl",
                                  "clipboard/DataTransferItemList.idl",
                                  "css/CSS.idl",
+                                 "css/CSSConditionRule.idl",
                                  "css/CSSFontFaceRule.idl",
                                  "css/CSSGroupingRule.idl",
                                  "css/CSSImportRule.idl",

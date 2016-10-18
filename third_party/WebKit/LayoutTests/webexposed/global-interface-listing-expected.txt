@@ -421,6 +421,10 @@ interface CSSCalcLength : CSSLengthValue
     getter vmin
     getter vw
     method constructor
+interface CSSConditionRule : CSSGroupingRule
+    attribute @@toStringTag
+    getter conditionText
+    method constructor
 interface CSSFontFaceRule : CSSRule
     attribute @@toStringTag
     getter style
@@ -495,7 +499,7 @@ interface CSSMatrixTransformComponent : CSSTransformComponent
     getter m43
     getter m44
     method constructor
-interface CSSMediaRule : CSSGroupingRule
+interface CSSMediaRule : CSSConditionRule
     attribute @@toStringTag
     getter media
     method constructor
@@ -614,13 +618,9 @@ interface CSSStyleValue
     attribute @@toStringTag
     getter cssText
     method constructor
-interface CSSSupportsRule : CSSRule
+interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
-    getter conditionText
-    getter cssRules
     method constructor
-    method deleteRule
-    method insertRule
 interface CSSTransformComponent
     attribute @@toStringTag
     getter cssText

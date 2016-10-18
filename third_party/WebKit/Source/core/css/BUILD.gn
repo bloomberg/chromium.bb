@@ -22,6 +22,8 @@ blink_core_sources("css") {
     "CSSColorValue.cpp",
     "CSSColorValue.h",
     "CSSComputedStyleDeclaration.cpp",
+    "CSSConditionRule.cpp",
+    "CSSConditionRule.h",
     "CSSContentDistributionValue.cpp",
     "CSSContentDistributionValue.h",
     "CSSCounterValue.cpp",

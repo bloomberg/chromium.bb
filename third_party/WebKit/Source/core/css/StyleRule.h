@@ -195,7 +195,24 @@ class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
   HeapVector<Member<StyleRuleBase>> m_childRules;
 };
 
-class CORE_EXPORT StyleRuleMedia : public StyleRuleGroup {
+class CORE_EXPORT StyleRuleCondition : public StyleRuleGroup {
+ public:
+  String conditionText() const { return m_conditionText; }
+
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    StyleRuleGroup::traceAfterDispatch(visitor);
+  }
+
+ protected:
+  StyleRuleCondition(RuleType, HeapVector<Member<StyleRuleBase>>& adoptRule);
+  StyleRuleCondition(RuleType,
+                     const String& conditionText,
+                     HeapVector<Member<StyleRuleBase>>& adoptRule);
+  StyleRuleCondition(const StyleRuleCondition&);
+  String m_conditionText;
+};
+
+class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
  public:
   static StyleRuleMedia* create(MediaQuerySet* media,
                                 HeapVector<Member<StyleRuleBase>>& adoptRules) {
@@ -215,7 +232,7 @@ class CORE_EXPORT StyleRuleMedia : public StyleRuleGroup {
   Member<MediaQuerySet> m_mediaQueries;
 };
 
-class StyleRuleSupports : public StyleRuleGroup {
+class StyleRuleSupports : public StyleRuleCondition {
  public:
   static StyleRuleSupports* create(
       const String& conditionText,
@@ -225,12 +242,11 @@ class StyleRuleSupports : public StyleRuleGroup {
                                  adoptRules);
   }
 
-  String conditionText() const { return m_conditionText; }
   bool conditionIsSupported() const { return m_conditionIsSupported; }
   StyleRuleSupports* copy() const { return new StyleRuleSupports(*this); }
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    StyleRuleGroup::traceAfterDispatch(visitor);
+    StyleRuleCondition::traceAfterDispatch(visitor);
   }
 
  private:

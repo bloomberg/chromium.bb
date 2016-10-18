@@ -23,14 +23,14 @@
 #ifndef CSSMediaRule_h
 #define CSSMediaRule_h
 
-#include "core/css/CSSGroupingRule.h"
+#include "core/css/CSSConditionRule.h"
 #include "core/css/MediaList.h"
 
 namespace blink {
 
 class StyleRuleMedia;
 
-class CSSMediaRule final : public CSSGroupingRule {
+class CSSMediaRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -42,6 +42,7 @@ class CSSMediaRule final : public CSSGroupingRule {
 
   void reattach(StyleRuleBase*) override;
   String cssText() const override;
+  String conditionText() const override;
 
   MediaList* media() const;
 

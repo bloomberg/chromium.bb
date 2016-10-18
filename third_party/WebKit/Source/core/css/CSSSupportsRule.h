@@ -29,13 +29,13 @@
 #ifndef CSSSupportsRule_h
 #define CSSSupportsRule_h
 
-#include "core/css/CSSGroupingRule.h"
+#include "core/css/CSSConditionRule.h"
 
 namespace blink {
 
 class StyleRuleSupports;
 
-class CSSSupportsRule final : public CSSGroupingRule {
+class CSSSupportsRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -47,10 +47,6 @@ class CSSSupportsRule final : public CSSGroupingRule {
   ~CSSSupportsRule() override {}
 
   String cssText() const override;
-
-  String conditionText() const;
-
-  DEFINE_INLINE_VIRTUAL_TRACE() { CSSGroupingRule::trace(visitor); }
 
  private:
   CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
