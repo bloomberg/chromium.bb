@@ -367,6 +367,12 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static bool isNonceableElement(const Element*);
 
+  // This method checks whether the request should be allowed for an
+  // experimental EmbeddingCSP feature
+  // Please, see https://w3c.github.io/webappsec-csp/embedded/#origin-allowed.
+  static bool shouldEnforceEmbeddersPolicy(const ResourceResponse&,
+                                           SecurityOrigin*);
+
   Document* document() const;
 
  private:

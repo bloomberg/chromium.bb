@@ -29,14 +29,14 @@
 
       async_test(t => {
         var i = document.createElement('iframe');
-        i.csp = 'value';
+        i.csp = "script-src 'unsafe-inline'";
         i.src = src;
 
         window.addEventListener('message', t.step_func(e => {
           if (e.source != i.contentWindow)
               return;
           assert_equals(src, e.data['src']);
-          assert_equals('value', e.data['embedding_csp']);
+          assert_equals("script-src 'unsafe-inline'", e.data['embedding_csp']);
           t.done();
         }));
 
@@ -45,31 +45,31 @@
 
       async_test(t => {
         var i = document.createElement('iframe');
-        i.csp = 'value';
+        i.csp = "script-src 'unsafe-inline'";
         i.src = src;
         document.body.appendChild(i);
 
-        i.contentWindow.location = new_src;
+        i.contentWindow.location = new_src + "?csp=" + i.csp;
         window.addEventListener('message', t.step_func(e => {
           if (e.source != i.contentWindow || new_src != e.data['src'])
               return;
-          assert_equals('value', e.data['embedding_csp']);
+          assert_equals("script-src 'unsafe-inline'", e.data['embedding_csp']);
           t.done();
         }));
       }, "Set Embedding-CSP Header on change of window's location.");
 
       async_test(t => {
         var i = document.createElement('iframe');
-        i.csp = 'value';
+        i.csp = "script-src 'unsafe-inline'";
         i.src = src;
         document.body.appendChild(i);
 
-        i.csp = 'value 2';
-        i.src = new_src;
+        i.csp = "default-src 'unsafe-inline'";
+        i.src = new_src + "?csp=" + i.csp;
         window.addEventListener('message', t.step_func(e => {
           if (e.source != i.contentWindow || new_src != e.data['src'])
               return;
-          assert_equals('value 2', e.data['embedding_csp']);
+          assert_equals("default-src 'unsafe-inline'", e.data['embedding_csp']);
           t.done();
         }));
       }, "Set Embedding-CSP Header on change of src attribute on iframe.");
@@ -77,8 +77,8 @@
 
       async_test(t => {
         var i = document.createElement('iframe');
-        i.csp = 'value';
-        redirect_url = 'http://localhost:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header.php';
+        i.csp = "script-src 'unsafe-inline'";
+        redirect_url = 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header.php';
         i.src = generateRedirect(redirect_url);
         document.body.appendChild(i);
 
@@ -87,26 +87,26 @@
             return;
           }
           assert_equals(src, e.data['src']);
-          assert_equals('value', e.data['embedding_csp']);
+          assert_equals("script-src 'unsafe-inline'", e.data['embedding_csp']);
           t.done();
         }));
       }, "Set Embedding-CSP Header on redirect in <iframe>.");
 
       async_test(t => {
         var i = document.createElement('iframe');
-        i.csp = 'value';
-        redirect_url = 'http://localhost:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header.php';
+        i.csp = "script-src 'unsafe-inline'";
+        redirect_url = 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header.php';
         i.src = generateRedirect(redirect_url);
         document.body.appendChild(i);
 
-        redirect_url = 'http://localhost:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header-and-respond.php';
+        redirect_url = 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/get-embedding-csp-header-and-respond.php';
         new_redirect = generateRedirect(redirect_url);
-        i.csp = 'value 2';
+        i.csp = "default-src 'unsafe-inline'";
         i.src = new_redirect;
         window.addEventListener('message', t.step_func(e => {
           if (e.source != i.contentWindow || new_src != e.data['src'])
               return;
-          assert_equals('value 2', e.data['embedding_csp']);
+          assert_equals("default-src 'unsafe-inline'", e.data['embedding_csp']);
           t.done();
         }));
       }, "Set Embedding-CSP Header on change of csp attribte and redirect.");

@@ -448,6 +448,29 @@ void DocumentLoader::responseReceived(
     }
   }
 
+  if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
+      !frameLoader()->requiredCSP().isEmpty()) {
+    SecurityOrigin* parentSecurityOrigin =
+        frame()->tree().parent()->securityContext()->getSecurityOrigin();
+    if (ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
+            response, parentSecurityOrigin)) {
+      m_contentSecurityPolicy->addPolicyFromHeaderValue(
+          frameLoader()->requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
+          ContentSecurityPolicyHeaderSourceHTTP);
+    } else {
+      String message = "Refused to display '" + response.url().elidedString() +
+                       "' because it has not opted-into the following policy "
+                       "required by its embedder: '" +
+                       frameLoader()->requiredCSP() + "'.";
+      ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
+          SecurityMessageSource, ErrorMessageLevel, message, response.url(),
+          mainResourceIdentifier());
+      frame()->document()->addConsoleMessage(consoleMessage);
+      cancelLoadAfterXFrameOptionsOrCSPDenied(response);
+      return;
+    }
+  }
+
   DCHECK(!m_frame->page()->defersLoading());
 
   m_response = response;

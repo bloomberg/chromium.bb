@@ -864,4 +864,56 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
   }
 }
 
+TEST_F(ContentSecurityPolicyTest, ShouldEnforceEmbeddersPolicy) {
+  struct TestCase {
+    const char* resourceURL;
+    const bool inherits;
+  } cases[] = {
+      // Same-origin
+      {"https://example.test/index.html", true},
+      // Cross-origin
+      {"http://example.test/index.html", false},
+      {"http://example.test:8443/index.html", false},
+      {"https://example.test:8443/index.html", false},
+      {"http://not.example.test/index.html", false},
+      {"https://not.example.test/index.html", false},
+      {"https://not.example.test:8443/index.html", false},
+
+      // Inherit
+      {"about:blank", true},
+      {"data:text/html,yay", true},
+      {"blob:https://example.test/bbe708f3-defd-4852-93b6-cf94e032f08d", true},
+      {"filesystem:http://example.test/temporary/index.html", true},
+  };
+
+  for (const auto& test : cases) {
+    ResourceResponse response;
+    response.setURL(KURL(ParsedURLString, test.resourceURL));
+    EXPECT_EQ(ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
+                  response, secureOrigin.get()),
+              test.inherits);
+
+    response.setHTTPHeaderField(HTTPNames::Allow_CSP_From, AtomicString("*"));
+    EXPECT_TRUE(ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
+        response, secureOrigin.get()));
+
+    response.setHTTPHeaderField(HTTPNames::Allow_CSP_From,
+                                AtomicString("* not a valid header"));
+    EXPECT_EQ(ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
+                  response, secureOrigin.get()),
+              test.inherits);
+
+    response.setHTTPHeaderField(HTTPNames::Allow_CSP_From,
+                                AtomicString("http://example.test"));
+    EXPECT_EQ(ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
+                  response, secureOrigin.get()),
+              test.inherits);
+
+    response.setHTTPHeaderField(HTTPNames::Allow_CSP_From,
+                                AtomicString("https://example.test"));
+    EXPECT_TRUE(ContentSecurityPolicy::shouldEnforceEmbeddersPolicy(
+        response, secureOrigin.get()));
+  }
+}
+
 }  // namespace blink

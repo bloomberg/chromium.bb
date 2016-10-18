@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/security/contentSecurityPolicy/resources/child-csp-test.js"></script>
+</head>
+<body>
+    <script>
+      var imgLineNumber = 20;
+      var scriptAbcLineNumber = 21;
+
+      async_test(t => {
+        csp = "img-src 'none'; script-src 'unsafe-inline';";
+        url = generateUrlWithAllowCSPFrom(SAME_ORIGIN, "");
+        injectIframeWithCSP(url, EXPECT_LOAD, csp, t, "0");
+      }, "Same origin iframes are always allowed.");
+
+      async_test(t => {
+        csp = "script-src 'unsafe-inline'; img-src 'none'";
+        url = generateUrlWithAllowCSPFrom(CROSS_ORIGIN, "");
+        injectIframeWithCSP(url, EXPECT_BLOCK, csp, t, "1");
+      }, "Cross origin iframe with requiredCSP but without Allow-CSP-From header gets blocked.")
+
+      async_test(t => {
+        csp = "script-src 'unsafe-inline'";
+        url = generateUrlWithAllowCSPFrom(CROSS_ORIGIN, "http://127.0.0.1:8000");
+        injectIframeWithCSP(url, EXPECT_LOAD, csp, t, "2");
+      }, "iframe from cross origin does not load without Allow-CSP-From header.");
+
+      async_test(t => {
+        csp = "script-src 'unsafe-inline'; img-src 'none'";
+        url = generateUrlWithAllowCSPFrom(CROSS_ORIGIN, "* ¢¥§");
+        injectIframeWithCSP(url, EXPECT_BLOCK, csp, t, "3");
+      }, "Iframe with improper Allow-CSP-From header gets blocked.");
+
+      async_test(t => {
+        csp = "script-src 'unsafe-inline'; img-src 'none'";
+        url = generateUrlWithAllowCSPFrom(CROSS_ORIGIN, "*") + "&csp=img-src *";
+        injectIframeWithCSP(url, EXPECT_LOAD, csp, t, "4");
+      }, "Star Allow-CSP-From header can be returned.");
+
+      async_test(t => {
+        csp = "script-src 'nonce-123';";
+        url = generateUrlWithAllowCSPFrom(CROSS_ORIGIN, "http://127.0.0.1:8000");
+        var i = document.createElement('iframe');
+        i.csp = csp;
+        i.src = url + "&id=5";
+
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow || e.data["securitypolicyviolation"] != true)
+            return;
+          assert_equals(e.data["blockedURI"], "inline");
+          assert_equals(e.data["lineNumber"], scriptAbcLineNumber);
+          t.done();
+        }));
+
+        document.body.appendChild(i);
+      }, "Allow-CSP-From header enforces EmbeddingCSP.");
+
+      async_test(t => {
+        csp = "script-src 'unsafe-inline'; img-src 'none'";
+        url = generateUrlWithAllowCSPFrom(CROSS_ORIGIN, "*") + "&csp=img-src *";
+        var i = document.createElement('iframe');
+        i.csp = csp;
+        i.src = url + "&id=6";
+
+        window.addEventListener('message', t.step_func(e => {
+          if (e.source != i.contentWindow || e.data["securitypolicyviolation"] != true)
+            return;
+          assert_equals(e.data["blockedURI"], 
+            "http://localhost:8000/security/contentSecurityPolicy/resources/green250x50.png");
+          assert_equals(e.data["lineNumber"], imgLineNumber);
+          t.done();
+        }));
+
+        document.body.appendChild(i);
+      }, "Star Allow-CSP-From header allows the parent to enforce its Embedding CSP.");
+
+      async_test(t => {
+        csp = "script-src 'unsafe-inline'; img-src 'none'";
+        url = "http://localhost:8000/security/contentSecurityPolicy/resources/respond-with-allow-csp-from-multiple-headers.php?allow_csp_from=";
+        var i = document.createElement('iframe');
+        i.csp = csp;
+        i.src = url + "http://localhost:8000" + "&allow_csp_from_2=*";
+
+        injectIframeWithCSP(url, EXPECT_BLOCK, csp, t, "7");
+      }, "Only first Allow-CSP-From header is considered.");
+    </script>
+</body>
+</html>

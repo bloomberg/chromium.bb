@@ -16,6 +16,7 @@ Access-Control-Max-Age
 Access-Control-Request-External
 Access-Control-Request-Headers
 Access-Control-Request-Method
+Allow-CSP-From
 Cache-Control
 Content-DPR
 Content-Disposition
