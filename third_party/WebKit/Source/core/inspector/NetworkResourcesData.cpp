@@ -217,8 +217,8 @@ void NetworkResourcesData::responseReceived(const String& requestId,
 
   String filePath = response.downloadedFilePath();
   if (!filePath.isEmpty()) {
-    std::unique_ptr<BlobData> blobData = BlobData::create();
-    blobData->appendFile(filePath);
+    std::unique_ptr<BlobData> blobData =
+        BlobData::createForFileWithUnknownSize(filePath);
     AtomicString mimeType;
     if (response.isHTTP())
       mimeType = extractMIMETypeFromMediaType(

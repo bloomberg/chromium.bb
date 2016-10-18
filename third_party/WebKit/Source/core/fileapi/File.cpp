@@ -60,9 +60,9 @@ static String getContentTypeFromFileName(const String& name,
 static std::unique_ptr<BlobData> createBlobDataForFileWithType(
     const String& path,
     const String& contentType) {
-  std::unique_ptr<BlobData> blobData = BlobData::create();
+  std::unique_ptr<BlobData> blobData =
+      BlobData::createForFileWithUnknownSize(path);
   blobData->setContentType(contentType);
-  blobData->appendFile(path);
   return blobData;
 }
 

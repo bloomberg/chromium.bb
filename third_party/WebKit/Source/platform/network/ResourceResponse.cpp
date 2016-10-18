@@ -617,8 +617,9 @@ void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath) {
     m_downloadedFileHandle.clear();
     return;
   }
-  std::unique_ptr<BlobData> blobData = BlobData::create();
-  blobData->appendFile(m_downloadedFilePath);
+  // TODO(dmurph): Investigate whether we need the mimeType on this blob.
+  std::unique_ptr<BlobData> blobData =
+      BlobData::createForFileWithUnknownSize(m_downloadedFilePath);
   blobData->detachFromCurrentThread();
   m_downloadedFileHandle = BlobDataHandle::create(std::move(blobData), -1);
 }

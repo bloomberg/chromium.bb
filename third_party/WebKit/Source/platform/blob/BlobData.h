@@ -152,6 +152,10 @@ class PLATFORM_EXPORT BlobData {
 
  public:
   static std::unique_ptr<BlobData> create();
+  // Calling append* on the returned object will check-fail. The caller can only
+  // have an unknown-length file if it is the only item in the blob.
+  static std::unique_ptr<BlobData> createForFileWithUnknownSize(
+      const String& path);
 
   // Detaches from current thread so that it can be passed to another thread.
   void detachFromCurrentThread();
@@ -163,9 +167,6 @@ class PLATFORM_EXPORT BlobData {
 
   void appendBytes(const void*, size_t length);
   void appendData(PassRefPtr<RawData>, long long offset, long long length);
-  // Do not use this version, please provide an offset and length
-  // (crbug.com/548512).
-  void appendFile(const String& path);
   void appendFile(const String& path,
                   long long offset,
                   long long length,
@@ -187,11 +188,18 @@ class PLATFORM_EXPORT BlobData {
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobDataTest, Consolidation);
 
-  BlobData() {}
+  enum class FileCompositionStatus {
+    SINGLE_UNKNOWN_SIZE_FILE,
+    NO_UNKNOWN_SIZE_FILES
+  };
+
+  explicit BlobData(FileCompositionStatus composition)
+      : m_fileComposition(composition) {}
 
   bool canConsolidateData(size_t length);
 
   String m_contentType;
+  FileCompositionStatus m_fileComposition;
   BlobDataItemList m_items;
 };
 

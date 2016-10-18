@@ -13,7 +13,7 @@ namespace blink {
 
 TEST(BlobDataTest, Consolidation) {
   const size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
-  BlobData data;
+  BlobData data(BlobData::FileCompositionStatus::NO_UNKNOWN_SIZE_FILES);
   const char* text1 = "abc";
   const char* text2 = "def";
   data.appendBytes(text1, 3u);
