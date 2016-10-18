@@ -59,9 +59,9 @@
         success = Should("node.numberOfOutputs", node.numberOfOutputs)
           .beEqualTo(6) && success;
         success = Should("node.channelCount", node.channelCount)
-          .beEqualTo(2) && success;
+          .beEqualTo(node.numberOfOutputs) && success;
         success = Should("node.channelCountMode", node.channelCountMode)
-          .beEqualTo("max") && success;
+          .beEqualTo("explicit") && success;
         success = Should("node.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
@@ -74,7 +74,17 @@
       });
 
       audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "ChannelSplitterNode");
+        testAudioNodeOptions(context, "ChannelSplitterNode", {
+          expectedChannelCount: {
+            value: 6,
+            isFixed: true,
+            errorType: "InvalidStateError"
+          },
+          expectedChannelCountMode: {
+            value: "explicit",
+            isFixed: true
+          }
+        });
         taskDone();
       });
 
@@ -110,7 +120,7 @@
             function () {
               node = new ChannelSplitterNode(context, options);
             })
-          .notThrow() && success;
+          .throw("InvalidStateError") && success;
 
         options = { channelCountMode:  "max"};
         success = Should("new ChannelSplitterNode(c, " + JSON.stringify(options) + ")",
@@ -119,7 +129,7 @@
                 channelCountMode: "max"
               });
             })
-          .notThrow() && success;
+          .throw("InvalidStateError") && success;
 
         Should("new ChannelSplitterNode() with options", success)
             .summarize(

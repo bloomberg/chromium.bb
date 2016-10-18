@@ -42,6 +42,8 @@ class ChannelSplitterHandler final : public AudioHandler {
 
   // AudioHandler
   void process(size_t framesToProcess) override;
+  void setChannelCount(unsigned long, ExceptionState&) final;
+  void setChannelCountMode(const String&, ExceptionState&) final;
 
  private:
   ChannelSplitterHandler(AudioNode&,

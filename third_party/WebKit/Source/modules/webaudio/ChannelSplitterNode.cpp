@@ -38,6 +38,9 @@ ChannelSplitterHandler::ChannelSplitterHandler(AudioNode& node,
                                                float sampleRate,
                                                unsigned numberOfOutputs)
     : AudioHandler(NodeTypeChannelSplitter, node, sampleRate) {
+  // These properties are fixed and cannot be changed by the user.
+  m_channelCount = numberOfOutputs;
+  setInternalChannelCountMode(Explicit);
   addInput();
 
   // Create a fixed number of outputs (able to handle the maximum number of
@@ -76,6 +79,34 @@ void ChannelSplitterHandler::process(size_t framesToProcess) {
       // Only bother zeroing out the destination if it's connected to anything
       destination->zero();
     }
+  }
+}
+
+void ChannelSplitterHandler::setChannelCount(unsigned long channelCount,
+                                             ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  BaseAudioContext::AutoLocker locker(context());
+
+  // channelCount cannot be changed from the number of outputs.
+  if (channelCount != numberOfOutputs()) {
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        "ChannelSplitter: channelCount cannot be changed from " +
+            String::number(numberOfOutputs()));
+  }
+}
+
+void ChannelSplitterHandler::setChannelCountMode(
+    const String& mode,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  BaseAudioContext::AutoLocker locker(context());
+
+  // channcelCountMode must be 'explicit'.
+  if (mode != "explicit") {
+    exceptionState.throwDOMException(
+        InvalidStateError,
+        "ChannelSplitter: channelCountMode cannot be changed from 'explicit'");
   }
 }
 
