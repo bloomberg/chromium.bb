@@ -108,6 +108,7 @@ BaseAudioContext::BaseAudioContext(Document* document)
   if (document->settings() &&
       document->settings()->mediaPlaybackRequiresUserGesture() &&
       document->frame() && document->frame()->isCrossOriginSubframe()) {
+    m_autoplayStatus = AutoplayStatus::AutoplayStatusFailed;
     m_userGestureRequired = true;
   }
 
@@ -145,6 +146,7 @@ BaseAudioContext::~BaseAudioContext() {
   DCHECK(!m_finishedSourceHandlers.size());
   DCHECK(!m_isResolvingResumePromises);
   DCHECK(!m_resumeResolvers.size());
+  DCHECK(!m_autoplayStatus.has_value());
 }
 
 void BaseAudioContext::initialize() {
@@ -188,6 +190,8 @@ void BaseAudioContext::uninitialize() {
 
   DCHECK(m_listener);
   m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
+
+  recordAutoplayStatus();
 
   clear();
 }
@@ -562,6 +566,15 @@ PeriodicWave* BaseAudioContext::periodicWave(int type) {
   }
 }
 
+void BaseAudioContext::maybeRecordStartAttempt() {
+  if (!m_userGestureRequired || !UserGestureIndicator::processingUserGesture())
+    return;
+
+  DCHECK(!m_autoplayStatus.has_value() ||
+         m_autoplayStatus != AutoplayStatus::AutoplayStatusSucceeded);
+  m_autoplayStatus = AutoplayStatus::AutoplayStatusFailedWithStart;
+}
+
 String BaseAudioContext::state() const {
   // These strings had better match the strings for AudioContextState in
   // AudioContext.idl.
@@ -784,8 +797,12 @@ void BaseAudioContext::maybeUnlockUserGesture() {
   if (!m_userGestureRequired || !UserGestureIndicator::processingUserGesture())
     return;
 
+  DCHECK(!m_autoplayStatus.has_value() ||
+         m_autoplayStatus != AutoplayStatus::AutoplayStatusSucceeded);
+
   UserGestureIndicator::utilizeUserGesture();
   m_userGestureRequired = false;
+  m_autoplayStatus = AutoplayStatus::AutoplayStatusSucceeded;
 }
 
 bool BaseAudioContext::isAllowedToStart() const {
@@ -814,6 +831,18 @@ void BaseAudioContext::rejectPendingResolvers() {
   m_isResolvingResumePromises = false;
 
   rejectPendingDecodeAudioDataResolvers();
+}
+
+void BaseAudioContext::recordAutoplayStatus() {
+  if (!m_autoplayStatus.has_value())
+    return;
+
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, autoplayHistogram,
+      ("WebAudio.Autoplay.CrossOrigin", AutoplayStatus::AutoplayStatusCount));
+  autoplayHistogram.count(m_autoplayStatus.value());
+
+  m_autoplayStatus.reset();
 }
 
 const AtomicString& BaseAudioContext::interfaceName() const {

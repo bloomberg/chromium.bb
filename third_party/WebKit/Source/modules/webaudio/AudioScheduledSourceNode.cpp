@@ -149,8 +149,7 @@ void AudioScheduledSourceHandler::start(double when,
                                         ExceptionState& exceptionState) {
   DCHECK(isMainThread());
 
-  // TODO(mlamouri): record when this is called with a user gesture and could
-  // have started the AudioContext if following Safari iOS rules.
+  context()->maybeRecordStartAttempt();
 
   if (playbackState() != UNSCHEDULED_STATE) {
     exceptionState.throwDOMException(InvalidStateError,
