@@ -1253,7 +1253,6 @@ void Editor::setBaseWritingDirection(WritingDirection direction) {
     focusedElement->setAttribute(
         dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
     focusedElement->dispatchInputEvent();
-    frame().document()->updateStyleAndLayoutTree();
     return;
   }
 
