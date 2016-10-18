@@ -227,8 +227,14 @@ cr.define('settings', function() {
       assert(routeObservers_.delete(this));
     },
 
-    /** @abstract */
-    currentRouteChanged: assertNotReached,
+    /**
+     * @param {!settings.Route|undefined} opt_newRoute
+     * @param {!settings.Route|undefined} opt_oldRoute
+     * @abstract
+     */
+    currentRouteChanged: function(opt_newRoute, opt_oldRoute) {
+      assertNotReached();
+    },
   };
 
   /**
