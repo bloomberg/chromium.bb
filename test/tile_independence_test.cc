@@ -100,7 +100,16 @@ TEST_P(TileIndependenceTest, MD5Match) {
   // a MD5...
   ASSERT_STREQ(md5_fw_str, md5_inv_str);
 }
-
+#if CONFIG_EC_ADAPT
+// TODO(thdavies): EC_ADAPT does not support tiles
+INSTANTIATE_TEST_CASE_P(
+    DISABLED_AV1, TileIndependenceTest,
+    ::testing::Combine(
+        ::testing::Values(
+            static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
+        ::testing::Range(0, 2, 1)));
+#else
 AV1_INSTANTIATE_TEST_CASE(TileIndependenceTest, ::testing::Range(0, 2, 1));
+#endif
 
 }  // namespace

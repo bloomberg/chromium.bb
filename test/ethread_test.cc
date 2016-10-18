@@ -119,9 +119,20 @@ TEST_P(AVxEncoderThreadTest, EncoderResultTest) {
   // Compare to check if two vectors are equal.
   ASSERT_EQ(single_thr_md5, multi_thr_md5);
 }
-
+#if CONFIG_EC_ADAPT
+// TODO(thdavies): EC_ADAPT does not support tiles
+INSTANTIATE_TEST_CASE_P(
+    DISABLED_AV1, AVxEncoderThreadTest,
+    ::testing::Combine(
+        ::testing::Values(
+            static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
+        ::testing::Values(::libaom_test::kTwoPassGood,
+                          ::libaom_test::kOnePassGood),
+        ::testing::Range(1, 3)));
+#else
 AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTest,
                           ::testing::Values(::libaom_test::kTwoPassGood,
                                             ::libaom_test::kOnePassGood),
                           ::testing::Range(1, 3));
+#endif
 }  // namespace
