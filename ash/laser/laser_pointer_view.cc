@@ -87,7 +87,17 @@ void LaserPointerView::ReparentWidget(aura::Window* new_root_window) {
 
 void LaserPointerView::AddNewPoint(const gfx::Point& new_point) {
   laser_points_.AddPoint(new_point);
+  OnPointsUpdated();
+}
 
+void LaserPointerView::UpdateTime() {
+  // Do not add the point but advance the time if the view is in process of
+  // fading away.
+  laser_points_.MoveForwardToTime(base::Time::Now());
+  OnPointsUpdated();
+}
+
+void LaserPointerView::OnPointsUpdated() {
   // The bounding box should be relative to the screen.
   gfx::Point screen_offset =
       widget_->GetNativeView()->GetRootWindow()->GetBoundsInScreen().origin();
@@ -113,29 +123,25 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
   paint.setAntiAlias(true);
   paint.setStrokeJoin(SkPaint::kBevel_Join);
 
-  base::Time oldest = laser_points_.GetOldest().creation_time;
-  base::Time newest = laser_points_.GetNewest().creation_time;
-  gfx::Point previous_point = laser_points_.GetOldest().location;
-  gfx::Point current_point;
-
   // Compute the offset of the current widget.
   gfx::Point widget_offset =
       widget_->GetNativeView()->GetBoundsInRootWindow().origin();
+
+  gfx::Point previous_point(
+      (laser_points_.GetOldest().location - widget_offset).x(),
+      (laser_points_.GetOldest().location - widget_offset).y());
+  gfx::Point current_point;
+
   int num_points_ = laser_points_.GetNumberOfPoints();
   int point_count = 0;
+  int current_opacity = 0;
   for (const LaserPointerPoints::LaserPoint& point :
        laser_points_.laser_points()) {
-    // relative_time is a value between [0,1] where 0 means the point is about
-    // to be removed and 1 means that the point was just added.
-    double relative_time = 1.0;
-    if (oldest != newest) {
-      relative_time = 1.0 - ((point.creation_time - oldest).InMillisecondsF() /
-                             (newest - oldest).InMillisecondsF());
-    }
-
     // Set the radius and opacity based on the distance.
-    double radius = LinearInterpolate(kPointInitialRadius, kPointFinalRadius,
-                                      relative_time);
+    double current_radius =
+        LinearInterpolate(kPointInitialRadius, kPointFinalRadius, point.age);
+    current_opacity = int{LinearInterpolate(
+        double{kPointInitialOpacity}, double{kPointFinalOpacity}, point.age)};
 
     gfx::Vector2d center = point.location - widget_offset;
     current_point = gfx::Point(center.x(), center.y());
@@ -144,23 +150,20 @@ void LaserPointerView::OnPaint(gfx::Canvas* canvas) {
     // the result will be very jagged, unless we are on the last point, then we
     // draw regardless.
     point_count++;
-    float distance_threshold = float{radius * 2};
+    float distance_threshold = float{current_radius * 2};
     if (DistanceBetweenPoints(previous_point, current_point) <=
             distance_threshold &&
         point_count != num_points_) {
       continue;
     }
 
-    int opacity =
-        int{LinearInterpolate(double{kPointInitialOpacity},
-                              double{kPointFinalOpacity}, relative_time)};
-    paint.setColor(SkColorSetA(kPointColor, opacity));
-    paint.setStrokeWidth(radius * 2);
+    paint.setColor(SkColorSetA(kPointColor, current_opacity));
+    paint.setStrokeWidth(current_radius * 2);
     canvas->DrawLine(previous_point, current_point, paint);
     previous_point = current_point;
   }
   // Draw the last point as a circle.
-  paint.setColor(SkColorSetA(kPointColor, kPointInitialOpacity));
+  paint.setColor(SkColorSetA(kPointColor, current_opacity));
   paint.setStyle(SkPaint::kFill_Style);
   canvas->DrawCircle(current_point, kPointInitialRadius, paint);
 }

@@ -111,23 +111,35 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollectionDeletion) {
   LaserPointerPointsTestApi points_test_api_(&points_);
 
   // When a point older than kTestPointsLifetime (5 seconds) is added, it
-  // should get removed.
+  // should get removed. The age of the point is a number between 0.0 and 1.0,
+  // with 0.0 specifying a newly added point and 1.0 specifying the age of a
+  // point added |kTestPointsLifetime| ago.
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1, points_test_api_.GetNumberOfPoints());
+  EXPECT_FLOAT_EQ(0.0, points_test_api_.GetPointAtIndex(0).age);
+
+  // Verify when we move forward in time by one second, the age of the last
+  // point, added one second ago is 1 / |kTestPointsLifetime|.
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(2, points_test_api_.GetNumberOfPoints());
-
+  EXPECT_FLOAT_EQ(0.2, points_test_api_.GetPointAtIndex(0).age);
+  EXPECT_FLOAT_EQ(0.0, points_test_api_.GetPointAtIndex(1).age);
   // Verify adding a point 10 seconds later will clear all other points, since
   // they are older than 5 seconds.
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(10));
   EXPECT_EQ(1, points_test_api_.GetNumberOfPoints());
 
   // Verify adding 3 points one second apart each will add 3 points to the
-  // collection, since all 4 poitns are younger than 5 seconds.
+  // collection, since all 4 points are younger than 5 seconds. All 4 points are
+  // added 1 second apart so their age should be 0.2 apart.
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(1));
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(1));
   points_test_api_.MoveForwardInTime(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(4, points_test_api_.GetNumberOfPoints());
+  EXPECT_FLOAT_EQ(0.6, points_test_api_.GetPointAtIndex(0).age);
+  EXPECT_FLOAT_EQ(0.4, points_test_api_.GetPointAtIndex(1).age);
+  EXPECT_FLOAT_EQ(0.2, points_test_api_.GetPointAtIndex(2).age);
+  EXPECT_FLOAT_EQ(0.0, points_test_api_.GetPointAtIndex(3).age);
 
   // Verify adding 1 point three seconds later will remove 2 points which are
   // older than 5 seconds.
@@ -159,9 +171,11 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
   GetEventGenerator().MoveMouseToInHost(gfx::Point(5, 5));
   EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
 
-  // Verify pressing the stylus will show the laser pointer and add a point.
+  // Verify pressing the stylus will show the laser pointer and add a point but
+  // will not activate fading out.
   GetEventGenerator().PressLeftButton();
   EXPECT_TRUE(controller_test_api_.IsShowingLaserPointer());
+  EXPECT_FALSE(controller_test_api_.IsFadingAway());
   EXPECT_EQ(1, controller_test_api_.laser_points().GetNumberOfPoints());
 
   // Verify dragging the stylus 2 times will add 2 more points.
@@ -169,9 +183,11 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
   GetEventGenerator().MoveMouseToInHost(gfx::Point(7, 7));
   EXPECT_EQ(3, controller_test_api_.laser_points().GetNumberOfPoints());
 
-  // Verify releasing the stylus hides the laser pointer.
+  // Verify releasing the stylus still shows the laser pointer, which is fading
+  // away.
   GetEventGenerator().ReleaseLeftButton();
-  EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
+  EXPECT_TRUE(controller_test_api_.IsShowingLaserPointer());
+  EXPECT_TRUE(controller_test_api_.IsFadingAway());
 
   // Verify that disabling the mode does not display the laser pointer.
   controller_test_api_.SetEnabled(false);
@@ -179,6 +195,7 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
 
   // Verify that disabling the mode while laser pointer is displayed does not
   // display the laser pointer.
+  controller_test_api_.SetIsFadingAway(false);
   controller_test_api_.SetEnabled(true);
   GetEventGenerator().PressLeftButton();
   GetEventGenerator().MoveMouseToInHost(gfx::Point(6, 6));

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -23,7 +24,9 @@ class ASH_EXPORT LaserPointerPoints {
   // Struct to describe each point.
   struct LaserPoint {
     gfx::Point location;
-    base::Time creation_time;
+    // age is a value between [0,1] where 0 means the point was just added and 1
+    // means that the point is just about to be removed.
+    double age = 0.0;
   };
 
   // Constructor with a parameter to choose the fade out time of the points in
@@ -33,6 +36,9 @@ class ASH_EXPORT LaserPointerPoints {
 
   // Adds a point. Automatically clears points that are too old.
   void AddPoint(const gfx::Point& point);
+  // Updates the collection latest time. Automatically clears points that are
+  // too old.
+  void MoveForwardToTime(const base::Time& latest_time);
   // Removes all points.
   void Clear();
   // Gets the bounding box of the points.
@@ -51,10 +57,11 @@ class ASH_EXPORT LaserPointerPoints {
  private:
   friend class LaserPointerPointsTestApi;
 
-  void ClearOldPoints();
-
   base::TimeDelta life_duration_;
   std::deque<LaserPoint> points_;
+  // The latest time of the collection of points. This gets updated when new
+  // points are added or when MoveForwardInTime is called.
+  base::Time collection_latest_time_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserPointerPoints);
 };

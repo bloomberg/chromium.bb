@@ -4,13 +4,11 @@
 
 #include "ash/laser/laser_pointer_points_test_api.h"
 
-#include "ash/laser/laser_pointer_points.h"
-
 namespace ash {
 
 LaserPointerPointsTestApi::LaserPointerPointsTestApi(
     LaserPointerPoints* instance)
-    : new_point_time_(base::Time::Now()), instance_(instance) {}
+    : instance_(instance) {}
 
 LaserPointerPointsTestApi::~LaserPointerPointsTestApi() {}
 
@@ -20,12 +18,17 @@ int LaserPointerPointsTestApi::GetNumberOfPoints() const {
 
 void LaserPointerPointsTestApi::MoveForwardInTime(
     const base::TimeDelta& delta) {
-  for (LaserPointerPoints::LaserPoint& point : instance_->points_)
-    point.creation_time -= delta;
+  base::Time new_time = instance_->collection_latest_time_ + delta;
+  instance_->MoveForwardToTime(new_time);
 
   LaserPointerPoints::LaserPoint new_point;
-  new_point.creation_time = new_point_time_;
   instance_->points_.push_back(new_point);
-  instance_->ClearOldPoints();
 }
+
+LaserPointerPoints::LaserPoint LaserPointerPointsTestApi::GetPointAtIndex(
+    int index) {
+  DCHECK(index >= 0 && index < GetNumberOfPoints());
+  return instance_->points_[index];
+}
+
 }  // namespace ash

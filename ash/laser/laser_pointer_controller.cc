@@ -73,40 +73,40 @@ void LaserPointerController::OnMouseEvent(ui::MouseEvent* event) {
       event->type() != ui::ET_MOUSE_RELEASED)
     return;
 
-  // Delete the LaserPointerView instance if mouse is released.
-  if (event->type() == ui::ET_MOUSE_RELEASED) {
-    stationary_timer_->Stop();
-    laser_pointer_view_->Stop();
-    laser_pointer_view_.reset();
+  aura::Window* current_window = GetCurrentRootWindow();
+  if (!current_window) {
+    DestroyLaserPointerView();
     return;
   }
 
-  // This will handle creating the initial laser pointer view on
-  // ET_MOUSE_PRESSED events.
-  SwitchTargetRootWindowIfNeeded(GetCurrentRootWindow());
+  // Compute the event coordinate relative to the display it is currently on
+  // (and not the one the event was captured on).
+  gfx::Point event_location = event->root_location();
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::Window* event_root = target->GetRootWindow();
+  aura::Window::ConvertPointToTarget(event_root, current_window,
+                                     &event_location);
 
-  if (laser_pointer_view_) {
-    // Remap point from where it was captured to the display it is actually on.
-    gfx::Point event_location = event->root_location();
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    aura::Window* event_root = target->GetRootWindow();
-    aura::Window::ConvertPointToTarget(
-        event_root, laser_pointer_view_->GetRootWindow(), &event_location);
+  // Start a new laser session if the mouse is pressed but not pressed over the
+  // palette.
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      !PaletteContainsPointInScreen(event_location)) {
+    DestroyLaserPointerView();
+    UpdateLaserPointerView(current_window, event_location, event);
+  }
 
-    current_mouse_location_ = event_location;
-    laser_pointer_view_->AddNewPoint(current_mouse_location_);
+  // Do not update laser if it is in the process of fading away.
+  if (event->type() == ui::ET_MOUSE_DRAGGED && laser_pointer_view_ &&
+      !is_fading_away_) {
+    UpdateLaserPointerView(current_window, event_location, event);
+    RestartTimer();
+  }
 
-    stationary_timer_repeat_count_ = 0;
-    if (event->type() == ui::ET_MOUSE_DRAGGED) {
-      // Start the timer to add stationary points if dragged.
-      if (!stationary_timer_->IsRunning())
-        stationary_timer_->Reset();
-    }
-
-    // If the stylus is over the palette icon or widget, do not consume the
-    // event.
-    if (!PaletteContainsPointInScreen(current_mouse_location_))
-      event->StopPropagation();
+  if (event->type() == ui::ET_MOUSE_RELEASED && laser_pointer_view_ &&
+      !is_fading_away_) {
+    is_fading_away_ = true;
+    UpdateLaserPointerView(current_window, event_location, event);
+    RestartTimer();
   }
 }
 
@@ -117,8 +117,7 @@ void LaserPointerController::OnWindowDestroying(aura::Window* window) {
 void LaserPointerController::SwitchTargetRootWindowIfNeeded(
     aura::Window* root_window) {
   if (!root_window) {
-    stationary_timer_->Stop();
-    laser_pointer_view_.reset();
+    DestroyLaserPointerView();
   } else if (laser_pointer_view_) {
     laser_pointer_view_->ReparentWidget(root_window);
   } else if (enabled_) {
@@ -127,13 +126,47 @@ void LaserPointerController::SwitchTargetRootWindowIfNeeded(
   }
 }
 
-void LaserPointerController::AddStationaryPoint() {
+void LaserPointerController::UpdateLaserPointerView(
+    aura::Window* current_window,
+    const gfx::Point& event_location,
+    ui::MouseEvent* event) {
+  SwitchTargetRootWindowIfNeeded(current_window);
+  current_mouse_location_ = event_location;
   laser_pointer_view_->AddNewPoint(current_mouse_location_);
+  event->StopPropagation();
+}
+
+void LaserPointerController::DestroyLaserPointerView() {
+  // |stationary_timer_| should also be stopped so that it does not attempt to
+  // add points when |laser_pointer_view_| is null.
+  stationary_timer_->Stop();
+  if (laser_pointer_view_) {
+    is_fading_away_ = false;
+    laser_pointer_view_.reset();
+  }
+}
+
+void LaserPointerController::RestartTimer() {
+  stationary_timer_repeat_count_ = 0;
+  if (!stationary_timer_->IsRunning())
+    stationary_timer_->Reset();
+}
+
+void LaserPointerController::AddStationaryPoint() {
+  if (is_fading_away_)
+    laser_pointer_view_->UpdateTime();
+  else
+    laser_pointer_view_->AddNewPoint(current_mouse_location_);
+
   // We can stop repeating the timer once the mouse has been stationary for
   // longer than the life of a point.
   if (stationary_timer_repeat_count_ * kAddStationaryPointsDelayMs >=
       kPointLifeDurationMs) {
     stationary_timer_->Stop();
+    // Reset the view if the timer expires and the view was in process of fading
+    // away.
+    if (is_fading_away_)
+      DestroyLaserPointerView();
   }
   stationary_timer_repeat_count_++;
 }

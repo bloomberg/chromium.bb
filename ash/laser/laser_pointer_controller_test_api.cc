@@ -24,6 +24,14 @@ bool LaserPointerControllerTestApi::IsShowingLaserPointer() {
   return instance_->laser_pointer_view_ != nullptr;
 }
 
+bool LaserPointerControllerTestApi::IsFadingAway() {
+  return IsShowingLaserPointer() && instance_->is_fading_away_;
+}
+
+void LaserPointerControllerTestApi::SetIsFadingAway(bool fading_away) {
+  instance_->is_fading_away_ = fading_away;
+}
+
 const LaserPointerPoints& LaserPointerControllerTestApi::laser_points() {
   return instance_->laser_pointer_view_->laser_points_;
 }

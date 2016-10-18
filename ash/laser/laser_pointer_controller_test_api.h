@@ -21,6 +21,8 @@ class LaserPointerControllerTestApi {
 
   void SetEnabled(bool enabled);
   bool IsShowingLaserPointer();
+  bool IsFadingAway();
+  void SetIsFadingAway(bool fading_away);
   const LaserPointerPoints& laser_points();
   LaserPointerView* laser_pointer_view();
 

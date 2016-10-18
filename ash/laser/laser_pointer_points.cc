@@ -15,11 +15,31 @@ LaserPointerPoints::LaserPointerPoints(base::TimeDelta life_duration)
 LaserPointerPoints::~LaserPointerPoints() {}
 
 void LaserPointerPoints::AddPoint(const gfx::Point& point) {
+  MoveForwardToTime(base::Time::Now());
+
   LaserPoint new_point;
   new_point.location = point;
-  new_point.creation_time = base::Time::Now();
   points_.push_back(new_point);
-  ClearOldPoints();
+}
+
+void LaserPointerPoints::MoveForwardToTime(const base::Time& latest_time) {
+  if (!points_.empty()) {
+    DCHECK(!collection_latest_time_.is_null());
+
+    // Increase the age of points based on how much time has elapsed.
+    base::TimeDelta delta = latest_time - collection_latest_time_;
+    double lifespan_change =
+        delta.InMillisecondsF() / life_duration_.InMillisecondsF();
+    for (LaserPoint& point : points_)
+      point.age += lifespan_change;
+
+    // Remove points that are too old (points age older than 1.0).
+    auto first_alive_point =
+        std::find_if(points_.begin(), points_.end(),
+                     [](const LaserPoint& p) { return p.age < 1.0; });
+    points_.erase(points_.begin(), first_alive_point);
+  }
+  collection_latest_time_ = latest_time;
 }
 
 void LaserPointerPoints::Clear() {
@@ -61,14 +81,4 @@ const std::deque<LaserPointerPoints::LaserPoint>&
 LaserPointerPoints::laser_points() {
   return points_;
 }
-
-void LaserPointerPoints::ClearOldPoints() {
-  DCHECK(!IsEmpty());
-  auto first_alive_point =
-      std::find_if(points_.begin(), points_.end(), [this](LaserPoint& p) {
-        return GetNewest().creation_time - p.creation_time < life_duration_;
-      });
-  points_.erase(points_.begin(), first_alive_point);
-}
-
 }  // namespace ash

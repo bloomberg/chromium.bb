@@ -54,12 +54,30 @@ class ASH_EXPORT LaserPointerController : public ui::EventHandler,
   // allows the trail to fade away when the mouse is stationary.
   void AddStationaryPoint();
 
+  // Updates |laser_pointer_view_| by changing its root window or creating it if
+  // needed. Also adds the latest point at |event_location| and stops
+  // propagation of |event|.
+  void UpdateLaserPointerView(aura::Window* current_window,
+                              const gfx::Point& event_location,
+                              ui::MouseEvent* event);
+
+  // Destroys |laser_pointer_view_|, if it exists.
+  void DestroyLaserPointerView();
+
+  void RestartTimer();
+
   // Timer which will add a new stationary point when the mouse stops moving.
   // This will remove points that are too old.
   std::unique_ptr<base::Timer> stationary_timer_;
   int stationary_timer_repeat_count_ = 0;
 
   bool enabled_ = false;
+
+  // |is_fading_away_| determines whether the laser pointer view should accept
+  // points normally, or just advance the |laser_points_| time so that current
+  // points start fading away. This should be set to true when the view is about
+  // to be destroyed, such as when the stylus is released.
+  bool is_fading_away_ = false;
 
   // The last seen mouse location in screen coordinates.
   gfx::Point current_mouse_location_;

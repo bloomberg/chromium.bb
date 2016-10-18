@@ -34,7 +34,9 @@ class LaserPointerView : public views::View {
   ~LaserPointerView() override;
 
   void AddNewPoint(const gfx::Point& new_point);
+  void UpdateTime();
   void Stop();
+
   aura::Window* GetRootWindow();
 
   // Reparents the widget if needed.
@@ -45,6 +47,8 @@ class LaserPointerView : public views::View {
 
   // view::View:
   void OnPaint(gfx::Canvas* canvas) override;
+
+  void OnPointsUpdated();
 
   LaserPointerPoints laser_points_;
   std::unique_ptr<views::Widget> widget_;
