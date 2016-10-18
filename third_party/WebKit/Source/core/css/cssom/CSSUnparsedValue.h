@@ -48,7 +48,19 @@ class CORE_EXPORT CSSUnparsedValue final
       : CSSStyleValue(), m_fragments(fragments) {}
 
  private:
+  static CSSUnparsedValue* fromString(String string) {
+    HeapVector<StringOrCSSVariableReferenceValue> fragments;
+    fragments.append(StringOrCSSVariableReferenceValue::fromString(string));
+    return create(fragments);
+  }
+
   IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+
+  FRIEND_TEST_ALL_PREFIXES(CSSUnparsedValueTest, ListOfStrings);
+  FRIEND_TEST_ALL_PREFIXES(CSSUnparsedValueTest,
+                           ListOfCSSVariableReferenceValues);
+  FRIEND_TEST_ALL_PREFIXES(CSSUnparsedValueTest, MixedList);
+  FRIEND_TEST_ALL_PREFIXES(CSSVariableReferenceValueTest, MixedList);
 
   HeapVector<StringOrCSSVariableReferenceValue> m_fragments;
 };

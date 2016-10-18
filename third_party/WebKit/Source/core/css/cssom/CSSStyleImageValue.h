@@ -25,8 +25,6 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
  public:
   virtual ~CSSStyleImageValue() {}
 
-  StyleValueType type() const override { return ImageType; }
-
   double intrinsicWidth(bool& isNull) const;
   double intrinsicHeight(bool& isNull) const;
   double intrinsicRatio(bool& isNull);
@@ -49,7 +47,6 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->trace(m_imageValue);
-    CSSStyleValue::trace(visitor);
     CSSResourceValue::trace(visitor);
   }
 
@@ -57,10 +54,8 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   CSSStyleImageValue(const CSSImageValue* imageValue)
       : m_imageValue(imageValue) {}
 
-  Member<const CSSImageValue> m_imageValue;
-
   virtual LayoutSize imageLayoutSize() const {
-    DCHECK(!m_imageValue->isCachePending());
+    DCHECK(!isCachePending());
     return m_imageValue->cachedImage()->cachedImage()->imageSize(
         DoNotRespectImageOrientation, 1, ImageResource::IntrinsicSize);
   }
@@ -73,8 +68,12 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
     return m_imageValue->cachedImage()->cachedImage()->getStatus();
   }
 
+  const CSSImageValue* cssImageValue() const { return m_imageValue.get(); };
+
  private:
   PassRefPtr<Image> image() const;
+
+  Member<const CSSImageValue> m_imageValue;
 };
 
 }  // namespace blink

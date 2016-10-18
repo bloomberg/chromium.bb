@@ -13,14 +13,16 @@ namespace {
 class FakeCSSResourceValue : public CSSResourceValue {
  public:
   FakeCSSResourceValue(Resource::Status status) : m_status(status) {}
+  Resource::Status status() const override { return m_status; }
 
   CSSValue* toCSSValue() const override { return nullptr; }
-
-  Resource::Status status() const override { return m_status; }
+  StyleValueType type() const override { return Unknown; }
 
  private:
   Resource::Status m_status;
 };
+
+}  // namespace
 
 TEST(CSSResourceValueTest, TestStatus) {
   EXPECT_EQ((new FakeCSSResourceValue(Resource::NotStarted))->state(),
@@ -31,7 +33,5 @@ TEST(CSSResourceValueTest, TestStatus) {
   EXPECT_EQ((new FakeCSSResourceValue(Resource::DecodeError))->state(),
             "error");
 }
-
-}  // namespace
 
 }  // namespace blink

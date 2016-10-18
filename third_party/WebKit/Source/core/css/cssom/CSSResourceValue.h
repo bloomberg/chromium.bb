@@ -18,8 +18,6 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
  public:
   virtual ~CSSResourceValue() {}
 
-  StyleValueType type() const override { return ResourceType; }
-
   const String state() const {
     switch (status()) {
       case Resource::Status::NotStarted:

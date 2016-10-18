@@ -25,14 +25,13 @@ class CORE_EXPORT CSSStyleValue
 
  public:
   enum StyleValueType {
+    // This list corresponds to each non-abstract subclass.
     Unknown,
     AngleType,
     CalcLengthType,
-    ImageType,
     KeywordType,
     NumberType,
     PositionType,
-    ResourceType,
     SimpleLengthType,
     TransformType,
     URLImageType,

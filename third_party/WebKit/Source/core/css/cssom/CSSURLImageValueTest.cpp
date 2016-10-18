@@ -19,6 +19,8 @@ void checkNullURLImageValue(CSSURLImageValue* urlImageValue) {
   EXPECT_TRUE(isNull);
 }
 
+}  // namespace
+
 TEST(CSSURLImageValueTest, CreateURLImageValueFromURL) {
   checkNullURLImageValue(CSSURLImageValue::create("http://localhost"));
 }
@@ -27,7 +29,5 @@ TEST(CSSURLImageValueTest, CreateURLImageValueFromImageValue) {
   checkNullURLImageValue(
       CSSURLImageValue::create(CSSImageValue::create("http://localhost")));
 }
-
-}  // namespace
 
 }  // namespace blink

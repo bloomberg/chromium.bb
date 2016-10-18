@@ -11,43 +11,26 @@ namespace blink {
 
 namespace {
 
-StringOrCSSVariableReferenceValue getStringOrCSSVariableReferenceValue(
-    String str) {
-  StringOrCSSVariableReferenceValue temp;
-  temp.setString(str);
-  return temp;
-}
-
-StringOrCSSVariableReferenceValue getStringOrCSSVariableReferenceValue(
-    CSSStyleVariableReferenceValue* ref) {
-  StringOrCSSVariableReferenceValue temp;
-  temp.setCSSVariableReferenceValue(ref);
-  return temp;
-}
-
-CSSUnparsedValue* unparsedValueFromString(String str) {
-  HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.append(getStringOrCSSVariableReferenceValue(str));
-  return CSSUnparsedValue::create(fragments);
-}
-
 CSSUnparsedValue* unparsedValueFromCSSVariableReferenceValue(
-    CSSStyleVariableReferenceValue* ref) {
+    CSSStyleVariableReferenceValue* variableReferenceValue) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.append(getStringOrCSSVariableReferenceValue(ref));
+  fragments.append(
+      StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
+          variableReferenceValue));
   return CSSUnparsedValue::create(fragments);
 }
+
+}  // namespace
 
 TEST(CSSUnparsedValueTest, EmptyList) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-
   CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
 
   EXPECT_EQ(unparsedValue->size(), 0UL);
 }
 
-TEST(CSSUnparsedValueTest, ListOfString) {
-  CSSUnparsedValue* unparsedValue = unparsedValueFromString("Str");
+TEST(CSSUnparsedValueTest, ListOfStrings) {
+  CSSUnparsedValue* unparsedValue = CSSUnparsedValue::fromString("string");
 
   EXPECT_EQ(unparsedValue->size(), 1UL);
 
@@ -55,15 +38,16 @@ TEST(CSSUnparsedValueTest, ListOfString) {
   EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isNull());
   EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isCSSVariableReferenceValue());
 
-  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsString(), "Str");
+  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsString(), "string");
 }
 
-TEST(CSSUnparsedValueTest, ListOfCSSVariableReferenceValue) {
-  CSSStyleVariableReferenceValue* ref = CSSStyleVariableReferenceValue::create(
-      "Ref", unparsedValueFromString("Str"));
+TEST(CSSUnparsedValueTest, ListOfCSSVariableReferenceValues) {
+  CSSStyleVariableReferenceValue* variableReferenceValue =
+      CSSStyleVariableReferenceValue::create(
+          "Ref", CSSUnparsedValue::fromString("string"));
 
   CSSUnparsedValue* unparsedValue =
-      unparsedValueFromCSSVariableReferenceValue(ref);
+      unparsedValueFromCSSVariableReferenceValue(variableReferenceValue);
 
   EXPECT_EQ(unparsedValue->size(), 1UL);
 
@@ -72,25 +56,20 @@ TEST(CSSUnparsedValueTest, ListOfCSSVariableReferenceValue) {
   EXPECT_TRUE(unparsedValue->fragmentAtIndex(0).isCSSVariableReferenceValue());
 
   EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsCSSVariableReferenceValue(),
-            ref);
+            variableReferenceValue);
 }
 
-TEST(CSSUnparsedValueTest, MixedContents) {
+TEST(CSSUnparsedValueTest, MixedList) {
+  CSSStyleVariableReferenceValue* variableReferenceValue =
+      CSSStyleVariableReferenceValue::create(
+          "Ref", CSSUnparsedValue::fromString("string"));
+
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-
-  StringOrCSSVariableReferenceValue x =
-      getStringOrCSSVariableReferenceValue("Str");
-
-  CSSStyleVariableReferenceValue* ref = CSSStyleVariableReferenceValue::create(
-      "Ref", unparsedValueFromString("Str"));
-  StringOrCSSVariableReferenceValue y =
-      getStringOrCSSVariableReferenceValue(ref);
-
-  StringOrCSSVariableReferenceValue z;
-
-  fragments.append(x);
-  fragments.append(y);
-  fragments.append(z);
+  fragments.append(StringOrCSSVariableReferenceValue::fromString("string"));
+  fragments.append(
+      StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
+          variableReferenceValue));
+  fragments.append(StringOrCSSVariableReferenceValue());
 
   CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
 
@@ -98,16 +77,14 @@ TEST(CSSUnparsedValueTest, MixedContents) {
 
   EXPECT_TRUE(unparsedValue->fragmentAtIndex(0).isString());
   EXPECT_FALSE(unparsedValue->fragmentAtIndex(0).isCSSVariableReferenceValue());
-  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsString(), "Str");
+  EXPECT_EQ(unparsedValue->fragmentAtIndex(0).getAsString(), "string");
 
   EXPECT_TRUE(unparsedValue->fragmentAtIndex(1).isCSSVariableReferenceValue());
   EXPECT_FALSE(unparsedValue->fragmentAtIndex(1).isString());
   EXPECT_EQ(unparsedValue->fragmentAtIndex(1).getAsCSSVariableReferenceValue(),
-            ref);
+            variableReferenceValue);
 
   EXPECT_TRUE(unparsedValue->fragmentAtIndex(2).isNull());
 }
-
-}  // namespace
 
 }  // namespace blink

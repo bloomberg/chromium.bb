@@ -23,9 +23,9 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
 
   StyleValueType type() const override { return URLImageType; }
 
-  const CSSValue* toCSSValue() const { return m_imageValue.get(); }
+  const CSSValue* toCSSValue() const override { return cssImageValue(); }
 
-  const String& url() const { return m_imageValue->url(); }
+  const String& url() const { return cssImageValue()->url(); }
 
  private:
   explicit CSSURLImageValue(const CSSImageValue* imageValue)

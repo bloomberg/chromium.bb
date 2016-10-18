@@ -22,10 +22,7 @@ double CSSStyleImageValue::intrinsicHeight(bool& isNull) const {
 
 double CSSStyleImageValue::intrinsicRatio(bool& isNull) {
   isNull = isCachePending();
-  if (isNull) {
-    return 0;
-  }
-  if (intrinsicHeight(isNull) == 0) {
+  if (isNull || intrinsicHeight(isNull) == 0) {
     isNull = true;
     return 0;
   }
