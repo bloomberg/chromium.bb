@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -428,6 +429,21 @@ public class EditorView extends AlwaysDismissedDialog
                 }
             });
         }
+
+        // If some of the required fields are valid, then this EditorView is for modification, so
+        // validate form to update displayed errors and hide keyboard by default.
+        if (hasValidRequiredField()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    validateForm();
+                }
+            });
+        } else {
+            getWindow().setSoftInputMode(
+                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
     }
 
     /** Rereads the values in the model to update the UI. */
@@ -454,6 +470,15 @@ public class EditorView extends AlwaysDismissedDialog
             mPhoneInput.removeTextChangedListener(mPhoneFormatter);
             mPhoneInput = null;
         }
+    }
+
+    private boolean hasValidRequiredField() {
+        List<EditorFieldModel> fields = mEditorModel.getFields();
+        for (int i = 0; i < fields.size(); i++) {
+            EditorFieldModel field = fields.get(i);
+            if (field.isRequired() && field.isValid()) return true;
+        }
+        return false;
     }
 
     private List<EditorFieldView> getViewsWithInvalidInformation(boolean findAll) {
