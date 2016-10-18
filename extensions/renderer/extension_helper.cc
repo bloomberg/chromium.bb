@@ -73,8 +73,8 @@ void ExtensionHelper::OnAppWindowClosed() {
       dispatcher_->script_context_set().GetByV8Context(v8_context);
   if (!script_context)
     return;
-  script_context->module_system()->CallModuleMethod("app.window",
-                                                    "onAppWindowClosed");
+  script_context->module_system()->CallModuleMethodSafe("app.window",
+                                                        "onAppWindowClosed");
 }
 
 }  // namespace extensions

@@ -25,7 +25,7 @@ class JsonSchemaTest : public ModuleSystemTest {
 
  protected:
   void TestFunction(const std::string& test_name) {
-    env()->module_system()->CallModuleMethod("json_schema_test", test_name);
+    env()->module_system()->CallModuleMethodSafe("json_schema_test", test_name);
   }
 
  private:

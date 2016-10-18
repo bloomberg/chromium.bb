@@ -91,8 +91,11 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // Calls the specified method exported by the specified module. This is
   // equivalent to calling require('module_name').method_name() from JS.
-  v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
-                                        const std::string& method_name);
+  // DEPRECATED: see crbug.com/629431
+  // TODO(devlin): Remove these.
+  v8::Local<v8::Value> CallModuleMethod(
+      const std::string& module_name,
+      const std::string& method_name);
   v8::Local<v8::Value> CallModuleMethod(
       const std::string& module_name,
       const std::string& method_name,
@@ -101,6 +104,17 @@ class ModuleSystem : public ObjectBackedNativeHandler,
                                         const std::string& method_name,
                                         int argc,
                                         v8::Local<v8::Value> argv[]);
+
+  // Same as the above, but allows for blocking execution.
+  void CallModuleMethodSafe(const std::string& module_name,
+                            const std::string& method_name);
+  void CallModuleMethodSafe(const std::string& module_name,
+                            const std::string& method_name,
+                            std::vector<v8::Local<v8::Value>>* args);
+  void CallModuleMethodSafe(const std::string& module_name,
+                            const std::string& method_name,
+                            int argc,
+                            v8::Local<v8::Value> argv[]);
 
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by
@@ -217,6 +231,10 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   // Marks any existing NativeHandler named |name| as clobbered.
   // See |clobbered_native_handlers_|.
   void ClobberExistingNativeHandler(const std::string& name);
+
+  // Returns the v8::Function associated with the given module and method name.
+  v8::Local<v8::Function> GetModuleFunction(const std::string& module_name,
+                                            const std::string& method_name);
 
   ScriptContext* context_;
 

@@ -314,45 +314,57 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   v8::Local<v8::Context> v8_context = context()->v8_context();
   v8::Context::Scope context_scope(v8_context);
 
-  v8::Local<v8::String> v8_module_name;
-  v8::Local<v8::String> v8_method_name;
-  if (!ToV8String(GetIsolate(), module_name.c_str(), &v8_module_name) ||
-      !ToV8String(GetIsolate(), method_name.c_str(), &v8_method_name)) {
-    return handle_scope.Escape(v8::Undefined(GetIsolate()));
-  }
+  v8::Local<v8::Function> function =
+      GetModuleFunction(module_name, method_name);
 
-  v8::Local<v8::Value> module;
-  {
-    NativesEnabledScope natives_enabled(this);
-    module = RequireForJsInner(v8_module_name);
-  }
-
-  if (module.IsEmpty() || !module->IsObject()) {
-    Fatal(context_,
-          "Failed to get module " + module_name + " to call " + method_name);
-    return handle_scope.Escape(v8::Undefined(GetIsolate()));
-  }
-
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(module);
-  v8::Local<v8::Value> value;
-  if (!GetProperty(v8_context, object, v8_method_name, &value) ||
-      !value->IsFunction()) {
-    Fatal(context_, module_name + "." + method_name + " is not a function");
-    return handle_scope.Escape(v8::Undefined(GetIsolate()));
-  }
-
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(value);
   v8::Local<v8::Value> result;
   {
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
-    result = context_->CallFunction(func, argc, argv);
+    result = context_->CallFunction(function, argc, argv);
     if (try_catch.HasCaught()) {
       HandleException(try_catch);
       result = v8::Undefined(GetIsolate());
     }
   }
   return handle_scope.Escape(result);
+}
+
+void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
+                                        const std::string& method_name) {
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Value> no_args;
+  CallModuleMethodSafe(module_name, method_name, 0, &no_args);
+}
+
+void ModuleSystem::CallModuleMethodSafe(
+    const std::string& module_name,
+    const std::string& method_name,
+    std::vector<v8::Local<v8::Value>>* args) {
+  CallModuleMethodSafe(module_name, method_name, args->size(), args->data());
+}
+
+void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
+                                        const std::string& method_name,
+                                        int argc,
+                                        v8::Local<v8::Value> argv[]) {
+  TRACE_EVENT2("v8", "v8.callModuleMethodSafe", "module_name", module_name,
+               "method_name", method_name);
+
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Context> v8_context = context()->v8_context();
+  v8::Context::Scope context_scope(v8_context);
+
+  v8::Local<v8::Function> function =
+      GetModuleFunction(module_name, method_name);
+
+  {
+    v8::TryCatch try_catch(GetIsolate());
+    try_catch.SetCaptureMessage(true);
+    context_->SafeCallFunction(function, argc, argv);
+    if (try_catch.HasCaught())
+      HandleException(try_catch);
+  }
 }
 
 void ModuleSystem::RegisterNativeHandler(
@@ -779,6 +791,41 @@ void ModuleSystem::ClobberExistingNativeHandler(const std::string& name) {
     clobbered_native_handlers_.push_back(std::move(existing_handler->second));
     native_handler_map_.erase(existing_handler);
   }
+}
+
+v8::Local<v8::Function> ModuleSystem::GetModuleFunction(
+    const std::string& module_name,
+    const std::string& method_name) {
+  v8::Local<v8::String> v8_module_name;
+  v8::Local<v8::String> v8_method_name;
+  v8::Local<v8::Function> function;
+  if (!ToV8String(GetIsolate(), module_name.c_str(), &v8_module_name) ||
+      !ToV8String(GetIsolate(), method_name.c_str(), &v8_method_name)) {
+    return function;
+  }
+
+  v8::Local<v8::Value> module;
+  {
+    NativesEnabledScope natives_enabled(this);
+    module = RequireForJsInner(v8_module_name);
+  }
+
+  if (module.IsEmpty() || !module->IsObject()) {
+    Fatal(context_,
+          "Failed to get module " + module_name + " to call " + method_name);
+    return function;
+  }
+
+  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(module);
+  v8::Local<v8::Value> value;
+  if (!GetProperty(context()->v8_context(), object, v8_method_name, &value) ||
+      !value->IsFunction()) {
+    Fatal(context_, module_name + "." + method_name + " is not a function");
+    return function;
+  }
+
+  function = v8::Local<v8::Function>::Cast(value);
+  return function;
 }
 
 }  // namespace extensions
