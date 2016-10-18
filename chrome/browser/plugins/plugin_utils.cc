@@ -5,7 +5,6 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 
 #include "base/values.h"
-#include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/plugin_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -113,17 +112,5 @@ ContentSetting PluginUtils::GetFlashPluginContentSetting(
 // static
 bool PluginUtils::ShouldPreferHtmlOverPlugins(
     const HostContentSettingsMap* host_content_settings_map) {
-  std::string provider_id;
-  ContentSetting default_setting =
-      host_content_settings_map->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_PLUGINS, &provider_id);
-  ALLOW_UNUSED_LOCAL(default_setting);
-
-  // Working around a policy issue - do not allow PreferHtml if there is any
-  // policy for the plugin default setting. crbug.com/654072.
-  if (provider_id == site_settings::kPolicyProviderId)
-    return false;
-
-  // Fine. No policy interferes.
   return base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
 }

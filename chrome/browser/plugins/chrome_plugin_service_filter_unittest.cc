@@ -19,6 +19,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -396,10 +397,7 @@ TEST_F(ChromePluginServiceFilterTest,
                                 incognito->GetResourceContext(), flash_plugin));
 }
 
-// If there is an enterprise managed setting, we fall back to the behavior that
-// would occur if kPreferHtmlOverPlugins was disabled (i.e. click-to-play).
-// Flash should be advertised to the page.
-TEST_F(ChromePluginServiceFilterTest, C2PIfManagedSetting) {
+TEST_F(ChromePluginServiceFilterTest, ManagedSetting) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
@@ -413,19 +411,25 @@ TEST_F(ChromePluginServiceFilterTest, C2PIfManagedSetting) {
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
-  SiteEngagementService* service = SiteEngagementService::Get(profile());
-  GURL url("http://www.google.com");
-  url::Origin main_frame_origin(url);
-  // 0 engagement would usually ensure that flash isn't advertised to the page.
-  service->ResetScoreForURL(url, 0);
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
-
-  // Enterprise ASK setting should result in C2P behavior.
   syncable_prefs::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
                         new base::FundamentalValue(CONTENT_SETTING_ASK));
+
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  GURL url("http://www.google.com");
+  url::Origin main_frame_origin(url);
+  NavigateAndCommit(url);
+
+  service->ResetScoreForURL(url, 30.0);
+  // Reaching 30.0 engagement would usually allow Flash, but not for enterprise.
+  service->ResetScoreForURL(url, 0);
+  EXPECT_FALSE(IsPluginAvailable(
+      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+
+  // Allow flash temporarily.
+  FlashTemporaryPermissionTracker::Get(profile())->FlashEnabledForWebContents(
+      web_contents());
   EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
                                 profile()->GetResourceContext(), flash_plugin));
 }

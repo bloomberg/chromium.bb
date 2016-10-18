@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -64,14 +65,15 @@ void AuthorizeRenderer(content::RenderFrameHost* render_frame_host) {
 // ChromePluginServiceFilter inner struct definitions.
 
 struct ChromePluginServiceFilter::ContextInfo {
-  ContextInfo(
-      const scoped_refptr<PluginPrefs>& plugin_prefs,
-      const scoped_refptr<HostContentSettingsMap>& host_content_settings_map,
-      Profile* profile);
+  ContextInfo(scoped_refptr<PluginPrefs> pp,
+              scoped_refptr<HostContentSettingsMap> hcsm,
+              scoped_refptr<FlashTemporaryPermissionTracker> ftpm,
+              Profile* profile);
   ~ContextInfo();
 
   scoped_refptr<PluginPrefs> plugin_prefs;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map;
+  scoped_refptr<FlashTemporaryPermissionTracker> permission_tracker;
   ProfileContentSettingObserver observer;
 
  private:
@@ -79,12 +81,14 @@ struct ChromePluginServiceFilter::ContextInfo {
 };
 
 ChromePluginServiceFilter::ContextInfo::ContextInfo(
-    const scoped_refptr<PluginPrefs>& plugin_prefs,
-    const scoped_refptr<HostContentSettingsMap>& host_content_settings_map,
+    scoped_refptr<PluginPrefs> pp,
+    scoped_refptr<HostContentSettingsMap> hcsm,
+    scoped_refptr<FlashTemporaryPermissionTracker> ftpm,
     Profile* profile)
-    : plugin_prefs(plugin_prefs),
-      host_content_settings_map(host_content_settings_map),
-      observer(ProfileContentSettingObserver(profile)) {
+    : plugin_prefs(std::move(pp)),
+      host_content_settings_map(std::move(hcsm)),
+      permission_tracker(std::move(ftpm)),
+      observer(profile) {
   host_content_settings_map->AddObserver(&observer);
 }
 
@@ -126,7 +130,7 @@ void ChromePluginServiceFilter::RegisterResourceContext(Profile* profile,
   resource_context_map_[context] = base::MakeUnique<ContextInfo>(
       PluginPrefs::GetForProfile(profile),
       HostContentSettingsMapFactory::GetForProfile(profile),
-      profile);
+      FlashTemporaryPermissionTracker::Get(profile), profile);
 }
 
 void ChromePluginServiceFilter::UnregisterResourceContext(
@@ -237,14 +241,19 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 
     UMA_HISTOGRAM_COUNTS_100(kEngagementNoSettingHistogram, engagement);
 
-    // The content setting is neither ALLOW or BLOCK. Check whether the site
-    // meets the engagement cutoff for making Flash available without a prompt.
-    // This should only happen if the setting isn't being enforced by an
-    // enterprise policy.
-    if (is_managed ||
-        engagement < PluginsFieldTrial::GetSiteEngagementThresholdForFlash()) {
-      return false;
+    // If the content setting is being managed by enterprise policy and is an
+    // ASK setting, we check to see if it has been temporarily granted.
+    if (is_managed) {
+      return context_info_it->second->permission_tracker->IsFlashEnabled(
+          main_frame_origin.GetURL());
     }
+
+    // If the content setting isn't managed by enterprise policy, but is ASK,
+    // check whether the site meets the engagement cutoff for making Flash
+    // available without a prompt.This should only happen if the setting isn't
+    // being enforced by an enterprise policy.
+    if (engagement < PluginsFieldTrial::GetSiteEngagementThresholdForFlash())
+      return false;
   }
 
   return true;

@@ -6,14 +6,29 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/origin.h"
+
+namespace {
+
+bool PluginsEnterpriseSettingEnabled(
+    HostContentSettingsMap* host_content_settings_map) {
+  std::string provider_id;
+  host_content_settings_map->GetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, &provider_id);
+  return provider_id == site_settings::kPolicyProviderId;
+}
+
+}  // namespace
 
 FlashPermissionContext::FlashPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -31,7 +46,7 @@ ContentSetting FlashPermissionContext::GetPermissionStatus(
       host_content_settings_map, url::Origin(embedding_origin),
       requesting_origin, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+      host_content_settings_map, content_settings_type(), flash_setting);
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
     return CONTENT_SETTING_ASK;
   return flash_setting;
@@ -42,11 +57,20 @@ void FlashPermissionContext::UpdateTabContext(const PermissionRequestID& id,
                                               bool allowed) {
   if (!allowed)
     return;
-  // Automatically refresh the page.
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(
           content::RenderFrameHost::FromID(id.render_process_id(),
                                            id.render_frame_id()));
+
+  if (PluginsEnterpriseSettingEnabled(
+          HostContentSettingsMapFactory::GetForProfile(profile()))) {
+    // Enable the grant temporarily.
+    FlashTemporaryPermissionTracker::Get(profile())->FlashEnabledForWebContents(
+        web_contents);
+  }
+
+  // Automatically refresh the page.
   web_contents->GetController().Reload(true /* check_for_repost */);
 }
 
@@ -59,17 +83,22 @@ void FlashPermissionContext::UpdateContentSetting(
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
 
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  // If there is an enterprise ASK setting in effect, don't store the setting as
+  // it won't have any effect anyway.
+  if (PluginsEnterpriseSettingEnabled(host_content_settings_map))
+    return;
+
   // If the request was for a file scheme, allow or deny all file:/// URLs.
   ContentSettingsPattern pattern;
   if (embedding_origin.SchemeIsFile())
     pattern = ContentSettingsPattern::FromString("file:///*");
   else
     pattern = ContentSettingsPattern::FromURLNoWildcard(embedding_origin);
-
-  HostContentSettingsMapFactory::GetForProfile(profile())
-      ->SetContentSettingCustomScope(
-          pattern, ContentSettingsPattern::Wildcard(), content_settings_type(),
-          std::string(), content_setting);
+  host_content_settings_map->SetContentSettingCustomScope(
+      pattern, ContentSettingsPattern::Wildcard(), content_settings_type(),
+      std::string(), content_setting);
 }
 
 bool FlashPermissionContext::IsRestrictedToSecureOrigins() const {
