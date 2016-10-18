@@ -184,7 +184,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
-  int pinch_overlay_scrollbar_thickness;
   bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
   V8CacheOptions v8_cache_options;

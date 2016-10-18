@@ -1166,8 +1166,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setMainFrameResizesAreOrientationChanges(
       prefs.main_frame_resizes_are_orientation_changes);
 
-  settings->setPinchOverlayScrollbarThickness(
-      prefs.pinch_overlay_scrollbar_thickness);
   settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
 
   settings->setShowContextMenuOnMouseUp(prefs.context_menu_on_mouse_up);

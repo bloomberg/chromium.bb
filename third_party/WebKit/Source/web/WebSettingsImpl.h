@@ -135,7 +135,6 @@ class WEB_EXPORT WebSettingsImpl final
   void setPerTilePaintingEnabled(bool) override;
   void setPictographFontFamily(const WebString&,
                                UScriptCode = USCRIPT_COMMON) override;
-  void setPinchOverlayScrollbarThickness(int) override;
   void setPluginsEnabled(bool) override;
   void setAvailablePointerTypes(int) override;
   void setPrimaryPointerType(PointerType) override;
