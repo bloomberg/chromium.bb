@@ -80,59 +80,59 @@ class CONTENT_EXPORT ManifestParser {
                 const GURL& base_url);
 
   // Parses the 'name' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
   // Returns the parsed string if any, a null string if the parsing failed.
   base::NullableString16 ParseName(const base::DictionaryValue& dictionary);
 
   // Parses the 'short_name' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-short-name-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-short-name-member
   // Returns the parsed string if any, a null string if the parsing failed.
   base::NullableString16 ParseShortName(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'scope' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-scope-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-scope-member
   // Returns the parsed GURL if any, an empty GURL if the parsing failed.
   GURL ParseScope(const base::DictionaryValue& dictionary,
                   const GURL& start_url);
 
   // Parses the 'start_url' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-start_url-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-start_url-member
   // Returns the parsed GURL if any, an empty GURL if the parsing failed.
   GURL ParseStartURL(const base::DictionaryValue& dictionary);
 
   // Parses the 'display' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-display-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-display-member
   // Returns the parsed DisplayMode if any, WebDisplayModeUndefined if the
   // parsing failed.
   blink::WebDisplayMode ParseDisplay(const base::DictionaryValue& dictionary);
 
   // Parses the 'orientation' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
   // Returns the parsed WebScreenOrientationLockType if any,
   // WebScreenOrientationLockDefault if the parsing failed.
   blink::WebScreenOrientationLockType ParseOrientation(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'src' field of an icon, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-src-member-of-an-icon
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-src-member-of-an-image
   // Returns the parsed GURL if any, an empty GURL if the parsing failed.
   GURL ParseIconSrc(const base::DictionaryValue& icon);
 
   // Parses the 'type' field of an icon, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-type-member-of-an-icon
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-type-member-of-an-image
   // Returns the parsed string if any, an empty string if the parsing failed.
   base::string16 ParseIconType(const base::DictionaryValue& icon);
 
   // Parses the 'sizes' field of an icon, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-icon
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-image
   // Returns a vector of gfx::Size with the successfully parsed sizes, if any.
   // An empty vector if the field was not present or empty. "Any" is represented
   // by gfx::Size(0, 0).
   std::vector<gfx::Size> ParseIconSizes(const base::DictionaryValue& icon);
 
   // Parses the 'icons' field of a Manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-icons-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-an-array-of-images
   // Returns a vector of Manifest::Icon with the successfully parsed icons, if
   // any. An empty vector if the field was not present or empty.
   std::vector<Manifest::Icon> ParseIcons(
@@ -170,13 +170,13 @@ class CONTENT_EXPORT ManifestParser {
   bool ParsePreferRelatedApplications(const base::DictionaryValue& dictionary);
 
   // Parses the 'theme_color' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-theme_color-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-theme_color-member
   // Returns the parsed theme color if any,
   // Manifest::kInvalidOrMissingColor if the parsing failed.
   int64_t ParseThemeColor(const base::DictionaryValue& dictionary);
 
   // Parses the 'background_color' field of the manifest, as defined in:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-background_color-member
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-background_color-member
   // Returns the parsed background color if any,
   // Manifest::kInvalidOrMissingColor if the parsing failed.
   int64_t ParseBackgroundColor(const base::DictionaryValue& dictionary);
