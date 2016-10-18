@@ -1,5 +1,6 @@
 include_rules = [
   "+blimp/client/public",
+  "+blimp/client/support/resources",
   "-components/devtools_bridge",
   "+cc/layers/layer.h",
   "+cc/output/context_provider.h",

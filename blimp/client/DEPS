@@ -16,6 +16,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebInputEvent.h",
   "+ui/android",
   "+ui/base/ime/text_input_type.h",
+  "+ui/base/l10n",
   "+ui/events",
   "+ui/events/android",
   "+ui/events/blink",

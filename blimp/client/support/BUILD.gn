@@ -5,6 +5,7 @@
 group("support") {
   public_deps = [
     "//blimp/client/support/compositor",
+    "//blimp/client/support/resources",
     "//blimp/client/support/session",
   ]
 }

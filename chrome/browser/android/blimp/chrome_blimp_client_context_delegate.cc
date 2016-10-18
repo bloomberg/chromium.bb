@@ -10,6 +10,7 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
+#include "blimp/client/support/resources/blimp_strings.h"
 #include "chrome/browser/android/blimp/blimp_client_context_factory.h"
 #include "chrome/browser/android/blimp/blimp_contents_profile_attachment.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,7 @@
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "net/base/net_errors.h"
+#include "ui/base/l10n/l10n_util.h"
 
 ChromeBlimpClientContextDelegate::ChromeBlimpClientContextDelegate(
     Profile* profile)
@@ -45,8 +47,10 @@ void ChromeBlimpClientContextDelegate::OnAssignmentConnectionAttempted(
   // TODO(xingliu): All strings shown in the UI should be accessed through grd
   // files. https://crbug.com/630687
   std::stringstream ss;
-  ss << "Blimp: Assignment failed, reason: " << result << ".";
-  ShowMessage(base::UTF8ToUTF16(ss.str()), false);
+  ss << "Assignment failed, reason: " << result << ".";
+  base::string16 message =
+      blimp::string::BlimpPrefix(base::UTF8ToUTF16(ss.str()));
+  ShowMessage(message, false);
 }
 
 std::unique_ptr<IdentityProvider>
@@ -60,11 +64,15 @@ ChromeBlimpClientContextDelegate::CreateIdentityProvider() {
 void ChromeBlimpClientContextDelegate::OnAuthenticationError(
     const GoogleServiceAuthError& error) {
   LOG(ERROR) << "GoogleAuth error : " << error.ToString();
-  ShowMessage(base::UTF8ToUTF16("Blimp: Failed to get OAuth2 token."), false);
+  base::string16 message = blimp::string::BlimpPrefix(
+      l10n_util::GetStringUTF16(IDS_BLIMP_SIGNIN_GET_TOKEN_FAILED));
+  ShowMessage(message, false);
 }
 
 void ChromeBlimpClientContextDelegate::OnConnected() {
-  ShowMessage(base::UTF8ToUTF16("Blimp: Connected."), true);
+  base::string16 message = blimp::string::BlimpPrefix(
+      l10n_util::GetStringUTF16(IDS_BLIMP_NETWORK_CONNECTED));
+  ShowMessage(message, true);
 }
 
 void ChromeBlimpClientContextDelegate::OnEngineDisconnected(int result) {
@@ -81,7 +89,7 @@ void ChromeBlimpClientContextDelegate::ShowMessage(
 
 void ChromeBlimpClientContextDelegate::OnDisconnected(
     const base::string16& reason) {
-  std::stringstream ss;
-  ss << "Blimp: Disconnected(" << reason << ").";
-  ShowMessage(base::UTF8ToUTF16(ss.str()), false);
+  ShowMessage(blimp::string::BlimpPrefix(l10n_util::GetStringFUTF16(
+                  IDS_BLIMP_NETWORK_DISCONNECTED, reason)),
+              false);
 }
