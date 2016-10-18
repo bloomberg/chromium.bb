@@ -6,32 +6,37 @@
 <script src="resources/generate-paint-style-logging.js"></script>
 <style>
     div {
-        color: rgb(0, 255, 0);
-        line-height: 1px;
-    }
+        width: 100px;
+        height: 100px;
 
-    div::first-letter {
         background-image: paint(test);
-        color: rgb(255, 0, 0);
-        line-height: 2px;
+
+        --length: 10px;
+        --number: 10;
     }
 </style>
 </head>
 <body>
-<div>Foo</div>
+<div></div>
 <script>
     if (window.testRunner)
         testRunner.dumpAsText();
 
+    CSS.registerProperty({name: '--length', syntax: '<length>', initialValue: '0px'});
+    CSS.registerProperty({name: '--length-initial', syntax: '<length>', initialValue: '20px'});
+    CSS.registerProperty({name: '--number', syntax: '<number>', initialValue: '0'});
+
     importPaintWorkletAndTerminateTestAfterAsyncPaint(
             generatePaintStyleLogging([
-                'color',
-                'line-height',
+                '--length',
+                '--length-initial',
+                '--number',
             ]));
 </script>
 <p>This tests the style information in the paint callback.</p>
 <p>See the devtools console for test output. The console should log:</p>
-color: [CSSStyleValue=rgb(255, 0, 0)]<br>
-line-height: [CSSSimpleLength=2px]<br>
-</body>
+--length: [CSSSimpleLength=10px]<br>
+--length-initial: [CSSSimpleLength=20px]<br>
+--number: [CSSNumberValue=10]<br>
+
 </html>

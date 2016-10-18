@@ -1,10 +1,10 @@
-CONSOLE MESSAGE: line 8: color: rgb(255, 0, 0)
-CONSOLE MESSAGE: line 8: line-height: 2px
+CONSOLE MESSAGE: line 14: color: [CSSStyleValue=rgb(255, 0, 0)]
+CONSOLE MESSAGE: line 14: line-height: [CSSSimpleLength=2px]
 Foo
 This tests the style information in the paint callback.
 
 See the devtools console for test output. The console should log:
 
-color: rgb(255, 0, 0)
-line-height: 2px
+color: [CSSStyleValue=rgb(255, 0, 0)]
+line-height: [CSSSimpleLength=2px]
 

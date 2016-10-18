@@ -1,0 +1,11 @@
+CONSOLE MESSAGE: line 14: --length: [CSSSimpleLength=10px]
+CONSOLE MESSAGE: line 14: --length-initial: [CSSSimpleLength=20px]
+CONSOLE MESSAGE: line 14: --number: [CSSNumberValue=10]
+This tests the style information in the paint callback.
+
+See the devtools console for test output. The console should log:
+
+--length: [CSSSimpleLength=10px]
+--length-initial: [CSSSimpleLength=20px]
+--number: [CSSNumberValue=10]
+

@@ -16,7 +16,13 @@ function generatePaintStyleLogging(properties) {
                 const properties = styleMap.getProperties().sort();
                 for (let i = 0; i < properties.length; i++) {
                     const value = styleMap.get(properties[i]);
-                    console.log(properties[i] + ': ' + (value ? value.cssText: '[null]'));
+                    let serialized;
+                    if (value) {
+                        serialized = '[' + value.constructor.name + '=' + value.cssText + ']';
+                    } else {
+                        serialized = '[null]';
+                    }
+                    console.log(properties[i] + ': ' + serialized);
                 }
             }
         });
