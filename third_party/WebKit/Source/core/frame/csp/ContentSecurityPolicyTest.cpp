@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/frame/csp/CSPDirectiveList.h"
+#include "core/html/HTMLScriptElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/Crypto.h"
@@ -705,6 +706,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                                     << "`, Nonce: `" << test.nonce << "`");
 
     unsigned expectedReports = test.allowed ? 0u : 1u;
+    HTMLScriptElement* element = HTMLScriptElement::create(*document, true);
 
     // Enforce 'script-src'
     Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::create();
@@ -713,8 +715,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed,
-              policy->allowInlineScript(contextURL, String(test.nonce),
-                                        ParserInserted, contextLine, content));
+              policy->allowInlineScript(element, contextURL, String(test.nonce),
+                                        contextLine, content));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Enforce 'style-src'
@@ -724,7 +726,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              ContentSecurityPolicyHeaderTypeEnforce,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.allowed,
-              policy->allowInlineStyle(contextURL, String(test.nonce),
+              policy->allowInlineStyle(element, contextURL, String(test.nonce),
                                        contextLine, content));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
@@ -735,7 +737,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->allowInlineScript(
-        contextURL, String(test.nonce), ParserInserted, contextLine, content));
+        element, contextURL, String(test.nonce), contextLine, content));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
 
     // Report 'style-src'
@@ -744,8 +746,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->didReceiveHeader(String("style-src ") + test.policy,
                              ContentSecurityPolicyHeaderTypeReport,
                              ContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_TRUE(policy->allowInlineStyle(contextURL, String(test.nonce),
-                                         contextLine, content));
+    EXPECT_TRUE(policy->allowInlineStyle(
+        element, contextURL, String(test.nonce), contextLine, content));
     EXPECT_EQ(expectedReports, policy->m_violationReportsSent.size());
   }
 }

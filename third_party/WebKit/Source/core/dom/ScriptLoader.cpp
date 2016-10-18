@@ -461,16 +461,13 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
       csp->allowScriptWithHash(sourceCode.source(),
                                ContentSecurityPolicy::InlineType::Block);
 
-  ParserDisposition parserDisposition =
-      isParserInserted() ? ParserInserted : NotParserInserted;
-
   AtomicString nonce =
       ContentSecurityPolicy::isNonceableElement(m_element.get())
           ? m_element->fastGetAttribute(HTMLNames::nonceAttr)
           : AtomicString();
   if (!m_isExternalScript &&
       (!shouldBypassMainWorldCSP &&
-       !csp->allowInlineScript(elementDocument->url(), nonce, parserDisposition,
+       !csp->allowInlineScript(m_element, elementDocument->url(), nonce,
                                m_startLineNumber, sourceCode.source()))) {
     return false;
   }

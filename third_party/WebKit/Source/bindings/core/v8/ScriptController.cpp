@@ -331,7 +331,8 @@ bool ScriptController::canExecuteScripts(
   return allowed;
 }
 
-bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url) {
+bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,
+                                                    Element* element) {
   if (!protocolIsJavaScript(url))
     return false;
 
@@ -340,8 +341,10 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url) {
   if (!frame()->page() ||
       (!shouldBypassMainWorldContentSecurityPolicy &&
        !frame()->document()->contentSecurityPolicy()->allowJavaScriptURLs(
-           frame()->document()->url(), eventHandlerPosition().m_line)))
+           element, frame()->document()->url(),
+           eventHandlerPosition().m_line))) {
     return true;
+  }
 
   bool progressNotificationsNeeded =
       frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() &&

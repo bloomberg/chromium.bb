@@ -12,7 +12,7 @@ var testObject = {nyannyan: 123};
 var testDiv = document.createElement("div");
 
 // No initializer is passed.
-shouldBeFalse("new SecurityPolicyViolationEvent('eventType').bubbles");
+shouldBeTrue("new SecurityPolicyViolationEvent('eventType').bubbles");
 shouldBeFalse("new SecurityPolicyViolationEvent('eventType').cancelable");
 shouldBeEmptyString("new SecurityPolicyViolationEvent('eventType').documentURI");
 shouldBeEmptyString("new SecurityPolicyViolationEvent('eventType').referrer");
@@ -26,13 +26,13 @@ shouldBe("new SecurityPolicyViolationEvent('eventType').lineNumber", "0");
 shouldBe("new SecurityPolicyViolationEvent('eventType').columnNumber", "0");
 shouldBe("new SecurityPolicyViolationEvent('eventType').statusCode", "0");
 
-// bubbles is passed.
-shouldBeFalse("new SecurityPolicyViolationEvent('eventType', { bubbles: false }).bubbles");
+// bubbles is always true.
+shouldBeTrue("new SecurityPolicyViolationEvent('eventType', { bubbles: false }).bubbles");
 shouldBeTrue("new SecurityPolicyViolationEvent('eventType', { bubbles: true }).bubbles");
 
-// cancelable is passed.
+// cancelable is always false.
 shouldBeFalse("new SecurityPolicyViolationEvent('eventType', { cancelable: false }).cancelable");
-shouldBeTrue("new SecurityPolicyViolationEvent('eventType', { cancelable: true }).cancelable");
+shouldBeFalse("new SecurityPolicyViolationEvent('eventType', { cancelable: true }).cancelable");
 
 // String members are passed.
 ["documentURI", "referrer", "blockedURI", "violatedDirective", "effectiveDirective", "originalPolicy", "sourceFile"].forEach(function(member) {

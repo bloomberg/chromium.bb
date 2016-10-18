@@ -96,7 +96,7 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem) {
     return;
   toLocalFrame(contentFrame())
       ->script()
-      .executeScriptIfJavaScriptURL(scriptURL);
+      .executeScriptIfJavaScriptURL(scriptURL, this);
 }
 
 void HTMLFrameElementBase::frameOwnerPropertiesChanged() {

@@ -421,7 +421,7 @@ void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission) {
             submission->action()))
       return;
     document().frame()->script().executeScriptIfJavaScriptURL(
-        submission->action());
+        submission->action(), this);
     return;
   }
 

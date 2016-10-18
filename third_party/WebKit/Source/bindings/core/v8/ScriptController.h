@@ -47,6 +47,7 @@
 namespace blink {
 
 class DOMWrapperWorld;
+class Element;
 class ExecutionContext;
 class HTMLDocument;
 class HTMLPlugInElement;
@@ -113,7 +114,7 @@ class CORE_EXPORT ScriptController final
                                     Vector<v8::Local<v8::Value>>* results);
 
   // Returns true if argument is a JavaScript URL.
-  bool executeScriptIfJavaScriptURL(const KURL&);
+  bool executeScriptIfJavaScriptURL(const KURL&, Element*);
 
   // Returns true if the current world is isolated, and has its own Content
   // Security Policy. In this case, the policy of the main world should be

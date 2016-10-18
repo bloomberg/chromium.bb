@@ -30,7 +30,9 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SandboxFlags.h"
+#include "core/events/EventQueue.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/frame/FrameClient.h"
@@ -441,36 +443,42 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
 }
 
 template <bool (CSPDirectiveList::*allowed)(
+    Element*,
     const String&,
     const WTF::OrdinalNumber&,
     ContentSecurityPolicy::ReportingStatus) const>
 bool isAllowedByAll(const CSPDirectiveListVector& policies,
+                    Element* element,
                     const String& contextURL,
                     const WTF::OrdinalNumber& contextLine,
                     ContentSecurityPolicy::ReportingStatus reportingStatus) {
   bool isAllowed = true;
-  for (const auto& policy : policies)
-    isAllowed &=
-        (policy.get()->*allowed)(contextURL, contextLine, reportingStatus);
+  for (const auto& policy : policies) {
+    isAllowed &= (policy.get()->*allowed)(element, contextURL, contextLine,
+                                          reportingStatus);
+  }
   return isAllowed;
 }
 
 template <
-    bool (CSPDirectiveList::*allowed)(const String&,
+    bool (CSPDirectiveList::*allowed)(Element*,
+                                      const String&,
                                       const String&,
                                       const WTF::OrdinalNumber&,
                                       ContentSecurityPolicy::ReportingStatus,
                                       const String& content) const>
 bool isAllowedByAll(const CSPDirectiveListVector& policies,
+                    Element* element,
                     const String& contextURL,
                     const String& nonce,
                     const WTF::OrdinalNumber& contextLine,
                     ContentSecurityPolicy::ReportingStatus reportingStatus,
                     const String& content) {
   bool isAllowed = true;
-  for (const auto& policy : policies)
-    isAllowed &= (policy.get()->*allowed)(contextURL, nonce, contextLine,
-                                          reportingStatus, content);
+  for (const auto& policy : policies) {
+    isAllowed &= (policy.get()->*allowed)(
+        element, contextURL, nonce, contextLine, reportingStatus, content);
+  }
   return isAllowed;
 }
 
@@ -628,14 +636,16 @@ bool checkDigest(const String& source,
 }
 
 bool ContentSecurityPolicy::allowJavaScriptURLs(
+    Element* element,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
   return isAllowedByAll<&CSPDirectiveList::allowJavaScriptURLs>(
-      m_policies, contextURL, contextLine, reportingStatus);
+      m_policies, element, contextURL, contextLine, reportingStatus);
 }
 
 bool ContentSecurityPolicy::allowInlineEventHandler(
+    Element* element,
     const String& source,
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
@@ -649,31 +659,34 @@ bool ContentSecurityPolicy::allowInlineEventHandler(
           m_policies))
     return true;
   return isAllowedByAll<&CSPDirectiveList::allowInlineEventHandlers>(
-      m_policies, contextURL, contextLine, reportingStatus);
+      m_policies, element, contextURL, contextLine, reportingStatus);
 }
 
 bool ContentSecurityPolicy::allowInlineScript(
+    Element* element,
     const String& contextURL,
     const String& nonce,
-    ParserDisposition parserDisposition,
     const WTF::OrdinalNumber& contextLine,
     const String& scriptContent,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+  DCHECK(element);
   return isAllowedByAll<&CSPDirectiveList::allowInlineScript>(
-      m_policies, contextURL, nonce, parserDisposition, contextLine,
-      reportingStatus, scriptContent);
+      m_policies, element, contextURL, nonce, contextLine, reportingStatus,
+      scriptContent);
 }
 
 bool ContentSecurityPolicy::allowInlineStyle(
+    Element* element,
     const String& contextURL,
     const String& nonce,
     const WTF::OrdinalNumber& contextLine,
     const String& styleContent,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+  DCHECK(element);
   if (m_overrideInlineStyleAllowed)
     return true;
   return isAllowedByAll<&CSPDirectiveList::allowInlineStyle>(
-      m_policies, contextURL, nonce, contextLine, reportingStatus,
+      m_policies, element, contextURL, nonce, contextLine, reportingStatus,
       styleContent);
 }
 
@@ -1116,7 +1129,8 @@ void ContentSecurityPolicy::reportViolation(
     ViolationType violationType,
     LocalFrame* contextFrame,
     RedirectStatus redirectStatus,
-    int contextLine) {
+    int contextLine,
+    Element* element) {
   ASSERT(violationType == URLViolation || blockedURL.isEmpty());
 
   // TODO(lukasza): Support sending reports from OOPIFs -
@@ -1198,9 +1212,6 @@ void ContentSecurityPolicy::reportViolation(
   LocalFrame* frame = document->frame();
   if (!frame)
     return;
-  frame->localDOMWindow()->enqueueDocumentEvent(
-      SecurityPolicyViolationEvent::create(
-          EventTypeNames::securitypolicyviolation, violationData));
 
   for (const String& endpoint : reportEndpoints) {
     // If we have a context frame we're dealing with 'frame-ancestors' and we
@@ -1216,6 +1227,27 @@ void ContentSecurityPolicy::reportViolation(
             : completeURL(endpoint);
     PingLoader::sendViolationReport(
         frame, url, report, PingLoader::ContentSecurityPolicyViolationReport);
+  }
+
+  document->postTask(
+      BLINK_FROM_HERE,
+      createSameThreadTask(&ContentSecurityPolicy::dispatchViolationEvents,
+                           wrapPersistent(this), violationData,
+                           wrapPersistent(element), wrapPersistent(document)));
+}
+
+void ContentSecurityPolicy::dispatchViolationEvents(
+    const SecurityPolicyViolationEventInit& violationData,
+    Element* element,
+    Document* document) {
+  SecurityPolicyViolationEvent* event = SecurityPolicyViolationEvent::create(
+      EventTypeNames::securitypolicyviolation, violationData);
+  DCHECK(event->bubbles());
+  if (element && element->isConnected() && element->document() == document) {
+    event->setTarget(element);
+    document->domWindow()->getEventQueue()->enqueueEvent(event);
+  } else {
+    document->domWindow()->enqueueDocumentEvent(event);
   }
 }
 

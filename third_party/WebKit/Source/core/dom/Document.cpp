@@ -5390,9 +5390,10 @@ bool Document::allowInlineEventHandler(Node* node,
                                        EventListener* listener,
                                        const String& contextURL,
                                        const WTF::OrdinalNumber& contextLine) {
+  Element* element = node && node->isElementNode() ? toElement(node) : nullptr;
   if (!ContentSecurityPolicy::shouldBypassMainWorld(this) &&
       !contentSecurityPolicy()->allowInlineEventHandler(
-          listener->code(), contextURL, contextLine))
+          element, listener->code(), contextURL, contextLine))
     return false;
 
   // HTML says that inline script needs browsing context to create its execution

@@ -42,19 +42,22 @@ class CORE_EXPORT CSPDirectiveList
     return m_headerSource;
   }
 
-  bool allowJavaScriptURLs(const String& contextURL,
+  bool allowJavaScriptURLs(Element*,
+                           const String& contextURL,
                            const WTF::OrdinalNumber& contextLine,
                            ContentSecurityPolicy::ReportingStatus) const;
-  bool allowInlineEventHandlers(const String& contextURL,
+  bool allowInlineEventHandlers(Element*,
+                                const String& contextURL,
                                 const WTF::OrdinalNumber& contextLine,
                                 ContentSecurityPolicy::ReportingStatus) const;
-  bool allowInlineScript(const String& contextURL,
+  bool allowInlineScript(Element*,
+                         const String& contextURL,
                          const String& nonce,
-                         ParserDisposition,
                          const WTF::OrdinalNumber& contextLine,
                          ContentSecurityPolicy::ReportingStatus,
                          const String& scriptContent) const;
-  bool allowInlineStyle(const String& contextURL,
+  bool allowInlineStyle(Element*,
+                        const String& contextURL,
                         const String& nonce,
                         const WTF::OrdinalNumber& contextLine,
                         ContentSecurityPolicy::ReportingStatus,
@@ -210,7 +213,8 @@ class CORE_EXPORT CSPDirectiveList
                                    const String& consoleMessage,
                                    const KURL& blockedURL,
                                    const String& contextURL,
-                                   const WTF::OrdinalNumber& contextLine) const;
+                                   const WTF::OrdinalNumber& contextLine,
+                                   Element*) const;
   void reportViolationWithState(
       const String& directiveText,
       const String& effectiveDirective,
@@ -246,6 +250,7 @@ class CORE_EXPORT CSPDirectiveList
           ContentSecurityPolicy::WillNotThrowException) const;
   bool checkInlineAndReportViolation(SourceListDirective*,
                                      const String& consoleMessage,
+                                     Element*,
                                      const String& contextURL,
                                      const WTF::OrdinalNumber& contextLine,
                                      bool isScript,

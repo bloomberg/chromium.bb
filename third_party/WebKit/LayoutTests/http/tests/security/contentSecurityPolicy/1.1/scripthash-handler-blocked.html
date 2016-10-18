@@ -10,7 +10,7 @@
                     document.querySelector('#pass').click();
                 }));
                 document.addEventListener('securitypolicyviolation', t.step_func_done(function (e) {
-                    assert_equals(e.target, document);
+                    assert_equals(e.target, document.querySelector('#pass'));
                 }));
             }, 'Inline event handlers whitelisted by the policy should not fire, as \'unsafe-hash-attributes\' is not present.');
         </script>

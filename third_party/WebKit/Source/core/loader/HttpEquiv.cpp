@@ -22,16 +22,17 @@ namespace blink {
 void HttpEquiv::process(Document& document,
                         const AtomicString& equiv,
                         const AtomicString& content,
-                        bool inDocumentHeadElement) {
+                        bool inDocumentHeadElement,
+                        Element* element) {
   DCHECK(!equiv.isNull());
   DCHECK(!content.isNull());
 
   if (equalIgnoringCase(equiv, "default-style")) {
     processHttpEquivDefaultStyle(document, content);
   } else if (equalIgnoringCase(equiv, "refresh")) {
-    processHttpEquivRefresh(document, content);
+    processHttpEquivRefresh(document, content, element);
   } else if (equalIgnoringCase(equiv, "set-cookie")) {
-    processHttpEquivSetCookie(document, content);
+    processHttpEquivSetCookie(document, content, element);
   } else if (equalIgnoringCase(equiv, "content-language")) {
     document.setContentLanguage(content);
   } else if (equalIgnoringCase(equiv, "x-dns-prefetch-control")) {
@@ -96,10 +97,11 @@ void HttpEquiv::processHttpEquivDefaultStyle(Document& document,
 }
 
 void HttpEquiv::processHttpEquivRefresh(Document& document,
-                                        const AtomicString& content) {
+                                        const AtomicString& content,
+                                        Element* element) {
   UseCounter::count(document, UseCounter::MetaRefresh);
   if (!document.contentSecurityPolicy()->allowInlineScript(
-          KURL(), "", ParserInserted, OrdinalNumber(), "",
+          element, KURL(), "", OrdinalNumber(), "",
           ContentSecurityPolicy::SuppressReport)) {
     UseCounter::count(document,
                       UseCounter::MetaRefreshWhenCSPBlocksInlineScript);
@@ -109,7 +111,8 @@ void HttpEquiv::processHttpEquivRefresh(Document& document,
 }
 
 void HttpEquiv::processHttpEquivSetCookie(Document& document,
-                                          const AtomicString& content) {
+                                          const AtomicString& content,
+                                          Element* element) {
   // FIXME: make setCookie work on XML documents too; e.g. in case of
   // <html:meta.....>
   if (!document.isHTMLDocument())
@@ -117,7 +120,7 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document,
 
   UseCounter::count(document, UseCounter::MetaSetCookie);
   if (!document.contentSecurityPolicy()->allowInlineScript(
-          KURL(), "", ParserInserted, OrdinalNumber(), "",
+          element, KURL(), "", OrdinalNumber(), "",
           ContentSecurityPolicy::SuppressReport)) {
     UseCounter::count(document,
                       UseCounter::MetaSetCookieWhenCSPBlocksInlineScript);

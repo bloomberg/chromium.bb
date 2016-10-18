@@ -3831,7 +3831,8 @@ void Element::styleAttributeChanged(
              (containingShadowRoot() &&
               containingShadowRoot()->type() == ShadowRootType::UserAgent) ||
              document().contentSecurityPolicy()->allowInlineStyle(
-                 document().url(), String(), startLineNumber, newStyleString)) {
+                 this, document().url(), String(), startLineNumber,
+                 newStyleString)) {
     setInlineStyleFromString(newStyleString);
   }
 

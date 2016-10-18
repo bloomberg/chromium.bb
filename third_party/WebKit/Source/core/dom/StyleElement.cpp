@@ -159,7 +159,7 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element& element,
   bool passesContentSecurityPolicyChecks =
       shouldBypassMainWorldCSP(element) ||
       csp->allowStyleWithHash(text, ContentSecurityPolicy::InlineType::Block) ||
-      csp->allowInlineStyle(document.url(),
+      csp->allowInlineStyle(&element, document.url(),
                             element.fastGetAttribute(HTMLNames::nonceAttr),
                             m_startPosition.m_line, text);
 

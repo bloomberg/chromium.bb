@@ -497,7 +497,7 @@ void HTMLMetaElement::process() {
     return;
 
   HttpEquiv::process(document(), httpEquivValue, contentValue,
-                     inDocumentHead(this));
+                     inDocumentHead(this), this);
 }
 
 WTF::TextEncoding HTMLMetaElement::computeEncoding() const {

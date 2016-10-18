@@ -951,7 +951,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request) {
     return true;
 
   KURL url = request.resourceRequest().url();
-  if (m_frame->script().executeScriptIfJavaScriptURL(url))
+  if (m_frame->script().executeScriptIfJavaScriptURL(url, nullptr))
     return false;
 
   if (!request.originDocument()->getSecurityOrigin()->canDisplay(url)) {

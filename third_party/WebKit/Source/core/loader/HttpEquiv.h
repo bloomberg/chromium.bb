@@ -11,6 +11,7 @@
 namespace blink {
 
 class Document;
+class Element;
 
 /**
  * Handles a HTTP header equivalent set by a meta tag using
@@ -27,13 +28,18 @@ class HttpEquiv {
   static void process(Document&,
                       const AtomicString& equiv,
                       const AtomicString& content,
-                      bool inDocumentHeadElement);
+                      bool inDocumentHeadElement,
+                      Element*);
 
  private:
   static void processHttpEquivDefaultStyle(Document&,
                                            const AtomicString& content);
-  static void processHttpEquivRefresh(Document&, const AtomicString& content);
-  static void processHttpEquivSetCookie(Document&, const AtomicString& content);
+  static void processHttpEquivRefresh(Document&,
+                                      const AtomicString& content,
+                                      Element*);
+  static void processHttpEquivSetCookie(Document&,
+                                        const AtomicString& content,
+                                        Element*);
   static void processHttpEquivXFrameOptions(Document&,
                                             const AtomicString& content);
   static void processHttpEquivContentSecurityPolicy(

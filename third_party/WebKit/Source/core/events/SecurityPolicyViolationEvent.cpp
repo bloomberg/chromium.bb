@@ -38,7 +38,7 @@ const char kReport[] = "report";
 SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
     const AtomicString& type,
     const SecurityPolicyViolationEventInit& initializer)
-    : Event(type, initializer),
+    : Event(type, true, false, ComposedMode::Composed),
       m_disposition(ContentSecurityPolicyHeaderTypeEnforce),
       m_lineNumber(0),
       m_columnNumber(0),

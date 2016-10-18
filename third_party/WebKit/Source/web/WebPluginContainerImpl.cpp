@@ -467,8 +467,9 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url,
     return WebString();
 
   if (!m_element->document().contentSecurityPolicy()->allowJavaScriptURLs(
-          m_element->document().url(), OrdinalNumber()))
+          m_element, m_element->document().url(), OrdinalNumber())) {
     return WebString();
+  }
 
   const KURL& kurl = url;
   DCHECK(kurl.protocolIs("javascript"));
