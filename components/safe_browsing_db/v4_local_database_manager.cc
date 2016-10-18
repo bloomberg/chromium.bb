@@ -26,6 +26,8 @@ const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
 
 ListInfos GetListInfos() {
+  // NOTE(vakh): When adding a store here, add the corresponding store-specific
+  // histograms also.
   return ListInfos(
       {ListInfo(true, "UrlMalware.store", GetUrlMalwareId(),
                 SB_THREAT_TYPE_URL_MALWARE),
