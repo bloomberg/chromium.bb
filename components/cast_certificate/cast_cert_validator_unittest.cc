@@ -109,15 +109,9 @@ void RunTest(TestResult expected_result,
   std::unique_ptr<CertVerificationContext> context;
   CastDeviceCertPolicy policy;
 
-  bool result;
-  if (trust_store.get()) {
-    result =
-        VerifyDeviceCertForTest(certs, time, &context, &policy, nullptr,
-                                CRLPolicy::CRL_OPTIONAL, trust_store.get());
-  } else {
-    result = VerifyDeviceCert(certs, time, &context, &policy, nullptr,
-                              CRLPolicy::CRL_OPTIONAL);
-  }
+  bool result = VerifyDeviceCertUsingCustomTrustStore(
+      certs, time, &context, &policy, nullptr, CRLPolicy::CRL_OPTIONAL,
+      trust_store.get());
 
   if (expected_result == RESULT_FAIL) {
     ASSERT_FALSE(result);

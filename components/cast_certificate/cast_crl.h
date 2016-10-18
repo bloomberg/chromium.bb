@@ -53,13 +53,15 @@ class CastCRL {
 std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
                                            const base::Time& time);
 
-// Exposed only for testing, not for use in production code.
-//
 // This is an overloaded version of ParseAndVerifyCRL that allows
 // the input of a custom TrustStore.
-std::unique_ptr<CastCRL> ParseAndVerifyCRLForTest(const std::string& crl_proto,
-                                                  const base::Time& time,
-                                                  net::TrustStore* trust_store);
+//
+// For production use pass |trust_store| as nullptr to use the production trust
+// store.
+std::unique_ptr<CastCRL> ParseAndVerifyCRLUsingCustomTrustStore(
+    const std::string& crl_proto,
+    const base::Time& time,
+    net::TrustStore* trust_store);
 
 }  // namespace cast_certificate
 

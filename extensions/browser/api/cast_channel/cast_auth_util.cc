@@ -6,11 +6,14 @@
 
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/cast_certificate/cast_cert_validator.h"
+#include "components/cast_certificate/cast_crl.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/cert/x509_certificate.h"
@@ -25,6 +28,15 @@ const char kParseErrorPrefix[] = "Failed to parse auth message: ";
 
 // The maximum number of days a cert can live for.
 const int kMaxSelfSignedCertLifetimeInDays = 4;
+
+// Enforce certificate revocation when enabled.
+// If disabled, any revocation failures are ignored.
+//
+// This flags only controls the enforcement. Revocation is checked regardless.
+//
+// This flag tracks the changes necessary to fully enforce revocation.
+const base::Feature kEnforceRevocationChecking{
+    "CastCertificateRevocation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace cast_crypto = ::cast_certificate;
 
@@ -62,6 +74,16 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
   }
   return AuthResult();
 }
+
+// Must match with histogram enum CastCertificateStatus.
+// This should never be reordered.
+enum CertVerificationStatus {
+  CERT_STATUS_OK,
+  CERT_STATUS_INVALID_CRL,
+  CERT_STATUS_VERIFICATION_FAILED,
+  CERT_STATUS_REVOKED,
+  CERT_STATUS_COUNT,
+};
 
 }  // namespace
 
@@ -110,16 +132,16 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
       peer_cert.valid_start() > base::Time::Now()) {
     return AuthResult::CreateWithParseError(
         "Certificate's valid start date is in the future.",
-        AuthResult::ERROR_VALID_START_DATE_IN_FUTURE);
+        AuthResult::ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE);
   }
   if (expiry.is_null() || peer_cert.HasExpired()) {
     return AuthResult::CreateWithParseError("Certificate has expired.",
-                                            AuthResult::ERROR_CERT_EXPIRED);
+                                            AuthResult::ERROR_TLS_CERT_EXPIRED);
   }
   if (expiry > lifetime_limit) {
     return AuthResult::CreateWithParseError(
         "Peer cert lifetime is too long.",
-        AuthResult::ERROR_VALIDITY_PERIOD_TOO_LONG);
+        AuthResult::ERROR_TLS_CERT_VALIDITY_PERIOD_TOO_LONG);
   }
 
   const AuthResponse& response = auth_message.response();
@@ -130,13 +152,27 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
 //
 // * Verifies that the certificate chain |response.client_auth_certificate| +
 //   |response.intermediate_certificate| is valid and chains to a trusted
-//   Cast root.
+//   Cast root. The list of trusted Cast roots can be overrided by providing a
+//   non-nullptr |cast_trust_store|. The certificate is verified at
+//   |verification_time|.
+//
+// * Verifies that none of the certificates in the chain are revoked based on
+//   the CRL provided in the response |response.crl|. The CRL is verified to be
+//   valid and its issuer certificate chains to a trusted Cast CRL root. The
+//   list of trusted Cast CRL roots can be overrided by providing a non-nullptr
+//   |crl_trust_store|. If |crl_policy| is CRL_OPTIONAL then the result of
+//   revocation checking is ignored. The CRL is verified at
+//   |verification_time|.
 //
 // * Verifies that |response.signature| matches the signature
 //   of |signature_input| by |response.client_auth_certificate|'s public
 //   key.
-AuthResult VerifyCredentials(const AuthResponse& response,
-                             const std::string& signature_input) {
+AuthResult VerifyCredentialsImpl(const AuthResponse& response,
+                                 const std::string& signature_input,
+                                 const cast_crypto::CRLPolicy& crl_policy,
+                                 net::TrustStore* cast_trust_store,
+                                 net::TrustStore* crl_trust_store,
+                                 const base::Time& verification_time) {
   // Verify the certificate
   std::unique_ptr<cast_crypto::CertVerificationContext> verification_context;
 
@@ -147,19 +183,56 @@ AuthResult VerifyCredentials(const AuthResponse& response,
                     response.intermediate_certificate().begin(),
                     response.intermediate_certificate().end());
 
-  // Use the current time when checking certificate validity.
-  base::Time now = base::Time::Now();
-
-  // CRL should not be enforced until it is served.
-  cast_crypto::CastDeviceCertPolicy device_policy;
-  if (!cast_crypto::VerifyDeviceCert(
-          cert_chain, now, &verification_context, &device_policy, nullptr,
-          cast_certificate::CRLPolicy::CRL_OPTIONAL)) {
-    // TODO(eroman): The error information was lost; this error is ambiguous.
-    return AuthResult("Failed verifying cast device certificate",
-                      AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+  // Parse the CRL.
+  std::unique_ptr<cast_crypto::CastCRL> crl =
+      cast_crypto::ParseAndVerifyCRLUsingCustomTrustStore(
+          response.crl(), verification_time, crl_trust_store);
+  if (!crl) {
+    // CRL is invalid.
+    UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate",
+                              CERT_STATUS_INVALID_CRL, CERT_STATUS_COUNT);
+    if (crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED) {
+      return AuthResult("Failed verifying Cast CRL.",
+                        AuthResult::ERROR_CRL_INVALID);
+    }
   }
 
+  cast_crypto::CastDeviceCertPolicy device_policy;
+  bool verification_success =
+      cast_crypto::VerifyDeviceCertUsingCustomTrustStore(
+          cert_chain, verification_time, &verification_context, &device_policy,
+          crl.get(), crl_policy, cast_trust_store);
+  if (!verification_success) {
+    // TODO(ryanchung): Once this feature is completely rolled-out, remove the
+    // reverification step and use error reporting to get verification errors
+    // for metrics.
+    bool verification_no_crl_success =
+        cast_crypto::VerifyDeviceCertUsingCustomTrustStore(
+            cert_chain, verification_time, &verification_context,
+            &device_policy, nullptr, cast_crypto::CRLPolicy::CRL_OPTIONAL,
+            cast_trust_store);
+    if (!verification_no_crl_success) {
+      // TODO(eroman): The error information was lost; this error is ambiguous.
+      UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate",
+                                CERT_STATUS_VERIFICATION_FAILED,
+                                CERT_STATUS_COUNT);
+      return AuthResult("Failed verifying cast device certificate",
+                        AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
+    }
+    if (crl) {
+      // If CRL was not present, it should've been recorded as such.
+      UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate", CERT_STATUS_REVOKED,
+                                CERT_STATUS_COUNT);
+    }
+    if (crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED) {
+      // Device is revoked.
+      return AuthResult("Failed certificate revocation check.",
+                        AuthResult::ERROR_CERT_REVOKED);
+    }
+  }
+  // The certificate is verified at this point.
+  UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate", CERT_STATUS_OK,
+                            CERT_STATUS_COUNT);
   if (!verification_context->VerifySignatureOverData(response.signature(),
                                                      signature_input)) {
     return AuthResult("Failed verifying signature over data",
@@ -179,6 +252,28 @@ AuthResult VerifyCredentials(const AuthResponse& response,
   }
 
   return success;
+}
+
+AuthResult VerifyCredentials(const AuthResponse& response,
+                             const std::string& signature_input) {
+  base::Time now = base::Time::Now();
+  cast_crypto::CRLPolicy policy = cast_crypto::CRLPolicy::CRL_REQUIRED;
+  if (!base::FeatureList::IsEnabled(kEnforceRevocationChecking)) {
+    policy = cast_crypto::CRLPolicy::CRL_OPTIONAL;
+  }
+  return VerifyCredentialsImpl(response, signature_input, policy, nullptr,
+                               nullptr, now);
+}
+
+AuthResult VerifyCredentialsForTest(const AuthResponse& response,
+                                    const std::string& signature_input,
+                                    const cast_crypto::CRLPolicy& crl_policy,
+                                    net::TrustStore* cast_trust_store,
+                                    net::TrustStore* crl_trust_store,
+                                    const base::Time& verification_time) {
+  return VerifyCredentialsImpl(response, signature_input, crl_policy,
+                               cast_trust_store, crl_trust_store,
+                               verification_time);
 }
 
 }  // namespace cast_channel

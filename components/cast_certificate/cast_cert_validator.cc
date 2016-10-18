@@ -255,14 +255,29 @@ net::ParseCertificateOptions GetCertParsingOptions() {
   return options;
 }
 
-// Verifies a cast device certificate given a chain of DER-encoded certificates.
+}  // namespace
+
 bool VerifyDeviceCert(const std::vector<std::string>& certs,
                       const base::Time& time,
                       std::unique_ptr<CertVerificationContext>* context,
                       CastDeviceCertPolicy* policy,
                       const CastCRL* crl,
-                      CRLPolicy crl_policy,
-                      net::TrustStore* trust_store) {
+                      CRLPolicy crl_policy) {
+  return VerifyDeviceCertUsingCustomTrustStore(
+      certs, time, context, policy, crl, crl_policy, &CastTrustStore::Get());
+}
+
+bool VerifyDeviceCertUsingCustomTrustStore(
+    const std::vector<std::string>& certs,
+    const base::Time& time,
+    std::unique_ptr<CertVerificationContext>* context,
+    CastDeviceCertPolicy* policy,
+    const CastCRL* crl,
+    CRLPolicy crl_policy,
+    net::TrustStore* trust_store) {
+  if (!trust_store)
+    return VerifyDeviceCert(certs, time, context, policy, crl, crl_policy);
+
   if (certs.empty())
     return false;
 
@@ -318,29 +333,6 @@ bool VerifyDeviceCert(const std::vector<std::string>& certs,
     }
   }
   return true;
-}
-
-}  // namespace
-
-bool VerifyDeviceCert(const std::vector<std::string>& certs,
-                      const base::Time& time,
-                      std::unique_ptr<CertVerificationContext>* context,
-                      CastDeviceCertPolicy* policy,
-                      const CastCRL* crl,
-                      CRLPolicy crl_policy) {
-  return VerifyDeviceCert(certs, time, context, policy, crl, crl_policy,
-                          &CastTrustStore::Get());
-}
-
-bool VerifyDeviceCertForTest(const std::vector<std::string>& certs,
-                             const base::Time& time,
-                             std::unique_ptr<CertVerificationContext>* context,
-                             CastDeviceCertPolicy* policy,
-                             const CastCRL* crl,
-                             CRLPolicy crl_policy,
-                             net::TrustStore* trust_store) {
-  return VerifyDeviceCert(certs, time, context, policy, crl, crl_policy,
-                          trust_store);
 }
 
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(

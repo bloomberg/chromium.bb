@@ -58,6 +58,16 @@ proto::ChallengeReplyErrorType ChallegeReplyErrorToProto(
       return proto::CHALLENGE_REPLY_ERROR_CANNOT_EXTRACT_PUBLIC_KEY;
     case AuthResult::ERROR_SIGNED_BLOBS_MISMATCH:
       return proto::CHALLENGE_REPLY_ERROR_SIGNED_BLOBS_MISMATCH;
+    case AuthResult::ERROR_TLS_CERT_VALIDITY_PERIOD_TOO_LONG:
+      return proto::CHALLENGE_REPLY_ERROR_TLS_CERT_VALIDITY_PERIOD_TOO_LONG;
+    case AuthResult::ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE:
+      return proto::CHALLENGE_REPLY_ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE;
+    case AuthResult::ERROR_TLS_CERT_EXPIRED:
+      return proto::CHALLENGE_REPLY_ERROR_TLS_CERT_EXPIRED;
+    case AuthResult::ERROR_CRL_INVALID:
+      return proto::CHALLENGE_REPLY_ERROR_CRL_INVALID;
+    case AuthResult::ERROR_CERT_REVOKED:
+      return proto::CHALLENGE_REPLY_ERROR_CERT_REVOKED;
     default:
       NOTREACHED();
       return proto::CHALLENGE_REPLY_ERROR_NONE;

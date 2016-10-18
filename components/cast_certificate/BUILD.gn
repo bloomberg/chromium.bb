@@ -27,6 +27,7 @@ static_library("test_support") {
   deps = [
     ":cast_certificate",
     "//base",
+    "//components/cast_certificate/proto:unittest_proto",
     "//net",
     "//testing/gtest",
   ]

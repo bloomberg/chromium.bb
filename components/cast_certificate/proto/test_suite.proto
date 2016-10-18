@@ -28,6 +28,10 @@ enum VerificationResult {
   REVOCATION_CHECK_FAILED = 4;
   // No CRL was provided, but revocation check is required, and therefore fails.
   REVOCATION_CHECK_FAILED_WITHOUT_CRL = 5;
+  // CRL is valid at the time of initial verification, but when device cert
+  // revocation is checked, the CRL signer cert has expired and the CRL is no
+  // longer valid.
+  CRL_EXPIRED_AFTER_INITIAL_VERIFICATION = 6;
 }
 
 message DeviceCertTest {

@@ -5,10 +5,17 @@
 #ifndef COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
 #define COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_TEST_HELPERS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
+#include "net/cert/internal/trust_store_in_memory.h"
+
+namespace net {
+class TrustStoreInMemory;
+}
 
 namespace cast_certificate {
 
@@ -38,6 +45,13 @@ SignatureTestData ReadSignatureTestData(const base::StringPiece& file_name);
 // Reads a file from the test data directory
 // (//src/components/test/data/cast_certificate)
 std::string ReadTestFileToString(const base::StringPiece& file_name);
+
+// Creates a trust store using the test roots encoded in the PEM file at |path|.
+std::unique_ptr<net::TrustStoreInMemory> CreateTrustStoreFromFile(
+    const std::string& path);
+
+// Converts uint64_t unix timestamp in seconds to base::Time.
+base::Time ConvertUnixTimestampSeconds(uint64_t time);
 
 }  // namespace testing
 

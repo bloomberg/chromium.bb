@@ -316,11 +316,21 @@ bool CastCRLImpl::CheckRevocation(const net::CertPath& trusted_chain,
   return true;
 }
 
-// Parses and verifies the CRL used to verify the revocation status of
-// Cast device certificates.
+}  // namespace
+
 std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
-                                           const base::Time& time,
-                                           net::TrustStore* trust_store) {
+                                           const base::Time& time) {
+  return ParseAndVerifyCRLUsingCustomTrustStore(crl_proto, time,
+                                                &CastCRLTrustStore::Get());
+}
+
+std::unique_ptr<CastCRL> ParseAndVerifyCRLUsingCustomTrustStore(
+    const std::string& crl_proto,
+    const base::Time& time,
+    net::TrustStore* trust_store) {
+  if (!trust_store)
+    return ParseAndVerifyCRL(crl_proto, time);
+
   CrlBundle crl_bundle;
   if (!crl_bundle.ParseFromString(crl_proto)) {
     LOG(ERROR) << "CRL - Binary could not be parsed.";
@@ -344,20 +354,6 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
   }
   LOG(ERROR) << "No supported version of revocation data.";
   return nullptr;
-}
-
-}  // namespace
-
-std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
-                                           const base::Time& time) {
-  return ParseAndVerifyCRL(crl_proto, time, &CastCRLTrustStore::Get());
-}
-
-std::unique_ptr<CastCRL> ParseAndVerifyCRLForTest(
-    const std::string& crl_proto,
-    const base::Time& time,
-    net::TrustStore* trust_store) {
-  return ParseAndVerifyCRL(crl_proto, time, trust_store);
 }
 
 }  // namespace cast_certificate
