@@ -155,28 +155,51 @@ class ModuleEnumerator {
   // will notify when done by calling the DoneScanning method of |observer_|.
   void ScanNow(ModulesVector* list);
 
+  // Sets |per_module_delay_| to zero, causing the modules to be inspected
+  // in realtime.
+  void SetPerModuleDelayToZero();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(EnumerateModulesTest, CollapsePath);
 
-  // This function does the actual file scanning work in the blocking pool. It
-  // enumerates all loaded modules in the process and other modules of interest,
-  // such as the registered Winsock LSP modules and stores them in
-  // |enumerated_modules_|. It then normalizes the module info and matches them
-  // against a blacklist of known bad modules. Finally, notifies the observer
-  // that the enumeration is complete by invoking DoneScanning.
-  void ScanImpl();
+  // This function enumerates all modules in the blocking pool. Once the list of
+  // module filenames is populated it posts a delayed task to call
+  // ScanImplDelay for the first module.
+  void ScanImplStart();
 
-  // Enumerate all modules loaded into the Chrome process.
+  // Immediately posts a CONTINUE_ON_SHUTDOWN task to ScanImplModule for the
+  // given module. This ping-ponging is because the blocking pool does not
+  // offer a delayed CONTINUE_ON_SHUTDOWN task.
+  // TODO(chrisha): When the new scheduler enables delayed CONTINUE_ON_SHUTDOWN
+  // tasks, simplify this logic.
+  void ScanImplDelay(size_t index);
+
+  // Inspects the module in |enumerated_modules_| at the given |index|. Gets
+  // module information, normalizes it, and collapses the path. This is an
+  // expensive operation and non-critical. Posts a delayed task to ScanImplDelay
+  // for the next module. When all modules are finished forwards directly to
+  // ScanImplFinish.
+  void ScanImplModule(size_t index);
+
+  // Collects metrics and notifies the observer that the enumeration is complete
+  // by invoking DoneScanning on the UI thread.
+  void ScanImplFinish();
+
+  // Enumerate all modules loaded into the Chrome process. Creates empty
+  // entries in |enumerated_modules_| with a populated |location| field.
   void EnumerateLoadedModules();
 
-  // Enumerate all registered Windows shell extensions.
+  // Enumerate all registered Windows shell extensions. Creates empty
+  // entries in |enumerated_modules_| with a populated |location| field.
   void EnumerateShellExtensions();
 
-  // Enumerate all registered Winsock LSP modules.
+  // Enumerate all registered Winsock LSP modules. Creates empty
+  // entries in |enumerated_modules_| with a populated |location| field.
   void EnumerateWinsockModules();
 
   // Reads the registered shell extensions found under |parent| key in the
-  // registry.
+  // registry. Creates empty entries in |enumerated_modules_| with a populated
+  // |location| field.
   void ReadShellExtensions(HKEY parent);
 
   // Given a |module|, initializes the structure and loads additional
@@ -202,8 +225,7 @@ class ModuleEnumerator {
   void CollapsePath(Module* module);
 
   // Reports (via UMA) a handful of high-level metrics regarding third party
-  // modules in this process. Called by ScanImpl after modules have been
-  // enumerated and processed.
+  // modules in this process. Called by ScanImplFinish.
   void ReportThirdPartyMetrics();
 
   // The typedef for the vector that maps a regular file path to %env_var%.
@@ -219,6 +241,19 @@ class ModuleEnumerator {
 
   // The observer, which needs to be notified when the scan is complete.
   EnumerateModulesModel* observer_;
+
+  // The delay that is observed between module inspection tasks. This is
+  // currently 1 second, which means it takes several minutes to iterate over
+  // all modules on average.
+  base::TimeDelta per_module_delay_;
+
+  // The amount of time taken for on-disk module inspection. Reported in
+  // ScanImplFinish.
+  base::TimeDelta enumeration_inspection_time_;
+
+  // The total amount of time taken for module enumeration. Reported in
+  // ScanImplFinish.
+  base::TimeDelta enumeration_total_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleEnumerator);
 };
@@ -295,10 +330,14 @@ class EnumerateModulesModel {
   int modules_to_notify_about() const;
 
   // Checks to see if a scanning task should be started and sets one off, if so.
+  // This will cause ScanNow to be invoked in background mode.
   void MaybePostScanningTask();
 
-  // Asynchronously start the scan for the loaded module list.
-  void ScanNow();
+  // Asynchronously start the scan for the loaded module list. If
+  // |background_mode| is true the scan will happen slowly over a process of
+  // minutes, spread across dozens or even hundreds of delayed tasks. Otherwise
+  // the processing will occur in a single task.
+  void ScanNow(bool background_mode);
 
   // Gets the whole module list as a ListValue.
   base::ListValue* GetModuleList();

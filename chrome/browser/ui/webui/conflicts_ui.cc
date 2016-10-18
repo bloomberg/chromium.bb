@@ -122,7 +122,10 @@ void ConflictsDOMHandler::HandleRequestModuleList(const base::ListValue* args) {
   // easy enough to defend against this.
   if (!observer_.IsObserving(model)) {
     observer_.Add(model);
-    model->ScanNow();
+
+    // Ask the scan to be performed immediately, and not in background mode.
+    // This ensures the results are available ASAP for the UI.
+    model->ScanNow(false);
   }
 }
 
