@@ -1550,7 +1550,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             tabModelSelector.getModel(mIncognito).removeTab(this);
 
-            updateWindowAndroid(null);
+            // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
+            // because many code paths (including navigation) expect the tab to always be associated
+            // with an activity, and will crash. crbug.com/657007
+            if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
             attachTabContentManager(null);
         }
 
