@@ -507,14 +507,8 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
 
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
-    // TODO(svillar): we won't need to do this once the intrinsic width
-    // computation is isolated from the LayoutGrid object state (it should not
-    // touch any attribute) (see crbug.com/627812)
-    if (m_autoRepeatColumns &&
-        m_autoRepeatColumns !=
-            computeAutoRepeatTracksCount(ForColumns, TrackSizing))
-      dirtyGrid();
-    placeItemsOnGrid(TrackSizing);
+    updateAutoRepeatTracksAndSetDirtyIfNeeded(TrackSizing);
+    placeItemsOnGrid();
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
 
@@ -684,7 +678,9 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction,
 void LayoutGrid::computeIntrinsicLogicalWidths(
     LayoutUnit& minLogicalWidth,
     LayoutUnit& maxLogicalWidth) const {
-  const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
+  const_cast<LayoutGrid*>(this)->updateAutoRepeatTracksAndSetDirtyIfNeeded(
+      IntrinsicSizeComputation);
+  const_cast<LayoutGrid*>(this)->placeItemsOnGrid();
 
   GridSizingData sizingData(gridColumnCount(), gridRowCount());
   computeTrackSizesForIndefiniteSize(ForColumns, sizingData, minLogicalWidth,
@@ -1766,6 +1762,21 @@ void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridArea& area) {
   }
 }
 
+void LayoutGrid::updateAutoRepeatTracksAndSetDirtyIfNeeded(
+    SizingOperation sizingOperation) {
+  size_t newAutoRepeatColumns =
+      computeAutoRepeatTracksCount(ForColumns, sizingOperation);
+  size_t newAutoRepeatRows =
+      computeAutoRepeatTracksCount(ForRows, sizingOperation);
+
+  if (m_autoRepeatColumns != newAutoRepeatColumns ||
+      m_autoRepeatRows != newAutoRepeatRows)
+    dirtyGrid();
+
+  m_autoRepeatColumns = newAutoRepeatColumns;
+  m_autoRepeatRows = newAutoRepeatRows;
+}
+
 size_t LayoutGrid::computeAutoRepeatTracksCount(
     GridTrackSizingDirection direction,
     SizingOperation sizingOperation) const {
@@ -1906,19 +1917,12 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
   return emptyTrackIndexes;
 }
 
-void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
+void LayoutGrid::placeItemsOnGrid() {
   if (!m_gridIsDirty)
     return;
 
   DCHECK(m_gridItemArea.isEmpty());
   DCHECK(m_gridItemsIndexesMap.isEmpty());
-
-  if (sizingOperation == IntrinsicSizeComputation)
-    m_autoRepeatColumns = styleRef().gridAutoRepeatColumns().size();
-  else
-    m_autoRepeatColumns =
-        computeAutoRepeatTracksCount(ForColumns, sizingOperation);
-  m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows, sizingOperation);
 
   populateExplicitGridAndOrderIterator();
 
