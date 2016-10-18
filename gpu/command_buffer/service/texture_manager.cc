@@ -2572,6 +2572,39 @@ void TextureManager::ValidateAndDoTexImage(
     }
   }
 
+  if (args.command_type == DoTexImageArguments::kTexImage3D &&
+      texture_state->unpack_image_height_workaround_with_unpack_buffer &&
+      buffer) {
+    ContextState::Dimension dimension = ContextState::k3D;
+    const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
+    if (unpack_params.image_height != 0 &&
+        unpack_params.image_height != args.height) {
+      ReserveTexImageToBeFilled(texture_state, state, framebuffer_state,
+                                function_name, texture_ref, args);
+
+      DoTexSubImageArguments sub_args = {
+          args.target,
+          args.level,
+          0,
+          0,
+          0,
+          args.width,
+          args.height,
+          args.depth,
+          args.format,
+          args.type,
+          args.pixels,
+          args.pixels_size,
+          args.padding,
+          DoTexSubImageArguments::kTexSubImage3D};
+      DoTexSubImageLayerByLayerWorkaround(texture_state, state, sub_args,
+                                          unpack_params);
+
+      SetLevelCleared(texture_ref, args.target, args.level, true);
+      return;
+    }
+  }
+
   if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
@@ -2776,6 +2809,19 @@ void TextureManager::ValidateAndDoTexSubImage(
       // work around driver bug.
       DoTexSubImageRowByRowWorkaround(texture_state, state, args,
                                       unpack_params);
+      return;
+    }
+  }
+
+  if (args.command_type == DoTexSubImageArguments::kTexSubImage3D &&
+      texture_state->unpack_image_height_workaround_with_unpack_buffer &&
+      buffer) {
+    ContextState::Dimension dimension = ContextState::k3D;
+    const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
+    if (unpack_params.image_height != 0 &&
+        unpack_params.image_height != args.height) {
+      DoTexSubImageLayerByLayerWorkaround(texture_state, state, args,
+                                          unpack_params);
       return;
     }
   }
@@ -2987,6 +3033,51 @@ void TextureManager::DoTexSubImageRowByRowWorkaround(
   // Restore unpack state
   glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_params.alignment);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_params.row_length);
+}
+
+void TextureManager::DoTexSubImageLayerByLayerWorkaround(
+    DecoderTextureState* texture_state,
+    ContextState* state,
+    const DoTexSubImageArguments& args,
+    const PixelStoreParams& unpack_params) {
+  glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+
+  GLenum format = AdjustTexFormat(feature_info_.get(), args.format);
+
+  GLsizei row_length =
+      unpack_params.row_length ? unpack_params.row_length : args.width;
+  GLsizei row_bytes =
+      row_length * GLES2Util::ComputeImageGroupSize(format, args.type);
+  GLsizei alignment_diff = row_bytes % unpack_params.alignment;
+  if (alignment_diff != 0) {
+    row_bytes += unpack_params.alignment - alignment_diff;
+  }
+  DCHECK_EQ(0, row_bytes % unpack_params.alignment);
+
+  // process the texture layer by layer
+  GLsizei image_height = unpack_params.image_height;
+  GLsizei image_bytes = row_bytes * image_height;
+  const GLubyte* image_pixels = reinterpret_cast<const GLubyte*>(args.pixels);
+  for (GLsizei image = 0; image < args.depth - 1; ++image) {
+    glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
+                    image + args.zoffset, args.width, args.height, 1, format,
+                    args.type, image_pixels);
+
+    image_pixels += image_bytes;
+  }
+
+  // Process the last image row by row
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  const GLubyte* row_pixels = image_pixels;
+  for (GLsizei row = 0; row < args.height; ++row) {
+    glTexSubImage3D(args.target, args.level, args.xoffset, row + args.yoffset,
+                    args.depth - 1 + args.zoffset, args.width, 1, 1, format,
+                    args.type, row_pixels);
+    row_pixels += row_bytes;
+  }
+  // Restore unpack state
+  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_params.alignment);
+  glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_params.image_height);
 }
 
 // static

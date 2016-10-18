@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.09",
+  "version": "9.10",
   "entries": [
     {
       "id": 1,
@@ -2109,6 +2109,18 @@ LONG_STRING_CONST(
       },
       "features": [
         "use_unused_standard_shared_blocks"
+      ]
+    },
+    {
+      "id": 196,
+      "description": "Tex(Sub)Image3D performs incorrectly when uploading from unpack buffer with GL_UNPACK_IMAGE_HEIGHT greater than zero on Intel Macs",
+      "cr_bugs": [654258],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "unpack_image_height_workaround_with_unpack_buffer"
       ]
     }
   ]

@@ -171,6 +171,8 @@
          unfold_short_circuit_as_ternary_operation)          \
   GPU_OP(UNPACK_ALIGNMENT_WORKAROUND_WITH_UNPACK_BUFFER,     \
          unpack_alignment_workaround_with_unpack_buffer)     \
+  GPU_OP(UNPACK_IMAGE_HEIGHT_WORKAROUND_WITH_UNPACK_BUFFER,  \
+         unpack_image_height_workaround_with_unpack_buffer)  \
   GPU_OP(UNPACK_OVERLAPPING_ROWS_SEPARATELY_UNPACK_BUFFER,   \
          unpack_overlapping_rows_separately_unpack_buffer)   \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \

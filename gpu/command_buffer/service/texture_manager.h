@@ -710,7 +710,9 @@ struct DecoderTextureState {
         unpack_alignment_workaround_with_unpack_buffer(
             workarounds.unpack_alignment_workaround_with_unpack_buffer),
         unpack_overlapping_rows_separately_unpack_buffer(
-            workarounds.unpack_overlapping_rows_separately_unpack_buffer) {}
+            workarounds.unpack_overlapping_rows_separately_unpack_buffer),
+        unpack_image_height_workaround_with_unpack_buffer(
+            workarounds.unpack_image_height_workaround_with_unpack_buffer) {}
 
   // This indicates all the following texSubImage*D calls that are part of the
   // failed texImage*D call should be ignored. The client calls have a lock
@@ -727,6 +729,7 @@ struct DecoderTextureState {
   bool force_cube_complete;
   bool unpack_alignment_workaround_with_unpack_buffer;
   bool unpack_overlapping_rows_separately_unpack_buffer;
+  bool unpack_image_height_workaround_with_unpack_buffer;
 };
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
@@ -1171,6 +1174,12 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                                        ContextState* state,
                                        const DoTexSubImageArguments& args,
                                        const PixelStoreParams& unpack_params);
+
+  void DoTexSubImageLayerByLayerWorkaround(
+      DecoderTextureState* texture_state,
+      ContextState* state,
+      const DoTexSubImageArguments& args,
+      const PixelStoreParams& unpack_params);
 
   void DoCubeMapWorkaround(
       DecoderTextureState* texture_state,

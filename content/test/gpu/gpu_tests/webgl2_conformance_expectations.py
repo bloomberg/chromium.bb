@@ -481,12 +481,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'teximage3d_pbo_params.html',
-        ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
-        'texsubimage3d_pbo_params.html',
-        ['mac', 'intel'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texturelod.html',
@@ -503,9 +497,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/rect_03.html',
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_04.html',
-        ['mac', 'intel'], bug=483282)
-
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['mac', 'intel'], bug=483282)
 
     # Fixed on OSX 10.11
