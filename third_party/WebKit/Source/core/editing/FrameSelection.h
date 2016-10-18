@@ -137,13 +137,6 @@ class CORE_EXPORT FrameSelection final
     setSelection(selection, CloseTyping | ClearTypingStyle,
                  CursorAlignOnScroll::IfNeeded, granularity);
   }
-  // TODO(yosin) We should get rid of |Range| version of |setSelectedRagne()|
-  // for Oilpan.
-  bool setSelectedRange(
-      Range*,
-      TextAffinity,
-      SelectionDirectionalMode = SelectionDirectionalMode::NonDirectional,
-      SetSelectionOptions = CloseTyping | ClearTypingStyle);
   bool setSelectedRange(
       const EphemeralRange&,
       TextAffinity,

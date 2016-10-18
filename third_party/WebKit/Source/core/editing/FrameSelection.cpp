@@ -969,18 +969,6 @@ void FrameSelection::selectAll() {
   notifyLayoutObjectOfSelectionChange(UserTriggered);
 }
 
-bool FrameSelection::setSelectedRange(Range* range,
-                                      TextAffinity affinity,
-                                      SelectionDirectionalMode directional,
-                                      SetSelectionOptions options) {
-  if (!range || !range->isConnected())
-    return false;
-  DCHECK_EQ(range->startContainer()->document(),
-            range->endContainer()->document());
-  return setSelectedRange(EphemeralRange(range), affinity, directional,
-                          options);
-}
-
 bool FrameSelection::setSelectedRange(const EphemeralRange& range,
                                       TextAffinity affinity,
                                       SelectionDirectionalMode directional,

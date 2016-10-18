@@ -474,7 +474,7 @@ void DOMSelection::addRange(Range* newRange) {
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (selection.isNone()) {
-    selection.setSelectedRange(newRange, VP_DEFAULT_AFFINITY);
+    selection.setSelectedRange(EphemeralRange(newRange), VP_DEFAULT_AFFINITY);
     return;
   }
 
@@ -517,9 +517,8 @@ void DOMSelection::addRange(Range* newRange) {
                                                     ASSERT_NO_EXCEPTION) < 0
                    ? newRange
                    : originalRange;
-  Range* merged = Range::create(originalRange->startContainer()->document(),
-                                start->startContainer(), start->startOffset(),
-                                end->endContainer(), end->endOffset());
+  const EphemeralRange merged =
+      EphemeralRange(start->startPosition(), end->endPosition());
   TextAffinity affinity = selection.selection().affinity();
   selection.setSelectedRange(merged, affinity);
 }
