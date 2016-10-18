@@ -1915,7 +1915,7 @@ def CMDsync(parser, args):
   # TODO(agable): Remove these when the oldest CrOS release milestone is M56.
   parser.add_option('-t', '--transitive', action='store_true',
                     help='DEPRECATED: This is a no-op.')
-  parser.add_option('-m', '--manually_grap_svn_rev', action='store_true',
+  parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
                     help='DEPRECATED: This is a no-op.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
