@@ -80,7 +80,7 @@ void WebUIScreenLocker::LockScreen() {
   gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   lock_time_ = base::TimeTicks::Now();
-  LockWindow* lock_window = LockWindow::Create();
+  auto* lock_window = new LockWindow();
   lock_window->set_observer(this);
   lock_window->set_initially_focused_view(this);
   lock_window_ = lock_window->GetWidget();

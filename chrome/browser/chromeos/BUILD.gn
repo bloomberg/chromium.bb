@@ -834,8 +834,6 @@ source_set("chromeos") {
     "login/ui/keyboard_driven_oobe_key_handler.h",
     "login/ui/lock_window.cc",
     "login/ui/lock_window.h",
-    "login/ui/lock_window_aura.cc",
-    "login/ui/lock_window_aura.h",
     "login/ui/login_display.cc",
     "login/ui/login_display.h",
     "login/ui/login_display_host.cc",
