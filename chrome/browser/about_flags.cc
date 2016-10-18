@@ -611,7 +611,7 @@ const FeatureEntry::Choice kDisableWebRtcHWEncodingChoices[] = {
     {IDS_FLAGS_WEBRTC_HW_ENCODING_NONE, switches::kDisableWebRtcHWEncoding,
      switches::kDisableWebRtcHWEncodingNone},
 };
-#endif
+#endif  // ENABLE_WEBRTC
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -753,7 +753,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsLinux | kOsCrOS | kOsWin,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOverlayScrollbar,
                                switches::kDisableOverlayScrollbar)},
-#endif  // USE_AURA) || defined(OS_LINUX
+#endif  // USE_AURA || OS_LINUX
     {   // See http://crbug.com/120416 for how to remove this flag.
      "save-page-as-mhtml", IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,
      IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION, kOsMac | kOsWin | kOsLinux,
@@ -822,7 +822,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-android-spellchecker", IDS_OPTIONS_ENABLE_SPELLCHECK,
      IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(spellcheck::kAndroidSpellChecker)},
-#endif  // ENABLE_SPELLCHECK) && defined(OS_ANDROID
+#endif  // ENABLE_SPELLCHECK && OS_ANDROID
     {"enable-scroll-prediction", IDS_FLAGS_SCROLL_PREDICTION_NAME,
      IDS_FLAGS_SCROLL_PREDICTION_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableScrollPrediction)},
@@ -1219,7 +1219,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
      kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
-#endif  // ENABLE_APP_LIST
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if defined(OS_ANDROID)
     {"enable-downloads-ui", IDS_FLAGS_ENABLE_DOWNLOADS_UI_NAME,
      IDS_FLAGS_ENABLE_DOWNLOADS_UI_DESCRIPTION, kOsAndroid,
@@ -1278,7 +1278,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"translate-2016q2-ui", IDS_FLAGS_TRANSLATE_2016Q2_UI_NAME,
      IDS_FLAGS_TRANSLATE_2016Q2_UI_DESCRIPTION, kOsCrOS | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(translate::kTranslateUI2016Q2)},
-#endif  // OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS
+#endif  // OS_LINUX || OS_WIN || OS_CHROMEOS
     {"translate-lang-by-ulp", IDS_FLAGS_TRANSLATE_LANGUAGE_BY_ULP_NAME,
      IDS_FLAGS_TRANSLATE_LANGUAGE_BY_ULP_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateLanguageByULP)},
@@ -1409,7 +1409,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(
          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
-#endif  // OS_ANDROID
+#endif  // !OS_ANDROID
     {"enable-md-policy-page", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignPolicyPage)},
@@ -1535,7 +1535,7 @@ const FeatureEntry kFeatureEntries[] = {
                                          "1",
                                          switches::kMediaRouter,
                                          "0")},
-#endif  // ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID
+#endif  // ENABLE_MEDIA_ROUTER && !OS_ANDROID
 // Since Drive Search is not available when app list is disabled, flag guard
 // enable-drive-search-in-chrome-launcher flag.
 #if BUILDFLAG(ENABLE_APP_LIST)
@@ -1545,7 +1545,7 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          app_list::switches::kEnableDriveSearchInChromeLauncher,
          app_list::switches::kDisableDriveSearchInChromeLauncher)},
-#endif  // ENABLE_APP_LIST
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if defined(OS_CHROMEOS)
     {"disable-mtp-write-support", IDS_FLAGS_MTP_WRITE_SUPPORT_NAME,
      IDS_FLAGS_MTP_WRITE_SUPPORT_DESCRIPTION, kOsCrOS,
@@ -1695,7 +1695,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableWebNotificationCustomLayouts,
                                switches::kDisableWebNotificationCustomLayouts)},
-#endif  // ENABLE_NOTIFICATIONS) && defined(OS_ANDROID
+#endif  // ENABLE_NOTIFICATIONS && OS_ANDROID
 #if defined(OS_WIN)
     {"enable-appcontainer", IDS_FLAGS_ENABLE_APPCONTAINER_NAME,
      IDS_FLAGS_ENABLE_APPCONTAINER_DESCRIPTION, kOsWin,
@@ -1709,7 +1709,7 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          autofill::switches::kEnableOfferUploadCreditCards,
          autofill::switches::kDisableOfferUploadCreditCards)},
-#endif  // TOOLKIT_VIEWS) || defined(OS_ANDROID
+#endif  // TOOLKIT_VIEWS || OS_ANDROID
 #if defined(OS_ANDROID)
     {"tab-management-experiment-type", IDS_FLAGS_HERB_PROTOTYPE_CHOICES_NAME,
      IDS_FLAGS_HERB_PROTOTYPE_CHOICES_DESCRIPTION, kOsAndroid,
@@ -1744,7 +1744,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_INPUT_IME_API_DESCRIPTION, kOsWin | kOsLinux,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                switches::kDisableInputImeAPI)},
-#endif  // OS_WIN) || defined(OS_LINUX
+#endif  // OS_WIN || OS_LINUX
     {"enable-origin-trials", IDS_FLAGS_ORIGIN_TRIALS_NAME,
      IDS_FLAGS_ORIGIN_TRIALS_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kOriginTrials)},
@@ -1856,8 +1856,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_NAME,
      IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
-#endif  // ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264 &&
-        // !defined(MEDIA_DISABLE_FFMPEG)
+#endif  // ENABLE_WEBRTC && BUILDFLAG(RTC_USE_H264) && !MEDIA_DISABLE_FFMPEG
 #if defined(OS_ANDROID)
     {"ime-thread", IDS_FLAGS_IME_THREAD_NAME, IDS_FLAGS_IME_THREAD_DESCRIPTION,
      kOsAndroid, FEATURE_VALUE_TYPE(features::kImeThread)},
@@ -1905,13 +1904,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-files-details-panel", IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_NAME,
      IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableFilesDetailsPanel)},
-#endif  // defined(OS_CHROMEOS)
+#endif  // OS_CHROMEOS
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
      IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME,
      IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableGoogleBrandedContextMenu)},
-#endif  // OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD
+#endif  // !OS_ANDROID && !OS_IOS && GOOGLE_CHROME_BUILD
 #if defined(OS_MACOSX)
     {"enable-fullscreen-in-tab-detaching",
      IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_NAME,
@@ -2021,12 +2020,10 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::switches::kArcUseAuthEndpoint,
          "https://www-googleapis-staging.sandbox.google.com/oauth2/v4/"
          "ExchangeToken")},
-#endif  // OS_CHROMEOS
-#if defined(OS_CHROMEOS)
     {"arc-boot-completed-broadcast", IDS_FLAGS_ARC_BOOT_COMPLETED,
      IDS_FLAGS_ARC_BOOT_COMPLETED_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
-#endif
+#endif  // OS_CHROMEOS
 #if defined(OS_WIN)
     {"disable-winrt-midi-api", IDS_FLAGS_DISABLE_WINRT_MIDI_API_NAME,
      IDS_FLAGS_DISABLE_WINRT_MIDI_API_DESCRIPTION, kOsWin,
