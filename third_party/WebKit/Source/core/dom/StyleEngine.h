@@ -30,7 +30,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/invalidation/StyleInvalidator.h"

@@ -5,7 +5,7 @@
 #ifndef NodeIntersectionObserverData_h
 #define NodeIntersectionObserverData_h
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

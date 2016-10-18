@@ -30,7 +30,7 @@
 #ifndef StyleSheetCollection_h
 #define StyleSheetCollection_h
 
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"

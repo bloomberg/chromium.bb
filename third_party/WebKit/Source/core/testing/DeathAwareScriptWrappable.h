@@ -6,7 +6,7 @@
 #define DeathAwareScriptWrappable_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/ScriptWrappableVisitor.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "platform/heap/Heap.h"
 #include "wtf/text/WTFString.h"
 #include <signal.h>
