@@ -111,6 +111,7 @@ static_library("test_support") {
     "../public/test/test_web_ui.h",
     "../public/test/text_input_test_utils.cc",
     "../public/test/text_input_test_utils.h",
+    "../public/test/text_input_test_utils_mac.mm",
     "../public/test/unittest_test_suite.cc",
     "../public/test/unittest_test_suite.h",
     "../public/test/web_contents_tester.cc",
