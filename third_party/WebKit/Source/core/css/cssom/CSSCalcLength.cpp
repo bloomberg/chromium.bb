@@ -40,28 +40,30 @@ CSSCalcLength* CSSCalcLength::create(const CSSCalcDictionary& dictionary,
   CSSCalcLength* result = new CSSCalcLength();
   int numSet = 0;
 
-#define setFromDictValue(name, camelName, primitiveName)     \
+#define SET_FROM_DICT_VALUE(name, camelName, primitiveName)  \
   if (dictionary.has##camelName()) {                         \
     result->set(dictionary.name(),                           \
                 CSSPrimitiveValue::UnitType::primitiveName); \
     numSet++;                                                \
   }
 
-  setFromDictValue(px, Px, Pixels)
-      setFromDictValue(percent, Percent, Percentage)
-          setFromDictValue(em, Em, Ems) setFromDictValue(ex, Ex, Exs)
-              setFromDictValue(ch, Ch, Chs) setFromDictValue(rem, Rem, Rems)
-                  setFromDictValue(vw, Vw, ViewportWidth)
-                      setFromDictValue(vh, Vh, ViewportHeight) setFromDictValue(
-                          vmin, Vmin, ViewportMin)
-                          setFromDictValue(vmax, Vmax, ViewportMax)
-                              setFromDictValue(cm, Cm, Centimeters)
-                                  setFromDictValue(mm, Mm, Millimeters)
-                                      setFromDictValue(in, In, Inches)
-                                          setFromDictValue(pc, Pc, Picas)
-                                              setFromDictValue(pt, Pt, Points)
+  SET_FROM_DICT_VALUE(px, Px, Pixels)
+  SET_FROM_DICT_VALUE(percent, Percent, Percentage)
+  SET_FROM_DICT_VALUE(em, Em, Ems)
+  SET_FROM_DICT_VALUE(ex, Ex, Exs)
+  SET_FROM_DICT_VALUE(ch, Ch, Chs)
+  SET_FROM_DICT_VALUE(rem, Rem, Rems)
+  SET_FROM_DICT_VALUE(vw, Vw, ViewportWidth)
+  SET_FROM_DICT_VALUE(vh, Vh, ViewportHeight)
+  SET_FROM_DICT_VALUE(vmin, Vmin, ViewportMin)
+  SET_FROM_DICT_VALUE(vmax, Vmax, ViewportMax)
+  SET_FROM_DICT_VALUE(cm, Cm, Centimeters)
+  SET_FROM_DICT_VALUE(mm, Mm, Millimeters)
+  SET_FROM_DICT_VALUE(in, In, Inches)
+  SET_FROM_DICT_VALUE(pc, Pc, Picas)
+  SET_FROM_DICT_VALUE(pt, Pt, Points)
 
-                                                  if (numSet == 0) {
+  if (numSet == 0) {
     exceptionState.throwTypeError(
         "Must specify at least one value in CSSCalcDictionary for creating a "
         "CSSCalcLength.");
