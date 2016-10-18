@@ -91,14 +91,22 @@ void PepperVideoRenderer3D::SetPepperContext(
   DCHECK(event_handler);
   DCHECK(!event_handler_);
 
+  fallback_renderer_.SetPepperContext(instance, event_handler);
+
   event_handler_ = event_handler;
   pp_instance_ = instance;
 }
 
 void PepperVideoRenderer3D::OnViewChanged(const pp::View& view) {
+  fallback_renderer_.OnViewChanged(view);
+
   pp::Size size = view.GetRect().size();
   float scale = view.GetDeviceScale();
-  view_size_.set(ceilf(size.width() * scale), ceilf(size.height() * scale));
+  DCHECK_GT(scale, 0.0);
+  view_size_.set(std::min<int>(ceilf(size.width() * scale),
+                               gl_max_viewport_size_[0]),
+                 std::min<int>(ceilf(size.height() * scale),
+                               gl_max_viewport_size_[1]));
   graphics_.ResizeBuffers(view_size_.width(), view_size_.height());
 
   force_repaint_ = true;
@@ -106,12 +114,17 @@ void PepperVideoRenderer3D::OnViewChanged(const pp::View& view) {
 }
 
 void PepperVideoRenderer3D::EnableDebugDirtyRegion(bool enable) {
+  fallback_renderer_.EnableDebugDirtyRegion(enable);
   debug_dirty_region_ = enable;
 }
 
 bool PepperVideoRenderer3D::Initialize(
     const ClientContext& context,
     protocol::FrameStatsConsumer* stats_consumer) {
+  if (!fallback_renderer_.Initialize(context, stats_consumer)) {
+    LOG(FATAL) << "Failed to initialize fallback_renderer_";
+  }
+
   stats_consumer_ = stats_consumer;
 
   const int32_t context_attributes[] = {
@@ -167,6 +180,11 @@ bool PepperVideoRenderer3D::Initialize(
   gles2_if_->BufferData(graphics_3d, GL_ARRAY_BUFFER, sizeof(kVertices),
                         kVertices, GL_STATIC_DRAW);
 
+  gles2_if_->GetIntegerv(
+      graphics_3d, GL_MAX_TEXTURE_SIZE, &gl_max_texture_size_);
+  gles2_if_->GetIntegerv(
+      graphics_3d, GL_MAX_VIEWPORT_DIMS, gl_max_viewport_size_);
+
   CheckGLError();
 
   return true;
@@ -174,6 +192,8 @@ bool PepperVideoRenderer3D::Initialize(
 
 void PepperVideoRenderer3D::OnSessionConfig(
     const protocol::SessionConfig& config) {
+  fallback_renderer_.OnSessionConfig(config);
+
   PP_VideoProfile video_profile = PP_VIDEOPROFILE_VP8_ANY;
   switch (config.video_config().codec) {
     case protocol::ChannelConfig::CODEC_VP8:
@@ -212,6 +232,29 @@ protocol::FrameStatsConsumer* PepperVideoRenderer3D::GetFrameStatsConsumer() {
 void PepperVideoRenderer3D::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
     const base::Closure& done) {
+  if (!use_fallback_renderer_ &&
+      packet->format().has_screen_width() &&
+      packet->format().has_screen_height() &&
+      (packet->format().screen_width() > gl_max_texture_size_ ||
+       packet->format().screen_height() > gl_max_texture_size_)) {
+    use_fallback_renderer_ = true;
+    // Clear current instance and use fallback_renderer_.
+    current_picture_frames_.clear();
+    current_picture_.reset();
+    next_picture_frames_.clear();
+    next_picture_.reset();
+    decoded_frames_.clear();
+    pending_frames_.clear();
+    graphics_ = pp::Graphics3D();
+    video_decoder_ = pp::VideoDecoder();
+  }
+
+  if (use_fallback_renderer_) {
+    fallback_renderer_.GetVideoStub()->ProcessVideoPacket(
+        std::move(packet), done);
+    return;
+  }
+
   VideoPacket* packet_ptr = packet.get();
   std::unique_ptr<FrameTracker> frame_tracker(
       new FrameTracker(std::move(packet), stats_consumer_, done));

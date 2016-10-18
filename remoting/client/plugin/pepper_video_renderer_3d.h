@@ -18,6 +18,7 @@
 #include "ppapi/cpp/video_decoder.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/plugin/pepper_video_renderer.h"
+#include "remoting/client/plugin/pepper_video_renderer_2d.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -136,6 +137,11 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   // the |current_picture_| is rendered.
   std::list<std::unique_ptr<FrameTracker>> current_picture_frames_;
 
+  // The fallback software renderer, if input video packet size is larger than
+  // hardware limitation.
+  PepperVideoRenderer2D fallback_renderer_;
+  bool use_fallback_renderer_ = false;
+
   // Set to true if the screen has been resized and needs to be repainted.
   bool force_repaint_ = false;
 
@@ -157,6 +163,10 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   bool debug_dirty_region_ = false;
 
   pp::CompletionCallbackFactory<PepperVideoRenderer3D> callback_factory_;
+
+  // The hardware limitation.
+  int gl_max_texture_size_;
+  int gl_max_viewport_size_[2];
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoRenderer3D);
 };
