@@ -534,8 +534,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kArcBackupRestoreEnabled,
     prefs::kArcBackupRestoreEnabled,
     base::Value::TYPE_BOOLEAN },
-  { key::kReportArcStatus,
-    prefs::kReportArcStatus,
+  { key::kReportArcStatusEnabled,
+    prefs::kReportArcStatusEnabled,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 

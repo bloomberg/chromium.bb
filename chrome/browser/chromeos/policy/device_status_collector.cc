@@ -472,7 +472,8 @@ DeviceStatusCollector::DeviceStatusCollector(
   running_kiosk_app_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportRunningKioskApp, callback);
 
-  report_arc_status_pref_.Init(prefs::kReportArcStatus, local_state_, callback);
+  report_arc_status_pref_.Init(prefs::kReportArcStatusEnabled, local_state_,
+      callback);
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -500,7 +501,7 @@ DeviceStatusCollector::~DeviceStatusCollector() {
 void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes,
                                    new base::DictionaryValue);
-  registry->RegisterBooleanPref(prefs::kReportArcStatus, true);
+  registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, true);
 }
 
 void DeviceStatusCollector::CheckIdleState() {
@@ -554,7 +555,8 @@ void DeviceStatusCollector::UpdateReportingSettings() {
     report_kiosk_session_status_ = true;
   }
 
-  report_android_status_ = local_state_->GetBoolean(prefs::kReportArcStatus);
+  report_android_status_ =
+      local_state_->GetBoolean(prefs::kReportArcStatusEnabled);
 
   if (!report_hardware_status_) {
     ClearCachedResourceUsage();

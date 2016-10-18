@@ -1857,7 +1857,7 @@ const char kLogoutStartedLast[] = "chromeos.logout-started";
 const char kIsBootstrappingSlave[] = "is_oobe_bootstrapping_slave";
 
 // A preference that controlles Android status reporting.
-const char kReportArcStatus[] = "arc.status_reporting";
+const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";
 
 #endif  // defined(OS_CHROMEOS)
 

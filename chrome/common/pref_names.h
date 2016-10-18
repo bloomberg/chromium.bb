@@ -650,7 +650,7 @@ extern const char kCustomizationDefaultWallpaperURL[];
 extern const char kLogoutStartedLast[];
 extern const char kConsumerManagementStage[];
 extern const char kIsBootstrappingSlave[];
-extern const char kReportArcStatus[];
+extern const char kReportArcStatusEnabled[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

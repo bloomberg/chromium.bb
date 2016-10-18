@@ -1019,7 +1019,7 @@ TEST_F(DeviceStatusCollectorTest, NoAndroidReportingWhenDisabled) {
                          base::Bind(&GetFakeAndroidStatus, kArcStatus,
                              kDroidGuardInfo));
 
-  prefs_.SetBoolean(prefs::kReportArcStatus, false);
+  prefs_.SetBoolean(prefs::kReportArcStatusEnabled, false);
   // Mock Kiosk app, so some session status is reported
   status_collector_->set_kiosk_account(
       base::MakeUnique<DeviceLocalAccount>(fake_device_local_account_));
@@ -1033,7 +1033,7 @@ TEST_F(DeviceStatusCollectorTest, NoAndroidReportingWhenDisabled) {
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskAndNoArcReporting) {
   // Should not report session status if we don't have an active kiosk app.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
-  prefs_.SetBoolean(prefs::kReportArcStatus, false);
+  prefs_.SetBoolean(prefs::kReportArcStatusEnabled, false);
   GetStatus();
   EXPECT_FALSE(got_session_status_);
 }
@@ -1043,7 +1043,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, false);
   // ReportDeviceSessionStatus only controls Kiosk reporting, ARC reporting
   // has to be disabled serarately.
-  prefs_.SetBoolean(prefs::kReportArcStatus, false);
+  prefs_.SetBoolean(prefs::kReportArcStatusEnabled, false);
   status_collector_->set_kiosk_account(
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
   // Set up a device-local account for single-app kiosk mode.

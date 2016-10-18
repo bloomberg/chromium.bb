@@ -5030,7 +5030,7 @@
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
-      'name': 'ReportArcStatus',
+      'name': 'ReportArcStatusEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:55-'],

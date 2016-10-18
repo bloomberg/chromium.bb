@@ -2650,12 +2650,12 @@
     ]
   },
 
-  "ReportArcStatus": {
+  "ReportArcStatusEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,
-    "test_policy": { "ReportArcStatus": false },
+    "test_policy": { "ReportArcStatusEnabled": false },
     "pref_mappings": [
-      { "pref": "arc.status_reporting",
+      { "pref": "arc.status_reporting_enabled",
         "local_state": true }
     ]
   },
