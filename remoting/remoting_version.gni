@@ -77,4 +77,15 @@ if (is_mac) {
   prefpane_bundle_id = _result.prefpane_bundle_id
   remote_assistance_host_bundle_id = _result.remote_assistance_host_bundle_id
   uninstaller_bundle_id = _result.uninstaller_bundle_id
+
+  host_name_nospace = exec_script("//remoting/tools/remove_spaces.py",
+                                  [ "$host_name" ],
+                                  "trim string")
+  host_service_name_nospace = exec_script("//remoting/tools/remove_spaces.py",
+                                          [ "$host_service_name" ],
+                                          "trim string")
+  host_uninstaller_name_nospace =
+      exec_script("//remoting/tools/remove_spaces.py",
+                  [ "$host_uninstaller_name" ],
+                  "trim string")
 }
