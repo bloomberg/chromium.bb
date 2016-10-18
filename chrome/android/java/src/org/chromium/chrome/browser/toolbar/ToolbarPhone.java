@@ -814,9 +814,7 @@ public class ToolbarPhone extends ToolbarLayout
         Tab currentTab = getToolbarDataProvider().getTab();
         if (currentTab != null) {
             NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
-            // Explicitly use the focus change percentage here because it applies scroll
-            // compensation that only applies during focus animations.
-            if (ntp != null && mUrlFocusChangeInProgress) {
+            if (ntp != null) {
                 ntp.setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
             }
 
