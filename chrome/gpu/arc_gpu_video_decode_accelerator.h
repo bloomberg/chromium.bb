@@ -123,6 +123,9 @@ class ArcGpuVideoDecodeAccelerator
   // Returns |nullptr| if it cannot be found.
   InputRecord* FindInputRecord(int32_t bitstream_buffer_id);
 
+  // Notify the client when output format changes.
+  void NotifyOutputFormatChanged();
+
   // Global counter that keeps track the number of active clients (i.e., how
   // many VDAs in use by this class).
   // Since this class only works on the same thread, it's safe to access
@@ -139,6 +142,7 @@ class ArcGpuVideoDecodeAccelerator
   int32_t next_bitstream_buffer_id_;
 
   gfx::Size coded_size_;
+  gfx::Rect visible_rect_;
   media::VideoPixelFormat output_pixel_format_;
 
   // A list of most recent |kMaxNumberOfInputRecord| InputRecords.
@@ -155,6 +159,9 @@ class ArcGpuVideoDecodeAccelerator
 
   base::ThreadChecker thread_checker_;
   size_t output_buffer_size_;
+
+  // The minimal number of requested output buffers.
+  uint32_t requested_num_of_output_buffers_;
 
   gpu::GpuPreferences gpu_preferences_;
 
