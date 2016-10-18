@@ -70,6 +70,13 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Must be initialized by calling StartOnIOThread() before using.
   V4LocalDatabaseManager(const base::FilePath& base_path);
 
+  ~V4LocalDatabaseManager() override;
+
+  void SetTaskRunnerForTest(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+    task_runner_ = task_runner;
+  }
+
   enum class ClientCallbackType {
     // This represents the case when we're trying to determine if a URL is
     // unsafe from the following perspectives: Malware, Phishing, UwS.
@@ -120,18 +127,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
  private:
   friend class V4LocalDatabaseManagerTest;
-  void SetTaskRunnerForTest(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-    task_runner_ = task_runner;
-  }
   FRIEND_TEST_ALL_PREFIXES(V4LocalDatabaseManagerTest,
                            TestGetSeverestThreatTypeAndMetadata);
 
   // The set of clients awaiting a full hash response. It is used for tracking
   // which clients have cancelled their outstanding request.
   typedef std::unordered_set<Client*> PendingClients;
-
-  ~V4LocalDatabaseManager() override;
 
   // Called when all the stores managed by the database have been read from
   // disk after startup and the database is ready for checking resource
@@ -170,9 +171,9 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
                           const std::vector<FullHashInfo>& full_hash_infos);
 
   // Performs the full hash checking of the URL in |check|.
-  void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
-                            const FullHashToStoreAndHashPrefixesMap&
-                                full_hash_to_store_and_hash_prefixes);
+  virtual void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
+                                    const FullHashToStoreAndHashPrefixesMap&
+                                        full_hash_to_store_and_hash_prefixes);
 
   // When the database is ready to use, process the checks that were queued
   // while the database was loading from disk.

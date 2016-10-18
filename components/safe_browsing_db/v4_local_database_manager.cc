@@ -149,7 +149,13 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
     return true;
   }
 
-  PerformFullHashCheck(std::move(check), full_hash_to_store_and_hash_prefixes);
+  // Post the task to check full hashes back on the IO thread to follow the
+  // documented behavior of CheckBrowseUrl.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck, this,
+                 base::Passed(std::move(check)),
+                 full_hash_to_store_and_hash_prefixes));
   return false;
 }
 

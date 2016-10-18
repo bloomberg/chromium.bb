@@ -79,6 +79,31 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
   GURL expected_url;
 };
 
+class FakeV4LocalDatabaseManager : public V4LocalDatabaseManager {
+ public:
+  void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
+                            const FullHashToStoreAndHashPrefixesMap&
+                                full_hash_to_store_and_hash_prefixes) override {
+    perform_full_hash_check_called_ = true;
+  }
+
+  FakeV4LocalDatabaseManager(const base::FilePath& base_path)
+      : V4LocalDatabaseManager(base_path),
+        perform_full_hash_check_called_(false) {}
+
+  static bool PerformFullHashCheckCalled(
+      scoped_refptr<safe_browsing::V4LocalDatabaseManager>& v4_ldbm) {
+    FakeV4LocalDatabaseManager* fake =
+        static_cast<FakeV4LocalDatabaseManager*>(v4_ldbm.get());
+    return fake->perform_full_hash_check_called_;
+  }
+
+ private:
+  ~FakeV4LocalDatabaseManager() override {}
+
+  bool perform_full_hash_check_called_;
+};
+
 class V4LocalDatabaseManagerTest : public PlatformTest {
  public:
   V4LocalDatabaseManagerTest() : task_runner_(new base::TestSimpleTaskRunner) {}
@@ -91,7 +116,7 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
 
     v4_local_database_manager_ =
         make_scoped_refptr(new V4LocalDatabaseManager(base_dir_.GetPath()));
-    v4_local_database_manager_->SetTaskRunnerForTest(task_runner_);
+    SetTaskRunnerForTest();
 
     StartLocalDatabaseManager();
   }
@@ -136,6 +161,10 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
 
   void ResetV4Database() {
     V4Database::Destroy(std::move(v4_local_database_manager_->v4_database_));
+  }
+
+  void SetTaskRunnerForTest() {
+    v4_local_database_manager_->SetTaskRunnerForTest(task_runner_);
   }
 
   void StartLocalDatabaseManager() {
@@ -205,6 +234,9 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckBrowseUrlWithFakeDbReturnsMatch) {
   // The fake database returns a matched hash prefix.
   EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
       GURL("http://example.com/a/"), nullptr));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
 }
 
 TEST_F(V4LocalDatabaseManagerTest,
@@ -266,6 +298,38 @@ TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
 
   StopLocalDatabaseManager();
   EXPECT_TRUE(GetQueuedChecks().empty());
+}
+
+// This test is somewhat similar to TestCheckBrowseUrlWithFakeDbReturnsMatch but
+// it uses a fake V4LocalDatabaseManager to assert that PerformFullHashCheck is
+// called async.
+TEST_F(V4LocalDatabaseManagerTest, PerformFullHashCheckCalledAsync) {
+  // StopLocalDatabaseManager before resetting it because that's what
+  // ~V4LocalDatabaseManager expects.
+  StopLocalDatabaseManager();
+  v4_local_database_manager_ =
+      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
+  SetTaskRunnerForTest();
+  StartLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+  net::TestURLFetcherFactory factory;
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  ReplaceV4Database(store_and_hash_prefixes);
+
+  // The fake database returns a matched hash prefix.
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      GURL("http://example.com/a/"), nullptr));
+
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
+
+  EXPECT_TRUE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
 }
 
 }  // namespace safe_browsing
