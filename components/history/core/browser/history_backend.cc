@@ -2492,16 +2492,16 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
                                       const URLRow& row,
                                       const RedirectList& redirects,
                                       base::Time visit_time) {
-  FOR_EACH_OBSERVER(HistoryBackendObserver, observers_,
-                    OnURLVisited(this, transition, row, redirects, visit_time));
+  for (HistoryBackendObserver& observer : observers_)
+    observer.OnURLVisited(this, transition, row, redirects, visit_time);
 
   if (delegate_)
     delegate_->NotifyURLVisited(transition, row, redirects, visit_time);
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
-  FOR_EACH_OBSERVER(HistoryBackendObserver, observers_,
-                    OnURLsModified(this, rows));
+  for (HistoryBackendObserver& observer : observers_)
+    observer.OnURLsModified(this, rows);
 
   if (delegate_)
     delegate_->NotifyURLsModified(rows);
@@ -2512,9 +2512,10 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
                                        const URLRows& rows,
                                        const std::set<GURL>& favicon_urls) {
   URLRows copied_rows(rows);
-  FOR_EACH_OBSERVER(
-      HistoryBackendObserver, observers_,
-      OnURLsDeleted(this, all_history, expired, copied_rows, favicon_urls));
+  for (HistoryBackendObserver& observer : observers_) {
+    observer.OnURLsDeleted(this, all_history, expired, copied_rows,
+                           favicon_urls);
+  }
 
   if (delegate_)
     delegate_->NotifyURLsDeleted(all_history, expired, copied_rows,

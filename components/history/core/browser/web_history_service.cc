@@ -567,8 +567,8 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
 
   // Inform the observers about the history deletion.
   if (response_value.get() && success) {
-    FOR_EACH_OBSERVER(WebHistoryServiceObserver, observer_list_,
-                      OnWebHistoryDeleted());
+    for (WebHistoryServiceObserver& observer : observer_list_)
+      observer.OnWebHistoryDeleted();
   }
 }
 
