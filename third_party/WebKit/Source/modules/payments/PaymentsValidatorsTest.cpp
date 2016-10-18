@@ -11,23 +11,18 @@
 namespace blink {
 namespace {
 
-struct TestCase {
-  TestCase(const char* input, bool expectedValid)
-      : input(input), expectedValid(expectedValid) {}
-  ~TestCase() {}
+struct CurrencyCodeTestCase {
+  CurrencyCodeTestCase(const char* code, const char* system, bool expectedValid)
+      : code(code), system(system), expectedValid(expectedValid) {}
+  ~CurrencyCodeTestCase() {}
 
-  const char* input;
+  const char* code;
+  const char* system;
   bool expectedValid;
 };
 
-std::ostream& operator<<(std::ostream& out, const TestCase& testCase) {
-  out << "'" << testCase.input << "' is expected to be "
-      << (testCase.expectedValid ? "valid" : "invalid");
-  return out;
-}
-
-class PaymentsCurrencyValidatorTest : public testing::TestWithParam<TestCase> {
-};
+class PaymentsCurrencyValidatorTest
+    : public testing::TestWithParam<CurrencyCodeTestCase> {};
 
 const char* longString2048() {
   static char longString[2049];
@@ -48,30 +43,61 @@ const char* longString2049() {
 TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat) {
   String errorMessage;
   EXPECT_EQ(GetParam().expectedValid,
-            PaymentsValidators::isValidCurrencyCodeFormat(GetParam().input,
-                                                          &errorMessage))
+            PaymentsValidators::isValidCurrencyCodeFormat(
+                GetParam().code, GetParam().system, &errorMessage))
       << errorMessage;
   EXPECT_EQ(GetParam().expectedValid, errorMessage.isEmpty()) << errorMessage;
 
-  EXPECT_EQ(
-      GetParam().expectedValid,
-      PaymentsValidators::isValidCurrencyCodeFormat(GetParam().input, nullptr));
+  EXPECT_EQ(GetParam().expectedValid,
+            PaymentsValidators::isValidCurrencyCodeFormat(
+                GetParam().code, GetParam().system, nullptr));
 }
 
 INSTANTIATE_TEST_CASE_P(
     CurrencyCodes,
     PaymentsCurrencyValidatorTest,
     testing::Values(
-        // Any string of at most 2048 characters can be a valid currency code
-        TestCase("USD", true),
-        TestCase("US1", true),
-        TestCase("US", true),
-        TestCase("USDO", true),
-        TestCase("usd", true),
-        TestCase("ANYSTRING", true),
-        TestCase("", true),
-        TestCase(longString2048(), true),
-        TestCase(longString2049(), false)));
+        // The most common identifiers are three-letter alphabetic codes as
+        // defined by [ISO4217] (for example, "USD" for US Dollars).
+        // |system| is a URL that indicates the currency system that the
+        // currency identifier belongs to. By default,
+        // the value is urn:iso:std:iso:4217 indicating that currency is defined
+        // by [[ISO4217]], however any string of at most 2048
+        // characters is considered valid in other currencySystem. Returns false
+        // if currency |code| is too long (greater than 2048).
+        CurrencyCodeTestCase("USD", "urn:iso:std:iso:4217", true),
+        CurrencyCodeTestCase("US1", "http://www.example.com", true),
+        CurrencyCodeTestCase("US1", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase("US", "http://www.example.com", true),
+        CurrencyCodeTestCase("US", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase("USDO", "http://www.example.com", true),
+        CurrencyCodeTestCase("USDO", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase("usd", "http://www.example.com", true),
+        CurrencyCodeTestCase("usd", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase("ANYSTRING", "http://www.example.com", true),
+        CurrencyCodeTestCase("ANYSTRING", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase("", "http://www.example.com", true),
+        CurrencyCodeTestCase("", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase(longString2048(), "http://www.example.com", true),
+        CurrencyCodeTestCase(longString2048(), "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase(longString2049(),
+                             "http://www.example.com",
+                             false)));
+
+struct TestCase {
+  TestCase(const char* input, bool expectedValid)
+      : input(input), expectedValid(expectedValid) {}
+  ~TestCase() {}
+
+  const char* input;
+  bool expectedValid;
+};
+
+std::ostream& operator<<(std::ostream& out, const TestCase& testCase) {
+  out << "'" << testCase.input << "' is expected to be "
+      << (testCase.expectedValid ? "valid" : "invalid");
+  return out;
+}
 
 class PaymentsAmountValidatorTest : public testing::TestWithParam<TestCase> {};
 

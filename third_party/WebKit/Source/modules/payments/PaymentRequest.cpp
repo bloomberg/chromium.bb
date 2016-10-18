@@ -201,8 +201,9 @@ void validateShippingOptionOrPaymentItem(const T& item,
   }
 
   String errorMessage;
-  if (!PaymentsValidators::isValidCurrencyCodeFormat(item.amount().currency(),
-                                                     &errorMessage)) {
+  if (!PaymentsValidators::isValidCurrencyCodeFormat(
+          item.amount().currency(), item.amount().currencySystem(),
+          &errorMessage)) {
     exceptionState.throwTypeError(errorMessage);
     return;
   }

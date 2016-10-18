@@ -41,6 +41,7 @@ enum PaymentTestDataToChange {
   PaymentTestDataLabel,
   PaymentTestDataAmount,
   PaymentTestDataCurrencyCode,
+  PaymentTestDataCurrencySystem,
   PaymentTestDataValue,
 };
 

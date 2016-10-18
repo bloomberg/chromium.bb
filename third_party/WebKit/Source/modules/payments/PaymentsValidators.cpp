@@ -14,7 +14,27 @@ static const int maxiumStringLength = 2048;
 
 bool PaymentsValidators::isValidCurrencyCodeFormat(
     const String& code,
+    const String& system,
     String* optionalErrorMessage) {
+  if (system == "urn:iso:std:iso:4217") {
+    if (ScriptRegexp("^[A-Z]{3}$", TextCaseSensitive).match(code) == 0)
+      return true;
+
+    if (optionalErrorMessage)
+      *optionalErrorMessage = "'" + code +
+                              "' is not a valid ISO 4217 currency code, should "
+                              "be 3 upper case letters [A-Z]";
+
+    return false;
+  }
+
+  if (!KURL(KURL(), system).isValid()) {
+    if (optionalErrorMessage)
+      *optionalErrorMessage = "The currency system is not a valid URL";
+
+    return false;
+  }
+
   if (code.length() <= maxiumStringLength)
     return true;
 

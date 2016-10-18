@@ -28,6 +28,15 @@ void setValues(PaymentItemOrPaymentShippingOption& original,
   } else {
     itemAmount.setCurrency("USD");
   }
+
+  // Currency system is "urn:iso:std:iso:4217" by default.
+  if (data == PaymentTestDataCurrencySystem) {
+    if (modificationType == PaymentTestOverwriteValue)
+      itemAmount.setCurrencySystem(valueToUse);
+    else
+      itemAmount.setCurrencySystem(String());  // null string.
+  }
+
   if (data == PaymentTestDataValue) {
     if (modificationType == PaymentTestOverwriteValue)
       itemAmount.setValue(valueToUse);
