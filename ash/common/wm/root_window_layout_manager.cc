@@ -29,10 +29,18 @@ void RootWindowLayoutManager::OnWindowResized() {
   WmWindowTracker children_tracker(owner_->GetChildren());
   while (!children_tracker.windows().empty()) {
     WmWindow* child = children_tracker.Pop();
+    // Skip descendants of top-level windows, i.e. only resize containers and
+    // other windows without a delegate, such as ScreenDimmer windows.
+    if (child->GetToplevelWindow())
+      continue;
+
     child->SetBounds(fullscreen_bounds);
     WmWindowTracker grandchildren_tracker(child->GetChildren());
-    while (!grandchildren_tracker.windows().empty())
-      grandchildren_tracker.Pop()->SetBounds(fullscreen_bounds);
+    while (!grandchildren_tracker.windows().empty()) {
+      child = grandchildren_tracker.Pop();
+      if (!child->GetToplevelWindow())
+        child->SetBounds(fullscreen_bounds);
+    }
   }
 }
 

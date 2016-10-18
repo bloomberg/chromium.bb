@@ -143,10 +143,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
-  // Called when the login status changes after login (such as lock/unlock).
-  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
-  void UpdateAfterLoginStatusChange(LoginStatus status);
-
   // Called when the brightness/grayscale animation from white to the login
   // wallpaper image has started.  Starts |boot_splash_screen_|'s hiding
   // animation (if the screen is non-NULL).
@@ -232,13 +228,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // of the RootWindowController so that it is safe for observers to be added
   // to it during construction of the shelf widget and status tray.
   std::unique_ptr<WmShelfAura> wm_shelf_aura_;
-
-  // An invisible/empty window used as a event target for
-  // |MouseCursorEventFilter| before a user logs in.
-  // (crbug.com/266987)
-  // Its container is |LockScreenWallpaperContainer| and
-  // this must be deleted before the container is deleted.
-  std::unique_ptr<aura::Window> mouse_event_target_;
 
   std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 

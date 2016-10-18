@@ -695,20 +695,6 @@ TEST_P(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   delete window2;
 }
 
-typedef test::NoSessionAshTestBase NoSessionRootWindowControllerTest;
-
-// Make sure that an event handler exists for entire display area.
-TEST_F(NoSessionRootWindowControllerTest, Event) {
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  const gfx::Size size = root->bounds().size();
-  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(0, 0)));
-  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
-  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(size.width() - 1, 0)));
-  EXPECT_TRUE(root->GetEventHandlerForPoint(gfx::Point(0, size.height() - 1)));
-  EXPECT_TRUE(root->GetEventHandlerForPoint(
-      gfx::Point(size.width() - 1, size.height() - 1)));
-}
-
 class VirtualKeyboardRootWindowControllerTest
     : public RootWindowControllerTest {
  public:
