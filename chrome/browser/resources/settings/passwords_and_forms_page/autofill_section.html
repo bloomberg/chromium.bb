@@ -1,20 +1,16 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/passwords_and_forms_page/address_edit_dialog.html">
 <link rel="import" href="/passwords_and_forms_page/credit_card_edit_dialog.html">
 <link rel="import" href="/passwords_and_forms_page/passwords_shared_css.html">
+<link rel="import" href="/settings_action_menu.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-autofill-section">
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <template>
     <style include="settings-shared passwords-shared">
-      .menu-item {
-        @apply(--settings-actionable);
-      }
-
       .type-column {
         align-items: center;
         flex: 2;
@@ -63,15 +59,16 @@
         <a is="action-link" on-tap="onAddAddressTap_">$i18n{addAddress}</a>
       </div>
     </div>
-    <cr-shared-menu id="addressSharedMenu">
-      <button id="menuEditAddress" class="list-item menu-item"
+    <dialog is="settings-action-menu" id="addressSharedMenu">
+      <button id="menuEditAddress" class="dropdown-item"
           on-tap="onMenuEditAddressTap_">$i18n{editAddress}</button>
-      <button id="menuRemoveAddress" class="list-item menu-item"
+      <button id="menuRemoveAddress" class="dropdown-item"
+          hidden$="[[!activeAddress.metadata.isLocal]]"
           on-tap="onMenuRemoveAddressTap_">$i18n{removeAddress}</button>
-    </cr-shared-menu>
-    <template is="dom-if" if="[[activeAddress]]" restamp>
+    </dialog>
+    <template is="dom-if" if="[[showAddressDialog_]]" restamp>
       <settings-address-edit-dialog address="[[activeAddress]]"
-          on-close="unstampAddressEditDialog_">
+          on-close="onAddressDialogClosed_">
       </settings-address-edit-dialog>
     </template>
     <div class="settings-box first">
@@ -118,17 +115,21 @@
         </a>
       </div>
     </div>
-    <cr-shared-menu id="creditCardSharedMenu">
-      <button id="menuEditCreditCard" class="list-item menu-item"
+    <dialog is="settings-action-menu" id="creditCardSharedMenu">
+      <button id="menuEditCreditCard" class="dropdown-item"
           on-tap="onMenuEditCreditCardTap_">$i18n{editCreditCard}</button>
-      <button id="menuRemoveCreditCard" class="list-item menu-item"
+      <button id="menuRemoveCreditCard" class="dropdown-item"
+          hidden$="[[!activeCreditCard.metadata.isLocal]]"
           on-tap="onMenuRemoveCreditCardTap_">$i18n{removeCreditCard}</button>
-      <button id="menuClearCreditCard" class="list-item menu-item"
-          on-tap="onMenuClearCreditCardTap_">$i18n{clearCreditCard}</button>
-    </cr-shared-menu>
-    <template is="dom-if" if="[[activeCreditCard]]" restamp>
+      <button id="menuClearCreditCard" class="dropdown-item"
+          on-tap="onMenuClearCreditCardTap_"
+          hidden$="[[!activeCreditCard.metadata.isCached]]">
+        $i18n{clearCreditCard}
+      </button>
+    </dialog>
+    <template is="dom-if" if="[[showCreditCardDialog_]]" restamp>
       <settings-credit-card-edit-dialog credit-card="[[activeCreditCard]]"
-          on-close="unstampCreditCardEditDialog_">
+          on-close="onCreditCardDialogClosed_">
       </settings-credit-card-edit-dialog>
     </template>
   </template>

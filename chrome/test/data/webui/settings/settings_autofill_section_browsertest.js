@@ -9,8 +9,7 @@ var ROOT_PATH = '../../../../../';
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE([
-    ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
-    ROOT_PATH + 'ui/webui/resources/js/load_time_data.js',
+  ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
 
 /**
@@ -24,9 +23,9 @@ CountryDetailManagerTestImpl.prototype = {
   getCountryList: function() {
     return new Promise(function(resolve) {
       resolve([
-          {name: 'United States', countryCode: 'US'},  // Default test country.
-          {name: 'Israel', countryCode: 'IL'},
-          {name: 'United Kingdom', countryCode: 'GB'},
+        {name: 'United States', countryCode: 'US'},  // Default test country.
+        {name: 'Israel', countryCode: 'IL'},
+        {name: 'United Kingdom', countryCode: 'GB'},
       ]);
     });
   },
@@ -47,7 +46,7 @@ CountryDetailManagerTestImpl.prototype = {
  * @return {!Promise}
  */
 function asyncForEach(items, loopBody) {
-  return new Promise(function(finish) {
+  return new Promise(function(resolve) {
     var index = 0;
 
     function loop() {
@@ -55,7 +54,7 @@ function asyncForEach(items, loopBody) {
       if (item)
         loopBody(item).then(loop);
       else
-        finish();
+        resolve();
     };
 
     loop();
@@ -108,22 +107,12 @@ SettingsAutofillSectionBrowserTest.prototype = {
    */
   runAccessibilityChecks: false,
 
-  i18nStrings: {
-    addAddressTitle: 'add-title',
-    addCreditCardTitle: 'add-title',
-    editAddressTitle: 'edit-title',
-    editCreditCardTitle: 'edit-title',
-  },
-
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
 
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
-
-    // Faking 'strings.js' for this test.
-    loadTimeData.data = this.i18nStrings;
 
     settings.address.CountryDetailManagerImpl.instance_ =
         new CountryDetailManagerTestImpl();
@@ -410,7 +399,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       return self.createAddressDialog_(
           FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
         var title = dialog.$$('.title');
-        assertEquals(self.i18nStrings.addAddressTitle, title.textContent);
+        assertEquals(loadTimeData.getString('addAddress'), title.textContent);
         // Shouldn't be possible to save until something is typed in.
         assertTrue(dialog.$.saveButton.disabled);
       });
@@ -420,7 +409,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       return self.createAddressDialog_(
           FakeDataMaker.addressEntry()).then(function(dialog) {
         var title = dialog.$$('.title');
-        assertEquals(self.i18nStrings.editAddressTitle, title.textContent);
+        assertEquals(
+            loadTimeData.getString('editAddressTitle'), title.textContent);
         // Should be possible to save when editing because fields are populated.
         assertFalse(dialog.$.saveButton.disabled);
       });

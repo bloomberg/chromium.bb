@@ -21,7 +21,7 @@
     {
       'target_name': 'autofill_section',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
+        '../compiled_resources2.gyp:settings_action_menu',
         '<(EXTERNS_GYP):autofill_private',
         'address_edit_dialog',
         'credit_card_edit_dialog',
