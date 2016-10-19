@@ -131,7 +131,9 @@ AccessibilityExtensionLoader::AccessibilityExtensionLoader(
 
 AccessibilityExtensionLoader::~AccessibilityExtensionLoader() {}
 
-void AccessibilityExtensionLoader::SetProfile(Profile* profile) {
+void AccessibilityExtensionLoader::SetProfile(
+    Profile* profile,
+    const base::Closure& done_callback) {
   profile_ = profile;
 
   if (!loaded_on_user_screen_ && !loaded_on_lock_screen_)
@@ -143,7 +145,7 @@ void AccessibilityExtensionLoader::SetProfile(Profile* profile) {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   auto* component_loader = extension_service->component_loader();
   if (!component_loader->Exists(extension_id_))
-    LoadExtension(profile_, nullptr, base::Closure());
+    LoadExtension(profile_, nullptr, done_callback);
 }
 
 void AccessibilityExtensionLoader::Load(Profile* profile,

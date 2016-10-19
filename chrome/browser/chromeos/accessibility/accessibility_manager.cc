@@ -453,8 +453,11 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAccessibilitySpokenFeedbackEnabled);
 
-  if (enabled)
-    chromevox_loader_->SetProfile(profile_);
+  if (enabled) {
+    chromevox_loader_->SetProfile(
+        profile_, base::Bind(&AccessibilityManager::PostSwitchChromeVoxProfile,
+                             weak_ptr_factory_.GetWeakPtr()));
+  }
 
   if (spoken_feedback_enabled_ == enabled)
     return;
@@ -1036,7 +1039,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
             &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
             base::Unretained(this)));
 
-    chromevox_loader_->SetProfile(profile);
+    chromevox_loader_->SetProfile(
+        profile, base::Bind(&AccessibilityManager::PostSwitchChromeVoxProfile,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
@@ -1316,6 +1321,16 @@ void AccessibilityManager::PostUnloadChromeVox() {
     chromevox_panel_->Close();
     chromevox_panel_ = nullptr;
   }
+}
+
+void AccessibilityManager::PostSwitchChromeVoxProfile() {
+  if (chromevox_panel_) {
+    chromevox_panel_->Close();
+    chromevox_panel_ = nullptr;
+  }
+  chromevox_panel_ = new ChromeVoxPanel(profile_);
+  chromevox_panel_widget_observer_.reset(
+      new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
 }
 
 void AccessibilityManager::OnChromeVoxPanelClosing() {

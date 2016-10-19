@@ -25,7 +25,7 @@ class AccessibilityExtensionLoader {
                                const base::Closure& unload_callback);
   ~AccessibilityExtensionLoader();
 
-  void SetProfile(Profile* profile);
+  void SetProfile(Profile* profile, const base::Closure& done_callback);
   void Load(Profile* profile,
             const std::string& init_script_str,
             const base::Closure& done_cb);

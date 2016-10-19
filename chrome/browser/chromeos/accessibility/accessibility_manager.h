@@ -289,6 +289,7 @@ class AccessibilityManager
  private:
   void PostLoadChromeVox();
   void PostUnloadChromeVox();
+  void PostSwitchChromeVoxProfile();
 
   void UpdateLargeCursorFromPref();
   void UpdateStickyKeysFromPref();
