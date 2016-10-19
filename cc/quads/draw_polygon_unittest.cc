@@ -26,6 +26,45 @@ void DrawPolygon::RecomputeNormalForTesting() {
 }
 #endif
 
+static int sign(float v) {
+  static const float epsilon = 0.00001f;
+
+  if (v > epsilon)
+    return 1;
+  if (v < -epsilon)
+    return -1;
+  return 0;
+}
+
+bool IsPlanarForTesting(const DrawPolygon& p) {
+  static const float epsilon = 0.00001f;
+  for (size_t i = 1; i < p.points_.size(); i++) {
+    if (gfx::DotProduct(p.points_[i] - p.points_[0], p.normal_) > epsilon)
+      return false;
+  }
+  return true;
+}
+
+bool IsConvexForTesting(const DrawPolygon& p) {
+  if (p.points_.size() < 3)
+    return true;
+
+  gfx::Vector3dF prev =
+      p.points_[p.points_.size() - 1] - p.points_[p.points_.size() - 2];
+  gfx::Vector3dF next = p.points_[0] - p.points_[p.points_.size() - 1];
+  int ccw = sign(gfx::DotProduct(CrossProduct(prev, next), p.normal_));
+  for (size_t i = 1; i < p.points_.size(); i++) {
+    prev = next;
+    next = p.points_[i] - p.points_[i - 1];
+    int next_sign = sign(gfx::DotProduct(CrossProduct(prev, next), p.normal_));
+    if (ccw == 0)
+      ccw = next_sign;
+    if (next_sign != 0 && next_sign != ccw)
+      return false;
+  }
+  return true;
+}
+
 namespace {
 
 #define CREATE_NEW_DRAW_POLYGON(name, points_vector, normal, polygon_id) \
@@ -320,6 +359,44 @@ TEST(DrawPolygonSplitTest, BarelyTouchingNoSplit) {
   EXPECT_NE(back, nullptr);
 }
 
+// One quad intersects a pent with an occluded side.
+TEST(DrawPolygonSplitTest, SlimClip) {
+  std::vector<gfx::Point3F> vertices_a;
+  vertices_a.push_back(gfx::Point3F(0.0f, 10.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(0.0f, 0.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(10.0f, 0.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
+  std::vector<gfx::Point3F> vertices_b;
+  vertices_b.push_back(gfx::Point3F(9.0f, 9.0f, 5.000f));
+  vertices_b.push_back(gfx::Point3F(1.0f, 1.0f, 0.001f));
+  vertices_b.push_back(gfx::Point3F(1.0f, 1.0f, 0.000f));
+  vertices_b.push_back(gfx::Point3F(1.002f, 1.002f, -0.005f));
+  vertices_b.push_back(gfx::Point3F(9.0f, 9.0f, -4.000f));
+
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_a, vertices_a,
+                              gfx::Vector3dF(0.0f, 0.0f, 1.0f), 0);
+  CREATE_NEW_DRAW_POLYGON_PTR(
+      polygon_b, vertices_b,
+      gfx::Vector3dF(sqrt(2) / 2, -sqrt(2) / 2, 0.000000), 1);
+
+  // These are well formed, convex polygons.
+  EXPECT_TRUE(IsPlanarForTesting(*(polygon_a.get())));
+  EXPECT_TRUE(IsConvexForTesting(*(polygon_a.get())));
+  EXPECT_TRUE(IsPlanarForTesting(*(polygon_b.get())));
+  EXPECT_TRUE(IsConvexForTesting(*(polygon_b.get())));
+
+  std::unique_ptr<DrawPolygon> front_polygon;
+  std::unique_ptr<DrawPolygon> back_polygon;
+  bool is_coplanar;
+
+  polygon_a->SplitPolygon(std::move(polygon_b), &front_polygon, &back_polygon,
+                          &is_coplanar);
+
+  EXPECT_FALSE(is_coplanar);
+  EXPECT_TRUE(front_polygon != nullptr);
+  EXPECT_TRUE(back_polygon != nullptr);
+}
+
 // One quad intersects another and becomes two pieces.
 TEST(DrawPolygonSplitTest, BasicSplit) {
   std::vector<gfx::Point3F> vertices_a;
@@ -407,6 +484,60 @@ TEST(DrawPolygonSplitTest, AngledSplit) {
 
   ValidatePointsWithinDeltaOf(*(front_polygon.get()), test_points_a, 1e-6f);
   ValidatePointsWithinDeltaOf(*(back_polygon.get()), test_points_b, 1e-6f);
+}
+
+// In this test we cut the corner of a quad so that it creates a triangle and
+// a pentagon as a result, and then cut the pentagon.
+TEST(DrawPolygonSplitTest, DoubleSplit) {
+  std::vector<gfx::Point3F> vertices_a;
+  vertices_a.push_back(gfx::Point3F(0.0f, 0.0f, 0.0f));
+  vertices_a.push_back(gfx::Point3F(0.0f, 0.0f, 10.0f));
+  vertices_a.push_back(gfx::Point3F(10.0f, 0.0f, 10.0f));
+  vertices_a.push_back(gfx::Point3F(10.0f, 0.0f, 0.0f));
+  std::vector<gfx::Point3F> vertices_b;
+  vertices_b.push_back(gfx::Point3F(2.0f, 5.0f, 1.0f));
+  vertices_b.push_back(gfx::Point3F(2.0f, -5.0f, 1.0f));
+  vertices_b.push_back(gfx::Point3F(-1.0f, -5.0f, -2.0f));
+  vertices_b.push_back(gfx::Point3F(-1.0f, 5.0f, -2.0f));
+
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_a, vertices_a,
+                              gfx::Vector3dF(0.0f, 1.0f, 0.0f), 0);
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_b, vertices_b,
+                              gfx::Vector3dF(sqrt(2) / 2, 0.0f, -sqrt(2) / 2),
+                              1);
+
+  std::unique_ptr<DrawPolygon> front_polygon;
+  std::unique_ptr<DrawPolygon> back_polygon;
+  bool is_coplanar;
+
+  polygon_b->SplitPolygon(std::move(polygon_a), &front_polygon, &back_polygon,
+                          &is_coplanar);
+  EXPECT_FALSE(is_coplanar);
+  EXPECT_TRUE(front_polygon != nullptr);
+  EXPECT_TRUE(back_polygon != nullptr);
+
+  EXPECT_EQ(3u, front_polygon->points().size());
+  EXPECT_EQ(5u, back_polygon->points().size());
+
+  std::vector<gfx::Point3F> vertices_c;
+  vertices_c.push_back(gfx::Point3F(0.0f, 0.0f, 10.0f));
+  vertices_c.push_back(gfx::Point3F(1.0f, -0.05f, 0.0f));
+  vertices_c.push_back(gfx::Point3F(10.0f, 0.05f, 9.0f));
+
+  CREATE_NEW_DRAW_POLYGON_PTR(polygon_c, vertices_c,
+                              gfx::Vector3dF(0.0055f, -0.999f, 0.0055f), 0);
+
+  std::unique_ptr<DrawPolygon> second_front_polygon;
+  std::unique_ptr<DrawPolygon> second_back_polygon;
+
+  polygon_c->SplitPolygon(std::move(back_polygon), &second_front_polygon,
+                          &second_back_polygon, &is_coplanar);
+  EXPECT_FALSE(is_coplanar);
+  EXPECT_TRUE(second_front_polygon != nullptr);
+  EXPECT_TRUE(second_back_polygon != nullptr);
+
+  EXPECT_EQ(3u, second_front_polygon->points().size());
+  EXPECT_EQ(3u, second_back_polygon->points().size());
 }
 
 TEST(DrawPolygonTransformTest, TransformNormal) {

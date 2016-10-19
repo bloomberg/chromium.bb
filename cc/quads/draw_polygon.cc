@@ -237,10 +237,6 @@ void DrawPolygon::SplitPolygon(std::unique_ptr<DrawPolygon> polygon,
     return;
   }
 
-  // There should be at most two points that are considered to be on the thick
-  // plane. If this is not the case, then the polygon is not convex.
-  DCHECK_LE(num_points - pos_count - neg_count, 2u);
-
   // Handle splitting case.
   size_t front_begin;
   size_t back_begin;

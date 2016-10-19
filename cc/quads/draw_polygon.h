@@ -56,7 +56,10 @@ class CC_EXPORT DrawPolygon {
   bool is_split() const { return is_split_; }
   std::unique_ptr<DrawPolygon> CreateCopy();
 
+  // These are helper functions for testing.
   void RecomputeNormalForTesting();
+  friend bool IsPlanarForTesting(const DrawPolygon& p);
+  friend bool IsConvexForTesting(const DrawPolygon& p);
 
  private:
   void ApplyTransform(const gfx::Transform& transform);
