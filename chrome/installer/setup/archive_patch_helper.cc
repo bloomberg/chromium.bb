@@ -17,11 +17,13 @@ namespace installer {
 ArchivePatchHelper::ArchivePatchHelper(const base::FilePath& working_directory,
                                        const base::FilePath& compressed_archive,
                                        const base::FilePath& patch_source,
-                                       const base::FilePath& target)
+                                       const base::FilePath& target,
+                                       UnPackConsumer consumer)
     : working_directory_(working_directory),
       compressed_archive_(compressed_archive),
       patch_source_(patch_source),
-      target_(target) {}
+      target_(target),
+      consumer_(consumer) {}
 
 ArchivePatchHelper::~ArchivePatchHelper() {}
 
@@ -30,9 +32,10 @@ bool ArchivePatchHelper::UncompressAndPatch(
     const base::FilePath& working_directory,
     const base::FilePath& compressed_archive,
     const base::FilePath& patch_source,
-    const base::FilePath& target) {
+    const base::FilePath& target,
+    UnPackConsumer consumer) {
   ArchivePatchHelper instance(working_directory, compressed_archive,
-                              patch_source, target);
+                              patch_source, target, consumer);
   return (instance.Uncompress(NULL) &&
           (instance.EnsemblePatch() || instance.BinaryPatch()));
 }
@@ -42,13 +45,15 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
   DCHECK(!base::PathExists(target_));
 
   // UnPackArchive takes care of logging.
-  base::string16 output_file;
-  int32_t lzma_result = LzmaUtil::UnPackArchive(
-      compressed_archive_.value(), working_directory_.value(), &output_file);
-  if (lzma_result != NO_ERROR)
+  base::FilePath output_file;
+  UnPackStatus unpack_status = UNPACK_NO_ERROR;
+  DWORD lzma_result = UnPackArchive(compressed_archive_, working_directory_,
+                                    &output_file, &unpack_status);
+  RecordUnPackMetrics(unpack_status, consumer_);
+  if (lzma_result != ERROR_SUCCESS)
     return false;
 
-  last_uncompressed_file_ = base::FilePath(output_file);
+  last_uncompressed_file_ = output_file;
   if (last_uncompressed_file)
     *last_uncompressed_file = last_uncompressed_file_;
   return true;

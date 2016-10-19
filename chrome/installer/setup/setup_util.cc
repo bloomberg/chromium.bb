@@ -22,6 +22,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -112,6 +113,8 @@ bool OnUserHive(const base::string16& client_state_path,
 }
 
 }  // namespace
+
+const char kUnPackStatusMetricsName[] = "Setup.Install.LzmaUnPackStatus";
 
 int CourgettePatchFiles(const base::FilePath& src,
                         const base::FilePath& patch,
@@ -622,6 +625,31 @@ bool IsChromeActivelyUsed(const InstallerState& installer_state) {
   VisitUserHives(base::Bind(&OnUserHive, chrome_dist->GetStateKey(),
                             base::Unretained(&is_used)));
   return is_used;
+}
+
+void RecordUnPackMetrics(UnPackStatus unpack_status, UnPackConsumer consumer) {
+  std::string consumer_name = "";
+
+  switch (consumer) {
+    case UnPackConsumer::CHROME_ARCHIVE_PATCH:
+      consumer_name = "ChromeArchivePath";
+      break;
+    case UnPackConsumer::COMPRESSED_CHROME_ARCHIVE:
+      consumer_name = "CompressedChromeArchive";
+      break;
+    case UnPackConsumer::SETUP_EXE_PATCH:
+      consumer_name = "SetupExePatch";
+      break;
+    case UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE:
+      consumer_name = "UncompressedChromeArchive";
+      break;
+  }
+
+  base::LinearHistogram::FactoryGet(
+      std::string(kUnPackStatusMetricsName) + "_" + consumer_name, 1,
+      UNPACK_STATUS_COUNT, UNPACK_STATUS_COUNT + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(unpack_status);
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

@@ -7,6 +7,8 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/util/lzma_util.h"
 
 namespace installer {
 
@@ -34,7 +36,8 @@ class ArchivePatchHelper {
   ArchivePatchHelper(const base::FilePath& working_directory,
                      const base::FilePath& compressed_archive,
                      const base::FilePath& patch_source,
-                     const base::FilePath& target);
+                     const base::FilePath& target,
+                     UnPackConsumer consumer);
 
   ~ArchivePatchHelper();
 
@@ -45,7 +48,8 @@ class ArchivePatchHelper {
   static bool UncompressAndPatch(const base::FilePath& working_directory,
                                  const base::FilePath& compressed_archive,
                                  const base::FilePath& patch_source,
-                                 const base::FilePath& target);
+                                 const base::FilePath& target,
+                                 UnPackConsumer consumer);
 
   // Uncompresses compressed_archive() into the working directory. On success,
   // last_uncompressed_file (if not NULL) is populated with the path to the last
@@ -88,6 +92,7 @@ class ArchivePatchHelper {
   base::FilePath patch_source_;
   base::FilePath target_;
   base::FilePath last_uncompressed_file_;
+  UnPackConsumer consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArchivePatchHelper);
 };

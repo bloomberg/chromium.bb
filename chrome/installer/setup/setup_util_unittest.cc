@@ -18,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -273,6 +274,23 @@ TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
     EXPECT_EQ(PCCR_CHANGED, RelaunchAndDoProcessPriorityAdjustment());
   else
     EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
+}
+
+TEST(SetupUtilTest, RecordUnPackMetricsTest) {
+  base::HistogramTester histogram_tester;
+  std::string metrics_name =
+      std::string(installer::kUnPackStatusMetricsName) + "_SetupExePatch";
+  histogram_tester.ExpectTotalCount(metrics_name, 0);
+
+  RecordUnPackMetrics(UnPackStatus::UNPACK_NO_ERROR,
+                      installer::UnPackConsumer::SETUP_EXE_PATCH);
+  histogram_tester.ExpectTotalCount(metrics_name, 1);
+  histogram_tester.ExpectBucketCount(metrics_name, 0, 1);
+
+  RecordUnPackMetrics(UnPackStatus::UNPACK_CLOSE_FILE_ERROR,
+                      installer::UnPackConsumer::SETUP_EXE_PATCH);
+  histogram_tester.ExpectTotalCount(metrics_name, 2);
+  histogram_tester.ExpectBucketCount(metrics_name, 10, 1);
 }
 
 namespace {

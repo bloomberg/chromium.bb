@@ -81,3 +81,17 @@ TEST_F(LzmaFileAllocatorTest, ErrorAndFallbackTest) {
 
   IAlloc_Free(&allocator, s);
 }
+
+TEST_F(LzmaFileAllocatorTest, IsAddressMappedTest) {
+  LzmaFileAllocator allocator(temp_dir_.GetPath());
+  size_t size = 10;
+  uintptr_t address =
+      reinterpret_cast<uintptr_t>(IAlloc_Alloc(&allocator, size));
+  ASSERT_TRUE(allocator.IsAddressMapped(address));
+  ASSERT_TRUE(allocator.IsAddressMapped(address + 1));
+  ASSERT_TRUE(allocator.IsAddressMapped(address + 9));
+  ASSERT_FALSE(allocator.IsAddressMapped(address + 10));
+  ASSERT_FALSE(allocator.IsAddressMapped(address + 11));
+  ASSERT_FALSE(allocator.IsAddressMapped(address - 1));
+  IAlloc_Free(&allocator, reinterpret_cast<void*>(address));
+}

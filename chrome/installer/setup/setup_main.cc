@@ -185,7 +185,8 @@ std::unique_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
     const base::FilePath& setup_exe,
     const base::CommandLine& command_line,
     const installer::InstallerState& installer_state,
-    const base::FilePath& working_directory) {
+    const base::FilePath& working_directory,
+    installer::UnPackConsumer consumer) {
   // A compressed archive is ordinarily given on the command line by the mini
   // installer. If one was not given, look for chrome.packed.7z next to the
   // running program.
@@ -216,7 +217,7 @@ std::unique_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
   // is.
   return std::unique_ptr<installer::ArchivePatchHelper>(
       new installer::ArchivePatchHelper(working_directory, compressed_archive,
-                                        base::FilePath(), target));
+                                        base::FilePath(), target, consumer));
 }
 
 // Returns the MSI product ID from the ClientState key that is populated for MSI
@@ -260,6 +261,7 @@ bool UncompressAndPatchChromeArchive(
     const base::Version& previous_version) {
   installer_state.SetStage(installer::UNCOMPRESSING);
   base::TimeTicks start_time = base::TimeTicks::Now();
+
   if (!archive_helper->Uncompress(NULL)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
     installer_state.WriteInstallerResult(*install_status,
@@ -1199,7 +1201,8 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
       VLOG(1) << "Opening archive " << compressed_archive.value();
       if (installer::ArchivePatchHelper::UncompressAndPatch(
               temp_path.GetPath(), compressed_archive, setup_exe,
-              cmd_line.GetSwitchValuePath(installer::switches::kNewSetupExe))) {
+              cmd_line.GetSwitchValuePath(installer::switches::kNewSetupExe),
+              installer::UnPackConsumer::SETUP_EXE_PATCH)) {
         status = installer::NEW_VERSION_UPDATED;
       }
       if (!temp_path.Delete()) {
@@ -1547,8 +1550,11 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
     }
 
     std::unique_ptr<ArchivePatchHelper> archive_helper(
-        CreateChromeArchiveHelper(setup_exe, cmd_line, installer_state,
-                                  unpack_path));
+        CreateChromeArchiveHelper(
+            setup_exe, cmd_line, installer_state, unpack_path,
+            (previous_version.IsValid()
+                 ? UnPackConsumer::CHROME_ARCHIVE_PATCH
+                 : UnPackConsumer::COMPRESSED_CHROME_ARCHIVE)));
     if (archive_helper) {
       VLOG(1) << "Installing Chrome from compressed archive "
               << archive_helper->compressed_archive().value();
@@ -1586,9 +1592,12 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   // Unpack the uncompressed archive.
   installer_state.SetStage(UNPACKING);
   base::TimeTicks start_time = base::TimeTicks::Now();
-  if (LzmaUtil::UnPackArchive(uncompressed_archive.value(),
-                              unpack_path.value(),
-                              NULL)) {
+  UnPackStatus unpack_status = UNPACK_NO_ERROR;
+  DWORD lzma_result =
+      UnPackArchive(uncompressed_archive, unpack_path, NULL, &unpack_status);
+  RecordUnPackMetrics(unpack_status,
+                      UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
+  if (lzma_result) {
     installer_state.WriteInstallerResult(
         UNPACKING_FAILED,
         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,

@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <limits>
 #include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -649,20 +650,17 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
 
   // Unpack chrome.packed.7z (static build only).
   if (!chrome_packed_7z.empty()) {
-    base::string16 chrome_7z_name;
-    if (LzmaUtil::UnPackArchive(chrome_packed_7z.value(),
-                                work_dir.directory().value(),
-                                &chrome_7z_name) != NO_ERROR) {
+    if (UnPackArchive(chrome_packed_7z, work_dir.directory(), &chrome_7z,
+                      nullptr) != ERROR_SUCCESS) {
       LOG(DFATAL) << "Failed unpacking \"" << chrome_packed_7z.value() << "\"";
       return false;
     }
-    chrome_7z = base::FilePath(chrome_7z_name);
   }
   DCHECK(!chrome_7z.empty());
 
   // Unpack chrome.7z
-  if (LzmaUtil::UnPackArchive(chrome_7z.value(), work_dir.directory().value(),
-                              NULL) != NO_ERROR) {
+  if (UnPackArchive(chrome_7z, work_dir.directory(), nullptr, nullptr) !=
+      ERROR_SUCCESS) {
     LOG(DFATAL) << "Failed unpacking \"" << chrome_7z.value() << "\"";
     return false;
   }

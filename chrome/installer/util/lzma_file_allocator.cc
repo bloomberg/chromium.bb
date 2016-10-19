@@ -42,6 +42,11 @@ LzmaFileAllocator::~LzmaFileAllocator() {
   Free = nullptr;
 }
 
+bool LzmaFileAllocator::IsAddressMapped(uintptr_t address) const {
+  return (address >= mapped_start_address_) &&
+         (address < mapped_start_address_ + mapped_size_);
+}
+
 void* LzmaFileAllocator::DoAllocate(size_t size) {
   DCHECK(!file_mapping_handle_.IsValid());
 
@@ -70,6 +75,8 @@ void* LzmaFileAllocator::DoAllocate(size_t size) {
     file_mapping_handle_.Close();
     return SzAlloc(this, size);
   }
+  mapped_start_address_ = reinterpret_cast<uintptr_t>(ret);
+  mapped_size_ = size;
   return ret;
 }
 
@@ -82,6 +89,8 @@ void LzmaFileAllocator::DoFree(void* address) {
   }
   int ret = ::UnmapViewOfFile(address);
   DPCHECK(ret != 0) << "Failed to unmap view of file";
+  mapped_start_address_ = 0;
+  mapped_size_ = 0;
   file_mapping_handle_.Close();
 }
 

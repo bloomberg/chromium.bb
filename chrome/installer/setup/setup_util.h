@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/util_constants.h"
 
 class AppRegistrationData;
@@ -34,6 +35,16 @@ class InstallationState;
 class InstallerState;
 class ProductState;
 class MasterPreferences;
+
+extern const char kUnPackStatusMetricsName[];
+
+// The name of consumers of UnPackArchive which is used to publish metrics.
+enum UnPackConsumer {
+  CHROME_ARCHIVE_PATCH,
+  COMPRESSED_CHROME_ARCHIVE,
+  SETUP_EXE_PATCH,
+  UNCOMPRESSED_CHROME_ARCHIVE,
+};
 
 // Applies a patch file to source file using Courgette. Returns 0 in case of
 // success. In case of errors, it returns kCourgetteErrorOffset + a Courgette
@@ -126,6 +137,9 @@ bool IsDowngradeAllowed(const MasterPreferences& prefs);
 
 // Returns true if Chrome has been run within the last 28 days.
 bool IsChromeActivelyUsed(const InstallerState& installer_state);
+
+// Records UMA metrics for unpack result.
+void RecordUnPackMetrics(UnPackStatus unpack_status, UnPackConsumer consumer);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
