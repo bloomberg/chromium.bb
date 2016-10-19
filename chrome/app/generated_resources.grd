@@ -15544,6 +15544,25 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_DESCRIPTION" desc="Description for the flag to enable expensive background timer throttling">
       Enables intervention to limit CPU usage of background timers to 1%.
     </message>
+
+    <!-- Enable default MediaSession flag -->
+    <if expr="not is_android">
+        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_NAME" desc="Name for the flag to enable default MediaSession on desktop">
+            Manage audio focus across tabs
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DESCRIPTION" desc="Desciption for the flag to enable default MediaSession on desktop">
+            Manage audio focus across tabs to improve the audio mixing.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DISABLED" desc="Option for disabling the default MediaSession">
+            Disabled
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED" desc="Option for enabling the default MediaSession">
+            Enabled
+        </message>
+        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED_WITH_FLASH" desc="Option for enabling the default MediaSession with Flash">
+            Enabled (with Flash)
+        </message>
+    </if>
   </messages>
  </release>
 </grit>

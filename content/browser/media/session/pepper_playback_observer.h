@@ -26,7 +26,9 @@ class PepperPlaybackObserver {
 
   void PepperInstanceCreated(int32_t pp_instance);
   void PepperInstanceDeleted(int32_t pp_instance);
+  // This method is called when a Pepper instance starts making sound.
   void PepperStartsPlayback(int32_t pp_instance);
+  // This method is called when a Pepper instance stops making sound.
   void PepperStopsPlayback(int32_t pp_instance);
 
  private:

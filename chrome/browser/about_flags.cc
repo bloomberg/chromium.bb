@@ -614,6 +614,19 @@ const FeatureEntry::Choice kDisableWebRtcHWEncodingChoices[] = {
 };
 #endif  // ENABLE_WEBRTC
 
+#if !defined(OS_ANDROID)
+const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
+    {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DISABLED, "", ""},
+    {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED,
+     switches::kEnableDefaultMediaSession, ""},
+#if defined(ENABLE_PLUGINS)
+    {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED_WITH_FLASH,
+     switches::kEnableDefaultMediaSession,
+     switches::kEnableDefaultMediaSessionWithFlash},
+#endif  // defined(ENABLE_PLUGINS)
+};
+#endif  // !defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2051,7 +2064,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ENUMERATING_AUDIO_DEVICES_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnumerateAudioDevices)},
 #endif  // OS_CHROMEOS
-
+#if !defined(OS_ANDROID)
+    {"enable-default-media-session",
+     IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_NAME,
+     IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DESCRIPTION, kOsDesktop,
+     MULTI_VALUE_TYPE(kEnableDefaultMediaSessionChoices)},
+#endif  // !defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

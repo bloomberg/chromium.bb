@@ -66,12 +66,18 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 const char kUseCras[] = "use-cras";
 #endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
 // Use a media session for each tabs in a way that two tabs can't play on top of
 // each other. This is different from the Media Session API as it is enabling a
-// default behaviour for the browser.
+// default behaviour for the browser. The allowed values are: "" (empty),
+// |kEnableDefaultMediaSessionWithFlash|.
 const char kEnableDefaultMediaSession[] = "enable-default-media-session";
-#endif
+#endif  // !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
+
+#if defined(ENABLE_PLUGINS)
+// This value is used as an option for |kEnableDefaultMediaSession|.
+const char kEnableDefaultMediaSessionWithFlash[] = "with-flash";
+#endif  // defined(ENABLE_PLUGINS)
 
 // Use fake device for Media Stream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
@@ -127,13 +133,6 @@ namespace media {
 const base::Feature kMediaFoundationH264Encoding{
     "MediaFoundationH264Encoding", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
-
-#if defined(ENABLE_PLUGINS)
-// Let flash join and be controlled by media session, only valid when
-// |kEnableDefaultMediaSession| is on.
-const base::Feature kFlashJoinsMediaSession{"FlashJoinsMediaSession",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(ENABLE_PLUGINS)
 
 // Use new audio rendering mixer.
 const base::Feature kNewAudioRenderingMixingStrategy{

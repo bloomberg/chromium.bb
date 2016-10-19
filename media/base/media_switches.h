@@ -43,9 +43,13 @@ MEDIA_EXPORT extern const char kWaveOutBuffers[];
 MEDIA_EXPORT extern const char kUseCras[];
 #endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
 MEDIA_EXPORT extern const char kEnableDefaultMediaSession[];
-#endif
+#endif  // !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
+
+#if defined(ENABLE_PLUGINS)
+MEDIA_EXPORT extern const char kEnableDefaultMediaSessionWithFlash[];
+#endif  // defined(ENABLE_PLUGINS)
 
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
@@ -76,10 +80,6 @@ namespace media {
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 #endif  // defined(OS_WIN)
-
-#if defined(ENABLE_PLUGINS)
-MEDIA_EXPORT extern const base::Feature kFlashJoinsMediaSession;
-#endif  // defined(ENABLE_PLUGINS)
 
 MEDIA_EXPORT extern const base::Feature kNewAudioRenderingMixingStrategy;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;

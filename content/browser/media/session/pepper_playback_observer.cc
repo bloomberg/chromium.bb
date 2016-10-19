@@ -46,8 +46,11 @@ void PepperPlaybackObserver::PepperInstanceDeleted(int32_t pp_instance) {
 void PepperPlaybackObserver::PepperStartsPlayback(int32_t pp_instance) {
   players_played_sound_map_[pp_instance] = true;
 
-  if (!base::FeatureList::IsEnabled(media::kFlashJoinsMediaSession))
+  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableDefaultMediaSession) !=
+      switches::kEnableDefaultMediaSessionWithFlash) {
     return;
+  }
 
   if (players_map_.count(pp_instance))
     return;
