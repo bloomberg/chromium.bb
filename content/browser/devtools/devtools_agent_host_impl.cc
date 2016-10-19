@@ -42,6 +42,7 @@ char DevToolsAgentHost::kTypeExternal[] = "external";
 char DevToolsAgentHost::kTypeBrowser[] = "browser";
 char DevToolsAgentHost::kTypeOther[] = "other";
 int DevToolsAgentHostImpl::s_attached_count_ = 0;
+int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
 
 // static
 std::string DevToolsAgentHost::GetProtocolVersion() {
@@ -67,6 +68,14 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
     result.push_back(host);
 
   RenderFrameDevToolsAgentHost::AddAllAgentHosts(&result);
+
+#if DCHECK_IS_ON()
+  for (auto it : result) {
+    DevToolsAgentHostImpl* host = static_cast<DevToolsAgentHostImpl*>(it.get());
+    DCHECK(g_instances.Get().find(host->id_) != g_instances.Get().end());
+  }
+#endif
+
   return result;
 }
 
@@ -97,13 +106,11 @@ DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
       session_id_(0),
       client_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(g_instances.Get().find(id_) == g_instances.Get().end());
-  g_instances.Get()[id_] = this;
 }
 
 DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  g_instances.Get().erase(g_instances.Get().find(id_));
+  NotifyDestroyed();
 }
 
 // static
@@ -294,12 +301,36 @@ void DevToolsAgentHost::DetachAllClients() {
 
 // static
 void DevToolsAgentHost::AddObserver(DevToolsAgentHostObserver* observer) {
+  if (observer->ShouldForceDevToolsAgentHostCreation()) {
+    if (!DevToolsAgentHostImpl::s_force_creation_count_) {
+      // Force all agent hosts when first observer is added.
+      DevToolsAgentHost::GetOrCreateAll();
+    }
+    DevToolsAgentHostImpl::s_force_creation_count_++;
+  }
+
   g_observers.Get().AddObserver(observer);
+  for (const auto& id_host : g_instances.Get())
+    observer->DevToolsAgentHostCreated(id_host.second);
 }
 
 // static
 void DevToolsAgentHost::RemoveObserver(DevToolsAgentHostObserver* observer) {
+  if (observer->ShouldForceDevToolsAgentHostCreation())
+    DevToolsAgentHostImpl::s_force_creation_count_--;
   g_observers.Get().RemoveObserver(observer);
+}
+
+// static
+bool DevToolsAgentHostImpl::ShouldForceCreation() {
+  return !!s_force_creation_count_;
+}
+
+void DevToolsAgentHostImpl::NotifyCreated() {
+  DCHECK(g_instances.Get().find(id_) == g_instances.Get().end());
+  g_instances.Get()[id_] = this;
+  for (auto& observer : g_observers.Get())
+    observer.DevToolsAgentHostCreated(this);
 }
 
 void DevToolsAgentHostImpl::NotifyAttached() {
@@ -327,6 +358,13 @@ void DevToolsAgentHostImpl::NotifyDetached() {
 
   for (auto& observer : g_observers.Get())
     observer.DevToolsAgentHostDetached(this);
+}
+
+void DevToolsAgentHostImpl::NotifyDestroyed() {
+  DCHECK(g_instances.Get().find(id_) != g_instances.Get().end());
+  for (auto& observer : g_observers.Get())
+    observer.DevToolsAgentHostDestroyed(this);
+  g_instances.Get().erase(id_);
 }
 
 // DevToolsMessageChunkProcessor -----------------------------------------------

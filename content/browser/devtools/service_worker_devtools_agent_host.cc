@@ -63,6 +63,7 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
                                                    : base::Time()) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler()->dispatcher();
   dispatcher->SetNetworkHandler(network_handler_.get());
+  NotifyCreated();
 }
 
 std::string ServiceWorkerDevToolsAgentHost::GetType() {

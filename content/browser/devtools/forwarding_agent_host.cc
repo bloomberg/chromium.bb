@@ -14,6 +14,7 @@ ForwardingAgentHost::ForwardingAgentHost(
     std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate)
       : DevToolsAgentHostImpl(id),
         delegate_(std::move(delegate)) {
+  NotifyCreated();
 }
 
 ForwardingAgentHost::~ForwardingAgentHost() {

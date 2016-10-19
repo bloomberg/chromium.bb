@@ -1244,6 +1244,88 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ShowCertificateViewer) {
   EXPECT_EQ(transient_entry->GetSSL().certificate, last_shown_certificate());
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
+  std::string temp;
+  std::set<std::string> ids;
+  std::unique_ptr<base::DictionaryValue> command_params;
+  std::unique_ptr<base::DictionaryValue> params;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL first_url = embedded_test_server()->GetURL("/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), first_url, 1);
+
+  GURL second_url = embedded_test_server()->GetURL("/devtools/navigation.html");
+  Shell* second = CreateBrowser();
+  NavigateToURLBlockUntilNavigationsComplete(second, second_url, 1);
+
+  Attach();
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetBoolean("discover", true);
+  SendCommand("Target.setDiscoverTargets", std::move(command_params), true);
+  params = WaitForNotification("Target.targetCreated", true);
+  EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
+  EXPECT_EQ("page", temp);
+  EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
+  EXPECT_TRUE(ids.find(temp) == ids.end());
+  ids.insert(temp);
+  params = WaitForNotification("Target.targetCreated", true);
+  EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
+  EXPECT_EQ("page", temp);
+  EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
+  EXPECT_TRUE(ids.find(temp) == ids.end());
+  ids.insert(temp);
+  EXPECT_TRUE(notifications_.empty());
+
+  GURL third_url = embedded_test_server()->GetURL("/devtools/navigation.html");
+  Shell* third = CreateBrowser();
+  NavigateToURLBlockUntilNavigationsComplete(third, third_url, 1);
+  params = WaitForNotification("Target.targetCreated", true);
+  EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
+  EXPECT_EQ("page", temp);
+  EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
+  EXPECT_TRUE(ids.find(temp) == ids.end());
+  std::string attached_id = temp;
+  ids.insert(temp);
+  EXPECT_TRUE(notifications_.empty());
+
+  second->Close();
+  second = nullptr;
+  params = WaitForNotification("Target.targetDestroyed", true);
+  EXPECT_TRUE(params->GetString("targetId", &temp));
+  EXPECT_TRUE(ids.find(temp) != ids.end());
+  ids.erase(temp);
+  EXPECT_TRUE(notifications_.empty());
+
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetString("targetId", attached_id);
+  SendCommand("Target.attachToTarget", std::move(command_params), true);
+  params = WaitForNotification("Target.attachedToTarget", true);
+  EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
+  EXPECT_EQ(attached_id, temp);
+  EXPECT_TRUE(notifications_.empty());
+
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetBoolean("discover", false);
+  SendCommand("Target.setDiscoverTargets", std::move(command_params), true);
+  params = WaitForNotification("Target.targetDestroyed", true);
+  EXPECT_TRUE(params->GetString("targetId", &temp));
+  EXPECT_TRUE(ids.find(temp) != ids.end());
+  ids.erase(temp);
+  params = WaitForNotification("Target.targetDestroyed", true);
+  EXPECT_TRUE(params->GetString("targetId", &temp));
+  EXPECT_TRUE(ids.find(temp) != ids.end());
+  ids.erase(temp);
+  EXPECT_TRUE(notifications_.empty());
+
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetString("targetId", attached_id);
+  SendCommand("Target.detachFromTarget", std::move(command_params), true);
+  params = WaitForNotification("Target.detachedFromTarget", true);
+  EXPECT_TRUE(params->GetString("targetId", &temp));
+  EXPECT_EQ(attached_id, temp);
+  EXPECT_TRUE(notifications_.empty());
+}
+
 class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1289,13 +1371,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   command_params.reset(new base::DictionaryValue());
   command_params->SetBoolean("value", true);
   SendCommand("Target.setAttachToFrames", std::move(command_params), false);
-  params = WaitForNotification("Target.targetCreated", true);
+  params = WaitForNotification("Target.attachedToTarget", true);
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &target_id));
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("iframe", temp);
-  params = WaitForNotification("Target.attachedToTarget", true);
-  EXPECT_TRUE(params->GetString("targetId", &temp));
-  EXPECT_EQ(target_id, temp);
 
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
@@ -1304,19 +1383,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   params = WaitForNotification("Target.detachedFromTarget", true);
   EXPECT_TRUE(params->GetString("targetId", &temp));
   EXPECT_EQ(target_id, temp);
-  params = WaitForNotification("Target.targetRemoved", true);
-  EXPECT_TRUE(params->GetString("targetId", &temp));
-  EXPECT_EQ(target_id, temp);
 
   // Navigate back to cross-site iframe.
   NavigateFrameToURL(root->child_at(0), cross_site_url);
-  params = WaitForNotification("Target.targetCreated", true);
+  params = WaitForNotification("Target.attachedToTarget", true);
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &target_id));
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("iframe", temp);
-  params = WaitForNotification("Target.attachedToTarget", true);
-  EXPECT_TRUE(params->GetString("targetId", &temp));
-  EXPECT_EQ(target_id, temp);
 
   // Disable auto-attach.
   command_params.reset(new base::DictionaryValue());
@@ -1324,9 +1397,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsProtocolTest, TargetNoDiscovery) {
   command_params->SetBoolean("waitForDebuggerOnStart", false);
   SendCommand("Target.setAutoAttach", std::move(command_params), false);
   params = WaitForNotification("Target.detachedFromTarget", true);
-  EXPECT_TRUE(params->GetString("targetId", &temp));
-  EXPECT_EQ(target_id, temp);
-  params = WaitForNotification("Target.targetRemoved", true);
   EXPECT_TRUE(params->GetString("targetId", &temp));
   EXPECT_EQ(target_id, temp);
 }

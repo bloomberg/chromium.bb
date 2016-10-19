@@ -64,9 +64,12 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   DevToolsAgentHostImpl(const std::string& id);
   ~DevToolsAgentHostImpl() override;
 
+  static bool ShouldForceCreation();
+
   virtual bool DispatchProtocolMessage(const std::string& message) = 0;
   virtual void InspectElement(int x, int y);
 
+  void NotifyCreated();
   void HostClosed();
   void SendMessageToClient(int session_id, const std::string& message);
   devtools::DevToolsIOContext* GetIOContext() { return &io_context_; }
@@ -79,12 +82,14 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   void InnerDetach();
   void NotifyAttached();
   void NotifyDetached();
+  void NotifyDestroyed();
 
   const std::string id_;
   int session_id_;
   DevToolsAgentHostClient* client_;
   devtools::DevToolsIOContext io_context_;
   static int s_attached_count_;
+  static int s_force_creation_count_;
 };
 
 class DevToolsMessageChunkProcessor {

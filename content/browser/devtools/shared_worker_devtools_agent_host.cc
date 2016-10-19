@@ -27,6 +27,7 @@ SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
     const SharedWorkerInstance& shared_worker)
     : WorkerDevToolsAgentHost(worker_id),
       shared_worker_(new SharedWorkerInstance(shared_worker)) {
+  NotifyCreated();
 }
 
 std::string SharedWorkerDevToolsAgentHost::GetType() {

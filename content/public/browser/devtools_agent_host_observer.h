@@ -14,10 +14,24 @@ class DevToolsAgentHost;
 // Observer API notifies interested parties about changes in DevToolsAgentHosts.
 class CONTENT_EXPORT DevToolsAgentHostObserver {
  public:
-  virtual ~DevToolsAgentHostObserver() {}
+  virtual ~DevToolsAgentHostObserver();
 
-  virtual void DevToolsAgentHostAttached(DevToolsAgentHost* agent_host) {}
-  virtual void DevToolsAgentHostDetached(DevToolsAgentHost* agent_host) {}
+  // If observer returns |true|, DevToolsAgentHost instances are created
+  // (and reported in DevToolsAgentHostCreated) for every possible devtools
+  // target (e.g. WebContents).
+  virtual bool ShouldForceDevToolsAgentHostCreation();
+
+  // Called when DevToolsAgentHost was created and is ready to be used.
+  virtual void DevToolsAgentHostCreated(DevToolsAgentHost* agent_host);
+
+  // Called when client has attached to DevToolsAgentHost.
+  virtual void DevToolsAgentHostAttached(DevToolsAgentHost* agent_host);
+
+  // Called when client has detached from DevToolsAgentHost.
+  virtual void DevToolsAgentHostDetached(DevToolsAgentHost* agent_host);
+
+  // Called when DevToolsAgentHost was destroyed.
+  virtual void DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host);
 };
 
 }  // namespace content

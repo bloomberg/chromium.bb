@@ -70,6 +70,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
 
+  static void WebContentsCreated(WebContents* web_contents);
+
   void SynchronousSwapCompositorFrame(
       cc::CompositorFrameMetadata frame_metadata);
 

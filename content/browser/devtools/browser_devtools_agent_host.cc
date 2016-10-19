@@ -43,6 +43,7 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
   dispatcher->SetSystemInfoHandler(system_info_handler_.get());
   dispatcher->SetTetheringHandler(tethering_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
+  NotifyCreated();
 }
 
 BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {

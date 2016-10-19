@@ -372,6 +372,15 @@ RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(
   return nullptr;
 }
 
+// static
+void RenderFrameDevToolsAgentHost::WebContentsCreated(
+    WebContents* web_contents) {
+  if (ShouldForceCreation()) {
+    // Force agent host.
+    DevToolsAgentHost::GetOrCreateFor(web_contents);
+  }
+}
+
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
@@ -433,6 +442,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
 
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
+  NotifyCreated();
 }
 
 void RenderFrameDevToolsAgentHost::SetPending(RenderFrameHostImpl* host) {
