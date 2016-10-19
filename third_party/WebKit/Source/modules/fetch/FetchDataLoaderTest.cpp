@@ -48,7 +48,7 @@ TEST(FetchDataLoaderTest, LoadAsBlob) {
   EXPECT_CALL(*consumer,
               drainAsBlobDataHandle(
                   BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize))
-      .WillOnce(Return(nullptr));
+      .WillOnce(Return(ByMove(nullptr)));
   EXPECT_CALL(*consumer, setClient(_)).WillOnce(SaveArg<0>(&client));
   EXPECT_CALL(*consumer, beginRead(_, _))
       .WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<1>(0),
@@ -96,7 +96,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed) {
   EXPECT_CALL(*consumer,
               drainAsBlobDataHandle(
                   BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize))
-      .WillOnce(Return(nullptr));
+      .WillOnce(Return(ByMove(nullptr)));
   EXPECT_CALL(*consumer, setClient(_)).WillOnce(SaveArg<0>(&client));
   EXPECT_CALL(*consumer, beginRead(_, _))
       .WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<1>(0),
@@ -139,7 +139,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel) {
   EXPECT_CALL(*consumer,
               drainAsBlobDataHandle(
                   BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize))
-      .WillOnce(Return(nullptr));
+      .WillOnce(Return(ByMove(nullptr)));
   EXPECT_CALL(*consumer, setClient(_)).WillOnce(SaveArg<0>(&client));
   EXPECT_CALL(*consumer, beginRead(_, _))
       .WillOnce(DoAll(SetArgPointee<0>(nullptr), SetArgPointee<1>(0),
@@ -178,7 +178,7 @@ TEST(FetchDataLoaderTest,
   EXPECT_CALL(*consumer,
               drainAsBlobDataHandle(
                   BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize))
-      .WillOnce(Return(inputBlobDataHandle));
+      .WillOnce(Return(ByMove(inputBlobDataHandle)));
   EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_))
       .WillOnce(SaveArg<0>(&blobDataHandle));
   EXPECT_CALL(checkpoint, Call(2));
@@ -220,7 +220,7 @@ TEST(FetchDataLoaderTest,
   EXPECT_CALL(*consumer,
               drainAsBlobDataHandle(
                   BytesConsumer::BlobSizePolicy::DisallowBlobWithInvalidSize))
-      .WillOnce(Return(inputBlobDataHandle));
+      .WillOnce(Return(ByMove(inputBlobDataHandle)));
   EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_))
       .WillOnce(SaveArg<0>(&blobDataHandle));
   EXPECT_CALL(checkpoint, Call(2));

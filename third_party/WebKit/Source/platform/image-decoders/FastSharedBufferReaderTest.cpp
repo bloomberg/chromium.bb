@@ -66,7 +66,7 @@ struct SegmentReaders {
   RefPtr<SegmentReader> segmentReaders[3];
 
   SegmentReaders(PassRefPtr<SharedBuffer> input) {
-    segmentReaders[0] = SegmentReader::createFromSharedBuffer(input);
+    segmentReaders[0] = SegmentReader::createFromSharedBuffer(std::move(input));
     segmentReaders[1] = copyToROBufferSegmentReader(segmentReaders[0]);
     segmentReaders[2] = copyToDataSegmentReader(segmentReaders[0]);
   }

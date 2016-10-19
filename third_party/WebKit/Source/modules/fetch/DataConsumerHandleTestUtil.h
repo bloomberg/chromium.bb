@@ -211,7 +211,7 @@ class DataConsumerHandleTestUtil {
       static std::unique_ptr<WebDataConsumerHandle> create(
           const String& name,
           PassRefPtr<Context> context) {
-        return wrapUnique(new DataConsumerHandle(name, context));
+        return wrapUnique(new DataConsumerHandle(name, std::move(context)));
       }
 
      private:

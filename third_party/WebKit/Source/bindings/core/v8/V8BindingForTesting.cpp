@@ -13,7 +13,7 @@ PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(
     v8::Local<v8::Context> context,
     PassRefPtr<DOMWrapperWorld> world) {
   RefPtr<ScriptStateForTesting> scriptState =
-      adoptRef(new ScriptStateForTesting(context, world));
+      adoptRef(new ScriptStateForTesting(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
   // is alive.  This is deref()ed in the weak callback of the v8::Context.
   scriptState->ref();
@@ -22,7 +22,7 @@ PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(
 
 ScriptStateForTesting::ScriptStateForTesting(v8::Local<v8::Context> context,
                                              PassRefPtr<DOMWrapperWorld> world)
-    : ScriptState(context, world) {}
+    : ScriptState(context, std::move(world)) {}
 
 ExecutionContext* ScriptStateForTesting::getExecutionContext() const {
   return m_executionContext;

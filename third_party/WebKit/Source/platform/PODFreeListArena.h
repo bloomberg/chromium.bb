@@ -42,7 +42,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
   // Creates a new PODFreeListArena configured with the given Allocator.
   static PassRefPtr<PODFreeListArena> create(
       PassRefPtr<PODArena::Allocator> allocator) {
-    return adoptRef(new PODFreeListArena(allocator));
+    return adoptRef(new PODFreeListArena(std::move(allocator)));
   }
 
   // Allocates an object from the arena.

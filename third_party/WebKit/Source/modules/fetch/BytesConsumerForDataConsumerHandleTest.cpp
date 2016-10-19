@@ -19,6 +19,7 @@ using Command = DataConsumerHandleTestUtil::Command;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
+using ::testing::ByMove;
 using ::testing::InSequence;
 using ::testing::Return;
 

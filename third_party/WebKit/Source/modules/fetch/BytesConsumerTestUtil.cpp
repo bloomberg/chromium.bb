@@ -15,6 +15,7 @@ namespace blink {
 
 using Result = BytesConsumer::Result;
 using ::testing::_;
+using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -25,8 +26,9 @@ BytesConsumerTestUtil::MockBytesConsumer::MockBytesConsumer() {
                            Return(Result::Error)));
   ON_CALL(*this, endRead(_)).WillByDefault(Return(Result::Error));
   ON_CALL(*this, getPublicState()).WillByDefault(Return(PublicState::Errored));
-  ON_CALL(*this, drainAsBlobDataHandle(_)).WillByDefault(Return(nullptr));
-  ON_CALL(*this, drainAsFormData()).WillByDefault(Return(nullptr));
+  ON_CALL(*this, drainAsBlobDataHandle(_))
+      .WillByDefault(Return(ByMove(nullptr)));
+  ON_CALL(*this, drainAsFormData()).WillByDefault(Return(ByMove(nullptr)));
 }
 
 BytesConsumerTestUtil::ReplayingBytesConsumer::ReplayingBytesConsumer(
