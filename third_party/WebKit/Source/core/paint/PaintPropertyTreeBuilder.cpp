@@ -70,7 +70,7 @@ PaintPropertyTreeBuilder::setupInitialContext() {
   return context;
 }
 
-void createOrUpdateFrameViewPreTranslation(
+const TransformPaintPropertyNode* createOrUpdateFrameViewPreTranslation(
     FrameView& frameView,
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
@@ -82,9 +82,10 @@ void createOrUpdateFrameViewPreTranslation(
   else
     frameView.setPreTranslation(
         TransformPaintPropertyNode::create(std::move(parent), matrix, origin));
+  return frameView.preTranslation();
 }
 
-void createOrUpdateFrameViewContentClip(
+const ClipPaintPropertyNode* createOrUpdateFrameViewContentClip(
     FrameView& frameView,
     PassRefPtr<const ClipPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
@@ -96,9 +97,10 @@ void createOrUpdateFrameViewContentClip(
   else
     frameView.setContentClip(ClipPaintPropertyNode::create(
         std::move(parent), std::move(localTransformSpace), clipRect));
+  return frameView.contentClip();
 }
 
-void createOrUpdateFrameViewScrollTranslation(
+const TransformPaintPropertyNode* createOrUpdateFrameViewScrollTranslation(
     FrameView& frameView,
     PassRefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
@@ -110,9 +112,10 @@ void createOrUpdateFrameViewScrollTranslation(
   else
     frameView.setScrollTranslation(
         TransformPaintPropertyNode::create(std::move(parent), matrix, origin));
+  return frameView.scrollTranslation();
 }
 
-void createOrUpdateFrameViewScroll(
+ScrollPaintPropertyNode* createOrUpdateFrameViewScroll(
     FrameView& frameView,
     PassRefPtr<ScrollPaintPropertyNode> parent,
     PassRefPtr<const TransformPaintPropertyNode> scrollOffset,
@@ -129,6 +132,7 @@ void createOrUpdateFrameViewScroll(
     frameView.setScroll(ScrollPaintPropertyNode::create(
         std::move(parent), std::move(scrollOffset), clip, bounds,
         userScrollableHorizontal, userScrollableVertical));
+  return frameView.scroll();
 }
 
 void PaintPropertyTreeBuilder::buildTreeNodes(
@@ -162,19 +166,23 @@ void PaintPropertyTreeBuilder::buildTreeNodes(
   TransformationMatrix frameTranslate;
   frameTranslate.translate(frameView.x() + context.current.paintOffset.x(),
                            frameView.y() + context.current.paintOffset.y());
-  createOrUpdateFrameViewPreTranslation(frameView, context.current.transform,
-                                        frameTranslate, FloatPoint3D());
+  context.current.transform = createOrUpdateFrameViewPreTranslation(
+      frameView, context.current.transform, frameTranslate, FloatPoint3D());
 
   FloatRoundedRect contentClip(
       IntRect(IntPoint(), frameView.visibleContentSize()));
-  createOrUpdateFrameViewContentClip(frameView, context.current.clip,
-                                     frameView.preTranslation(), contentClip);
+  context.current.clip = createOrUpdateFrameViewContentClip(
+      frameView, context.current.clip, frameView.preTranslation(), contentClip);
+
+  // Record the fixed properties before any scrolling occurs.
+  const auto* fixedTransformNode = context.current.transform;
+  auto* fixedScrollNode = context.current.scroll;
 
   ScrollOffset scrollOffset = frameView.scrollOffset();
   if (frameView.isScrollable() || !scrollOffset.isZero()) {
     TransformationMatrix frameScroll;
     frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
-    createOrUpdateFrameViewScrollTranslation(
+    context.current.transform = createOrUpdateFrameViewScrollTranslation(
         frameView, frameView.preTranslation(), frameScroll, FloatPoint3D());
 
     IntSize scrollClip = frameView.visibleContentSize();
@@ -183,11 +191,12 @@ void PaintPropertyTreeBuilder::buildTreeNodes(
         frameView.userInputScrollable(HorizontalScrollbar);
     bool userScrollableVertical =
         frameView.userInputScrollable(VerticalScrollbar);
-    createOrUpdateFrameViewScroll(frameView, context.current.scroll,
-                                  frameView.scrollTranslation(), scrollClip,
-                                  scrollBounds, userScrollableHorizontal,
-                                  userScrollableVertical);
+    context.current.scroll = createOrUpdateFrameViewScroll(
+        frameView, context.current.scroll, frameView.scrollTranslation(),
+        scrollClip, scrollBounds, userScrollableHorizontal,
+        userScrollableVertical);
   } else {
+    // Ensure pre-existing properties are cleared when there is no scrolling.
     frameView.setScrollTranslation(nullptr);
     frameView.setScroll(nullptr);
   }
@@ -195,21 +204,14 @@ void PaintPropertyTreeBuilder::buildTreeNodes(
   // Initialize the context for current, absolute and fixed position cases.
   // They are the same, except that scroll translation does not apply to
   // fixed position descendants.
-  ScrollPaintPropertyNode* initialScroll = context.current.scroll;
-  context.current.transform = frameView.scrollTranslation()
-                                  ? frameView.scrollTranslation()
-                                  : frameView.preTranslation();
   context.current.paintOffset = LayoutPoint();
-  context.current.clip = frameView.contentClip();
-  context.current.scroll =
-      frameView.scroll() ? frameView.scroll() : initialScroll;
   context.current.renderingContextID = 0;
   context.current.shouldFlattenInheritedTransform = true;
   context.absolutePosition = context.current;
   context.containerForAbsolutePosition = nullptr;
   context.fixedPosition = context.current;
-  context.fixedPosition.transform = frameView.preTranslation();
-  context.fixedPosition.scroll = initialScroll;
+  context.fixedPosition.transform = fixedTransformNode;
+  context.fixedPosition.scroll = fixedScrollNode;
 
   std::unique_ptr<PropertyTreeState> contentsState(
       new PropertyTreeState(context.current.transform, context.current.clip,
