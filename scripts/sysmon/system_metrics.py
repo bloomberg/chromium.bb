@@ -193,6 +193,10 @@ def get_net_info():
 
   nics = psutil.net_io_counters(pernic=True)
   for nic, counters in nics.iteritems():
+    # TODO(ayatane): Use a different way of identifying virtual interfaces
+    if nic.startswith('veth'):
+      # Skip virtual interfaces
+      continue
     fields = {'interface': nic}
     for metric, counter_name in metric_counter_names:
       try:
