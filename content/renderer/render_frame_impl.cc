@@ -491,36 +491,36 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
 void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(kChromeUIScheme))
     return;
-  if (url == GURL(kChromeUIBadCastCrashURL)) {
+  if (url == kChromeUIBadCastCrashURL) {
     LOG(ERROR)
         << "Intentionally crashing (with bad cast)"
         << " because user navigated to " << url.spec();
     BadCastCrashIntentionally();
-  } else if (url == GURL(kChromeUICrashURL)) {
+  } else if (url == kChromeUICrashURL) {
     LOG(ERROR) << "Intentionally crashing (with null pointer dereference)"
                << " because user navigated to " << url.spec();
     CrashIntentionally();
-  } else if (url == GURL(kChromeUIDumpURL)) {
+  } else if (url == kChromeUIDumpURL) {
     // This URL will only correctly create a crash dump file if content is
     // hosted in a process that has correctly called
     // base::debug::SetDumpWithoutCrashingFunction.  Refer to the documentation
     // of base::debug::DumpWithoutCrashing for more details.
     base::debug::DumpWithoutCrashing();
-  } else if (url == GURL(kChromeUIKillURL)) {
+  } else if (url == kChromeUIKillURL) {
     LOG(ERROR) << "Intentionally issuing kill signal to current process"
                << " because user navigated to " << url.spec();
     base::Process::Current().Terminate(1, false);
-  } else if (url == GURL(kChromeUIHangURL)) {
+  } else if (url == kChromeUIHangURL) {
     LOG(ERROR) << "Intentionally hanging ourselves with sleep infinite loop"
                << " because user navigated to " << url.spec();
     for (;;) {
       base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
     }
-  } else if (url == GURL(kChromeUIShorthangURL)) {
+  } else if (url == kChromeUIShorthangURL) {
     LOG(ERROR) << "Intentionally sleeping renderer for 20 seconds"
                << " because user navigated to " << url.spec();
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
-  } else if (url == GURL(kChromeUIMemoryExhaustURL)) {
+  } else if (url == kChromeUIMemoryExhaustURL) {
     LOG(ERROR)
         << "Intentionally exhausting renderer memory because user navigated to "
         << url.spec();
@@ -4807,7 +4807,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
 
-  params.is_srcdoc = params.url == GURL(content::kAboutSrcDocURL);
+  params.is_srcdoc = params.url == content::kAboutSrcDocURL;
 
   if (!frame->parent()) {
     // Top-level navigation.
@@ -5216,7 +5216,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   // (see below).
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
-      old_url == GURL(url::kAboutBlankURL) &&
+      old_url == url::kAboutBlankURL &&
       // Must be the first real navigation of the tab.
       render_view_->historyBackListCount() < 1 &&
       render_view_->historyForwardListCount() < 1 &&

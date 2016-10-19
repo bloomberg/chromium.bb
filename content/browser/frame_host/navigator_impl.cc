@@ -689,7 +689,7 @@ void NavigatorImpl::DidNavigate(
 bool NavigatorImpl::ShouldAssignSiteForURL(const GURL& url) {
   // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
   // still be used for a normal web site.
-  if (url == GURL(url::kAboutBlankURL))
+  if (url == url::kAboutBlankURL)
     return false;
 
   // The embedder will then have the opportunity to determine if the URL

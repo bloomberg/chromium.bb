@@ -418,7 +418,7 @@ void FrameTree::UpdateLoadProgress() {
         // Ignore the current frame if it has not started loading,
         // if the frame is cross-origin, or about:blank.
         if (!node->has_started_loading() || !node->HasSameOrigin(*root_) ||
-            node->current_url() == GURL(url::kAboutBlankURL))
+            node->current_url() == url::kAboutBlankURL)
           continue;
         progress += node->loading_progress();
         frame_count++;

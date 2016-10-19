@@ -1463,7 +1463,7 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
                         // We don't have sufficient information to identify
                         // that case at the moment, so always allow about:blank
                         // for now.
-                        last_committed_url == GURL(url::kAboutBlankURL) ||
+                        last_committed_url == url::kAboutBlankURL ||
                         last_committed_url.GetOrigin() == url.GetOrigin() ||
                         committed_origin == origin ||
                         !prefs.web_security_enabled ||

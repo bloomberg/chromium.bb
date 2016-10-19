@@ -56,7 +56,7 @@ const char kKaskoSendReport[] = "/send-report";
 
 void HandlePpapiFlashDebugURL(const GURL& url) {
 #if defined(ENABLE_PLUGINS)
-  bool crash = url == GURL(kChromeUIPpapiFlashCrashURL);
+  bool crash = url == kChromeUIPpapiFlashCrashURL;
 
   std::vector<PpapiPluginProcessHost*> hosts;
   PpapiPluginProcessHost::FindByName(
@@ -198,18 +198,18 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     return true;
   }
 
-  if (url == GURL(kChromeUIBrowserCrashURL)) {
+  if (url == kChromeUIBrowserCrashURL) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
     return true;
   }
 
-  if (url == GURL(kChromeUIBrowserUIHang)) {
+  if (url == kChromeUIBrowserUIHang) {
     HangCurrentThread();
     return true;
   }
 
-  if (url == GURL(kChromeUIDelayedBrowserUIHang)) {
+  if (url == kChromeUIDelayedBrowserUIHang) {
     // Webdriver-safe url to hang the ui thread. Webdriver waits for the onload
     // event in javascript which needs a little more time to fire.
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
@@ -218,29 +218,28 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
     return true;
   }
 
-  if (url == GURL(kChromeUIGpuCleanURL)) {
+  if (url == kChromeUIGpuCleanURL) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateRemoveAllContext();
     return true;
   }
 
-  if (url == GURL(kChromeUIGpuCrashURL)) {
+  if (url == kChromeUIGpuCrashURL) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateCrash();
     return true;
   }
 
-  if (url == GURL(kChromeUIGpuHangURL)) {
+  if (url == kChromeUIGpuHangURL) {
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateHang();
     return true;
   }
 
-  if (url == GURL(kChromeUIPpapiFlashCrashURL) ||
-      url == GURL(kChromeUIPpapiFlashHangURL)) {
+  if (url == kChromeUIPpapiFlashCrashURL || url == kChromeUIPpapiFlashHangURL) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&HandlePpapiFlashDebugURL, url));
     return true;
@@ -256,13 +255,13 @@ bool IsRendererDebugURL(const GURL& url) {
   if (url.SchemeIs(url::kJavaScriptScheme))
     return true;
 
-  return url == GURL(kChromeUIBadCastCrashURL) ||
-         url == GURL(kChromeUICrashURL) ||
-         url == GURL(kChromeUIDumpURL) ||
-         url == GURL(kChromeUIKillURL) ||
-         url == GURL(kChromeUIHangURL) ||
-         url == GURL(kChromeUIShorthangURL) ||
-         url == GURL(kChromeUIMemoryExhaustURL);
+  return url == kChromeUIBadCastCrashURL ||
+         url == kChromeUICrashURL ||
+         url == kChromeUIDumpURL ||
+         url == kChromeUIKillURL ||
+         url == kChromeUIHangURL ||
+         url == kChromeUIShorthangURL ||
+         url == kChromeUIMemoryExhaustURL;
 }
 
 }  // namespace content
