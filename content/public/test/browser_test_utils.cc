@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
@@ -982,8 +983,7 @@ void FetchHistogramsFromChildProcesses() {
   scoped_refptr<content::MessageLoopRunner> runner = new MessageLoopRunner;
 
   FetchHistogramsAsynchronously(
-      base::MessageLoop::current(),
-      runner->QuitClosure(),
+      base::ThreadTaskRunnerHandle::Get(), runner->QuitClosure(),
       // If this call times out, it means that a child process is not
       // responding, which is something we should not ignore.  The timeout is
       // set to be longer than the normal browser test timeout so that it will

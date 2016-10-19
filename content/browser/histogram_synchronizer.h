@@ -12,12 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/histogram_subscriber.h"
-
-namespace base {
-class MessageLoop;
-}
 
 namespace content {
 
@@ -68,11 +65,12 @@ class HistogramSynchronizer : public HistogramSubscriber {
 
   // Contact all child processes, and get them to upload to the browser any/all
   // changes to histograms.  When all changes have been acquired, or when the
-  // wait time expires (whichever is sooner), post the callback to the
-  // specified message loop. Note the callback is posted exactly once.
-  static void FetchHistogramsAsynchronously(base::MessageLoop* callback_thread,
-                                            const base::Closure& callback,
-                                            base::TimeDelta wait_time);
+  // wait time expires (whichever is sooner), post the callback to the specified
+  // TaskRunner. Note the callback is posted exactly once.
+  static void FetchHistogramsAsynchronously(
+      scoped_refptr<base::TaskRunner> task_runner,
+      const base::Closure& callback,
+      base::TimeDelta wait_time);
 
  private:
   friend struct base::DefaultSingletonTraits<HistogramSynchronizer>;
@@ -106,18 +104,18 @@ class HistogramSynchronizer : public HistogramSubscriber {
       int sequence_number,
       const std::vector<std::string>& pickled_histograms) override;
 
-  // Set the callback_thread_ and callback_ members. If these members already
-  // had values, then as a side effect, post the old callback_ to the old
-  // callaback_thread_.  This side effect should not generally happen, but is in
-  // place to assure correctness (that any tasks that were set, are eventually
-  // called, and never merely discarded).
-  void SetCallbackTaskAndThread(base::MessageLoop* callback_thread,
+  // Set the |callback_task_runner_| and |callback_| members. If these members
+  // already had values, then as a side effect, post the old |callback_| to the
+  // old |callback_task_runner_|. This side effect should not generally happen,
+  // but is in place to assure correctness (that any tasks that were set, are
+  // eventually called, and never merely discarded).
+  void SetTaskRunnerAndCallback(scoped_refptr<base::TaskRunner> task_runner,
                                 const base::Closure& callback);
 
   void ForceHistogramSynchronizationDoneCallback(int sequence_number);
 
   // Internal helper function, to post task, and record callback stats.
-  void InternalPostTask(base::MessageLoop* thread,
+  void InternalPostTask(scoped_refptr<base::TaskRunner> task_runner,
                         const base::Closure& callback);
 
   // Gets a new sequence number to be sent to processes from browser process.
@@ -127,10 +125,10 @@ class HistogramSynchronizer : public HistogramSubscriber {
   base::Lock lock_;
 
   // When a request is made to asynchronously update the histograms, we store
-  // the task and thread we use to post a completion notification in
-  // callback_ and callback_thread_.
+  // the task and TaskRunner we use to post a completion notification in
+  // |callback_| and |callback_task_runner_|.
   base::Closure callback_;
-  base::MessageLoop* callback_thread_;
+  scoped_refptr<base::TaskRunner> callback_task_runner_;
 
   // We don't track the actual processes that are contacted for an update, only
   // the count of the number of processes, and we can sometimes time-out and
