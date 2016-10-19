@@ -200,7 +200,7 @@ class UrlRuleFlatBufferConverter {
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 10;
+const int RulesetIndexer::kIndexedFormatVersion = 11;
 
 RulesetIndexer::MutableUrlPatternIndex::MutableUrlPatternIndex() = default;
 RulesetIndexer::MutableUrlPatternIndex::~MutableUrlPatternIndex() = default;

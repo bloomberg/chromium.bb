@@ -30,7 +30,7 @@ using NGramHasher = Uint64Hasher;
 // The hash table probe sequence used both by the ruleset builder and matcher.
 using NGramHashTableProber = DefaultProber<NGram, NGramHasher>;
 
-constexpr size_t kNGramSize = 6;
+constexpr size_t kNGramSize = 5;
 static_assert(kNGramSize <= sizeof(NGram), "NGram type is too narrow.");
 
 // The class used to construct flat data structures representing the set of URL
