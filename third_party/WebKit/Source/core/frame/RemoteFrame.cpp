@@ -95,6 +95,8 @@ void RemoteFrame::reload(FrameLoadType frameLoadType,
 }
 
 void RemoteFrame::detach(FrameDetachType type) {
+  m_isDetaching = true;
+
   PluginScriptForbiddenScope forbidPluginDestructorScripting;
   detachChildren();
   if (!client())

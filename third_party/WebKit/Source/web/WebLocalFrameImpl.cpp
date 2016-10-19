@@ -2062,8 +2062,7 @@ bool WebLocalFrameImpl::isLoading() const {
 
 bool WebLocalFrameImpl::
     isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873() const {
-  return !frame() ||
-         frame()->isFrameDetachedForSpecialOneOffStopTheCrashingHackBug561873();
+  return !frame() || frame()->isDetaching();
 }
 
 bool WebLocalFrameImpl::isNavigationScheduledWithin(

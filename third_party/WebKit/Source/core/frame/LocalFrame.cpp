@@ -383,7 +383,9 @@ void LocalFrame::reload(FrameLoadType loadType,
 }
 
 void LocalFrame::detach(FrameDetachType type) {
-  m_detached = true;
+  // Note that detach() can be re-entered, so it's not possible to
+  // DCHECK(!m_isDetaching) here.
+  m_isDetaching = true;
 
   PluginScriptForbiddenScope forbidPluginDestructorScripting;
   m_loader.stopAllLoaders();
