@@ -8,7 +8,7 @@ Test 0
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -23,7 +23,7 @@ Test 1
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 #testdiv { background-color: green; }
@@ -51,7 +51,7 @@ Test 3
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
   #testdiv { background-color: green; }
 }
@@ -67,7 +67,7 @@ Test 4
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
 }
 @page :right { margin-left: 3cm; }
 @-webkit-keyframes bounce { 
@@ -81,7 +81,7 @@ Test 5
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: green; }
 }
 @page :right { margin-left: 3cm; }
@@ -96,7 +96,7 @@ Test 6
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { }
 }
 @page :right { margin-left: 3cm; }
@@ -111,7 +111,7 @@ Test 7
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: green; }
 }
 @page :right { margin-left: 3cm; }
@@ -126,7 +126,7 @@ Test 8
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #dontmatch { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -141,7 +141,7 @@ Test 9
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media print { 
+@media print {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -156,7 +156,7 @@ Test 10
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(0, 128, 0)'
 
 #testdiv { background-color: green; }
-@media print { 
+@media print {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -178,7 +178,7 @@ PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is
 
 @import url("data:text/css;charset=utf-8,%23testdiv%7Bbackground-color%3Agreen%20!important%7D");
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -193,7 +193,7 @@ Test 13
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 @page foo { margin-left: 3cm; }
@@ -208,7 +208,7 @@ Test 14
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -224,7 +224,7 @@ Test 15
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }
@@ -238,7 +238,7 @@ Test 16
 PASS getComputedStyle(testElement, null).getPropertyValue('background-color') is 'rgb(255, 0, 0)'
 
 #testdiv { background-color: green; }
-@media all { 
+@media all {
   #testdiv { background-color: red; }
 }
 @page :right { margin-left: 3cm; }

@@ -43,7 +43,7 @@ String CSSMediaRule::cssText() const {
     result.append(mediaQueries()->mediaText());
     result.append(' ');
   }
-  result.append("{ \n");
+  result.append("{\n");
   appendCSSTextForItems(result);
   result.append('}');
   return result.toString();

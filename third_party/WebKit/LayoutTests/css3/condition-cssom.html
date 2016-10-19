@@ -31,7 +31,7 @@
         assert_equals(rules[0].conditionText, "screen and (min-width: 480px)");
         assert_equals(rules[0].media.mediaText,rules[0].conditionText);
         assert_equals(rules[0].cssText,
-                          "@media screen and (min-width: 480px) { \n" +
+                          "@media screen and (min-width: 480px) {\n" +
                           "  body { background-color: lightgreen; }\n" +
                           "}");
     }, "@media inherited from CSSConditionRule.");
@@ -45,7 +45,7 @@
         assert_equals(rules[1].conditionText, "");
         assert_equals(rules[1].media.mediaText,rules[1].conditionText);
         assert_equals(rules[1].cssText,
-                          "@media  { \n" +
+                          "@media  {\n" +
                           "  body { background-color: red; }\n" +
                           "}");
     }, "@media inherited from CSSConditionRule, empty media.");

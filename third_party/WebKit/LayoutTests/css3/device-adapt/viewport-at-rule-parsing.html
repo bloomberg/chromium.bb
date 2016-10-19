@@ -70,7 +70,7 @@
         }, "Rule with malformed attributes");
 
         test(function() {
-            assert_equals(rules.item(4).cssText, "@media all { \n  @viewport { }\n}");
+            assert_equals(rules.item(4).cssText, "@media all {\n  @viewport { }\n}");
         }, "Should be accepted inside media queries");
 
         test(function() {

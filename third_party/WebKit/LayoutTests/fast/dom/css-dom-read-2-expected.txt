@@ -32,13 +32,13 @@ I {display: block;}
 i { display: block; } 
 
 @import url("fancyfonts.css") screen;
-@media print { 
+@media print {
   body { font-size: 10pt; }
 }
-@media screen { 
+@media screen {
   body { font-size: 13px; }
 }
-@media screen, print { 
+@media screen, print {
   body { line-height: 1.2; }
 }
 .one { display: block; }
