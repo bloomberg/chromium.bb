@@ -7,10 +7,8 @@
 
 #include <wayland-server-core.h>
 
-#include <memory>
-
 #include "base/bind.h"
-#include "base/files/file_descriptor_watcher_posix.h"
+#include "base/message_loop/message_pump_libevent.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -184,7 +182,7 @@ struct DisplayDeleter {
   void operator()(wl_display* display);
 };
 
-class FakeServer : public base::Thread {
+class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
  public:
   FakeServer();
   ~FakeServer() override;
@@ -215,9 +213,11 @@ class FakeServer : public base::Thread {
  private:
   void DoPause();
 
-  void StartWatchingFileDescriptor();
+  std::unique_ptr<base::MessagePump> CreateMessagePump();
 
-  void OnFileCanReadWithoutBlocking();
+  // base::MessagePumpLibevent::Watcher
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   std::unique_ptr<wl_display, DisplayDeleter> display_;
   wl_client* client_ = nullptr;
@@ -232,7 +232,7 @@ class FakeServer : public base::Thread {
   MockSeat seat_;
   MockXdgShell xdg_shell_;
 
-  std::unique_ptr<base::FileDescriptorWatcher::Controller> controller_;
+  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServer);
 };
