@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
@@ -342,6 +343,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   // The database for persisting snippets.
   std::unique_ptr<NTPSnippetsDatabase> database_;
+  base::TimeTicks database_load_start_;
 
   // The service that provides events and data about the signin and sync state.
   std::unique_ptr<NTPSnippetsStatusService> snippets_status_service_;

@@ -213,6 +213,7 @@ NTPSnippetsService::NTPSnippetsService(
 
   // We transition to other states while finalizing the initialization, when the
   // database is done loading.
+  database_load_start_ = base::TimeTicks::Now();
   database_->LoadSnippets(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,
                                      base::Unretained(this)));
 }
@@ -471,6 +472,11 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
     return;
   DCHECK(state_ == State::NOT_INITED);
   DCHECK(base::ContainsKey(categories_, articles_category_));
+
+  base::TimeDelta database_load_time =
+      base::TimeTicks::Now() - database_load_start_;
+  UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Snippets.DatabaseLoadTime",
+                             database_load_time);
 
   NTPSnippet::PtrVector to_delete;
   for (std::unique_ptr<NTPSnippet>& snippet : snippets) {
