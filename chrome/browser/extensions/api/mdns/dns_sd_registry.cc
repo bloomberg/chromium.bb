@@ -230,8 +230,10 @@ void DnsSdRegistry::ServicesFlushed(const std::string& service_type) {
 
 void DnsSdRegistry::DispatchApiEvent(const std::string& service_type) {
   VLOG(1) << "DispatchApiEvent: service_type: " << service_type;
-  FOR_EACH_OBSERVER(DnsSdObserver, observers_, OnDnsSdEvent(
-      service_type, service_data_map_[service_type]->GetServiceList()));
+  for (auto& observer : observers_) {
+    observer.OnDnsSdEvent(service_type,
+                          service_data_map_[service_type]->GetServiceList());
+  }
 }
 
 bool DnsSdRegistry::IsRegistered(const std::string& service_type) {

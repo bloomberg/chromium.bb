@@ -167,8 +167,8 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
   GetExtensionPrefs()->UpdateExtensionPref(extension_id,
                                            kBrowserActionVisible,
                                            new base::FundamentalValue(visible));
-  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionActionVisibilityChanged(
-      extension_id, visible));
+  for (auto& observer : observers_)
+    observer.OnExtensionActionVisibilityChanged(extension_id, visible);
 }
 
 bool ExtensionActionAPI::ShowExtensionActionPopup(
@@ -205,10 +205,8 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
                                       content::WebContents* web_contents,
                                       content::BrowserContext* context) {
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      OnExtensionActionUpdated(extension_action, web_contents, context));
+  for (auto& observer : observers_)
+    observer.OnExtensionActionUpdated(extension_action, web_contents, context);
 
   if (extension_action->action_type() == ActionInfo::TYPE_PAGE)
     NotifyPageActionsChanged(web_contents);
@@ -302,11 +300,13 @@ void ExtensionActionAPI::NotifyPageActionsChanged(
     return;
   location_bar->UpdatePageActions();
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnPageActionsUpdated(web_contents));
+  for (auto& observer : observers_)
+    observer.OnPageActionsUpdated(web_contents);
 }
 
 void ExtensionActionAPI::Shutdown() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionActionAPIShuttingDown());
+  for (auto& observer : observers_)
+    observer.OnExtensionActionAPIShuttingDown();
 }
 
 //

@@ -1839,8 +1839,8 @@ void ExtensionService::OnExtensionInstalled(
       if (delay_reason ==
           extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE) {
         // Notify observers that app update is available.
-        FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
-                          OnAppUpdateAvailable(extension));
+        for (auto& observer : update_observers_)
+          observer.OnAppUpdateAvailable(extension);
       }
       return;
     case extensions::InstallGate::ABORT:
@@ -2208,8 +2208,8 @@ void ExtensionService::Observe(int type,
     }
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
       // Notify observers that chrome update is available.
-      FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
-                        OnChromeUpdateAvailable());
+      for (auto& observer : update_observers_)
+        observer.OnChromeUpdateAvailable();
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED: {

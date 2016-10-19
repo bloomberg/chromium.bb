@@ -303,7 +303,8 @@ void BrailleControllerImpl::DispatchKeyEvent(std::unique_ptr<KeyEvent> event) {
     return;
   }
   VLOG(1) << "Dispatching key event: " << *event->ToValue();
-  FOR_EACH_OBSERVER(BrailleObserver, observers_, OnBrailleKeyEvent(*event));
+  for (auto& observer : observers_)
+    observer.OnBrailleKeyEvent(*event);
 }
 
 void BrailleControllerImpl::DispatchOnDisplayStateChanged(
@@ -318,8 +319,8 @@ void BrailleControllerImpl::DispatchOnDisplayStateChanged(
     }
     return;
   }
-  FOR_EACH_OBSERVER(BrailleObserver, observers_,
-                    OnBrailleDisplayStateChanged(*new_state));
+  for (auto& observer : observers_)
+    observer.OnBrailleDisplayStateChanged(*new_state);
 }
 
 }  // namespace braille_display_private

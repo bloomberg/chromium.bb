@@ -32,8 +32,8 @@ WindowControllerList::~WindowControllerList() {
 
 void WindowControllerList::AddExtensionWindow(WindowController* window) {
   windows_.push_back(window);
-  FOR_EACH_OBSERVER(WindowControllerListObserver, observers_,
-                    OnWindowControllerAdded(window));
+  for (auto& observer : observers_)
+    observer.OnWindowControllerAdded(window);
 }
 
 void WindowControllerList::RemoveExtensionWindow(WindowController* window) {
@@ -41,8 +41,8 @@ void WindowControllerList::RemoveExtensionWindow(WindowController* window) {
       windows_.begin(), windows_.end(), window);
   if (iter != windows_.end()) {
     windows_.erase(iter);
-    FOR_EACH_OBSERVER(WindowControllerListObserver, observers_,
-                      OnWindowControllerRemoved(window));
+    for (auto& observer : observers_)
+      observer.OnWindowControllerRemoved(window);
   }
 }
 

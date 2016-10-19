@@ -353,7 +353,8 @@ void Blacklist::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE, type);
-  FOR_EACH_OBSERVER(Observer, observers_, OnBlacklistUpdated());
+  for (auto& observer : observers_)
+    observer.OnBlacklistUpdated();
 }
 
 }  // namespace extensions

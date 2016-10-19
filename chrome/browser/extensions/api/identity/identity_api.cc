@@ -225,7 +225,8 @@ std::string IdentityAPI::FindAccountKeyByGaiaId(const std::string& gaia_id) {
 }
 
 void IdentityAPI::Shutdown() {
-  FOR_EACH_OBSERVER(ShutdownObserver, shutdown_observer_list_, OnShutdown());
+  for (auto& observer : shutdown_observer_list_)
+    observer.OnShutdown();
   account_tracker_.RemoveObserver(this);
   account_tracker_.Shutdown();
 }

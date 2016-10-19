@@ -60,9 +60,8 @@ void ExtensionErrorReporter::ReportLoadError(
       path_str.c_str(),
       error.c_str()));
   ReportError(message, be_noisy);
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnLoadFailure(browser_context, extension_path, error));
+  for (auto& observer : observers_)
+    observer.OnLoadFailure(browser_context, extension_path, error);
 }
 
 void ExtensionErrorReporter::ReportError(const base::string16& message,

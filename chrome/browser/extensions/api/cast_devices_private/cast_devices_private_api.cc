@@ -77,8 +77,8 @@ void CastDeviceUpdateListeners::RemoveObserver(
 
 void CastDeviceUpdateListeners::NotifyCallbacks(
     const ReceiverAndActivityList& devices) {
-  FOR_EACH_OBSERVER(ash::CastConfigDelegate::Observer, observer_list_,
-                    OnDevicesUpdated(devices));
+  for (auto& observer : observer_list_)
+    observer.OnDevicesUpdated(devices);
 }
 
 CastDevicesPrivateUpdateDevicesFunction::

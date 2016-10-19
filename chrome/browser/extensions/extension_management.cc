@@ -438,8 +438,8 @@ void ExtensionManagement::OnExtensionPrefChanged() {
 }
 
 void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
-  FOR_EACH_OBSERVER(
-      Observer, observer_list_, OnExtensionManagementSettingsChanged());
+  for (auto& observer : observer_list_)
+    observer.OnExtensionManagementSettingsChanged();
 }
 
 internal::IndividualSettings* ExtensionManagement::AccessById(

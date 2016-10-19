@@ -75,7 +75,8 @@ ErrorConsole::ErrorConsole(Profile* profile)
 }
 
 ErrorConsole::~ErrorConsole() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnErrorConsoleDestroyed());
+  for (auto& observer : observers_)
+    observer.OnErrorConsoleDestroyed();
 }
 
 // static
@@ -146,13 +147,15 @@ void ErrorConsole::ReportError(std::unique_ptr<ExtensionError> error) {
     return;
 
   const ExtensionError* weak_error = errors_.AddError(std::move(error));
-  FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(weak_error));
+  for (auto& observer : observers_)
+    observer.OnErrorAdded(weak_error);
 }
 
 void ErrorConsole::RemoveErrors(const ErrorMap::Filter& filter) {
   std::set<std::string> affected_ids;
   errors_.RemoveErrors(filter, &affected_ids);
-  FOR_EACH_OBSERVER(Observer, observers_, OnErrorsRemoved(affected_ids));
+  for (auto& observer : observers_)
+    observer.OnErrorsRemoved(affected_ids);
 }
 
 const ErrorList& ErrorConsole::GetErrorsForExtension(

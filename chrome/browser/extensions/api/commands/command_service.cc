@@ -294,11 +294,10 @@ bool CommandService::AddKeybindingPref(
                          std::move(suggested_key_prefs));
 
   // Fetch the newly-updated command, and notify the observers.
-  FOR_EACH_OBSERVER(
-      Observer,
-      observers_,
-      OnExtensionCommandAdded(extension_id,
-                              FindCommandByName(extension_id, command_name)));
+  for (auto& observer : observers_) {
+    observer.OnExtensionCommandAdded(
+        extension_id, FindCommandByName(extension_id, command_name));
+  }
 
   // TODO(devlin): Deprecate this notification in favor of the observers.
   std::pair<const std::string, const std::string> details =
@@ -849,10 +848,8 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
   }
 
   for (const Command& removed_command : removed_commands) {
-    FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        OnExtensionCommandRemoved(extension_id, removed_command));
+    for (auto& observer : observers_)
+      observer.OnExtensionCommandRemoved(extension_id, removed_command);
   }
 }
 
