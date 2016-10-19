@@ -165,6 +165,7 @@ foreach(locale, remoting_locales_with_underscores) {
 }
 
 target("mac_app_bundle", "remoting_native_messaging_host") {
+  output_name = "native_messaging_host"
   info_plist = "../setup/native_messaging_host-Info.plist"
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
   extra_substitutions = [
