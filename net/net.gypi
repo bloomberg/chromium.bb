@@ -1759,6 +1759,8 @@
       'quic/test_tools/mock_random.h',
       'quic/test_tools/quic_buffered_packet_store_peer.cc',
       'quic/test_tools/quic_buffered_packet_store_peer.h',
+      'quic/test_tools/quic_client_promised_info_peer.cc',
+      'quic/test_tools/quic_client_promised_info_peer.h',
       'quic/test_tools/quic_config_peer.cc',
       'quic/test_tools/quic_config_peer.h',
       'quic/test_tools/quic_connection_peer.cc',

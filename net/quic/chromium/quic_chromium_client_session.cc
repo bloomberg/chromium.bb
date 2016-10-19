@@ -1431,10 +1431,8 @@ void QuicChromiumClientSession::DeletePromised(
 
 void QuicChromiumClientSession::OnPushStreamTimedOut(QuicStreamId stream_id) {
   QuicSpdyStream* stream = GetPromisedStream(stream_id);
-  DCHECK(stream);
-  // TODO(zhongyi): re-enable metrics collection when crbug.com/656467 is
-  // solved.
-  // bytes_pushed_and_unclaimed_count_ += stream->stream_bytes_read();
+  if (stream != nullptr)
+    bytes_pushed_and_unclaimed_count_ += stream->stream_bytes_read();
 }
 
 const LoadTimingInfo::ConnectTiming&
