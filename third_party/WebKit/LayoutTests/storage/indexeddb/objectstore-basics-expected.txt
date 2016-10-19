@@ -127,10 +127,10 @@ getSuccessDateKey():
 PASS event.target.result.x is "foo"
 store.delete('key')
 removeSuccess():
-FAIL event.target.result should be undefined (of type undefined). Was 1 (of type number).
+PASS event.target.result is undefined
 store.delete('key')
 removeSuccessButNotThere():
-FAIL event.target.result should be undefined (of type undefined). Was 0 (of type number).
+PASS event.target.result is undefined
 store = event.target.source
 Passing an invalid key into store.get().
 Expecting exception from store.get({})

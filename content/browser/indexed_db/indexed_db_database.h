@@ -352,8 +352,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   // synchronously.
   bool processing_pending_requests_ = false;
 
-  bool experimental_web_platform_features_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabase);
 };
 

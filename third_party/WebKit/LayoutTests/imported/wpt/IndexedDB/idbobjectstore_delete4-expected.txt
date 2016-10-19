@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL IDBObjectStore.delete() - delete removes record (out-of-line keys)  assert_equals: expected (undefined) undefined but got (number) 1
-Harness: the test ran to completion.
-

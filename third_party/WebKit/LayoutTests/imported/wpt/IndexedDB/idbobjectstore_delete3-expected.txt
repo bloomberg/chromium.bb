@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL IDBObjectStore.delete() - object store's key path is an object attribute  assert_equals: expected (undefined) undefined but got (number) 1
-Harness: the test ran to completion.
-

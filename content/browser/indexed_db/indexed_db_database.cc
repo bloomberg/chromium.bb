@@ -10,7 +10,6 @@
 #include <set>
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -383,10 +382,7 @@ IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
                 IndexedDBDatabaseMetadata::NO_VERSION,
                 kInvalidId),
       identifier_(unique_identifier),
-      factory_(factory),
-      experimental_web_platform_features_enabled_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures)) {
+      factory_(factory) {
   DCHECK(factory != NULL);
 }
 
@@ -1838,11 +1834,7 @@ void IndexedDBDatabase::DeleteRangeOperation(
     }
     return;
   }
-  if (experimental_web_platform_features_enabled_) {
-    callbacks->OnSuccess(base::checked_cast<int64_t>(delete_count));
-  } else {
-    callbacks->OnSuccess();
-  }
+  callbacks->OnSuccess();
   FilterObservation(transaction, object_store_id, blink::WebIDBDelete,
                     *key_range);
 }
