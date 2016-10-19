@@ -55,6 +55,8 @@ import urlparse
 
 from multiprocessing.pool import ThreadPool
 
+import appengine_mapper
+
 # The configparser module was renamed in Python 3.
 try:
   import configparser
@@ -443,6 +445,7 @@ class AbstractRpcServer(object):
         tries += 1
         args = dict(kwargs)
         url = "%s%s%s" % (self.host, self.request_path_prefix, request_path)
+        url = appengine_mapper.MapUrl(url)
         if args:
           url += "?" + urllib.urlencode(args)
         req = self._CreateRequest(url=url, data=payload)
