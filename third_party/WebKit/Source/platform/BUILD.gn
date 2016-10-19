@@ -1031,6 +1031,8 @@ component("platform") {
     "image-decoders/png/PNGImageDecoder.h",
     "image-decoders/webp/WEBPImageDecoder.cpp",
     "image-decoders/webp/WEBPImageDecoder.h",
+    "image-encoders/ImageEncoderUtils.cpp",
+    "image-encoders/ImageEncoderUtils.h",
     "image-encoders/JPEGImageEncoder.cpp",
     "image-encoders/JPEGImageEncoder.h",
     "image-encoders/PNGImageEncoder.cpp",

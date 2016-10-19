@@ -108,12 +108,6 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
 
   bool isPaintable() const;
 
-  enum EncodeReason {
-    EncodeReasonToDataURL = 0,
-    EncodeReasonToBlobCallback = 1,
-    NumberOfEncodeReasons
-  };
-  static String toEncodingMimeType(const String& mimeType, const EncodeReason);
   String toDataURL(const String& mimeType,
                    const ScriptValue& qualityArgument,
                    ExceptionState&) const;
