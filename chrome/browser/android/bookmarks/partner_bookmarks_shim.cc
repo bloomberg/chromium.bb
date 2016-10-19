@@ -123,8 +123,8 @@ void PartnerBookmarksShim::RenameBookmark(const BookmarkNode* node,
   const NodeRenamingMapKey key(node->url(), node->GetTitle());
   node_rename_remove_map_[key] = title;
   SaveNodeMapping();
-  FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
-                    PartnerShimChanged(this));
+  for (PartnerBookmarksShim::Observer& observer : observers_)
+    observer.PartnerShimChanged(this);
 }
 
 void PartnerBookmarksShim::AddObserver(
@@ -180,8 +180,8 @@ void PartnerBookmarksShim::SetPartnerBookmarksRoot(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_partner_model_keeper.Get().partner_bookmarks_root = std::move(root_node);
   g_partner_model_keeper.Get().loaded = true;
-  FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
-                    PartnerShimLoaded(this));
+  for (PartnerBookmarksShim::Observer& observer : observers_)
+    observer.PartnerShimLoaded(this);
 }
 
 PartnerBookmarksShim::NodeRenamingMapKey::NodeRenamingMapKey(
@@ -221,8 +221,8 @@ PartnerBookmarksShim::PartnerBookmarksShim(PrefService* prefs)
 }
 
 PartnerBookmarksShim::~PartnerBookmarksShim() {
-  FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
-                    ShimBeingDeleted(this));
+  for (PartnerBookmarksShim::Observer& observer : observers_)
+    observer.ShimBeingDeleted(this);
 }
 
 const BookmarkNode* PartnerBookmarksShim::GetNodeByID(

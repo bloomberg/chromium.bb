@@ -327,20 +327,21 @@ bool DataUseTabModel::IsCustomTabPackageMatch(SessionID::id_type tab_id) const {
 void DataUseTabModel::NotifyObserversOfTrackingStarting(
     SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(TabDataUseObserver, observers_,
-                    NotifyTrackingStarting(tab_id));
+  for (TabDataUseObserver& observer : observers_)
+    observer.NotifyTrackingStarting(tab_id);
 }
 
 void DataUseTabModel::NotifyObserversOfTrackingEnding(
     SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(TabDataUseObserver, observers_,
-                    NotifyTrackingEnding(tab_id));
+  for (TabDataUseObserver& observer : observers_)
+    observer.NotifyTrackingEnding(tab_id);
 }
 
 void DataUseTabModel::NotifyObserversOfDataUseTabModelReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(TabDataUseObserver, observers_, OnDataUseTabModelReady());
+  for (TabDataUseObserver& observer : observers_)
+    observer.OnDataUseTabModelReady();
 }
 
 void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(

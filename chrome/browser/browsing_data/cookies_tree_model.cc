@@ -1601,9 +1601,8 @@ void CookiesTreeModel::RecordBatchSeen() {
 void CookiesTreeModel::NotifyObserverBeginBatch() {
   // Only notify the model once if we're batching in a nested manner.
   if (batches_started_++ == 0) {
-    FOR_EACH_OBSERVER(Observer,
-                      cookies_observer_list_,
-                      TreeModelBeginBatch(this));
+    for (Observer& observer : cookies_observer_list_)
+      observer.TreeModelBeginBatch(this);
   }
 }
 
@@ -1617,9 +1616,8 @@ void CookiesTreeModel::MaybeNotifyBatchesEnded() {
   // called in a nested manner.
   if (batches_ended_ == batches_started_ &&
       batches_seen_ == batches_expected_) {
-    FOR_EACH_OBSERVER(Observer,
-                      cookies_observer_list_,
-                      TreeModelEndBatch(this));
+    for (Observer& observer : cookies_observer_list_)
+      observer.TreeModelEndBatch(this);
     SetBatchExpectation(0, true);
   }
 }

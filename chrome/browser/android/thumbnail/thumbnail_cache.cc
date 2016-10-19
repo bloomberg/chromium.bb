@@ -827,8 +827,8 @@ void ThumbnailCache::PostReadTask(TabId tab_id,
 }
 
 void ThumbnailCache::NotifyObserversOfThumbnailRead(TabId tab_id) {
-  FOR_EACH_OBSERVER(
-      ThumbnailCacheObserver, observers_, OnFinishedThumbnailRead(tab_id));
+  for (ThumbnailCacheObserver& observer : observers_)
+    observer.OnFinishedThumbnailRead(tab_id);
 }
 
 void ThumbnailCache::RemoveOnMatchedTimeStamp(TabId tab_id,
