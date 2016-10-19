@@ -546,6 +546,14 @@ public class NewTabPageView extends FrameLayout
         // search box) are sane.
         if (getWrapperView().getHeight() == 0) return 0f;
 
+        if (mUseCardsUi && !mRecyclerView.isFirstItemVisible()) {
+            // getVerticalScroll is valid only for the RecyclerView if the first item is visible.
+            // If the first item is not visible, we must have scrolled quite far and we know the
+            // toolbar transition should be 100%. This might be the initial scroll position due to
+            // the scroll restore feature, so the search box will not have been laid out yet.
+            return 1f;
+        }
+
         int searchBoxTop = mSearchBoxView.getTop();
         if (searchBoxTop == 0) return 0f;
 
@@ -555,13 +563,6 @@ public class NewTabPageView extends FrameLayout
 
         if (!mUseCardsUi) {
             return MathUtils.clamp(getVerticalScroll() / (float) searchBoxTop, 0f, 1f);
-        }
-
-        if (!mRecyclerView.isFirstItemVisible()) {
-            // getVerticalScroll is valid only for the RecyclerView if the first item is
-            // visible. If the first item is not visible, we know the toolbar transition
-            // should be 100%.
-            return 1f;
         }
 
         final int scrollY = getVerticalScroll();
