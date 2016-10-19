@@ -503,10 +503,6 @@ bool InputType::shouldSendChangeEventAfterCheckedChanged() {
   return true;
 }
 
-bool InputType::storesValueSeparateFromAttribute() {
-  return true;
-}
-
 bool InputType::shouldDispatchFormControlChangeEvent(String& oldValue,
                                                      String& newValue) {
   return !equalIgnoringNullity(oldValue, newValue);

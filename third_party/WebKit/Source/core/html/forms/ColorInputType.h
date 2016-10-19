@@ -63,6 +63,7 @@ class ColorInputType final : public InputType,
  private:
   explicit ColorInputType(HTMLInputElement&);
   InputTypeView* createView() override;
+  ValueMode valueMode() const override;
   void valueAttributeChanged() override;
   void countUsage() override;
   const AtomicString& formControlType() const override;

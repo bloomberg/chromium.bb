@@ -50,6 +50,7 @@ class RangeInputType final : public InputType, public InputTypeView {
  private:
   RangeInputType(HTMLInputElement&);
   InputTypeView* createView() override;
+  ValueMode valueMode() const override;
   void countUsage() override;
   const AtomicString& formControlType() const override;
   double valueAsDouble() const override;

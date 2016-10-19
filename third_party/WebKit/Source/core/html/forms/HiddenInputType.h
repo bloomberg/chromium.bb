@@ -55,7 +55,7 @@ class HiddenInputType final : public InputType, private InputTypeView {
   LayoutObject* createLayoutObject(const ComputedStyle&) const override;
   void accessKeyAction(bool sendMouseEvents) override;
   bool layoutObjectIsNeeded() override;
-  bool storesValueSeparateFromAttribute() override;
+  ValueMode valueMode() const override;
   bool isInteractiveContent() const override { return false; }
   bool shouldRespectHeightAndWidthAttributes() override;
   void setValue(const String&, bool, TextFieldEventBehavior) override;

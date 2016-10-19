@@ -55,7 +55,7 @@ class BaseButtonInputType : public InputType,
   bool shouldSaveAndRestoreFormControlState() const override;
   void appendToFormData(FormData&) const override;
   LayoutObject* createLayoutObject(const ComputedStyle&) const override;
-  bool storesValueSeparateFromAttribute() override;
+  ValueMode valueMode() const override;
   void setValue(const String&, bool, TextFieldEventBehavior) override;
   bool matchesDefaultPseudoClass() override;
 

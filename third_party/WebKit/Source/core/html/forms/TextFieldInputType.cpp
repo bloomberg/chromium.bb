@@ -120,6 +120,10 @@ InputTypeView* TextFieldInputType::createView() {
   return this;
 }
 
+InputType::ValueMode TextFieldInputType::valueMode() const {
+  return ValueMode::kValue;
+}
+
 SpinButtonElement* TextFieldInputType::spinButtonElement() const {
   return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(
       ShadowElementNames::spinButton()));

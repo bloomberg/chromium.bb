@@ -81,8 +81,8 @@ LayoutObject* BaseButtonInputType::createLayoutObject(
   return new LayoutButton(&element());
 }
 
-bool BaseButtonInputType::storesValueSeparateFromAttribute() {
-  return false;
+InputType::ValueMode BaseButtonInputType::valueMode() const {
+  return ValueMode::kDefault;
 }
 
 void BaseButtonInputType::setValue(const String& sanitizedValue,

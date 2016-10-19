@@ -59,6 +59,10 @@ InputTypeView* BaseTemporalInputType::createView() {
   return ChooserOnlyTemporalInputTypeView::create(element(), *this);
 }
 
+InputType::ValueMode BaseTemporalInputType::valueMode() const {
+  return ValueMode::kValue;
+}
+
 double BaseTemporalInputType::valueAsDate() const {
   return valueAsDouble();
 }

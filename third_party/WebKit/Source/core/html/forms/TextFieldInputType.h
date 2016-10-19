@@ -82,6 +82,7 @@ class TextFieldInputType : public InputType,
 
  private:
   InputTypeView* createView() override;
+  ValueMode valueMode() const override;
   bool shouldShowFocusRingOnMouseFocus() const final;
   bool isTextField() const final;
   bool valueMissing(const String&) const override;

@@ -78,6 +78,7 @@
 
 namespace blink {
 
+using ValueMode = InputType::ValueMode;
 using namespace HTMLNames;
 
 class ListAttributeTargetObserver : public IdTargetObserver {
@@ -409,7 +410,8 @@ void HTMLInputElement::updateType() {
   InputType* newType = InputType::create(*this, newTypeName);
   removeFromRadioButtonGroup();
 
-  bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();
+  bool didStoreValue = m_inputType->valueMode() == ValueMode::kValue ||
+                       m_inputType->valueMode() == ValueMode::kFilename;
   bool didRespectHeightAndWidth =
       m_inputType->shouldRespectHeightAndWidthAttributes();
   bool couldBeSuccessfulSubmitButton = canBeSuccessfulSubmitButton();
@@ -423,7 +425,8 @@ void HTMLInputElement::updateType() {
 
   setNeedsWillValidateCheck();
 
-  bool willStoreValue = m_inputType->storesValueSeparateFromAttribute();
+  bool willStoreValue = m_inputType->valueMode() == ValueMode::kValue ||
+                        m_inputType->valueMode() == ValueMode::kFilename;
 
   // https://html.spec.whatwg.org/multipage/forms.html#input-type-change
   //
@@ -868,7 +871,8 @@ String HTMLInputElement::resultForDialogSubmit() {
 }
 
 void HTMLInputElement::resetImpl() {
-  if (m_inputType->storesValueSeparateFromAttribute()) {
+  if (m_inputType->valueMode() == ValueMode::kValue ||
+      m_inputType->valueMode() == ValueMode::kFilename) {
     setValue(String());
     setNeedsValidityCheck();
   }

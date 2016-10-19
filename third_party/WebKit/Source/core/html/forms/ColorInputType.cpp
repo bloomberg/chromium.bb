@@ -93,6 +93,10 @@ InputTypeView* ColorInputType::createView() {
   return this;
 }
 
+InputType::ValueMode ColorInputType::valueMode() const {
+  return ValueMode::kValue;
+}
+
 void ColorInputType::countUsage() {
   countUsageIfVisible(UseCounter::InputTypeColor);
 }

@@ -87,8 +87,8 @@ bool HiddenInputType::layoutObjectIsNeeded() {
   return false;
 }
 
-bool HiddenInputType::storesValueSeparateFromAttribute() {
-  return false;
+InputType::ValueMode HiddenInputType::valueMode() const {
+  return ValueMode::kDefault;
 }
 
 void HiddenInputType::setValue(const String& sanitizedValue,

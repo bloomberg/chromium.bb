@@ -83,6 +83,7 @@ class BaseTemporalInputType : public InputType {
 
   String badInputText() const override;
   InputTypeView* createView() override;
+  ValueMode valueMode() const override;
   double valueAsDate() const override;
   void setValueAsDate(double, ExceptionState&) const override;
   double valueAsDouble() const override;

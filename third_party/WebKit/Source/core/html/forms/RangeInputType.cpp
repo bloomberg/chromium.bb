@@ -88,6 +88,10 @@ InputTypeView* RangeInputType::createView() {
   return this;
 }
 
+InputType::ValueMode RangeInputType::valueMode() const {
+  return ValueMode::kValue;
+}
+
 void RangeInputType::countUsage() {
   countUsageIfVisible(UseCounter::InputTypeRange);
   if (const ComputedStyle* style = element().computedStyle()) {

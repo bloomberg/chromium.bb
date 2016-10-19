@@ -157,6 +157,10 @@ LayoutObject* FileInputType::createLayoutObject(const ComputedStyle&) const {
   return new LayoutFileUploadControl(&element());
 }
 
+InputType::ValueMode FileInputType::valueMode() const {
+  return ValueMode::kFilename;
+}
+
 bool FileInputType::canSetStringValue() const {
   return false;
 }
