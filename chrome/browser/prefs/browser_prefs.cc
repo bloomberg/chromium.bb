@@ -53,7 +53,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_prefs.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
@@ -504,10 +503,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-  app_list::AppListPrefs::RegisterProfilePrefs(registry);
-#endif
 
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
   certificate_transparency::CTPolicyManager::RegisterPrefs(registry);

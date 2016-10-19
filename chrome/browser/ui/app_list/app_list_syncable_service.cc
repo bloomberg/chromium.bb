@@ -15,11 +15,9 @@
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_prefs.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
-#include "chrome/browser/ui/app_list/model_pref_updater.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -276,7 +274,6 @@ AppListSyncableService::AppListSyncableService(
 AppListSyncableService::~AppListSyncableService() {
   // Remove observers.
   model_observer_.reset();
-  model_pref_updater_.reset();
 }
 
 void AppListSyncableService::BuildModel() {
@@ -309,9 +306,6 @@ void AppListSyncableService::BuildModel() {
       arc_apps_builder_->InitializeWithProfile(profile_, model_.get());
 #endif
   }
-
-  model_pref_updater_.reset(
-      new ModelPrefUpdater(AppListPrefs::Get(profile_), model_.get()));
 
   if (app_list::switches::IsDriveAppsInAppListEnabled())
     drive_app_provider_.reset(new DriveAppProvider(profile_, this));

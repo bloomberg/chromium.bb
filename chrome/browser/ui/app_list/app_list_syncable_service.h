@@ -44,7 +44,6 @@ namespace app_list {
 class AppListFolderItem;
 class AppListItem;
 class AppListModel;
-class ModelPrefUpdater;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
@@ -237,7 +236,6 @@ class AppListSyncableService : public syncer::SyncableService,
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<AppListModel> model_;
   std::unique_ptr<ModelObserver> model_observer_;
-  std::unique_ptr<ModelPrefUpdater> model_pref_updater_;
   std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;
