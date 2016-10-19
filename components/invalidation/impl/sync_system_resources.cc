@@ -193,8 +193,8 @@ void SyncNetworkChannel::NotifyNetworkStatusChange(bool online) {
 
 void SyncNetworkChannel::NotifyChannelStateChange(
     InvalidatorState invalidator_state) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnNetworkChannelStateChanged(invalidator_state));
+  for (auto& observer : observers_)
+    observer.OnNetworkChannelStateChanged(invalidator_state);
 }
 
 bool SyncNetworkChannel::DeliverIncomingMessage(const std::string& message) {

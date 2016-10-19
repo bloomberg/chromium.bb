@@ -33,8 +33,8 @@ void InvalidationLogger::OnUnregistration(const std::string& registrar_name) {
 }
 
 void InvalidationLogger::EmitRegisteredHandlers() {
-  FOR_EACH_OBSERVER(InvalidationLoggerObserver, observer_list_,
-                    OnRegistrationChange(registered_handlers_));
+  for (auto& observer : observer_list_)
+    observer.OnRegistrationChange(registered_handlers_);
 }
 
 void InvalidationLogger::OnStateChange(
@@ -47,10 +47,10 @@ void InvalidationLogger::OnStateChange(
 }
 
 void InvalidationLogger::EmitState() {
-  FOR_EACH_OBSERVER(InvalidationLoggerObserver,
-                    observer_list_,
-                    OnStateChange(last_invalidator_state_,
-                                  last_invalidator_state_timestamp_));
+  for (auto& observer : observer_list_) {
+    observer.OnStateChange(last_invalidator_state_,
+                           last_invalidator_state_timestamp_);
+  }
 }
 
 void InvalidationLogger::OnUpdateIds(
@@ -73,15 +73,14 @@ void InvalidationLogger::EmitUpdatedIds() {
          ++oid_it) {
       per_object_invalidation_count[*oid_it] = invalidation_count_[*oid_it];
     }
-    FOR_EACH_OBSERVER(InvalidationLoggerObserver,
-                      observer_list_,
-                      OnUpdateIds(it->first, per_object_invalidation_count));
+    for (auto& observer : observer_list_)
+      observer.OnUpdateIds(it->first, per_object_invalidation_count);
   }
 }
 
 void InvalidationLogger::OnDebugMessage(const base::DictionaryValue& details) {
-  FOR_EACH_OBSERVER(
-      InvalidationLoggerObserver, observer_list_, OnDebugMessage(details));
+  for (auto& observer : observer_list_)
+    observer.OnDebugMessage(details);
 }
 
 void InvalidationLogger::OnInvalidation(
@@ -94,8 +93,8 @@ void InvalidationLogger::OnInvalidation(
        ++it) {
     invalidation_count_[it->object_id()]++;
   }
-  FOR_EACH_OBSERVER(
-      InvalidationLoggerObserver, observer_list_, OnInvalidation(details));
+  for (auto& observer : observer_list_)
+    observer.OnInvalidation(details);
 }
 
 void InvalidationLogger::EmitContent() {

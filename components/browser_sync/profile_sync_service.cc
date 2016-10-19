@@ -529,29 +529,29 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
 }
 
 void ProfileSyncService::OnProtocolEvent(const syncer::ProtocolEvent& event) {
-  FOR_EACH_OBSERVER(ProtocolEventObserver, protocol_event_observers_,
-                    OnProtocolEvent(event));
+  for (auto& observer : protocol_event_observers_)
+    observer.OnProtocolEvent(event);
 }
 
 void ProfileSyncService::OnDirectoryTypeCommitCounterUpdated(
     syncer::ModelType type,
     const syncer::CommitCounters& counters) {
-  FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver, type_debug_info_observers_,
-                    OnCommitCountersUpdated(type, counters));
+  for (auto& observer : type_debug_info_observers_)
+    observer.OnCommitCountersUpdated(type, counters);
 }
 
 void ProfileSyncService::OnDirectoryTypeUpdateCounterUpdated(
     syncer::ModelType type,
     const syncer::UpdateCounters& counters) {
-  FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver, type_debug_info_observers_,
-                    OnUpdateCountersUpdated(type, counters));
+  for (auto& observer : type_debug_info_observers_)
+    observer.OnUpdateCountersUpdated(type, counters);
 }
 
 void ProfileSyncService::OnDatatypeStatusCounterUpdated(
     syncer::ModelType type,
     const syncer::StatusCounters& counters) {
-  FOR_EACH_OBSERVER(syncer::TypeDebugInfoObserver, type_debug_info_observers_,
-                    OnStatusCountersUpdated(type, counters));
+  for (auto& observer : type_debug_info_observers_)
+    observer.OnStatusCountersUpdated(type, counters);
 }
 
 void ProfileSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
@@ -831,17 +831,18 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 }
 
 void ProfileSyncService::NotifyObservers() {
-  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_, OnStateChanged());
+  for (auto& observer : observers_)
+    observer.OnStateChanged();
 }
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
-  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_,
-                    OnSyncCycleCompleted());
+  for (auto& observer : observers_)
+    observer.OnSyncCycleCompleted();
 }
 
 void ProfileSyncService::NotifyForeignSessionUpdated() {
-  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_,
-                    OnForeignSessionUpdated());
+  for (auto& observer : observers_)
+    observer.OnForeignSessionUpdated();
 }
 
 void ProfileSyncService::ClearStaleErrors() {
@@ -1329,8 +1330,8 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Notify listeners that configuration is done.
-  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_,
-                    OnSyncConfigurationCompleted());
+  for (auto& observer : observers_)
+    observer.OnSyncConfigurationCompleted();
 
   DVLOG(1) << "PSS OnConfigureDone called with status: " << configure_status_;
   // The possible status values:

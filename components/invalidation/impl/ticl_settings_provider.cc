@@ -24,7 +24,8 @@ void TiclSettingsProvider::RemoveObserver(Observer* observer) {
 }
 
 void TiclSettingsProvider::FireOnUseGCMChannelChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnUseGCMChannelChanged());
+  for (auto& observer : observers_)
+    observer.OnUseGCMChannelChanged();
 }
 
 }  // namespace invalidation

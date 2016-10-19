@@ -115,8 +115,8 @@ void InvalidatorRegistrar::UpdateInvalidatorState(InvalidatorState state) {
   DVLOG(1) << "New invalidator state: " << InvalidatorStateToString(state_)
       << " -> " << InvalidatorStateToString(state);
   state_ = state;
-  FOR_EACH_OBSERVER(InvalidationHandler, handlers_,
-                    OnInvalidatorStateChange(state));
+  for (auto& observer : handlers_)
+    observer.OnInvalidatorStateChange(state);
 }
 
 InvalidatorState InvalidatorRegistrar::GetInvalidatorState() const {
