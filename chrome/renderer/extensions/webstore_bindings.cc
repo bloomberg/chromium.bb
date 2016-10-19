@@ -93,7 +93,7 @@ void WebstoreBindings::Install(
 
   Send(new ExtensionHostMsg_InlineWebstoreInstall(
       render_frame->GetRoutingID(), install_id, GetRoutingID(),
-      webstore_item_id, frame->document().url(), listener_mask));
+      webstore_item_id, listener_mask));
 
   args.GetReturnValue().Set(static_cast<int32_t>(install_id));
 }

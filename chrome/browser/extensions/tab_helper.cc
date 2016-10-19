@@ -62,6 +62,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "url/url_constants.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/web_applications/web_app_win.h"
@@ -432,13 +433,16 @@ void TabHelper::OnInlineWebstoreInstall(content::RenderFrameHost* host,
                                         int install_id,
                                         int return_route_id,
                                         const std::string& webstore_item_id,
-                                        const GURL& requestor_url,
                                         int listeners_mask) {
+  GURL requestor_url(host->GetLastCommittedURL());
   // Check that the listener is reasonable. We should never get anything other
   // than an install stage listener, a download listener, or both.
+  // The requestor_url should also be valid, and the renderer should disallow
+  // child frames from sending the IPC.
   if ((listeners_mask & ~(api::webstore::INSTALL_STAGE_LISTENER |
                           api::webstore::DOWNLOAD_PROGRESS_LISTENER)) != 0 ||
-      requestor_url.is_empty()) {
+      !requestor_url.is_valid() || requestor_url == GURL(url::kAboutBlankURL) ||
+      host->GetParent()) {
     NOTREACHED();
     return;
   }
