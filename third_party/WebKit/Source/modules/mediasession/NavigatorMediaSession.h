@@ -21,7 +21,7 @@ class NavigatorMediaSession final
 
  public:
   static NavigatorMediaSession& from(Navigator&);
-  static MediaSession* mediaSession(Navigator&);
+  static MediaSession* mediaSession(ScriptState*, Navigator&);
 
   DECLARE_TRACE();
 

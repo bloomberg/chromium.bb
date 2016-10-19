@@ -3872,11 +3872,25 @@ interface MediaRecorder : EventTarget
     setter onresume
     setter onstart
     setter onstop
-interface MediaSession
+interface MediaSession : EventTarget
     attribute @@toStringTag
     getter metadata
+    getter onnexttrack
+    getter onpause
+    getter onplay
+    getter onplaypause
+    getter onprevioustrack
+    getter onseekbackward
+    getter onseekforward
     method constructor
     setter metadata
+    setter onnexttrack
+    setter onpause
+    setter onplay
+    setter onplaypause
+    setter onprevioustrack
+    setter onseekbackward
+    setter onseekforward
 interface MediaSettingsRange
     attribute @@toStringTag
     getter current

@@ -6,6 +6,14 @@
 
 [
     RuntimeEnabled=MediaSession,
-] interface MediaSession {
-    [CallWith=ScriptState] attribute MediaMetadata? metadata;
+] interface MediaSession : EventTarget {
+    attribute MediaMetadata? metadata;
+
+    attribute EventHandler onplay;
+    attribute EventHandler onpause;
+    attribute EventHandler onplaypause;
+    attribute EventHandler onprevioustrack;
+    attribute EventHandler onnexttrack;
+    attribute EventHandler onseekforward;
+    attribute EventHandler onseekbackward;
 };

@@ -31,10 +31,11 @@ NavigatorMediaSession& NavigatorMediaSession::from(Navigator& navigator) {
   return *supplement;
 }
 
-MediaSession* NavigatorMediaSession::mediaSession(Navigator& navigator) {
+MediaSession* NavigatorMediaSession::mediaSession(ScriptState* scriptState,
+                                                  Navigator& navigator) {
   NavigatorMediaSession& self = NavigatorMediaSession::from(navigator);
   if (!self.m_session)
-    self.m_session = MediaSession::create();
+    self.m_session = MediaSession::create(scriptState);
   return self.m_session.get();
 }
 

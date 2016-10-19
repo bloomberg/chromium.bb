@@ -54,6 +54,13 @@ PASS childWindow.navigator.language is window.navigator.language
 PASS childWindow.navigator.maxTouchPoints is 0
 PASS childWindow.navigator.mediaDevices.ondevicechange is null
 PASS childWindow.navigator.mediaSession.metadata is null
+PASS childWindow.navigator.mediaSession.onnexttrack is null
+PASS childWindow.navigator.mediaSession.onpause is null
+PASS childWindow.navigator.mediaSession.onplay is null
+PASS childWindow.navigator.mediaSession.onplaypause is null
+PASS childWindow.navigator.mediaSession.onprevioustrack is null
+PASS childWindow.navigator.mediaSession.onseekbackward is null
+PASS childWindow.navigator.mediaSession.onseekforward is null
 PASS childWindow.navigator.onLine is window.navigator.onLine
 PASS childWindow.navigator.platform is window.navigator.platform
 FAIL childWindow.navigator.presentation.defaultRequest should be null. Threw exception TypeError: Cannot read property 'defaultRequest' of null

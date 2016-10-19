@@ -150,6 +150,7 @@ mouseup
 mousewheel
 mute
 negotiationneeded
+nexttrack
 nomatch
 notificationclick
 notificationclose
@@ -167,6 +168,7 @@ pause
 periodicsync
 play
 playing
+playpause
 pointercancel
 pointerdown
 pointerenter
@@ -178,6 +180,7 @@ pointerout
 pointerover
 pointerup
 popstate
+previoustrack
 progress
 push
 ratechange
@@ -195,7 +198,9 @@ resume
 scroll
 search
 securitypolicyviolation
+seekbackward
 seeked
+seekforward
 seeking
 select
 selectionchange

@@ -6,6 +6,7 @@
 #define MediaSession_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/mediasession/media_session.mojom-blink.h"
@@ -16,27 +17,47 @@ namespace blink {
 class MediaMetadata;
 class ScriptState;
 
-class MODULES_EXPORT MediaSession final
-    : public GarbageCollectedFinalized<MediaSession>,
-      public ScriptWrappable {
+class MODULES_EXPORT MediaSession final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaSession* create();
+  static MediaSession* create(ScriptState*);
 
-  void setMetadata(ScriptState*, MediaMetadata*);
-  MediaMetadata* metadata(ScriptState*) const;
+  void setMetadata(MediaMetadata*);
+  MediaMetadata* metadata() const;
+
+  // EventTarget implementation.
+  const WTF::AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(play);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(playpause);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(previoustrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(nexttrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(seekforward);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(seekbackward);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   friend class MediaSessionTest;
 
-  MediaSession();
+  MediaSession(ScriptState*);
+
+  // EventTarget overrides
+  bool addEventListenerInternal(
+      const AtomicString& eventType,
+      EventListener*,
+      const AddEventListenerOptionsResolved&) override;
+  bool removeEventListenerInternal(const AtomicString& eventType,
+                                   const EventListener*,
+                                   const EventListenerOptions&) override;
 
   // Returns null when the ExecutionContext is not document.
   mojom::blink::MediaSessionService* getService(ScriptState*);
 
+  RefPtr<ScriptState> m_scriptState;
   Member<MediaMetadata> m_metadata;
   mojom::blink::MediaSessionServicePtr m_service;
 };
