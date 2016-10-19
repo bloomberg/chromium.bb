@@ -307,6 +307,10 @@ void ScrollAnchor::clearSelf(bool unconditionally) {
     anchorObject->clearIsScrollAnchorObject(unconditionally);
 }
 
+void ScrollAnchor::clearSelf() {
+  clearSelf(false);
+}
+
 void ScrollAnchor::clear() {
   LayoutObject* layoutObject =
       m_anchorObject ? m_anchorObject : scrollerLayoutBox(m_scroller);

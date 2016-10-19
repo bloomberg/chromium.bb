@@ -318,6 +318,46 @@ TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv) {
   EXPECT_EQ(250, scroller->scrollOffsetInt().height());
 }
 
+// Verify that a nested scroller with a div that has its own PaintLayer can be
+// removed without causing a crash. This test passes if it doesn't crash.
+TEST_F(ScrollAnchorTest, RemoveScrollerWithLayerInScrollingDiv) {
+  setBodyInnerHTML(
+      "<style>"
+      "    body { height: 2000px }"
+      "    #scroller { overflow: scroll; width: 500px; height: 400px}"
+      "    #block1 { height: 100px; width: 100px; overflow: hidden}"
+      "    #anchor { height: 1000px; }"
+      "</style>"
+      "<div id='changer1'></div>"
+      "<div id='scroller'>"
+      "  <div id='changer2'></div>"
+      "  <div id='block1'></div>"
+      "  <div id='anchor'></div>"
+      "</div>");
+
+  ScrollableArea* viewport = layoutViewport();
+  ScrollableArea* scroller =
+      scrollerForElement(document().getElementById("scroller"));
+  Element* changer1 = document().getElementById("changer1");
+  Element* changer2 = document().getElementById("changer2");
+  Element* anchor = document().getElementById("anchor");
+
+  scroller->scrollBy(ScrollOffset(0, 150), UserScroll);
+  scrollLayoutViewport(ScrollOffset(0, 50));
+
+  // In this layout pass both the inner and outer scroller will anchor to
+  // #anchor.
+  setHeight(changer1, 100);
+  setHeight(changer2, 100);
+  EXPECT_EQ(250, scroller->scrollOffsetInt().height());
+  EXPECT_EQ(anchor->layoutObject(), scrollAnchor(scroller).anchorObject());
+  EXPECT_EQ(anchor->layoutObject(), scrollAnchor(viewport).anchorObject());
+
+  // Test that the inner scroller can be destroyed without crashing.
+  document().getElementById("scroller")->remove();
+  update();
+}
+
 TEST_F(ScrollAnchorTest, ExcludeAnonymousCandidates) {
   setBodyInnerHTML(
       "<style>"

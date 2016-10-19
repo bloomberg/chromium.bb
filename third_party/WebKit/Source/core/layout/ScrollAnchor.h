@@ -38,6 +38,10 @@ class CORE_EXPORT ScrollAnchor final {
   // containing scroller and all ancestor scrollers.
   void clear();
 
+  // Indicates that the next save() should compute a new anchor for the
+  // containing scroller.
+  void clearSelf();
+
   // Records the anchor's location in relation to the scroller. Should be
   // called when the scroller is about to be laid out.
   void save();
@@ -64,9 +68,9 @@ class CORE_EXPORT ScrollAnchor final {
   DEFINE_INLINE_TRACE() { visitor->trace(m_scroller); }
 
  private:
-  // Indicates that the next save() should compute a new anchor for the
-  // containing scroller.
-  void clearSelf(bool unconditionally = false);
+  // Releases the anchor and conditionally clears the IsScrollAnchorObject bit
+  // on the LayoutObject.
+  void clearSelf(bool unconditionally);
 
   void findAnchor();
   bool computeScrollAnchorDisablingStyleChanged();

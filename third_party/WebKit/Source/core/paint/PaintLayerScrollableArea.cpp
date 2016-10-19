@@ -178,7 +178,7 @@ void PaintLayerScrollableArea::dispose() {
   // leaving the ScrollAnchor with a stale LayoutObject pointer.
   if (RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
       !box().documentBeingDestroyed())
-    m_scrollAnchor.clear();
+    m_scrollAnchor.clearSelf();
 
 #if ENABLE(ASSERT)
   m_hasBeenDisposed = true;
