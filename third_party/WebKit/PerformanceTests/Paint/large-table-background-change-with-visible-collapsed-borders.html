@@ -3,14 +3,6 @@
 <pre id="log"></pre>
 <style>td { border: 1px solid blue }</style>
 <script>
-// We discard the first iteration to avoid a cold outlier.
-var iterations = 11;
-var results = [];
-var previousFrameTime = -1;
-var now = function(){
-    return window.performance ? performance.now() : Date.now();
-};
-
 function createTable(rows, columns) {
     var table = document.createElement("TABLE");
     // Collapsing border is not necessary to see the slowness
@@ -27,37 +19,18 @@ function createTable(rows, columns) {
     return table;
 }
 
-
 var table = createTable(300, 320);
-document.body.appendChild(table);
+document.body.insertBefore(table, log);
 
-ix=30;
-iy=30;
+var ix = 30;
+var iy = 30;
 
-function toggleBackgroundColor()
-{
-    var thisFrameTime = now();
-    if (previousFrameTime != -1)
-        results.push(thisFrameTime - previousFrameTime);
-    previousFrameTime = thisFrameTime;
-
-    if (iterations == 0) {
-        PerfTestRunner.logStatistics(results, 'ms', "Time:");
-        if (window.testRunner)
-            testRunner.notifyDone();
-    } else {
-        iterations--;
-        window.requestAnimationFrame(toggleBackgroundColor);
-    }
-
-    table.childNodes[iy].childNodes[ix].style.backgroundColor = 'teal';
-    ix++;
-    iy++;
-}
-
-if (window.testRunner)
-    testRunner.waitUntilDone();
-
-// Start the test after two frame to ensure we have set-up, laid out and painted the table.
-window.requestAnimationFrame(function() { window.requestAnimationFrame(toggleBackgroundColor) });
+PerfTestRunner.measureFrameTime({
+    run: function() {
+        table.childNodes[iy].childNodes[ix].style.backgroundColor = 'teal';
+        ix++;
+        iy++;
+    },
+    warmUpCount: 5,
+});
 </script>

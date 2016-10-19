@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/runner.js"></script>
 <pre id="log"></pre>
+<style>td { border: 1px solid blue; }</style>
 <script>
 function createTable(rows, columns) {
     var table = document.createElement("TABLE");
@@ -11,6 +12,7 @@ function createTable(rows, columns) {
         var tr = document.createElement("TR");
         for (var j = 0; j < columns; ++j) {
             var td = document.createElement("TD");
+            td.style.backgroundColor = "green";
             tr.appendChild(td);
         }
         table.appendChild(tr);
@@ -26,7 +28,7 @@ var iy = 30;
 
 PerfTestRunner.measureFrameTime({
     run: function() {
-        table.childNodes[iy].childNodes[ix].style.backgroundColor = 'teal';
+        table.childNodes[iy].childNodes[ix].style.borderColor = "red";
         ix++;
         iy++;
     },

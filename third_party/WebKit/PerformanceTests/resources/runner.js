@@ -145,7 +145,7 @@ if (window.testRunner) {
             doc.documentElement.offsetHeight;
     };
 
-    function start(test, runner) {
+    function start(test, scheduler, runner) {
         if (!test) {
             PerfTestRunner.logFatalError("Got a bad test object.");
             return;
@@ -161,12 +161,12 @@ if (window.testRunner) {
         if (test.doNotIgnoreInitialRun)
             completedIterations++;
         if (runner)
-            scheduleNextRun(runner);
+            scheduleNextRun(scheduler, runner);
     }
 
-    function scheduleNextRun(runner) {
+    function scheduleNextRun(scheduler, runner) {
         PerfTestRunner.gc();
-        window.setTimeout(function () {
+        scheduler(function () {
             try {
                 if (currentTest.setup)
                     currentTest.setup();
@@ -187,10 +187,10 @@ if (window.testRunner) {
             }
 
             if (completedIterations < iterationCount)
-                scheduleNextRun(runner);
+                scheduleNextRun(scheduler, runner);
             else
                 finish();
-        }, 0);
+        });
     }
 
     function ignoreWarmUpAndLog(measuredValue) {
@@ -245,9 +245,34 @@ if (window.testRunner) {
             finish();
     }
 
+    PerfTestRunner.measureFrameTime = function (test) {
+        PerfTestRunner.unit = "ms";
+        start(test, requestAnimationFrame, measureFrameTimeOnce);
+    }
+
+    var lastFrameTime = -1;
+    function measureFrameTimeOnce() {
+        var now = PerfTestRunner.now();
+        var result = lastFrameTime == -1 ? -1 : now - lastFrameTime;
+        lastFrameTime = now;
+
+        var returnValue = currentTest.run();
+        if (returnValue - 0 === returnValue) {
+            if (returnValue < 0)
+                PerfTestRunner.log("runFunction returned a negative value: " + returnValue);
+            return returnValue;
+        }
+
+        return result;
+    }
+
     PerfTestRunner.measureTime = function (test) {
         PerfTestRunner.unit = "ms";
-        start(test, measureTimeOnce);
+        start(test, zeroTimeoutScheduler, measureTimeOnce);
+    }
+
+    function zeroTimeoutScheduler(task) {
+        setTimeout(task, 0);
     }
 
     function measureTimeOnce() {
@@ -266,7 +291,7 @@ if (window.testRunner) {
 
     PerfTestRunner.measureRunsPerSecond = function (test) {
         PerfTestRunner.unit = "runs/s";
-        start(test, measureRunsPerSecondOnce);
+        start(test, zeroTimeoutScheduler, measureRunsPerSecondOnce);
     }
 
     function measureRunsPerSecondOnce() {
