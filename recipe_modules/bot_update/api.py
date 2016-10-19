@@ -130,9 +130,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
     oauth2_json_file = email_file = key_file = None
     if oauth2_json:
       if self.m.platform.is_win:
-        oauth2_json_file = 'C:\\creds\\refresh_tokens\\rietveld.json'
+        oauth2_json_file = 'C:\\creds\\refresh_tokens\\internal-try'
       else:
-        oauth2_json_file = '/creds/refresh_tokens/rietveld.json'
+        oauth2_json_file = '/creds/refresh_tokens/internal-try'
     elif patch_oauth2:
       # TODO(martiniss): remove this hack :(. crbug.com/624212
       if use_site_config_creds:
