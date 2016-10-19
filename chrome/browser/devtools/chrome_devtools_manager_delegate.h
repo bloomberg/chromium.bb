@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/devtools/device/devtools_android_bridge.h"
+#include "chrome/browser/devtools/device/devtools_device_discovery.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "net/base/host_port_pair.h"
@@ -51,7 +51,7 @@ class ChromeDevToolsManagerDelegate :
 
   void DevicesAvailable(
     const content::DevToolsAgentHost::DiscoveryCallback& callback,
-    const DevToolsAndroidBridge::CompleteDevices& devices);
+    const DevToolsDeviceDiscovery::CompleteDevices& devices);
 
   std::unique_ptr<base::DictionaryValue> SetRemoteLocations(
       content::DevToolsAgentHost* agent_host,

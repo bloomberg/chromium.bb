@@ -53,7 +53,7 @@ void ChromeDevToolsManagerDelegate::Inspect(
 
 void ChromeDevToolsManagerDelegate::DevicesAvailable(
     const DevToolsAgentHost::DiscoveryCallback& callback,
-    const DevToolsAndroidBridge::CompleteDevices& devices) {
+    const DevToolsDeviceDiscovery::CompleteDevices& devices) {
   DevToolsAgentHost::List result = DevToolsAgentHost::GetOrCreateAll();
   for (const auto& complete : devices) {
     for (const auto& browser : complete.second->browsers()) {
@@ -76,7 +76,7 @@ bool ChromeDevToolsManagerDelegate::DiscoverTargets(
   providers.push_back(new TCPDeviceProvider(tcp_locations_));
   device_manager_->SetDeviceProviders(providers);
 
-  DevToolsAndroidBridge::QueryCompleteDevices(
+  DevToolsDeviceDiscovery::DiscoverOnce(
       device_manager_.get(),
       base::Bind(&ChromeDevToolsManagerDelegate::DevicesAvailable,
                  base::Unretained(this),

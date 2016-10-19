@@ -91,6 +91,8 @@ static_library("devtools") {
       "device/android_web_socket.cc",
       "device/devtools_android_bridge.cc",
       "device/devtools_android_bridge.h",
+      "device/devtools_device_discovery.cc",
+      "device/devtools_device_discovery.h",
       "device/port_forwarding_controller.cc",
       "device/port_forwarding_controller.h",
       "device/tcp_device_provider.cc",
