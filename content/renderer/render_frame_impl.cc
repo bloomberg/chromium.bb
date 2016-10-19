@@ -3162,7 +3162,8 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
                                       suggested_name));
   } else {
     OpenURL(request.url(), IsHttpPost(request),
-            GetRequestBodyForWebURLRequest(request), referrer, policy,
+            GetRequestBodyForWebURLRequest(request),
+            GetWebURLRequestHeaders(request), referrer, policy,
             should_replace_current_entry, false);
   }
 }
@@ -5113,7 +5114,8 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
     OpenURL(url, IsHttpPost(info.urlRequest),
-            GetRequestBodyForWebURLRequest(info.urlRequest), referrer,
+            GetRequestBodyForWebURLRequest(info.urlRequest),
+            GetWebURLRequestHeaders(info.urlRequest), referrer,
             info.defaultPolicy, info.replacesCurrentHistoryItem, false);
     return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
@@ -5133,7 +5135,8 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     // JavaScript on the page is trying to interrupt the history navigation.
     if (!info.isClientRedirect) {
       OpenURL(url, IsHttpPost(info.urlRequest),
-              GetRequestBodyForWebURLRequest(info.urlRequest), referrer,
+              GetRequestBodyForWebURLRequest(info.urlRequest),
+              GetWebURLRequestHeaders(info.urlRequest), referrer,
               info.defaultPolicy, info.replacesCurrentHistoryItem, true);
       // Suppress the load in Blink but mark the frame as loading.
       return blink::WebNavigationPolicyHandledByClient;
@@ -5194,6 +5197,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     if (should_fork) {
       OpenURL(url, IsHttpPost(info.urlRequest),
               GetRequestBodyForWebURLRequest(info.urlRequest),
+              GetWebURLRequestHeaders(info.urlRequest),
               send_referrer ? referrer : Referrer(), info.defaultPolicy,
               info.replacesCurrentHistoryItem, false);
       return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
@@ -5235,7 +5239,8 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   if (is_fork) {
     // Open the URL via the browser, not via WebKit.
     OpenURL(url, IsHttpPost(info.urlRequest),
-            GetRequestBodyForWebURLRequest(info.urlRequest), Referrer(),
+            GetRequestBodyForWebURLRequest(info.urlRequest),
+            GetWebURLRequestHeaders(info.urlRequest), Referrer(),
             info.defaultPolicy, info.replacesCurrentHistoryItem, false);
     return blink::WebNavigationPolicyIgnore;
   }
@@ -5572,6 +5577,7 @@ void RenderFrameImpl::OpenURL(
     const GURL& url,
     bool uses_post,
     const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body,
+    const std::string& extra_headers,
     const Referrer& referrer,
     WebNavigationPolicy policy,
     bool should_replace_current_entry,
@@ -5580,6 +5586,7 @@ void RenderFrameImpl::OpenURL(
   params.url = url;
   params.uses_post = uses_post;
   params.resource_request_body = resource_request_body;
+  params.extra_headers = extra_headers;
   params.referrer = referrer;
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
 
@@ -6071,8 +6078,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
              REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
   Send(new FrameHostMsg_BeginNavigation(
-      routing_id_,
-      MakeCommonNavigationParams(info),
+      routing_id_, MakeCommonNavigationParams(info),
       BeginNavigationParams(
           GetWebURLRequestHeaders(info.urlRequest),
           GetLoadFlagsForWebURLRequest(info.urlRequest),
