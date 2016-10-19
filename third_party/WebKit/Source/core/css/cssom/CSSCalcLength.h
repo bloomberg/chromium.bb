@@ -7,27 +7,58 @@
 
 #include "core/css/cssom/CSSLengthValue.h"
 #include "wtf/BitVector.h"
+#include <array>
+#include <bitset>
 
 namespace blink {
 
-class CSSCalcDictionary;
+class CSSCalcExpressionNode;
 class CSSSimpleLength;
 
 class CORE_EXPORT CSSCalcLength final : public CSSLengthValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSCalcLength* create(const CSSLengthValue*);
+  class UnitData {
+   public:
+    UnitData() : m_values(), m_hasValueForUnit() {}
+    UnitData(const UnitData& other)
+        : m_values(other.m_values),
+          m_hasValueForUnit(other.m_hasValueForUnit) {}
+
+    static std::unique_ptr<UnitData> fromExpressionNode(
+        const CSSCalcExpressionNode*);
+    CSSCalcExpressionNode* toCSSCalcExpressionNode() const;
+
+    bool has(CSSPrimitiveValue::UnitType) const;
+    void set(CSSPrimitiveValue::UnitType, double);
+    double get(CSSPrimitiveValue::UnitType) const;
+
+    void add(const UnitData& right);
+    void subtract(const UnitData& right);
+    void multiply(double);
+    void divide(double);
+
+   private:
+    bool hasAtIndex(int) const;
+    void setAtIndex(int, double);
+    double getAtIndex(int) const;
+
+    std::array<double, CSSLengthValue::kNumSupportedUnits> m_values;
+    std::bitset<CSSLengthValue::kNumSupportedUnits> m_hasValueForUnit;
+  };
+
   static CSSCalcLength* create(const CSSCalcDictionary&, ExceptionState&);
   static CSSCalcLength* create(const CSSLengthValue* length, ExceptionState&) {
     return create(length);
   }
+  static CSSCalcLength* create(const CSSLengthValue*);
   static CSSCalcLength* fromCSSValue(const CSSPrimitiveValue&);
 
-#define GETTER_MACRO(name, type)              \
-  double name(bool& isNull) {                 \
-    isNull = !hasAtIndex(indexForUnit(type)); \
-    return get(type);                         \
+#define GETTER_MACRO(name, type)    \
+  double name(bool& isNull) {       \
+    isNull = !m_unitData.has(type); \
+    return m_unitData.get(type);    \
   }
 
   GETTER_MACRO(px, CSSPrimitiveValue::UnitType::Pixels)
@@ -64,39 +95,9 @@ class CORE_EXPORT CSSCalcLength final : public CSSLengthValue {
   CSSCalcLength();
   CSSCalcLength(const CSSCalcLength& other);
   CSSCalcLength(const CSSSimpleLength& other);
+  CSSCalcLength(const UnitData& unitData) : m_unitData(unitData) {}
 
-  static int indexForUnit(CSSPrimitiveValue::UnitType);
-  static CSSPrimitiveValue::UnitType unitFromIndex(int index) {
-    DCHECK(index < CSSLengthValue::kNumSupportedUnits);
-    int lowestValue = static_cast<int>(CSSPrimitiveValue::UnitType::Percentage);
-    return static_cast<CSSPrimitiveValue::UnitType>(index + lowestValue);
-  }
-
-  bool hasAtIndex(int index) const {
-    DCHECK(index < CSSLengthValue::kNumSupportedUnits);
-    return m_hasValues.quickGet(index);
-  }
-  bool has(CSSPrimitiveValue::UnitType unit) const {
-    return hasAtIndex(indexForUnit(unit));
-  }
-  void setAtIndex(double value, int index) {
-    DCHECK(index < CSSLengthValue::kNumSupportedUnits);
-    m_hasValues.quickSet(index);
-    m_values[index] = value;
-  }
-  void set(double value, CSSPrimitiveValue::UnitType unit) {
-    setAtIndex(value, indexForUnit(unit));
-  }
-  double getAtIndex(int index) const {
-    DCHECK(index < CSSLengthValue::kNumSupportedUnits);
-    return m_values[index];
-  }
-  double get(CSSPrimitiveValue::UnitType unit) const {
-    return getAtIndex(indexForUnit(unit));
-  }
-
-  Vector<double, CSSLengthValue::kNumSupportedUnits> m_values;
-  BitVector m_hasValues;
+  UnitData m_unitData;
 };
 
 #define DEFINE_CALC_LENGTH_TYPE_CASTS(argumentType)                    \

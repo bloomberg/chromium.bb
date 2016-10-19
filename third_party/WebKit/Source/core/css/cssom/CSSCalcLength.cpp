@@ -13,17 +13,25 @@
 
 namespace blink {
 
-CSSCalcLength::CSSCalcLength()
-    : m_values(CSSLengthValue::kNumSupportedUnits),
-      m_hasValues(CSSLengthValue::kNumSupportedUnits) {}
+namespace {
+
+static CSSPrimitiveValue::UnitType unitFromIndex(int index) {
+  int lowestValue = static_cast<int>(CSSPrimitiveValue::UnitType::Percentage);
+  return static_cast<CSSPrimitiveValue::UnitType>(index + lowestValue);
+}
+
+int indexForUnit(CSSPrimitiveValue::UnitType unit) {
+  return (static_cast<int>(unit) -
+          static_cast<int>(CSSPrimitiveValue::UnitType::Percentage));
+}
+
+}  // namespace
 
 CSSCalcLength::CSSCalcLength(const CSSCalcLength& other)
-    : m_values(other.m_values), m_hasValues(other.m_hasValues) {}
+    : m_unitData(other.m_unitData) {}
 
-CSSCalcLength::CSSCalcLength(const CSSSimpleLength& other)
-    : m_values(CSSLengthValue::kNumSupportedUnits),
-      m_hasValues(CSSLengthValue::kNumSupportedUnits) {
-  set(other.value(), other.lengthUnit());
+CSSCalcLength::CSSCalcLength(const CSSSimpleLength& other) {
+  m_unitData.set(other.lengthUnit(), other.value());
 }
 
 CSSCalcLength* CSSCalcLength::create(const CSSLengthValue* length) {
@@ -37,14 +45,13 @@ CSSCalcLength* CSSCalcLength::create(const CSSLengthValue* length) {
 
 CSSCalcLength* CSSCalcLength::create(const CSSCalcDictionary& dictionary,
                                      ExceptionState& exceptionState) {
-  CSSCalcLength* result = new CSSCalcLength();
   int numSet = 0;
+  UnitData result;
 
-#define SET_FROM_DICT_VALUE(name, camelName, primitiveName)  \
-  if (dictionary.has##camelName()) {                         \
-    result->set(dictionary.name(),                           \
-                CSSPrimitiveValue::UnitType::primitiveName); \
-    numSet++;                                                \
+#define SET_FROM_DICT_VALUE(name, camelName, primitiveName)                    \
+  if (dictionary.has##camelName()) {                                           \
+    result.set(CSSPrimitiveValue::UnitType::primitiveName, dictionary.name()); \
+    numSet++;                                                                  \
   }
 
   SET_FROM_DICT_VALUE(px, Px, Pixels)
@@ -63,72 +70,82 @@ CSSCalcLength* CSSCalcLength::create(const CSSCalcDictionary& dictionary,
   SET_FROM_DICT_VALUE(pc, Pc, Picas)
   SET_FROM_DICT_VALUE(pt, Pt, Points)
 
+#undef SET_FROM_DICT_VALUE
+
   if (numSet == 0) {
     exceptionState.throwTypeError(
         "Must specify at least one value in CSSCalcDictionary for creating a "
         "CSSCalcLength.");
+    return nullptr;
   }
-  return result;
+  return new CSSCalcLength(result);
 }
 
-CSSCalcLength* CSSCalcLength::fromCSSValue(const CSSPrimitiveValue&) {
-  // TODO(meade): Implement.
+CSSCalcLength* CSSCalcLength::fromCSSValue(const CSSPrimitiveValue& value) {
+  std::unique_ptr<UnitData> unitData =
+      UnitData::fromExpressionNode(value.cssCalcValue()->expressionNode());
+  if (unitData)
+    return new CSSCalcLength(*unitData);
   return nullptr;
 }
 
 bool CSSCalcLength::containsPercent() const {
-  return has(CSSPrimitiveValue::UnitType::Percentage);
+  return m_unitData.has(CSSPrimitiveValue::UnitType::Percentage);
 }
 
 CSSLengthValue* CSSCalcLength::addInternal(const CSSLengthValue* other) {
-  CSSCalcLength* result = CSSCalcLength::create(other);
-  for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
-    if (hasAtIndex(i)) {
-      result->setAtIndex(getAtIndex(i) + result->getAtIndex(i), i);
-    }
+  UnitData result = m_unitData;
+  if (other->type() == SimpleLengthType) {
+    const CSSSimpleLength* simpleLength = toCSSSimpleLength(other);
+    result.set(
+        simpleLength->lengthUnit(),
+        m_unitData.get(simpleLength->lengthUnit()) + simpleLength->value());
+  } else {
+    result.add(toCSSCalcLength(other)->m_unitData);
   }
-  return result;
+  return new CSSCalcLength(result);
 }
 
 CSSLengthValue* CSSCalcLength::subtractInternal(const CSSLengthValue* other) {
-  CSSCalcLength* result = CSSCalcLength::create(this);
-  if (other->type() == CalcLengthType) {
-    const CSSCalcLength* o = toCSSCalcLength(other);
-    for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
-      if (o->hasAtIndex(i)) {
-        result->setAtIndex(getAtIndex(i) - o->getAtIndex(i), i);
-      }
-    }
+  UnitData result = m_unitData;
+  if (other->type() == SimpleLengthType) {
+    const CSSSimpleLength* simpleLength = toCSSSimpleLength(other);
+    result.set(
+        simpleLength->lengthUnit(),
+        m_unitData.get(simpleLength->lengthUnit()) - simpleLength->value());
   } else {
-    const CSSSimpleLength* o = toCSSSimpleLength(other);
-    result->set(get(o->lengthUnit()) - o->value(), o->lengthUnit());
+    result.subtract(toCSSCalcLength(other)->m_unitData);
   }
-  return result;
+  return new CSSCalcLength(result);
 }
 
 CSSLengthValue* CSSCalcLength::multiplyInternal(double x) {
-  CSSCalcLength* result = CSSCalcLength::create(this);
-  for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
-    if (hasAtIndex(i)) {
-      result->setAtIndex(getAtIndex(i) * x, i);
-    }
-  }
-  return result;
+  UnitData result = m_unitData;
+  result.multiply(x);
+  return new CSSCalcLength(result);
 }
 
 CSSLengthValue* CSSCalcLength::divideInternal(double x) {
-  DCHECK_NE(x, 0);
-  CSSCalcLength* result = CSSCalcLength::create(this);
-  for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
-    if (hasAtIndex(i)) {
-      result->setAtIndex(getAtIndex(i) / x, i);
-    }
-  }
-  return result;
+  UnitData result = m_unitData;
+  result.divide(x);
+  return new CSSCalcLength(result);
 }
 
 CSSValue* CSSCalcLength::toCSSValue() const {
-  // Create a CSS Calc Value, then put it into a CSSPrimitiveValue
+  CSSCalcExpressionNode* node = m_unitData.toCSSCalcExpressionNode();
+  if (node)
+    return CSSPrimitiveValue::create(CSSCalcValue::create(node));
+  return nullptr;
+}
+
+std::unique_ptr<CSSCalcLength::UnitData>
+CSSCalcLength::UnitData::fromExpressionNode(
+    const CSSCalcExpressionNode* expressionNode) {
+  return nullptr;
+}
+
+CSSCalcExpressionNode* CSSCalcLength::UnitData::toCSSCalcExpressionNode()
+    const {
   CSSCalcExpressionNode* node = nullptr;
   for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
     if (!hasAtIndex(i))
@@ -144,12 +161,72 @@ CSSValue* CSSCalcLength::toCSSValue() const {
           CSSPrimitiveValue::create(value, unitFromIndex(i)));
     }
   }
-  return CSSPrimitiveValue::create(CSSCalcValue::create(node));
+  return node;
 }
 
-int CSSCalcLength::indexForUnit(CSSPrimitiveValue::UnitType unit) {
-  return (static_cast<int>(unit) -
-          static_cast<int>(CSSPrimitiveValue::UnitType::Percentage));
+bool CSSCalcLength::UnitData::hasAtIndex(int i) const {
+  DCHECK_GE(i, 0);
+  DCHECK_LT(i, CSSLengthValue::kNumSupportedUnits);
+  return m_hasValueForUnit[i];
+}
+
+bool CSSCalcLength::UnitData::has(CSSPrimitiveValue::UnitType unit) const {
+  return hasAtIndex(indexForUnit(unit));
+}
+
+void CSSCalcLength::UnitData::setAtIndex(int i, double value) {
+  DCHECK_GE(i, 0);
+  DCHECK_LT(i, CSSLengthValue::kNumSupportedUnits);
+  m_hasValueForUnit.set(i);
+  m_values[i] = value;
+}
+
+void CSSCalcLength::UnitData::set(CSSPrimitiveValue::UnitType unit,
+                                  double value) {
+  setAtIndex(indexForUnit(unit), value);
+}
+
+double CSSCalcLength::UnitData::getAtIndex(int i) const {
+  DCHECK_GE(i, 0);
+  DCHECK_LT(i, CSSLengthValue::kNumSupportedUnits);
+  return m_values[i];
+}
+
+double CSSCalcLength::UnitData::get(CSSPrimitiveValue::UnitType unit) const {
+  return getAtIndex(indexForUnit(unit));
+}
+
+void CSSCalcLength::UnitData::add(const CSSCalcLength::UnitData& right) {
+  for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
+    if (right.hasAtIndex(i)) {
+      setAtIndex(i, getAtIndex(i) + right.getAtIndex(i));
+    }
+  }
+}
+
+void CSSCalcLength::UnitData::subtract(const CSSCalcLength::UnitData& right) {
+  for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
+    if (right.hasAtIndex(i)) {
+      setAtIndex(i, getAtIndex(i) - right.getAtIndex(i));
+    }
+  }
+}
+
+void CSSCalcLength::UnitData::multiply(double x) {
+  for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
+    if (hasAtIndex(i)) {
+      setAtIndex(i, getAtIndex(i) * x);
+    }
+  }
+}
+
+void CSSCalcLength::UnitData::divide(double x) {
+  DCHECK_NE(x, 0);
+  for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
+    if (hasAtIndex(i)) {
+      setAtIndex(i, getAtIndex(i) / x);
+    }
+  }
 }
 
 }  // namespace blink

@@ -34,6 +34,8 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
   static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
 
  protected:
+  static const int kNumSupportedUnits = 15;
+
   CSSLengthValue() {}
 
   virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
@@ -47,8 +49,6 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
            unit != CSSPrimitiveValue::UnitType::QuirkyEms &&
            unit != CSSPrimitiveValue::UnitType::UserUnits;
   }
-
-  static const int kNumSupportedUnits = 15;
 };
 
 DEFINE_TYPE_CASTS(CSSLengthValue,
