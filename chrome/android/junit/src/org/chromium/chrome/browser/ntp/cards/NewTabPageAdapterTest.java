@@ -138,16 +138,16 @@ public class NewTabPageAdapterTest {
     }
 
     /**
-     * Asserts that the given itemGroup is a {@link SuggestionsSection} that matches the given
-     * {@link SectionDescriptor}.
+     * Asserts that the given {@link TreeNode} is a {@link SuggestionsSection} that matches the
+     * given {@link SectionDescriptor}.
      * @param descriptor The section descriptor to match against.
-     * @param itemGroup The items from the adapter.
+     * @param node The node from the adapter.
      */
-    private void assertMatches(SectionDescriptor descriptor, TreeNode itemGroup) {
-        int offset = mAdapter.getGroupPositionOffset(itemGroup);
+    private void assertMatches(SectionDescriptor descriptor, TreeNode node) {
+        int offset = mAdapter.getChildPositionOffset(node);
         ItemsMatcher matcher = new ItemsMatcher(mAdapter, offset);
         matcher.expect(descriptor);
-        matcher.expectPosition(offset + itemGroup.getItemCount());
+        matcher.expectPosition(offset + node.getItemCount());
     }
 
     /**
@@ -460,8 +460,8 @@ public class NewTabPageAdapterTest {
         assertItemsFor(section(3));
 
         // 1.3 - When all suggestions are dismissed
-        assertEquals(SuggestionsSection.class, mAdapter.getGroups().get(sectionIdx).getClass());
-        SuggestionsSection section42 = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
+        assertEquals(SuggestionsSection.class, mAdapter.getChildren().get(sectionIdx).getClass());
+        SuggestionsSection section42 = (SuggestionsSection) mAdapter.getChildren().get(sectionIdx);
         assertMatches(section(3), section42);
         section42.removeSuggestion(articles.get(0));
         section42.removeSuggestion(articles.get(1));
@@ -514,8 +514,8 @@ public class NewTabPageAdapterTest {
         assertItemsFor(sectionWithMoreButton(3));
 
         // 1.3 - When all suggestions are dismissed.
-        assertEquals(SuggestionsSection.class, mAdapter.getGroups().get(sectionIdx).getClass());
-        section42 = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
+        assertEquals(SuggestionsSection.class, mAdapter.getChildren().get(sectionIdx).getClass());
+        section42 = (SuggestionsSection) mAdapter.getChildren().get(sectionIdx);
         assertMatches(sectionWithMoreButton(3), section42);
         section42.removeSuggestion(articles.get(0));
         section42.removeSuggestion(articles.get(1));
@@ -537,8 +537,8 @@ public class NewTabPageAdapterTest {
         assertItemsFor(section(3));
 
         // 2.3 - When all suggestions are dismissed.
-        assertEquals(SuggestionsSection.class, mAdapter.getGroups().get(sectionIdx).getClass());
-        section42 = (SuggestionsSection) mAdapter.getGroups().get(sectionIdx);
+        assertEquals(SuggestionsSection.class, mAdapter.getChildren().get(sectionIdx).getClass());
+        section42 = (SuggestionsSection) mAdapter.getChildren().get(sectionIdx);
         assertMatches(section(3), section42);
         section42.removeSuggestion(articles.get(0));
         section42.removeSuggestion(articles.get(1));
@@ -604,7 +604,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testCategoryOrder() {
-        final int basicGroupCount = 4; // above-the-fold, sign in promo, footer, spacer.
+        final int basicChildCount = 4; // above-the-fold, sign in promo, footer, spacer.
         FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
         registerCategory(suggestionsSource, KnownCategories.ARTICLES, 0);
         registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 0);
@@ -613,18 +613,18 @@ public class NewTabPageAdapterTest {
 
         NewTabPageAdapter ntpAdapter =
                 new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
-        List<TreeNode> groups = ntpAdapter.getGroups();
+        List<TreeNode> children = ntpAdapter.getChildren();
 
-        assertEquals(basicGroupCount + 4, groups.size());
-        assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
-        assertEquals(SuggestionsSection.class, groups.get(1).getClass());
-        assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
-        assertEquals(SuggestionsSection.class, groups.get(2).getClass());
-        assertEquals(KnownCategories.BOOKMARKS, getCategory(groups.get(2)));
-        assertEquals(SuggestionsSection.class, groups.get(3).getClass());
-        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(3)));
-        assertEquals(SuggestionsSection.class, groups.get(4).getClass());
-        assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(4)));
+        assertEquals(basicChildCount + 4, children.size());
+        assertEquals(AboveTheFoldItem.class, children.get(0).getClass());
+        assertEquals(SuggestionsSection.class, children.get(1).getClass());
+        assertEquals(KnownCategories.ARTICLES, getCategory(children.get(1)));
+        assertEquals(SuggestionsSection.class, children.get(2).getClass());
+        assertEquals(KnownCategories.BOOKMARKS, getCategory(children.get(2)));
+        assertEquals(SuggestionsSection.class, children.get(3).getClass());
+        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(children.get(3)));
+        assertEquals(SuggestionsSection.class, children.get(4).getClass());
+        assertEquals(KnownCategories.DOWNLOADS, getCategory(children.get(4)));
 
         // With a different order.
         suggestionsSource = new FakeSuggestionsSource();
@@ -635,18 +635,18 @@ public class NewTabPageAdapterTest {
 
         ntpAdapter =
                 new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
-        groups = ntpAdapter.getGroups();
+        children = ntpAdapter.getChildren();
 
-        assertEquals(basicGroupCount + 4, groups.size());
-        assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
-        assertEquals(SuggestionsSection.class, groups.get(1).getClass());
-        assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
-        assertEquals(SuggestionsSection.class, groups.get(2).getClass());
-        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(2)));
-        assertEquals(SuggestionsSection.class, groups.get(3).getClass());
-        assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(3)));
-        assertEquals(SuggestionsSection.class, groups.get(4).getClass());
-        assertEquals(KnownCategories.BOOKMARKS, getCategory(groups.get(4)));
+        assertEquals(basicChildCount + 4, children.size());
+        assertEquals(AboveTheFoldItem.class, children.get(0).getClass());
+        assertEquals(SuggestionsSection.class, children.get(1).getClass());
+        assertEquals(KnownCategories.ARTICLES, getCategory(children.get(1)));
+        assertEquals(SuggestionsSection.class, children.get(2).getClass());
+        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(children.get(2)));
+        assertEquals(SuggestionsSection.class, children.get(3).getClass());
+        assertEquals(KnownCategories.DOWNLOADS, getCategory(children.get(3)));
+        assertEquals(SuggestionsSection.class, children.get(4).getClass());
+        assertEquals(KnownCategories.BOOKMARKS, getCategory(children.get(4)));
 
         // With unknown categories.
         suggestionsSource = new FakeSuggestionsSource();
@@ -661,16 +661,16 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, 42, 1);
         registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 1);
 
-        groups = ntpAdapter.getGroups();
+        children = ntpAdapter.getChildren();
 
-        assertEquals(basicGroupCount + 3, groups.size());
-        assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
-        assertEquals(SuggestionsSection.class, groups.get(1).getClass());
-        assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
-        assertEquals(SuggestionsSection.class, groups.get(2).getClass());
-        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(2)));
-        assertEquals(SuggestionsSection.class, groups.get(3).getClass());
-        assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(3)));
+        assertEquals(basicChildCount + 3, children.size());
+        assertEquals(AboveTheFoldItem.class, children.get(0).getClass());
+        assertEquals(SuggestionsSection.class, children.get(1).getClass());
+        assertEquals(KnownCategories.ARTICLES, getCategory(children.get(1)));
+        assertEquals(SuggestionsSection.class, children.get(2).getClass());
+        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(children.get(2)));
+        assertEquals(SuggestionsSection.class, children.get(3).getClass());
+        assertEquals(KnownCategories.DOWNLOADS, getCategory(children.get(3)));
     }
 
     @Test
@@ -759,10 +759,10 @@ public class NewTabPageAdapterTest {
         MockNewTabPageManager ntpManager = new MockNewTabPageManager(mSource);
         NewTabPageAdapter adapter = new NewTabPageAdapter(ntpManager, null, null);
 
-        TreeNode signinPromoGroup = adapter.getGroups().get(2);
+        TreeNode signinPromo = adapter.getChildren().get(2);
 
         // Adapter content:
-        // Idx | Item               | Group Index
+        // Idx | Item               | Item Index
         // ----|--------------------|-------------
         // 0   | Above-the-fold     | 0
         // 1   | Header             | 1
@@ -773,14 +773,14 @@ public class NewTabPageAdapterTest {
         // 6   | Footer             | 3
         // 7   | Spacer             | 4
 
-        assertEquals(1, signinPromoGroup.getItemCount());
-        assertEquals(ItemViewType.PROMO, signinPromoGroup.getItemViewType(0));
+        assertEquals(1, signinPromo.getItemCount());
+        assertEquals(ItemViewType.PROMO, signinPromo.getItemViewType(0));
 
         ntpManager.mSignInStateObserver.onSignedIn();
-        assertEquals(0, signinPromoGroup.getItemCount());
+        assertEquals(0, signinPromo.getItemCount());
 
         ntpManager.mSignInStateObserver.onSignedOut();
-        assertEquals(1, signinPromoGroup.getItemCount());
+        assertEquals(1, signinPromo.getItemCount());
     }
 
     @Test
@@ -794,11 +794,11 @@ public class NewTabPageAdapterTest {
         NewTabPageAdapter adapter = new NewTabPageAdapter(ntpManager, null, null);
         final int signInPromoIndex = 5;
 
-        assertEquals(5, adapter.getGroups().size());
-        TreeNode signinPromoGroup = adapter.getGroups().get(2);
+        assertEquals(5, adapter.getChildren().size());
+        TreeNode signinPromo = adapter.getChildren().get(2);
 
         // Adapter content:
-        // Idx | Item               | Group Index
+        // Idx | Item               | Item Index
         // ----|--------------------|-------------
         // 0   | Above-the-fold     | 0
         // 1   | Header             | 1
@@ -809,15 +809,15 @@ public class NewTabPageAdapterTest {
         // 6   | Footer             | 3
         // 7   | Spacer             | 4
 
-        assertEquals(ItemViewType.PROMO, signinPromoGroup.getItemViewType(0));
+        assertEquals(ItemViewType.PROMO, signinPromo.getItemViewType(0));
 
         adapter.dismissItem(signInPromoIndex);
-        assertEquals(0, signinPromoGroup.getItemCount());
+        assertEquals(0, signinPromo.getItemCount());
         assertTrue(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
                            .getNewTabPageSigninPromoDismissed());
 
         adapter = new NewTabPageAdapter(ntpManager, null, null);
-        assertEquals(5, adapter.getGroups().size());
+        assertEquals(5, adapter.getChildren().size());
         // The items below the signin promo move up, footer is now at the position of the promo.
         assertEquals(ItemViewType.FOOTER, adapter.getItemViewType(signInPromoIndex));
     }
@@ -834,8 +834,8 @@ public class NewTabPageAdapterTest {
                 category, createDummySuggestions(suggestionCount));
     }
 
-    private int getCategory(TreeNode itemGroup) {
-        return ((SuggestionsSection) itemGroup).getCategory();
+    private int getCategory(TreeNode item) {
+        return ((SuggestionsSection) item).getCategory();
     }
 
     private static class MockNewTabPageManager implements NewTabPageManager {

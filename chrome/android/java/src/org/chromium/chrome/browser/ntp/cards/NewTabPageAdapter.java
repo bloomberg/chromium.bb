@@ -51,10 +51,9 @@ public class NewTabPageAdapter
     private NewTabPageRecyclerView mRecyclerView;
 
     /**
-     * List of all item groups (which can themselves contain multiple items. When flattened, this
-     * will be a list of all items the adapter exposes.
+     * List of all child nodes (which can themselves contain multiple child nodes).
      */
-    private final List<TreeNode> mGroups = new ArrayList<>();
+    private final List<TreeNode> mChildren = new ArrayList<>();
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
     private final SignInPromo mSigninPromo;
     private final AllDismissedItem mAllDismissed = new AllDismissedItem();
@@ -137,7 +136,7 @@ public class NewTabPageAdapter
         mRoot = new InnerNode(this) {
             @Override
             protected List<TreeNode> getChildren() {
-                return mGroups;
+                return mChildren;
             }
         };
 
@@ -184,7 +183,7 @@ public class NewTabPageAdapter
 
         mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
 
-        updateGroups();
+        updateChildren();
     }
 
     /**
@@ -348,7 +347,7 @@ public class NewTabPageAdapter
     }
 
     public int getAboveTheFoldPosition() {
-        return getGroupPositionOffset(mAboveTheFold);
+        return getChildPositionOffset(mAboveTheFold);
     }
 
     public int getFirstHeaderPosition() {
@@ -367,15 +366,15 @@ public class NewTabPageAdapter
     }
 
     public int getFooterPosition() {
-        return getGroupPositionOffset(mFooter);
+        return getChildPositionOffset(mFooter);
     }
 
     public int getBottomSpacerPosition() {
-        return getGroupPositionOffset(mBottomSpacer);
+        return getChildPositionOffset(mBottomSpacer);
     }
 
     public int getLastContentItemPosition() {
-        return getGroupPositionOffset(hasAllBeenDismissed() ? mAllDismissed : mFooter);
+        return getChildPositionOffset(hasAllBeenDismissed() ? mAllDismissed : mFooter);
     }
 
     public int getSuggestionPosition(SnippetArticle article) {
@@ -407,13 +406,13 @@ public class NewTabPageAdapter
         mSections.get(category).setSuggestions(suggestions, status);
     }
 
-    private void updateGroups() {
-        mGroups.clear();
-        mGroups.add(mAboveTheFold);
-        mGroups.addAll(mSections.values());
-        mGroups.add(mSigninPromo);
-        mGroups.add(hasAllBeenDismissed() ? mAllDismissed : mFooter);
-        mGroups.add(mBottomSpacer);
+    private void updateChildren() {
+        mChildren.clear();
+        mChildren.add(mAboveTheFold);
+        mChildren.addAll(mSections.values());
+        mChildren.add(mSigninPromo);
+        mChildren.add(hasAllBeenDismissed() ? mAllDismissed : mFooter);
+        mChildren.add(mBottomSpacer);
 
         // TODO(mvanouwerkerk): Notify about the subset of changed items. At least |mAboveTheFold|
         // has not changed when refreshing from the all dismissed state.
@@ -422,13 +421,13 @@ public class NewTabPageAdapter
 
     private void removeSection(SuggestionsSection section) {
         mSections.remove(section.getCategory());
-        int startPos = getGroupPositionOffset(section);
-        mGroups.remove(section);
+        int startPos = getChildPositionOffset(section);
+        mChildren.remove(section);
         notifyItemRangeRemoved(startPos, section.getItemCount());
 
         if (hasAllBeenDismissed()) {
             int footerPosition = getFooterPosition();
-            mGroups.set(mGroups.indexOf(mFooter), mAllDismissed);
+            mChildren.set(mChildren.indexOf(mFooter), mAllDismissed);
             notifyItemChanged(footerPosition);
         }
 
@@ -438,14 +437,14 @@ public class NewTabPageAdapter
     @Override
     public void onItemRangeChanged(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
-        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
+        if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRangeChanged(itemPosition, itemCount);
     }
 
     @Override
     public void onItemRangeInserted(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
-        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
+        if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRangeInserted(itemPosition, itemCount);
         notifyItemChanged(getItemCount() - 1); // Refresh the spacer too.
     }
@@ -453,7 +452,7 @@ public class NewTabPageAdapter
     @Override
     public void onItemRangeRemoved(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
-        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
+        if (mChildren.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRangeRemoved(itemPosition, itemCount);
         notifyItemChanged(getItemCount() - 1); // Refresh the spacer too.
     }
@@ -531,7 +530,7 @@ public class NewTabPageAdapter
 
         if (hasAllBeenDismissed()) {
             int footerPosition = getFooterPosition();
-            mGroups.set(mGroups.indexOf(mFooter), mAllDismissed);
+            mChildren.set(mChildren.indexOf(mFooter), mAllDismissed);
             notifyItemChanged(footerPosition);
         }
     }
@@ -545,7 +544,7 @@ public class NewTabPageAdapter
         if (section == null) return null;
 
         int siblingPosDelta =
-                section.getDismissSiblingPosDelta(swipePos - getGroupPositionOffset(section));
+                section.getDismissSiblingPosDelta(swipePos - getChildPositionOffset(section));
         if (siblingPosDelta == 0) return null;
 
         return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
@@ -562,19 +561,19 @@ public class NewTabPageAdapter
      */
     @VisibleForTesting
     SuggestionsSection getSuggestionsSection(int itemPosition) {
-        TreeNode child = mGroups.get(mRoot.getChildIndexForPosition(itemPosition));
+        TreeNode child = mChildren.get(mRoot.getChildIndexForPosition(itemPosition));
         if (!(child instanceof SuggestionsSection)) return null;
         return (SuggestionsSection) child;
     }
 
     @VisibleForTesting
-    List<TreeNode> getGroups() {
-        return Collections.unmodifiableList(mGroups);
+    List<TreeNode> getChildren() {
+        return Collections.unmodifiableList(mChildren);
     }
 
     @VisibleForTesting
-    int getGroupPositionOffset(TreeNode group) {
-        return mRoot.getStartingOffsetForChild(group);
+    int getChildPositionOffset(TreeNode child) {
+        return mRoot.getStartingOffsetForChild(child);
     }
 
     @VisibleForTesting
