@@ -187,7 +187,7 @@ ReducedReferrerGranularity
 ReloadwithoutSubResourceCacheRevalidation
 RemotePlayback status=experimental
 RenderingPipelineThrottling status=stable
-RenderUnicodeControlCharacters status=experimental
+RenderUnicodeControlCharacters status=stable
 ResizeObserver status=experimental
 // Handles frame scrolling via the root PaintLayer instead of the FrameView.
 // crbug.com/417782 tracks enabling this by default.
