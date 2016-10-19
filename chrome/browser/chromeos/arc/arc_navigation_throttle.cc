@@ -173,7 +173,8 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
           << "Chrome browser is selected as the preferred app for this URL: "
           << navigation_handle()->GetURL().spec();
     }
-    OnIntentPickerClosed(std::move(handlers), i,
+    std::string package_name = handlers[i]->package_name;
+    OnIntentPickerClosed(std::move(handlers), package_name,
                          CloseReason::PREFERRED_ACTIVITY_FOUND);
     return;
   }
@@ -212,7 +213,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
     mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::vector<NameAndIcon> app_info;
+  std::vector<AppInfo> app_info;
 
   for (const auto& handler : handlers) {
     gfx::Image icon;
@@ -221,7 +222,8 @@ void ArcNavigationThrottle::OnAppIconsReceived(
     const auto it = icons->find(activity);
 
     app_info.emplace_back(
-        handler->name, it != icons->end() ? it->second.icon20 : gfx::Image());
+        AppInfo(it != icons->end() ? it->second.icon20 : gfx::Image(),
+                handler->package_name, handler->name));
   }
 
   show_intent_picker_callback_.Run(
@@ -232,19 +234,34 @@ void ArcNavigationThrottle::OnAppIconsReceived(
 
 void ArcNavigationThrottle::OnIntentPickerClosed(
     mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
-    size_t selected_app_index,
+    std::string selected_app_package,
     CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const GURL& url = navigation_handle()->GetURL();
   content::NavigationHandle* handle = navigation_handle();
-
   previous_user_action_ = close_reason;
 
   // Make sure that the instance at least supports HandleUrl.
   auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
       "HandleUrl", kMinVersionForHandleUrl);
-  if (!instance || selected_app_index >= handlers.size())
+  size_t selected_app_index = handlers.size();
+  if (!instance) {
     close_reason = CloseReason::ERROR;
+  } else if (close_reason == CloseReason::JUST_ONCE_PRESSED ||
+             close_reason == CloseReason::ALWAYS_PRESSED ||
+             close_reason == CloseReason::PREFERRED_ACTIVITY_FOUND) {
+    // Since we are selecting an app by its package name, we need to locate it
+    // on the |handlers| structure before sending the IPC to ARC.
+    for (size_t i = 0; i < handlers.size(); ++i) {
+      if (handlers[i]->package_name == selected_app_package) {
+        selected_app_index = i;
+        break;
+      }
+    }
+
+    if (selected_app_index == handlers.size())
+      close_reason = CloseReason::ERROR;
+  }
 
   switch (close_reason) {
     case CloseReason::ERROR:
@@ -272,8 +289,7 @@ void ArcNavigationThrottle::OnIntentPickerClosed(
               handlers[selected_app_index]->package_name)) {
         handle->Resume();
       } else {
-        instance->HandleUrl(url.spec(),
-                            handlers[selected_app_index]->package_name);
+        instance->HandleUrl(url.spec(), selected_app_package);
         handle->CancelDeferredNavigation(
             content::NavigationThrottle::CANCEL_AND_IGNORE);
         if (handle->GetWebContents()->GetController().IsInitialNavigation())
