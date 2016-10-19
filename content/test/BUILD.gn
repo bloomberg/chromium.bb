@@ -670,7 +670,7 @@ test("content_browsertests") {
         data += [ "//testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter" ]
       }
 
-      if (is_win || is_linux) {
+      if (is_win || is_linux || is_android) {
         data += [ "//testing/buildbot/filters/site-per-process.content_browsertests.filter" ]
       }
     }

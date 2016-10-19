@@ -11389,6 +11389,42 @@
         "test": "content_browsertests"
       },
       {
+        "args": [
+          "--gtest-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter",
+          "--test-arguments=--site-per-process"
+        ],
+        "name": "site_per_process_content_browsertests",
+        "override_isolate_target": "content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "override_isolate_target": "content_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--test-arguments=--site-per-process"
+        ],
+        "name": "site_per_process_content_unittests",
         "override_isolate_target": "content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
