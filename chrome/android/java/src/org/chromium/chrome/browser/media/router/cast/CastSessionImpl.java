@@ -16,6 +16,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -25,8 +28,6 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.MediaMetadata;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -263,7 +264,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
 
     @Override
     public boolean isApiClientInvalid() {
-        return mApiClient == null || (!mApiClient.isConnected() && !mApiClient.isConnecting());
+        return mApiClient == null || !mApiClient.isConnected();
     }
 
     @Override
