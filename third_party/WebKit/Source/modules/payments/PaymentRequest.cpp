@@ -224,25 +224,29 @@ void validateDisplayItems(const HeapVector<PaymentItem>& items,
   }
 }
 
-void validateAndFixupShippingOptions(HeapVector<PaymentShippingOption>& options,
-                                     ExceptionState& exceptionState) {
+// Returns false if |options| should be ignored, even if an exception was not
+// thrown. TODO(rouslan): Clear shipping options instead of ignoring them when
+// http://crbug.com/601193 is fixed.
+bool validateShippingOptions(const HeapVector<PaymentShippingOption>& options,
+                             ExceptionState& exceptionState) {
   HashSet<String> uniqueIds;
   for (const auto& option : options) {
     if (!option.hasId() || option.id().isEmpty()) {
       exceptionState.throwTypeError("ShippingOption id required");
-      return;
+      return false;
     }
 
-    if (uniqueIds.contains(option.id())) {
-      options = HeapVector<PaymentShippingOption>();
-      return;
-    }
+    if (uniqueIds.contains(option.id()))
+      return false;
+
     uniqueIds.add(option.id());
 
     validateShippingOptionOrPaymentItem(option, exceptionState);
     if (exceptionState.hadException())
-      return;
+      return false;
   }
+
+  return true;
 }
 
 void validatePaymentDetailsModifiers(
@@ -291,47 +295,52 @@ void validatePaymentDetailsModifiers(
   }
 }
 
-void validateAndFixupPaymentDetails(PaymentDetails& details,
-                                    ExceptionState& exceptionState) {
+// Returns false if the shipping options should be ignored without throwing an
+// exception.
+bool validatePaymentDetails(const PaymentDetails& details,
+                            ExceptionState& exceptionState) {
+  bool keepShippingOptions = true;
   if (!details.hasTotal()) {
     exceptionState.throwTypeError("Must specify total");
-    return;
+    return keepShippingOptions;
   }
 
   validateShippingOptionOrPaymentItem(details.total(), exceptionState);
   if (exceptionState.hadException())
-    return;
+    return keepShippingOptions;
 
   if (details.total().amount().value()[0] == '-') {
     exceptionState.throwTypeError("Total amount value should be non-negative");
-    return;
+    return keepShippingOptions;
   }
 
   if (details.hasDisplayItems()) {
     validateDisplayItems(details.displayItems(), exceptionState);
     if (exceptionState.hadException())
-      return;
+      return keepShippingOptions;
   }
 
   if (details.hasShippingOptions()) {
-    HeapVector<PaymentShippingOption> fixedShippingOptions =
-        details.shippingOptions();
-    validateAndFixupShippingOptions(fixedShippingOptions, exceptionState);
-    details.setShippingOptions(fixedShippingOptions);
+    keepShippingOptions =
+        validateShippingOptions(details.shippingOptions(), exceptionState);
+
     if (exceptionState.hadException())
-      return;
+      return keepShippingOptions;
   }
 
   if (details.hasModifiers()) {
     validatePaymentDetailsModifiers(details.modifiers(), exceptionState);
+    if (exceptionState.hadException())
+      return keepShippingOptions;
   }
 
   String errorMessage;
   if (!PaymentsValidators::isValidErrorMsgFormat(details.error(),
                                                  &errorMessage)) {
     exceptionState.throwTypeError(errorMessage);
-    return;
   }
+
+  return keepShippingOptions;
 }
 
 void validateAndConvertPaymentMethodData(
@@ -408,6 +417,15 @@ String getValidShippingType(const String& shippingType) {
       return shippingType;
   }
   return validValues[0];
+}
+
+mojom::blink::PaymentDetailsPtr maybeKeepShippingOptions(
+    mojom::blink::PaymentDetailsPtr details,
+    bool keep) {
+  if (!keep)
+    details->shipping_options.resize(0);
+
+  return details;
 }
 
 }  // namespace
@@ -527,7 +545,7 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
   }
 
-  validateAndFixupPaymentDetails(details, exceptionState);
+  bool keepShippingOptions = validatePaymentDetails(details, exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -535,10 +553,15 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
   }
 
-  if (m_options.requestShipping())
-    m_shippingOption = getSelectedShippingOption(details);
+  if (m_options.requestShipping()) {
+    if (keepShippingOptions)
+      m_shippingOption = getSelectedShippingOption(details);
+    else
+      m_shippingOption = String();
+  }
 
-  m_paymentProvider->UpdateWith(mojom::blink::PaymentDetails::From(details));
+  m_paymentProvider->UpdateWith(maybeKeepShippingOptions(
+      mojom::blink::PaymentDetails::From(details), keepShippingOptions));
 }
 
 void PaymentRequest::onUpdatePaymentDetailsFailure(const String& error) {
@@ -592,18 +615,18 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
     return;
   }
 
-  PaymentDetails fixedDetails(details);
-  validateAndFixupPaymentDetails(fixedDetails, exceptionState);
+  bool keepShippingOptions = validatePaymentDetails(details, exceptionState);
   if (exceptionState.hadException())
     return;
 
-  if (fixedDetails.hasError() && !fixedDetails.error().isEmpty()) {
+  if (details.hasError() && !details.error().isEmpty()) {
     exceptionState.throwTypeError("Error value should be empty");
     return;
   }
 
   if (m_options.requestShipping()) {
-    m_shippingOption = getSelectedShippingOption(fixedDetails);
+    if (keepShippingOptions)
+      m_shippingOption = getSelectedShippingOption(details);
     m_shippingType = getValidShippingType(m_options.shippingType());
   }
 
@@ -616,7 +639,8 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
       m_clientBinding.CreateInterfacePtrAndBind(),
       mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(
           validatedMethodData),
-      mojom::blink::PaymentDetails::From(fixedDetails),
+      maybeKeepShippingOptions(mojom::blink::PaymentDetails::From(details),
+                               keepShippingOptions),
       mojom::blink::PaymentOptions::From(m_options));
 }
 
