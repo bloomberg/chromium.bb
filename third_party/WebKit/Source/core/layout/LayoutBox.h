@@ -1578,9 +1578,9 @@ inline LayoutBox* LayoutBox::parentBox() const {
 
 inline LayoutBox* LayoutBox::firstInFlowChildBox() const {
   LayoutBox* first = firstChildBox();
-  while (first && first->isOutOfFlowPositioned())
-    first = first->nextInFlowSiblingBox();
-  return first;
+  return (first && first->isOutOfFlowPositioned())
+             ? first->nextInFlowSiblingBox()
+             : first;
 }
 
 inline LayoutBox* LayoutBox::firstChildBox() const {
