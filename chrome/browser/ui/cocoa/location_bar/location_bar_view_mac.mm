@@ -121,7 +121,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
       location_bar_visible_(true),
-      should_show_secure_verbose_(true),
+      should_show_secure_verbose_(false),
+      should_show_nonsecure_verbose_(false),
       should_animate_secure_verbose_(false),
       should_animate_nonsecure_verbose_(false),
       is_width_available_for_security_verbose_(false),
@@ -152,6 +153,9 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
         command_line->GetSwitchValueASCII(switches::kSecurityChip);
     should_show_secure_verbose_ =
         security_chip_flag == switches::kSecurityChipShowAll;
+    should_show_nonsecure_verbose_ =
+        security_chip_flag == switches::kSecurityChipShowAll ||
+        security_chip_flag == switches::kSecurityChipShowNonSecureOnly;
   }
 
   if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
@@ -678,21 +682,27 @@ WebContents* LocationBarViewMac::GetWebContents() {
 }
 
 bool LocationBarViewMac::ShouldShowEVBubble() const {
-  return (GetToolbarModel()->GetSecurityLevel(false) ==
-          security_state::SecurityStateModel::EV_SECURE) &&
-         should_show_secure_verbose_;
+  return GetToolbarModel()->GetSecurityLevel(false) ==
+         security_state::SecurityStateModel::EV_SECURE;
 }
 
 bool LocationBarViewMac::ShouldShowSecurityState() const {
+  if (omnibox_view_->IsEditingOrEmpty() ||
+      omnibox_view_->model()->is_keyword_hint()) {
+    return false;
+  }
+
   security_state::SecurityStateModel::SecurityLevel security =
       GetToolbarModel()->GetSecurityLevel(false);
-  bool has_verbose_for_security =
-      security == security_state::SecurityStateModel::DANGEROUS ||
-      security == security_state::SecurityStateModel::HTTP_SHOW_WARNING ||
-      (IsSecureConnection(security) && should_show_secure_verbose_);
 
-  return has_verbose_for_security && !omnibox_view_->IsEditingOrEmpty() &&
-         !omnibox_view_->model()->is_keyword_hint();
+  if (security == security_state::SecurityStateModel::EV_SECURE)
+    return true;
+  else if (security == security_state::SecurityStateModel::SECURE)
+    return should_show_secure_verbose_;
+
+  return should_show_nonsecure_verbose_ &&
+         (security == security_state::SecurityStateModel::DANGEROUS ||
+          security == security_state::SecurityStateModel::HTTP_SHOW_WARNING);
 }
 
 bool LocationBarViewMac::IsLocationBarDark() const {

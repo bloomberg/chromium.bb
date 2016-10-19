@@ -140,7 +140,8 @@ LocationBarView::LocationBarView(Browser* browser,
       show_focus_rect_(false),
       template_url_service_(NULL),
       web_contents_null_at_last_refresh_(true),
-      should_show_secure_state_(true),
+      should_show_secure_state_(false),
+      should_show_nonsecure_state_(false),
       should_animate_secure_state_(false),
       should_animate_nonsecure_state_(false) {
   edit_bookmarks_enabled_.Init(
@@ -157,6 +158,9 @@ LocationBarView::LocationBarView(Browser* browser,
         command_line->GetSwitchValueASCII(switches::kSecurityChip);
     should_show_secure_state_ =
         security_chip_flag == switches::kSecurityChipShowAll;
+    should_show_nonsecure_state_ =
+        security_chip_flag == switches::kSecurityChipShowAll ||
+        security_chip_flag == switches::kSecurityChipShowNonSecureOnly;
   }
 
   if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
@@ -998,8 +1002,10 @@ bool LocationBarView::HasValidSuggestText() const {
 }
 
 base::string16 LocationBarView::GetSecurityText() const {
-  return ShouldShowEVBubble() ? GetToolbarModel()->GetEVCertName()
-                              : GetToolbarModel()->GetSecureVerboseText();
+  bool has_ev_cert = (GetToolbarModel()->GetSecurityLevel(false) ==
+                      security_state::SecurityStateModel::EV_SECURE);
+  return has_ev_cert ? GetToolbarModel()->GetEVCertName()
+                     : GetToolbarModel()->GetSecureVerboseText();
 }
 
 bool LocationBarView::ShouldShowKeywordBubble() const {
@@ -1007,19 +1013,18 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
       !omnibox_view_->model()->is_keyword_hint();
 }
 
-bool LocationBarView::ShouldShowEVBubble() const {
-  return (GetToolbarModel()->GetSecurityLevel(false) ==
-          security_state::SecurityStateModel::EV_SECURE) &&
-         should_show_secure_state_;
-}
-
 bool LocationBarView::ShouldShowSecurityChip() const {
   using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
   const SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
-  if (level == SecurityLevel::SECURE || level == SecurityLevel::EV_SECURE)
+  if (level == SecurityLevel::EV_SECURE) {
+    return true;
+  } else if (level == SecurityLevel::SECURE) {
     return should_show_secure_state_;
-  return level == SecurityLevel::DANGEROUS ||
-         level == SecurityLevel::HTTP_SHOW_WARNING;
+  } else {
+    return should_show_nonsecure_state_ &&
+           (level == SecurityLevel::DANGEROUS ||
+            level == SecurityLevel::HTTP_SHOW_WARNING);
+  }
 }
 
 bool LocationBarView::ShouldAnimateSecurityChip() const {

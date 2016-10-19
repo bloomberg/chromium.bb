@@ -316,8 +316,12 @@ class LocationBarViewMac : public LocationBar,
   bool location_bar_visible_;
 
   // True if the HTTPS state should be displayed on the security state
-  // decoration.
+  // decoration. This does not apply to the EV cert.
   bool should_show_secure_verbose_;
+
+  // True if the non-secure state should be displayed on the security state
+  // decoration.
+  bool should_show_nonsecure_verbose_;
 
   // True if the security state decoration should be animated for a secure
   // security level.
