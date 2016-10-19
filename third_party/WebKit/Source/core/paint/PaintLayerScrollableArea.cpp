@@ -63,6 +63,7 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -310,7 +311,7 @@ IntRect PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(
   IntRect rect = scrollbarRect;
   rect.move(scrollbarOffset(scrollbar));
 
-  return view->frameView()->convertFromLayoutObject(box(), rect);
+  return view->frameView()->convertFromLayoutItem(LayoutBoxItem(&box()), rect);
 }
 
 IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
@@ -320,7 +321,8 @@ IntRect PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
   if (!view)
     return parentRect;
 
-  IntRect rect = view->frameView()->convertToLayoutObject(box(), parentRect);
+  IntRect rect =
+      view->frameView()->convertToLayoutItem(LayoutBoxItem(&box()), parentRect);
   rect.move(-scrollbarOffset(scrollbar));
   return rect;
 }
@@ -334,7 +336,7 @@ IntPoint PaintLayerScrollableArea::convertFromScrollbarToContainingWidget(
 
   IntPoint point = scrollbarPoint;
   point.move(scrollbarOffset(scrollbar));
-  return view->frameView()->convertFromLayoutObject(box(), point);
+  return view->frameView()->convertFromLayoutItem(LayoutBoxItem(&box()), point);
 }
 
 IntPoint PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
@@ -344,7 +346,8 @@ IntPoint PaintLayerScrollableArea::convertFromContainingWidgetToScrollbar(
   if (!view)
     return parentPoint;
 
-  IntPoint point = view->frameView()->convertToLayoutObject(box(), parentPoint);
+  IntPoint point = view->frameView()->convertToLayoutItem(LayoutBoxItem(&box()),
+                                                          parentPoint);
 
   point.move(-scrollbarOffset(scrollbar));
   return point;

@@ -3095,19 +3095,19 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize,
   adjustViewSizeAndLayout();
 }
 
-IntRect FrameView::convertFromLayoutObject(
-    const LayoutObject& layoutObject,
+IntRect FrameView::convertFromLayoutItem(
+    const LayoutItem& layoutItem,
     const IntRect& layoutObjectRect) const {
   // Convert from page ("absolute") to FrameView coordinates.
   LayoutRect rect = enclosingLayoutRect(
-      layoutObject.localToAbsoluteQuad(FloatRect(layoutObjectRect))
+      layoutItem.localToAbsoluteQuad(FloatRect(layoutObjectRect))
           .boundingBox());
   rect.move(LayoutSize(-scrollOffset()));
   return pixelSnappedIntRect(rect);
 }
 
-IntRect FrameView::convertToLayoutObject(const LayoutObject& layoutObject,
-                                         const IntRect& frameRect) const {
+IntRect FrameView::convertToLayoutItem(const LayoutItem& layoutItem,
+                                       const IntRect& frameRect) const {
   IntRect rectInContent = frameToContents(frameRect);
 
   // Convert from FrameView coords into page ("absolute") coordinates.
@@ -3116,44 +3116,43 @@ IntRect FrameView::convertToLayoutObject(const LayoutObject& layoutObject,
   // FIXME: we don't have a way to map an absolute rect down to a local quad, so
   // just move the rect for now.
   rectInContent.setLocation(roundedIntPoint(
-      layoutObject.absoluteToLocal(rectInContent.location(), UseTransforms)));
+      layoutItem.absoluteToLocal(rectInContent.location(), UseTransforms)));
   return rectInContent;
 }
 
-IntPoint FrameView::convertFromLayoutObject(
-    const LayoutObject& layoutObject,
+IntPoint FrameView::convertFromLayoutItem(
+    const LayoutItem& layoutItem,
     const IntPoint& layoutObjectPoint) const {
   IntPoint point = roundedIntPoint(
-      layoutObject.localToAbsolute(layoutObjectPoint, UseTransforms));
+      layoutItem.localToAbsolute(layoutObjectPoint, UseTransforms));
 
   // Convert from page ("absolute") to FrameView coordinates.
   point.move(-scrollOffsetInt());
   return point;
 }
 
-IntPoint FrameView::convertToLayoutObject(const LayoutObject& layoutObject,
-                                          const IntPoint& framePoint) const {
+IntPoint FrameView::convertToLayoutItem(const LayoutItem& layoutItem,
+                                        const IntPoint& framePoint) const {
   IntPoint point = framePoint;
 
   // Convert from FrameView coords into page ("absolute") coordinates.
   point += IntSize(scrollX(), scrollY());
 
-  return roundedIntPoint(layoutObject.absoluteToLocal(point, UseTransforms));
+  return roundedIntPoint(layoutItem.absoluteToLocal(point, UseTransforms));
 }
 
 IntRect FrameView::convertToContainingWidget(const IntRect& localRect) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
-    LayoutPart* layoutObject = m_frame->ownerLayoutObject();
-    if (!layoutObject)
+    LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
+    if (layoutItem.isNull())
       return localRect;
 
     IntRect rect(localRect);
     // Add borders and padding??
-    rect.move(
-        (layoutObject->borderLeft() + layoutObject->paddingLeft()).toInt(),
-        (layoutObject->borderTop() + layoutObject->paddingTop()).toInt());
-    return parentView->convertFromLayoutObject(*layoutObject, rect);
+    rect.move((layoutItem.borderLeft() + layoutItem.paddingLeft()).toInt(),
+              (layoutItem.borderTop() + layoutItem.paddingTop()).toInt());
+    return parentView->convertFromLayoutItem(layoutItem, rect);
   }
 
   return localRect;
@@ -3163,15 +3162,14 @@ IntRect FrameView::convertFromContainingWidget(
     const IntRect& parentRect) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
-    LayoutPart* layoutObject = m_frame->ownerLayoutObject();
-    if (!layoutObject)
+    LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
+    if (layoutItem.isNull())
       return parentRect;
 
-    IntRect rect = parentView->convertToLayoutObject(*layoutObject, parentRect);
+    IntRect rect = parentView->convertToLayoutItem(layoutItem, parentRect);
     // Subtract borders and padding
-    rect.move(
-        (-layoutObject->borderLeft() - layoutObject->paddingLeft()).toInt(),
-        (-layoutObject->borderTop() - layoutObject->paddingTop().toInt()));
+    rect.move((-layoutItem.borderLeft() - layoutItem.paddingLeft()).toInt(),
+              (-layoutItem.borderTop() - layoutItem.paddingTop().toInt()));
     return rect;
   }
 
@@ -3182,17 +3180,16 @@ IntPoint FrameView::convertToContainingWidget(
     const IntPoint& localPoint) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
-    LayoutPart* layoutObject = m_frame->ownerLayoutObject();
-    if (!layoutObject)
+    LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
+    if (layoutItem.isNull())
       return localPoint;
 
     IntPoint point(localPoint);
 
     // Add borders and padding
-    point.move(
-        (layoutObject->borderLeft() + layoutObject->paddingLeft()).toInt(),
-        (layoutObject->borderTop() + layoutObject->paddingTop()).toInt());
-    return parentView->convertFromLayoutObject(*layoutObject, point);
+    point.move((layoutItem.borderLeft() + layoutItem.paddingLeft()).toInt(),
+               (layoutItem.borderTop() + layoutItem.paddingTop()).toInt());
+    return parentView->convertFromLayoutItem(layoutItem, point);
   }
 
   return localPoint;
@@ -3202,16 +3199,14 @@ IntPoint FrameView::convertFromContainingWidget(
     const IntPoint& parentPoint) const {
   if (const FrameView* parentView = toFrameView(parent())) {
     // Get our layoutObject in the parent view
-    LayoutPart* layoutObject = m_frame->ownerLayoutObject();
-    if (!layoutObject)
+    LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
+    if (layoutItem.isNull())
       return parentPoint;
 
-    IntPoint point =
-        parentView->convertToLayoutObject(*layoutObject, parentPoint);
+    IntPoint point = parentView->convertToLayoutItem(layoutItem, parentPoint);
     // Subtract borders and padding
-    point.move(
-        (-layoutObject->borderLeft() - layoutObject->paddingLeft()).toInt(),
-        (-layoutObject->borderTop() - layoutObject->paddingTop()).toInt());
+    point.move((-layoutItem.borderLeft() - layoutItem.paddingLeft()).toInt(),
+               (-layoutItem.borderTop() - layoutItem.paddingTop()).toInt());
     return point;
   }
 

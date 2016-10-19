@@ -66,6 +66,7 @@ class FloatSize;
 class HTMLFrameOwnerElement;
 class JSONArray;
 class JSONObject;
+class LayoutItem;
 class LayoutViewItem;
 class LayoutPart;
 class LocalFrame;
@@ -304,11 +305,11 @@ class CORE_EXPORT FrameView final
   void clearFragmentAnchor();
 
   // Methods to convert points and rects between the coordinate space of the
-  // layoutObject, and this view.
-  IntRect convertFromLayoutObject(const LayoutObject&, const IntRect&) const;
-  IntRect convertToLayoutObject(const LayoutObject&, const IntRect&) const;
-  IntPoint convertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
-  IntPoint convertToLayoutObject(const LayoutObject&, const IntPoint&) const;
+  // layoutItem, and this view.
+  IntRect convertFromLayoutItem(const LayoutItem&, const IntRect&) const;
+  IntRect convertToLayoutItem(const LayoutItem&, const IntRect&) const;
+  IntPoint convertFromLayoutItem(const LayoutItem&, const IntPoint&) const;
+  IntPoint convertToLayoutItem(const LayoutItem&, const IntPoint&) const;
 
   bool isFrameViewScrollCorner(LayoutScrollbarPart* scrollCorner) const {
     return m_scrollCorner == scrollCorner;
