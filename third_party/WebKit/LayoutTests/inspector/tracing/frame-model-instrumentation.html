@@ -21,7 +21,8 @@ function test()
         if (lastFrame) {
             InspectorTest.addResult("layerTree: " + typeof lastFrame.layerTree);
             InspectorTest.addResult("mainFrameId: " + typeof lastFrame._mainFrameId);
-            InspectorTest.addResult("paints: " + (lastFrame.paints && lastFrame.paints.length ? "present" : "absent"));
+            var paints = lastFrame.layerTree.paints();
+            InspectorTest.addResult("paints: " + (paints && paints.length ? "present" : "absent"));
         } else {
             InspectorTest.addResult("FAIL: there was no frame");
         }
