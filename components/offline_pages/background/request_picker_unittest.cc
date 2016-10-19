@@ -38,6 +38,7 @@ const int kMaxCompletedTries = 1;
 const bool kPreferUntried = false;
 const bool kPreferEarlier = true;
 const bool kPreferRetryCount = true;
+const int kBackgroundProcessingTimeBudgetSeconds = 170;
 
 // Default request
 const SavePageRequest kEmptyRequest(0UL,
@@ -194,9 +195,9 @@ TEST_F(RequestPickerTest, PickFromEmptyQueue) {
 }
 
 TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
                                   &event_logger_));
 
@@ -230,9 +231,9 @@ TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
 
 TEST_F(RequestPickerTest, ChooseEarlierRequest) {
   // We need a custom policy object prefering recency to retry count.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   !kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
                                   &event_logger_));
 
@@ -253,9 +254,9 @@ TEST_F(RequestPickerTest, ChooseEarlierRequest) {
 
 TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
   // We need a custom policy object preferring recency to retry count.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   !kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
                                   &event_logger_));
 
@@ -274,9 +275,9 @@ TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
 
 TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
   // We need a custom policy object preferring lower retry count.
-  policy_.reset(new OfflinerPolicy(!kPreferUntried, kPreferEarlier,
-                                   kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      !kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
                                   &event_logger_));
 
@@ -295,9 +296,9 @@ TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
 
 TEST_F(RequestPickerTest, ChooseLaterRequest) {
   // We need a custom policy preferring recency over retry, and later requests.
-  policy_.reset(new OfflinerPolicy(kPreferUntried, !kPreferEarlier,
-                                   !kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, !kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
                                   &event_logger_));
 
@@ -377,9 +378,9 @@ TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededCompletionLimit) {
 
 
 TEST_F(RequestPickerTest, ChooseRequestThatIsNotDisabled) {
-  policy_.reset(new OfflinerPolicy(kPreferUntried, kPreferEarlier,
-                                   kPreferRetryCount, kMaxStartedTries,
-                                   kMaxCompletedTries + 1));
+  policy_.reset(new OfflinerPolicy(
+      kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
+      kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
   picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
                                   &event_logger_));
 

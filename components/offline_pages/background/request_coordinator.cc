@@ -136,6 +136,7 @@ RequestCoordinator::RequestCoordinator(
       network_quality_estimator_(network_quality_estimator),
       active_request_(nullptr),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
+      immediate_schedule_callback_(base::Bind(&EmptySchedulerCallback)),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
   picker_.reset(
@@ -464,10 +465,10 @@ RequestCoordinator::TryImmediateStart() {
   // Start processing with manufactured conservative battery conditions
   // (i.e., assume no battery).
   // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
+
   DeviceConditions device_conditions(false, 0, GetConnectionType());
   if (StartProcessingInternal(ProcessingWindowState::IMMEDIATE_WINDOW,
-                              device_conditions,
-                              base::Bind(&EmptySchedulerCallback)))
+                              device_conditions, immediate_schedule_callback_))
     return OfflinerImmediateStartStatus::STARTED;
   else
     return OfflinerImmediateStartStatus::NOT_ACCEPTED;
@@ -646,6 +647,8 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     case Offliner::RequestStatus::PRERENDERING_CANCELED:
     case Offliner::RequestStatus::PRERENDERING_FAILED:
       // No further processing in this service window.
+      // Let the scheduler know we are done processing.
+      scheduler_callback_.Run(true);
       break;
     default:
       // Make explicit choice about new status codes that actually reach here.

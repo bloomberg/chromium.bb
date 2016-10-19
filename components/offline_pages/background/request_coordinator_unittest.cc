@@ -68,7 +68,6 @@ class SchedulerStub : public Scheduler {
     conditions_ = trigger_conditions;
   }
 
-
   // Unschedules the currently scheduled task, if any.
   void Unschedule() override {
     unschedule_called_ = true;
@@ -239,7 +238,8 @@ class RequestCoordinatorTest
   bool is_starting() { return coordinator_->is_starting(); }
 
   // Empty callback function.
-  void EmptyCallbackFunction(bool result) {
+  void ImmediateScheduleCallbackFunction(bool result) {
+    immediate_schedule_callback_called_ = true;
   }
 
   // Callback function which releases a wait for it.
@@ -326,6 +326,10 @@ class RequestCoordinatorTest
 
   ObserverStub observer() { return observer_; }
 
+  bool immediate_schedule_callback_called() const {
+    return immediate_schedule_callback_called_;
+  }
+
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
   MultipleItemStatuses last_remove_results_;
@@ -337,6 +341,7 @@ class RequestCoordinatorTest
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
   ObserverStub observer_;
+  bool immediate_schedule_callback_called_;
 };
 
 RequestCoordinatorTest::RequestCoordinatorTest()
@@ -345,7 +350,8 @@ RequestCoordinatorTest::RequestCoordinatorTest()
       task_runner_handle_(task_runner_),
       offliner_(nullptr),
       waiter_(base::WaitableEvent::ResetPolicy::MANUAL,
-              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+              base::WaitableEvent::InitialState::NOT_SIGNALED),
+      immediate_schedule_callback_called_(false) {}
 
 RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
@@ -407,10 +413,11 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
   base::Callback<void(bool)> callback =
-      base::Bind(
-          &RequestCoordinatorTest::EmptyCallbackFunction,
-          base::Unretained(this));
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+  PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 }
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
@@ -424,7 +431,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   DeviceConditions device_conditions(
       false, 75, net::NetworkChangeNotifier::CONNECTION_3G);
   base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::EmptyCallbackFunction,
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
                  base::Unretained(this));
 
   // Ensure that the forthcoming request does not finish - we simulate it being
@@ -435,16 +442,78 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
   PumpLoop();
   EXPECT_TRUE(is_busy());
+  // Since the offliner is disabled, this callback should not be called.
+  EXPECT_FALSE(immediate_schedule_callback_called());
 
   // Now trying to start processing on another request should return false.
   EXPECT_FALSE(coordinator()->StartProcessing(device_conditions, callback));
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
+  // Set up device conditions for the test and enable the offliner.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+  EnableOfflinerCallback(true);
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
+
+  // The user-requested request which gets processed by SavePageLater
+  // would invoke user request callback.
+  coordinator()->SetImmediateScheduleCallbackForTest(callback);
+
   EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
           RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
+
+  // Expect that a request got placed on the queue.
+  coordinator()->queue()->GetRequests(base::Bind(
+      &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
+
+  // Wait for callbacks to finish, both request queue and offliner.
+  PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
+
+  // Check the request queue is as expected.
+  EXPECT_EQ(1UL, last_requests().size());
+  EXPECT_EQ(kUrl1, last_requests().at(0)->url());
+  EXPECT_EQ(kClientId1, last_requests().at(0)->client_id());
+
+  // Expect that the scheduler got notified.
+  SchedulerStub* scheduler_stub =
+      reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
+  EXPECT_TRUE(scheduler_stub->schedule_called());
+  EXPECT_EQ(coordinator()
+                ->GetTriggerConditions(last_requests()[0]->user_requested())
+                .minimum_battery_percentage,
+            scheduler_stub->conditions()->minimum_battery_percentage);
+
+  // Check that the observer got the notification that a page is available
+  EXPECT_TRUE(observer().added_called());
+}
+
+TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
+  // Set up device conditions for the test and enable the offliner.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
+  // The user-requested request which gets processed by SavePageLater
+  // would invoke user request callback.
+  coordinator()->SetImmediateScheduleCallbackForTest(callback);
+
+  EXPECT_TRUE(
+      coordinator()->SavePageLater(
+          kUrl1, kClientId1, kUserRequested,
+          RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER) != 0);
 
   // Expect that a request got placed on the queue.
   coordinator()->queue()->GetRequests(
@@ -453,6 +522,8 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 
   // Wait for callbacks to finish, both request queue and offliner.
   PumpLoop();
+  // Will not be called since the offliner is disabled.
+  EXPECT_FALSE(immediate_schedule_callback_called());
 
   // Check the request queue is as expected.
   EXPECT_EQ(1UL, last_requests().size());
@@ -485,9 +556,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
 
   // We need to give a callback to the request.
   base::Callback<void(bool)> callback =
-      base::Bind(
-          &RequestCoordinatorTest::EmptyCallbackFunction,
-          base::Unretained(this));
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
   // Set up device conditions for the test.
@@ -499,6 +569,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // for callbacks.
   SendOfflinerDoneCallback(request, Offliner::RequestStatus::SAVED);
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // Verify the request gets removed from the queue, and wait for callbacks.
   coordinator()->queue()->GetRequests(
@@ -539,9 +610,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 
   // We need to give a callback to the request.
   base::Callback<void(bool)> callback =
-      base::Bind(
-          &RequestCoordinatorTest::EmptyCallbackFunction,
-          base::Unretained(this));
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
   // Set up device conditions for the test.
@@ -554,6 +624,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_FAILED);
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // TODO(dougarnett): Consider injecting mock RequestPicker for this test
   // and verifying that there is no attempt to pick another request following
@@ -593,8 +664,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   PumpLoop();
 
   // We need to give a callback to the request.
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
   // Set up device conditions for the test.
@@ -607,6 +679,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   SendOfflinerDoneCallback(
       request, Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY);
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // TODO(dougarnett): Consider injecting mock RequestPicker for this test
   // and verifying that there is as attempt to pick another request following
@@ -636,8 +709,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   PumpLoop();
 
   // We need to give a callback to the request.
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
   // Set up device conditions for the test.
@@ -650,6 +724,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::FOREGROUND_CANCELED);
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // Verify the request is not removed from the queue, and wait for callbacks.
   coordinator()->queue()->GetRequests(base::Bind(
@@ -673,8 +748,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
   PumpLoop();
 
   // We need to give a callback to the request.
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
   // Set up device conditions for the test.
@@ -687,6 +763,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_CANCELED);
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // Verify the request is not removed from the queue, and wait for callbacks.
   coordinator()->queue()->GetRequests(base::Bind(
@@ -707,8 +784,9 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedDisabledItemsRemain) {
   // Call start processing just to set up a scheduler callback.
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->StartProcessing(device_conditions, callback);
   EXPECT_TRUE(is_starting());
 
@@ -732,8 +810,9 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   // Call start processing just to set up a scheduler callback.
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   coordinator()->StartProcessing(device_conditions, callback);
   EXPECT_TRUE(is_starting());
 
@@ -743,6 +822,7 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   PumpLoop();
 
   EXPECT_FALSE(is_starting());
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // The scheduler should have been called to schedule the non-user requested
   // task.
@@ -807,13 +887,13 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithLoadingDisabled) {
                                      net::NetworkChangeNotifier::CONNECTION_3G);
   DisableLoading();
   base::Callback<void(bool)> callback =
-      base::Bind(
-          &RequestCoordinatorTest::EmptyCallbackFunction,
-          base::Unretained(this));
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   EXPECT_FALSE(is_starting());
   EXPECT_EQ(Offliner::PRERENDERING_NOT_STARTED, last_offlining_status());
@@ -834,9 +914,8 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
   base::Callback<void(bool)> callback =
-      base::Bind(
-          &RequestCoordinatorTest::EmptyCallbackFunction,
-          base::Unretained(this));
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
   EXPECT_TRUE(is_starting());
 
@@ -845,6 +924,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   EXPECT_FALSE(is_starting());
 
@@ -874,14 +954,15 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
   base::Callback<void(bool)> callback =
-      base::Bind(
-          &RequestCoordinatorTest::EmptyCallbackFunction,
-          base::Unretained(this));
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
   EXPECT_TRUE(is_starting());
 
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
+  // Since the offliner is disabled, this callback should not be called.
+  EXPECT_FALSE(immediate_schedule_callback_called());
 
   // Coordinator should now be busy.
   EXPECT_TRUE(is_busy());
@@ -920,12 +1001,15 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
 
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
 
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
+  // Since the offliner is disabled, this callback should not be called.
+  EXPECT_FALSE(immediate_schedule_callback_called());
 
   // Remove the request while it is processing.
   std::vector<int64_t> request_ids{kRequestId1};
@@ -955,13 +1039,15 @@ TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {
 
   DeviceConditions device_conditions(false, 75,
                                      net::NetworkChangeNotifier::CONNECTION_3G);
-  base::Callback<void(bool)> callback = base::Bind(
-      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  base::Callback<void(bool)> callback =
+      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+                 base::Unretained(this));
   EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
 
   // Call the method under test, making sure we send SUCCESS to the observer.
   coordinator()->MarkRequestCompleted(request_id);
   PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
 
   // Our observer should have seen SUCCESS instead of REMOVED.
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,

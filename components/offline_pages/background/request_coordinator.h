@@ -137,6 +137,14 @@ class RequestCoordinator : public KeyedService,
     scheduler_callback_ = callback;
   }
 
+  // A way to set the callback which would be called if the request will be
+  // scheduled immediately. Used by testing harness to determine if a request
+  // has been processed.
+  void SetImmediateScheduleCallbackForTest(
+      const base::Callback<void(bool)> callback) {
+    immediate_schedule_callback_ = callback;
+  }
+
   // Observers implementing the RequestCoordinator::Observer interface can
   // register here to get notifications of changes to request state.  This
   // pointer is not owned, and it is the callers responsibility to remove the
@@ -367,6 +375,8 @@ class RequestCoordinator : public KeyedService,
   RequestCoordinatorEventLogger event_logger_;
   // Timer to watch for pre-render attempts running too long.
   base::OneShotTimer watchdog_timer_;
+  // Callback invoked when an immediate request is done (default empty).
+  base::Callback<void(bool)> immediate_schedule_callback_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
