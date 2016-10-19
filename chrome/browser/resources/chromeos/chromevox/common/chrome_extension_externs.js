@@ -649,6 +649,12 @@ chrome.automation.AutomationNode.prototype.markerEnds;
 /** @type {boolean} */
 chrome.automation.AutomationNode.prototype.ariaReadonly;
 
+/** @type {chrome.automation.AutomationNode} */
+chrome.automation.AutomationNode.prototype.nextOnLine;
+/** @type {chrome.automation.AutomationNode} */
+chrome.automation.AutomationNode.prototype.previousOnLine;
+
+
 /**
  * @extends {chrome.automation.AutomationNode}
  * @constructor
