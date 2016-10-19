@@ -221,7 +221,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsNoPermissions) {
+// Flaky on Linux. http://crbug.com/657376.
+#if defined(OS_LINUX)
+#define MAYBE_TabsNoPermissions DISABLED_TabsNoPermissions
+#else
+#define MAYBE_TabsNoPermissions TabsNoPermissions
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabsNoPermissions) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/no_permissions")) << message_;
