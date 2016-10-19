@@ -75,6 +75,9 @@ REFS_THAT_ALIAS_TO_OTHER_REFS = {
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
 
+# Buildbucket master name prefix.
+MASTER_PREFIX = 'master.'
+
 # Shortcut since it quickly becomes redundant.
 Fore = colorama.Fore
 
@@ -281,10 +284,22 @@ def _prefix_master(master):
   (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
   function does the conversion for buildbucket migration.
   """
-  prefix = 'master.'
-  if master.startswith(prefix):
+  if master.startswith(MASTER_PREFIX):
     return master
-  return '%s%s' % (prefix, master)
+  return '%s%s' % (MASTER_PREFIX, master)
+
+
+def _unprefix_master(bucket):
+  """Convert bucket name to shortened master name.
+
+  Buildbucket uses full master name(master.tryserver.chromium.linux) as bucket
+  name, while the developers always use shortened master name
+  (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
+  function does the conversion for buildbucket migration.
+  """
+  if bucket.startswith(MASTER_PREFIX):
+    return bucket[len(MASTER_PREFIX):]
+  return bucket
 
 
 def _buildbucket_retry(operation_name, http, *args, **kwargs):
@@ -324,7 +339,7 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
   assert False, 'unreachable'
 
 
-def _trigger_try_jobs(auth_config, changelist, masters, options,
+def _trigger_try_jobs(auth_config, changelist, buckets, options,
                       category='git_cl_try', patchset=None):
   assert changelist.GetIssue(), 'CL must be uploaded first'
   codereview_url = changelist.GetCodereviewServer()
@@ -356,9 +371,11 @@ def _trigger_try_jobs(auth_config, changelist, masters, options,
   batch_req_body = {'builds': []}
   print_text = []
   print_text.append('Tried jobs on:')
-  for master, builders_and_tests in sorted(masters.iteritems()):
-    print_text.append('Master: %s' % master)
-    bucket = _prefix_master(master)
+  for bucket, builders_and_tests in sorted(buckets.iteritems()):
+    print_text.append('Bucket: %s' % bucket)
+    master = None
+    if bucket.startswith(MASTER_PREFIX):
+      master = _unprefix_master(bucket)
     for builder, tests in sorted(builders_and_tests.iteritems()):
       print_text.append('  %s: %s' % (builder, tests))
       parameters = {
@@ -370,7 +387,6 @@ def _trigger_try_jobs(auth_config, changelist, masters, options,
           'properties': {
               'category': category,
               'issue': changelist.GetIssue(),
-              'master': master,
               'patch_project': project,
               'patch_storage': 'rietveld',
               'patchset': patchset,
@@ -386,15 +402,22 @@ def _trigger_try_jobs(auth_config, changelist, masters, options,
         parameters['properties'].update(extra_properties)
       if options.clobber:
         parameters['properties']['clobber'] = True
+
+      tags = [
+          'builder:%s' % builder,
+          'buildset:%s' % buildset,
+          'user_agent:git_cl_try',
+      ]
+      if master:
+        parameters['properties']['master'] = master
+        tags.append('master:%s' % master)
+
       batch_req_body['builds'].append(
           {
               'bucket': bucket,
               'parameters_json': json.dumps(parameters),
               'client_operation_id': str(uuid.uuid4()),
-              'tags': ['builder:%s' % builder,
-                       'buildset:%s' % buildset,
-                       'master:%s' % master,
-                       'user_agent:git_cl_try']
+              'tags': tags,
           }
       )
 
@@ -4719,9 +4742,11 @@ def CMDtry(parser, args):
             'the try server waterfall for the builders name and the tests '
             'available.'))
   group.add_option(
+      '-B', '--bucket', default='',
+      help=('Buildbucket bucket to send the try requests.'))
+  group.add_option(
       '-m', '--master', default='',
       help=('Specify a try master where to run the tries.'))
-  # TODO(tandrii,nodir): add -B --bucket flag.
   group.add_option(
       '-r', '--revision',
       help='Revision to use for the try job; default: the revision will '
@@ -4779,7 +4804,10 @@ def CMDtry(parser, args):
   if not options.name:
     options.name = cl.GetBranch()
 
-  if options.bot and not options.master:
+  if options.bucket and options.master:
+    parser.error('Only one of --bucket and --master may be used.')
+
+  if options.bot and not options.master and not options.bucket:
     options.master, err_msg = GetBuilderMaster(options.bot)
     if err_msg:
       parser.error('Tryserver master cannot be found because: %s\n'
@@ -4836,33 +4864,40 @@ def CMDtry(parser, args):
     # Return a master map with one master to be backwards compatible. The
     # master name defaults to an empty string, which will cause the master
     # not to be set on rietveld (deprecated).
-    return {options.master: builders_and_tests}
+    bucket = ''
+    if options.master:
+      # Add the "master." prefix to the master name to obtain the bucket name.
+      bucket = _prefix_master(options.master)
+    return {bucket: builders_and_tests}
 
-  masters = GetMasterMap()
-  if not masters:
-    # Default to triggering Dry Run (see http://crbug.com/625697).
-    if options.verbose:
-      print('git cl try with no bots now defaults to CQ Dry Run.')
-    try:
-      cl.SetCQState(_CQState.DRY_RUN)
-      print('scheduled CQ Dry Run on %s' % cl.GetIssueURL())
-      return 0
-    except KeyboardInterrupt:
-      raise
-    except:
-      print('WARNING: failed to trigger CQ Dry Run.\n'
-            'Either:\n'
-            ' * your project has no CQ\n'
-            ' * you don\'t have permission to trigger Dry Run\n'
-            ' * bug in this code (see stack trace below).\n'
-            'Consider specifying which bots to trigger manually '
-            'or asking your project owners for permissions '
-            'or contacting Chrome Infrastructure team at '
-            'https://www.chromium.org/infra\n\n')
-      # Still raise exception so that stack trace is printed.
-      raise
+  if options.bucket:
+    buckets = {options.bucket: {b: [] for b in options.bot}}
+  else:
+    buckets = GetMasterMap()
+    if not buckets:
+      # Default to triggering Dry Run (see http://crbug.com/625697).
+      if options.verbose:
+        print('git cl try with no bots now defaults to CQ Dry Run.')
+      try:
+        cl.SetCQState(_CQState.DRY_RUN)
+        print('scheduled CQ Dry Run on %s' % cl.GetIssueURL())
+        return 0
+      except KeyboardInterrupt:
+        raise
+      except:
+        print('WARNING: failed to trigger CQ Dry Run.\n'
+              'Either:\n'
+              ' * your project has no CQ\n'
+              ' * you don\'t have permission to trigger Dry Run\n'
+              ' * bug in this code (see stack trace below).\n'
+              'Consider specifying which bots to trigger manually '
+              'or asking your project owners for permissions '
+              'or contacting Chrome Infrastructure team at '
+              'https://www.chromium.org/infra\n\n')
+        # Still raise exception so that stack trace is printed.
+        raise
 
-  for builders in masters.itervalues():
+  for builders in buckets.itervalues():
     if any('triggered' in b for b in builders):
       print('ERROR You are trying to send a job to a triggered bot. This type '
             'of bot requires an initial job from a parent (usually a builder). '
@@ -4879,8 +4914,8 @@ def CMDtry(parser, args):
           'codereview, continuing to use patchset %s.\n' %
           (patchset, cl.GetPatchset(), patchset))
   try:
-    _trigger_try_jobs(auth_config, cl, masters, options, 'git_cl_try',
-                     patchset)
+    _trigger_try_jobs(auth_config, cl, buckets, options, 'git_cl_try',
+                      patchset)
   except BuildbucketResponseException as ex:
     print('ERROR: %s' % ex)
     return 1

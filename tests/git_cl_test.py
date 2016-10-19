@@ -1941,8 +1941,8 @@ class TestGitCl(TestCase):
         u'client_operation_id': u'uuid4',
         u'tags': [u'builder:win',
                   u'buildset:patch/rietveld/codereview.chromium.org/123/20001',
-                  u'master:tryserver.chromium',
-                  u'user_agent:git_cl_try'],
+                  u'user_agent:git_cl_try',
+                  u'master:tryserver.chromium'],
       })
 
     self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
@@ -1953,7 +1953,59 @@ class TestGitCl(TestCase):
         '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
     self.assertRegexpMatches(
         git_cl.sys.stdout.getvalue(),
-        'Tried jobs on:\nMaster: tryserver.chromium')
+        'Tried jobs on:\nBucket: master.tryserver.chromium')
+
+  def test_git_cl_try_buildbucket_bucket_flag(self):
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda _: 20001)
+    self.mock(git_cl.Changelist, 'GetIssueOwner', lambda _: 'owner@e.mail')
+    self.mock(git_cl.Changelist, 'GetIssueProject', lambda _: 'depot_tools')
+    self.mock(git_cl.uuid, 'uuid4', lambda: 'uuid4')
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
+        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+        ((['git', 'config', 'rietveld.server'],),
+         'https://codereview.chromium.org'),
+        ((['git', 'config', 'branch.feature.rietveldserver'],), CERR1),
+        ((['git', 'config', 'branch.feature.rietveldpatchset'],), '20001'),
+    ]
+
+    def _buildbucket_retry(*_, **kw):
+      # self.maxDiff = 10000
+      body = json.loads(kw['body'])
+      self.assertEqual(len(body['builds']), 1)
+      build = body['builds'][0]
+      params = json.loads(build.pop('parameters_json'))
+      self.assertEqual(params, {
+        u'builder_name': u'win',
+        u'changes': [{u'author': {u'email': u'owner@e.mail'},
+                      u'revision': None}],
+        u'properties': {
+          u'category': u'git_cl_try',
+           u'issue': 123,
+           u'patch_project': u'depot_tools',
+           u'patch_storage': u'rietveld',
+           u'patchset': 20001,
+           u'reason': u'feature',  # This is a branch name, but why?
+           u'rietveld': u'https://codereview.chromium.org',
+        }
+      })
+      self.assertEqual(build, {
+        u'bucket': u'test.bucket',
+        u'client_operation_id': u'uuid4',
+        u'tags': [u'builder:win',
+                  u'buildset:patch/rietveld/codereview.chromium.org/123/20001',
+                  u'user_agent:git_cl_try'],
+      })
+
+    self.mock(git_cl, '_buildbucket_retry', _buildbucket_retry)
+
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+    self.assertEqual(0, git_cl.main([
+        'try', '-B', 'test.bucket', '-b', 'win']))
+    self.assertRegexpMatches(
+        git_cl.sys.stdout.getvalue(),
+        'Tried jobs on:\nBucket: test.bucket')
 
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
