@@ -31,6 +31,8 @@
 
 #include "core/timing/Performance.h"
 
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
@@ -97,6 +99,13 @@ void Performance::updateLongTaskInstrumentation() {
     m_longTaskInspectorAgent->disable();
     m_longTaskInspectorAgent = nullptr;
   }
+}
+
+ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
+  V8ObjectBuilder result(scriptState);
+  result.add("timing", timing()->toJSONForBinding(scriptState));
+  result.add("navigation", navigation()->toJSONForBinding(scriptState));
+  return result.scriptValue();
 }
 
 DEFINE_TRACE(Performance) {

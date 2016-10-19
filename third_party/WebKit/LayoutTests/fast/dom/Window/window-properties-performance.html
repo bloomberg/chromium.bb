@@ -5,7 +5,7 @@
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
-    
+
 var logBuffer = [];
 function log(s)
 {
@@ -91,16 +91,29 @@ function logProperties(object, objectName)
 logValue('window.performance');
 window.performance.timing = 'timing is not replaceable';
 logValue('window.performance.timing');
+
 // PerformanceTiming supports a serializer.
 var jsonizedTiming = JSON.parse(JSON.stringify(window.performance.timing));
 logValue('jsonizedTiming');
+
 // PerformanceEntry supports a serializer.
 window.performance.measure('request');
 var jsonizedEntry = JSON.parse(JSON.stringify(window.performance.getEntriesByName('request')[0]));
 logValue('jsonizedEntry');
+
 window.performance.navigation = 'navigation is not replaceable';
 logValue('window.performance.navigation');
+
+// PerformanceNavigation supports a serializer.
+var jsonizedNavigation = JSON.parse(JSON.stringify(window.performance.navigation));
+logValue('jsonizedNavigation');
+
+// Performance supports a serializer.
+var jsonizedPerformance = JSON.parse(JSON.stringify(window.performance));
+logValue('jsonizedPerformance');
+
 window.performance = 'performance is replaceable';
 logValue('window.performance');
+
 flushLog();
 </script>

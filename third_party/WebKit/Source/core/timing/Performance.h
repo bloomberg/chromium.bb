@@ -42,6 +42,8 @@
 namespace blink {
 
 class InspectorWebPerfAgent;
+class ScriptState;
+class ScriptValue;
 
 class CORE_EXPORT Performance final : public PerformanceBase,
                                       public DOMWindowProperty {
@@ -62,6 +64,8 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   PerformanceTiming* timing() const override;
 
   void updateLongTaskInstrumentation() override;
+
+  ScriptValue toJSONForBinding(ScriptState*) const;
 
   DECLARE_VIRTUAL_TRACE();
 

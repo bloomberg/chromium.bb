@@ -4502,6 +4502,7 @@ interface Performance : EventTarget
     method now
     method setFrameTimingBufferSize
     method setResourceTimingBufferSize
+    method toJSON
     method webkitClearResourceTimings
     method webkitSetResourceTimingBufferSize
     setter onframetimingbufferfull
@@ -4534,6 +4535,7 @@ interface PerformanceNavigation
     getter redirectCount
     getter type
     method constructor
+    method toJSON
 interface PerformanceObserver
     attribute @@toStringTag
     method constructor

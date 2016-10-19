@@ -39,6 +39,8 @@
 namespace blink {
 
 class LocalFrame;
+class ScriptState;
+class ScriptValue;
 
 class CORE_EXPORT PerformanceNavigation final
     : public GarbageCollected<PerformanceNavigation>,
@@ -61,6 +63,8 @@ class CORE_EXPORT PerformanceNavigation final
 
   unsigned short type() const;
   unsigned short redirectCount() const;
+
+  ScriptValue toJSONForBinding(ScriptState*) const;
 
   DECLARE_VIRTUAL_TRACE();
 
