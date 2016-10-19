@@ -69,7 +69,7 @@ class Service : public KeyedService,
                 public extensions::ExtensionRegistryObserver,
                 public ProvidedFileSystemObserver {
  public:
-  typedef base::Callback<ProvidedFileSystemInterface*(
+  typedef base::Callback<std::unique_ptr<ProvidedFileSystemInterface>(
       Profile* profile,
       const ProvidedFileSystemInfo& file_system_info)>
       FileSystemFactoryCallback;
@@ -172,11 +172,7 @@ class Service : public KeyedService,
 
   // Key is a pair of an extension id and file system id, which makes it
   // unique among the entire service instance.
-  typedef std::pair<std::string, std::string> FileSystemKey;
-
-  typedef std::map<FileSystemKey, ProvidedFileSystemInterface*>
-      ProvidedFileSystemMap;
-  typedef std::map<std::string, FileSystemKey> MountPointNameToKeyMap;
+  using FileSystemKey = std::pair<std::string, std::string>;
 
   // Mounts the file system in the specified context. See MountFileSystem() for
   // more information.
@@ -194,7 +190,7 @@ class Service : public KeyedService,
   void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
                           const Watchers& watchers);
 
-  // Removes the file system from preferences, so it is not remounmted anymore
+  // Removes the file system from preferences, so it is not remounted anymore
   // after a reboot.
   void ForgetFileSystem(const std::string& extension_id,
                         const std::string& file_system_id);
@@ -207,8 +203,9 @@ class Service : public KeyedService,
   extensions::ExtensionRegistry* extension_registry_;  // Not owned.
   FileSystemFactoryCallback file_system_factory_;
   base::ObserverList<Observer> observers_;
-  ProvidedFileSystemMap file_system_map_;  // Owns pointers.
-  MountPointNameToKeyMap mount_point_name_to_key_map_;
+  std::map<FileSystemKey, std::unique_ptr<ProvidedFileSystemInterface>>
+      file_system_map_;
+  std::map<std::string, FileSystemKey> mount_point_name_to_key_map_;
   std::unique_ptr<RegistryInterface> registry_;
   base::ThreadChecker thread_checker_;
 

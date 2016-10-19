@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -140,7 +139,7 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
 
   std::unique_ptr<CloudExternalDataManagerBase> external_data_manager_;
 
-  std::map<int, std::string*> callback_data_;
+  std::map<int, std::unique_ptr<std::string>> callback_data_;
   PolicyDetailsMap policy_details_;
 
  private:
@@ -225,14 +224,13 @@ CloudExternalDataManagerBaseTest::ConstructFetchCallback(int id) {
 }
 
 void CloudExternalDataManagerBaseTest::ResetCallbackData() {
-  base::STLDeleteValues(&callback_data_);
+  callback_data_.clear();
 }
 
 void CloudExternalDataManagerBaseTest::OnFetchDone(
     int id,
     std::unique_ptr<std::string> data) {
-  delete callback_data_[id];
-  callback_data_[id] = data.release();
+  callback_data_[id] = std::move(data);
 }
 
 void CloudExternalDataManagerBaseTest::FetchAll() {

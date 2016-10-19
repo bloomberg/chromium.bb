@@ -410,10 +410,10 @@ void FakeProvidedFileSystem::Configure(
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
-ProvidedFileSystemInterface* FakeProvidedFileSystem::Create(
+std::unique_ptr<ProvidedFileSystemInterface> FakeProvidedFileSystem::Create(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info) {
-  return new FakeProvidedFileSystem(file_system_info);
+  return base::MakeUnique<FakeProvidedFileSystem>(file_system_info);
 }
 
 base::WeakPtr<ProvidedFileSystemInterface>

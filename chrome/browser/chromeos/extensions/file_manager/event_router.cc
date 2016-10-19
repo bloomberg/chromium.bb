@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -397,7 +396,7 @@ void EventRouter::Shutdown() {
   DLOG_IF(WARNING, !file_watchers_.empty())
       << "Not all file watchers are "
       << "removed. This can happen when Files.app is open during shutdown.";
-  base::STLDeleteValues(&file_watchers_);
+  file_watchers_.clear();
   if (!profile_) {
     NOTREACHED();
     return;
@@ -500,7 +499,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
   if (is_on_drive)
     watch_path = drive::util::ExtractDrivePath(watch_path);
 
-  WatcherMap::iterator iter = file_watchers_.find(watch_path);
+  auto iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end()) {
     std::unique_ptr<FileWatcher> watcher(new FileWatcher(virtual_path));
     watcher->AddExtension(extension_id);
@@ -519,7 +518,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
           callback);
     }
 
-    file_watchers_[watch_path] = watcher.release();
+    file_watchers_[watch_path] = std::move(watcher);
   } else {
     iter->second->AddExtension(extension_id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -538,15 +537,13 @@ void EventRouter::RemoveFileWatch(const base::FilePath& local_path,
   if (drive::util::IsUnderDriveMountPoint(watch_path)) {
     watch_path = drive::util::ExtractDrivePath(watch_path);
   }
-  WatcherMap::iterator iter = file_watchers_.find(watch_path);
+  auto iter = file_watchers_.find(watch_path);
   if (iter == file_watchers_.end())
     return;
   // Remove the watcher if |watch_path| is no longer watched by any extensions.
   iter->second->RemoveExtension(extension_id);
-  if (iter->second->GetExtensionIds().empty()) {
-    delete iter->second;
+  if (iter->second->GetExtensionIds().empty())
     file_watchers_.erase(iter);
-  }
 }
 
 void EventRouter::OnCopyCompleted(int copy_id,
@@ -695,8 +692,7 @@ void EventRouter::OnFileChanged(const drive::FileChange& changed_files) {
     // 1. /a DELETE:DIRECTORY
     if (contains_directory_deletion) {
       // Expand the deleted directory path with watched paths.
-      for (WatcherMap::const_iterator file_watchers_it =
-               file_watchers_.lower_bound(path);
+      for (auto file_watchers_it = file_watchers_.lower_bound(path);
            file_watchers_it != file_watchers_.end(); ++file_watchers_it) {
         if (path == file_watchers_it->first ||
             path.IsParent(file_watchers_it->first)) {
@@ -770,7 +766,7 @@ void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
                                               bool got_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  WatcherMap::const_iterator iter = file_watchers_.find(local_path);
+  auto iter = file_watchers_.find(local_path);
   if (iter == file_watchers_.end()) {
     return;
   }

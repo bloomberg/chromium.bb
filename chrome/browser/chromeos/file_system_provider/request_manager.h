@@ -160,8 +160,6 @@ class RequestManager {
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
-  typedef std::map<int, Request*> RequestMap;
-
   // Destroys the request with the passed |request_id|.
   void DestroyRequest(int request_id);
 
@@ -183,7 +181,7 @@ class RequestManager {
 
   Profile* profile_;  // Not owned.
   std::string extension_id_;
-  RequestMap requests_;
+  std::map<int, std::unique_ptr<Request>> requests_;
   NotificationManagerInterface* notification_manager_;  // Not owned.
   int next_id_;
   base::TimeDelta timeout_;

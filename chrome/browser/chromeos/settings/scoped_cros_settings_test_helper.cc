@@ -21,12 +21,11 @@
 
 namespace chromeos {
 
-ScopedCrosSettingsTestHelper::ScopedCrosSettingsTestHelper() {
-  Initialize(true);
-}
-
 ScopedCrosSettingsTestHelper::ScopedCrosSettingsTestHelper(
-    bool create_settings_service) {
+    bool create_settings_service)
+    : stub_settings_provider_(base::MakeUnique<StubCrosSettingsProvider>()),
+      stub_settings_provider_ptr_(static_cast<StubCrosSettingsProvider*>(
+          stub_settings_provider_.get())) {
   Initialize(create_settings_service);
 }
 
@@ -37,7 +36,7 @@ ScopedCrosSettingsTestHelper::~ScopedCrosSettingsTestHelper() {
 std::unique_ptr<FakeOwnerSettingsService>
 ScopedCrosSettingsTestHelper::CreateOwnerSettingsService(Profile* profile) {
   return base::MakeUnique<FakeOwnerSettingsService>(
-      profile, new ownership::MockOwnerKeyUtil(), &stub_settings_provider_);
+      profile, new ownership::MockOwnerKeyUtil(), stub_settings_provider_ptr_);
 }
 
 void ScopedCrosSettingsTestHelper::ReplaceProvider(const std::string& path) {
@@ -45,35 +44,38 @@ void ScopedCrosSettingsTestHelper::ReplaceProvider(const std::string& path) {
   // Swap out the DeviceSettingsProvider with our settings provider so we can
   // set values for the specified path.
   CrosSettings* const cros_settings = CrosSettings::Get();
-  real_settings_provider_ = cros_settings->GetProvider(path);
+  CrosSettingsProvider* real_settings_provider =
+      cros_settings->GetProvider(path);
+  EXPECT_TRUE(real_settings_provider);
+  real_settings_provider_ =
+      cros_settings->RemoveSettingsProvider(real_settings_provider);
   EXPECT_TRUE(real_settings_provider_);
-  EXPECT_TRUE(cros_settings->RemoveSettingsProvider(real_settings_provider_));
-  cros_settings->AddSettingsProvider(&stub_settings_provider_);
+  cros_settings->AddSettingsProvider(std::move(stub_settings_provider_));
 }
 
 void ScopedCrosSettingsTestHelper::RestoreProvider() {
   if (real_settings_provider_) {
     // Restore the real DeviceSettingsProvider.
     CrosSettings* const cros_settings = CrosSettings::Get();
-    EXPECT_TRUE(
-        cros_settings->RemoveSettingsProvider(&stub_settings_provider_));
-    cros_settings->AddSettingsProvider(real_settings_provider_);
-    real_settings_provider_ = nullptr;
+    stub_settings_provider_ =
+        cros_settings->RemoveSettingsProvider(stub_settings_provider_ptr_);
+    EXPECT_TRUE(stub_settings_provider_);
+    cros_settings->AddSettingsProvider(std::move(real_settings_provider_));
   }
 }
 
 void ScopedCrosSettingsTestHelper::SetTrustedStatus(
     CrosSettingsProvider::TrustedStatus status) {
-  stub_settings_provider_.SetTrustedStatus(status);
+  stub_settings_provider_ptr_->SetTrustedStatus(status);
 }
 
 void ScopedCrosSettingsTestHelper::SetCurrentUserIsOwner(bool owner) {
-  stub_settings_provider_.SetCurrentUserIsOwner(owner);
+  stub_settings_provider_ptr_->SetCurrentUserIsOwner(owner);
 }
 
 void ScopedCrosSettingsTestHelper::Set(const std::string& path,
                                        const base::Value& in_value) {
-  stub_settings_provider_.Set(path, in_value);
+  stub_settings_provider_ptr_->Set(path, in_value);
 }
 
 void ScopedCrosSettingsTestHelper::SetBoolean(const std::string& path,
@@ -98,7 +100,7 @@ void ScopedCrosSettingsTestHelper::SetString(const std::string& path,
 
 void ScopedCrosSettingsTestHelper::StoreCachedDeviceSetting(
     const std::string& path) {
-  const base::Value* const value = stub_settings_provider_.Get(path);
+  const base::Value* const value = stub_settings_provider_ptr_->Get(path);
   if (value) {
     enterprise_management::PolicyData data;
     enterprise_management::ChromeDeviceSettingsProto settings;
@@ -114,11 +116,11 @@ void ScopedCrosSettingsTestHelper::StoreCachedDeviceSetting(
 
 void ScopedCrosSettingsTestHelper::CopyStoredValue(const std::string& path) {
   CrosSettingsProvider* provider = real_settings_provider_
-                                       ? real_settings_provider_
+                                       ? real_settings_provider_.get()
                                        : CrosSettings::Get()->GetProvider(path);
   const base::Value* const value = provider->Get(path);
   if (value) {
-    stub_settings_provider_.Set(path, *value);
+    stub_settings_provider_ptr_->Set(path, *value);
   }
 }
 

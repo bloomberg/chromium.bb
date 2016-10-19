@@ -26,13 +26,11 @@ class ScopedTestDeviceSettingsService;
 
 class ScopedCrosSettingsTestHelper {
  public:
-  ScopedCrosSettingsTestHelper();
-
   // In some cases it is required to pass |create_settings_service| as false:
   // If the test already has a device settings service and/or CrosSettings set
   // up by another (instantiated or base) class, creating another one causes
   // crash.
-  explicit ScopedCrosSettingsTestHelper(bool create_settings_service);
+  explicit ScopedCrosSettingsTestHelper(bool create_settings_service = true);
   ~ScopedCrosSettingsTestHelper();
 
   // Methods to replace and restore CrosSettingsProvider for the specified
@@ -59,10 +57,10 @@ class ScopedCrosSettingsTestHelper {
 
   // This may be called before |ReplaceProvider| to copy values currently stored
   // in the old provider. If the method is called after |ReplaceProvider|, then
-  // the value is retreived from |real_settings_provider_| for any |path|.
+  // the value is retrieved from |real_settings_provider_| for any |path|.
   void CopyStoredValue(const std::string& path);
 
-  // Write the setting from |path| to local state so that it can be retreived
+  // Write the setting from |path| to local state so that it can be retrieved
   // later on browser test startup by the device settings service.
   void StoreCachedDeviceSetting(const std::string& path);
 
@@ -71,8 +69,9 @@ class ScopedCrosSettingsTestHelper {
   std::unique_ptr<ScopedTestDeviceSettingsService>
       test_device_settings_service_;
   std::unique_ptr<ScopedTestCrosSettings> test_cros_settings_;
-  CrosSettingsProvider* real_settings_provider_ = nullptr;
-  StubCrosSettingsProvider stub_settings_provider_;
+  std::unique_ptr<CrosSettingsProvider> real_settings_provider_;
+  std::unique_ptr<CrosSettingsProvider> stub_settings_provider_;
+  StubCrosSettingsProvider* stub_settings_provider_ptr_;
 
   void Initialize(bool create_settings_service);
 

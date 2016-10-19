@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -36,9 +37,12 @@ const char* kTestUsers[] = { "test-user1@gmail.com", "test-user2@gmail.com" };
 class AccountsOptionsTest : public LoginManagerTest {
  public:
   AccountsOptionsTest()
-    : LoginManagerTest(false),
-      device_settings_provider_(NULL) {
-    stub_settings_provider_.Set(kDeviceOwner, base::StringValue(kTestUsers[0]));
+      : LoginManagerTest(false),
+        stub_settings_provider_(base::MakeUnique<StubCrosSettingsProvider>()),
+        stub_settings_provider_ptr_(static_cast<StubCrosSettingsProvider*>(
+            stub_settings_provider_.get())) {
+    stub_settings_provider_->Set(kDeviceOwner,
+                                 base::StringValue(kTestUsers[0]));
     for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
       test_users_.push_back(AccountId::FromUserEmail(kTestUsers[i]));
     }
@@ -49,15 +53,18 @@ class AccountsOptionsTest : public LoginManagerTest {
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     CrosSettings* settings = CrosSettings::Get();
-    device_settings_provider_ = settings->GetProvider(kDeviceOwner);
-    settings->RemoveSettingsProvider(device_settings_provider_);
-    settings->AddSettingsProvider(&stub_settings_provider_);
+    CrosSettingsProvider* device_settings_provider =
+        settings->GetProvider(kDeviceOwner);
+    device_settings_provider_ =
+        settings->RemoveSettingsProvider(device_settings_provider);
+    settings->AddSettingsProvider(std::move(stub_settings_provider_));
   }
 
   void TearDownOnMainThread() override {
     CrosSettings* settings = CrosSettings::Get();
-    settings->RemoveSettingsProvider(&stub_settings_provider_);
-    settings->AddSettingsProvider(device_settings_provider_);
+    stub_settings_provider_ =
+        settings->RemoveSettingsProvider(stub_settings_provider_ptr_);
+    settings->AddSettingsProvider(std::move(device_settings_provider_));
     LoginManagerTest::TearDownOnMainThread();
   }
 
@@ -120,8 +127,9 @@ class AccountsOptionsTest : public LoginManagerTest {
     EXPECT_EQ(is_owner, whitelist_enabled);
   }
 
-  StubCrosSettingsProvider stub_settings_provider_;
-  CrosSettingsProvider* device_settings_provider_;
+  std::unique_ptr<CrosSettingsProvider> stub_settings_provider_;
+  StubCrosSettingsProvider* stub_settings_provider_ptr_;
+  std::unique_ptr<CrosSettingsProvider> device_settings_provider_;
   std::vector<AccountId> test_users_;
 
  private:

@@ -24,11 +24,11 @@ class FilePath;
 namespace chromeos {
 
 // Class that processes mobile (carrier) configuration.
-// Confugration is defined as a JSON file - global and local one.
+// Configuration is defined as a JSON file - global and local one.
 // First global configuration is loaded then local one if it exists.
 // Notes on global/local configuration:
 // 1. All global config data is inherited unless some carrier properties
-//    are overidden or carrier deals are explicitly marked as excluded.
+//    are overridden or carrier deals are explicitly marked as excluded.
 // 2. Local config could mark that all carrier deals should be excluded or
 //    only specific carrier deals are excluded.
 // 3. New ID mappings in local config are not supported.
@@ -93,9 +93,6 @@ class MobileConfig : public CustomizationDocument  {
     void RemoveDeals();
 
    private:
-    // Maps deal id to deal instance.
-    typedef std::map<std::string, CarrierDeal*> CarrierDeals;
-
     // List of external IDs that should map to this carrier.
     std::vector<std::string> external_ids_;
 
@@ -110,7 +107,8 @@ class MobileConfig : public CustomizationDocument  {
     // carrier portal (chrome://mobilesetup/ extension).
     bool show_portal_button_;
 
-    CarrierDeals deals_;
+    // Maps deal id to deal instance.
+    std::map<std::string, std::unique_ptr<CarrierDeal>> deals_;
 
     DISALLOW_COPY_AND_ASSIGN(Carrier);
   };
@@ -137,10 +135,10 @@ class MobileConfig : public CustomizationDocument  {
   };
 
   // External carrier ID (ex. "Verizon (us)") mapping to internal carrier ID.
-  typedef std::map<std::string, std::string> CarrierIdMap;
+  using CarrierIdMap = std::map<std::string, std::string>;
 
   // Internal carrier ID mapping to Carrier config.
-  typedef std::map<std::string, Carrier*> Carriers;
+  using Carriers = std::map<std::string, std::unique_ptr<Carrier>>;
 
   static MobileConfig* GetInstance();
 

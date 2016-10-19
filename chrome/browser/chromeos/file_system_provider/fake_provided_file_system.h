@@ -170,7 +170,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // Factory callback, to be used in Service::SetFileSystemFactory(). The
   // |event_router| argument can be NULL.
-  static ProvidedFileSystemInterface* Create(
+  static std::unique_ptr<ProvidedFileSystemInterface> Create(
       Profile* profile,
       const ProvidedFileSystemInfo& file_system_info);
 

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
@@ -22,7 +22,7 @@
 
 namespace chromeos {
 
-static CrosSettings*  g_cros_settings = NULL;
+static CrosSettings* g_cros_settings = nullptr;
 
 // static
 void CrosSettings::Initialize() {
@@ -39,7 +39,7 @@ bool CrosSettings::IsInitialized() {
 void CrosSettings::Shutdown() {
   DCHECK(g_cros_settings);
   delete g_cros_settings;
-  g_cros_settings = NULL;
+  g_cros_settings = nullptr;
 }
 
 // static
@@ -73,18 +73,16 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service) {
                  base::Unretained(this)));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kStubCrosSettings)) {
-    AddSettingsProvider(new StubCrosSettingsProvider(notify_cb));
+    AddSettingsProvider(base::MakeUnique<StubCrosSettingsProvider>(notify_cb));
   } else {
-    AddSettingsProvider(
-        new DeviceSettingsProvider(notify_cb, device_settings_service));
+    AddSettingsProvider(base::MakeUnique<DeviceSettingsProvider>(
+        notify_cb, device_settings_service));
   }
   // System settings are not mocked currently.
-  AddSettingsProvider(new SystemSettingsProvider(notify_cb));
+  AddSettingsProvider(base::MakeUnique<SystemSettingsProvider>(notify_cb));
 }
 
 CrosSettings::~CrosSettings() {
-  base::STLDeleteElements(&providers_);
-  base::STLDeleteValues(&settings_observers_);
 }
 
 bool CrosSettings::IsCrosSettings(const std::string& path) {
@@ -106,7 +104,7 @@ const base::Value* CrosSettings::GetPref(const std::string& path) const {
   if (provider)
     return provider->Get(path);
   NOTREACHED() << path << " preference was not found in the signed settings.";
-  return NULL;
+  return nullptr;
 }
 
 CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
@@ -163,7 +161,7 @@ void CrosSettings::RemoveFromList(const std::string& path,
   const base::Value* old_value = GetPref(path);
   std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
                                                    : new base::ListValue());
-  static_cast<base::ListValue*>(new_value.get())->Remove(*value, NULL);
+  static_cast<base::ListValue*>(new_value.get())->Remove(*value, nullptr);
   Set(path, *new_value);
 }
 
@@ -271,9 +269,11 @@ bool CrosSettings::FindEmailInList(const std::string& path,
   return found_wildcard_match;
 }
 
-bool CrosSettings::AddSettingsProvider(CrosSettingsProvider* provider) {
+bool CrosSettings::AddSettingsProvider(
+    std::unique_ptr<CrosSettingsProvider> provider) {
   DCHECK(CalledOnValidThread());
-  providers_.push_back(provider);
+  CrosSettingsProvider* provider_ptr = provider.get();
+  providers_.push_back(std::move(provider));
 
   // Allow the provider to notify this object when settings have changed.
   // Providers instantiated inside this class will have the same callback
@@ -281,19 +281,24 @@ bool CrosSettings::AddSettingsProvider(CrosSettingsProvider* provider) {
   // to be instantiated outside this class.
   CrosSettingsProvider::NotifyObserversCallback notify_cb(
       base::Bind(&CrosSettings::FireObservers, base::Unretained(this)));
-  provider->SetNotifyObserversCallback(notify_cb);
+  provider_ptr->SetNotifyObserversCallback(notify_cb);
   return true;
 }
 
-bool CrosSettings::RemoveSettingsProvider(CrosSettingsProvider* provider) {
+std::unique_ptr<CrosSettingsProvider> CrosSettings::RemoveSettingsProvider(
+    CrosSettingsProvider* provider) {
   DCHECK(CalledOnValidThread());
-  std::vector<CrosSettingsProvider*>::iterator it =
-      std::find(providers_.begin(), providers_.end(), provider);
+  auto it = std::find_if(
+      providers_.begin(), providers_.end(),
+      [provider](const std::unique_ptr<CrosSettingsProvider>& ptr) {
+        return ptr.get() == provider;
+      });
   if (it != providers_.end()) {
+    std::unique_ptr<CrosSettingsProvider> ptr = std::move(*it);
     providers_.erase(it);
-    return true;
+    return ptr;
   }
-  return false;
+  return nullptr;
 }
 
 std::unique_ptr<CrosSettings::ObserverSubscription>
@@ -310,14 +315,14 @@ CrosSettings::AddSettingsObserver(const std::string& path,
   }
 
   // Get the callback registry associated with the path.
-  base::CallbackList<void(void)>* registry = NULL;
-  SettingsObserverMap::iterator observer_iterator =
-      settings_observers_.find(path);
+  base::CallbackList<void(void)>* registry = nullptr;
+  auto observer_iterator = settings_observers_.find(path);
   if (observer_iterator == settings_observers_.end()) {
-    registry = new base::CallbackList<void(void)>;
-    settings_observers_[path] = registry;
+    settings_observers_[path] =
+        base::MakeUnique<base::CallbackList<void(void)>>();
+    registry = settings_observers_[path].get();
   } else {
-    registry = observer_iterator->second;
+    registry = observer_iterator->second.get();
   }
 
   return registry->Add(callback);
@@ -327,15 +332,14 @@ CrosSettingsProvider* CrosSettings::GetProvider(
     const std::string& path) const {
   for (size_t i = 0; i < providers_.size(); ++i) {
     if (providers_[i]->HandlesSetting(path))
-      return providers_[i];
+      return providers_[i].get();
   }
-  return NULL;
+  return nullptr;
 }
 
 void CrosSettings::FireObservers(const std::string& path) {
   DCHECK(CalledOnValidThread());
-  SettingsObserverMap::iterator observer_iterator =
-      settings_observers_.find(path);
+  auto observer_iterator = settings_observers_.find(path);
   if (observer_iterator == settings_observers_.end())
     return;
 

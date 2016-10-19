@@ -150,8 +150,6 @@ class EventRouter : public KeyedService,
   base::WeakPtr<EventRouter> GetWeakPtr();
 
  private:
-  typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
-
   // Starts observing file system change events.
   void ObserveEvents();
 
@@ -214,7 +212,7 @@ class EventRouter : public KeyedService,
 
   base::Time last_copy_progress_event_;
 
-  WatcherMap file_watchers_;
+  std::map<base::FilePath, std::unique_ptr<FileWatcher>> file_watchers_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
 

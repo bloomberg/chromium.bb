@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -117,7 +117,6 @@ class BlockingLoginTest
   void TearDownOnMainThread() override {
     RunUntilIdle();
     EXPECT_TRUE(responses_.empty());
-    base::STLDeleteElements(&responses_);
     OobeBaseTest::TearDownOnMainThread();
   }
 
@@ -183,7 +182,7 @@ class BlockingLoginTest
         base::StartsWith(request.relative_url, kDMPolicyRequest,
                          base::CompareCase::SENSITIVE)) {
       if (!responses_.empty()) {
-        response.reset(responses_.back());
+        response = std::move(responses_.back());
         responses_.pop_back();
       }
     }
@@ -196,11 +195,11 @@ class BlockingLoginTest
   // next response used.
   // Returns a reference to that response, so that it can be further customized.
   net::test_server::BasicHttpResponse& PushResponse(net::HttpStatusCode code) {
-    net::test_server::BasicHttpResponse* response =
-        new net::test_server::BasicHttpResponse();
+    auto response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+    net::test_server::BasicHttpResponse* response_ptr = response.get();
     response->set_code(code);
-    responses_.push_back(response);
-    return *response;
+    responses_.push_back(std::move(response));
+    return *response_ptr;
   }
 
   // Returns the body of the register response from the policy server.
@@ -234,7 +233,7 @@ class BlockingLoginTest
   Profile* profile_added_;
 
  private:
-  std::vector<net::test_server::HttpResponse*> responses_;
+  std::vector<std::unique_ptr<net::test_server::HttpResponse>> responses_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockingLoginTest);
