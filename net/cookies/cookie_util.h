@@ -37,19 +37,8 @@ NET_EXPORT bool GetCookieDomainWithString(const GURL& url,
 // i.e. it doesn't begin with a leading '.' character.
 NET_EXPORT bool DomainIsHostOnly(const std::string& domain_string);
 
-// Parses the string with the cookie expiration time (very forgivingly).
-// Returns the "null" time on failure.
-//
-// If the expiration date is either too small or too large (there are
-// platform-specific limits for allowed date ranges), then it will be clipped
-// to the min/max time Time::FromUTCExploded() can return on the current
-// platform,
-// rather than failing. In particular:
-//
-// On non-Mac 32-bit POSIX, times will currently be clamped between 1970 and
-// 2038.
-// On Windows, times will currently be clamped between year 1601 and 30827.
-NET_EXPORT base::Time ParseCookieExpirationTime(const std::string& time_string);
+// Parses the string with the cookie time (very forgivingly).
+NET_EXPORT base::Time ParseCookieTime(const std::string& time_string);
 
 // Convenience for converting a cookie origin (domain and https pair) to a URL.
 NET_EXPORT GURL CookieOriginToURL(const std::string& domain, bool is_https);

@@ -18,80 +18,6 @@
 namespace net {
 namespace cookie_util {
 
-namespace {
-
-base::Time MinNonNullTime() {
-  return base::Time::FromInternalValue(1);
-}
-
-// Tries to assemble a base::Time given a base::Time::Exploded representing a
-// UTC calendar date.
-//
-// If the date falls outside of the range supported internally by
-// FromUTCExploded(), then the result is clamped to the range that
-// FromUTCExploded() supports on the current platform.
-bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
-                                  base::Time* out) {
-  // Try to calculate the base::Time in the normal fashion.
-  if (base::Time::FromUTCExploded(exploded, out)) {
-    // Don't return Time(0) on success.
-    if (out->is_null())
-      *out = MinNonNullTime();
-    return true;
-  }
-
-  // base::Time::FromUTCExploded() has platform-specific limits:
-  //
-  // * Windows: Years 1601 - 30827
-  // * 32-bit POSIX: Years 1970 - 2038
-  //
-  // Work around this by clamping values when imploding the time is doomed
-  // to fail.
-  //
-  // Note that the following implementation is NOT perfect. It will accept
-  // some invalid calendar dates in the out-of-range case.
-  if (!exploded.HasValidValues())
-    return false;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Allow dates prior to unix epoch (which fail on non-Mac/iOS POSIX).
-  if (exploded.year < 1970) {
-    *out = base::Time::UnixEpoch();
-    return true;
-  }
-
-  // On 32-bit non-Mac/iOS POSIX systems, the time_t value that FromExploded()
-  // returns overflows in the middle of year 2038. In that case, return the max
-  // value that can be represented by a 32-bit time_t.
-  if (sizeof(time_t) == 4u && exploded.year >= 2038) {
-    *out = base::Time::FromTimeT(std::numeric_limits<time_t>::max());
-    return true;
-  }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-  // Allow dates prior to Windows epoch.
-  if (exploded.year < 1601) {
-    *out = MinNonNullTime();
-    return true;
-  }
-
-  // Allow dates after the Windows epoch.
-  if (exploded.year >= 30827) {
-    // This is the maximum value a FILETIME can represent, though FromExploded()
-    // does fail on marginally smaller FILETIME values. The division by 10 is
-    // needed because FILETIMEs are in terms of hundreds of nanoseconds.
-    // This relies on base::Time() returning the start of the Windows epoch.
-    *out =
-        base::Time::FromInternalValue(std::numeric_limits<int64_t>::max() / 10);
-    return true;
-  }
-#endif  //  defined(OS_WIN)
-
-  return false;
-}
-
-}  // namespace
-
 bool DomainIsHostOnly(const std::string& domain_string) {
   return (domain_string.empty() || domain_string[0] != '.');
 }
@@ -177,7 +103,7 @@ bool GetCookieDomainWithString(const GURL& url,
 //  - The time must be of the format hh:mm:ss.
 // An average cookie expiration will look something like this:
 //   Sat, 15-Apr-17 21:01:22 GMT
-base::Time ParseCookieExpirationTime(const std::string& time_string) {
+base::Time ParseCookieTime(const std::string& time_string) {
   static const char* const kMonths[] = {
     "jan", "feb", "mar", "apr", "may", "jun",
     "jul", "aug", "sep", "oct", "nov", "dec" };
@@ -274,11 +200,13 @@ base::Time ParseCookieExpirationTime(const std::string& time_string) {
   if (exploded.year >= 0 && exploded.year <= 68)
     exploded.year += 2000;
 
-  // Note that clipping the date if it is outside of a platform-specific range
-  // is permitted by: https://tools.ietf.org/html/rfc6265#section-5.2.1
-  base::Time result;
-  if (SaturatedTimeFromUTCExploded(exploded, &result))
-    return result;
+  // If our values are within their correct ranges, we got our time.
+  if (exploded.day_of_month >= 1 && exploded.day_of_month <= 31 &&
+      exploded.month >= 1 && exploded.month <= 12 &&
+      exploded.year >= 1601 && exploded.year <= 30827 &&
+      exploded.hour <= 23 && exploded.minute <= 59 && exploded.second <= 59) {
+    return base::Time::FromUTCExploded(exploded);
+  }
 
   // One of our values was out of expected range.  For well-formed input,
   // the following check would be reasonable:
