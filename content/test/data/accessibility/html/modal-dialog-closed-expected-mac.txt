@@ -1,9 +1,7 @@
 AXWebArea
-++AXGroup
-++++AXStaticText AXValue='Test that elements respawn in the accessibility tree after a modal dialog closes.'
+++AXStaticText AXValue='Test that elements respawn in the accessibility tree after a modal dialog closes.'
 ++AXGroup AXSubrole=AXDocumentRegion
 ++++AXPopUpButton AXValue='This should be in the tree.'
 ++++++AXUnknown
 ++++++++AXMenuItem AXValue='This should be in the tree.'
-++AXGroup
-++++AXColorWell AXValue='rgb 0.00000 0.00000 0.00000 1'
+++AXColorWell AXValue='rgb 0.00000 0.00000 0.00000 1'

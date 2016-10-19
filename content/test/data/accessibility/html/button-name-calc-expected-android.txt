@@ -1,8 +1,7 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View
-++++android.widget.Button role_description='button' clickable focusable name='InnerText0'
-++++android.widget.Button role_description='button' clickable focusable name='InnerText1 Title1'
-++++android.widget.Button role_description='button' clickable focusable name='AriaLabel2 Title2'
-++++android.widget.Button role_description='button' clickable focusable name='LabelledBy3 Title3'
-++++android.widget.Button role_description='button' clickable focusable name='LabelledBy4 DescribedBy4'
-++++android.widget.Button role_description='button' clickable focusable name='InnerText5 DescribedBy5'
+++android.widget.Button role_description='button' clickable focusable name='InnerText0'
+++android.widget.Button role_description='button' clickable focusable name='InnerText1 Title1'
+++android.widget.Button role_description='button' clickable focusable name='AriaLabel2 Title2'
+++android.widget.Button role_description='button' clickable focusable name='LabelledBy3 Title3'
+++android.widget.Button role_description='button' clickable focusable name='LabelledBy4 DescribedBy4'
+++android.widget.Button role_description='button' clickable focusable name='InnerText5 DescribedBy5'

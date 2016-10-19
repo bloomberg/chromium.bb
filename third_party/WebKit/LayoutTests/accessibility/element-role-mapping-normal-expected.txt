@@ -60,14 +60,12 @@ AXRole: AXWebArea
     AXRole: AXParagraph
         AXRole: AXStaticText "Paragraph"
             AXRole: AXInlineTextBox "Paragraph"
-    AXRole: AXGroup
-        AXRole: AXRuby
-            AXRole: AXAnnotation
-                AXRole: AXStaticText "한국"
-                    AXRole: AXInlineTextBox "한국"
-            AXRole: AXGroup
-                AXRole: AXStaticText "韓國"
-                    AXRole: AXInlineTextBox "韓國"
+    AXRole: AXRuby
+        AXRole: AXAnnotation
+            AXRole: AXStaticText "한국"
+                AXRole: AXInlineTextBox "한국"
+        AXRole: AXStaticText "韓國"
+            AXRole: AXInlineTextBox "韓國"
     AXRole: AXDescriptionList
         AXRole: AXDescriptionListTerm
             AXRole: AXStaticText "Coffee"
@@ -81,18 +79,17 @@ AXRole: AXWebArea
         AXRole: AXDescriptionListDetail
             AXRole: AXStaticText "- white cold drink"
                 AXRole: AXInlineTextBox "- white cold drink"
-    AXRole: AXGroup
-        AXRole: AXMath
-            AXRole: AXStaticText "x "
-                AXRole: AXInlineTextBox "x "
-            AXRole: AXStaticText "+ "
-                AXRole: AXInlineTextBox "+ "
-            AXRole: AXStaticText "a "
-                AXRole: AXInlineTextBox "a "
-            AXRole: AXStaticText "/ "
-                AXRole: AXInlineTextBox "/ "
-            AXRole: AXStaticText "b"
-                AXRole: AXInlineTextBox "b"
+    AXRole: AXMath
+        AXRole: AXStaticText "x "
+            AXRole: AXInlineTextBox "x "
+        AXRole: AXStaticText "+ "
+            AXRole: AXInlineTextBox "+ "
+        AXRole: AXStaticText "a "
+            AXRole: AXInlineTextBox "a "
+        AXRole: AXStaticText "/ "
+            AXRole: AXInlineTextBox "/ "
+        AXRole: AXStaticText "b"
+            AXRole: AXInlineTextBox "b"
     AXRole: AXMain
         AXRole: AXArticle
             AXRole: AXGroup
@@ -192,13 +189,11 @@ element
                     AXRole: AXInlineTextBox "Cell2"
         AXRole: AXTableHeaderContainer
     AXRole: AXFigure "Fig1. - Blue Box"
-        AXRole: AXGroup
-            AXRole: AXImage "blue"
+        AXRole: AXImage "blue"
         AXRole: AXFigcaption
             AXRole: AXStaticText "Fig1. - Blue Box"
                 AXRole: AXInlineTextBox "Fig1. - Blue Box"
-    AXRole: AXGroup
-        AXRole: AXEmbeddedObject
+    AXRole: AXEmbeddedObject
     AXRole: AXFooter
         AXRole: AXParagraph
             AXRole: AXStaticText "This is a footer."

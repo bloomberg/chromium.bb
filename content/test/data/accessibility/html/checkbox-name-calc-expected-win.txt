@@ -1,8 +1,7 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-++IA2_ROLE_SECTION
-++++ROLE_SYSTEM_CHECKBUTTON name='Title0' FOCUSABLE explicit-name:true
-++++ROLE_SYSTEM_CHECKBUTTON name='Label1' FOCUSABLE explicit-name:true description='Title1'
-++++ROLE_SYSTEM_CHECKBUTTON name='AriaLabel2' FOCUSABLE explicit-name:true description='Title2'
-++++ROLE_SYSTEM_CHECKBUTTON name='LabelledBy3' FOCUSABLE explicit-name:true description='Title3'
-++++ROLE_SYSTEM_CHECKBUTTON name='LabelledBy4' FOCUSABLE explicit-name:true description='DescribedBy4'
-++++ROLE_SYSTEM_CHECKBUTTON FOCUSABLE description='DescribedBy5'
+++ROLE_SYSTEM_CHECKBUTTON name='Title0' FOCUSABLE explicit-name:true
+++ROLE_SYSTEM_CHECKBUTTON name='Label1' FOCUSABLE explicit-name:true description='Title1'
+++ROLE_SYSTEM_CHECKBUTTON name='AriaLabel2' FOCUSABLE explicit-name:true description='Title2'
+++ROLE_SYSTEM_CHECKBUTTON name='LabelledBy3' FOCUSABLE explicit-name:true description='Title3'
+++ROLE_SYSTEM_CHECKBUTTON name='LabelledBy4' FOCUSABLE explicit-name:true description='DescribedBy4'
+++ROLE_SYSTEM_CHECKBUTTON FOCUSABLE description='DescribedBy5'

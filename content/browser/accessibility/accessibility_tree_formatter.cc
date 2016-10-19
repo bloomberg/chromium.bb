@@ -78,6 +78,12 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   if (line.find(base::ASCIIToUTF16(kSkipString)) != base::string16::npos)
     return;
 
+  // Replace literal newlines with "<newline>"
+  base::ReplaceChars(line,
+                     base::ASCIIToUTF16("\n"),
+                     base::ASCIIToUTF16("<newline>"),
+                     &line);
+
   *contents += line + base::ASCIIToUTF16("\n");
   if (line.find(base::ASCIIToUTF16(kSkipChildren)) != base::string16::npos)
     return;

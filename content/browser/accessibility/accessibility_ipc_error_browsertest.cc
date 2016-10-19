@@ -128,11 +128,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   const ui::AXNode* para = live_region->ChildAtIndex(0);
   EXPECT_EQ(ui::AX_ROLE_PARAGRAPH, para->data().role);
 
-  const ui::AXNode* button_container = root->ChildAtIndex(1);
-  EXPECT_EQ(ui::AX_ROLE_GROUP, button_container->data().role);
-  ASSERT_EQ(1, button_container->child_count());
-
-  const ui::AXNode* button = button_container->ChildAtIndex(0);
+  const ui::AXNode* button = root->ChildAtIndex(1);
   EXPECT_EQ(ui::AX_ROLE_BUTTON, button->data().role);
 }
 

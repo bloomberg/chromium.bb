@@ -9,7 +9,6 @@ var link;
 var main;
 var p2;
 var p3;
-var anonGroup;
 var okButton;
 var cancelButton;
 
@@ -36,16 +35,13 @@ function initializeNodes(rootNode) {
   p3 = main.lastChild;
   assertEq(RoleType.paragraph, p3.role);
 
-  anonGroup = rootNode.lastChild;
-  assertEq(RoleType.group, anonGroup.role);
-
-  okButton = anonGroup.firstChild;
+  okButton = rootNode.children[2];
   assertEq(RoleType.button, okButton.role);
   assertEq('Ok', okButton.name);
   assertTrue(StateType.disabled in okButton.state);
   assertTrue(okButton.state.disabled);
 
-  cancelButton = anonGroup.lastChild;
+  cancelButton = rootNode.children[3];
   assertEq(RoleType.button, cancelButton.role);
   assertEq('Cancel', cancelButton.name);
   assertFalse(StateType.disabled in cancelButton.state);
@@ -77,13 +73,6 @@ var allTests = [
     assertEq(p2, main.find({ role: RoleType.paragraph }));
     assertEq([p2, p3], main.findAll({ role: RoleType.paragraph }));
 
-    // Unlike querySelector, can search from an anonymous group without
-    // unexpected results.
-    assertEq(okButton, anonGroup.find({ role: RoleType.button }));
-    assertEq([okButton, cancelButton],
-             anonGroup.findAll({ role: RoleType.button }));
-    assertEq(null, anonGroup.find({ role: RoleType.heading }));
-
     chrome.test.succeed();
   },
 
@@ -99,12 +88,6 @@ var allTests = [
     assertEq(okButton, rootNode.find({ role: RoleType.button,
                                        state: { disabled: true }}));
     assertEq([okButton], rootNode.findAll({ role: RoleType.button,
-                                            state: { disabled: true }}));
-
-    // Find disabled buttons within a portion of the tree.
-    assertEq(okButton, anonGroup.find({ role: RoleType.button,
-                                       state: { disabled: true }}));
-    assertEq([okButton], anonGroup.findAll({ role: RoleType.button,
                                             state: { disabled: true }}));
 
     // Find enabled buttons.

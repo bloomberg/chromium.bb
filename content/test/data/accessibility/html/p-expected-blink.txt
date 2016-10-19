@@ -1,11 +1,8 @@
 rootWebArea
-++group
-++++staticText name='Before'
-++++++inlineTextBox name='Before' wordStarts=0 wordEnds=6
+++staticText name='Before'
+++++inlineTextBox name='Before' wordStarts=0 wordEnds=6
 ++paragraph
 ++++staticText name='Paragraph'
 ++++++inlineTextBox name='Paragraph' wordStarts=0 wordEnds=9
-++group
-++++staticText name='After'
-++++++inlineTextBox name='After' wordStarts=0 wordEnds=5
-<-- End-of-file -->
+++staticText name='After'
+++++inlineTextBox name='After' wordStarts=0 wordEnds=5

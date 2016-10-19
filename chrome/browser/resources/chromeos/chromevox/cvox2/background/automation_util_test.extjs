@@ -42,7 +42,7 @@ AutomationUtilE2ETest.prototype = {
 
   basicDoc: function() {/*!
     <p><a href='#'></a>hello</p>
-    <h1><ul><li>a</ul><button></h1>
+    <h1><ul><li>a</ul><div role="group"><button></button></div></h1>
   */},
 
   secondDoc: function() {/*!
@@ -72,7 +72,7 @@ TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
     }
   });
 });
-  
+
 TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
     var leftmost = root, rightmost = root;

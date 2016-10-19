@@ -1,9 +1,8 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View
-++++android.view.View role_description='link' clickable focusable link name='InnerText0'
-++++android.view.View role_description='link' clickable focusable link name='InnerText1 Title1'
-++++android.view.View role_description='link' clickable focusable link name='Title2'
-++++android.view.View role_description='link' clickable focusable link name='LabelledBy3'
-++++android.view.View role_description='link' clickable focusable link name='Title4'
-++++android.view.View role_description='link' clickable focusable link name='Label5'
-++++android.view.View role_description='link' clickable focusable link name='LabelledBy6'
+++android.view.View role_description='link' clickable focusable link name='InnerText0'
+++android.view.View role_description='link' clickable focusable link name='InnerText1 Title1'
+++android.view.View role_description='link' clickable focusable link name='Title2'
+++android.view.View role_description='link' clickable focusable link name='LabelledBy3'
+++android.view.View role_description='link' clickable focusable link name='Title4'
+++android.view.View role_description='link' clickable focusable link name='Label5'
+++android.view.View role_description='link' clickable focusable link name='LabelledBy6'
