@@ -796,7 +796,6 @@ static void dispatchEditableContentChangedEvents(Element* startRoot,
 void Editor::appliedEditing(CompositeEditCommand* cmd) {
   DCHECK(!cmd->isCommandGroupWrapper());
   EventQueueScope scope;
-  frame().document()->updateStyleAndLayout();
 
   // Request spell checking before any further DOM change.
   spellChecker().markMisspellingsAfterApplyingCommand(*cmd);
@@ -853,7 +852,6 @@ static VisibleSelection correctedVisibleSelection(
 
 void Editor::unappliedEditing(EditCommandComposition* cmd) {
   EventQueueScope scope;
-  frame().document()->updateStyleAndLayout();
 
   dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(),
                                        cmd->endingRootEditableElement());
@@ -883,7 +881,6 @@ void Editor::unappliedEditing(EditCommandComposition* cmd) {
 
 void Editor::reappliedEditing(EditCommandComposition* cmd) {
   EventQueueScope scope;
-  frame().document()->updateStyleAndLayout();
 
   dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(),
                                        cmd->endingRootEditableElement());

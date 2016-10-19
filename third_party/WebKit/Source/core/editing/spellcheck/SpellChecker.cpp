@@ -392,6 +392,12 @@ void SpellChecker::markMisspellingsAfterApplyingCommand(
   if (!isSpellCheckingEnabledFor(cmd.endingSelection()))
     return;
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term we should use idle time spell checker to prevent
+  // synchronous layout caused by spell checking (see crbug.com/517298).
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // Use type-based conditioning instead of polymorphism so that all spell
   // checking code can be encapsulated in SpellChecker.
 
