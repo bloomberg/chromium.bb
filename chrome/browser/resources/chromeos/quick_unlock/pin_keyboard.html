@@ -44,7 +44,7 @@
       .digit-button {
         align-items: center;
         background: none;
-        border-radius: 100px;
+        border-radius: 0;
         box-sizing: border-box;
         color: #000;
         display: flex;
@@ -52,12 +52,12 @@
         font-size: 18px;
         height: 48px;
         justify-content: center;
-        margin: 0 6px;
+        margin: 0;
         min-height: 48px;
         min-width: 48px;
         opacity: 0.87;
-        padding: 15px;
-        width: 48px;
+        padding: 15px 21px;
+        width: 60px;
       }
 
       [hidden=true] {
@@ -72,9 +72,29 @@
         margin-top: 6px;
       }
 
+      .backspace-button-container {
+        position: relative;
+      }
+
+      .backspace-button-container paper-ripple {
+        position: absolute;
+        top: 0;
+      }
+
+      paper-ripple {
+        border-radius: 100px;
+        color: #000;
+        height: 48px;
+        left: 6px;
+        width: 48px;
+      }
+
       .digit-button.backspace-button {
+        left: 0;
         opacity: var(--dark-primary-opacity);
         padding: 14px;
+        position: absolute;
+        top: 0;
       }
 
       .digit-button.backspace-button:not([has-content]) {
@@ -159,50 +179,74 @@
         </div>
         <hr>
         <div class="row keyboard">
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="1">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="1"
+                        noink>
             <inner-text>$i18n{pinKeyboard1}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="2">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="2"
+                        noink>
             <inner-text>$i18n{pinKeyboard2}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="3">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="3"
+                        noink>
             <inner-text>$i18n{pinKeyboard3}</inner-text>
+            <paper-ripple>
           </paper-button>
         </div>
         <div class="row keyboard">
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="4">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="4"
+                        noink>
             <inner-text>$i18n{pinKeyboard4}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="5">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="5"
+                        noink>
             <inner-text>$i18n{pinKeyboard5}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="6">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="6"
+                        noink>
             <inner-text>$i18n{pinKeyboard6}</inner-text>
+            <paper-ripple>
           </paper-button>
         </div>
         <div class="row keyboard">
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="7">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="7"
+                        noink>
             <inner-text>$i18n{pinKeyboard7}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="8">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="8"
+                        noink>
             <inner-text>$i18n{pinKeyboard8}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="9">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="9"
+                        noink>
             <inner-text>$i18n{pinKeyboard9}</inner-text>
+            <paper-ripple>
           </paper-button>
         </div>
         <div class="row keyboard bottom-row">
           <div class="digit-button"></div>
-          <paper-button class="digit-button" on-tap="onNumberTap_" value="0">
+          <paper-button class="digit-button" on-tap="onNumberTap_" value="0"
+                        noink>
             <inner-text>$i18n{pinKeyboard0}</inner-text>
+            <paper-ripple>
           </paper-button>
-          <paper-icon-button class="digit-button backspace-button"
-                             has-content$="[[hasInput_(value)]]"
-                             icon="pin-keyboard:backspace"
-                             on-pointerdown="onBackspacePointerDown_"
-                             on-pointerout="onBackspacePointerOut_"
-                             on-pointerup="onBackspacePointerUp_">
-          </paper-icon-button>
+          <div class="backspace-button-container">
+            <paper-icon-button class="digit-button backspace-button"
+                               has-content$="[[hasInput_(value)]]"
+                               icon="pin-keyboard:backspace"
+                               on-pointerdown="onBackspacePointerDown_"
+                               on-pointerout="onBackspacePointerOut_"
+                               on-pointerup="onBackspacePointerUp_"
+                               noink>
+            </paper-icon-button>
+            <paper-ripple>
+          </div>
         </div>
       </div>
     </div>
