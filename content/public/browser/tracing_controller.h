@@ -134,17 +134,6 @@ class TracingController {
   virtual bool GetTraceBufferUsage(
       const GetTraceBufferUsageCallback& callback) = 0;
 
-  // |callback| will will be called every time the given event occurs on any
-  // process.
-  typedef base::Callback<void()> WatchEventCallback;
-  virtual bool SetWatchEvent(const std::string& category_name,
-                             const std::string& event_name,
-                             const WatchEventCallback& callback) = 0;
-
-  // Cancel the watch event. If tracing is enabled, this may race with the
-  // watch event callback.
-  virtual bool CancelWatchEvent() = 0;
-
   // Check if the tracing system is tracing
   virtual bool IsTracing() const = 0;
 

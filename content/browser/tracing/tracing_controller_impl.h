@@ -73,10 +73,6 @@ class TracingControllerImpl
       const GetTraceBufferUsageCallback& callback) override;
   void AddMetadata(const base::DictionaryValue& metadata) override;
 
-  bool SetWatchEvent(const std::string& category_name,
-                     const std::string& event_name,
-                     const WatchEventCallback& callback) override;
-  bool CancelWatchEvent() override;
   bool IsTracing() const override;
 
   void RegisterTracingUI(TracingUI* tracing_ui);
@@ -144,10 +140,6 @@ class TracingControllerImpl
     return pending_trace_buffer_usage_callback_.is_null();
   }
 
-  bool can_cancel_watch_event() const {
-    return !watch_event_callback_.is_null();
-  }
-
   void PerformNextQueuedGlobalMemoryDump();
 
   // Methods for use by TraceMessageFilter.
@@ -187,8 +179,6 @@ class TracingControllerImpl
   void OnBrowserProcessMemoryDumpDone(uint64_t dump_guid, bool success);
 
   void FinalizeGlobalMemoryDumpIfAllProcessesReplied();
-
-  void OnWatchEventMatched();
 
   void SetEnabledOnFileThread(
       const base::trace_event::TraceConfig& trace_config,
@@ -244,10 +234,6 @@ class TracingControllerImpl
 
   GetCategoriesDoneCallback pending_get_categories_done_callback_;
   GetTraceBufferUsageCallback pending_trace_buffer_usage_callback_;
-
-  std::string watch_category_name_;
-  std::string watch_event_name_;
-  WatchEventCallback watch_event_callback_;
 
   base::ObserverList<TraceMessageFilterObserver>
       trace_message_filter_observers_;

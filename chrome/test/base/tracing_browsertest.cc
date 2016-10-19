@@ -27,8 +27,6 @@ namespace {
 using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpType;
 using tracing::BeginTracingWithTraceConfig;
-using tracing::BeginTracingWithWatch;
-using tracing::WaitForWatchEvent;
 using tracing::EndTracing;
 
 const char g_category[] = "test_tracing";
@@ -88,70 +86,6 @@ class TracingBrowserTest : public InProcessBrowserTest {
 void AddEvents(int num) {
   for (int i = 0; i < num; ++i)
     TRACE_EVENT_INSTANT0(g_category, g_event, TRACE_EVENT_SCOPE_THREAD);
-}
-
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
-  base::TimeDelta no_timeout;
-  base::TimeDelta short_timeout = base::TimeDelta::FromMilliseconds(5);
-  std::string json_events;
-
-  // One event before wait.
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 1));
-  AddEvents(1);
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // One event after wait.
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 1));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&AddEvents, 1));
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // Not enough events timeout.
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 2));
-  AddEvents(1);
-  EXPECT_FALSE(WaitForWatchEvent(short_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // Multi event before wait.
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 5));
-  AddEvents(5);
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // Multi event after wait.
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 5));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&AddEvents, 5));
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // Child process events from same process.
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category,
-                                    "OnJavaScriptExecuteRequestForTests", 2));
-  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
-
-  // Child process events from different processes.
-  GURL url1("chrome://tracing/");
-  GURL url2("chrome://credits/");
-  ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category,
-                                    "OnJavaScriptExecuteRequestForTests", 2));
-  // Open two tabs to different URLs to encourage two separate renderer
-  // processes. Each will fire an event that will be counted towards the total.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url2, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
-  EXPECT_TRUE(WaitForWatchEvent(no_timeout));
-  ASSERT_TRUE(EndTracing(&json_events));
 }
 
 IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {

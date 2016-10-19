@@ -44,8 +44,6 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingHostMsg_EndTracingAck, OnEndTracingAck)
     IPC_MESSAGE_HANDLER(TracingHostMsg_TraceDataCollected,
                         OnTraceDataCollected)
-    IPC_MESSAGE_HANDLER(TracingHostMsg_WatchEventMatched,
-                        OnWatchEventMatched)
     IPC_MESSAGE_HANDLER(TracingHostMsg_TraceLogStatusReply,
                         OnTraceLogStatusReply)
     IPC_MESSAGE_HANDLER(TracingHostMsg_GlobalMemoryDumpRequest,
@@ -89,15 +87,6 @@ void TraceMessageFilter::SendGetTraceLogStatus() {
   Send(new TracingMsg_GetTraceLogStatus);
 }
 
-void TraceMessageFilter::SendSetWatchEvent(const std::string& category_name,
-                                           const std::string& event_name) {
-  Send(new TracingMsg_SetWatchEvent(category_name, event_name));
-}
-
-void TraceMessageFilter::SendCancelWatchEvent() {
-  Send(new TracingMsg_CancelWatchEvent);
-}
-
 // Called by TracingControllerImpl, which handles the multiprocess coordination.
 void TraceMessageFilter::SendProcessMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args) {
@@ -132,10 +121,6 @@ void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
   data_ptr->data() = data;
   TracingControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
-}
-
-void TraceMessageFilter::OnWatchEventMatched() {
-  TracingControllerImpl::GetInstance()->OnWatchEventMatched();
 }
 
 void TraceMessageFilter::OnTraceLogStatusReply(

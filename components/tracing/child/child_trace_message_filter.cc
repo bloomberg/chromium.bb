@@ -54,8 +54,6 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingMsg_EndTracing, OnEndTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelTracing, OnCancelTracing)
     IPC_MESSAGE_HANDLER(TracingMsg_GetTraceLogStatus, OnGetTraceLogStatus)
-    IPC_MESSAGE_HANDLER(TracingMsg_SetWatchEvent, OnSetWatchEvent)
-    IPC_MESSAGE_HANDLER(TracingMsg_CancelWatchEvent, OnCancelWatchEvent)
     IPC_MESSAGE_HANDLER(TracingMsg_ProcessMemoryDumpRequest,
                         OnProcessMemoryDumpRequest)
     IPC_MESSAGE_HANDLER(TracingMsg_GlobalMemoryDumpResponse,
@@ -109,27 +107,6 @@ void ChildTraceMessageFilter::OnCancelTracing() {
 void ChildTraceMessageFilter::OnGetTraceLogStatus() {
   sender_->Send(new TracingHostMsg_TraceLogStatusReply(
       TraceLog::GetInstance()->GetStatus()));
-}
-
-void ChildTraceMessageFilter::OnSetWatchEvent(const std::string& category_name,
-                                              const std::string& event_name) {
-  TraceLog::GetInstance()->SetWatchEvent(
-      category_name, event_name,
-      base::Bind(&ChildTraceMessageFilter::OnWatchEventMatched, this));
-}
-
-void ChildTraceMessageFilter::OnCancelWatchEvent() {
-  TraceLog::GetInstance()->CancelWatchEvent();
-}
-
-void ChildTraceMessageFilter::OnWatchEventMatched() {
-  if (!ipc_task_runner_->BelongsToCurrentThread()) {
-    ipc_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ChildTraceMessageFilter::OnWatchEventMatched, this));
-    return;
-  }
-  sender_->Send(new TracingHostMsg_WatchEventMatched);
 }
 
 void ChildTraceMessageFilter::OnTraceDataCollected(

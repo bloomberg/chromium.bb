@@ -50,58 +50,13 @@ class InProcessTraceController {
     return base::Singleton<InProcessTraceController>::get();
   }
 
-  InProcessTraceController()
-      : is_waiting_on_watch_(false),
-        watch_notification_count_(0) {}
+  InProcessTraceController() {}
   virtual ~InProcessTraceController() {}
 
   bool BeginTracing(const base::trace_event::TraceConfig& trace_config) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return content::TracingController::GetInstance()->StartTracing(
         trace_config, content::TracingController::StartTracingDoneCallback());
-  }
-
-  bool BeginTracingWithWatch(const std::string& category_patterns,
-                             const std::string& category_name,
-                             const std::string& event_name,
-                             int num_occurrences) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(num_occurrences > 0);
-    watch_notification_count_ = num_occurrences;
-    if (!content::TracingController::GetInstance()->SetWatchEvent(
-            category_name, event_name,
-            base::Bind(&InProcessTraceController::OnWatchEventMatched,
-                       base::Unretained(this)))) {
-      return false;
-    }
-    if (!content::TracingController::GetInstance()->StartTracing(
-            base::trace_event::TraceConfig(category_patterns, ""),
-            base::Bind(&InProcessTraceController::OnEnableTracingComplete,
-                       base::Unretained(this)))) {
-      return false;
-    }
-
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-    return true;
-  }
-
-  bool WaitForWatchEvent(base::TimeDelta timeout) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (watch_notification_count_ == 0)
-      return true;
-
-    if (!timeout.is_zero()) {
-      timer_.Start(FROM_HERE, timeout, this,
-                   &InProcessTraceController::Timeout);
-    }
-
-    is_waiting_on_watch_ = true;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-    is_waiting_on_watch_ = false;
-
-    return watch_notification_count_ == 0;
   }
 
   bool EndTracing(std::string* json_trace_output) {
@@ -119,9 +74,6 @@ class InProcessTraceController {
     message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
 
-    // Watch notifications can occur during this method's message loop run, but
-    // not after, so clear them here.
-    watch_notification_count_ = 0;
     return true;
   }
 
@@ -134,27 +86,9 @@ class InProcessTraceController {
 
   void OnTracingComplete() { message_loop_runner_->Quit(); }
 
-  void OnWatchEventMatched() {
-    if (watch_notification_count_ == 0)
-      return;
-    if (--watch_notification_count_ == 0) {
-      timer_.Stop();
-      if (is_waiting_on_watch_)
-        message_loop_runner_->Quit();
-    }
-  }
-
-  void Timeout() {
-    DCHECK(is_waiting_on_watch_);
-    message_loop_runner_->Quit();
-  }
-
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   base::OneShotTimer timer_;
-
-  bool is_waiting_on_watch_;
-  int watch_notification_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessTraceController);
 };
@@ -168,21 +102,9 @@ bool BeginTracing(const std::string& category_patterns) {
       base::trace_event::TraceConfig(category_patterns, ""));
 }
 
-bool BeginTracingWithWatch(const std::string& category_patterns,
-                           const std::string& category_name,
-                           const std::string& event_name,
-                           int num_occurrences) {
-  return InProcessTraceController::GetInstance()->BeginTracingWithWatch(
-      category_patterns, category_name, event_name, num_occurrences);
-}
-
 bool BeginTracingWithTraceConfig(
     const base::trace_event::TraceConfig& trace_config) {
   return InProcessTraceController::GetInstance()->BeginTracing(trace_config);
-}
-
-bool WaitForWatchEvent(base::TimeDelta timeout) {
-  return InProcessTraceController::GetInstance()->WaitForWatchEvent(timeout);
 }
 
 bool EndTracing(std::string* json_trace_output) {
@@ -190,4 +112,3 @@ bool EndTracing(std::string* json_trace_output) {
 }
 
 }  // namespace tracing
-

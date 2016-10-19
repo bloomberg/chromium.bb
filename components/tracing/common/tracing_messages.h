@@ -60,14 +60,6 @@ IPC_MESSAGE_CONTROL0(TracingMsg_CancelTracing)
 // Sent to all child processes to get trace buffer fullness.
 IPC_MESSAGE_CONTROL0(TracingMsg_GetTraceLogStatus)
 
-// Sent to all child processes to set watch event.
-IPC_MESSAGE_CONTROL2(TracingMsg_SetWatchEvent,
-                     std::string /* category_name */,
-                     std::string /* event_name */)
-
-// Sent to all child processes to clear watch event.
-IPC_MESSAGE_CONTROL0(TracingMsg_CancelWatchEvent)
-
 // Sent to all child processes to request a local (current process) memory dump.
 IPC_MESSAGE_CONTROL1(TracingMsg_ProcessMemoryDumpRequest,
                      base::trace_event::MemoryDumpRequestArgs)
@@ -86,9 +78,6 @@ IPC_MESSAGE_CONTROL4(TracingMsg_SetUMACallback,
 
 IPC_MESSAGE_CONTROL1(TracingMsg_ClearUMACallback,
                      std::string /* histogram_name */)
-
-// Sent everytime when a watch event is matched.
-IPC_MESSAGE_CONTROL0(TracingHostMsg_WatchEventMatched)
 
 // Notify the browser that this child process supports tracing.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_ChildSupportsTracing)

@@ -460,46 +460,6 @@ bool TracingControllerImpl::GetTraceBufferUsage(
   return true;
 }
 
-bool TracingControllerImpl::SetWatchEvent(
-    const std::string& category_name,
-    const std::string& event_name,
-    const WatchEventCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (callback.is_null())
-    return false;
-
-  watch_category_name_ = category_name;
-  watch_event_name_ = event_name;
-  watch_event_callback_ = callback;
-
-  TraceLog::GetInstance()->SetWatchEvent(
-      category_name, event_name,
-      base::Bind(&TracingControllerImpl::OnWatchEventMatched,
-                 base::Unretained(this)));
-
-  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
-      it != trace_message_filters_.end(); ++it) {
-    it->get()->SendSetWatchEvent(category_name, event_name);
-  }
-  return true;
-}
-
-bool TracingControllerImpl::CancelWatchEvent() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!can_cancel_watch_event())
-    return false;
-
-  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
-      it != trace_message_filters_.end(); ++it) {
-    it->get()->SendCancelWatchEvent();
-  }
-
-  watch_event_callback_.Reset();
-  return true;
-}
-
 bool TracingControllerImpl::IsTracing() const {
   return is_tracing_;
 }
@@ -523,10 +483,6 @@ void TracingControllerImpl::AddTraceMessageFilter(
 #endif
 
   trace_message_filters_.insert(trace_message_filter);
-  if (can_cancel_watch_event()) {
-    trace_message_filter->SendSetWatchEvent(watch_category_name_,
-                                            watch_event_name_);
-  }
   if (can_stop_tracing()) {
     trace_message_filter->SendBeginTracing(
         TraceLog::GetInstance()->GetCurrentTraceConfig());
@@ -787,18 +743,6 @@ void TracingControllerImpl::OnTraceLogStatusReply(
                                              approximate_event_count_);
     pending_trace_buffer_usage_callback_.Reset();
   }
-}
-
-void TracingControllerImpl::OnWatchEventMatched() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnWatchEventMatched,
-                   base::Unretained(this)));
-    return;
-  }
-
-  if (!watch_event_callback_.is_null())
-    watch_event_callback_.Run();
 }
 
 void TracingControllerImpl::RegisterTracingUI(TracingUI* tracing_ui) {
