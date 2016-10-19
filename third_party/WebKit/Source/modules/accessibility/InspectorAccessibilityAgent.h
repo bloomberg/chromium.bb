@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class AXObject;
 class AXObjectCacheImpl;
 class InspectorDOMAgent;
 class LocalFrame;
@@ -37,6 +38,13 @@ class MODULES_EXPORT InspectorAccessibilityAgent
  private:
   Member<Page> m_page;
   Member<InspectorDOMAgent> m_domAgent;
+
+  std::unique_ptr<protocol::Accessibility::AXNode> buildObjectForIgnoredNode(
+      Node* domNode,
+      AXObject*) const;
+  std::unique_ptr<protocol::Accessibility::AXNode> buildProtocolAXObject(
+      AXObject&) const;
+  void fillCoreProperties(AXObject&, protocol::Accessibility::AXNode&) const;
 };
 
 }  // namespace blink

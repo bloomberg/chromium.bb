@@ -8,6 +8,8 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
+#include "core/dom/Node.h"
+#include "core/dom/NodeList.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
@@ -36,98 +38,76 @@ using namespace HTMLNames;
 
 namespace {
 
-void fillCoreProperties(AXObject* axObject, AXNode* nodeObject) {
-  // Description (secondary to the accessible name).
-  AXNameFrom nameFrom;
-  AXObject::AXObjectVector nameObjects;
-  axObject->name(nameFrom, &nameObjects);
-  AXDescriptionFrom descriptionFrom;
-  AXObject::AXObjectVector descriptionObjects;
-  String description =
-      axObject->description(nameFrom, descriptionFrom, &descriptionObjects);
-  if (!description.isEmpty())
-    nodeObject->setDescription(
-        createValue(description, AXValueTypeEnum::ComputedString));
-
-  // Value.
-  if (axObject->supportsRangeValue()) {
-    nodeObject->setValue(createValue(axObject->valueForRange()));
-  } else {
-    String stringValue = axObject->stringValue();
-    if (!stringValue.isEmpty())
-      nodeObject->setValue(createValue(stringValue));
-  }
-}
-
-void fillLiveRegionProperties(AXObject* axObject,
-                              protocol::Array<AXProperty>* properties) {
-  if (!axObject->liveRegionRoot())
+void fillLiveRegionProperties(AXObject& axObject,
+                              protocol::Array<AXProperty>& properties) {
+  if (!axObject.liveRegionRoot())
     return;
 
-  properties->addItem(
+  properties.addItem(
       createProperty(AXLiveRegionAttributesEnum::Live,
-                     createValue(axObject->containerLiveRegionStatus(),
+                     createValue(axObject.containerLiveRegionStatus(),
                                  AXValueTypeEnum::Token)));
-  properties->addItem(createProperty(
-      AXLiveRegionAttributesEnum::Atomic,
-      createBooleanValue(axObject->containerLiveRegionAtomic())));
-  properties->addItem(
+  properties.addItem(
+      createProperty(AXLiveRegionAttributesEnum::Atomic,
+                     createBooleanValue(axObject.containerLiveRegionAtomic())));
+  properties.addItem(
       createProperty(AXLiveRegionAttributesEnum::Relevant,
-                     createValue(axObject->containerLiveRegionRelevant(),
+                     createValue(axObject.containerLiveRegionRelevant(),
                                  AXValueTypeEnum::TokenList)));
-  properties->addItem(
+  properties.addItem(
       createProperty(AXLiveRegionAttributesEnum::Busy,
-                     createBooleanValue(axObject->containerLiveRegionBusy())));
+                     createBooleanValue(axObject.containerLiveRegionBusy())));
 
-  if (!axObject->isLiveRegion())
-    properties->addItem(
-        createProperty(AXLiveRegionAttributesEnum::Root,
-                       createRelatedNodeListValue(axObject->liveRegionRoot())));
+  if (!axObject.isLiveRegion()) {
+    properties.addItem(createProperty(
+        AXLiveRegionAttributesEnum::Root,
+        createRelatedNodeListValue(*(axObject.liveRegionRoot()))));
+  }
 }
 
-void fillGlobalStates(AXObject* axObject,
-                      protocol::Array<AXProperty>* properties) {
-  if (!axObject->isEnabled())
-    properties->addItem(
+void fillGlobalStates(AXObject& axObject,
+                      protocol::Array<AXProperty>& properties) {
+  if (!axObject.isEnabled())
+    properties.addItem(
         createProperty(AXGlobalStatesEnum::Disabled, createBooleanValue(true)));
 
-  if (const AXObject* hiddenRoot = axObject->ariaHiddenRoot()) {
-    properties->addItem(
+  if (const AXObject* hiddenRoot = axObject.ariaHiddenRoot()) {
+    properties.addItem(
         createProperty(AXGlobalStatesEnum::Hidden, createBooleanValue(true)));
-    properties->addItem(createProperty(AXGlobalStatesEnum::HiddenRoot,
-                                       createRelatedNodeListValue(hiddenRoot)));
+    properties.addItem(createProperty(AXGlobalStatesEnum::HiddenRoot,
+                                      createRelatedNodeListValue(*hiddenRoot)));
   }
 
-  InvalidState invalidState = axObject->getInvalidState();
+  InvalidState invalidState = axObject.getInvalidState();
   switch (invalidState) {
     case InvalidStateUndefined:
       break;
     case InvalidStateFalse:
-      properties->addItem(
+      properties.addItem(
           createProperty(AXGlobalStatesEnum::Invalid,
                          createValue("false", AXValueTypeEnum::Token)));
       break;
     case InvalidStateTrue:
-      properties->addItem(
+      properties.addItem(
           createProperty(AXGlobalStatesEnum::Invalid,
                          createValue("true", AXValueTypeEnum::Token)));
       break;
     case InvalidStateSpelling:
-      properties->addItem(
+      properties.addItem(
           createProperty(AXGlobalStatesEnum::Invalid,
                          createValue("spelling", AXValueTypeEnum::Token)));
       break;
     case InvalidStateGrammar:
-      properties->addItem(
+      properties.addItem(
           createProperty(AXGlobalStatesEnum::Invalid,
                          createValue("grammar", AXValueTypeEnum::Token)));
       break;
     default:
       // TODO(aboxhall): expose invalid: <nothing> and source: aria-invalid as
       // invalid value
-      properties->addItem(createProperty(
+      properties.addItem(createProperty(
           AXGlobalStatesEnum::Invalid,
-          createValue(axObject->ariaInvalidValue(), AXValueTypeEnum::String)));
+          createValue(axObject.ariaInvalidValue(), AXValueTypeEnum::String)));
       break;
   }
 }
@@ -173,47 +153,49 @@ bool roleAllowsSelected(AccessibilityRole role) {
          role == RowHeaderRole || role == TreeItemRole;
 }
 
-void fillWidgetProperties(AXObject* axObject,
-                          protocol::Array<AXProperty>* properties) {
-  AccessibilityRole role = axObject->roleValue();
-  String autocomplete = axObject->ariaAutoComplete();
+void fillWidgetProperties(AXObject& axObject,
+                          protocol::Array<AXProperty>& properties) {
+  AccessibilityRole role = axObject.roleValue();
+  String autocomplete = axObject.ariaAutoComplete();
   if (!autocomplete.isEmpty())
-    properties->addItem(
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Autocomplete,
                        createValue(autocomplete, AXValueTypeEnum::Token)));
 
-  if (axObject->hasAttribute(HTMLNames::aria_haspopupAttr)) {
-    bool hasPopup = axObject->ariaHasPopup();
-    properties->addItem(createProperty(AXWidgetAttributesEnum::Haspopup,
-                                       createBooleanValue(hasPopup)));
+  if (axObject.hasAttribute(HTMLNames::aria_haspopupAttr)) {
+    bool hasPopup = axObject.ariaHasPopup();
+    properties.addItem(createProperty(AXWidgetAttributesEnum::Haspopup,
+                                      createBooleanValue(hasPopup)));
   }
 
-  int headingLevel = axObject->headingLevel();
-  if (headingLevel > 0)
-    properties->addItem(createProperty(AXWidgetAttributesEnum::Level,
-                                       createValue(headingLevel)));
-  int hierarchicalLevel = axObject->hierarchicalLevel();
+  int headingLevel = axObject.headingLevel();
+  if (headingLevel > 0) {
+    properties.addItem(createProperty(AXWidgetAttributesEnum::Level,
+                                      createValue(headingLevel)));
+  }
+  int hierarchicalLevel = axObject.hierarchicalLevel();
   if (hierarchicalLevel > 0 ||
-      axObject->hasAttribute(HTMLNames::aria_levelAttr))
-    properties->addItem(createProperty(AXWidgetAttributesEnum::Level,
-                                       createValue(hierarchicalLevel)));
+      axObject.hasAttribute(HTMLNames::aria_levelAttr)) {
+    properties.addItem(createProperty(AXWidgetAttributesEnum::Level,
+                                      createValue(hierarchicalLevel)));
+  }
 
   if (roleAllowsMultiselectable(role)) {
-    bool multiselectable = axObject->isMultiSelectable();
-    properties->addItem(createProperty(AXWidgetAttributesEnum::Multiselectable,
-                                       createBooleanValue(multiselectable)));
+    bool multiselectable = axObject.isMultiSelectable();
+    properties.addItem(createProperty(AXWidgetAttributesEnum::Multiselectable,
+                                      createBooleanValue(multiselectable)));
   }
 
   if (roleAllowsOrientation(role)) {
-    AccessibilityOrientation orientation = axObject->orientation();
+    AccessibilityOrientation orientation = axObject.orientation();
     switch (orientation) {
       case AccessibilityOrientationVertical:
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetAttributesEnum::Orientation,
                            createValue("vertical", AXValueTypeEnum::Token)));
         break;
       case AccessibilityOrientationHorizontal:
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetAttributesEnum::Orientation,
                            createValue("horizontal", AXValueTypeEnum::Token)));
         break;
@@ -222,103 +204,104 @@ void fillWidgetProperties(AXObject* axObject,
     }
   }
 
-  if (role == TextFieldRole)
-    properties->addItem(
+  if (role == TextFieldRole) {
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Multiline,
-                       createBooleanValue(axObject->isMultiline())));
+                       createBooleanValue(axObject.isMultiline())));
+  }
 
   if (roleAllowsReadonly(role)) {
-    properties->addItem(
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Readonly,
-                       createBooleanValue(axObject->isReadOnly())));
+                       createBooleanValue(axObject.isReadOnly())));
   }
 
   if (roleAllowsRequired(role)) {
-    properties->addItem(
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Required,
-                       createBooleanValue(axObject->isRequired())));
+                       createBooleanValue(axObject.isRequired())));
   }
 
   if (roleAllowsSort(role)) {
     // TODO(aboxhall): sort
   }
 
-  if (axObject->isRange()) {
-    properties->addItem(
+  if (axObject.isRange()) {
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Valuemin,
-                       createValue(axObject->minValueForRange())));
-    properties->addItem(
+                       createValue(axObject.minValueForRange())));
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Valuemax,
-                       createValue(axObject->maxValueForRange())));
-    properties->addItem(
+                       createValue(axObject.maxValueForRange())));
+    properties.addItem(
         createProperty(AXWidgetAttributesEnum::Valuetext,
-                       createValue(axObject->valueDescription())));
+                       createValue(axObject.valueDescription())));
   }
 }
 
-void fillWidgetStates(AXObject* axObject,
-                      protocol::Array<AXProperty>* properties) {
-  AccessibilityRole role = axObject->roleValue();
+void fillWidgetStates(AXObject& axObject,
+                      protocol::Array<AXProperty>& properties) {
+  AccessibilityRole role = axObject.roleValue();
   if (roleAllowsChecked(role)) {
-    AccessibilityButtonState checked = axObject->checkboxOrRadioValue();
+    AccessibilityButtonState checked = axObject.checkboxOrRadioValue();
     switch (checked) {
       case ButtonStateOff:
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetStatesEnum::Checked,
                            createValue("false", AXValueTypeEnum::Tristate)));
         break;
       case ButtonStateOn:
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetStatesEnum::Checked,
                            createValue("true", AXValueTypeEnum::Tristate)));
         break;
       case ButtonStateMixed:
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetStatesEnum::Checked,
                            createValue("mixed", AXValueTypeEnum::Tristate)));
         break;
     }
   }
 
-  AccessibilityExpanded expanded = axObject->isExpanded();
+  AccessibilityExpanded expanded = axObject.isExpanded();
   switch (expanded) {
     case ExpandedUndefined:
       break;
     case ExpandedCollapsed:
-      properties->addItem(createProperty(
+      properties.addItem(createProperty(
           AXWidgetStatesEnum::Expanded,
           createBooleanValue(false, AXValueTypeEnum::BooleanOrUndefined)));
       break;
     case ExpandedExpanded:
-      properties->addItem(createProperty(
+      properties.addItem(createProperty(
           AXWidgetStatesEnum::Expanded,
           createBooleanValue(true, AXValueTypeEnum::BooleanOrUndefined)));
       break;
   }
 
   if (role == ToggleButtonRole) {
-    if (!axObject->isPressed()) {
-      properties->addItem(
+    if (!axObject.isPressed()) {
+      properties.addItem(
           createProperty(AXWidgetStatesEnum::Pressed,
                          createValue("false", AXValueTypeEnum::Tristate)));
     } else {
       const AtomicString& pressedAttr =
-          axObject->getAttribute(HTMLNames::aria_pressedAttr);
+          axObject.getAttribute(HTMLNames::aria_pressedAttr);
       if (equalIgnoringCase(pressedAttr, "mixed"))
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetStatesEnum::Pressed,
                            createValue("mixed", AXValueTypeEnum::Tristate)));
       else
-        properties->addItem(
+        properties.addItem(
             createProperty(AXWidgetStatesEnum::Pressed,
                            createValue("true", AXValueTypeEnum::Tristate)));
     }
   }
 
   if (roleAllowsSelected(role)) {
-    properties->addItem(
+    properties.addItem(
         createProperty(AXWidgetStatesEnum::Selected,
-                       createBooleanValue(axObject->isSelected())));
+                       createBooleanValue(axObject.isSelected())));
   }
 }
 
@@ -334,46 +317,46 @@ std::unique_ptr<AXProperty> createRelatedNodeListProperty(
     const String& key,
     AXObject::AXObjectVector& nodes,
     const QualifiedName& attr,
-    AXObject* axObject) {
+    AXObject& axObject) {
   std::unique_ptr<AXValue> nodeListValue = createRelatedNodeListValue(nodes);
-  const AtomicString& attrValue = axObject->getAttribute(attr);
+  const AtomicString& attrValue = axObject.getAttribute(attr);
   nodeListValue->setValue(protocol::StringValue::create(attrValue));
   return createProperty(key, std::move(nodeListValue));
 }
 
-void fillRelationships(AXObject* axObject,
-                       protocol::Array<AXProperty>* properties) {
-  if (AXObject* activeDescendant = axObject->activeDescendant()) {
-    properties->addItem(
+void fillRelationships(AXObject& axObject,
+                       protocol::Array<AXProperty>& properties) {
+  if (AXObject* activeDescendant = axObject.activeDescendant()) {
+    properties.addItem(
         createProperty(AXRelationshipAttributesEnum::Activedescendant,
-                       createRelatedNodeListValue(activeDescendant)));
+                       createRelatedNodeListValue(*activeDescendant)));
   }
 
   AXObject::AXObjectVector results;
-  axObject->ariaFlowToElements(results);
+  axObject.ariaFlowToElements(results);
   if (!results.isEmpty())
-    properties->addItem(
+    properties.addItem(
         createRelatedNodeListProperty(AXRelationshipAttributesEnum::Flowto,
                                       results, aria_flowtoAttr, axObject));
   results.clear();
 
-  axObject->ariaControlsElements(results);
+  axObject.ariaControlsElements(results);
   if (!results.isEmpty())
-    properties->addItem(
+    properties.addItem(
         createRelatedNodeListProperty(AXRelationshipAttributesEnum::Controls,
                                       results, aria_controlsAttr, axObject));
   results.clear();
 
-  axObject->ariaDescribedbyElements(results);
+  axObject.ariaDescribedbyElements(results);
   if (!results.isEmpty())
-    properties->addItem(
+    properties.addItem(
         createRelatedNodeListProperty(AXRelationshipAttributesEnum::Describedby,
                                       results, aria_describedbyAttr, axObject));
   results.clear();
 
-  axObject->ariaOwnsElements(results);
+  axObject.ariaOwnsElements(results);
   if (!results.isEmpty())
-    properties->addItem(createRelatedNodeListProperty(
+    properties.addItem(createRelatedNodeListProperty(
         AXRelationshipAttributesEnum::Owns, results, aria_ownsAttr, axObject));
   results.clear();
 }
@@ -390,11 +373,64 @@ std::unique_ptr<AXValue> createRoleNameValue(AccessibilityRole role) {
   return roleNameValue;
 }
 
-std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node,
-                                                  const AXObject* axObject) {
+}  // namespace
+
+InspectorAccessibilityAgent::InspectorAccessibilityAgent(
+    Page* page,
+    InspectorDOMAgent* domAgent)
+    : m_page(page), m_domAgent(domAgent) {}
+
+void InspectorAccessibilityAgent::getAXNodeChain(
+    ErrorString* errorString,
+    int domNodeId,
+    bool fetchAncestors,
+    std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>* nodes) {
+  if (!m_domAgent->enabled()) {
+    *errorString = "DOM agent must be enabled";
+    return;
+  }
+  Node* domNode = m_domAgent->assertNode(errorString, domNodeId);
+  if (!domNode)
+    return;
+
+  Document& document = domNode->document();
+  document.updateStyleAndLayoutIgnorePendingStylesheets();
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document.lifecycle());
+  LocalFrame* localFrame = document.frame();
+  if (!localFrame) {
+    *errorString = "Frame is detached.";
+    return;
+  }
+  std::unique_ptr<ScopedAXObjectCache> scopedCache =
+      ScopedAXObjectCache::create(document);
+  AXObjectCacheImpl* cache = toAXObjectCacheImpl(scopedCache->get());
+
+  AXObject* inspectedAXObject = cache->getOrCreate(domNode);
+  *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
+  if (!inspectedAXObject || inspectedAXObject->accessibilityIsIgnored()) {
+    (*nodes)->addItem(buildObjectForIgnoredNode(domNode, inspectedAXObject));
+  } else {
+    (*nodes)->addItem(buildProtocolAXObject(*inspectedAXObject));
+  }
+
+  if (fetchAncestors && inspectedAXObject) {
+    AXObject* parent = inspectedAXObject->parentObjectUnignored();
+    while (parent) {
+      (*nodes)->addItem(buildProtocolAXObject(*parent));
+      parent = parent->parentObjectUnignored();
+    }
+  }
+}
+
+std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
+    Node* domNode,
+    AXObject* axObject) const {
   AXObject::IgnoredReasons ignoredReasons;
 
   AXID axID = 0;
+  if (axObject)
+    axID = axObject->axObjectID();
   std::unique_ptr<AXNode> ignoredNodeObject =
       AXNode::create().setNodeId(String::number(axID)).setIgnored(true).build();
   if (axObject) {
@@ -402,7 +438,7 @@ std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node,
     axID = axObject->axObjectID();
     AccessibilityRole role = axObject->roleValue();
     ignoredNodeObject->setRole(createRoleNameValue(role));
-  } else if (node && !node->layoutObject()) {
+  } else if (domNode && !domNode->layoutObject()) {
     ignoredReasons.append(IgnoredReason(AXNotRendered));
   }
 
@@ -415,25 +451,26 @@ std::unique_ptr<AXNode> buildObjectForIgnoredNode(Node* node,
   return ignoredNodeObject;
 }
 
-std::unique_ptr<AXNode> buildProtocolAXObject(AXObject* axObject) {
-  AccessibilityRole role = axObject->roleValue();
+std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildProtocolAXObject(
+    AXObject& axObject) const {
+  AccessibilityRole role = axObject.roleValue();
   std::unique_ptr<AXNode> nodeObject =
       AXNode::create()
-          .setNodeId(String::number(axObject->axObjectID()))
+          .setNodeId(String::number(axObject.axObjectID()))
           .setIgnored(false)
           .build();
   nodeObject->setRole(createRoleNameValue(role));
 
   std::unique_ptr<protocol::Array<AXProperty>> properties =
       protocol::Array<AXProperty>::create();
-  fillLiveRegionProperties(axObject, properties.get());
-  fillGlobalStates(axObject, properties.get());
-  fillWidgetProperties(axObject, properties.get());
-  fillWidgetStates(axObject, properties.get());
-  fillRelationships(axObject, properties.get());
+  fillLiveRegionProperties(axObject, *(properties.get()));
+  fillGlobalStates(axObject, *(properties.get()));
+  fillWidgetProperties(axObject, *(properties.get()));
+  fillWidgetStates(axObject, *(properties.get()));
+  fillRelationships(axObject, *(properties.get()));
 
   AXObject::NameSources nameSources;
-  String computedName = axObject->name(&nameSources);
+  String computedName = axObject.name(&nameSources);
   if (!nameSources.isEmpty()) {
     std::unique_ptr<AXValue> name =
         createValue(computedName, AXValueTypeEnum::ComputedString);
@@ -459,56 +496,31 @@ std::unique_ptr<AXNode> buildProtocolAXObject(AXObject* axObject) {
     nodeObject->setProperties(std::move(properties));
   }
 
-  fillCoreProperties(axObject, nodeObject.get());
+  fillCoreProperties(axObject, *(nodeObject.get()));
   return nodeObject;
 }
 
-}  // namespace
+void InspectorAccessibilityAgent::fillCoreProperties(AXObject& axObject,
+                                                     AXNode& nodeObject) const {
+  AXNameFrom nameFrom;
+  AXObject::AXObjectVector nameObjects;
+  axObject.name(nameFrom, &nameObjects);
 
-InspectorAccessibilityAgent::InspectorAccessibilityAgent(
-    Page* page,
-    InspectorDOMAgent* domAgent)
-    : m_page(page), m_domAgent(domAgent) {}
-
-void InspectorAccessibilityAgent::getAXNodeChain(
-    ErrorString* errorString,
-    int domNodeId,
-    bool fetchAncestors,
-    std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>* nodes) {
-  if (!m_domAgent->enabled()) {
-    *errorString = "DOM agent must be enabled";
-    return;
+  AXDescriptionFrom descriptionFrom;
+  AXObject::AXObjectVector descriptionObjects;
+  String description =
+      axObject.description(nameFrom, descriptionFrom, &descriptionObjects);
+  if (!description.isEmpty()) {
+    nodeObject.setDescription(
+        createValue(description, AXValueTypeEnum::ComputedString));
   }
-  Node* node = m_domAgent->assertNode(errorString, domNodeId);
-  if (!node)
-    return;
-
-  Document& document = node->document();
-  document.updateStyleAndLayoutIgnorePendingStylesheets();
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      document.lifecycle());
-  LocalFrame* localFrame = document.frame();
-  if (!localFrame) {
-    *errorString = "Frame is detached.";
-    return;
-  }
-  std::unique_ptr<ScopedAXObjectCache> scopedCache =
-      ScopedAXObjectCache::create(document);
-  AXObjectCacheImpl* cache = toAXObjectCacheImpl(scopedCache->get());
-  AXObject* axObject = cache->getOrCreate(node);
-  *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
-  if (!axObject || axObject->accessibilityIsIgnored()) {
-    (*nodes)->addItem(buildObjectForIgnoredNode(node, axObject));
+  // Value.
+  if (axObject.supportsRangeValue()) {
+    nodeObject.setValue(createValue(axObject.valueForRange()));
   } else {
-    (*nodes)->addItem(buildProtocolAXObject(axObject));
-  }
-
-  if (fetchAncestors && axObject) {
-    AXObject* parent = axObject->parentObjectUnignored();
-    while (parent) {
-      (*nodes)->addItem(buildProtocolAXObject(parent));
-      parent = parent->parentObjectUnignored();
-    }
+    String stringValue = axObject.stringValue();
+    if (!stringValue.isEmpty())
+      nodeObject.setValue(createValue(stringValue));
   }
 }
 

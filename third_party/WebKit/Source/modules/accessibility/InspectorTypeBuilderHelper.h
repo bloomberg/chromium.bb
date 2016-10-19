@@ -31,7 +31,7 @@ std::unique_ptr<AXValue> createBooleanValue(
     bool value,
     const String& valueType = AXValueTypeEnum::Boolean);
 std::unique_ptr<AXValue> createRelatedNodeListValue(
-    const AXObject*,
+    const AXObject&,
     String* name = nullptr,
     const String& valueType = AXValueTypeEnum::Idref);
 std::unique_ptr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector&,
