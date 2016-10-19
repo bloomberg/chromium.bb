@@ -61,15 +61,26 @@ RegistrationRequest::Status GetStatusFromError(const std::string& error) {
   return RegistrationRequest::UNKNOWN_ERROR;
 }
 
-// Indicates whether a retry attempt should be made based on the status of the
-// last request.
+// Determines whether to retry based on the status of the last request.
 bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
-  return status == RegistrationRequest::UNKNOWN_ERROR ||
-         status == RegistrationRequest::AUTHENTICATION_FAILED ||
-         status == RegistrationRequest::DEVICE_REGISTRATION_ERROR ||
-         status == RegistrationRequest::HTTP_NOT_OK ||
-         status == RegistrationRequest::URL_FETCHING_FAILED ||
-         status == RegistrationRequest::RESPONSE_PARSING_FAILED;
+  switch (status) {
+    case RegistrationRequest::AUTHENTICATION_FAILED:
+    case RegistrationRequest::DEVICE_REGISTRATION_ERROR:
+    case RegistrationRequest::UNKNOWN_ERROR:
+    case RegistrationRequest::URL_FETCHING_FAILED:
+    case RegistrationRequest::HTTP_NOT_OK:
+    case RegistrationRequest::RESPONSE_PARSING_FAILED:
+      return true;
+    case RegistrationRequest::SUCCESS:
+    case RegistrationRequest::INVALID_PARAMETERS:
+    case RegistrationRequest::INVALID_SENDER:
+    case RegistrationRequest::REACHED_MAX_RETRIES:
+      return false;
+    case RegistrationRequest::STATUS_COUNT:
+      NOTREACHED();
+      break;
+  }
+  return false;
 }
 
 }  // namespace

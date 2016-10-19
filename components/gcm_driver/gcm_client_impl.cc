@@ -96,18 +96,15 @@ GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
   switch (status) {
     case MCSClient::QUEUED:
       return GCMClient::SUCCESS;
-    case MCSClient::QUEUE_SIZE_LIMIT_REACHED:
-      return GCMClient::NETWORK_ERROR;
-    case MCSClient::APP_QUEUE_SIZE_LIMIT_REACHED:
-      return GCMClient::NETWORK_ERROR;
     case MCSClient::MESSAGE_TOO_LARGE:
       return GCMClient::INVALID_PARAMETER;
+    case MCSClient::QUEUE_SIZE_LIMIT_REACHED:
+    case MCSClient::APP_QUEUE_SIZE_LIMIT_REACHED:
     case MCSClient::NO_CONNECTION_ON_ZERO_TTL:
-      return GCMClient::NETWORK_ERROR;
     case MCSClient::TTL_EXCEEDED:
       return GCMClient::NETWORK_ERROR;
     case MCSClient::SENT:
-    default:
+    case MCSClient::SEND_STATUS_COUNT:
       NOTREACHED();
       break;
   }
@@ -117,7 +114,8 @@ GCMClient::Result ToGCMClientResult(MCSClient::MessageSendStatus status) {
 void ToCheckinProtoVersion(
     const GCMClient::ChromeBuildInfo& chrome_build_info,
     checkin_proto::ChromeBuildProto* android_build_info) {
-  checkin_proto::ChromeBuildProto_Platform platform;
+  checkin_proto::ChromeBuildProto_Platform platform =
+      checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
   switch (chrome_build_info.platform) {
     case GCMClient::PLATFORM_WIN:
       platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_WIN;
@@ -141,14 +139,11 @@ void ToCheckinProtoVersion(
       // For unknown platform, return as LINUX.
       platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
       break;
-    default:
-      NOTREACHED();
-      platform = checkin_proto::ChromeBuildProto_Platform_PLATFORM_LINUX;
-      break;
   }
   android_build_info->set_platform(platform);
 
-  checkin_proto::ChromeBuildProto_Channel channel;
+  checkin_proto::ChromeBuildProto_Channel channel =
+      checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
   switch (chrome_build_info.channel) {
     case GCMClient::CHANNEL_STABLE:
       channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_STABLE;
@@ -163,10 +158,6 @@ void ToCheckinProtoVersion(
       channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_CANARY;
       break;
     case GCMClient::CHANNEL_UNKNOWN:
-      channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
-      break;
-    default:
-      NOTREACHED();
       channel = checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
       break;
   }
@@ -1159,10 +1150,10 @@ void GCMClientImpl::Send(const std::string& app_id,
 
 std::string GCMClientImpl::GetStateString() const {
   switch(state_) {
-    case GCMClientImpl::INITIALIZED:
-      return "INITIALIZED";
     case GCMClientImpl::UNINITIALIZED:
       return "UNINITIALIZED";
+    case GCMClientImpl::INITIALIZED:
+      return "INITIALIZED";
     case GCMClientImpl::LOADING:
       return "LOADING";
     case GCMClientImpl::LOADED:
@@ -1171,10 +1162,9 @@ std::string GCMClientImpl::GetStateString() const {
       return "INITIAL_DEVICE_CHECKIN";
     case GCMClientImpl::READY:
       return "READY";
-    default:
-      NOTREACHED();
-      return std::string();
   }
+  NOTREACHED();
+  return std::string();
 }
 
 void GCMClientImpl::RecordDecryptionFailure(
@@ -1343,7 +1333,6 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
       HandleIncomingSendError(app_id, data_message_stanza, message_data);
       break;
     case UNKNOWN:
-    default:  // Treat default the same as UNKNOWN.
       DVLOG(1) << "Unknown message_type received. Message ignored. "
                << "App ID: " << app_id << ".";
       break;

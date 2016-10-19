@@ -50,10 +50,11 @@ std::string GetMessageSendStatusString(
       return "NO_CONNECTION_ON_ZERO_TTL";
     case gcm::MCSClient::TTL_EXCEEDED:
       return "TTL_EXCEEDED";
-    default:
+    case gcm::MCSClient::SEND_STATUS_COUNT:
       NOTREACHED();
-      return "UNKNOWN";
+      break;
   }
+  return "UNKNOWN";
 }
 
 // Helper for getting string representation of the
@@ -71,10 +72,13 @@ std::string GetConnectionResetReasonString(
       return "SOCKET_FAILURE";
     case gcm::ConnectionFactory::NETWORK_CHANGE:
       return "NETWORK_CHANGE";
-    default:
+    case gcm::ConnectionFactory::NEW_HEARTBEAT_INTERVAL:
+      return "NEW_HEARTBEAT_INTERVAL";
+    case gcm::ConnectionFactory::CONNECTION_RESET_COUNT:
       NOTREACHED();
-      return "UNKNOWN_REASON";
+      break;
   }
+  return "UNKNOWN_REASON";
 }
 
 // Helper for getting string representation of the RegistrationRequest::Status
@@ -102,10 +106,11 @@ std::string GetRegistrationStatusString(
       return "RESPONSE_PARSING_FAILED";
     case gcm::RegistrationRequest::REACHED_MAX_RETRIES:
       return "REACHED_MAX_RETRIES";
-    default:
+    case gcm::RegistrationRequest::STATUS_COUNT:
       NOTREACHED();
-      return "UNKNOWN_STATUS";
+      break;
   }
+  return "UNKNOWN_STATUS";
 }
 
 // Helper for getting string representation of the RegistrationRequest::Status
@@ -135,10 +140,11 @@ std::string GetUnregistrationStatusString(
       return "UNKNOWN_ERROR";
     case gcm::UnregistrationRequest::REACHED_MAX_RETRIES:
       return "REACHED_MAX_RETRIES";
-    default:
+    case gcm::UnregistrationRequest::UNREGISTRATION_STATUS_COUNT:
       NOTREACHED();
-      return "UNKNOWN_STATUS";
+      break;
   }
+  return "UNKNOWN_STATUS";
 }
 
 }  // namespace
@@ -444,7 +450,7 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
                     "Data msg received",
                     "No such registered app found");
   } else {
-    switch(message_type) {
+    switch (message_type) {
       case GCMStatsRecorderImpl::DATA_MESSAGE:
         RecordReceiving(app_id, from, message_byte_size, "Data msg received",
                         std::string());
@@ -453,8 +459,6 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
         RecordReceiving(app_id, from, message_byte_size, "Data msg received",
                         "Message has been deleted on server");
         break;
-      default:
-        NOTREACHED();
     }
   }
 }

@@ -58,10 +58,11 @@ std::string GetCheckinRequestStatusString(CheckinRequestStatus status) {
       return "RESPONSE_PARSING_FAILED";
     case ZERO_ID_OR_TOKEN:
       return "ZERO_ID_OR_TOKEN";
-    default:
+    case STATUS_COUNT:
       NOTREACHED();
-      return "UNKNOWN_STATUS";
+      break;
   }
+  return "UNKNOWN_STATUS";
 }
 
 // Records checkin status to both stats recorder and reports to UMA.

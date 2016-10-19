@@ -37,9 +37,8 @@ std::string StatusToString(AccountMapping::MappingStatus status) {
       return kStatusMapped;
     case AccountMapping::REMOVING:
       return kStatusRemoving;
-    default:
-      NOTREACHED();
   }
+  NOTREACHED();
   return std::string();
 }
 

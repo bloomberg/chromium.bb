@@ -29,19 +29,19 @@ InstanceID::Result GCMClientResultToInstanceIDResult(
       return InstanceID::SUCCESS;
     case gcm::GCMClient::INVALID_PARAMETER:
       return InstanceID::INVALID_PARAMETER;
-    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
-      return InstanceID::ASYNC_OPERATION_PENDING;
     case gcm::GCMClient::GCM_DISABLED:
       return InstanceID::DISABLED;
+    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+      return InstanceID::ASYNC_OPERATION_PENDING;
     case gcm::GCMClient::NETWORK_ERROR:
       return InstanceID::NETWORK_ERROR;
     case gcm::GCMClient::SERVER_ERROR:
       return InstanceID::SERVER_ERROR;
     case gcm::GCMClient::UNKNOWN_ERROR:
       return InstanceID::UNKNOWN_ERROR;
-    default:
-      NOTREACHED() << "Unexpected value of result cannot be converted: "
-                   << result;
+    case gcm::GCMClient::TTL_EXCEEDED:
+      NOTREACHED();
+      break;
   }
   return InstanceID::UNKNOWN_ERROR;
 }

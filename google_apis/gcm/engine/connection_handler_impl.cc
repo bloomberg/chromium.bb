@@ -229,8 +229,6 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
         max_bytes_needed = bytes_left;
       }
       break;
-    default:
-      NOTREACHED();
   }
   DCHECK_GE(max_bytes_needed, min_bytes_needed);
 
@@ -285,8 +283,6 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
     case MCS_PROTO_BYTES:
       OnGotMessageBytes();
       break;
-    default:
-      NOTREACHED();
   }
 }
 
