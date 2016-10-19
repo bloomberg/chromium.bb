@@ -19,8 +19,6 @@ function test()
         InspectorTest.addResult("  fragment: " + parsedURL.fragment);
         InspectorTest.addResult("  folderPathComponents: " + parsedURL.folderPathComponents);
         InspectorTest.addResult("  lastPathComponent: " + parsedURL.lastPathComponent);
-        var splittedURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
-        InspectorTest.addResult("  splittedURL: " + JSON.stringify(splittedURL));
     }
 
     parseAndDumpURL("http://example.com/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");

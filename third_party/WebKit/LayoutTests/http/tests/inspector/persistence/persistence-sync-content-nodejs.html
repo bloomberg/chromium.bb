@@ -10,7 +10,7 @@
 function test()
 {
     // Pretend we are running under V8 front-end.
-    Runtime._queryParamsObject["v8only"] = true;
+    WebInspector.targetManager.mainTarget().setIsNodeJSForTest();
 
     var content = [
         '',
