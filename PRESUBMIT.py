@@ -316,6 +316,33 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      r'STLDeleteContainerPointers',  # http://crbug.com/555865
+      (
+        'This call is obsolete with C++ 11; create a container with owning',
+        'pointers instead (e.g. std::vector<std::unique_ptr<x>> ).',
+      ),
+      True,
+      (),
+    ),
+    (
+      r'STLDeleteElements',  # http://crbug.com/555865
+      (
+        'This call is obsolete with C++ 11; create a container with owning',
+        'pointers instead (e.g. std::vector<std::unique_ptr<x>> ).',
+      ),
+      True,
+      (),
+    ),
+    (
+      r'STLDeleteValues',  # http://crbug.com/555865
+      (
+        'This call is obsolete with C++ 11; create a map with owning',
+        'pointers instead (e.g. std::map<std::string, std::unique_ptr<x>> ).',
+      ),
+      True,
+      (),
+    ),
 )
 
 
