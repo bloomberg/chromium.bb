@@ -59,20 +59,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
       Profile::FromBrowserContext(alerting_web_contents->GetBrowserContext()));
   double engagement_score = site_engagement_service->GetScore(origin_url);
-  switch (message_type) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
-      UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs.Alert",
-                               engagement_score);
-      break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
-      UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs.Confirm",
-                               engagement_score);
-      break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
-      UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfDialogs.Prompt",
-                               engagement_score);
-      break;
-  }
   int32_t message_length = static_cast<int32_t>(message_text.length());
   if (engagement_score == 0) {
     UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementNone",
