@@ -13,13 +13,13 @@ CString FuzzedDataProvider::ConsumeBytesInRange(uint32_t minBytes,
                                                 uint32_t maxBytes) {
   size_t numBytes =
       static_cast<size_t>(m_provider.ConsumeUint32InRange(minBytes, maxBytes));
-  base::StringPiece bytes = m_provider.ConsumeBytes(numBytes);
-  return CString(bytes.data(), bytes.length());
+  std::string bytes = m_provider.ConsumeBytes(numBytes);
+  return CString(bytes.data(), bytes.size());
 }
 
 CString FuzzedDataProvider::ConsumeRemainingBytes() {
-  base::StringPiece bytes = m_provider.ConsumeRemainingBytes();
-  return CString(bytes.data(), bytes.length());
+  std::string bytes = m_provider.ConsumeRemainingBytes();
+  return CString(bytes.data(), bytes.size());
 }
 
 bool FuzzedDataProvider::ConsumeBool() {
