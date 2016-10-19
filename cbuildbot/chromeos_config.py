@@ -1388,14 +1388,21 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
   site_config.AddTemplate(
       'factory',
       site_config.templates.release,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      afdo_use=False,
+      chrome_sdk=False,
+      chrome_sdk_build_chrome=False,
+      description='Factory Builds',
+      factory_toolkit=True,
+      hwqual=False,
+      images=['test', 'factory_install'],
+      image_test=False,
+      paygen=False,
+      signer_tests=False,
+      sign_types=['factory'],
       upload_hw_test_artifacts=False,
       upload_symbols=False,
-      hw_tests=[],
-      chrome_sdk=False,
-      description='Factory Builds',
-      paygen=False,
-      afdo_use=False,
-      sign_types=['factory'],
   )
 
   site_config.AddTemplate(

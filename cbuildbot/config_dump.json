@@ -500,21 +500,13 @@
             "binhost_key": "RELEASE_BINHOST",
             "build_timeout": 28200,
             "build_type": "canary",
+            "chrome_sdk_build_chrome": false,
             "chromeos_official": true,
             "description": "Factory Builds",
             "dev_installer_prebuilts": true,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-            ],
-            "hwqual": true,
-            "image_test": true,
+            "hw_tests_override": [],
             "images": [
-                "base",
-                "recovery",
                 "test",
                 "factory_install"
             ],
@@ -527,7 +519,6 @@
             "sign_types": [
                 "factory"
             ],
-            "signer_tests": true,
             "trybot_list": true,
             "upload_hw_test_artifacts": false,
             "useflags": [
@@ -535,16 +526,7 @@
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
-            ]
+            "vm_tests": []
         },
         "firmware": {
             "_template": "firmware",
