@@ -661,7 +661,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
 
   // If the user has set the preference indicating URLs to show on opening,
   // read and add those.
-  StartupTabs prefs_tabs = provider.GetPreferencesTabs();
+  StartupTabs prefs_tabs = provider.GetPreferencesTabs(command_line_, profile_);
   AppendTabs(prefs_tabs, &tabs);
 
   // Potentially add the New Tab Page. Onboarding content is designed to
@@ -671,7 +671,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     tabs.emplace_back(GURL(chrome::kChromeUINewTabURL), false);
 
   // Add any tabs which the user has previously pinned.
-  AppendTabs(provider.GetPinnedTabs(), &tabs);
+  AppendTabs(provider.GetPinnedTabs(profile_), &tabs);
 
   return tabs;
 }

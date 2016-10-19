@@ -9,6 +9,7 @@
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,16 +53,15 @@ StartupTabs StartupTabProviderImpl::GetResetTriggerTabs(
   return CheckResetTriggerTabPolicy(has_reset_trigger);
 }
 
-StartupTabs StartupTabProviderImpl::GetPinnedTabs() const {
-  // TODO(tmartino): Copy/clean up logic from
-  // StartupBrowserCreatorImpl::ProcessSpecifiedUrls.
-  return StartupTabs();
+StartupTabs StartupTabProviderImpl::GetPinnedTabs(Profile* profile) const {
+  return PinnedTabCodec::ReadPinnedTabs(profile);
 }
 
-StartupTabs StartupTabProviderImpl::GetPreferencesTabs() const {
-  // TODO(tmartino): Copy/clean up logic from
-  // StartupBrowserCreatorImpl::ProcessStartupUrls.
-  return StartupTabs();
+StartupTabs StartupTabProviderImpl::GetPreferencesTabs(
+    const base::CommandLine& command_line,
+    Profile* profile) const {
+  return CheckPreferencesTabPolicy(
+      StartupBrowserCreator::GetSessionStartupPref(command_line, profile));
 }
 
 // static
@@ -79,8 +79,8 @@ StartupTabs StartupTabProviderImpl::CheckMasterPrefsTabPolicy(
     const std::vector<GURL>& first_run_tabs) {
   // Constants: Magic words used by Master Preferences files in place of a URL
   // host to indicate that internal pages should appear on first run.
-  constexpr char kNewTabUrlHost[] = "new_tab_page";
-  constexpr char kWelcomePageUrlHost[] = "welcome_page";
+  static constexpr char kNewTabUrlHost[] = "new_tab_page";
+  static constexpr char kWelcomePageUrlHost[] = "welcome_page";
 
   StartupTabs tabs;
   if (is_first_run) {
@@ -102,6 +102,17 @@ StartupTabs StartupTabProviderImpl::CheckResetTriggerTabPolicy(
   StartupTabs tabs;
   if (profile_has_trigger)
     tabs.emplace_back(GetTriggeredResetSettingsUrl(), false);
+  return tabs;
+}
+
+// static
+StartupTabs StartupTabProviderImpl::CheckPreferencesTabPolicy(
+    SessionStartupPref pref) {
+  StartupTabs tabs;
+  if (pref.type == SessionStartupPref::Type::URLS && !pref.urls.empty()) {
+    for (auto& url : pref.urls)
+      tabs.push_back(StartupTab(url, false));
+  }
   return tabs;
 }
 

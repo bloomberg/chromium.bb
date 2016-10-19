@@ -67,3 +67,30 @@ TEST(StartupTabProviderTest, CheckResetTriggerTabPolicy_Negative) {
 
   ASSERT_TRUE(output.empty());
 }
+
+TEST(StartupTabProviderTest, CheckPreferencesTabPolicy) {
+  SessionStartupPref pref(SessionStartupPref::Type::URLS);
+  pref.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
+
+  StartupTabs output = StartupTabProviderImpl::CheckPreferencesTabPolicy(pref);
+
+  ASSERT_EQ(1U, output.size());
+  EXPECT_EQ("www.google.com", output[0].url.host());
+}
+
+TEST(StartupTabProviderTest, CheckPreferencesTabPolicy_Negative) {
+  SessionStartupPref pref_default(SessionStartupPref::Type::DEFAULT);
+  pref_default.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
+
+  StartupTabs output =
+      StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_default);
+
+  EXPECT_TRUE(output.empty());
+
+  SessionStartupPref pref_last(SessionStartupPref::Type::LAST);
+  pref_last.urls = {GURL(base::ASCIIToUTF16("https://www.google.com"))};
+
+  output = StartupTabProviderImpl::CheckPreferencesTabPolicy(pref_last);
+
+  EXPECT_TRUE(output.empty());
+}

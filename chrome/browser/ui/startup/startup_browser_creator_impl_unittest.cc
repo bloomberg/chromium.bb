@@ -46,14 +46,15 @@ class FakeStartupTabProvider : public StartupTabProvider {
     return tabs;
   }
 
-  StartupTabs GetPinnedTabs() const override {
+  StartupTabs GetPinnedTabs(Profile* profile) const override {
     StartupTabs tabs;
     if (options_ & kPinnedTabs)
       tabs.emplace_back(GURL("https://pinned"), true);
     return tabs;
   }
 
-  StartupTabs GetPreferencesTabs() const override {
+  StartupTabs GetPreferencesTabs(const base::CommandLine& command_line_,
+                                 Profile* profile) const override {
     StartupTabs tabs;
     if (options_ & kPreferencesTabs)
       tabs.emplace_back(GURL("https://prefs"), false);

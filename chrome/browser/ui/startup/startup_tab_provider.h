@@ -36,11 +36,12 @@ class StartupTabProvider {
   virtual StartupTabs GetResetTriggerTabs(Profile* profile) const = 0;
 
   // Returns the user's pinned tabs.
-  virtual StartupTabs GetPinnedTabs() const = 0;
+  virtual StartupTabs GetPinnedTabs(Profile* profile) const = 0;
 
   // Returns tabs, if any, specified in the user's preferences as the default
   // content for a new window.
-  virtual StartupTabs GetPreferencesTabs() const = 0;
+  virtual StartupTabs GetPreferencesTabs(const base::CommandLine& command_line,
+                                         Profile* profile) const = 0;
 };
 
 class StartupTabProviderImpl : public StartupTabProvider {
@@ -65,6 +66,11 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // of a Reset Trigger on this profile.
   static StartupTabs CheckResetTriggerTabPolicy(bool profile_has_trigger);
 
+  // Determines whether preferences indicate that user-specified tabs should be
+  // shown as the default new window content, and returns the specified tabs if
+  // so.
+  static StartupTabs CheckPreferencesTabPolicy(SessionStartupPref pref);
+
   // Gets the URL for the "Welcome to Chrome" page.
   static GURL GetWelcomePageUrl();
 
@@ -77,8 +83,9 @@ class StartupTabProviderImpl : public StartupTabProvider {
   StartupTabs GetDistributionFirstRunTabs(
       StartupBrowserCreator* browser_creator) const override;
   StartupTabs GetResetTriggerTabs(Profile* profile) const override;
-  StartupTabs GetPinnedTabs() const override;
-  StartupTabs GetPreferencesTabs() const override;
+  StartupTabs GetPinnedTabs(Profile* profile) const override;
+  StartupTabs GetPreferencesTabs(const base::CommandLine& command_line,
+                                 Profile* profile) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StartupTabProviderImpl);
