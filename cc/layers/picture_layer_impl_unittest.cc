@@ -96,7 +96,6 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
     settings.verify_clip_tree_calculations = true;
-    settings.verify_transform_tree_calculations = true;
     settings.renderer_settings.buffer_to_texture_target_map =
         DefaultBufferToTextureTargetMapForTesting();
     return settings;

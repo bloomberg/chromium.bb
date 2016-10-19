@@ -74,8 +74,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          use_occlusion_for_tile_prioritization ==
              other.use_occlusion_for_tile_prioritization &&
          verify_clip_tree_calculations == other.verify_clip_tree_calculations &&
-         verify_transform_tree_calculations ==
-             other.verify_transform_tree_calculations &&
          image_decode_tasks_enabled == other.image_decode_tasks_enabled &&
          max_staging_buffer_usage_in_bytes ==
              other.max_staging_buffer_usage_in_bytes &&

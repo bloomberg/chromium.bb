@@ -117,7 +117,6 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
         host_impl->settings().layer_transforms_should_scale_layer_contents,
         false,  // do not verify_clip_tree_calculation for perf tests
         false,  // do not verify_visible_rect_calculation for perf tests
-        false,  // do not verify_transform_tree_calculation for perf tests
         &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }

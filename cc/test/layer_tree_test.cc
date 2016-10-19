@@ -841,7 +841,6 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
   // actions and less dependent on timings to make decisions.
   settings_.enable_latency_recovery = false;
   settings_.verify_clip_tree_calculations = true;
-  settings_.verify_transform_tree_calculations = true;
   settings_.renderer_settings.buffer_to_texture_target_map =
       DefaultBufferToTextureTargetMapForTesting();
   InitializeSettings(&settings_);

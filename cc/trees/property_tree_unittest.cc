@@ -589,7 +589,6 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    property_trees.verify_transform_tree_calculations = true;
     TransformTree& tree = property_trees.transform_tree;
     EffectTree& effect_tree = property_trees.effect_tree;
 
@@ -1114,7 +1113,6 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     // This tests that to_target transform is not snapped when it has a singular
     // transform.
     PropertyTrees property_trees;
-    property_trees.verify_transform_tree_calculations = true;
     TransformTree& tree = property_trees.transform_tree;
     EffectTree& effect_tree = property_trees.effect_tree;
 

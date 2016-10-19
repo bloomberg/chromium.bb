@@ -174,6 +174,12 @@ void TransformTree::clear() {
 #endif
 }
 
+void TransformTree::set_needs_update(bool needs_update) {
+  if (needs_update && !needs_update_)
+    property_trees()->UpdateCachedNumber();
+  needs_update_ = needs_update;
+}
+
 bool TransformTree::ComputeTransform(int source_id,
                                      int dest_id,
                                      gfx::Transform* transform) const {
@@ -264,7 +270,6 @@ void TransformTree::UpdateTransforms(int id) {
   TransformNode* parent_node = parent(node);
   TransformNode* target_node = Node(TargetId(id));
   TransformNode* source_node = Node(node->source_node_id);
-  property_trees()->UpdateCachedNumber();
   // TODO(flackr): Only dirty when scroll offset changes.
   if (node->sticky_position_constraint_id >= 0 ||
       node->needs_local_transform_update || NeedsSourceToParentUpdate(node)) {
@@ -276,7 +281,6 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateSurfaceContentsScale(node);
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
-  UpdateTargetSpaceTransform(node, target_node);
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
   UpdateTransformChanged(node, parent_node, source_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
@@ -333,19 +337,11 @@ void TransformTree::CombineTransformsBetween(int source_id,
       dest->surface_contents_scale.y() != 0.f;
   DCHECK(destination_has_non_zero_surface_contents_scale ||
          !dest->ancestors_are_invertible);
-  for (; current && current->id > dest_id; current = parent(current)) {
-    if (destination_has_non_zero_surface_contents_scale &&
-        TargetId(current->id) == dest_id &&
-        ContentTargetId(current->id) == dest_id)
-      break;
+  for (; current && current->id > dest_id; current = parent(current))
     source_to_destination.push_back(current->id);
-  }
 
   gfx::Transform combined_transform;
   if (current->id > dest_id) {
-    // TODO(sunxd): Instead of using target space transform, only use to_parent
-    // here when we fully implement computing draw transforms on demand.
-    combined_transform = ToTarget(current->id, kInvalidNodeId);
     // The stored target space transform has surface contents scale baked in,
     // but we need the unscaled transform.
     combined_transform.matrix().postScale(
@@ -767,16 +763,10 @@ bool TransformTree::HasNodesAffectedByOuterViewportBoundsDelta() const {
   return !nodes_affected_by_outer_viewport_bounds_delta_.empty();
 }
 
-const gfx::Transform& TransformTree::FromTarget(int node_id,
-                                                int effect_id) const {
-  DCHECK(static_cast<int>(cached_data_.size()) > node_id);
-  if (effect_id != kInvalidNodeId &&
-      property_trees()->verify_transform_tree_calculations) {
-    const gfx::Transform& transform =
-        property_trees()->GetDrawTransforms(node_id, effect_id).from_target;
-    CHECK(transform.ApproximatelyEqual(cached_data_[node_id].from_target));
-  }
-  return cached_data_[node_id].from_target;
+gfx::Transform TransformTree::FromTarget(int node_id, int effect_id) const {
+  gfx::Transform from_target;
+  property_trees()->GetFromTarget(node_id, effect_id, &from_target);
+  return from_target;
 }
 
 void TransformTree::SetFromTarget(int node_id,
@@ -785,19 +775,10 @@ void TransformTree::SetFromTarget(int node_id,
   cached_data_[node_id].from_target = transform;
 }
 
-const gfx::Transform& TransformTree::ToTarget(int node_id,
-                                              int effect_id) const {
-  DCHECK(static_cast<int>(cached_data_.size()) > node_id);
-  if (effect_id != kInvalidNodeId &&
-      property_trees()->verify_transform_tree_calculations) {
-    const gfx::Transform& transform =
-        property_trees()->GetDrawTransforms(node_id, effect_id).to_target;
-    if (property_trees()->non_root_surfaces_enabled)
-      CHECK(transform.ApproximatelyEqual(cached_data_[node_id].to_target));
-    else
-      CHECK(transform.ApproximatelyEqual(cached_data_[node_id].to_screen));
-  }
-  return cached_data_[node_id].to_target;
+gfx::Transform TransformTree::ToTarget(int node_id, int effect_id) const {
+  gfx::Transform to_target;
+  property_trees()->GetToTarget(node_id, effect_id, &to_target);
+  return to_target;
 }
 
 void TransformTree::SetToTarget(int node_id, const gfx::Transform& transform) {
@@ -1753,8 +1734,7 @@ PropertyTrees::PropertyTrees()
       full_tree_damaged(false),
       sequence_number(0),
       is_main_thread(true),
-      is_active(false),
-      verify_transform_tree_calculations(false) {
+      is_active(false) {
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);
   clip_tree.SetPropertyTrees(this);
@@ -1799,7 +1779,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   sequence_number = from.sequence_number;
   is_main_thread = from.is_main_thread;
   is_active = from.is_active;
-  verify_transform_tree_calculations = from.verify_transform_tree_calculations;
   inner_viewport_container_bounds_delta_ =
       from.inner_viewport_container_bounds_delta();
   outer_viewport_container_bounds_delta_ =
@@ -1827,8 +1806,6 @@ void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
   proto->set_non_root_surfaces_enabled(non_root_surfaces_enabled);
   proto->set_is_main_thread(is_main_thread);
   proto->set_is_active(is_active);
-  proto->set_verify_transform_tree_calculations(
-      verify_transform_tree_calculations);
 
   // TODO(khushalsagar): Consider using the sequence number to decide if
   // property trees need to be serialized again for a commit. See crbug/555370.
@@ -1853,8 +1830,6 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
   sequence_number = proto.sequence_number();
   is_main_thread = proto.is_main_thread();
   is_active = proto.is_active();
-  verify_transform_tree_calculations =
-      proto.verify_transform_tree_calculations();
 
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);
@@ -2082,8 +2057,7 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
     // Computing maximum animated scale in the presence of non-scale/translation
     // transforms isn't supported.
     bool failed_for_non_scale_or_translation =
-        !transform_tree.Node(transform_node_id)
-             ->to_parent.IsScaleOrTranslation();
+        !node->to_parent.IsScaleOrTranslation();
 
     // We don't attempt to accumulate animation scale from multiple nodes with
     // scale animations, because of the risk of significant overestimation. For
@@ -2188,95 +2162,124 @@ void PropertyTrees::SetAnimationScalesForTesting(
       cached_data_.property_tree_update_number;
 }
 
-const DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
-                                                       int effect_id) const {
-  if (cached_data_.draw_transforms[effect_id][transform_id].update_number !=
-      cached_data_.property_tree_update_number) {
-    gfx::Transform target_space_transform;
-    gfx::Transform from_target;
-    const TransformNode* transform_node = transform_tree.Node(transform_id);
-    const EffectNode* effect_node = effect_tree.Node(effect_id);
-    const TransformNode* dest_node =
-        transform_tree.Node(effect_node->transform_id);
-    DCHECK(effect_id == effect_tree.kRootNodeId ||
-           effect_node->has_render_surface);
-    bool already_computed_inverse = false;
-    if (transform_id == effect_node->transform_id) {
-      target_space_transform.Scale(effect_node->surface_contents_scale.x(),
-                                   effect_node->surface_contents_scale.y());
-    } else if (!dest_node || (dest_node->ancestors_are_invertible &&
-                              dest_node->node_and_ancestors_are_flat)) {
-      // Compute transform from transform_id to effect_node->transform using
-      // screen space transforms.
-      target_space_transform.ConcatTransform(
-          transform_tree.ToScreen(transform_id));
-      if (dest_node)
-        target_space_transform.ConcatTransform(
-            transform_tree.FromScreen(dest_node->id));
-      if (dest_node->needs_surface_contents_scale)
-        target_space_transform.matrix().postScale(
-            dest_node->surface_contents_scale.x(),
-            dest_node->surface_contents_scale.y(), 1.f);
-    } else if (transform_node->id > dest_node->id) {
-      target_space_transform =
-          GetDrawTransforms(transform_node->parent_id, effect_id).to_target;
-      if (transform_node->flattens_inherited_transform)
-        target_space_transform.FlattenTo2d();
-      target_space_transform.PreconcatTransform(transform_node->to_parent);
-    } else {
-      const TransformNode* current = dest_node;
-      std::vector<int> source_to_destination;
-      source_to_destination.push_back(current->id);
-      current = transform_tree.parent(current);
-      for (; current && current->id > transform_node->id;
-           current = transform_tree.parent(current)) {
-        source_to_destination.push_back(current->id);
-      }
-      DCHECK_EQ(current, transform_node);
-      gfx::Transform combined_transform;
-      size_t source_to_destination_size = source_to_destination.size();
-      for (size_t i = 0; i < source_to_destination_size; ++i) {
-        size_t index = source_to_destination_size - 1 - i;
-        const TransformNode* node =
-            transform_tree.Node(source_to_destination[index]);
-        if (node->flattens_inherited_transform)
-          combined_transform.FlattenTo2d();
-        combined_transform.PreconcatTransform(node->to_parent);
-      }
-      if (effect_node->surface_contents_scale.x() != 0.f &&
-          effect_node->surface_contents_scale.y() != 0.f)
-        combined_transform.Scale(
-            1.0f / effect_node->surface_contents_scale.x(),
-            1.0f / effect_node->surface_contents_scale.y());
-      cached_data_.draw_transforms[effect_id][transform_id]
-          .transforms.invertible =
-          combined_transform.GetInverse(&target_space_transform);
-      from_target = combined_transform;
-      already_computed_inverse = true;
-    }
-    if (!already_computed_inverse) {
-      cached_data_.draw_transforms[effect_id][transform_id]
-          .transforms.invertible =
-          target_space_transform.GetInverse(&from_target);
-    }
-    cached_data_.draw_transforms[effect_id][transform_id].update_number =
-        cached_data_.property_tree_update_number;
-    cached_data_.draw_transforms[effect_id][transform_id]
-        .transforms.from_target = from_target;
-    cached_data_.draw_transforms[effect_id][transform_id].transforms.to_target =
-        target_space_transform;
+bool PropertyTrees::GetToTarget(int transform_id,
+                                int effect_id,
+                                gfx::Transform* to_target) const {
+  DrawTransforms& transforms = GetDrawTransforms(transform_id, effect_id);
+  if (transforms.to_valid) {
+    *to_target = transforms.to_target;
+    return true;
+  } else if (!transforms.might_be_invertible) {
+    return false;
+  } else {
+    transforms.might_be_invertible =
+        transforms.from_target.GetInverse(to_target);
+    transforms.to_valid = transforms.might_be_invertible;
+    transforms.to_target = *to_target;
+    return transforms.to_valid;
   }
-  return cached_data_.draw_transforms[effect_id][transform_id].transforms;
+}
+
+bool PropertyTrees::GetFromTarget(int transform_id,
+                                  int effect_id,
+                                  gfx::Transform* from_target) const {
+  DrawTransforms& transforms = GetDrawTransforms(transform_id, effect_id);
+  if (transforms.from_valid) {
+    *from_target = transforms.from_target;
+    return true;
+  } else if (!transforms.might_be_invertible) {
+    return false;
+  } else {
+    transforms.might_be_invertible =
+        transforms.to_target.GetInverse(from_target);
+    transforms.from_valid = transforms.might_be_invertible;
+    transforms.from_target = *from_target;
+    return transforms.from_valid;
+  }
+}
+
+DrawTransformData& PropertyTrees::FetchDrawTransformsDataFromCache(
+    int transform_id,
+    int dest_id) const {
+  for (auto& transform_data : cached_data_.draw_transforms[transform_id]) {
+    // We initialize draw_transforms with 1 element vectors when
+    // ResetCachedData, so if we hit a -1 target id, it means it's the first
+    // time we compute draw transforms after reset.
+    if (transform_data.target_id == dest_id || transform_data.target_id == -1) {
+      return transform_data;
+    }
+  }
+  // Add an entry to the cache.
+  cached_data_.draw_transforms[transform_id].push_back(DrawTransformData());
+  DrawTransformData& data = cached_data_.draw_transforms[transform_id].back();
+  data.update_number = -1;
+  data.target_id = dest_id;
+  return data;
+}
+
+DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
+                                                 int effect_id) const {
+  const EffectNode* effect_node = effect_tree.Node(effect_id);
+  int dest_id = effect_node->transform_id;
+
+  DrawTransformData& data =
+      FetchDrawTransformsDataFromCache(transform_id, dest_id);
+
+  DCHECK(data.update_number != cached_data_.property_tree_update_number ||
+         data.target_id != -1);
+  if (data.update_number == cached_data_.property_tree_update_number)
+    return data.transforms;
+
+  // Cache miss.
+  gfx::Transform target_space_transform;
+  gfx::Transform from_target;
+  bool already_computed_inverse = false;
+  if (transform_id == dest_id) {
+    target_space_transform.Scale(effect_node->surface_contents_scale.x(),
+                                 effect_node->surface_contents_scale.y());
+    data.transforms.to_valid = true;
+    data.transforms.from_valid = false;
+  } else if (transform_id > dest_id) {
+    transform_tree.CombineTransformsBetween(transform_id, dest_id,
+                                            &target_space_transform);
+    if (dest_id != TransformTree::kRootNodeId)
+      target_space_transform.matrix().postScale(
+          effect_node->surface_contents_scale.x(),
+          effect_node->surface_contents_scale.y(), 1.f);
+    data.transforms.to_valid = true;
+    data.transforms.from_valid = false;
+    data.transforms.might_be_invertible = true;
+  } else {
+    gfx::Transform combined_transform;
+    transform_tree.CombineTransformsBetween(dest_id, transform_id,
+                                            &combined_transform);
+    if (effect_node->surface_contents_scale.x() != 0.f &&
+        effect_node->surface_contents_scale.y() != 0.f)
+      combined_transform.Scale(1.0f / effect_node->surface_contents_scale.x(),
+                               1.0f / effect_node->surface_contents_scale.y());
+    bool invertible = combined_transform.GetInverse(&target_space_transform);
+    data.transforms.might_be_invertible = invertible;
+    data.transforms.to_valid = invertible;
+    data.transforms.from_valid = true;
+    from_target = combined_transform;
+    already_computed_inverse = true;
+  }
+
+  if (!already_computed_inverse)
+    data.transforms.to_valid = true;
+  data.update_number = cached_data_.property_tree_update_number;
+  data.target_id = dest_id;
+  data.transforms.from_target = from_target;
+  data.transforms.to_target = target_space_transform;
+  return data.transforms;
 }
 
 void PropertyTrees::ResetCachedData() {
   cached_data_.property_tree_update_number = 0;
   cached_data_.animation_scales = std::vector<AnimationScaleData>(
       transform_tree.nodes().size(), AnimationScaleData());
-  cached_data_.draw_transforms =
-      std::vector<std::unordered_map<int, DrawTransformData>>(
-          effect_tree.nodes().size(),
-          std::unordered_map<int, DrawTransformData>());
+  cached_data_.draw_transforms = std::vector<std::vector<DrawTransformData>>(
+      transform_tree.nodes().size(), std::vector<DrawTransformData>(1));
 }
 
 void PropertyTrees::UpdateCachedNumber() {
@@ -2304,36 +2307,18 @@ bool PropertyTrees::ComputeTransformToTarget(int transform_id,
                                              int effect_id,
                                              gfx::Transform* transform) const {
   transform->MakeIdentity();
-
   if (transform_id == TransformTree::kInvalidNodeId)
     return true;
 
-  int target_transform_id;
   const EffectNode* effect_node = effect_tree.Node(effect_id);
-  if (effect_id == EffectTree::kInvalidNodeId) {
-    // This can happen when PaintArtifactCompositor builds property trees as
-    // it doesn't set effect ids on clip nodes. We want to compute transform
-    // to the root in this case.
-    target_transform_id = TransformTree::kRootNodeId;
-  } else {
-    DCHECK(effect_node->has_render_surface ||
-           effect_node->id == EffectTree::kRootNodeId);
-    target_transform_id = effect_node->transform_id;
-  }
 
-  bool success = transform_tree.ComputeTransform(
-      transform_id, target_transform_id, transform);
-  if (verify_transform_tree_calculations) {
-    gfx::Transform to_target;
-    to_target.ConcatTransform(
-        GetDrawTransforms(transform_id, effect_id).to_target);
-    if (effect_node->surface_contents_scale.x() != 0.f &&
-        effect_node->surface_contents_scale.y() != 0.f)
-      to_target.matrix().postScale(
-          1.0f / effect_node->surface_contents_scale.x(),
-          1.0f / effect_node->surface_contents_scale.y(), 1.0f);
-    DCHECK(to_target.ApproximatelyEqual(*transform));
-  }
+  bool success = true;
+  success = GetToTarget(transform_id, effect_id, transform);
+  if (effect_node->surface_contents_scale.x() != 0.f &&
+      effect_node->surface_contents_scale.y() != 0.f)
+    transform->matrix().postScale(
+        1.0f / effect_node->surface_contents_scale.x(),
+        1.0f / effect_node->surface_contents_scale.y(), 1.0f);
   return success;
 }
 
@@ -2342,34 +2327,14 @@ bool PropertyTrees::ComputeTransformFromTarget(
     int effect_id,
     gfx::Transform* transform) const {
   transform->MakeIdentity();
-
   if (transform_id == TransformTree::kInvalidNodeId)
     return true;
 
-  int target_transform_id;
   const EffectNode* effect_node = effect_tree.Node(effect_id);
-  if (effect_id == EffectTree::kInvalidNodeId) {
-    // This can happen when PaintArtifactCompositor builds property trees as
-    // it doesn't set effect ids on clip nodes. We want to compute transform
-    // to the root in this case.
-    target_transform_id = TransformTree::kRootNodeId;
-  } else {
-    DCHECK(effect_node->has_render_surface ||
-           effect_node->id == EffectTree::kRootNodeId);
-    target_transform_id = effect_node->transform_id;
-  }
 
-  bool success = transform_tree.ComputeTransform(target_transform_id,
-                                                 transform_id, transform);
-  if (verify_transform_tree_calculations) {
-    auto draw_transforms = GetDrawTransforms(transform_id, effect_id);
-    gfx::Transform from_target;
-    from_target.ConcatTransform(draw_transforms.from_target);
-    from_target.Scale(effect_node->surface_contents_scale.x(),
-                      effect_node->surface_contents_scale.y());
-    DCHECK(from_target.ApproximatelyEqual(*transform) ||
-           !draw_transforms.invertible);
-  }
+  bool success = GetFromTarget(transform_id, effect_id, transform);
+  transform->Scale(effect_node->surface_contents_scale.x(),
+                   effect_node->surface_contents_scale.y());
   return success;
 }
 

@@ -76,7 +76,6 @@ class MockLayerTreeHost : public LayerTreeHostInProcess {
     params.animation_host =
         AnimationHost::CreateForTesting(ThreadInstance::MAIN);
     LayerTreeSettings settings;
-    settings.verify_transform_tree_calculations = true;
     settings.verify_clip_tree_calculations = true;
     params.settings = &settings;
     return base::WrapUnique(new MockLayerTreeHost(&params));

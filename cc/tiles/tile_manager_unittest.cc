@@ -1090,7 +1090,6 @@ TEST_F(TileManagerTilePriorityQueueTest,
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
   settings.verify_clip_tree_calculations = true;
-  settings.verify_transform_tree_calculations = true;
 
   std::unique_ptr<PictureLayerTilingSet> tiling_set =
       PictureLayerTilingSet::Create(
@@ -1203,7 +1202,6 @@ TEST_F(TileManagerTilePriorityQueueTest,
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
   settings.verify_clip_tree_calculations = true;
-  settings.verify_transform_tree_calculations = true;
 
   std::unique_ptr<PictureLayerTilingSet> tiling_set =
       PictureLayerTilingSet::Create(

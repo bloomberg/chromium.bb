@@ -84,7 +84,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     bool can_adjust_raster_scales,
     bool verify_clip_tree_calculations,
     bool verify_visible_rect_calculations,
-    bool verify_transform_tree_calculations,
     LayerImplList* render_surface_layer_list,
     PropertyTrees* property_trees)
     : root_layer(root_layer),
@@ -103,7 +102,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       can_adjust_raster_scales(can_adjust_raster_scales),
       verify_clip_tree_calculations(verify_clip_tree_calculations),
       verify_visible_rect_calculations(verify_visible_rect_calculations),
-      verify_transform_tree_calculations(verify_transform_tree_calculations),
       render_surface_layer_list(render_surface_layer_list),
       property_trees(property_trees) {}
 
@@ -126,7 +124,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               std::numeric_limits<int>::max() / 2,
                               true,
                               false,
-                              true,
                               true,
                               true,
                               render_surface_layer_list,
@@ -619,9 +616,6 @@ void CalculateDrawPropertiesInternal(
   if (inputs->verify_visible_rect_calculations)
     draw_property_utils::VerifyVisibleRectsCalculations(visible_layer_list,
                                                         inputs->property_trees);
-  if (inputs->verify_transform_tree_calculations)
-    draw_property_utils::VerifyTransformTreeCalculations(
-        visible_layer_list, inputs->property_trees);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),

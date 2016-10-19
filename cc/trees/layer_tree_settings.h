@@ -88,7 +88,6 @@ class CC_EXPORT LayerTreeSettings {
   size_t scheduled_raster_task_limit = 32;
   bool use_occlusion_for_tile_prioritization = false;
   bool verify_clip_tree_calculations = false;
-  bool verify_transform_tree_calculations = false;
   bool image_decode_tasks_enabled = false;
   bool abort_commit_before_compositor_frame_sink_creation = true;
   bool use_layer_lists = false;

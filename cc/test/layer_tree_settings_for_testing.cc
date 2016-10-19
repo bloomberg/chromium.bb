@@ -9,7 +9,6 @@ namespace cc {
 LayerTreeSettingsForTesting::LayerTreeSettingsForTesting()
     : LayerTreeSettings() {
   verify_clip_tree_calculations = true;
-  verify_transform_tree_calculations = true;
 }
 
 LayerTreeSettingsForTesting::~LayerTreeSettingsForTesting() {}

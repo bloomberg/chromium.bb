@@ -985,7 +985,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
         settings().layer_transforms_should_scale_layer_contents,
         settings().verify_clip_tree_calculations,
         verify_visible_rect_calculations,
-        settings().verify_transform_tree_calculations,
         &render_surface_layer_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {

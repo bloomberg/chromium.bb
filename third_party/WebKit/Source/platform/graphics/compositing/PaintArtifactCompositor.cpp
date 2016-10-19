@@ -521,6 +521,7 @@ int PropertyTreeManager::compositorIdForClipNode(
   compositorNode.transform_id =
       compositorIdForTransformNode(clipNode->localTransformSpace());
   compositorNode.target_transform_id = kRealRootNodeId;
+  compositorNode.target_effect_id = kSecondaryRootNodeId;
   compositorNode.applies_local_clip = true;
   compositorNode.layers_are_clipped = true;
   compositorNode.layers_are_clipped_when_surfaces_disabled = true;
@@ -673,6 +674,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   dummyClip.owner_id = dummyLayer->id();
   dummyClip.transform_id = kRealRootNodeId;
   dummyClip.target_transform_id = kRealRootNodeId;
+  dummyClip.target_effect_id = kSecondaryRootNodeId;
 
   cc::EffectNode& effectNode = *effectTree().Node(effectTree().Insert(
       cc::EffectNode(), compositorIdForCurrentEffectNode()));
@@ -765,6 +767,7 @@ void PaintArtifactCompositor::update(
   // Mark the property trees as having been rebuilt.
   layerTree->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
   layerTree->property_trees()->needs_rebuild = false;
+  layerTree->property_trees()->ResetCachedData();
 }
 
 }  // namespace blink

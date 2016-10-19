@@ -32,7 +32,6 @@ void TestLayerTreeHostBase::SetUp() {
 
 LayerTreeSettings TestLayerTreeHostBase::CreateSettings() {
   LayerTreeSettings settings;
-  settings.verify_transform_tree_calculations = true;
   settings.verify_clip_tree_calculations = true;
   return settings;
 }

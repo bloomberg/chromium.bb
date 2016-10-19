@@ -81,7 +81,6 @@ class CC_EXPORT LayerTreeHostCommon {
         bool can_adjust_raster_scales,
         bool verify_clip_tree_calculations,
         bool verify_visible_rect_calculations,
-        bool verify_transform_tree_calculations,
         LayerImplList* render_surface_layer_list,
         PropertyTrees* property_trees);
 
@@ -100,7 +99,6 @@ class CC_EXPORT LayerTreeHostCommon {
     bool can_adjust_raster_scales;
     bool verify_clip_tree_calculations;
     bool verify_visible_rect_calculations;
-    bool verify_transform_tree_calculations;
     LayerImplList* render_surface_layer_list;
     PropertyTrees* property_trees;
   };

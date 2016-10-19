@@ -120,6 +120,7 @@ class CC_EXPORT PropertyTree {
  private:
   std::vector<T> nodes_;
 
+  friend class TransformTree;
   bool needs_update_;
   PropertyTrees* property_trees_;
 };
@@ -194,6 +195,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
       TransformNode* node,
       TransformNode* parent_node);
 
+  void set_needs_update(bool needs_update);
+
   // A TransformNode's source_to_parent value is used to account for the fact
   // that fixed-position layers are positioned by Blink wrt to their layer tree
   // parent (their "source"), but are parented in the transform tree by their
@@ -247,12 +250,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return nodes_affected_by_outer_viewport_bounds_delta_;
   }
 
-  const gfx::Transform& FromTarget(int node_id, int effect) const;
+  gfx::Transform FromTarget(int node_id, int effect) const;
   void SetFromTarget(int node_id, const gfx::Transform& transform);
 
   // TODO(sunxd): Remove target space transforms in cached data when we
   // completely implement computing draw transforms on demand.
-  const gfx::Transform& ToTarget(int node_id, int effect_id) const;
+  gfx::Transform ToTarget(int node_id, int effect_id) const;
   void SetToTarget(int node_id, const gfx::Transform& transform);
 
   const gfx::Transform& FromScreen(int node_id) const;
@@ -517,33 +520,48 @@ struct CombinedAnimationScale {
 };
 
 struct DrawTransforms {
-  bool invertible;
+  // We compute invertibility of a draw transforms lazily.
+  // Might_be_invertible is true if we have not computed the inverse of either
+  // to_target or from_target, or to_target / from_target is invertible.
+  bool might_be_invertible;
+  // From_valid is true if the from_target is already computed directly or
+  // computed by inverting an invertible to_target.
+  bool from_valid;
+  // To_valid is true if to_target stores a valid result, similar to from_valid.
+  bool to_valid;
   gfx::Transform from_target;
   gfx::Transform to_target;
 
   DrawTransforms(gfx::Transform from, gfx::Transform to)
-      : invertible(true), from_target(from), to_target(to) {}
+      : might_be_invertible(true),
+        from_valid(false),
+        to_valid(false),
+        from_target(from),
+        to_target(to) {}
   bool operator==(const DrawTransforms& other) const {
-    return invertible == other.invertible && from_target == other.from_target &&
-           to_target == other.to_target;
+    return from_valid == other.from_valid && to_valid == other.to_valid &&
+           from_target == other.from_target && to_target == other.to_target;
   }
 };
 
 struct DrawTransformData {
   int update_number;
+  int target_id;
+
   DrawTransforms transforms;
 
   // TODO(sunxd): Move screen space transforms here if it can improve
   // performance.
   DrawTransformData()
-      : update_number(-1), transforms(gfx::Transform(), gfx::Transform()) {}
+      : update_number(-1),
+        target_id(-1),
+        transforms(gfx::Transform(), gfx::Transform()) {}
 };
 
 struct PropertyTreesCachedData {
   int property_tree_update_number;
   std::vector<AnimationScaleData> animation_scales;
-  mutable std::vector<std::unordered_map<int, DrawTransformData>>
-      draw_transforms;
+  mutable std::vector<std::vector<DrawTransformData>> draw_transforms;
 
   PropertyTreesCachedData();
   ~PropertyTreesCachedData();
@@ -588,7 +606,6 @@ class CC_EXPORT PropertyTrees final {
   int sequence_number;
   bool is_main_thread;
   bool is_active;
-  bool verify_transform_tree_calculations;
 
   void clear();
 
@@ -622,9 +639,12 @@ class CC_EXPORT PropertyTrees final {
                                     float maximum_animation_scale,
                                     float starting_animation_scale);
 
-  // GetDrawTransforms may change the value of cached_data_.
-  const DrawTransforms& GetDrawTransforms(int transform_id,
-                                          int effect_id) const;
+  bool GetToTarget(int transform_id,
+                   int effect_id,
+                   gfx::Transform* to_target) const;
+  bool GetFromTarget(int transform_id,
+                     int effect_id,
+                     gfx::Transform* from_target) const;
 
   void ResetCachedData();
   void UpdateCachedNumber();
@@ -643,6 +663,11 @@ class CC_EXPORT PropertyTrees final {
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
   gfx::Vector2dF outer_viewport_container_bounds_delta_;
   gfx::Vector2dF inner_viewport_scroll_bounds_delta_;
+
+  // GetDrawTransforms may change the value of cached_data_.
+  DrawTransforms& GetDrawTransforms(int transform_id, int effect_id) const;
+  DrawTransformData& FetchDrawTransformsDataFromCache(int transform_id,
+                                                      int effect_id) const;
 
   PropertyTreesCachedData cached_data_;
 };

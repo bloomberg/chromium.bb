@@ -52,7 +52,6 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner) {
   LayerTreeSettings settings;
-  settings.verify_transform_tree_calculations = true;
   settings.verify_clip_tree_calculations = true;
   return Create(client, task_graph_runner, settings);
 }
