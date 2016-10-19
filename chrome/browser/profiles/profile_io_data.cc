@@ -1175,7 +1175,7 @@ ProfileIOData::SetUpJobFactoryDefaults(
     std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     net::NetworkDelegate* network_delegate,
-    net::FtpTransactionFactory* ftp_transaction_factory) const {
+    net::HostResolver* host_resolver) const {
   // NOTE(willchan): Keep these protocol handlers in sync with
   // ProfileIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
@@ -1224,11 +1224,10 @@ ProfileIOData::SetUpJobFactoryDefaults(
   job_factory->SetProtocolHandler(
       url::kAboutScheme,
       base::MakeUnique<about_handler::AboutProtocolHandler>());
+
 #if !defined(DISABLE_FTP_SUPPORT)
-  DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(
-      url::kFtpScheme,
-      base::MakeUnique<net::FtpProtocolHandler>(ftp_transaction_factory));
+      url::kFtpScheme, net::FtpProtocolHandler::Create(host_resolver));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
 #if defined(DEBUG_DEVTOOLS)

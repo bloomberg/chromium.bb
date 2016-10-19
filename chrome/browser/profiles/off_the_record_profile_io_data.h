@@ -21,7 +21,6 @@ class Profile;
 
 namespace net {
 class CookieStore;
-class FtpTransactionFactory;
 class SdchOwner;
 class URLRequestContext;
 }  // namespace net
@@ -139,8 +138,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   net::URLRequestContext* AcquireIsolatedMediaRequestContext(
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
-
-  mutable std::unique_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   mutable std::unique_ptr<net::CookieStore> extensions_cookie_store_;
 

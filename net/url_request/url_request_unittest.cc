@@ -9858,8 +9858,7 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
 class URLRequestTestFTP : public URLRequestTest {
  public:
   URLRequestTestFTP()
-      : ftp_transaction_factory_(&host_resolver_),
-        ftp_test_server_(SpawnedTestServer::TYPE_FTP,
+      : ftp_test_server_(SpawnedTestServer::TYPE_FTP,
                          SpawnedTestServer::kLocalhost,
                          base::FilePath(kTestFilePath)) {
     // Can't use |default_context_|'s HostResolver to set up the
@@ -9871,7 +9870,7 @@ class URLRequestTestFTP : public URLRequestTest {
   void SetUpFactory() override {
     // Add FTP support to the default URLRequestContext.
     job_factory_impl_->SetProtocolHandler(
-        "ftp", base::MakeUnique<FtpProtocolHandler>(&ftp_transaction_factory_));
+        "ftp", FtpProtocolHandler::Create(&host_resolver_));
   }
 
   std::string GetTestFileContents() {
@@ -9885,8 +9884,10 @@ class URLRequestTestFTP : public URLRequestTest {
   }
 
  protected:
+  // Note that this is destroyed before the FtpProtocolHandler that references
+  // it, which is owned by the parent class. Since no requests are made during
+  // teardown, this works, though it's not great.
   MockHostResolver host_resolver_;
-  FtpNetworkLayer ftp_transaction_factory_;
 
   SpawnedTestServer ftp_test_server_;
 };

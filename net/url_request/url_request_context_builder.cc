@@ -505,10 +505,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
 #if !defined(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {
-    ftp_transaction_factory_.reset(
-        new FtpNetworkLayer(context->host_resolver()));
-    job_factory->SetProtocolHandler("ftp", base::MakeUnique<FtpProtocolHandler>(
-                                               ftp_transaction_factory_.get()));
+    job_factory->SetProtocolHandler(
+        "ftp", FtpProtocolHandler::Create(context->host_resolver()));
   }
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 

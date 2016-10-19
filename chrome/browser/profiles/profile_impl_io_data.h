@@ -31,7 +31,6 @@ class DomainReliabilityMonitor;
 
 namespace net {
 class CookieStore;
-class FtpTransactionFactory;
 class HttpServerPropertiesManager;
 class SdchOwner;
 }  // namespace net
@@ -210,8 +209,6 @@ class ProfileImplIOData : public ProfileIOData {
   mutable std::unique_ptr<LazyParams> lazy_params_;
 
   mutable scoped_refptr<JsonPrefStore> network_json_store_;
-
-  mutable std::unique_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   // Owned by URLRequestContextStorage, reference here to can be shut down on
   // the UI thread.

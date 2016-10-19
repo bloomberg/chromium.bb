@@ -356,9 +356,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<CookieStore> cookie_store_;
-#if !defined(DISABLE_FTP_SUPPORT)
-  std::unique_ptr<FtpTransactionFactory> ftp_transaction_factory_;
-#endif
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<CTVerifier> ct_verifier_;

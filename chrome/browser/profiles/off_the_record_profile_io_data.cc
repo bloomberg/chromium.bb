@@ -31,7 +31,6 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
 #include "net/base/sdch_manager.h"
-#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -246,11 +245,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       CreateMainHttpFactory(main_context_storage->http_network_session(),
                             net::HttpCache::DefaultBackend::InMemory(0)));
 
-#if !defined(DISABLE_FTP_SUPPORT)
-  ftp_factory_.reset(
-      new net::FtpNetworkLayer(main_context->host_resolver()));
-#endif  // !defined(DISABLE_FTP_SUPPORT)
-
   std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
 
@@ -258,7 +252,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   main_context_storage->set_job_factory(SetUpJobFactoryDefaults(
       std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
-      main_context->network_delegate(), ftp_factory_.get()));
+      main_context->network_delegate(), main_context->host_resolver()));
 
   // Setup SDCH for this profile.
   main_context_storage->set_sdch_manager(base::MakeUnique<net::SdchManager>());
@@ -306,7 +300,7 @@ void OffTheRecordProfileIOData::
       std::move(extensions_job_factory),
       content::URLRequestInterceptorScopedVector(),
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(), NULL,
-      ftp_factory_.get());
+      io_thread_globals->host_resolver.get());
   extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
@@ -354,8 +348,8 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory;
   top_job_factory = SetUpJobFactoryDefaults(
       std::move(job_factory), std::move(request_interceptors),
-      std::move(protocol_handler_interceptor), main_context->network_delegate(),
-      ftp_factory_.get());
+      std::move(protocol_handler_interceptor), context->network_delegate(),
+      context->host_resolver());
   context->SetJobFactory(std::move(top_job_factory));
   return context;
 }

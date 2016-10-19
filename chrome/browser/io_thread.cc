@@ -83,7 +83,6 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -1062,12 +1061,9 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
 #if !defined(DISABLE_FTP_SUPPORT)
-  globals->proxy_script_fetcher_ftp_transaction_factory.reset(
-      new net::FtpNetworkLayer(globals->host_resolver.get()));
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      base::MakeUnique<net::FtpProtocolHandler>(
-          globals->proxy_script_fetcher_ftp_transaction_factory.get()));
+      net::FtpProtocolHandler::Create(globals->host_resolver.get()));
 #endif
   globals->proxy_script_fetcher_url_request_job_factory =
       std::move(job_factory);

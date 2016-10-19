@@ -74,7 +74,6 @@ class CertVerifier;
 class ChannelIDService;
 class CookieStore;
 class CTLogVerifier;
-class FtpTransactionFactory;
 class HostMappingRules;
 class HostResolver;
 class HttpAuthHandlerRegistryFactory;
@@ -164,8 +163,6 @@ class IOThread : public content::BrowserThreadDelegate {
         proxy_script_fetcher_http_network_session;
     std::unique_ptr<net::HttpTransactionFactory>
         proxy_script_fetcher_http_transaction_factory;
-    std::unique_ptr<net::FtpTransactionFactory>
-        proxy_script_fetcher_ftp_transaction_factory;
     std::unique_ptr<net::URLRequestJobFactory>
         proxy_script_fetcher_url_request_job_factory;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;

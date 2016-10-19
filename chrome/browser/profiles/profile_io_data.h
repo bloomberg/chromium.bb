@@ -77,7 +77,6 @@ class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
 class CTVerifier;
-class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class ProxyConfigService;
@@ -362,13 +361,20 @@ class ProfileIOData {
   void InitializeOnUIThread(Profile* profile);
   void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
+  // Does common setup of the URLRequestJobFactories. Adds default
+  // ProtocolHandlers to |job_factory|, adds URLRequestInterceptors in front of
+  // it as needed, and returns the result.
+  //
+  // |protocol_handler_interceptor| is configured to intercept URLRequests
+  //     before all other URLRequestInterceptors, if non-null.
+  // |host_resolver| is needed to set up the FtpProtocolHandler.
   std::unique_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
       std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
       content::URLRequestInterceptorScopedVector request_interceptors,
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       net::NetworkDelegate* network_delegate,
-      net::FtpTransactionFactory* ftp_transaction_factory) const;
+      net::HostResolver* host_resolver) const;
 
   // Called when the Profile is destroyed. |context_getters| must include all
   // URLRequestContextGetters that refer to the ProfileIOData's
