@@ -675,8 +675,9 @@ class GSContext(object):
           'ResumableDownloadException',
           'ssl.SSLError: The read operation timed out',
           # TODO: Error messages may change in different library versions,
-          # use regexes to match resumbale error messages.
+          # use regexes to match resumable error messages.
           'ssl.SSLError: (\'The read operation timed out\',)',
+          'ssl.SSLError: _ssl.c:495: The handshake operation timed out',
           'Unable to find the server',
           'doesn\'t match cloud-supplied digest',
           'ssl.SSLError: [Errno 8]',
