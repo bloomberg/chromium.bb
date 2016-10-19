@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 /**
  * Provides configuration details for NTP snippets.
@@ -15,8 +14,7 @@ public final class SnippetsConfig {
     private SnippetsConfig() {}
 
     public static boolean isEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
-                && PrefServiceBridge.getInstance().isSearchSuggestEnabled();
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS);
     }
 
     public static boolean isSaveToOfflineEnabled() {
