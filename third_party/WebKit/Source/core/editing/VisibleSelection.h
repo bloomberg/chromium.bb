@@ -242,10 +242,6 @@ createVisibleSelection(const PositionInFlatTree& base,
                        TextAffinity = SelDefaultAffinity,
                        bool isDirectional = false);
 CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelection(const EphemeralRangeInFlatTree&,
-                       TextAffinity = SelDefaultAffinity,
-                       bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const VisiblePositionInFlatTree&,
                        const VisiblePositionInFlatTree&,
                        bool isDirectional = false);

@@ -162,18 +162,6 @@ VisibleSelectionInFlatTree createVisibleSelection(
                                 base.affinity(), isDirectional);
 }
 
-VisibleSelectionInFlatTree createVisibleSelection(
-    const EphemeralRangeInFlatTree& range,
-    TextAffinity affinity,
-    bool isDirectional) {
-  DCHECK(!needsLayoutTreeUpdate(range.startPosition()));
-  DCHECK(!needsLayoutTreeUpdate(range.endPosition()));
-  SelectionInFlatTree::Builder builder;
-  builder.setBaseAndExtent(range).setAffinity(affinity).setIsDirectional(
-      isDirectional);
-  return createVisibleSelection(builder.build());
-}
-
 template <typename Strategy>
 static SelectionType computeSelectionType(
     const PositionTemplate<Strategy>& start,
