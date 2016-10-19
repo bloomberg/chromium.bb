@@ -6,7 +6,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "media/mojo/services/mojo_media_application_factory.h"
+#include "media/mojo/services/media_service_factory.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 
@@ -31,7 +31,7 @@ MojoResult ServiceMain(MojoHandle mojo_handle) {
   logging::InitLogging(settings);
 
   std::unique_ptr<service_manager::Service> service =
-      media::CreateMojoMediaApplication(base::Bind(&QuitApplication));
+      media::CreateMediaService(base::Bind(&QuitApplication));
   service_manager::ServiceRunner runner(service.release());
   g_runner = &runner;
   return runner.Run(mojo_handle, false /* init_base */);

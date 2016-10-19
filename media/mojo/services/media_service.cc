@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_media_application.h"
+#include "media/mojo/services/media_service.h"
 
 #include <utility>
 
@@ -16,40 +16,37 @@
 namespace media {
 
 // TODO(xhwang): Hook up MediaLog when possible.
-MojoMediaApplication::MojoMediaApplication(
-    std::unique_ptr<MojoMediaClient> mojo_media_client,
-    const base::Closure& quit_closure)
+MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
+                           const base::Closure& quit_closure)
     : mojo_media_client_(std::move(mojo_media_client)),
       media_log_(new MediaLog()),
       ref_factory_(quit_closure) {
   DCHECK(mojo_media_client_);
 }
 
-MojoMediaApplication::~MojoMediaApplication() {}
+MediaService::~MediaService() {}
 
-void MojoMediaApplication::OnStart(const service_manager::Identity& identity) {
+void MediaService::OnStart(const service_manager::Identity& identity) {
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::OnConnect(
-    const service_manager::Identity& remote_identity,
-    service_manager::InterfaceRegistry* registry) {
+bool MediaService::OnConnect(const service_manager::Identity& remote_identity,
+                             service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::MediaService>(this);
   return true;
 }
 
-bool MojoMediaApplication::OnStop() {
+bool MediaService::OnStop() {
   mojo_media_client_.reset();
   return true;
 }
 
-void MojoMediaApplication::Create(
-    const service_manager::Identity& remote_identity,
-    mojom::MediaServiceRequest request) {
+void MediaService::Create(const service_manager::Identity& remote_identity,
+                          mojom::MediaServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void MojoMediaApplication::CreateServiceFactory(
+void MediaService::CreateServiceFactory(
     mojom::ServiceFactoryRequest request,
     service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
   // Ignore request if service has already stopped.

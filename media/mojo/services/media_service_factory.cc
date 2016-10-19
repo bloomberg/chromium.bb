@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_media_application_factory.h"
+#include "media/mojo/services/media_service_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "media/mojo/services/mojo_media_application.h"
+#include "media/mojo/services/media_service.h"
 
 #if defined(OS_ANDROID)
 #include "media/mojo/services/android_mojo_media_client.h"  // nogncheck
@@ -18,10 +18,10 @@ using DefaultClient = media::DefaultMojoMediaClient;
 namespace media {
 
 // static
-std::unique_ptr<service_manager::Service> CreateMojoMediaApplication(
+std::unique_ptr<service_manager::Service> CreateMediaService(
     const base::Closure& quit_closure) {
-  return std::unique_ptr<service_manager::Service>(new MojoMediaApplication(
-      base::MakeUnique<DefaultClient>(), quit_closure));
+  return std::unique_ptr<service_manager::Service>(
+      new MediaService(base::MakeUnique<DefaultClient>(), quit_closure));
 }
 
 }  // namespace media

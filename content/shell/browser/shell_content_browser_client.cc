@@ -63,7 +63,7 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/services/mojo_media_application_factory.h"  // nogncheck
+#include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
 namespace content {
@@ -191,7 +191,7 @@ void ShellContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services) {
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::ServiceInfo info;
-  info.factory = base::Bind(&media::CreateMojoMediaApplication);
+  info.factory = base::Bind(&media::CreateMediaService);
   services->insert(std::make_pair("service:media", info));
 #endif
 }

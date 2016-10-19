@@ -37,10 +37,10 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   // Can be called on any thread. The returned CDM is not guaranteed to be
   // thread safe.
   // Note: This provides a generic hack to get the CDM in the process where
-  // MojoMediaApplication is running, regardless of which render process or
+  // MediaService is running, regardless of which render process or
   // render frame the caller is associated with. In the future, we should move
-  // all out-of-process media players into the MojoMediaApplicaiton so that we
-  // can use MojoCdmServiceContext (per render frame) to get the CDM.
+  // all out-of-process media players into the MediaService so that we can use
+  // MojoCdmServiceContext (per render frame) to get the CDM.
   static scoped_refptr<MediaKeys> LegacyGetCdm(int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.

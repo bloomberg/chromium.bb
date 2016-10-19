@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
-#define MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
+#ifndef MEDIA_MOJO_SERVICES_MEDIA_SERVICE_H_
+#define MEDIA_MOJO_SERVICES_MEDIA_SERVICE_H_
 
 #include <stdint.h>
 
@@ -26,15 +26,15 @@ namespace media {
 class MediaLog;
 class MojoMediaClient;
 
-class MEDIA_MOJO_EXPORT MojoMediaApplication
+class MEDIA_MOJO_EXPORT MediaService
     : public NON_EXPORTED_BASE(service_manager::Service),
       public NON_EXPORTED_BASE(
           service_manager::InterfaceFactory<mojom::MediaService>),
       public NON_EXPORTED_BASE(mojom::MediaService) {
  public:
-  MojoMediaApplication(std::unique_ptr<MojoMediaClient> mojo_media_client,
-                       const base::Closure& quit_closure);
-  ~MojoMediaApplication() final;
+  MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
+               const base::Closure& quit_closure);
+  ~MediaService() final;
 
  private:
   // service_manager::Service implementation.
@@ -65,4 +65,4 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_H_
+#endif  // MEDIA_MOJO_SERVICES_MEDIA_SERVICE_H_

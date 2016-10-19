@@ -63,7 +63,7 @@
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "chromecast/browser/media/cast_mojo_media_client.h"
-#include "media/mojo/services/mojo_media_application.h"  // nogncheck
+#include "media/mojo/services/media_service.h"  // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
 #if defined(OS_ANDROID)
@@ -77,7 +77,7 @@ namespace shell {
 
 namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-static std::unique_ptr<service_manager::Service> CreateMojoMediaApplication(
+static std::unique_ptr<service_manager::Service> CreateMediaService(
     CastContentBrowserClient* browser_client,
     const base::Closure& quit_closure) {
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
@@ -89,8 +89,7 @@ static std::unique_ptr<service_manager::Service> CreateMojoMediaApplication(
           browser_client->GetVideoResolutionPolicy(),
           browser_client->media_resource_tracker()));
   return std::unique_ptr<service_manager::Service>(
-      new ::media::MojoMediaApplication(std::move(mojo_media_client),
-                                        quit_closure));
+      new ::media::MediaService(std::move(mojo_media_client), quit_closure));
 }
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
@@ -428,8 +427,7 @@ void CastContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services) {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::ServiceInfo info;
-  info.factory =
-      base::Bind(&CreateMojoMediaApplication, base::Unretained(this));
+  info.factory = base::Bind(&CreateMediaService, base::Unretained(this));
   info.task_runner = GetMediaTaskRunner();
   services->insert(std::make_pair("service:media", info));
 #endif

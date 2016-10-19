@@ -23,7 +23,7 @@ class MediaLog;
 class RendererFactory;
 class VideoRendererSink;
 
-// Default MojoMediaClient for MojoMediaApplication.
+// Default MojoMediaClient for MediaService.
 class DefaultMojoMediaClient : public MojoMediaClient {
  public:
   DefaultMojoMediaClient();

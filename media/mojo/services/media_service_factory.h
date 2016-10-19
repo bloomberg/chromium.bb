@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_FACTORY_H_
-#define MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_FACTORY_H_
+#ifndef MEDIA_MOJO_SERVICES_MEDIA_SERVICE_FACTORY_H_
+#define MEDIA_MOJO_SERVICES_MEDIA_SERVICE_FACTORY_H_
 
 #include <memory>
 
@@ -13,10 +13,10 @@
 
 namespace media {
 
-// Creates a MojoMediaApplication instance using the default MojoMediaClient.
+// Creates a MediaService instance using the default MojoMediaClient.
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
-CreateMojoMediaApplication(const base::Closure& quit_closure);
+CreateMediaService(const base::Closure& quit_closure);
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_MEDIA_APPLICATION_FACTORY_H_
+#endif  // MEDIA_MOJO_SERVICES_MEDIA_SERVICE_FACTORY_H_
