@@ -141,7 +141,10 @@ class ServiceWorkerHandleTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);
 };
 
-TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
+class ServiceWorkerHandleTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerHandleTest> {};
+
+TEST_P(ServiceWorkerHandleTestP, OnVersionStateChanged) {
   std::unique_ptr<ServiceWorkerHandle> handle =
       ServiceWorkerHandle::Create(helper_->context()->AsWeakPtr(),
                                   provider_host_->AsWeakPtr(), version_.get());
@@ -156,16 +159,27 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   // ...update state to installed.
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
 
-  ASSERT_EQ(2UL, ipc_sink()->message_count());
   ASSERT_EQ(0L, dispatcher_host_->bad_message_received_count_);
 
-  // We should be sending 1. StartWorker,
-  EXPECT_EQ(EmbeddedWorkerMsg_StartWorker::ID,
-            ipc_sink()->GetMessageAt(0)->type());
-  // 2. StateChanged (state == Installed).
+  const IPC::Message* message = nullptr;
+  if (is_mojo_enabled()) {
+    // StartWorker shouldn't be recorded here.
+    ASSERT_EQ(1UL, ipc_sink()->message_count());
+    message = ipc_sink()->GetMessageAt(0);
+  } else {
+    ASSERT_EQ(2UL, ipc_sink()->message_count());
+    // We should be sending 1. StartWorker,
+    EXPECT_EQ(EmbeddedWorkerMsg_StartWorker::ID,
+              ipc_sink()->GetMessageAt(0)->type());
+    message = ipc_sink()->GetMessageAt(1);
+  }
+  // StateChanged (state == Installed).
   VerifyStateChangedMessage(handle->handle_id(),
-                            blink::WebServiceWorkerStateInstalled,
-                            ipc_sink()->GetMessageAt(1));
+                            blink::WebServiceWorkerStateInstalled, message);
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerHandleTest,
+                        ServiceWorkerHandleTestP,
+                        ::testing::Values(false, true));
 
 }  // namespace content
