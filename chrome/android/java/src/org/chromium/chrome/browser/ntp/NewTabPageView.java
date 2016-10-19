@@ -20,6 +20,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
@@ -125,6 +126,7 @@ public class NewTabPageView extends FrameLayout
     /** Flag used to request some layout changes after the next layout pass is completed. */
     private boolean mTileCountChanged;
     private boolean mSnapshotMostVisitedChanged;
+    private boolean mNewTabPageRecyclerViewChanged;
     private int mSnapshotWidth;
     private int mSnapshotHeight;
     private int mSnapshotScrollY;
@@ -405,6 +407,35 @@ public class NewTabPageView extends FrameLayout
             helper.attachToRecyclerView(mRecyclerView);
 
             initializeSearchBoxRecyclerViewScrollHandling();
+
+            // When the NewTabPageAdapter's data changes we need to invalidate any previous
+            // screen captures of the NewTabPageView.
+            mNewTabPageAdapter.registerAdapterDataObserver(new AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    mNewTabPageRecyclerViewChanged = true;
+                }
+
+                @Override
+                public void onItemRangeChanged(int positionStart, int itemCount) {
+                    onChanged();
+                }
+
+                @Override
+                public void onItemRangeInserted(int positionStart, int itemCount) {
+                    onChanged();
+                }
+
+                @Override
+                public void onItemRangeRemoved(int positionStart, int itemCount) {
+                    onChanged();
+                }
+
+                @Override
+                public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                    onChanged();
+                }
+            });
         } else {
             initializeSearchBoxScrollHandling();
         }
@@ -543,7 +574,7 @@ public class NewTabPageView extends FrameLayout
                 / transitionLength, 0f, 1f);
     }
 
-    private ViewGroup getWrapperView() {
+    ViewGroup getWrapperView() {
         return mUseCardsUi ? mRecyclerView : mScrollView;
     }
 
@@ -876,8 +907,9 @@ public class NewTabPageView extends FrameLayout
     boolean shouldCaptureThumbnail() {
         if (getWidth() == 0 || getHeight() == 0) return false;
 
-        return mSnapshotMostVisitedChanged || getWidth() != mSnapshotWidth
-                || getHeight() != mSnapshotHeight || getVerticalScroll() != mSnapshotScrollY;
+        return mNewTabPageRecyclerViewChanged || mSnapshotMostVisitedChanged
+                || getWidth() != mSnapshotWidth || getHeight() != mSnapshotHeight
+                || getVerticalScroll() != mSnapshotScrollY;
     }
 
     /**
@@ -891,6 +923,7 @@ public class NewTabPageView extends FrameLayout
         mSnapshotHeight = getHeight();
         mSnapshotScrollY = getVerticalScroll();
         mSnapshotMostVisitedChanged = false;
+        mNewTabPageRecyclerViewChanged = false;
     }
 
     // OnLayoutChangeListener overrides

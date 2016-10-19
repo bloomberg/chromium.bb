@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.graphics.Canvas;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -95,6 +96,59 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
 
         viewRenderer.renderAndCompare(mNtp.getView().getRootView(), "new_tab_page_scrolled");
+    }
+
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @CommandLineFlags.Add("enable-features=NTPSnippets")
+    public void testThumbnailInvalidations() {
+        // The Adapter's notify methods must be called on the UI Thread.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                captureThumbnail();
+                assertFalse(mNtp.shouldCaptureThumbnail());
+
+                // Check that we invalidate the thumbnail when the Recycler View is updated.
+                NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView)
+                        mNtp.getNewTabPageView().getWrapperView();
+
+                recyclerView.getAdapter().notifyDataSetChanged();
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemChanged(0);
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemInserted(0);
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemMoved(0, 1);
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemRangeChanged(0, 1);
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemRangeInserted(0, 1);
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemRangeRemoved(0, 1);
+                assertThumbnailInvalidAndRecapture();
+
+                recyclerView.getAdapter().notifyItemRemoved(0);
+                assertThumbnailInvalidAndRecapture();
+            }
+        });
+    }
+
+    private void assertThumbnailInvalidAndRecapture() {
+        assertTrue(mNtp.shouldCaptureThumbnail());
+        captureThumbnail();
+        assertFalse(mNtp.shouldCaptureThumbnail());
+    }
+
+    private void captureThumbnail() {
+        Canvas canvas = new Canvas();
+        mNtp.captureThumbnail(canvas);
     }
 
     @Override
