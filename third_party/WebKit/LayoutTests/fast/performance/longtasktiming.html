@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+async_test(function (t) {
+    var observer = new PerformanceObserver(
+        t.step_func(function (entryList) {
+            var entries = entryList.getEntries();
+            /* TODO(panicker): Update after fixing http://crbug.com/651461 */
+            for (var i = 0; i < entries.length; i++) {
+                assert_equals(entries[i].entryType, "longtask",
+                    "entryType expected to be: longtask");
+                assert_equals(entries[i].name, "same-origin",
+                    "name expected to be: same-origin");
+                assert_greater_than(entries[i].duration, 50000,
+                    "duration expected to be greater than 50ms threshold");
+            }
+            observer.disconnect();
+            t.done();
+        })
+    );
+    observer.observe({entryTypes: ["longtask"]});
+
+    /* Generate a slow task */
+    var begin = window.performance.now();
+    while (window.performance.now() < begin + 51);
+
+}, "Performance longtask entries are observable");
+
+</script>
