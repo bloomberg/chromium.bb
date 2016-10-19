@@ -1746,7 +1746,6 @@ bool DirectoryBackingStore::needs_column_refresh() const {
 void DirectoryBackingStore::ResetAndCreateConnection() {
   db_ = base::MakeUnique<sql::Connection>();
   db_->set_histogram_tag("SyncDirectory");
-  db_->set_exclusive_locking();
   db_->set_cache_size(32);
   db_->set_page_size(database_page_size_);
 

@@ -99,6 +99,19 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
   return true;
 }
 
+bool CorruptSizeInHeaderWithLock(const base::FilePath& db_path) {
+  sql::Connection db;
+  if (!db.Open(db_path))
+    return false;
+
+  // Prevent anyone else from using the database.  The transaction is
+  // rolled back when |db| is destroyed.
+  if (!db.Execute("BEGIN EXCLUSIVE"))
+    return false;
+
+  return CorruptSizeInHeader(db_path);
+}
+
 void CorruptSizeInHeaderMemory(unsigned char* header, int64_t db_size) {
   const size_t kPageSizeOffset = 16;
   const size_t kFileChangeCountOffset = 24;

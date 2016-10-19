@@ -20,7 +20,6 @@
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
-#include "components/sync/test/directory_backing_store_corruption_testing.h"
 #include "components/sync/test/test_directory_backing_store.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
@@ -4295,19 +4294,14 @@ TEST_F(DirectoryBackingStoreTest,
   ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
   Directory::SaveChangesSnapshot snapshot;
   const std::string suffix(400, 'o');
-  for (int i = 0; i < corruption_testing::kNumEntriesRequiredForCorruption;
-       ++i) {
+  for (size_t i = 0; i < 100; ++i) {
     snapshot.dirty_metas.insert(CreateEntry(i, suffix));
   }
   ASSERT_TRUE(dbs->SaveChanges(snapshot));
-  // Corrupt it.
-  ASSERT_TRUE(corruption_testing::CorruptDatabase(GetDatabasePath()));
+  // Corrupt the database on disk.
+  ASSERT_TRUE(sql::test::CorruptSizeInHeaderWithLock(GetDatabasePath()));
   // Attempt to save all those entries again. See that it fails (because of the
   // corruption).
-  //
-  // If this test fails because SaveChanges returned true, it may mean you need
-  // to increase the number of entries written to the DB. See also
-  // |kNumEntriesRequiredForCorruption|.
   ASSERT_FALSE(dbs->SaveChanges(snapshot));
   // At this point the handler has been posted but not executed.
   ASSERT_FALSE(was_called);

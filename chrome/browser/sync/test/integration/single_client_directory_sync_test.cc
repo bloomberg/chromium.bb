@@ -16,13 +16,11 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/syncable/directory.h"
-#include "components/sync/test/directory_backing_store_corruption_testing.h"
 #include "content/public/browser/browser_thread.h"
+#include "sql/test/test_helpers.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using syncer::syncable::corruption_testing::kNumEntriesRequiredForCorruption;
-using syncer::syncable::corruption_testing::CorruptDatabase;
 
 class SingleClientDirectorySyncTest : public SyncTest {
  public:
@@ -105,23 +103,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   const base::FilePath directory_path(sync_service->GetDirectoryPathForTest());
   const base::FilePath sync_db(directory_path.Append(
       syncer::syncable::Directory::kSyncDatabaseFilename));
-  ASSERT_TRUE(CorruptDatabase(sync_db));
+  ASSERT_TRUE(sql::test::CorruptSizeInHeaderWithLock(sync_db));
 
-  // Write a bunch of bookmarks and flush the directory to ensure sync notices
-  // the corruption. The key here is to force sync to actually write a lot of
-  // data to its DB so it will see the corruption we introduced above.
-  const GURL url(
-      "https://"
-      "www."
-      "gooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-      "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-      "oooooooooooooooooooogle.com");
+  // Write some bookmarks and flush the directory to force sync to
+  // notice the corruption.
+  const GURL url("https://www.example.com");
   const bookmarks::BookmarkNode* top = bookmarks_helper::AddFolder(
       0, bookmarks_helper::GetOtherNode(0), 0, "top");
-  for (int i = 0; i < kNumEntriesRequiredForCorruption; ++i) {
+  for (int i = 0; i < 100; ++i) {
     ASSERT_TRUE(
         bookmarks_helper::AddURL(0, top, 0, base::Int64ToString(i), url));
   }

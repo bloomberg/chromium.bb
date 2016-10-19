@@ -659,8 +659,6 @@ static_library("test_support_engine") {
     "engine_impl/test_entry_factory.h",
     "syncable/test_user_share.cc",
     "syncable/test_user_share.h",
-    "test/directory_backing_store_corruption_testing.cc",
-    "test/directory_backing_store_corruption_testing.h",
     "test/engine/fake_model_worker.cc",
     "test/engine/fake_model_worker.h",
     "test/engine/fake_sync_scheduler.cc",
