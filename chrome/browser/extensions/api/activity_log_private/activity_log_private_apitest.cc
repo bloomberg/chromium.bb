@@ -30,7 +30,6 @@ class ActivityLogApiTest : public ExtensionApiTest {
   ActivityLogApiTest() : saved_cmdline_(base::CommandLine::NO_PROGRAM) {}
 
   ~ActivityLogApiTest() override {
-    ExtensionApiTest::SetUpCommandLine(&saved_cmdline_);
     *base::CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 

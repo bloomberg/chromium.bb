@@ -11,6 +11,7 @@
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 

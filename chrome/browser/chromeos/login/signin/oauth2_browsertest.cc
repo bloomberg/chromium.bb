@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -765,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
 
   // Reset ExtensionBrowserTest::observer_ to the right browser object.
   Browser* browser = FindOrCreateVisibleBrowser(profile());
-  observer_.reset(new ExtensionTestNotificationObserver(browser));
+  observer_.reset(new ChromeExtensionTestNotificationObserver(browser));
 
   // Run background page tests. The tests will just wait for XHR request
   // to complete.

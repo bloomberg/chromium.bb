@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_BROWSERTEST_H_
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/extension_test_notification_observer.h"
+#include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/test_management_policy.h"
@@ -60,7 +60,7 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
       const base::FilePath& path);
   const extensions::Extension* InstallExtension(const base::FilePath& path);
 
-  std::unique_ptr<ExtensionTestNotificationObserver> observer_;
+  std::unique_ptr<ChromeExtensionTestNotificationObserver> observer_;
 
   // The default profile to be used.
   Profile* profile_;

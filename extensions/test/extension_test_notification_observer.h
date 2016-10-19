@@ -1,43 +1,40 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_
+#ifndef EXTENSIONS_TEST_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_
+#define EXTENSIONS_TEST_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
-#include "content/public/browser/notification_details.h"
+#include "base/callback_list.h"
+#include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/process_manager_observer.h"
 
 namespace content {
+class BrowserContext;
+class NotificationDetails;
 class WindowedNotificationObserver;
 }
 
-// Test helper class for observing extension-related events.
-class ExtensionTestNotificationObserver
-    : public content::NotificationObserver,
-      public extensions::ExtensionActionAPI::Observer {
- public:
-  explicit ExtensionTestNotificationObserver(Browser* browser);
-  ~ExtensionTestNotificationObserver() override;
+namespace extensions {
+class ProcessManager;
+}
 
-  // Wait for the number of visible page actions to change to |count|.
-  bool WaitForPageActionVisibilityChangeTo(int count);
+// Test helper class for observing extension-related events.
+class ExtensionTestNotificationObserver : public content::NotificationObserver {
+ public:
+  explicit ExtensionTestNotificationObserver(content::BrowserContext* context);
+  ~ExtensionTestNotificationObserver() override;
 
   // Wait for an extension install error to be raised. Returns true if an
   // error was raised.
   bool WaitForExtensionInstallError();
-
-  // Waits until an extension is loaded and all view have loaded.
-  void WaitForExtensionAndViewLoad();
 
   // Waits until an extension is loaded.
   void WaitForExtensionLoad();
@@ -52,15 +49,6 @@ class ExtensionTestNotificationObserver
 
   // Wait for the crx installer to be done. Returns true if it really is done.
   bool WaitForCrxInstallerDone();
-
-  // Wait for all extension views to load.
-  bool WaitForExtensionViewsToLoad();
-
-  // Wait for extension to be idle.
-  bool WaitForExtensionIdle(const std::string& extension_id);
-
-  // Wait for extension to be not idle.
-  bool WaitForExtensionNotIdle(const std::string& extension_id);
 
   // Watch for the given event type from the given source.
   // After calling this method, call Wait() to ensure that RunMessageLoop() is
@@ -84,12 +72,39 @@ class ExtensionTestNotificationObserver
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
- private:
-  class NotificationSet;
+ protected:
+  class NotificationSet : public content::NotificationObserver,
+                          public extensions::ProcessManagerObserver {
+   public:
+    NotificationSet();
+    ~NotificationSet() override;
 
-  Profile* GetProfile();
+    void Add(int type, const content::NotificationSource& source);
+    void Add(int type);
+    void AddExtensionFrameUnregistration(extensions::ProcessManager* manager);
 
-  void WaitForNotification(int notification_type);
+    // Notified any time an Add()ed notification is received.
+    // The details of the notification are dropped.
+    base::CallbackList<void()>& callback_list() { return callback_list_; }
+
+   private:
+    // content::NotificationObserver:
+    void Observe(int type,
+                 const content::NotificationSource& source,
+                 const content::NotificationDetails& details) override;
+
+    // extensions::ProcessManagerObserver:
+    void OnExtensionFrameUnregistered(
+        const std::string& extension_id,
+        content::RenderFrameHost* render_frame_host) override;
+
+    content::NotificationRegistrar notification_registrar_;
+    base::CallbackList<void()> callback_list_;
+    ScopedObserver<extensions::ProcessManager,
+                   extensions::ProcessManagerObserver>
+        process_manager_observer_;
+    DISALLOW_COPY_AND_ASSIGN(NotificationSet);
+  };
 
   // Wait for |condition_| to be met. |notification_set| is the set of
   // notifications to wait for and to check |condition| when observing. This
@@ -98,15 +113,14 @@ class ExtensionTestNotificationObserver
   void WaitForCondition(const base::Callback<bool(void)>& condition,
                         NotificationSet* notification_set);
 
+  void WaitForNotification(int notification_type);
+
   // Quits the message loop if |condition_| is met.
   void MaybeQuit();
 
-  // extensions::ExtensionActionAPI::Observer:
-  void OnPageActionsUpdated(content::WebContents* contents) override;
+  content::BrowserContext* context_;
 
-  Browser* browser_;
-  Profile* profile_;
-
+ private:
   content::NotificationRegistrar registrar_;
   std::unique_ptr<content::WindowedNotificationObserver> observer_;
 
@@ -121,6 +135,8 @@ class ExtensionTestNotificationObserver
 
   // The closure to quit the currently-running message loop.
   base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTestNotificationObserver);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_
+#endif  // EXTENSIONS_TEST_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_

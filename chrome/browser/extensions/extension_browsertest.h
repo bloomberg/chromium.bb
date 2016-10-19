@@ -13,7 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_test_notification_observer.h"
+#include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -325,7 +325,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // test_data/extensions.
   base::FilePath test_data_dir_;
 
-  std::unique_ptr<ExtensionTestNotificationObserver> observer_;
+  std::unique_ptr<ChromeExtensionTestNotificationObserver> observer_;
 
  private:
   // Temporary directory for testing.
