@@ -226,7 +226,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                                      bool wait_for_debugger);
 
   // Sends StartWorker message via Mojo.
-  void SendMojoStartWorker(std::unique_ptr<EmbeddedWorkerStartParams> params);
+  ServiceWorkerStatusCode SendMojoStartWorker(
+      std::unique_ptr<EmbeddedWorkerStartParams> params);
 
   // Called back from StartTask after a start worker message is sent.
   void OnStartWorkerMessageSent();

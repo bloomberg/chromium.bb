@@ -375,7 +375,7 @@ class EmbeddedWorkerInstance::StartTask {
     params->wait_for_debugger = wait_for_debugger;
 
     if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled())
-      instance_->SendMojoStartWorker(std::move(params));
+      SendMojoStartWorker(std::move(params));
     else
       SendStartWorker(std::move(params));
   }
@@ -398,6 +398,18 @@ class EmbeddedWorkerInstance::StartTask {
 
     // |start_callback_| will be called via RunStartCallback() when the script
     // is evaluated.
+  }
+
+  void SendMojoStartWorker(std::unique_ptr<EmbeddedWorkerStartParams> params) {
+    ServiceWorkerStatusCode status =
+        instance_->SendMojoStartWorker(std::move(params));
+    if (status != SERVICE_WORKER_OK) {
+      StatusCallback callback = start_callback_;
+      start_callback_.Reset();
+      instance_->OnStartFailed(callback, status);
+      // |this| may be destroyed.
+      return;
+    }
   }
 
   // |instance_| must outlive |this|.
@@ -601,8 +613,10 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     observer.OnRegisteredToDevToolsManager();
 }
 
-void EmbeddedWorkerInstance::SendMojoStartWorker(
+ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMojoStartWorker(
     std::unique_ptr<EmbeddedWorkerStartParams> params) {
+  if (!context_)
+    return SERVICE_WORKER_ERROR_ABORT;
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   service_manager::mojom::InterfaceProviderRequest request =
       mojo::GetProxy(&remote_interfaces);
@@ -615,6 +629,7 @@ void EmbeddedWorkerInstance::SendMojoStartWorker(
   TRACE_EVENT_ASYNC_STEP_PAST1("ServiceWorker", "EmbeddedWorkerInstance::Start",
                                this, "SendStartWorker", "Status", "mojo");
   OnStartWorkerMessageSent();
+  return SERVICE_WORKER_OK;
 }
 
 void EmbeddedWorkerInstance::OnStartWorkerMessageSent() {

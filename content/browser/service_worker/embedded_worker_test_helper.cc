@@ -123,9 +123,10 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker(
   ASSERT_TRUE(embedded_worker_id_);
   EmbeddedWorkerInstance* worker =
       helper_->registry()->GetWorker(embedded_worker_id_.value());
-  ASSERT_TRUE(worker != NULL);
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, worker->status());
-
+  // |worker| is possible to be null when corresponding EmbeddedWorkerInstance
+  // is removed right after sending StopWorker.
+  if (worker)
+    EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, worker->status());
   callback.Run();
 }
 

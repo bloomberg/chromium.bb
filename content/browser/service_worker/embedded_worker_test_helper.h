@@ -123,6 +123,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void RegisterMockInstanceClient(
       std::unique_ptr<MockEmbeddedWorkerInstanceClient> client);
 
+  template <typename MockType, typename... Args>
+  MockType* CreateAndRegisterMockInstanceClient(Args&&... args);
+
   // IPC sink for EmbeddedWorker messages.
   IPC::TestSink* ipc_sink() { return &sink_; }
   // Inner IPC sink for script context messages sent via EmbeddedWorker.
@@ -286,6 +289,16 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerTestHelper);
 };
+
+template <typename MockType, typename... Args>
+MockType* EmbeddedWorkerTestHelper::CreateAndRegisterMockInstanceClient(
+    Args&&... args) {
+  std::unique_ptr<MockType> mock =
+      base::MakeUnique<MockType>(std::forward<Args>(args)...);
+  MockType* mock_rawptr = mock.get();
+  RegisterMockInstanceClient(std::move(mock));
+  return mock_rawptr;
+}
 
 }  // namespace content
 
