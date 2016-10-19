@@ -45,7 +45,7 @@ def GetPreferredTryMasters(project, change):
       'linux_nacl_sdk': set(['defaulttests']),
       'linux_nacl_sdk_build': set(['defaulttests']),
     },
-    'master.ryserver.chromium.win': {
+    'master.tryserver.chromium.win': {
       'win_nacl_sdk': set(['defaulttests']),
       'win_nacl_sdk_build': set(['defaulttests']),
     },

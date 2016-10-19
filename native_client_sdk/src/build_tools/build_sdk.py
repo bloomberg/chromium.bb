@@ -433,7 +433,7 @@ def GnNinjaBuild(arch, out_dir, extra_gn_args=None):
     if arch == 'arm':
       # Without this the target_cpu='arm' build complains about missing code
       # signing identity
-      gn_args.append('use_ios_simulator=true')
+      gn_args.append('ios_enable_code_signing=false')
 
   gn_exe = GetGNExecutable(platform)
 

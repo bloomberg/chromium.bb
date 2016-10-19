@@ -398,7 +398,7 @@ template("ios_app_bundle") {
     visibility = [ ":$_arch_executable_target" ]
   }
 
-  if (use_ios_simulator) {
+  if (current_toolchain == default_toolchain || use_ios_simulator) {
     _generate_entitlements_target = _target_name + "_gen_entitlements"
     _generate_entitlements_output =
         get_label_info(":$_generate_entitlements_target($default_toolchain)",
@@ -522,7 +522,7 @@ template("ios_app_bundle") {
       executable_name = _output_name
     }
 
-    if (use_ios_simulator) {
+    if (current_toolchain == default_toolchain) {
       _entitlements_path = "//build/config/ios/entitlements.plist"
       if (defined(invoker.entitlements_path)) {
         _entitlements_path = invoker.entitlements_path
