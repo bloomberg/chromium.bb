@@ -521,7 +521,7 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings() const {
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(
     const WebSecurityOrigin& origin,
     const GURL& document_url) {
-  if (document_url == GURL(content::kUnreachableWebDataURL))
+  if (document_url == content::kUnreachableWebDataURL)
     return true;
 
   if (origin.isUnique())

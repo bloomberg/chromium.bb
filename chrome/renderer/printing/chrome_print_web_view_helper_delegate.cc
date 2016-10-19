@@ -43,8 +43,7 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
         blink::WebLocalFrame* frame) {
 #if defined(ENABLE_EXTENSIONS)
   GURL url = frame->document().url();
-  bool inside_print_preview =
-      url.GetOrigin() == GURL(chrome::kChromeUIPrintURL);
+  bool inside_print_preview = url.GetOrigin() == chrome::kChromeUIPrintURL;
   bool inside_pdf_extension = url.SchemeIs(extensions::kExtensionScheme) &&
                               url.host() == extension_misc::kPdfExtensionId;
   if (inside_print_preview || inside_pdf_extension) {

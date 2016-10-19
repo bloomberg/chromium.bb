@@ -983,10 +983,11 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
       // behavior is desired because completing or skipping the sync promo
       // causes a redirect to the NTP.
       if (!startup_urls->empty() &&
-          startup_urls->at(0) == GURL(chrome::kChromeUINewTabURL))
+          startup_urls->at(0) == chrome::kChromeUINewTabURL) {
         startup_urls->at(0) = sync_promo_url;
-      else
+      } else {
         startup_urls->insert(startup_urls->begin(), sync_promo_url);
+      }
     }
   }
 }

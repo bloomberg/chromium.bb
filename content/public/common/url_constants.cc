@@ -38,22 +38,22 @@ const char kChromeUITracingHost[] = "tracing";
 const char kChromeUIUberHost[] = "chrome";
 const char kChromeUIWebRTCInternalsHost[] = "webrtc-internals";
 
-const char kChromeUIBadCastCrashURL[] = "chrome://badcastcrash";
-const char kChromeUIBrowserCrashURL[] = "chrome://inducebrowsercrashforrealz";
-const char kChromeUIBrowserUIHang[] = "chrome://uithreadhang";
-const char kChromeUICrashURL[] = "chrome://crash";
-const char kChromeUIDelayedBrowserUIHang[] = "chrome://delayeduithreadhang";
-const char kChromeUIDumpURL[] = "chrome://crashdump";
-const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
-const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
-const char kChromeUIGpuHangURL[] = "chrome://gpuhang";
-const char kChromeUIHangURL[] = "chrome://hang";
-const char kChromeUIKillURL[] = "chrome://kill";
-const char kChromeUIMemoryExhaustURL[] = "chrome://memory-exhaust";
-const char kChromeUINetworkErrorURL[] = "chrome://network-error";
-const char kChromeUINetworkErrorsListingURL[] = "chrome://network-errors";
-const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash";
-const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang";
+const char kChromeUIBadCastCrashURL[] = "chrome://badcastcrash/";
+const char kChromeUIBrowserCrashURL[] = "chrome://inducebrowsercrashforrealz/";
+const char kChromeUIBrowserUIHang[] = "chrome://uithreadhang/";
+const char kChromeUICrashURL[] = "chrome://crash/";
+const char kChromeUIDelayedBrowserUIHang[] = "chrome://delayeduithreadhang/";
+const char kChromeUIDumpURL[] = "chrome://crashdump/";
+const char kChromeUIGpuCleanURL[] = "chrome://gpuclean/";
+const char kChromeUIGpuCrashURL[] = "chrome://gpucrash/";
+const char kChromeUIGpuHangURL[] = "chrome://gpuhang/";
+const char kChromeUIHangURL[] = "chrome://hang/";
+const char kChromeUIKillURL[] = "chrome://kill/";
+const char kChromeUIMemoryExhaustURL[] = "chrome://memory-exhaust/";
+const char kChromeUINetworkErrorURL[] = "chrome://network-error/";
+const char kChromeUINetworkErrorsListingURL[] = "chrome://network-errors/";
+const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash/";
+const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang/";
 
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.

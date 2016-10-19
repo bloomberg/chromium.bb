@@ -299,12 +299,11 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
     return false;
 
   if (!IsInstantExtendedAPIEnabled())
-    return url == GURL(chrome::kChromeUINewTabURL);
+    return url == chrome::kChromeUINewTabURL;
 
   const base::string16 search_terms = ExtractSearchTermsFromURL(profile, url);
-  return profile &&
-      ((IsInstantURL(url, profile) && search_terms.empty()) ||
-       url == GURL(chrome::kChromeSearchLocalNtpUrl));
+  return profile && ((IsInstantURL(url, profile) && search_terms.empty()) ||
+                     url == chrome::kChromeSearchLocalNtpUrl);
 }
 
 bool IsInstantNTP(const content::WebContents* contents) {
@@ -331,7 +330,7 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
     return false;
 
-  if (url == GURL(chrome::kChromeSearchLocalNtpUrl))
+  if (url == chrome::kChromeSearchLocalNtpUrl)
     return true;
 
   GURL new_tab_url(GetNewTabPageURL(profile));

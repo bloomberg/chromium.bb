@@ -67,7 +67,7 @@ bool IsNTP(const content::WebContents* contents) {
   // whereas we want the visible entry.
   const content::NavigationEntry* entry =
       contents->GetController().GetVisibleEntry();
-  if (entry && entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL))
+  if (entry && entry->GetVirtualURL() == chrome::kChromeUINewTabURL)
     return true;
 
   return search::IsInstantNTP(contents);
@@ -78,7 +78,7 @@ bool IsLocal(const content::WebContents* contents) {
     return false;
   const content::NavigationEntry* entry =
       contents->GetController().GetVisibleEntry();
-  return entry && entry->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
+  return entry && entry->GetURL() == chrome::kChromeSearchLocalNtpUrl;
 }
 
 // Returns true if |contents| are rendered inside an Instant process.
@@ -253,7 +253,7 @@ void SearchTabHelper::DidNavigateMainFrame(
   content::NavigationEntry* entry =
       web_contents_->GetController().GetLastCommittedEntry();
   if (entry && entry->GetTitle().empty() &&
-      (entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) ||
+      (entry->GetVirtualURL() == chrome::kChromeUINewTabURL ||
        search::NavEntryIsInstantNTP(web_contents_, entry))) {
     web_contents_->UpdateTitleForEntry(
         entry, l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));

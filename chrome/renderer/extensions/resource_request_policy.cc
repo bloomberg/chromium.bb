@@ -94,7 +94,7 @@ bool ResourceRequestPolicy::CanRequestResource(
         !ui::PageTransitionIsWebTriggerable(transition_type);
     // - unreachable web page error page (to allow showing the icon of the
     //   unreachable app on this page)
-    bool is_error_page = frame_url == GURL(content::kUnreachableWebDataURL);
+    bool is_error_page = frame_url == content::kUnreachableWebDataURL;
 
     if (!is_empty_origin && !is_own_resource &&
         !is_dev_tools && !transition_allowed && !is_error_page) {

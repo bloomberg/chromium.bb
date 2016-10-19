@@ -703,7 +703,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   [self openUrls:urls];
 
   if (startupIndex != TabStripModel::kNoTab &&
-      startupContent->GetVisibleURL() == GURL(chrome::kChromeUINewTabURL)) {
+      startupContent->GetVisibleURL() == chrome::kChromeUINewTabURL) {
     browser->tab_strip_model()->CloseWebContentsAt(startupIndex,
         TabStripModel::CLOSE_NONE);
   }

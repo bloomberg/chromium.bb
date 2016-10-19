@@ -146,11 +146,11 @@ void SubframeLogger::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
-  if (url == GURL(chrome::kChromeUIExtensionsFrameURL) ||
-      url == GURL(chrome::kChromeUIHelpFrameURL) ||
-      url == GURL(chrome::kChromeUIHistoryFrameURL) ||
-      url == GURL(chrome::kChromeUISettingsFrameURL) ||
-      url == GURL(chrome::kChromeUIUberFrameURL)) {
+  if (url == chrome::kChromeUIExtensionsFrameURL ||
+      url == chrome::kChromeUIHelpFrameURL ||
+      url == chrome::kChromeUIHistoryFrameURL ||
+      url == chrome::kChromeUISettingsFrameURL ||
+      url == chrome::kChromeUIUberFrameURL) {
     webui::LogWebUIUrl(url);
   }
 }

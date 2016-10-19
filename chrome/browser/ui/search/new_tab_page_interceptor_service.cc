@@ -61,7 +61,7 @@ class NewTabPageInterceptor : public net::URLRequestInterceptor {
       net::NetworkDelegate* network_delegate) const override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if ((request->url() != new_tab_url_) ||
-        (new_tab_url_ == GURL(chrome::kChromeSearchLocalNtpUrl))) {
+        (new_tab_url_ == chrome::kChromeSearchLocalNtpUrl)) {
       return nullptr;
     }
     // User has canceled this navigation so it shouldn't be redirected.

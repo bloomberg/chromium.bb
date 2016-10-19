@@ -734,7 +734,7 @@ bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
 
 // static
 bool PrerenderManager::DoesSubresourceURLHaveValidScheme(const GURL& url) {
-  return DoesURLHaveValidScheme(url) || url == GURL(url::kAboutBlankURL);
+  return DoesURLHaveValidScheme(url) || url == url::kAboutBlankURL;
 }
 
 std::unique_ptr<base::DictionaryValue> PrerenderManager::GetAsValue() const {
