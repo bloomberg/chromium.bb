@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/tracing.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -86,9 +85,6 @@ class LoginSigninTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
-
-    ASSERT_TRUE(tracing::BeginTracingWithWatch(
-        "ui", "ui", "ShowLoginWebUI", 1));
   }
 };
 
@@ -245,10 +241,10 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
 
 // Verifies that the webui for login comes up successfully.
 IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
-  base::TimeDelta no_timeout;
-  EXPECT_TRUE(tracing::WaitForWatchEvent(no_timeout));
-  std::string json_events;
-  ASSERT_TRUE(tracing::EndTracing(&json_events));
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources())
+      .Wait();
 }
 
 
