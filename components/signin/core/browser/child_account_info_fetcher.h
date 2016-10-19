@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "build/build_config.h"
@@ -25,9 +26,8 @@ class OAuth2TokenService;
 class ChildAccountInfoFetcher {
  public:
   // Caller takes ownership of the fetcher and keeps it alive in order to
-  // receive updates except on Android where the return value is a nullptr
-  // and there are no updates due to a stale OS cache.
-  static ChildAccountInfoFetcher* CreateFrom(
+  // receive updates.
+  static std::unique_ptr<ChildAccountInfoFetcher> CreateFrom(
       const std::string& account_id,
       AccountFetcherService* fetcher_service,
       OAuth2TokenService* token_service,

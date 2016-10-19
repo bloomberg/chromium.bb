@@ -4,6 +4,7 @@
 
 #include "components/signin/core/browser/child_account_info_fetcher.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
@@ -13,20 +14,18 @@
 #endif
 
 // static
-ChildAccountInfoFetcher* ChildAccountInfoFetcher::CreateFrom(
+std::unique_ptr<ChildAccountInfoFetcher> ChildAccountInfoFetcher::CreateFrom(
     const std::string& account_id,
     AccountFetcherService* fetcher_service,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context_getter,
     invalidation::InvalidationService* invalidation_service) {
 #if defined(OS_ANDROID)
-  ChildAccountInfoFetcherAndroid::StartFetchingChildAccountInfo(fetcher_service,
-                                                                account_id);
-  return nullptr;
+  return ChildAccountInfoFetcherAndroid::Create(fetcher_service, account_id);
 #else
-  return new ChildAccountInfoFetcherImpl(account_id, fetcher_service,
-                                         token_service, request_context_getter,
-                                         invalidation_service);
+  return base::MakeUnique<ChildAccountInfoFetcherImpl>(
+      account_id, fetcher_service, token_service, request_context_getter,
+      invalidation_service);
 #endif
 }
 

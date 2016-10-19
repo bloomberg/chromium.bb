@@ -214,9 +214,9 @@ void AccountFetcherService::StartFetchingUserInfo(
 // Starts fetching whether this is a child account. Handles refresh internally.
 void AccountFetcherService::StartFetchingChildInfo(
     const std::string& account_id) {
-  child_info_request_.reset(ChildAccountInfoFetcher::CreateFrom(
+  child_info_request_ = ChildAccountInfoFetcher::CreateFrom(
       child_request_account_id_, this, token_service_,
-      signin_client_->GetURLRequestContext(), invalidation_service_));
+      signin_client_->GetURLRequestContext(), invalidation_service_);
 }
 
 void AccountFetcherService::ResetChildInfo() {

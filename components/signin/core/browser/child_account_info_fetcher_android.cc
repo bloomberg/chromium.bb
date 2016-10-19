@@ -13,19 +13,36 @@
 using base::android::JavaParamRef;
 
 // static
-void ChildAccountInfoFetcherAndroid::StartFetchingChildAccountInfo(
+std::unique_ptr<ChildAccountInfoFetcher> ChildAccountInfoFetcherAndroid::Create(
     AccountFetcherService* service,
     const std::string& account_id) {
-  JNIEnv* env = base::android::AttachCurrentThread();
   std::string account_name =
       service->account_tracker_service()->GetAccountInfo(account_id).email;
   // The AccountTrackerService may not be populated correctly in tests.
   if (account_name.empty())
-    return;
-  Java_ChildAccountInfoFetcher_fetch(
+    return nullptr;
+
+  // Call the constructor directly instead of using base::MakeUnique because the
+  // constructor is private. Also, use the std::unique_ptr<> constructor instead
+  // of base::WrapUnique because the _destructor_ of the subclass is private.
+  return std::unique_ptr<ChildAccountInfoFetcher>(
+      new ChildAccountInfoFetcherAndroid(service, account_id, account_name));
+}
+
+ChildAccountInfoFetcherAndroid::ChildAccountInfoFetcherAndroid(
+    AccountFetcherService* service,
+    const std::string& account_id,
+    const std::string& account_name) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  j_child_account_info_fetcher_.Reset(Java_ChildAccountInfoFetcher_create(
       env, reinterpret_cast<jlong>(service),
       base::android::ConvertUTF8ToJavaString(env, account_id),
-      base::android::ConvertUTF8ToJavaString(env, account_name));
+      base::android::ConvertUTF8ToJavaString(env, account_name)));
+}
+
+ChildAccountInfoFetcherAndroid::~ChildAccountInfoFetcherAndroid() {
+  Java_ChildAccountInfoFetcher_destroy(base::android::AttachCurrentThread(),
+                                       j_child_account_info_fetcher_.obj());
 }
 
 // static

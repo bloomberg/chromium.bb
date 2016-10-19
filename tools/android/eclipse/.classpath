@@ -63,6 +63,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/precache/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/javatests/src"/>
     <classpathentry kind="src" path="components/safe_json/android/java/src"/>
+    <classpathentry kind="src" path="components/signin/core/browser/android/java/src"/>
+    <classpathentry kind="src" path="components/signin/core/browser/android/javatests/src"/>
     <classpathentry kind="src" path="components/sync/android/java/src"/>
     <classpathentry kind="src" path="components/sync/android/javatests/src"/>
     <classpathentry kind="src" path="components/test/android/browsertests_apk/src"/>
