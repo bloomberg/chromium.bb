@@ -57,7 +57,10 @@ class WPTServe(server_base.ServerBase):
             return
 
         # TODO(burnik): Figure out a cleaner way of stopping wptserve.
-        self._executive.interrupt(self._pid)
+        if self._platform.is_win():
+            self._executive.kill_process(self._pid)
+        else:
+            self._executive.interrupt(self._pid)
 
         # According to Popen.wait(), this can deadlock when using stdout=PIPE and/or stderr=PIPE.
         # We're using DEVNULL for both so that should not occur.
