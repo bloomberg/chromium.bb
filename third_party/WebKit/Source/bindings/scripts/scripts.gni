@@ -309,9 +309,13 @@ template("compute_global_objects") {
     args = [
       "--idl-files-list",
       rebase_path(idl_files_list, root_build_dir),
-      "--",
     ]
-    args += rebase_path(invoker.sources_generated, root_build_dir)
+    foreach(component, invoker.sources_generated) {
+      args += [
+        "--global-objects-component-files",
+        rebase_path(component, root_build_dir),
+      ]
+    }
     args += [ rebase_path(invoker.output_file, root_build_dir) ]
 
     deps = invoker.deps

@@ -12,12 +12,18 @@ their definition: http://heycam.github.io/webidl/#Global
 Design document: http://www.chromium.org/developers/design-documents/idl-build
 """
 
+# pylint: disable=relative-import
+
 import optparse
 import os
-import cPickle as pickle
 import sys
 
-from utilities import get_file_contents, idl_filename_to_interface_name, get_interface_extended_attributes_from_idl, read_file_to_list, read_pickle_files, write_pickle_file
+from utilities import get_file_contents
+from utilities import get_interface_extended_attributes_from_idl
+from utilities import idl_filename_to_interface_name
+from utilities import read_file_to_list
+from utilities import read_pickle_files
+from utilities import write_pickle_file
 
 GLOBAL_EXTENDED_ATTRIBUTES = frozenset([
     'Global',
@@ -26,17 +32,20 @@ GLOBAL_EXTENDED_ATTRIBUTES = frozenset([
 
 
 def parse_options():
-    usage = 'Usage: %prog [options] [GlobalObjectsComponent.pickle]... [GlobalObjects.pickle]'
+    usage = 'Usage: %prog [options]  [GlobalObjects.pickle]'
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--idl-files-list', help='file listing IDL files')
+    parser.add_option('--global-objects-component-files', action='append',
+                      help='optionally preceeded input pickle filename.')
 
     options, args = parser.parse_args()
 
     if options.idl_files_list is None:
         parser.error('Must specify a file listing IDL files using --idl-files-list.')
-    if not args:
-        parser.error('Must specify an output pickle filename as argument, '
-                     'optionally preceeded by input pickle filenames.')
+    if options.global_objects_component_files is None:
+        options.global_objects_component_files = []
+    if len(args) != 1:
+        parser.error('Must specify an output pickle filename as an argument')
 
     return options, args
 
@@ -86,11 +95,11 @@ def idl_files_to_interface_name_global_names(idl_files):
 
 def main():
     options, args = parse_options()
-    # args = Input1, Input2, ..., Output
     output_global_objects_filename = args.pop()
     interface_name_global_names = dict_union(
         existing_interface_name_global_names
-        for existing_interface_name_global_names in read_pickle_files(args))
+        for existing_interface_name_global_names
+        in read_pickle_files(options.global_objects_component_files))
 
     # Input IDL files are passed in a file, due to OS command line length
     # limits. This is generated at GYP time, which is ok b/c files are static.
