@@ -109,10 +109,6 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
                          bool is_page,
                          bool is_positive) override;
 
-  // TODO(djacobo): Remove this method when http://crbug.com/656198  is closed.
-  // Force |contents_viewport_| to enable a Layer().
-  void EnableViewPortLayer();
-
  private:
   friend class test::ScrollViewTestApi;
 

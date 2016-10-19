@@ -70,32 +70,15 @@ void OnIntentPickerClosed(int render_process_host_id,
                           int routing_id,
                           const GURL& url,
                           mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
-                          std::string selected_app_package,
+                          size_t selected_app_index,
                           ArcNavigationThrottle::CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  size_t selected_app_index = handlers.size();
   // Make sure that the instance at least supports HandleUrl.
   auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
       "HandleUrl", kMinVersionForHandleUrl);
-  if (!instance) {
+  if (!instance || selected_app_index >= handlers.size())
     close_reason = ArcNavigationThrottle::CloseReason::ERROR;
-  } else if (close_reason ==
-                 ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED ||
-             close_reason ==
-                 ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED) {
-    // If the user selected an app to continue the navigation, confirm that the
-    // |package_name| matches a valid option and return the index.
-    for (size_t i = 0; i < handlers.size(); ++i) {
-      if (handlers[i]->package_name == selected_app_package) {
-        selected_app_index = i;
-        break;
-      }
-    }
-
-    if (selected_app_index == handlers.size())
-      close_reason = ArcNavigationThrottle::CloseReason::ERROR;
-  }
 
   switch (close_reason) {
     case ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED: {
@@ -144,16 +127,15 @@ void OnAppIconsReceived(
     std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  using AppInfo = arc::ArcNavigationThrottle::AppInfo;
-  std::vector<AppInfo> app_info;
+  using NameAndIcon = std::pair<std::string, gfx::Image>;
+  std::vector<NameAndIcon> app_info;
 
   for (const auto& handler : handlers) {
     const ActivityIconLoader::ActivityName activity(handler->package_name,
                                                     handler->activity_name);
     const auto it = icons->find(activity);
     app_info.emplace_back(
-        AppInfo(it != icons->end() ? it->second.icon20 : gfx::Image(),
-                handler->package_name, handler->name));
+        handler->name, it != icons->end() ? it->second.icon20 : gfx::Image());
   }
 
   auto show_bubble_cb = base::Bind(ShowIntentPickerBubble());

@@ -183,7 +183,12 @@ ScrollView::ScrollView()
 
   if (!base::FeatureList::IsEnabled(kToolkitViewsScrollWithLayers))
     return;
-  EnableViewPortLayer();
+
+  background_color_ = SK_ColorWHITE;
+  contents_viewport_->set_background(
+      Background::CreateSolidBackground(background_color_));
+  contents_viewport_->SetPaintToLayer(true);
+  contents_viewport_->layer()->SetMasksToBounds(true);
 }
 
 ScrollView::~ScrollView() {
@@ -692,14 +697,6 @@ bool ScrollView::ScrollsWithLayers() const {
   // Just check for the presence of a layer since it's cheaper than querying the
   // Feature flag each time.
   return contents_viewport_->layer() != nullptr;
-}
-
-void ScrollView::EnableViewPortLayer() {
-  background_color_ = SK_ColorWHITE;
-  contents_viewport_->set_background(
-      Background::CreateSolidBackground(background_color_));
-  contents_viewport_->SetPaintToLayer(true);
-  contents_viewport_->layer()->SetMasksToBounds(true);
 }
 
 void ScrollView::OnLayerScrolled() {

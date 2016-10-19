@@ -6,13 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_INTENT_PICKER_BUBBLE_VIEW_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_navigation_throttle.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -33,8 +31,6 @@ namespace ui {
 class Event;
 }  // namespace ui
 
-class IntentPickerLabelButton;
-
 // A bubble that displays a list of aplications (icons and names), after the
 // list we show a pair of buttons which allow the user to remember the selection
 // or not. This class comunicates the user's selection with a callback used by
@@ -47,49 +43,47 @@ class IntentPickerLabelButton;
 //   |  ...                           |
 //   | Icon(N) Name(N)                |
 //   |                                |
-//   |           [Just once] [Always] |
+//   |           [JUST ONCE] [ALWAYS] |
 //   +--------------------------------+
 
 class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
                                public views::ButtonListener,
                                public content::WebContentsObserver {
  public:
-  using AppInfo = arc::ArcNavigationThrottle::AppInfo;
+  using NameAndIcon = arc::ArcNavigationThrottle::NameAndIcon;
+  // This callback informs the index of the app selected by the user, along with
+  // the reason why the Bubble was closed. The size_t param must have a value in
+  // the range [0, app_info.size()-1], except when the CloseReason is ERROR or
+  // DIALOG_DEACTIVATED, for these cases we return a dummy value
+  // |kAppTagNoneSelected| which won't be used at all and has no significance.
+  using ThrottleCallback =
+      base::Callback<void(size_t, arc::ArcNavigationThrottle::CloseReason)>;
 
   ~IntentPickerBubbleView() override;
   static void ShowBubble(content::WebContents* web_contents,
-                         const std::vector<AppInfo>& app_info,
-                         const IntentPickerResponse& intent_picker_cb);
+                         const std::vector<NameAndIcon>& app_info,
+                         const ThrottleCallback& throttle_cb);
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
-      const std::vector<AppInfo>& app_info,
-      const IntentPickerResponse& intent_picker_cb,
+      const std::vector<NameAndIcon>& app_info,
+      const ThrottleCallback& throttle_cb,
       content::WebContents* web_contents);
-
-  // views::BubbleDialogDelegateView overrides:
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
 
  protected:
   // views::BubbleDialogDelegateView overrides:
   void Init() override;
-  base::string16 GetWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
  private:
   friend class IntentPickerBubbleViewTest;
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, NullIcons);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, NonNullIcons);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, LabelsPtrVectorSize);
-  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, VerifyStartingInkDrop);
-  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, InkDropStateTransition);
-  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, PressButtonTwice);
-  IntentPickerBubbleView(const std::vector<AppInfo>& app_info,
-                         IntentPickerResponse intent_picker_cb,
+  IntentPickerBubbleView(const std::vector<NameAndIcon>& app_info,
+                         ThrottleCallback throttle_cb,
                          content::WebContents* web_contents);
 
   // views::BubbleDialogDelegateView overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
+  int GetDialogButtons() const override;
 
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -100,25 +94,26 @@ class IntentPickerBubbleView : public views::BubbleDialogDelegateView,
   // content::WebContentsObserver overrides:
   void WebContentsDestroyed() override;
 
-  // Retrieves the IntentPickerLabelButton* contained at position |index| from
-  // the internal ScrollView.
-  IntentPickerLabelButton* GetIntentPickerLabelButtonAt(size_t index);
-  void RunCallback(std::string package,
-                   arc::ArcNavigationThrottle::CloseReason close_reason);
+  // Retrieves the LabelButton* contained at position |index| from the internal
+  // ScrollView.
+  views::LabelButton* GetLabelButtonAt(size_t index);
+  void SetLabelButtonBackgroundColor(size_t index, SkColor color);
 
-  gfx::ImageSkia GetAppImageForTesting(size_t index);
-  views::InkDropState GetInkDropStateForTesting(size_t);
-  void PressButtonForTesting(size_t index, const ui::Event& event);
+  // Flag set to true iff the callback was Run at some previous step, used to
+  // ensure we only use the callback once.
+  bool was_callback_run_;
 
   // Callback used to respond to ArcNavigationThrottle.
-  IntentPickerResponse intent_picker_cb_;
+  ThrottleCallback throttle_cb_;
 
-  // Pre-select the first app on the list.
-  size_t selected_app_tag_ = 0;
+  // Keeps a invalid value unless the user explicitly makes a decision.
+  size_t selected_app_tag_;
 
+  views::LabelButton* always_button_;
+  views::LabelButton* just_once_button_;
   views::ScrollView* scroll_view_;
 
-  std::vector<AppInfo> app_info_;
+  std::vector<NameAndIcon> app_info_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleView);
 };

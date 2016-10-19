@@ -3129,6 +3129,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
     }
 
+    // TODO(djacobo): Support incognito mode by showing an aditional dialog as a
+    // warning that the selected app is not in incognito mode.
     const arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
     if (auth_service && auth_service->IsArcEnabled() &&
         !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
