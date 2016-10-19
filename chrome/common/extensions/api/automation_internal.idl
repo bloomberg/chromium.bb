@@ -28,6 +28,7 @@ namespace automationInternal {
     focus,
     doDefault,
     makeVisible,
+    setAccessibilityFocus,
     setSelection,
     showContextMenu
   };

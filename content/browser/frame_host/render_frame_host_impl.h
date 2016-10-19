@@ -183,27 +183,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // BrowserAccessibilityDelegate
-  void AccessibilitySetFocus(int acc_obj_id) override;
-  void AccessibilityDoDefaultAction(int acc_obj_id) override;
-  void AccessibilityShowContextMenu(int acc_obj_id) override;
-  void AccessibilityScrollToMakeVisible(int acc_obj_id,
-                                        const gfx::Rect& subfocus) override;
-  void AccessibilityScrollToPoint(int acc_obj_id,
-                                  const gfx::Point& point) override;
-  void AccessibilitySetScrollOffset(int acc_obj_id,
-                                    const gfx::Point& offset) override;
-  void AccessibilitySetSelection(int anchor_object_id,
-                                 int anchor_offset,
-                                 int focus_object_id,
-                                 int focus_offset) override;
-  void AccessibilitySetValue(int acc_obj_id, const base::string16& value)
-      override;
+  void AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool AccessibilityViewHasFocus() const override;
   gfx::Rect AccessibilityGetViewBounds() const override;
   gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const override;
-  void AccessibilityHitTest(const gfx::Point& point) override;
-  void AccessibilitySetAccessibilityFocus(int acc_obj_id) override;
   void AccessibilityFatalError() override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;

@@ -55,14 +55,7 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
   void HandleAlert(content::BrowserContext* context, const std::string& text);
 
   // AutomationActionAdapter implementation.
-  void DoDefault(int32_t id) override;
-  void Focus(int32_t id) override;
-  void MakeVisible(int32_t id) override;
-  void SetSelection(int32_t anchor_id,
-                    int32_t anchor_offset,
-                    int32_t focus_id,
-                    int32_t focus_offset) override;
-  void ShowContextMenu(int32_t id) override;
+  void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.
   void OnChildWindowRemoved(views::AXAuraObjWrapper* parent) override;

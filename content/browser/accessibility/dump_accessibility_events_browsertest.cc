@@ -93,7 +93,6 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   waiter.reset(new AccessibilityNotificationWaiter(
       shell()->web_contents(), AccessibilityModeComplete, ui::AX_EVENT_NONE));
 
-
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("go()"));
 
@@ -109,7 +108,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
       shell()->web_contents(), AccessibilityModeComplete, ui::AX_EVENT_HOVER));
   BrowserAccessibilityManager* manager =
       web_contents->GetRootBrowserAccessibilityManager();
-  manager->delegate()->AccessibilityHitTest(gfx::Point(0, 0));
+  manager->HitTest(gfx::Point(0, 0));
   waiter->WaitForNotification();
 
   // Save a copy of the final accessibility tree (as a text dump); we'll

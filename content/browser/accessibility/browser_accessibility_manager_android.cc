@@ -359,8 +359,7 @@ void BrowserAccessibilityManagerAndroid::HitTest(
     const JavaParamRef<jobject>& obj,
     jint x,
     jint y) {
-  if (delegate())
-    delegate()->AccessibilityHitTest(gfx::Point(x, y));
+  BrowserAccessibilityManager::HitTest(gfx::Point(x, y));
 }
 
 jboolean BrowserAccessibilityManagerAndroid::IsEditableText(
@@ -699,8 +698,8 @@ void BrowserAccessibilityManagerAndroid::ShowContextMenu(
     const JavaParamRef<jobject>& obj,
     jint id) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
-  if (node && node->manager()->delegate())
-    node->manager()->delegate()->AccessibilityShowContextMenu(node->GetId());
+  if (node)
+    node->manager()->ShowContextMenu(*node);
 }
 
 void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
@@ -909,10 +908,7 @@ void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
   if (!node)
     return;
 
-  if (node->manager()->delegate()) {
-    node->manager()->delegate()->AccessibilitySetAccessibilityFocus(
-        node->GetId());
-  }
+  node->manager()->SetAccessibilityFocus(*node);
 }
 
 bool BrowserAccessibilityManagerAndroid::IsSlider(

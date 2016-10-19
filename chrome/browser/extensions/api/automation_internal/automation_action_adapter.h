@@ -7,32 +7,20 @@
 
 #include <stdint.h>
 
+#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/geometry/point.h"
+
+namespace ui {
+struct AXActionData;
+}
 
 namespace extensions {
 
 // Adapts an object to receive actions from the Automation extension API.
 class AutomationActionAdapter {
  public:
-  // Performs a default action (e.g. click, check) on the target node.
-  virtual void DoDefault(int32_t id) = 0;
-
-  // Performs a focus action on the target node.
-  virtual void Focus(int32_t id) = 0;
-
-  // Makes the node visible by scrolling; does not change nodes from hidden to
-  // shown.
-  virtual void MakeVisible(int32_t id) = 0;
-
-  // Sets selection for anchor and focus node/offset pairs.  Also used to set
-  // selection in text fields.
-  virtual void SetSelection(int32_t anchor_id,
-                            int32_t anchor_offset,
-                            int32_t focus_id,
-                            int32_t focus_offset) = 0;
-
-  // Shows the context menu resulting from a right click.
-  virtual void ShowContextMenu(int32_t id) = 0;
+  // Performs an action on the target node.
+  virtual void PerformAction(const ui::AXActionData& data) = 0;
 };
 
 }  // namespace extensions
