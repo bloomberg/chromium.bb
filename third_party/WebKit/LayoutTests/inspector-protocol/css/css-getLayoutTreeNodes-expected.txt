@@ -16,7 +16,8 @@ LayoutTreeNodes result:
         "y": 0,
         "width": 785,
         "height": 600
-      }
+      },
+      "styleIndex": 0
     },
     {
       "backendNodeId": 2,
@@ -24,8 +25,9 @@ LayoutTreeNodes result:
         "x": 0,
         "y": 0,
         "width": 785,
-        "height": 860
-      }
+        "height": 911
+      },
+      "styleIndex": 1
     },
     {
       "backendNodeId": 3,
@@ -33,8 +35,9 @@ LayoutTreeNodes result:
         "x": 8,
         "y": 8,
         "width": 769,
-        "height": 844
-      }
+        "height": 882
+      },
+      "styleIndex": 2
     },
     {
       "backendNodeId": 4,
@@ -42,8 +45,9 @@ LayoutTreeNodes result:
         "x": 8,
         "y": 8,
         "width": 769,
-        "height": 844
-      }
+        "height": 882
+      },
+      "styleIndex": 2
     },
     {
       "backendNodeId": 5,
@@ -52,7 +56,8 @@ LayoutTreeNodes result:
         "y": 8,
         "width": 769,
         "height": 16
-      }
+      },
+      "styleIndex": 3
     },
     {
       "backendNodeId": 6,
@@ -74,7 +79,8 @@ LayoutTreeNodes result:
           "startCharacterIndex": 0,
           "numCharacters": 9
         }
-      ]
+      ],
+      "styleIndex": 4
     },
     {
       "backendNodeId": 7,
@@ -96,7 +102,8 @@ LayoutTreeNodes result:
           "startCharacterIndex": 1,
           "numCharacters": 14
         }
-      ]
+      ],
+      "styleIndex": 4
     },
     {
       "backendNodeId": 8,
@@ -105,7 +112,8 @@ LayoutTreeNodes result:
         "y": 24,
         "width": 200,
         "height": 576
-      }
+      },
+      "styleIndex": 5
     },
     {
       "backendNodeId": 9,
@@ -114,7 +122,8 @@ LayoutTreeNodes result:
         "y": 40,
         "width": 200,
         "height": 480
-      }
+      },
+      "styleIndex": 6
     },
     {
       "backendNodeId": 10,
@@ -436,7 +445,8 @@ LayoutTreeNodes result:
           "startCharacterIndex": 341,
           "numCharacters": 8
         }
-      ]
+      ],
+      "styleIndex": 4
     },
     {
       "backendNodeId": 11,
@@ -445,7 +455,8 @@ LayoutTreeNodes result:
         "y": 536,
         "width": 200,
         "height": 48
-      }
+      },
+      "styleIndex": 7
     },
     {
       "backendNodeId": 12,
@@ -454,7 +465,8 @@ LayoutTreeNodes result:
         "y": 536,
         "width": 160,
         "height": 16
-      }
+      },
+      "styleIndex": 8
     },
     {
       "backendNodeId": 13,
@@ -463,7 +475,8 @@ LayoutTreeNodes result:
         "y": 552,
         "width": 144,
         "height": 32
-      }
+      },
+      "styleIndex": 9
     },
     {
       "backendNodeId": 14,
@@ -495,7 +508,8 @@ LayoutTreeNodes result:
           "startCharacterIndex": 10,
           "numCharacters": 6
         }
-      ]
+      ],
+      "styleIndex": 9
     },
     {
       "backendNodeId": 15,
@@ -505,7 +519,8 @@ LayoutTreeNodes result:
         "width": 0,
         "height": 0
       },
-      "layoutText": "\n        "
+      "layoutText": "\n        ",
+      "styleIndex": 4
     },
     {
       "backendNodeId": 16,
@@ -515,7 +530,8 @@ LayoutTreeNodes result:
         "width": 0,
         "height": 0
       },
-      "layoutText": "\n    "
+      "layoutText": "\n    ",
+      "styleIndex": 4
     },
     {
       "backendNodeId": 17,
@@ -524,7 +540,8 @@ LayoutTreeNodes result:
         "y": 516,
         "width": 32,
         "height": 200
-      }
+      },
+      "styleIndex": 10
     },
     {
       "backendNodeId": 18,
@@ -556,7 +573,8 @@ LayoutTreeNodes result:
           "startCharacterIndex": 8,
           "numCharacters": 5
         }
-      ]
+      ],
+      "styleIndex": 11
     },
     {
       "backendNodeId": 19,
@@ -565,7 +583,8 @@ LayoutTreeNodes result:
         "y": 634,
         "width": 400,
         "height": 200
-      }
+      },
+      "styleIndex": 12
     },
     {
       "backendNodeId": 20,
@@ -574,7 +593,8 @@ LayoutTreeNodes result:
         "y": 642,
         "width": 384,
         "height": 184
-      }
+      },
+      "styleIndex": 13
     },
     {
       "backendNodeId": 21,
@@ -583,7 +603,8 @@ LayoutTreeNodes result:
         "y": 642,
         "width": 384,
         "height": 16
-      }
+      },
+      "styleIndex": 14
     },
     {
       "backendNodeId": 22,
@@ -605,7 +626,8 @@ LayoutTreeNodes result:
           "startCharacterIndex": 1,
           "numCharacters": 22
         }
-      ]
+      ],
+      "styleIndex": 4
     },
     {
       "backendNodeId": 23,
@@ -614,7 +636,8 @@ LayoutTreeNodes result:
         "y": 632,
         "width": 404,
         "height": 204
-      }
+      },
+      "styleIndex": 15
     },
     {
       "backendNodeId": 24,
@@ -624,47 +647,567 @@ LayoutTreeNodes result:
         "width": 0,
         "height": 0
       },
-      "layoutText": "\n    "
+      "layoutText": "\n    ",
+      "styleIndex": 4
     },
     {
       "backendNodeId": 25,
       "boundingBox": {
         "x": 8,
-        "y": 836,
+        "y": 857,
         "width": 769,
-        "height": 16
-      }
+        "height": 33
+      },
+      "styleIndex": 16
     },
     {
       "backendNodeId": 26,
       "boundingBox": {
         "x": 8,
-        "y": 836,
-        "width": 48,
-        "height": 16
+        "y": 857,
+        "width": 769,
+        "height": 33
+      },
+      "styleIndex": 16
+    },
+    {
+      "backendNodeId": 27,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 96,
+        "height": 33
       },
       "layoutText": "Hi!",
       "inlineTextNodes": [
         {
           "boundingBox": {
             "x": 8,
-            "y": 836,
-            "width": 48,
-            "height": 16
+            "y": 857.4375,
+            "width": 96,
+            "height": 32
           },
           "startCharacterIndex": 0,
           "numCharacters": 3
         }
+      ],
+      "styleIndex": 17
+    },
+    {
+      "backendNodeId": 28,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 769,
+        "height": 33
+      },
+      "styleIndex": 16
+    }
+  ],
+  "computedStyles": [
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": ""
+        },
+        {
+          "name": "transform-origin",
+          "value": ""
+        },
+        {
+          "name": "height",
+          "value": ""
+        },
+        {
+          "name": "width",
+          "value": ""
+        },
+        {
+          "name": "display",
+          "value": ""
+        },
+        {
+          "name": "outline-color",
+          "value": ""
+        }
       ]
     },
     {
-      "backendNodeId": 27,
-      "boundingBox": {
-        "x": 8,
-        "y": 836,
-        "width": 769,
-        "height": 16
-      }
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "392.5px 455.438px"
+        },
+        {
+          "name": "height",
+          "value": "910.875px"
+        },
+        {
+          "name": "width",
+          "value": "785px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "384.5px 440.719px"
+        },
+        {
+          "name": "height",
+          "value": "881.438px"
+        },
+        {
+          "name": "width",
+          "value": "769px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "384.5px 8px"
+        },
+        {
+          "name": "height",
+          "value": "16px"
+        },
+        {
+          "name": "width",
+          "value": "769px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 288px"
+        },
+        {
+          "name": "height",
+          "value": "576px"
+        },
+        {
+          "name": "width",
+          "value": "200px"
+        },
+        {
+          "name": "display",
+          "value": "inline-block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 240px"
+        },
+        {
+          "name": "height",
+          "value": "480px"
+        },
+        {
+          "name": "width",
+          "value": "200px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 24px"
+        },
+        {
+          "name": "height",
+          "value": "48px"
+        },
+        {
+          "name": "width",
+          "value": "160px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "80px 8px"
+        },
+        {
+          "name": "height",
+          "value": "16px"
+        },
+        {
+          "name": "width",
+          "value": "160px"
+        },
+        {
+          "name": "display",
+          "value": "list-item"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "inline"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0)"
+        },
+        {
+          "name": "transform-origin",
+          "value": "100px 16px"
+        },
+        {
+          "name": "height",
+          "value": "32px"
+        },
+        {
+          "name": "width",
+          "value": "200px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "matrix(6.12323e-17, 1, -1, 6.12323e-17, 0, 0)"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "200px 100px"
+        },
+        {
+          "name": "height",
+          "value": "200px"
+        },
+        {
+          "name": "width",
+          "value": "400px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "192px 92px"
+        },
+        {
+          "name": "height",
+          "value": "184px"
+        },
+        {
+          "name": "width",
+          "value": "384px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "192px 8px"
+        },
+        {
+          "name": "height",
+          "value": "16px"
+        },
+        {
+          "name": "width",
+          "value": "384px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "202px 102px"
+        },
+        {
+          "name": "height",
+          "value": "200px"
+        },
+        {
+          "name": "width",
+          "value": "400px"
+        },
+        {
+          "name": "display",
+          "value": "inline"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "384.5px 16px"
+        },
+        {
+          "name": "height",
+          "value": "32px"
+        },
+        {
+          "name": "width",
+          "value": "769px"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(255, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "block"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(255, 0, 0)"
+        }
+      ]
     }
   ]
 }

@@ -231,6 +231,13 @@ class CORE_EXPORT InspectorCSSAgent final
                             const String& value,
                             bool forceImportant = false);
   void layoutEditorItemSelected(Element*, CSSStyleDeclaration*);
+  void getLayoutTreeAndStyles(
+      ErrorString*,
+      std::unique_ptr<protocol::Array<String>> styleWhitelist,
+      std::unique_ptr<protocol::Array<protocol::CSS::LayoutTreeNode>>*
+          layoutTreeNodes,
+      std::unique_ptr<protocol::Array<protocol::CSS::ComputedStyle>>*
+          computedStyles) override;
 
   HeapVector<Member<CSSStyleDeclaration>> matchingStyles(Element*);
   String styleSheetId(CSSStyleSheet*);
@@ -311,6 +318,25 @@ class CORE_EXPORT InspectorCSSAgent final
   void styleSheetChanged(InspectorStyleSheetBase*) override;
 
   void resetPseudoStates();
+
+  struct VectorStringHashTraits;
+  using ComputedStylesMap = WTF::HashMap<Vector<String>,
+                                         int,
+                                         VectorStringHashTraits,
+                                         VectorStringHashTraits>;
+
+  void visitLayoutTreeNodes(
+      Node*,
+      protocol::Array<protocol::CSS::LayoutTreeNode>& layoutTreeNodes,
+      const Vector<std::pair<String, CSSPropertyID>>& cssPropertyWhitelist,
+      ComputedStylesMap& styleToIndexMap,
+      protocol::Array<protocol::CSS::ComputedStyle>& computedStyles);
+
+  int getStyleIndexForNode(
+      Node*,
+      const Vector<std::pair<String, CSSPropertyID>>& cssPropertyWhitelist,
+      ComputedStylesMap& styleToIndexMap,
+      protocol::Array<protocol::CSS::ComputedStyle>& computedStyles);
 
   Member<InspectorDOMAgent> m_domAgent;
   Member<InspectedFrames> m_inspectedFrames;

@@ -124,10 +124,6 @@ class CORE_EXPORT InspectorDOMAgent final
                    const Maybe<int>& depth,
                    const Maybe<bool>& traverseFrames,
                    std::unique_ptr<protocol::DOM::Node>* root) override;
-  void getLayoutTreeNodes(
-      ErrorString*,
-      std::unique_ptr<protocol::Array<protocol::DOM::LayoutTreeNode>>*
-          layoutTreeNodes) override;
   void collectClassNamesFromSubtree(
       ErrorString*,
       int nodeId,
@@ -301,6 +297,7 @@ class CORE_EXPORT InspectorDOMAgent final
   Node* assertNode(ErrorString*, int nodeId);
   Element* assertElement(ErrorString*, int nodeId);
   Document* assertDocument(ErrorString*, int nodeId);
+  Document* document() const { return m_document.get(); }
 
  private:
   void setDocument(Document*);
@@ -361,9 +358,6 @@ class CORE_EXPORT InspectorDOMAgent final
   bool pushDocumentUponHandlelessOperation(ErrorString*);
 
   Member<InspectorRevalidateDOMTask> revalidateTask();
-
-  void visitLayoutTreeNodes(Node*,
-                            protocol::Array<protocol::DOM::LayoutTreeNode>&);
 
   v8::Isolate* m_isolate;
   Member<InspectedFrames> m_inspectedFrames;

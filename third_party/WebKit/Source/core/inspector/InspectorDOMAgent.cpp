@@ -139,16 +139,6 @@ v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context> context, Node* node) {
   return toV8(node, context->Global(), isolate);
 }
 
-std::unique_ptr<protocol::DOM::Rect> buildRectForFloatRect(
-    const FloatRect& rect) {
-  return protocol::DOM::Rect::create()
-      .setX(rect.x())
-      .setY(rect.y())
-      .setWidth(rect.width())
-      .setHeight(rect.height())
-      .build();
-}
-
 }  // namespace
 
 class InspectorRevalidateDOMTask final
@@ -539,77 +529,6 @@ void InspectorDOMAgent::getDocument(
   *root = buildObjectForNode(m_document.get(), sanitizedDepth,
                              traverseFrames.fromMaybe(false),
                              m_documentNodeToIdMap.get());
-}
-
-void InspectorDOMAgent::getLayoutTreeNodes(
-    ErrorString* errorString,
-    std::unique_ptr<protocol::Array<protocol::DOM::LayoutTreeNode>>*
-        layoutTreeNodes) {
-  layoutTreeNodes->reset(new protocol::Array<protocol::DOM::LayoutTreeNode>);
-  visitLayoutTreeNodes(m_document.get(), *layoutTreeNodes->get());
-}
-
-void InspectorDOMAgent::visitLayoutTreeNodes(
-    Node* node,
-    protocol::Array<protocol::DOM::LayoutTreeNode>& layoutTreeNodes) {
-  for (; node; node = NodeTraversal::next(*node)) {
-    // Visit shadow dom nodes.
-    if (node->isElementNode()) {
-      const Element* element = toElement(node);
-      ElementShadow* elementShadow = element->shadow();
-      if (elementShadow) {
-        visitLayoutTreeNodes(&elementShadow->youngestShadowRoot(),
-                             layoutTreeNodes);
-      }
-    }
-
-    // Pierce iframe boundaries.
-    if (node->isFrameOwnerElement()) {
-      visitLayoutTreeNodes(
-          toHTMLFrameOwnerElement(node)->contentDocument()->documentElement(),
-          layoutTreeNodes);
-    }
-
-    LayoutObject* layoutObject = node->layoutObject();
-    if (!layoutObject)
-      continue;
-
-    int backendNodeId = DOMNodeIds::idForNode(node);
-    std::unique_ptr<protocol::DOM::LayoutTreeNode> layoutTreeNode =
-        protocol::DOM::LayoutTreeNode::create()
-            .setBackendNodeId(backendNodeId)
-            .setBoundingBox(buildRectForFloatRect(
-                node->isElementNode()
-                    ? FloatRect(toElement(node)->boundsInViewport())
-                    : layoutObject->absoluteBoundingBoxRect()))
-            .build();
-
-    if (layoutObject->isText()) {
-      LayoutText* layoutText = toLayoutText(layoutObject);
-      layoutTreeNode->setLayoutText(layoutText->text());
-      if (layoutText->hasTextBoxes()) {
-        std::unique_ptr<protocol::Array<protocol::DOM::InlineTextBox>>
-            inlineTextNodes(
-                new protocol::Array<protocol::DOM::InlineTextBox>());
-        for (const InlineTextBox* textBox = layoutText->firstTextBox(); textBox;
-             textBox = textBox->nextTextBox()) {
-          FloatRect localCoordsTextBoxRect(textBox->calculateBoundaries());
-          FloatRect absoluteCoordsTextBoxRect =
-              layoutObject->localToAbsoluteQuad(localCoordsTextBoxRect)
-                  .boundingBox();
-          inlineTextNodes->addItem(protocol::DOM::InlineTextBox::create()
-                                       .setStartCharacterIndex(textBox->start())
-                                       .setNumCharacters(textBox->len())
-                                       .setBoundingBox(buildRectForFloatRect(
-                                           absoluteCoordsTextBoxRect))
-                                       .build());
-        }
-        layoutTreeNode->setInlineTextNodes(std::move(inlineTextNodes));
-      }
-    }
-
-    layoutTreeNodes.addItem(std::move(layoutTreeNode));
-  }
 }
 
 void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId,

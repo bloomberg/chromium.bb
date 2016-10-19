@@ -2063,29 +2063,6 @@
                 "description": "DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type."
             },
             {
-                "id": "InlineTextBox",
-                "type": "object",
-                "properties": [
-                    { "name": "boundingBox", "$ref": "Rect", "description": "The absolute position bounding box." },
-                    { "name": "startCharacterIndex", "type": "integer", "description": "The starting index in characters, for this post layout textbox substring." },
-                    { "name": "numCharacters", "type": "integer", "description": "The number of characters in this post layout textbox substring." }
-                ],
-                "description": "Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.",
-                "experimental": true
-            },
-            {
-                "id": "LayoutTreeNode",
-                "type": "object",
-                "properties": [
-                    { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "The BackendNodeId of the related DOM node." },
-                    { "name": "boundingBox", "$ref": "Rect", "description": "The absolute position bounding box." },
-                    { "name": "layoutText", "type": "string", "optional": true, "description": "Contents of the LayoutText if any" },
-                    { "name": "inlineTextNodes", "type": "array", "optional": true, "items": { "$ref": "InlineTextBox" }, "description": "The post layout inline text nodes, if any." }
-                ],
-                "description": "Details of an element in the DOM tree with a LayoutObject.",
-                "experimental": true
-            },
-            {
                 "id": "RGBA",
                 "type": "object",
                 "properties": [
@@ -2193,14 +2170,6 @@
                     { "name": "root", "$ref": "Node", "description": "Resulting node." }
                 ],
                 "description": "Returns the root DOM node (and optionally the subtree) to the caller."
-            },
-            {
-                "name": "getLayoutTreeNodes",
-                "returns": [
-                    { "name": "layoutTreeNodes", "type": "array", "items": { "$ref": "LayoutTreeNode" } }
-                ],
-                "description": "Returns the document's LayoutTreeNodes to the caller, and those of any iframes too.",
-                "experimental": true
             },
             {
                 "name": "collectClassNamesFromSubtree",
@@ -2924,6 +2893,39 @@
                     { "name": "text", "type": "string", "description": "New style text."}
                 ],
                 "description": "A descriptor of operation to mutate style declaration text."
+            },
+            {
+                "id": "InlineTextBox",
+                "type": "object",
+                "properties": [
+                    { "name": "boundingBox", "$ref": "DOM.Rect", "description": "The absolute position bounding box." },
+                    { "name": "startCharacterIndex", "type": "integer", "description": "The starting index in characters, for this post layout textbox substring." },
+                    { "name": "numCharacters", "type": "integer", "description": "The number of characters in this post layout textbox substring." }
+                ],
+                "description": "Details of post layout rendered text positions. The exact layout should not be regarded as stable and may change between versions.",
+                "experimental": true
+            },
+            {
+                "id": "LayoutTreeNode",
+                "type": "object",
+                "properties": [
+                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "The BackendNodeId of the related DOM node." },
+                    { "name": "boundingBox", "$ref": "DOM.Rect", "description": "The absolute position bounding box." },
+                    { "name": "layoutText", "type": "string", "optional": true, "description": "Contents of the LayoutText if any" },
+                    { "name": "inlineTextNodes", "type": "array", "optional": true, "items": { "$ref": "InlineTextBox" }, "description": "The post layout inline text nodes, if any." },
+                    { "name": "styleIndex", "type": "integer", "optional": true, "description": "Index into the computedStyles array returned by getLayoutTreeAndStyles." }
+                ],
+                "description": "Details of an element in the DOM tree with a LayoutObject.",
+                "experimental": true
+            },
+            {
+                "id": "ComputedStyle",
+                "type": "object",
+                "properties": [
+                    { "name": "properties", "type": "array", "items": { "$ref": "CSSComputedStyleProperty" } }
+                ],
+                "description": "A subset of the full ComputedStyle as defined by the request whitelist.",
+                "experimental": true
             }
         ],
         "commands": [
@@ -3117,6 +3119,18 @@
                 "returns": [
                     { "name": "backgroundColors", "type": "array", "items": { "type": "string" }, "description": "The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).", "optional": true }
                 ],
+                "experimental": true
+            },
+            {
+                "name": "getLayoutTreeAndStyles",
+                "parameters": [
+                    { "name": "computedStyleWhitelist", "type": "array", "items": { "type": "string" }, "description": "Whitelist of computed styles to return." }
+                ],
+                "returns": [
+                    { "name": "layoutTreeNodes", "type": "array", "items": { "$ref": "LayoutTreeNode" } },
+                    { "name": "computedStyles", "type": "array", "items": { "$ref": "ComputedStyle" } }
+                ],
+                "description": "For the main document and any content documents, return the LayoutTreeNodes and a whitelisted subset of the computed style.",
                 "experimental": true
             }
         ],
