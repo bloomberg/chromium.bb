@@ -15,6 +15,7 @@
 #include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/custom_button.h"
 
 namespace chromeos {
 class NetworkTypePattern;
@@ -62,7 +63,9 @@ class NetworkStateListDetailedView
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;
   void CreateExtraTitleRowButtons() override;
-  void ShowSettings() override;
+
+  // Launches the WebUI settings in a browser and closes the system menu.
+  void ShowSettings();
 
   // Create UI components.
   void CreateHeaderEntry();
@@ -128,6 +131,7 @@ class NetworkStateListDetailedView
   // scanning state.
   bool prev_wifi_scanning_state_;
 
+  // Not used for material design.
   views::ImageButton* info_icon_;
 
   // Not used for material design.
@@ -141,6 +145,11 @@ class NetworkStateListDetailedView
   TrayPopupLabelButton* other_mobile_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
+
+  // Only used in material design.
+  views::CustomButton* info_button_md_;
+  views::CustomButton* settings_button_md_;
+  views::CustomButton* proxy_settings_button_md_;
 
   // A small bubble for displaying network info.
   views::BubbleDialogDelegateView* info_bubble_;

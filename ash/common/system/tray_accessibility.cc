@@ -18,6 +18,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
@@ -230,8 +231,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 void AccessibilityDetailedView::AppendHelpEntries() {
   // Currently the help page requires a browser window.
   // TODO(yoshiki): show this even on login/lock screen. crbug.com/158286
-  if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
-      WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
+  if (!CanOpenWebUISettings(login_))
     return;
 
   views::View* bottom_row = new View();
@@ -322,21 +322,31 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
 
 void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
                                                     const ui::Event& event) {
-  if (MaterialDesignController::UseMaterialDesignSystemIcons())
-    return;
-
-  SystemTrayController* controller = WmShell::Get()->system_tray_controller();
   if (sender == help_view_)
-    controller->ShowAccessibilityHelp();
+    ShowHelp();
   else if (sender == settings_view_)
-    controller->ShowAccessibilitySettings();
-  else
-    return;
-  owner()->system_tray()->CloseSystemBubble();
+    ShowSettings();
+}
+
+void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    help_view_ = title_row()->AddHelpButton(this, login_);
+    settings_view_ = title_row()->AddSettingsButton(this, login_);
+  }
 }
 
 void AccessibilityDetailedView::ShowSettings() {
-  WmShell::Get()->system_tray_controller()->ShowAccessibilitySettings();
+  if (CanOpenWebUISettings(login_)) {
+    WmShell::Get()->system_tray_controller()->ShowAccessibilitySettings();
+    owner()->system_tray()->CloseSystemBubble();
+  }
+}
+
+void AccessibilityDetailedView::ShowHelp() {
+  if (CanOpenWebUISettings(login_)) {
+    WmShell::Get()->system_tray_controller()->ShowAccessibilityHelp();
+    owner()->system_tray()->CloseSystemBubble();
+  }
 }
 
 }  // namespace tray

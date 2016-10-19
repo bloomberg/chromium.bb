@@ -76,6 +76,8 @@ action("aggregate_vector_icons") {
     "system_menu_headset.icon",
     "system_menu_help.1x.icon",
     "system_menu_help.icon",
+    "system_menu_info.1x.icon",
+    "system_menu_info.icon",
     "system_menu_keyboard.1x.icon",
     "system_menu_keyboard.icon",
     "system_menu_lock.1x.icon",

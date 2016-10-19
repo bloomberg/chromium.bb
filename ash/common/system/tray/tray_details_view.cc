@@ -66,8 +66,7 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       scroller_(nullptr),
       scroll_content_(nullptr),
       scroll_border_(nullptr),
-      back_button_(nullptr),
-      settings_button_(nullptr) {
+      back_button_(nullptr) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 }
@@ -86,14 +85,10 @@ void TrayDetailsView::OnViewClicked(views::View* sender) {
 
 void TrayDetailsView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    if (sender == back_button_) {
-      TransitionToDefaultView();
-      return;
-    } else if (sender == settings_button_) {
-      ShowSettings();
-      return;
-    }
+  if (MaterialDesignController::IsSystemTrayMenuMaterial() &&
+      sender == back_button_) {
+    TransitionToDefaultView();
+    return;
   }
 
   HandleButtonPressed(sender, event);
@@ -110,10 +105,8 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
 
   CreateExtraTitleRowButtons();
 
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
     back_button_ = title_row_->AddBackButton(this);
-    settings_button_ = title_row_->AddSettingsButton(this);
-  }
 
   Layout();
 }
@@ -147,7 +140,6 @@ void TrayDetailsView::Reset() {
   scroller_ = nullptr;
   scroll_content_ = nullptr;
   back_button_ = nullptr;
-  settings_button_ = nullptr;
 }
 
 void TrayDetailsView::HandleViewClicked(views::View* view) {}
@@ -156,13 +148,6 @@ void TrayDetailsView::HandleButtonPressed(views::Button* sender,
                                           const ui::Event& event) {}
 
 void TrayDetailsView::CreateExtraTitleRowButtons() {}
-
-void TrayDetailsView::ShowSettings() {
-  // TODO(tdanderson): Store login status as a member in TrayDetailsView
-  // instead of its derived classes. Use this to perform an early return
-  // if launching WebUI settings is not permitted, and provide a default
-  // implementation to ShowSettings().
-}
 
 void TrayDetailsView::TransitionToDefaultView() {
   // Cache pointer to owner in this function scope. TrayDetailsView will be

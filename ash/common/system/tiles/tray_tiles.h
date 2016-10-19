@@ -26,6 +26,8 @@ class ASH_EXPORT TrayTiles : public SystemTrayItem {
   void DestroyDefaultView() override;
 
  private:
+  friend class TrayTilesTest;
+
   TilesDefaultView* default_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayTiles);

@@ -17,6 +17,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -177,7 +178,8 @@ class BluetoothDetailedView : public TrayDetailsView {
         throbber_(nullptr),
         toggle_bluetooth_(nullptr),
         enable_bluetooth_(nullptr),
-        toggle_(nullptr) {
+        toggle_(nullptr),
+        settings_(nullptr) {
     CreateItems();
   }
 
@@ -368,15 +370,18 @@ class BluetoothDetailedView : public TrayDetailsView {
 
   // Add settings entries.
   void AppendSettingsEntries() {
+    // Do not append the bottom button row in material design; this is replaced
+    // by the settings button in the header row.
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      return;
+
     if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
       return;
 
     // Add bluetooth device requires a browser window, hide it for non logged in
     // user.
-    if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
-        WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
+    if (!CanOpenWebUISettings(login_))
       return;
-    }
 
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -424,13 +429,12 @@ class BluetoothDetailedView : public TrayDetailsView {
 
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override {
-    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (view == manage_devices_) {
-      delegate->ManageBluetoothDevices();
-      owner()->system_tray()->CloseSystemBubble();
+      ShowSettings();
       return;
     }
 
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (view == enable_bluetooth_) {
       WmShell::Get()->RecordUserMetricsAction(
           delegate->GetBluetoothEnabled() ? UMA_STATUS_AREA_BLUETOOTH_DISABLED
@@ -460,6 +464,8 @@ class BluetoothDetailedView : public TrayDetailsView {
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       if (sender == toggle_)
         WmShell::Get()->system_tray_delegate()->ToggleBluetooth();
+      else if (sender == settings_)
+        ShowSettings();
       else
         NOTREACHED();
       return;
@@ -478,6 +484,7 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       toggle_ = title_row()->AddToggleButton(this);
+      settings_ = title_row()->AddSettingsButton(this, login_);
       return;
     }
 
@@ -503,9 +510,18 @@ class BluetoothDetailedView : public TrayDetailsView {
     title_row()->AddViewToRowNonMd(toggle_bluetooth_, true);
   }
 
+  void ShowSettings() {
+    if (CanOpenWebUISettings(login_)) {
+      WmShell::Get()->system_tray_delegate()->ManageBluetoothDevices();
+      owner()->system_tray()->CloseSystemBubble();
+    }
+  }
+
   LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
+
+  // Not used in material design.
   views::View* manage_devices_;
 
   // Not used in material design.
@@ -522,6 +538,9 @@ class BluetoothDetailedView : public TrayDetailsView {
 
   // The on/off toggle button used in material design.
   views::ToggleButton* toggle_;
+
+  // Only used in material design.
+  views::Button* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetailedView);
 };

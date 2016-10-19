@@ -93,6 +93,7 @@ extern const SkColor kTrayIconColor;
 // system menu.
 extern const int kMenuIconSize;
 extern const SkColor kMenuIconColor;
+extern const SkColor kMenuIconColorDisabled;
 // The size of buttons in the system menu.
 extern const int kMenuButtonSize;
 // The vertical padding for the system menu separator.

@@ -17,19 +17,9 @@ TrayTiles::TrayTiles(SystemTray* system_tray)
 TrayTiles::~TrayTiles() {}
 
 views::View* TrayTiles::CreateDefaultView(LoginStatus status) {
-  WmShell* shell = WmShell::Get();
-  const bool adding_user =
-      shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
-
-  if (status == LoginStatus::LOCKED || status == LoginStatus::NOT_LOGGED_IN ||
-      adding_user) {
-    return nullptr;
-  }
-
   CHECK(default_view_ == nullptr);
-  default_view_ = new TilesDefaultView(this);
+  default_view_ = new TilesDefaultView(this, status);
   default_view_->Init();
-
   return default_view_;
 }
 

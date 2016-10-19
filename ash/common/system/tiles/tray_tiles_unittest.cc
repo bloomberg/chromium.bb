@@ -8,6 +8,7 @@
 #include "ash/common/system/tiles/tiles_default_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -27,6 +28,22 @@ class TrayTilesTest : public test::AshTestBase {
     test::AshTestBase::TearDown();
   }
 
+  views::CustomButton* GetSettingsButton() {
+    return tray_tiles()->default_view_->settings_button_;
+  }
+
+  views::CustomButton* GetHelpButton() {
+    return tray_tiles()->default_view_->help_button_;
+  }
+
+  views::CustomButton* GetLockButton() {
+    return tray_tiles()->default_view_->lock_button_;
+  }
+
+  views::CustomButton* GetPowerButton() {
+    return tray_tiles()->default_view_->power_button_;
+  }
+
   TrayTiles* tray_tiles() { return tray_tiles_.get(); }
 
  private:
@@ -35,34 +52,49 @@ class TrayTilesTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(TrayTilesTest);
 };
 
-// TODO(tdanderson|bruthig): Many of the other rows follow the same rules for
-// not being shown if the login status is NOT_LOGGED_IN, LOCKED, or if the
-// add-user screen is active. Consider applying the test coverage below to
-// such rows.
-
-TEST_F(TrayTilesTest, TilesRowNotCreatedWithAddingUser) {
+TEST_F(TrayTilesTest, ButtonStatesWithAddingUser) {
   SetUserAddingScreenRunning(true);
   std::unique_ptr<views::View> default_view(
       tray_tiles()->CreateDefaultView(LoginStatus::USER));
-  EXPECT_FALSE(default_view);
+  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
+#if !defined(OS_WIN)
+  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
+#endif  // !defined(OS_WIN)
 }
 
-TEST_F(TrayTilesTest, TilesRowNotCreatedWithLoginStatusNotLoggedIn) {
+TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusNotLoggedIn) {
   std::unique_ptr<views::View> default_view(
       tray_tiles()->CreateDefaultView(LoginStatus::NOT_LOGGED_IN));
-  EXPECT_FALSE(default_view);
+  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
+#if !defined(OS_WIN)
+  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
+#endif  // !defined(OS_WIN)
 }
 
-TEST_F(TrayTilesTest, TilesRowNotCreatedWithLoginStatusLocked) {
+TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusLocked) {
   std::unique_ptr<views::View> default_view(
       tray_tiles()->CreateDefaultView(LoginStatus::LOCKED));
-  EXPECT_FALSE(default_view);
+  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
+#if !defined(OS_WIN)
+  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
+  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
+#endif  // !defined(OS_WIN)
 }
 
-TEST_F(TrayTilesTest, TilesRowCreatedWithLoginStatusUser) {
+TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusUser) {
   std::unique_ptr<views::View> default_view(
       tray_tiles()->CreateDefaultView(LoginStatus::USER));
-  EXPECT_TRUE(default_view);
+  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_NORMAL);
+  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_NORMAL);
+#if !defined(OS_WIN)
+  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_NORMAL);
+  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
+#endif  // !defined(OS_WIN)
 }
 
 }  // namespace ash

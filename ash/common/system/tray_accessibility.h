@@ -64,7 +64,13 @@ class AccessibilityDetailedView : public TrayDetailsView,
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
                            const ui::Event& event) override;
-  void ShowSettings() override;
+  void CreateExtraTitleRowButtons() override;
+
+  // Launches the WebUI settings in a browser and closes the system menu.
+  void ShowSettings();
+
+  // Launches the a11y help article in a browser and closes the system menu.
+  void ShowHelp();
 
   // Add the accessibility feature list.
   void AppendAccessibilityList();

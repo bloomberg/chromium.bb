@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/common/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/strings/string16.h"
 
@@ -35,6 +36,11 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view, ShelfAlignment alignment);
 void GetAccessibleLabelFromDescendantViews(
     views::View* view,
     std::vector<base::string16>& out_labels);
+
+// Returns true if it is possible to open WebUI settings in a browser window,
+// i.e., the user is logged in, not on the lock screen, and not in a secondary
+// account flow.
+bool CanOpenWebUISettings(LoginStatus status);
 
 }  // namespace ash
 

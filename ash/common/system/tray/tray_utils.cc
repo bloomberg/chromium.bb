@@ -5,9 +5,11 @@
 #include "ash/common/system/tray/tray_utils.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
+#include "ash/common/wm_shell.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -84,6 +86,15 @@ void GetAccessibleLabelFromDescendantViews(
 
   for (int i = 0; i < view->child_count(); ++i)
     GetAccessibleLabelFromDescendantViews(view->child_at(i), out_labels);
+}
+
+bool CanOpenWebUISettings(LoginStatus status) {
+  // TODO(tdanderson): Consider moving this into WmShell, or introduce a
+  // CanShowSettings() method in each delegate type that has a
+  // ShowSettings() method.
+  return status != LoginStatus::NOT_LOGGED_IN &&
+         status != LoginStatus::LOCKED &&
+         !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 }
 
 }  // namespace ash

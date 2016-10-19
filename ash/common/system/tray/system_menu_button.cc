@@ -22,6 +22,10 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
     : views::ImageButton(listener) {
   gfx::ImageSkia image = gfx::CreateVectorIcon(icon, kMenuIconColor);
   SetImage(views::Button::STATE_NORMAL, &image);
+  gfx::ImageSkia disabled_image =
+      gfx::CreateVectorIcon(icon, kMenuIconColorDisabled);
+  SetImage(views::Button::STATE_DISABLED, &disabled_image);
+
   const int horizontal_padding = (kMenuButtonSize - image.width()) / 2;
   const int vertical_padding = (kMenuButtonSize - image.height()) / 2;
   SetBorder(

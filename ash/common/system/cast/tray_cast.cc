@@ -515,6 +515,9 @@ views::View* CastDetailedView::AddToReceiverList(
 }
 
 void CastDetailedView::AppendSettingsEntries() {
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   // Settings requires a browser window, hide it for non logged in user.
   if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
       WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {

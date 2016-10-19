@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -97,29 +98,30 @@ void SpecialPopupRow::SetContent(views::View* view) {
 }
 
 views::Button* SpecialPopupRow::AddBackButton(views::ButtonListener* listener) {
-  return AddSystemMenuButton(listener, kSystemMenuArrowBackIcon,
-                             IDS_ASH_STATUS_TRAY_PREVIOUS_MENU, false);
+  SystemMenuButton* button = new SystemMenuButton(
+      listener, kSystemMenuArrowBackIcon, IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
+  AddViewBeforeContent(button);
+  return button;
 }
 
 views::Button* SpecialPopupRow::AddSettingsButton(
-    views::ButtonListener* listener) {
-  return AddSystemMenuButton(listener, kSystemMenuSettingsIcon,
-                             IDS_ASH_STATUS_TRAY_SETTINGS, true);
+    views::ButtonListener* listener,
+    LoginStatus status) {
+  SystemMenuButton* button = new SystemMenuButton(
+      listener, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_SETTINGS);
+  if (!CanOpenWebUISettings(status))
+    button->SetState(views::Button::STATE_DISABLED);
+  AddViewAfterContent(button);
+  return button;
 }
 
-SystemMenuButton* SpecialPopupRow::AddSystemMenuButton(
-    views::ButtonListener* listener,
-    const gfx::VectorIcon& icon,
-    int accessible_name_id,
-    bool after_content) {
-  SystemMenuButton* button =
-      new SystemMenuButton(listener, icon, accessible_name_id);
-
-  if (after_content)
-    AddViewAfterContent(button);
-  else
-    AddViewBeforeContent(button);
-
+views::Button* SpecialPopupRow::AddHelpButton(views::ButtonListener* listener,
+                                              LoginStatus status) {
+  SystemMenuButton* button = new SystemMenuButton(listener, kSystemMenuHelpIcon,
+                                                  IDS_ASH_STATUS_TRAY_HELP);
+  if (!CanOpenWebUISettings(status))
+    button->SetState(views::Button::STATE_DISABLED);
+  AddViewAfterContent(button);
   return button;
 }
 
@@ -141,6 +143,10 @@ views::ToggleButton* SpecialPopupRow::AddToggleButton(
   AddViewAfterContent(container);
 
   return toggle;
+}
+
+void SpecialPopupRow::AddViewToTitleRow(views::View* view) {
+  AddViewAfterContent(view);
 }
 
 void SpecialPopupRow::AddViewToRowNonMd(views::View* view, bool add_separator) {

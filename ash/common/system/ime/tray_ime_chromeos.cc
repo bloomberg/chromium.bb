@@ -113,7 +113,9 @@ class IMEDetailedView : public ImeListView {
                   LoginStatus login,
                   bool show_keyboard_toggle)
       : ImeListView(owner, show_keyboard_toggle, ImeListView::HIDE_SINGLE_IME),
-        login_(login) {
+        login_(login),
+        settings_(nullptr),
+        settings_button_(nullptr) {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
@@ -131,10 +133,8 @@ class IMEDetailedView : public ImeListView {
               SingleImeBehavior single_ime_behavior) override {
     ImeListView::Update(list, property_list, show_keyboard_toggle,
                         single_ime_behavior);
-    if (login_ != LoginStatus::NOT_LOGGED_IN && login_ != LoginStatus::LOCKED &&
-        !WmShell::Get()
-             ->GetSessionStateDelegate()
-             ->IsInSecondaryLoginScreen()) {
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial() &&
+        CanOpenWebUISettings(login_)) {
       AppendSettings();
     }
 
@@ -145,11 +145,19 @@ class IMEDetailedView : public ImeListView {
   // ImeListView:
   void HandleViewClicked(views::View* view) override {
     ImeListView::HandleViewClicked(view);
-    if (view == settings_) {
-      WmShell::Get()->RecordUserMetricsAction(
-          UMA_STATUS_AREA_IME_SHOW_DETAILED);
-      WmShell::Get()->system_tray_controller()->ShowIMESettings();
-    }
+    if (view == settings_)
+      ShowSettings();
+  }
+
+  void HandleButtonPressed(views::Button* sender,
+                           const ui::Event& event) override {
+    if (sender == settings_button_)
+      ShowSettings();
+  }
+
+  void CreateExtraTitleRowButtons() override {
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      settings_button_ = title_row()->AddSettingsButton(this, login_);
   }
 
   void AppendSettings() {
@@ -162,9 +170,20 @@ class IMEDetailedView : public ImeListView {
     settings_ = container;
   }
 
+  void ShowSettings() {
+    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
+    WmShell::Get()->system_tray_controller()->ShowIMESettings();
+    if (owner()->system_tray())
+      owner()->system_tray()->CloseSystemBubble();
+  }
+
   LoginStatus login_;
 
+  // Not used in material design.
   views::View* settings_;
+
+  // Only used in material design.
+  views::Button* settings_button_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);
 };

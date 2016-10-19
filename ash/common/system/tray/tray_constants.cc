@@ -80,6 +80,7 @@ const int kTrayIconSize = 16;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;
+const SkColor kMenuIconColorDisabled = SkColorSetA(gfx::kChromeIconGrey, 0x61);
 const int kMenuButtonSize = 48;
 const int kMenuSeparatorVerticalPadding = 4;
 const int kMenuExtraMarginFromLeftEdge = 4;

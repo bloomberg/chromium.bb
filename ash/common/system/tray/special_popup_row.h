@@ -6,6 +6,7 @@
 #define ASH_COMMON_SYSTEM_TRAY_SPECIAL_POPUP_ROW_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/login_status.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -49,8 +50,14 @@ class ASH_EXPORT SpecialPopupRow : public views::View {
   // the view hierarchy rooted at |this|. Returns a pointer to the created
   // view.
   views::Button* AddBackButton(views::ButtonListener* listener);
-  views::Button* AddSettingsButton(views::ButtonListener* listener);
+  views::Button* AddSettingsButton(views::ButtonListener* listener,
+                                   LoginStatus status);
+  views::Button* AddHelpButton(views::ButtonListener* listener,
+                               LoginStatus status);
   views::ToggleButton* AddToggleButton(views::ButtonListener* listener);
+
+  // Adds |view| after this row's content.
+  void AddViewToTitleRow(views::View* view);
 
   // Adds |view| after this row's content, optionally with a separator. Only
   // used for non-MD.
@@ -81,10 +88,6 @@ class ASH_EXPORT SpecialPopupRow : public views::View {
 
   void SetTextLabelMd(int string_id, ViewClickListener* listener);
   void SetTextLabelNonMd(int string_id, ViewClickListener* listener);
-  SystemMenuButton* AddSystemMenuButton(views::ButtonListener* listener,
-                                        const gfx::VectorIcon& icon,
-                                        int accessible_name_id,
-                                        bool after_content);
 
   // The container for the views positioned before |content_|.
   views::View* views_before_content_container_;
