@@ -6285,6 +6285,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
     <ph name="BEGIN_PARAGRAPH">&lt;p&gt;</ph>Google’s location service uses sources like Wi-Fi to help estimate your device’s location faster and more accurately. When you turn on Google’s location services, your device enters a mode that uses Wi-Fi to provide location information. You can turn this off in location settings anytime.<ph name="END_PARAGRAPH">&lt;/p&gt;</ph>
   </message>
+  <message name="IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK" desc="Text of the Link to Goolge Privacy Policy in opt-in dialog">
+    Google privacy policy
+  </message>
   <message name="IDS_ARC_OPT_OUT_TAB_TITLE" desc="Tab title when viewing opt-out setting dialog for android apps.">
     Settings - Remove Android apps
   </message>

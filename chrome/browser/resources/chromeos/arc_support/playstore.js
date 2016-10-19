@@ -112,5 +112,22 @@ function formatDocument() {
   document.body.hidden = true;
 }
 
+/**
+ * Searches in footer for a privacy policy link.
+ * @return {string} Link to Google Privacy Policy detected from the current
+ *                  document or link to the default policy if it is not found.
+ */
+function getPrivacyPolicyLink() {
+  var doc = document;
+  var links = doc.getElementById('play-footer').getElementsByTagName('a');
+  for (var i = 0; i < links.length; ++i) {
+    var targetURL = links[i].href;
+    if (targetURL.endsWith('/policies/privacy/')) {
+      return targetURL;
+    }
+  }
+  return 'https://www.google.com/policies/privacy/';
+}
+
 formatDocument();
 processLangZoneTerms();
