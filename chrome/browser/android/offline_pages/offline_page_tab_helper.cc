@@ -55,16 +55,10 @@ void OfflinePageTabHelper::DidStartNavigation(
   provisional_offline_info_.Clear();
 
   // If not a fragment navigation, clear the cached offline info.
-  if (offline_info_.offline_page.get()) {
-    GURL::Replacements remove_params;
-    remove_params.ClearRef();
-    GURL offline_url =
-        offline_info_.offline_page->url.ReplaceComponents(remove_params);
-    GURL navigated_url =
-        navigation_handle->GetURL().ReplaceComponents(remove_params);
-
-    if (offline_url != navigated_url)
-      offline_info_.Clear();
+  if (offline_info_.offline_page.get() &&
+      !OfflinePageUtils::EqualsIgnoringFragment(offline_info_.offline_page->url,
+                                                navigation_handle->GetURL())) {
+    offline_info_.Clear();
   }
 }
 
@@ -87,7 +81,9 @@ void OfflinePageTabHelper::DidFinishNavigation(
     // The provisional offline info can now be committed if the navigation is
     // done without error.
     DCHECK(!provisional_offline_info_.offline_page ||
-      navigated_url == provisional_offline_info_.offline_page->url);
+           OfflinePageUtils::EqualsIgnoringFragment(
+               navigated_url,
+               provisional_offline_info_.offline_page->url));
     offline_info_.offline_page =
         std::move(provisional_offline_info_.offline_page);
     offline_info_.offline_header = provisional_offline_info_.offline_header;

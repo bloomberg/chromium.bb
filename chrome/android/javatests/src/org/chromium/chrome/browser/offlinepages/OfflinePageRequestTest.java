@@ -113,6 +113,36 @@ public class OfflinePageRequestTest extends ChromeActivityTestCaseBase<ChromeAct
         assertTrue(isOfflinePage(tab));
     }
 
+    @SmallTest
+    @RetryOnFailure
+    public void testLoadOfflinePageWithFragmentOnDisconnectedNetwork() throws Exception {
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        String testUrl = testServer.getURL(TEST_PAGE);
+        String testUrlWithFragment = testUrl + "#ref";
+
+        Tab tab = getActivity().getActivityTab();
+
+        // Load and save an offline page for the url with a fragment.
+        savePage(testUrlWithFragment);
+        assertFalse(isErrorPage(tab));
+        assertFalse(isOfflinePage(tab));
+
+        // Stop the server and also disconnect the network.
+        testServer.stopAndDestroyServer();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                NetworkChangeNotifier.forceConnectivityState(false);
+            }
+        });
+
+        // Load the URL without the fragment. The offline page should be shown.
+        loadUrl(testUrl);
+        assertFalse(isErrorPage(tab));
+        assertTrue(isOfflinePage(tab));
+    }
+
     private void savePage(String url) throws InterruptedException {
         loadUrl(url);
 
