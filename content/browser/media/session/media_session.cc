@@ -168,11 +168,15 @@ void MediaSession::OnPlayerPaused(MediaSessionPlayerObserver* observer,
   // Also, this method may be called when a player that is not added
   // to this session (e.g. a silent video) is paused. MediaSession
   // should ignore the paused player for this case.
-  if (!players_.count(PlayerIdentifier(observer, player_id)))
+  if (!players_.count(PlayerIdentifier(observer, player_id)) &&
+      !pepper_players_.count(PlayerIdentifier(observer, player_id))) {
     return;
+  }
 
-  // If there is more than one observer, remove the paused one from the session.
-  if (players_.size() != 1) {
+  // If the player to be removed is a pepper player, or there is more than one
+  // observer, remove the paused one from the session.
+  if (pepper_players_.count(PlayerIdentifier(observer, player_id)) ||
+      players_.size() != 1) {
     RemovePlayer(observer, player_id);
     return;
   }
