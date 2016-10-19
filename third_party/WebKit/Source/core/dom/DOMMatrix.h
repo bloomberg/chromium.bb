@@ -106,6 +106,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   DOMMatrix(T sequence, int size);
 
   void setIs2D(bool value);
+  void setNAN();
 };
 
 }  // namespace blink

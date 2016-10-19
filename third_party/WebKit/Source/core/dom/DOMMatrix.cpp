@@ -87,6 +87,25 @@ void DOMMatrix::setIs2D(bool value) {
     m_is2D = value;
 }
 
+void DOMMatrix::setNAN() {
+  m_matrix->setM11(NAN);
+  m_matrix->setM12(NAN);
+  m_matrix->setM13(NAN);
+  m_matrix->setM14(NAN);
+  m_matrix->setM21(NAN);
+  m_matrix->setM22(NAN);
+  m_matrix->setM23(NAN);
+  m_matrix->setM24(NAN);
+  m_matrix->setM31(NAN);
+  m_matrix->setM32(NAN);
+  m_matrix->setM33(NAN);
+  m_matrix->setM34(NAN);
+  m_matrix->setM41(NAN);
+  m_matrix->setM42(NAN);
+  m_matrix->setM43(NAN);
+  m_matrix->setM44(NAN);
+}
+
 DOMMatrix* DOMMatrix::multiplySelf(DOMMatrixInit& other,
                                    ExceptionState& exceptionState) {
   DOMMatrix* otherMatrix = DOMMatrix::fromMatrix(other, exceptionState);
@@ -190,22 +209,7 @@ DOMMatrix* DOMMatrix::invertSelf() {
   if (m_matrix->isInvertible()) {
     m_matrix = TransformationMatrix::create(m_matrix->inverse());
   } else {
-    setM11(NAN);
-    setM12(NAN);
-    setM13(NAN);
-    setM14(NAN);
-    setM21(NAN);
-    setM22(NAN);
-    setM23(NAN);
-    setM24(NAN);
-    setM31(NAN);
-    setM32(NAN);
-    setM33(NAN);
-    setM34(NAN);
-    setM41(NAN);
-    setM42(NAN);
-    setM43(NAN);
-    setM44(NAN);
+    setNAN();
     setIs2D(false);
   }
   return this;
