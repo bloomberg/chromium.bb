@@ -1435,7 +1435,4 @@ void av1_adapt_coef_probs(AV1_COMMON *cm) {
 
   for (t = 0; t <= TX_32X32; t++)
     adapt_coef_probs(cm, t, count_sat, update_factor);
-#if CONFIG_EC_MULTISYMBOL
-  av1_coef_pareto_cdfs(cm->fc);
-#endif  // CONFIG_EC_MULTISYMBOL
 }

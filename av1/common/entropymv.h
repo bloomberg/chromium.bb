@@ -135,6 +135,10 @@ typedef struct {
 
 void av1_inc_mv(const MV *mv, nmv_context_counts *mvctx, const int usehp);
 
+#if CONFIG_EC_MULTISYMBOL
+void av1_set_mv_cdfs(nmv_context *ctx);
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
