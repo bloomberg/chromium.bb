@@ -22,9 +22,8 @@ InputMethodBase::InputMethodBase()
       text_input_client_(nullptr) {}
 
 InputMethodBase::~InputMethodBase() {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnInputMethodDestroyed(this));
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnInputMethodDestroyed(this);
   if (ui::IMEBridge::Get() &&
       ui::IMEBridge::Get()->GetInputContextHandler() == this)
     ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
@@ -93,7 +92,8 @@ bool InputMethodBase::CanComposeInline() const {
 }
 
 void InputMethodBase::ShowImeIfNeeded() {
-  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnShowImeIfNeeded());
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnShowImeIfNeeded();
 }
 
 void InputMethodBase::AddObserver(InputMethodObserver* observer) {
@@ -128,15 +128,14 @@ ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
 
 void InputMethodBase::NotifyTextInputStateChanged(
     const TextInputClient* client) {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnTextInputStateChanged(client));
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnTextInputStateChanged(client);
 }
 
 void InputMethodBase::NotifyTextInputCaretBoundsChanged(
     const TextInputClient* client) {
-  FOR_EACH_OBSERVER(
-      InputMethodObserver, observer_list_, OnCaretBoundsChanged(client));
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnCaretBoundsChanged(client);
 }
 
 void InputMethodBase::SetFocusedTextInputClientInternal(

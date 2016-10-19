@@ -94,7 +94,8 @@ void SysColorChangeObserver::OnWndProc(HWND hwnd,
   if (message == WM_SYSCOLORCHANGE ||
       (message == WM_SETTINGCHANGE && wparam == SPI_SETHIGHCONTRAST)) {
     UpdateInvertedColorScheme();
-    FOR_EACH_OBSERVER(SysColorChangeListener, listeners_, OnSysColorChange());
+    for (SysColorChangeListener& observer : listeners_)
+      observer.OnSysColorChange();
   }
 }
 

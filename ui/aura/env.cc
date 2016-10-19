@@ -36,7 +36,8 @@ bool RunningInsideMus() {
 // Env, public:
 
 Env::~Env() {
-  FOR_EACH_OBSERVER(EnvObserver, observers_, OnWillDestroyEnv());
+  for (EnvObserver& observer : observers_)
+    observer.OnWillDestroyEnv();
   DCHECK_EQ(this, lazy_tls_ptr.Pointer()->Get());
   lazy_tls_ptr.Pointer()->Set(NULL);
 }
@@ -101,15 +102,18 @@ void Env::Init() {
 }
 
 void Env::NotifyWindowInitialized(Window* window) {
-  FOR_EACH_OBSERVER(EnvObserver, observers_, OnWindowInitialized(window));
+  for (EnvObserver& observer : observers_)
+    observer.OnWindowInitialized(window);
 }
 
 void Env::NotifyHostInitialized(WindowTreeHost* host) {
-  FOR_EACH_OBSERVER(EnvObserver, observers_, OnHostInitialized(host));
+  for (EnvObserver& observer : observers_)
+    observer.OnHostInitialized(host);
 }
 
 void Env::NotifyHostActivated(WindowTreeHost* host) {
-  FOR_EACH_OBSERVER(EnvObserver, observers_, OnHostActivated(host));
+  for (EnvObserver& observer : observers_)
+    observer.OnHostActivated(host);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

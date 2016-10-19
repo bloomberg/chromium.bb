@@ -48,8 +48,8 @@ void DisplayChangeNotifier::NotifyDisplaysChanged(
   for (; old_it != old_displays.end(); ++old_it) {
     if (std::find_if(new_displays.begin(), new_displays.end(),
                      DisplayComparator(*old_it)) == new_displays.end()) {
-      FOR_EACH_OBSERVER(DisplayObserver, observer_list_,
-                        OnDisplayRemoved(*old_it));
+      for (DisplayObserver& observer : observer_list_)
+        observer.OnDisplayRemoved(*old_it);
     }
   }
 
@@ -61,8 +61,8 @@ void DisplayChangeNotifier::NotifyDisplaysChanged(
         old_displays.begin(), old_displays.end(), DisplayComparator(*new_it));
 
     if (old_it == old_displays.end()) {
-      FOR_EACH_OBSERVER(DisplayObserver, observer_list_,
-                        OnDisplayAdded(*new_it));
+      for (DisplayObserver& observer : observer_list_)
+        observer.OnDisplayAdded(*new_it);
       continue;
     }
 
@@ -81,8 +81,8 @@ void DisplayChangeNotifier::NotifyDisplaysChanged(
       metrics |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
 
     if (metrics != DisplayObserver::DISPLAY_METRIC_NONE) {
-      FOR_EACH_OBSERVER(DisplayObserver, observer_list_,
-                        OnDisplayMetricsChanged(*new_it, metrics));
+      for (DisplayObserver& observer : observer_list_)
+        observer.OnDisplayMetricsChanged(*new_it, metrics);
     }
   }
 }

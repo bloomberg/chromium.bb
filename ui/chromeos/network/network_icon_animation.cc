@@ -27,7 +27,8 @@ void NetworkIconAnimation::AnimationProgressed(
     const gfx::Animation* animation) {
   if (animation != &animation_)
     return;
-  FOR_EACH_OBSERVER(AnimationObserver, observers_, NetworkIconChanged());
+  for (AnimationObserver& observer : observers_)
+    observer.NetworkIconChanged();
 }
 
 double NetworkIconAnimation::GetAnimation() {

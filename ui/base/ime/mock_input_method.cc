@@ -14,8 +14,8 @@ MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
 }
 
 MockInputMethod::~MockInputMethod() {
-  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_,
-                    OnInputMethodDestroyed(this));
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnInputMethodDestroyed(this);
 }
 
 void MockInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
@@ -45,11 +45,13 @@ void MockInputMethod::DispatchKeyEvent(ui::KeyEvent* event) {
 }
 
 void MockInputMethod::OnFocus() {
-  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnFocus());
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnFocus();
 }
 
 void MockInputMethod::OnBlur() {
-  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnBlur());
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnBlur();
 }
 
 bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
@@ -60,18 +62,15 @@ bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 }
 
 void MockInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnTextInputTypeChanged(client));
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnTextInputStateChanged(client));
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnTextInputTypeChanged(client);
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnTextInputStateChanged(client);
 }
 
 void MockInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {
-  FOR_EACH_OBSERVER(InputMethodObserver,
-                    observer_list_,
-                    OnCaretBoundsChanged(client));
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnCaretBoundsChanged(client);
 }
 
 void MockInputMethod::CancelComposition(const TextInputClient* client) {
@@ -105,7 +104,8 @@ bool MockInputMethod::IsCandidatePopupOpen() const {
 }
 
 void MockInputMethod::ShowImeIfNeeded() {
-  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnShowImeIfNeeded());
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnShowImeIfNeeded();
 }
 
 void MockInputMethod::AddObserver(InputMethodObserver* observer) {

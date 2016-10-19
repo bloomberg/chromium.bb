@@ -12,9 +12,10 @@
 #include "ui/gfx/geometry/point3_f.h"
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS(method_decl, observer_call)                        \
-  void DeviceDataManager::method_decl {                                     \
-    FOR_EACH_OBSERVER(InputDeviceEventObserver, observers_, observer_call); \
+#define NOTIFY_OBSERVERS(method_decl, observer_call)      \
+  void DeviceDataManager::method_decl {                   \
+    for (InputDeviceEventObserver& observer : observers_) \
+      observer.observer_call;                             \
   }
 
 namespace ui {

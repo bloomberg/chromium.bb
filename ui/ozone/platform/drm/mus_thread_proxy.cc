@@ -42,8 +42,8 @@ void MusThreadProxy::InitializeOnEvdev() {}
 
 MusThreadProxy::~MusThreadProxy() {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
-                    OnGpuThreadRetired());
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuThreadRetired();
 }
 
 // This is configured on the GPU thread.
@@ -74,8 +74,8 @@ void MusThreadProxy::DispatchObserversFromDrmThread() {
 
 void MusThreadProxy::RunObservers() {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
-                    OnGpuThreadReady());
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuThreadReady();
 }
 
 void MusThreadProxy::AddGpuThreadObserver(GpuThreadObserver* observer) {

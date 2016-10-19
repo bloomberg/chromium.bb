@@ -128,7 +128,8 @@ void GpuSwitchingManager::RemoveObserver(GpuSwitchingObserver* observer) {
 }
 
 void GpuSwitchingManager::NotifyGpuSwitched() {
-  FOR_EACH_OBSERVER(GpuSwitchingObserver, observer_list_, OnGpuSwitched());
+  for (GpuSwitchingObserver& observer : observer_list_)
+    observer.OnGpuSwitched();
 }
 
 gl::GpuPreference GpuSwitchingManager::AdjustGpuPreference(

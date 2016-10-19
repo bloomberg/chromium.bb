@@ -228,8 +228,8 @@ void FakeDisplayDelegate::OnConfigurationChanged() {
   if (!initialized_)
     return;
 
-  FOR_EACH_OBSERVER(ui::NativeDisplayObserver, observers_,
-                    OnConfigurationChanged());
+  for (ui::NativeDisplayObserver& observer : observers_)
+    observer.OnConfigurationChanged();
 }
 
 }  // namespace display

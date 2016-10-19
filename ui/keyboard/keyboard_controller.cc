@@ -188,8 +188,8 @@ KeyboardController::~KeyboardController() {
   }
   if (input_method_)
     input_method_->RemoveObserver(this);
-  FOR_EACH_OBSERVER(KeyboardControllerObserver, observer_list_,
-                    OnKeyboardClosed());
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardClosed();
   ui_->SetController(nullptr);
 }
 
@@ -221,9 +221,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   current_keyboard_bounds_ = new_bounds;
   if (ui_->HasKeyboardWindow() && ui_->GetKeyboardWindow()->IsVisible()) {
-    FOR_EACH_OBSERVER(KeyboardControllerObserver,
-                      observer_list_,
-                      OnKeyboardBoundsChanging(new_bounds));
+    for (KeyboardControllerObserver& observer : observer_list_)
+      observer.OnKeyboardBoundsChanging(new_bounds);
     if (keyboard::IsKeyboardOverscrollEnabled())
       ui_->InitInsets(new_bounds);
     else
@@ -488,8 +487,8 @@ void KeyboardController::ShowAnimationFinished() {
 
 void KeyboardController::HideAnimationFinished() {
   ui_->HideKeyboardContainer(container_.get());
-  FOR_EACH_OBSERVER(KeyboardControllerObserver, observer_list_,
-                    OnKeyboardHidden());
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardHidden();
 }
 
 }  // namespace keyboard

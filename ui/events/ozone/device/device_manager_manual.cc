@@ -66,7 +66,8 @@ void DeviceManagerManual::OnDevicesScanned(
   for (; it != result->end(); ++it) {
     devices_.push_back(*it);
     DeviceEvent event(DeviceEvent::INPUT, DeviceEvent::ADD, *it);
-    FOR_EACH_OBSERVER(DeviceEventObserver, observers_, OnDeviceEvent(event));
+    for (DeviceEventObserver& observer : observers_)
+      observer.OnDeviceEvent(event);
   }
 }
 

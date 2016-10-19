@@ -33,14 +33,14 @@ gfx::NativeCursor TestCursorClient::GetCursor() const {
 
 void TestCursorClient::ShowCursor() {
   visible_ = true;
-  FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
-                    OnCursorVisibilityChanged(true));
+  for (aura::client::CursorClientObserver& observer : observers_)
+    observer.OnCursorVisibilityChanged(true);
 }
 
 void TestCursorClient::HideCursor() {
   visible_ = false;
-  FOR_EACH_OBSERVER(aura::client::CursorClientObserver, observers_,
-                    OnCursorVisibilityChanged(false));
+  for (aura::client::CursorClientObserver& observer : observers_)
+    observer.OnCursorVisibilityChanged(false);
 }
 
 void TestCursorClient::SetCursorSet(ui::CursorSetType cursor_set) {

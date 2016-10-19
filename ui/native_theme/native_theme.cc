@@ -35,8 +35,8 @@ void NativeTheme::RemoveObserver(NativeThemeObserver* observer) {
 }
 
 void NativeTheme::NotifyObservers() {
-  FOR_EACH_OBSERVER(NativeThemeObserver, native_theme_observers_,
-                    OnNativeThemeUpdated(this));
+  for (NativeThemeObserver& observer : native_theme_observers_)
+    observer.OnNativeThemeUpdated(this);
 }
 
 NativeTheme::NativeTheme()

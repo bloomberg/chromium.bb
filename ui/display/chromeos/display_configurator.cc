@@ -1109,18 +1109,17 @@ void DisplayConfigurator::NotifyDisplayStateObservers(
     bool success,
     MultipleDisplayState attempted_state) {
   if (success) {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChanged(cached_displays_));
+    for (Observer& observer : observers_)
+      observer.OnDisplayModeChanged(cached_displays_);
   } else {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChangeFailed(cached_displays_,
-                                                        attempted_state));
+    for (Observer& observer : observers_)
+      observer.OnDisplayModeChangeFailed(cached_displays_, attempted_state);
   }
 }
 
 void DisplayConfigurator::NotifyPowerStateObservers() {
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnPowerStateChanged(current_power_state_));
+  for (Observer& observer : observers_)
+    observer.OnPowerStateChanged(current_power_state_);
 }
 
 int64_t DisplayConfigurator::AddVirtualDisplay(const gfx::Size& display_size) {

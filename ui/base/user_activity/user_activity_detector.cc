@@ -123,7 +123,8 @@ void UserActivityDetector::HandleActivity(const ui::Event* event) {
       kNotifyIntervalMs) {
     if (VLOG_IS_ON(1))
       VLOG(1) << "Reporting user activity: " << GetEventDebugString(event);
-    FOR_EACH_OBSERVER(UserActivityObserver, observers_, OnUserActivity(event));
+    for (UserActivityObserver& observer : observers_)
+      observer.OnUserActivity(event);
     last_observer_notification_time_ = now;
   }
 }

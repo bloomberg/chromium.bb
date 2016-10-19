@@ -270,8 +270,8 @@ void WindowTreeHost::OnHostMoved(const gfx::Point& new_location) {
   TRACE_EVENT1("ui", "WindowTreeHost::OnHostMoved",
                "origin", new_location.ToString());
 
-  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
-                    OnHostMoved(this, new_location));
+  for (WindowTreeHostObserver& observer : observers_)
+    observer.OnHostMoved(this, new_location);
 }
 
 void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
@@ -287,17 +287,18 @@ void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
   UpdateRootWindowSize(layer_size);
-  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_, OnHostResized(this));
+  for (WindowTreeHostObserver& observer : observers_)
+    observer.OnHostResized(this);
 }
 
 void WindowTreeHost::OnHostWorkspaceChanged() {
-  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
-                    OnHostWorkspaceChanged(this));
+  for (WindowTreeHostObserver& observer : observers_)
+    observer.OnHostWorkspaceChanged(this);
 }
 
 void WindowTreeHost::OnHostCloseRequested() {
-  FOR_EACH_OBSERVER(WindowTreeHostObserver, observers_,
-                    OnHostCloseRequested(this));
+  for (WindowTreeHostObserver& observer : observers_)
+    observer.OnHostCloseRequested(this);
 }
 
 void WindowTreeHost::OnHostActivated() {

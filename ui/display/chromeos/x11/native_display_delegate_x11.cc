@@ -90,8 +90,8 @@ class NativeDisplayDelegateX11::HelperDelegateX11
     return delegate_->cached_outputs_.get();
   }
   void NotifyDisplayObservers() override {
-    FOR_EACH_OBSERVER(
-        NativeDisplayObserver, delegate_->observers_, OnConfigurationChanged());
+    for (NativeDisplayObserver& observer : delegate_->observers_)
+      observer.OnConfigurationChanged();
   }
 
  private:

@@ -23,7 +23,8 @@ ClipboardMonitor* ClipboardMonitor::GetInstance() {
 
 void ClipboardMonitor::NotifyClipboardDataChanged() {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(ClipboardObserver, observers_, OnClipboardDataChanged());
+  for (ClipboardObserver& observer : observers_)
+    observer.OnClipboardDataChanged();
 }
 
 void ClipboardMonitor::AddObserver(ClipboardObserver* observer) {

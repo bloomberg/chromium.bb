@@ -44,9 +44,8 @@ void TestFocusClient::FocusWindow(Window* window) {
   if (focused_window_)
     observer_manager_.Add(focused_window_);
 
-  FOR_EACH_OBSERVER(aura::client::FocusChangeObserver,
-                     focus_observers_,
-                     OnWindowFocused(focused_window_, lost_focus));
+  for (aura::client::FocusChangeObserver& observer : focus_observers_)
+    observer.OnWindowFocused(focused_window_, lost_focus);
   client::FocusChangeObserver* observer =
       client::GetFocusChangeObserver(old_focused_window);
   if (observer)

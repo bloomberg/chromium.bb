@@ -79,8 +79,8 @@ void ImeKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
   bool old_state = caps_lock_is_enabled_;
   caps_lock_is_enabled_ = enable_caps_lock;
   if (old_state != enable_caps_lock) {
-    FOR_EACH_OBSERVER(ImeKeyboard::Observer, observers_,
-                      OnCapsLockChanged(enable_caps_lock));
+    for (ImeKeyboard::Observer& observer : observers_)
+      observer.OnCapsLockChanged(enable_caps_lock);
   }
 }
 

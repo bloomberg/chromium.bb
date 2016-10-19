@@ -92,8 +92,8 @@ void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
         display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   }
   if (should_notify_observers()) {
-    FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                      OnDisplayMetricsChanged(*local_display, changed_values));
+    for (display::DisplayObserver& observer : observers_)
+      observer.OnDisplayMetricsChanged(*local_display, changed_values);
   }
 }
 
@@ -103,8 +103,8 @@ void DisplayList::AddDisplay(const display::Display& display, Type type) {
   if (type == Type::PRIMARY)
     primary_display_index_ = static_cast<int>(displays_.size()) - 1;
   if (should_notify_observers()) {
-    FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                      OnDisplayAdded(display));
+    for (display::DisplayObserver& observer : observers_)
+      observer.OnDisplayAdded(display);
   }
 }
 
@@ -123,8 +123,8 @@ void DisplayList::RemoveDisplay(int64_t id) {
   const display::Display display = *iter;
   displays_.erase(iter);
   if (should_notify_observers()) {
-    FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                      OnDisplayRemoved(display));
+    for (display::DisplayObserver& observer : observers_)
+      observer.OnDisplayRemoved(display);
   }
 }
 

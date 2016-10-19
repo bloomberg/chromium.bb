@@ -35,9 +35,8 @@ InputMethodMenuManager::GetCurrentInputMethodMenuItemList() const {
 void InputMethodMenuManager::SetCurrentInputMethodMenuItemList(
     const InputMethodMenuItemList& menu_list) {
   menu_list_ = menu_list;
-  FOR_EACH_OBSERVER(InputMethodMenuManager::Observer,
-                    observers_,
-                    InputMethodMenuItemChanged(this));
+  for (InputMethodMenuManager::Observer& observer : observers_)
+    observer.InputMethodMenuItemChanged(this);
 }
 
 bool InputMethodMenuManager::HasInputMethodMenuItemForKey(

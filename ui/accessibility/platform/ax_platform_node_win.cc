@@ -899,9 +899,10 @@ STDMETHODIMP AXPlatformNodeWin::QueryService(
   COM_OBJECT_VALIDATE_1_ARG(object);
 
   if (riid == IID_IAccessible2) {
-    FOR_EACH_OBSERVER(IAccessible2UsageObserver,
-                      GetIAccessible2UsageObserverList(),
-                      OnIAccessible2Used());
+    for (IAccessible2UsageObserver& observer :
+         GetIAccessible2UsageObserverList()) {
+      observer.OnIAccessible2Used();
+    }
   }
 
   if (guidService == IID_IAccessible ||

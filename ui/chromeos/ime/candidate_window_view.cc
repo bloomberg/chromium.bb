@@ -409,7 +409,8 @@ void CandidateWindowView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
     if (sender == candidate_views_[i]) {
-      FOR_EACH_OBSERVER(Observer, observers_, OnCandidateCommitted(i));
+      for (Observer& observer : observers_)
+        observer.OnCandidateCommitted(i);
       return;
     }
   }

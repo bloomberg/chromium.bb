@@ -148,8 +148,8 @@ void DeviceManagerUdev::OnFileCanReadWithoutBlocking(int fd) {
 
   std::unique_ptr<DeviceEvent> event = ProcessMessage(device.get());
   if (event)
-    FOR_EACH_OBSERVER(
-        DeviceEventObserver, observers_, OnDeviceEvent(*event.get()));
+    for (DeviceEventObserver& observer : observers_)
+      observer.OnDeviceEvent(*event.get());
 }
 
 void DeviceManagerUdev::OnFileCanWriteWithoutBlocking(int fd) {

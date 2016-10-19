@@ -113,8 +113,8 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished(
   send_runner_ = send_runner;
   send_callback_ = send_callback;
 
-  FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
-                    OnGpuThreadReady());
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuThreadReady();
 
   // The cursor is special since it will process input events on the IO thread
   // and can by-pass the UI thread. This means that we need to special case it
@@ -133,8 +133,8 @@ void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
     host_id_ = -1;
     send_runner_ = nullptr;
     send_callback_.Reset();
-    FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
-                      OnGpuThreadRetired());
+    for (GpuThreadObserver& observer : gpu_thread_observers_)
+      observer.OnGpuThreadRetired();
   }
 
 }

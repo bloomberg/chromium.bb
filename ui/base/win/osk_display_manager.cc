@@ -219,8 +219,8 @@ void OnScreenKeyboardDetector::HandleKeyboardVisible() {
   DCHECK(!osk_visible_notification_received_);
   osk_visible_notification_received_ = true;
 
-  FOR_EACH_OBSERVER(OnScreenKeyboardObserver, observers_,
-                    OnKeyboardVisible(osk_rect_pixels_));
+  for (OnScreenKeyboardObserver& observer : observers_)
+    observer.OnKeyboardVisible(osk_rect_pixels_);
 
   // Now that the keyboard is visible, run the task to detect if it was hidden.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -231,8 +231,8 @@ void OnScreenKeyboardDetector::HandleKeyboardVisible() {
 
 void OnScreenKeyboardDetector::HandleKeyboardHidden() {
   osk_visible_notification_received_ = false;
-  FOR_EACH_OBSERVER(OnScreenKeyboardObserver, observers_,
-                    OnKeyboardHidden(osk_rect_pixels_));
+  for (OnScreenKeyboardObserver& observer : observers_)
+    observer.OnKeyboardHidden(osk_rect_pixels_);
   ClearObservers();
 }
 

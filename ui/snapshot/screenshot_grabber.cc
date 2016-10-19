@@ -187,8 +187,8 @@ void ScreenshotGrabber::NotifyScreenshotCompleted(
 #if defined(USE_AURA)
   cursor_hider_.reset();
 #endif
-  FOR_EACH_OBSERVER(ScreenshotGrabberObserver, observers_,
-                    OnScreenshotCompleted(screenshot_result, screenshot_path));
+  for (ScreenshotGrabberObserver& observer : observers_)
+    observer.OnScreenshotCompleted(screenshot_result, screenshot_path);
 }
 
 void ScreenshotGrabber::AddObserver(ScreenshotGrabberObserver* observer) {
