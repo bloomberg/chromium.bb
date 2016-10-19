@@ -32,7 +32,7 @@ class AutofillAssistant : public payments::FullCardRequest::Delegate {
   // Returns whether a credit card assist can be shown. Will go through the
   // forms in |form_structures| and extract the credit card form.
   bool CanShowCreditCardAssist(
-      const std::vector<FormStructure*>& form_structures);
+      const std::vector<std::unique_ptr<FormStructure>>& form_structures);
 
   // Will show an assist infobar for the previously extracted form proposing to
   // autofill it. Should only be called if CanShowCreditCardAssist() returned

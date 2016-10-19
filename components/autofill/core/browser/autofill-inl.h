@@ -22,6 +22,10 @@ class FormGroupMatchesByCompareFunctor {
     return form_group.Compare(form_group_) == 0;
   }
 
+  bool operator()(const std::unique_ptr<T>& form_group) {
+    return form_group->Compare(form_group_) == 0;
+  }
+
  private:
   const T& form_group_;
 };

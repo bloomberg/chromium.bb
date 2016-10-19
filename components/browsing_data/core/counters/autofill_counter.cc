@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -80,7 +79,7 @@ void AutofillCounter::Count() {
 
 void AutofillCounter::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
-    const WDTypedResult* result) {
+    std::unique_ptr<WDTypedResult> result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!result) {
     CancelAllRequests();
@@ -94,24 +93,22 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   if (handle == suggestions_query_) {
     // Autocomplete suggestions.
     DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
-    num_suggestions_ = static_cast<const WDResult<int>*>(result)->GetValue();
+    num_suggestions_ =
+        static_cast<const WDResult<int>*>(result.get())->GetValue();
     suggestions_query_ = 0;
 
   } else if (handle == credit_cards_query_) {
     // Credit cards.
     DCHECK_EQ(AUTOFILL_CREDITCARDS_RESULT, result->GetType());
-    const std::vector<autofill::CreditCard*> credit_cards =
-        static_cast<const WDResult<std::vector<autofill::CreditCard*>>*>(result)
+    auto credit_cards =
+        static_cast<
+            WDResult<std::vector<std::unique_ptr<autofill::CreditCard>>>*>(
+            result.get())
             ->GetValue();
 
-    // We own the result from this query. Make sure it will be deleted.
-    ScopedVector<const autofill::CreditCard> owned_result;
-    owned_result.assign(credit_cards.begin(), credit_cards.end());
-
     num_credit_cards_ = std::count_if(
-        credit_cards.begin(),
-        credit_cards.end(),
-        [start](const autofill::CreditCard* card) {
+        credit_cards.begin(), credit_cards.end(),
+        [start](const std::unique_ptr<autofill::CreditCard>& card) {
           return card->modification_date() >= start;
         });
     credit_cards_query_ = 0;
@@ -119,20 +116,17 @@ void AutofillCounter::OnWebDataServiceRequestDone(
   } else if (handle == addresses_query_) {
     // Addresses.
     DCHECK_EQ(AUTOFILL_PROFILES_RESULT, result->GetType());
-    const std::vector<autofill::AutofillProfile*> addresses =
-        static_cast<const WDResult<std::vector<autofill::AutofillProfile*>>*>(
-            result)
+    auto addresses =
+        static_cast<
+            WDResult<std::vector<std::unique_ptr<autofill::AutofillProfile>>>*>(
+            result.get())
             ->GetValue();
 
-    // We own the result from this query. Make sure it will be deleted.
-    ScopedVector<const autofill::AutofillProfile> owned_result;
-    owned_result.assign(addresses.begin(), addresses.end());
-
-    num_addresses_ =
-        std::count_if(addresses.begin(), addresses.end(),
-                      [start](const autofill::AutofillProfile* address) {
-                        return address->modification_date() >= start;
-                      });
+    num_addresses_ = std::count_if(
+        addresses.begin(), addresses.end(),
+        [start](const std::unique_ptr<autofill::AutofillProfile>& address) {
+          return address->modification_date() >= start;
+        });
     addresses_query_ = 0;
 
   } else {

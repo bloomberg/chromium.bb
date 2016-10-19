@@ -40,8 +40,9 @@ class AwFormDatabaseService : public WebDataServiceConsumer {
       get_autofill_webdata_service();
 
   // WebDataServiceConsumer implementation.
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
-                                   const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle h,
+      std::unique_ptr<WDTypedResult> result) override;
 
  private:
   struct PendingQuery {

@@ -1989,9 +1989,10 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   form.fields.push_back(checkable_field);
+  FormStructure form_structure(form);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
   std::vector<std::string> encoded_signatures;
 
   // Prepare the expected proto string.
@@ -2017,8 +2018,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   const char kSignature1[] = "11337937696949187602";
 
   AutofillQueryContents encoded_query;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
 
@@ -2028,11 +2029,12 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   // Add the same form, only one will be encoded, so EncodeQueryRequest() should
   // return the same data.
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure2(form);
+  forms.push_back(&form_structure2);
 
   AutofillQueryContents encoded_query2;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query2));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query2));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
 
@@ -2046,7 +2048,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
     form.fields.push_back(field);
   }
 
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure3(form);
+  forms.push_back(&form_structure3);
 
   // Add the second form to the expected proto.
   query_form = query.add_form();
@@ -2070,8 +2073,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
   AutofillQueryContents encoded_query3;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query3));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query3));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
   const char kSignature2[] = "8308881815906226214";
@@ -2089,10 +2092,11 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
     malformed_form.fields.push_back(field);
   }
 
-  forms.push_back(new FormStructure(malformed_form));
+  FormStructure malformed_form_structure(malformed_form);
+  forms.push_back(&malformed_form_structure);
   AutofillQueryContents encoded_query4;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query4));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query4));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
   EXPECT_EQ(kSignature2, encoded_signatures[1]);
@@ -2101,11 +2105,11 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   EXPECT_EQ(expected_query_string, encoded_query_string);
 
   // Check that we fail if there are only bad form(s).
-  ScopedVector<FormStructure> bad_forms;
-  bad_forms.push_back(new FormStructure(malformed_form));
+  std::vector<FormStructure*> bad_forms;
+  bad_forms.push_back(&malformed_form_structure);
   AutofillQueryContents encoded_query5;
-  EXPECT_FALSE(FormStructure::EncodeQueryRequest(
-      bad_forms.get(), &encoded_signatures, &encoded_query5));
+  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_signatures,
+                                                 &encoded_query5));
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest) {
@@ -3402,8 +3406,9 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   field.check_status = FormFieldData::NOT_CHECKABLE;
   form.fields.push_back(field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
   std::vector<std::string> encoded_signatures;
   AutofillQueryContents encoded_query;
 
@@ -3421,8 +3426,8 @@ TEST_F(FormStructureTest, SkipFieldTest) {
 
   const char kExpectedSignature[] = "18006745212084723782";
 
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kExpectedSignature, encoded_signatures[0]);
 
@@ -3453,8 +3458,9 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  std::vector<FormStructure*> forms;
+  FormStructure form_structure(form);
+  forms.push_back(&form_structure);
   std::vector<std::string> encoded_signatures;
   AutofillQueryContents encoded_query;
 
@@ -3472,8 +3478,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  EXPECT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query));
+  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -3507,8 +3513,9 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
   std::vector<std::string> encoded_signatures;
   AutofillQueryContents encoded_query;
 
@@ -3526,8 +3533,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  EXPECT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query));
+  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -3554,8 +3561,10 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   field.check_status = FormFieldData::NOT_CHECKABLE;
   form.fields.push_back(field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure(form);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
   std::vector<std::string> encoded_signatures;
   AutofillQueryContents encoded_query;
 
@@ -3573,8 +3582,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
 
   const char kExpectedSignature[] = "16416961345885087496";
 
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kExpectedSignature, encoded_signatures[0]);
 
@@ -3604,8 +3613,9 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   field.check_status = FormFieldData::NOT_CHECKABLE;
   form.fields.push_back(field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
   std::vector<std::string> encoded_signatures;
   AutofillQueryContents encoded_query;
 
@@ -3623,8 +3633,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
 
   const char kExpectedSignature[] = "7635954436925888745";
 
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(
-      forms.get(), &encoded_signatures, &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_query));
   ASSERT_EQ(1U, encoded_signatures.size());
   EXPECT_EQ(kExpectedSignature, encoded_signatures[0]);
 
@@ -3695,8 +3705,9 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   form.fields.push_back(checkable_field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
 
   field.label = ASCIIToUTF16("email");
   field.name = ASCIIToUTF16("email");
@@ -3707,7 +3718,8 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   field.form_control_type = "password";
   form.fields.push_back(field);
 
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure2(form);
+  forms.push_back(&form_structure2);
 
   AutofillQueryResponseContents response;
   response.add_field()->set_autofill_type(7);
@@ -3717,7 +3729,7 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms.get(), nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
@@ -3744,8 +3756,9 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   field.autocomplete_attribute = "new-password";
   form.fields.push_back(field);
 
-  ScopedVector<FormStructure> forms;
-  forms.push_back(new FormStructure(form));
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
   forms.front()->DetermineHeuristicTypes();
 
   AutofillQueryResponseContents response;
@@ -3754,7 +3767,7 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms.get(), nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   // Server type is parsed from the response and is the end result type.

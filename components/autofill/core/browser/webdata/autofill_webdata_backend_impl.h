@@ -213,11 +213,6 @@ class AutofillWebDataBackendImpl
 
   WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
 
-  // Callbacks to ensure that sensitive info is destroyed if request is
-  // cancelled.
-  void DestroyAutofillProfileResult(const WDTypedResult* result);
-  void DestroyAutofillCreditCardResult(const WDTypedResult* result);
-
   base::ObserverList<AutofillWebDataServiceObserverOnDBThread>
       db_observer_list_;
 

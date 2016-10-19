@@ -65,8 +65,9 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
   void Count() override;
 
   // WebDataServiceConsumer implementation.
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
-                                   const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle handle,
+      std::unique_ptr<WDTypedResult> result) override;
 
   // Cancel all pending requests to AutofillWebdataService.
   void CancelAllRequests();

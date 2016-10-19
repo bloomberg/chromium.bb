@@ -85,7 +85,8 @@ class FormStructureBrowserTest
   void GenerateResults(const std::string& input, std::string* output) override;
 
   // Serializes the given |forms| into a string.
-  std::string FormStructuresToString(const std::vector<FormStructure*>& forms);
+  std::string FormStructuresToString(
+      const std::vector<std::unique_ptr<FormStructure>>& forms);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FormStructureBrowserTest);
@@ -111,14 +112,15 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   ASSERT_NE(nullptr, autofill_driver);
   AutofillManager* autofill_manager = autofill_driver->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
-  std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
+  const std::vector<std::unique_ptr<FormStructure>>& forms =
+      autofill_manager->form_structures_;
   *output = FormStructuresToString(forms);
 }
 
 std::string FormStructureBrowserTest::FormStructuresToString(
-    const std::vector<FormStructure*>& forms) {
+    const std::vector<std::unique_ptr<FormStructure>>& forms) {
   std::string forms_string;
-  for (const FormStructure* form : forms) {
+  for (const auto& form : forms) {
     for (const AutofillField* field : *form) {
       forms_string += field->Type().ToString();
       forms_string += " | " + base::UTF16ToUTF8(field->name);

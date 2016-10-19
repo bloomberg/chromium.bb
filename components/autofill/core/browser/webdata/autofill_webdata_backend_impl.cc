@@ -7,9 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -241,25 +239,21 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  std::vector<AutofillProfile*> profiles;
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
   AutofillTable::FromWebDatabase(db)->GetAutofillProfiles(&profiles);
   return std::unique_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<AutofillProfile*>>(
-          AUTOFILL_PROFILES_RESULT, profiles,
-          base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillProfileResult,
-                     base::Unretained(this))));
+      new WDResult<std::vector<std::unique_ptr<AutofillProfile>>>(
+          AUTOFILL_PROFILES_RESULT, std::move(profiles)));
 }
 
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerProfiles(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  std::vector<AutofillProfile*> profiles;
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
   AutofillTable::FromWebDatabase(db)->GetServerProfiles(&profiles);
   return std::unique_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<AutofillProfile*>>(
-          AUTOFILL_PROFILES_RESULT, profiles,
-          base::Bind(&AutofillWebDataBackendImpl::DestroyAutofillProfileResult,
-                     base::Unretained(this))));
+      new WDResult<std::vector<std::unique_ptr<AutofillProfile>>>(
+          AUTOFILL_PROFILES_RESULT, std::move(profiles)));
 }
 
 std::unique_ptr<WDTypedResult>
@@ -340,27 +334,21 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCards(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  std::vector<CreditCard*> credit_cards;
+  std::vector<std::unique_ptr<CreditCard>> credit_cards;
   AutofillTable::FromWebDatabase(db)->GetCreditCards(&credit_cards);
   return std::unique_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<CreditCard*>>(
-          AUTOFILL_CREDITCARDS_RESULT, credit_cards,
-          base::Bind(
-              &AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult,
-              base::Unretained(this))));
+      new WDResult<std::vector<std::unique_ptr<CreditCard>>>(
+          AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards)));
 }
 
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  std::vector<CreditCard*> credit_cards;
+  std::vector<std::unique_ptr<CreditCard>> credit_cards;
   AutofillTable::FromWebDatabase(db)->GetServerCreditCards(&credit_cards);
   return std::unique_ptr<WDTypedResult>(
-      new WDDestroyableResult<std::vector<CreditCard*>>(
-          AUTOFILL_CREDITCARDS_RESULT, credit_cards,
-          base::Bind(
-              &AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult,
-              base::Unretained(this))));
+      new WDResult<std::vector<std::unique_ptr<CreditCard>>>(
+          AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards)));
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::UnmaskServerCreditCard(
@@ -480,14 +468,15 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveOriginURLsModifiedBetween(
     const base::Time& delete_end,
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  ScopedVector<AutofillProfile> profiles;
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
   if (!AutofillTable::FromWebDatabase(db)->RemoveOriginURLsModifiedBetween(
           delete_begin, delete_end, &profiles)) {
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
 
-  for (const AutofillProfile* it : profiles) {
-    AutofillProfileChange change(AutofillProfileChange::UPDATE, it->guid(), it);
+  for (const auto& profile : profiles) {
+    AutofillProfileChange change(AutofillProfileChange::UPDATE, profile->guid(),
+                                 profile.get());
     for (auto& db_observer : db_observer_list_)
       db_observer.AutofillProfileChanged(change);
   }
@@ -512,25 +501,6 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveExpiredFormElementsImpl(
     return WebDatabase::COMMIT_NEEDED;
   }
   return WebDatabase::COMMIT_NOT_NEEDED;
-}
-
-void AutofillWebDataBackendImpl::DestroyAutofillProfileResult(
-    const WDTypedResult* result) {
-  DCHECK(result->GetType() == AUTOFILL_PROFILES_RESULT);
-  const WDResult<std::vector<AutofillProfile*> >* r =
-      static_cast<const WDResult<std::vector<AutofillProfile*> >*>(result);
-  std::vector<AutofillProfile*> profiles = r->GetValue();
-  base::STLDeleteElements(&profiles);
-}
-
-void AutofillWebDataBackendImpl::DestroyAutofillCreditCardResult(
-      const WDTypedResult* result) {
-  DCHECK(result->GetType() == AUTOFILL_CREDITCARDS_RESULT);
-  const WDResult<std::vector<CreditCard*> >* r =
-      static_cast<const WDResult<std::vector<CreditCard*> >*>(result);
-
-  std::vector<CreditCard*> credit_cards = r->GetValue();
-  base::STLDeleteElements(&credit_cards);
 }
 
 }  // namespace autofill

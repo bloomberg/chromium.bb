@@ -127,8 +127,7 @@ class WebDataRequestManager
   // Next handle to be used for requests. Incremented for each use.
   WebDataServiceBase::Handle next_request_handle_;
 
-  typedef std::map<WebDataServiceBase::Handle, WebDataRequest*> RequestMap;
-  RequestMap pending_requests_;
+  std::map<WebDataServiceBase::Handle, WebDataRequest*> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataRequestManager);
 };

@@ -113,8 +113,9 @@ class MutableProfileOAuth2TokenServiceDelegate
                            ShutdownService);
 
   // WebDataServiceConsumer implementation:
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
-                                   const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle handle,
+      std::unique_ptr<WDTypedResult> result) override;
 
   // Loads credentials into in memory stucture.
   void LoadAllCredentialsIntoMemory(

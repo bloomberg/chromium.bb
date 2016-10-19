@@ -403,23 +403,23 @@ bool AutofillWalletMetadataSyncableService::GetLocalData(
         profiles,
     base::ScopedPtrHashMap<std::string, std::unique_ptr<CreditCard>>* cards)
     const {
-  ScopedVector<AutofillProfile> profile_list;
+  std::vector<std::unique_ptr<AutofillProfile>> profile_list;
   bool success =
       AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
-          ->GetServerProfiles(&profile_list.get());
+          ->GetServerProfiles(&profile_list);
   while (!profile_list.empty()) {
     profiles->add(GetServerId(*profile_list.front()),
-                  base::WrapUnique(profile_list.front()));
-    profile_list.weak_erase(profile_list.begin());
+                  std::move(profile_list.front()));
+    profile_list.erase(profile_list.begin());
   }
 
-  ScopedVector<CreditCard> card_list;
+  std::vector<std::unique_ptr<CreditCard>> card_list;
   success &= AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
-                 ->GetServerCreditCards(&card_list.get());
+                 ->GetServerCreditCards(&card_list);
   while (!card_list.empty()) {
-    cards->add(GetServerId(*card_list.front()),
-               base::WrapUnique(card_list.front()));
-    card_list.weak_erase(card_list.begin());
+    auto server_id = GetServerId(*card_list.front());
+    cards->add(server_id, std::move(card_list.front()));
+    card_list.erase(card_list.begin());
   }
 
   return success;

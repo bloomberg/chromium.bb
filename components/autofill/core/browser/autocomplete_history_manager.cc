@@ -140,7 +140,7 @@ void AutocompleteHistoryManager::SendSuggestions(
 
 void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
-    const WDTypedResult* result) {
+    std::unique_ptr<WDTypedResult> result) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -160,8 +160,8 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   }
 
   DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
-  const WDResult<std::vector<base::string16> >* autofill_result =
-      static_cast<const WDResult<std::vector<base::string16> >*>(result);
+  const WDResult<std::vector<base::string16>>* autofill_result =
+      static_cast<const WDResult<std::vector<base::string16>>*>(result.get());
   std::vector<base::string16> suggestions = autofill_result->GetValue();
   SendSuggestions(&suggestions);
 }

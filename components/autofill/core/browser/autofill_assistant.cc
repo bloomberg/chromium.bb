@@ -26,7 +26,7 @@ void AutofillAssistant::Reset() {
 }
 
 bool AutofillAssistant::CanShowCreditCardAssist(
-    const std::vector<FormStructure*>& form_structures) {
+    const std::vector<std::unique_ptr<FormStructure>>& form_structures) {
   if (form_structures.empty() || credit_card_form_data_ != nullptr ||
       !IsAutofillCreditCardAssistEnabled() ||
       !autofill_manager_->client()->IsContextSecure(
@@ -35,7 +35,7 @@ bool AutofillAssistant::CanShowCreditCardAssist(
     return false;
   }
 
-  for (FormStructure* cur_form : base::Reversed(form_structures)) {
+  for (auto& cur_form : base::Reversed(form_structures)) {
     if (cur_form->IsCompleteCreditCardForm()) {
       credit_card_form_data_.reset(new FormData(cur_form->ToFormData()));
       break;

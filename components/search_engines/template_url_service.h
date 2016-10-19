@@ -311,8 +311,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Notification that the keywords have been loaded.
   // This is invoked from WebDataService, and should not be directly
   // invoked.
-  void OnWebDataServiceRequestDone(KeywordWebDataService::Handle h,
-                                   const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(
+      KeywordWebDataService::Handle h,
+      std::unique_ptr<WDTypedResult> result) override;
 
   // Returns the locale-direction-adjusted short name for the given keyword.
   // Also sets the out param to indicate whether the keyword belongs to an

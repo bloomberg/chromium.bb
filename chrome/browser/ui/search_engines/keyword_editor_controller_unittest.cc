@@ -48,7 +48,7 @@ class KeywordEditorControllerTest : public testing::Test,
 
   void SetUp() override {
     if (simulate_load_failure_)
-      util_.model()->OnWebDataServiceRequestDone(0, NULL);
+      util_.model()->OnWebDataServiceRequestDone(0, nullptr);
     else
       util_.VerifyLoad();
 

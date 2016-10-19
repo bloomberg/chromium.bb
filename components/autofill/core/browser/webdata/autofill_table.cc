@@ -18,6 +18,7 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -912,7 +913,7 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
 }
 
 bool AutofillTable::GetAutofillProfiles(
-    std::vector<AutofillProfile*>* profiles) {
+    std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
   DCHECK(profiles);
   profiles->clear();
 
@@ -926,13 +927,14 @@ bool AutofillTable::GetAutofillProfiles(
     std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
     if (!profile)
       return false;
-    profiles->push_back(profile.release());
+    profiles->push_back(std::move(profile));
   }
 
   return s.Succeeded();
 }
 
-bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
+bool AutofillTable::GetServerProfiles(
+    std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
   profiles->clear();
 
   sql::Statement s(db_->GetUniqueStatement(
@@ -957,8 +959,9 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
 
   while (s.Step()) {
     int index = 0;
-    std::unique_ptr<AutofillProfile> profile(new AutofillProfile(
-        AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
+    std::unique_ptr<AutofillProfile> profile =
+        base::MakeUnique<AutofillProfile>(AutofillProfile::SERVER_PROFILE,
+                                          s.ColumnString(index++));
     profile->set_use_count(s.ColumnInt64(index++));
     profile->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
     // Modification date is not tracked for server profiles. Explicitly set it
@@ -986,7 +989,7 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
     profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone_number,
                      profile->language_code());
 
-    profiles->push_back(profile.release());
+    profiles->push_back(std::move(profile));
   }
 
   return s.Succeeded();
@@ -1173,7 +1176,7 @@ std::unique_ptr<CreditCard> AutofillTable::GetCreditCard(
 }
 
 bool AutofillTable::GetCreditCards(
-    std::vector<CreditCard*>* credit_cards) {
+    std::vector<std::unique_ptr<CreditCard>>* credit_cards) {
   DCHECK(credit_cards);
   credit_cards->clear();
 
@@ -1187,14 +1190,14 @@ bool AutofillTable::GetCreditCards(
     std::unique_ptr<CreditCard> credit_card = GetCreditCard(guid);
     if (!credit_card)
       return false;
-    credit_cards->push_back(credit_card.release());
+    credit_cards->push_back(std::move(credit_card));
   }
 
   return s.Succeeded();
 }
 
 bool AutofillTable::GetServerCreditCards(
-    std::vector<CreditCard*>* credit_cards) {
+    std::vector<std::unique_ptr<CreditCard>>* credit_cards) {
   credit_cards->clear();
 
   sql::Statement s(db_->GetUniqueStatement(
@@ -1225,7 +1228,8 @@ bool AutofillTable::GetServerCreditCards(
         CreditCard::FULL_SERVER_CARD;
     std::string server_id = s.ColumnString(index++);
 
-    CreditCard* card = new CreditCard(record_type, server_id);
+    std::unique_ptr<CreditCard> card =
+        base::MakeUnique<CreditCard>(record_type, server_id);
     card->SetRawInfo(
         CREDIT_CARD_NUMBER,
         record_type == CreditCard::MASKED_SERVER_CARD ? last_four
@@ -1239,7 +1243,7 @@ bool AutofillTable::GetServerCreditCards(
     std::string card_type = s.ColumnString(index++);
     if (record_type == CreditCard::MASKED_SERVER_CARD) {
       // The type must be set after setting the number to override the
-      // autodectected type.
+      // autodetected type.
       card->SetTypeForMaskedCard(card_type.c_str());
     } else {
       DCHECK_EQ(CreditCard::GetCreditCardType(full_card_number), card_type);
@@ -1250,7 +1254,7 @@ bool AutofillTable::GetServerCreditCards(
     card->SetRawInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(index++));
     card->SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(index++));
     card->set_billing_address_id(s.ColumnString(index++));
-    credit_cards->push_back(card);
+    credit_cards->push_back(std::move(card));
   }
 
   return s.Succeeded();
@@ -1557,7 +1561,7 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
 bool AutofillTable::RemoveOriginURLsModifiedBetween(
     const Time& delete_begin,
     const Time& delete_end,
-    ScopedVector<AutofillProfile>* profiles) {
+    std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
 
   time_t delete_begin_t = delete_begin.ToTimeT();
@@ -1592,7 +1596,7 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
     if (!profile)
       return false;
 
-    profiles->push_back(profile.release());
+    profiles->push_back(std::move(profile));
   }
 
   // Remember Autofill credit cards with URL origins in the time range.

@@ -123,11 +123,11 @@ AutofillProfile ProfileFromSpecifics(
 // The credit card's IDs do not change over time.
 void CopyBillingAddressesFromDisk(AutofillTable* table,
                                   std::vector<CreditCard>* cards_from_server) {
-  ScopedVector<CreditCard> cards_on_disk;
-  table->GetServerCreditCards(&cards_on_disk.get());
+  std::vector<std::unique_ptr<CreditCard>> cards_on_disk;
+  table->GetServerCreditCards(&cards_on_disk);
 
   // The reasons behind brute-force search are explained in SetDataIfChanged.
-  for (const CreditCard* saved_card : cards_on_disk) {
+  for (const auto& saved_card : cards_on_disk) {
     for (CreditCard& server_card : *cards_from_server) {
       if (saved_card->server_id() == server_card.server_id()) {
         server_card.set_billing_address_id(saved_card->billing_address_id());
@@ -150,15 +150,15 @@ void CopyBillingAddressesFromDisk(AutofillTable* table,
 //
 // Returns true if anything changed. The previous number of items in the table
 // (for sync tracking) will be placed into *prev_item_count.
-template<class Data>
+template <class Data>
 bool SetDataIfChanged(
     AutofillTable* table,
     const std::vector<Data>& data,
-    bool (AutofillTable::*getter)(std::vector<Data*>*),
+    bool (AutofillTable::*getter)(std::vector<std::unique_ptr<Data>>*),
     void (AutofillTable::*setter)(const std::vector<Data>&),
     size_t* prev_item_count) {
-  ScopedVector<Data> existing_data;
-  (table->*getter)(&existing_data.get());
+  std::vector<std::unique_ptr<Data>> existing_data;
+  (table->*getter)(&existing_data);
   *prev_item_count = existing_data.size();
 
   // If the user has a large number of addresses, don't bother verifying
@@ -177,7 +177,7 @@ bool SetDataIfChanged(
     // compares). A std::set only uses operator< requiring multiple calls to
     // check equality, giving 8 compares for 2 elements and 16 for 3. For these
     // set sizes, brute force O(n^2) is faster.
-    for (const Data* cur_existing : existing_data) {
+    for (const auto& cur_existing : existing_data) {
       bool found_match_for_cur_existing = false;
       for (const Data& cur_new : data) {
         if (cur_existing->Compare(cur_new) == 0) {

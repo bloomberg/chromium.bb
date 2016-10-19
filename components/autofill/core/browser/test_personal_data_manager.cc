@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace autofill {
@@ -29,7 +30,7 @@ void TestPersonalDataManager::AddTestingCreditCard(CreditCard* credit_card) {
 
 void TestPersonalDataManager::AddTestingServerCreditCard(
     const CreditCard& credit_card) {
-  server_credit_cards_.push_back(new CreditCard(credit_card));
+  server_credit_cards_.push_back(base::MakeUnique<CreditCard>(credit_card));
 }
 
 const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()
@@ -37,13 +38,12 @@ const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()
   return profiles_;
 }
 
-const std::vector<AutofillProfile*>& TestPersonalDataManager::web_profiles()
-    const {
+std::vector<AutofillProfile*> TestPersonalDataManager::web_profiles() const {
   return profiles_;
 }
 
-const std::vector<CreditCard*>& TestPersonalDataManager::
-    GetCreditCards() const {
+const std::vector<CreditCard*>& TestPersonalDataManager::GetCreditCards()
+    const {
   return credit_cards_;
 }
 

@@ -4535,22 +4535,24 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
 // existing profile in decreasing order of frecency.
 TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
   // Create two very similar profiles except with different company names.
-  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+  std::unique_ptr<AutofillProfile> profile1 = base::MakeUnique<AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile1.get(), "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
-  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2, "Homer", "Jay", "Simpson",
+  AutofillProfile* profile2 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile2, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
 
   // Give the "Fox" profile a bigger frecency score.
-  profile2.set_use_count(15);
+  profile2->set_use_count(15);
 
   // Create the |existing_profiles| vector.
-  std::vector<AutofillProfile*> existing_profiles;
-  existing_profiles.push_back(&profile1);
-  existing_profiles.push_back(&profile2);
+  std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
+  existing_profiles.push_back(std::move(profile1));
+  existing_profiles.push_back(base::WrapUnique(profile2));
 
   // Create a new imported profile with no company name.
   AutofillProfile imported_profile(base::GenerateGUID(),
@@ -4562,10 +4564,10 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
   std::string guid = personal_data_->MergeProfile(
-      imported_profile, existing_profiles, "US-EN", &profiles);
+      imported_profile, &existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the "fox" profile.
-  EXPECT_EQ(profile2.guid(), guid);
+  EXPECT_EQ(profile2->guid(), guid);
 }
 
 // Tests that MergeProfile produces a merged profile with the expected usage
@@ -4573,18 +4575,19 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
 TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
   // Create an initial profile with a use count of 10, an old use date and an
   // old modification date of 4 days ago.
-  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile, "Homer", "Jay", "Simpson",
+  AutofillProfile* profile =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile.set_use_count(4U);
-  profile.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(4));
-  profile.set_modification_date(base::Time::Now() -
-                                base::TimeDelta::FromDays(4));
+  profile->set_use_count(4U);
+  profile->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(4));
+  profile->set_modification_date(base::Time::Now() -
+                                 base::TimeDelta::FromDays(4));
 
   // Create the |existing_profiles| vector.
-  std::vector<AutofillProfile*> existing_profiles;
-  existing_profiles.push_back(&profile);
+  std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
+  existing_profiles.push_back(base::WrapUnique(profile));
 
   // Create a new imported profile that will get merged with the existing one.
   AutofillProfile imported_profile(base::GenerateGUID(),
@@ -4596,18 +4599,18 @@ TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
   std::string guid = personal_data_->MergeProfile(
-      imported_profile, existing_profiles, "US-EN", &profiles);
+      imported_profile, &existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the existing profile.
-  EXPECT_EQ(profile.guid(), guid);
+  EXPECT_EQ(profile->guid(), guid);
   // The use count should have be max(4, 1) => 4.
-  EXPECT_EQ(4U, profile.use_count());
+  EXPECT_EQ(4U, profile->use_count());
   // The use date and modification dates should have been set to less than 500
   // milliseconds ago.
   EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-            base::Time::Now() - profile.use_date());
+            base::Time::Now() - profile->use_date());
   EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-            base::Time::Now() - profile.modification_date());
+            base::Time::Now() - profile->modification_date());
 }
 
 // Tests that DedupeProfiles sets the correct profile guids to
@@ -4615,50 +4618,55 @@ TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
 TEST_F(PersonalDataManagerTest, DedupeProfiles_ProfilesToDelete) {
   // Create the profile for which to find duplicates. It has the highest
   // frecency.
-  AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1, "Homer", "Jay", "Simpson",
+  AutofillProfile* profile1 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile1, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "", "742. Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile1.set_use_count(9);
+  profile1->set_use_count(9);
 
   // Create a different profile that should not be deduped (different address).
-  AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2, "Homer", "Jay", "Simpson",
+  AutofillProfile* profile2 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile2, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "Fox", "1234 Other Street", "",
                        "Springfield", "IL", "91601", "US", "12345678910");
-  profile2.set_use_count(7);
+  profile2->set_use_count(7);
 
   // Create a profile similar to profile1 which should be deduped.
-  AutofillProfile profile3(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile3, "Homer", "Jay", "Simpson",
+  AutofillProfile* profile3 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile3, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "US", "12345678910");
-  profile3.set_use_count(5);
+  profile3->set_use_count(5);
 
   // Create another different profile that should not be deduped (different
   // name).
-  AutofillProfile profile4(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile4, "Marjorie", "Jacqueline", "Simpson",
+  AutofillProfile* profile4 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile4, "Marjorie", "Jacqueline", "Simpson",
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile4.set_use_count(3);
+  profile4->set_use_count(3);
 
   // Create another profile similar to profile1. Since that one has the lowest
   // frecency, the result of the merge should be in this profile at the end of
   // the test.
-  AutofillProfile profile5(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile5, "Homer", "Jay", "Simpson",
+  AutofillProfile* profile5 =
+      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(profile5, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace.",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
-  profile5.set_use_count(1);
+  profile5->set_use_count(1);
 
   // Add the profiles.
-  std::vector<AutofillProfile*> existing_profiles;
-  existing_profiles.push_back(&profile1);
-  existing_profiles.push_back(&profile2);
-  existing_profiles.push_back(&profile3);
-  existing_profiles.push_back(&profile4);
-  existing_profiles.push_back(&profile5);
+  std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
+  existing_profiles.push_back(base::WrapUnique(profile1));
+  existing_profiles.push_back(base::WrapUnique(profile2));
+  existing_profiles.push_back(base::WrapUnique(profile3));
+  existing_profiles.push_back(base::WrapUnique(profile4));
+  existing_profiles.push_back(base::WrapUnique(profile5));
 
   // Enable the profile cleanup.
   EnableAutofillProfileCleanup();
@@ -4675,11 +4683,11 @@ TEST_F(PersonalDataManagerTest, DedupeProfiles_ProfilesToDelete) {
 
   // Profile1 should be deleted because it was sent as the profile to merge and
   // thus was merged into profile3 and then into profile5.
-  EXPECT_TRUE(profiles_to_delete.count(&profile1));
+  EXPECT_TRUE(profiles_to_delete.count(profile1));
 
   // Profile3 should be deleted because profile1 was merged into it and the
   // resulting profile was then merged into profile5.
-  EXPECT_TRUE(profiles_to_delete.count(&profile3));
+  EXPECT_TRUE(profiles_to_delete.count(profile3));
 
   // Only these two profiles should be deleted.
   EXPECT_EQ(2U, profiles_to_delete.size());

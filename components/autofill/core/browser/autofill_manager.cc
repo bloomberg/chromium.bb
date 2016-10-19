@@ -21,6 +21,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
@@ -879,8 +880,9 @@ bool AutofillManager::IsShowingUnmaskPrompt() {
   return full_card_request_ && full_card_request_->IsGettingFullCard();
 }
 
-const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
-  return form_structures_.get();
+const std::vector<std::unique_ptr<FormStructure>>&
+AutofillManager::GetFormStructures() {
+  return form_structures_;
 }
 
 payments::FullCardRequest* AutofillManager::GetOrCreateFullCardRequest() {
@@ -914,9 +916,9 @@ void AutofillManager::OnLoadedServerPredictions(
   // the end of the list (and reverse the resulting pointer vector).
   std::vector<FormStructure*> queried_forms;
   for (const std::string& signature : base::Reversed(form_signatures)) {
-    for (FormStructure* cur_form : base::Reversed(form_structures_)) {
+    for (auto& cur_form : base::Reversed(form_structures_)) {
       if (cur_form->FormSignatureAsStr() == signature) {
-        queried_forms.push_back(cur_form);
+        queried_forms.push_back(cur_form.get());
         break;
       }
     }
@@ -1587,9 +1589,9 @@ bool AutofillManager::FindCachedForm(const FormData& form,
   // protocol with the crowdsourcing server does not permit us to discard the
   // original versions of the forms.
   *form_structure = NULL;
-  for (FormStructure* cur_form : base::Reversed(form_structures_)) {
+  for (auto& cur_form : base::Reversed(form_structures_)) {
     if (*cur_form == form) {
-      *form_structure = cur_form;
+      *form_structure = cur_form.get();
 
       // The same form might be cached with multiple field counts: in some
       // cases, non-autofillable fields are filtered out, whereas in other cases
@@ -1674,8 +1676,8 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
     return false;
 
   // Add the new or updated form to our cache.
-  form_structures_.push_back(new FormStructure(live_form));
-  *updated_form = *form_structures_.rbegin();
+  form_structures_.push_back(base::MakeUnique<FormStructure>(live_form));
+  *updated_form = form_structures_.rbegin()->get();
   (*updated_form)->DetermineHeuristicTypes();
 
   // If we have cached data, propagate it to the updated form.
@@ -1764,7 +1766,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   for (const FormData& form : forms) {
     const auto parse_form_start_time = base::TimeTicks::Now();
 
-    std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
+    std::unique_ptr<FormStructure> form_structure =
+        base::MakeUnique<FormStructure>(form);
     form_structure->ParseFieldTypesFromAutocompleteAttributes();
     if (!form_structure->ShouldBeParsed())
       continue;
@@ -1777,9 +1780,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     form_structures_.push_back(std::move(form_structure));
 
     if (form_structures_.back()->ShouldBeCrowdsourced())
-      queryable_forms.push_back(form_structures_.back());
+      queryable_forms.push_back(form_structures_.back().get());
     else
-      non_queryable_forms.push_back(form_structures_.back());
+      non_queryable_forms.push_back(form_structures_.back().get());
 
     AutofillMetrics::LogParseFormTiming(base::TimeTicks::Now() -
                                         parse_form_start_time);
@@ -1805,7 +1808,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   // prompt for credit card assisted filling. Upon accepting the infobar, the
   // form will automatically be filled with the user's information through this
   // class' FillCreditCardForm().
-  if (autofill_assistant_.CanShowCreditCardAssist(form_structures_.get())) {
+  if (autofill_assistant_.CanShowCreditCardAssist(form_structures_)) {
     const std::vector<CreditCard*> cards =
         personal_data_->GetCreditCardsToSuggest();
     // Expired cards are last in the sorted order, so if the first one is

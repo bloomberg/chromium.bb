@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
@@ -100,8 +99,8 @@ class AutofillProfileSyncableService
 
   // Helper to query WebDatabase for the current autofill state.
   // Made virtual for ease of mocking in unit tests.
-  // Caller owns returned |profiles|.
-  virtual bool LoadAutofillData(std::vector<AutofillProfile*>* profiles);
+  virtual bool LoadAutofillData(
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles);
 
   // Helper to persist any changes that occured during model association to
   // the WebDatabase.
@@ -146,8 +145,9 @@ class AutofillProfileSyncableService
 
   // Creates |profile_map| from the supplied |profiles| vector. Necessary for
   // fast processing of the changes.
-  void CreateGUIDToProfileMap(const std::vector<AutofillProfile*>& profiles,
-                              GUIDToProfileMap* profile_map);
+  void CreateGUIDToProfileMap(
+      const std::vector<std::unique_ptr<AutofillProfile>>& profiles,
+      GUIDToProfileMap* profile_map);
 
   // Creates or updates a profile based on |data|. Looks at the guid of the data
   // and if a profile with such guid is present in |profile_map| updates it. If
@@ -185,7 +185,7 @@ class AutofillProfileSyncableService
 
   // Cached Autofill profiles. *Warning* deleted profiles are still in the
   // vector - use the |profiles_map_| to iterate through actual profiles.
-  ScopedVector<AutofillProfile> profiles_;
+  std::vector<std::unique_ptr<AutofillProfile>> profiles_;
   GUIDToProfileMap profiles_map_;
 
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;

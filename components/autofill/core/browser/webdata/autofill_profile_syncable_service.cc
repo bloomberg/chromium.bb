@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -102,7 +103,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
 
   syncer::SyncMergeResult merge_result(type);
   sync_error_factory_ = std::move(sync_error_factory);
-  if (!LoadAutofillData(&profiles_.get())) {
+  if (!LoadAutofillData(&profiles_)) {
     merge_result.set_error(sync_error_factory_->CreateAndUploadError(
         FROM_HERE, "Could not get the autofill data from WebDatabase."));
     return merge_result;
@@ -112,7 +113,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
     DVLOG(2) << "[AUTOFILL MIGRATION]"
              << "Printing profiles from web db";
 
-    for (const auto* p : profiles_) {
+    for (const auto& p : profiles_) {
       DVLOG(2) << "[AUTOFILL MIGRATION]  "
                << UTF16ToUTF8(p->GetRawInfo(NAME_FIRST))
                << UTF16ToUTF8(p->GetRawInfo(NAME_LAST))
@@ -123,12 +124,12 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
   sync_processor_ = std::move(sync_processor);
 
   GUIDToProfileMap remaining_local_profiles;
-  CreateGUIDToProfileMap(profiles_.get(), &remaining_local_profiles);
+  CreateGUIDToProfileMap(profiles_, &remaining_local_profiles);
   DataBundle bundle;
   // For every incoming profile from sync, attempt to update a local profile or
   // otherwise create a new one.
   for (const auto& sync_iter : initial_sync_data) {
-    GUIDToProfileMap::iterator it =
+    auto it =
         CreateOrUpdateProfile(sync_iter, &remaining_local_profiles, &bundle);
     // |it| points to created/updated profile. Add it to the |profiles_map_| and
     // then remove it from |remaining_local_profiles|. After this loop is
@@ -143,7 +144,7 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
   // Check for similar unmatched profiles - they are created independently on
   // two systems, so merge them.
   for (const auto& sync_profile_it : bundle.candidates_to_merge) {
-    GUIDToProfileMap::iterator profile_to_merge =
+    auto profile_to_merge =
         remaining_local_profiles.find(sync_profile_it.first);
     if (profile_to_merge != remaining_local_profiles.end()) {
       bundle.profiles_to_delete.push_back(profile_to_merge->second->guid());
@@ -288,7 +289,7 @@ void AutofillProfileSyncableService::AutofillProfileChanged(
 }
 
 bool AutofillProfileSyncableService::LoadAutofillData(
-    std::vector<AutofillProfile*>* profiles) {
+    std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
   return GetAutofillTable()->GetAutofillProfiles(profiles);
 }
 
@@ -484,12 +485,12 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
 }
 
 void AutofillProfileSyncableService::CreateGUIDToProfileMap(
-    const std::vector<AutofillProfile*>& profiles,
+    const std::vector<std::unique_ptr<AutofillProfile>>& profiles,
     GUIDToProfileMap* profile_map) {
   DCHECK(profile_map);
   profile_map->clear();
-  for (size_t i = 0; i < profiles.size(); ++i)
-    (*profile_map)[profiles[i]->guid()] = profiles[i];
+  for (const auto& profile : profiles)
+    (*profile_map)[profile->guid()] = profile.get();
 }
 
 AutofillProfileSyncableService::GUIDToProfileMap::iterator
@@ -506,8 +507,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
   const sync_pb::AutofillProfileSpecifics& autofill_specifics(
       specifics.autofill_profile());
 
-  GUIDToProfileMap::iterator existing_profile = profile_map->find(
-        autofill_specifics.guid());
+  auto existing_profile = profile_map->find(autofill_specifics.guid());
   if (existing_profile != profile_map->end()) {
     // The synced profile already exists locally.  It might need to be updated.
     if (OverwriteProfileWithServerData(autofill_specifics,
@@ -518,24 +518,25 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
   }
 
   // New profile synced.
-  AutofillProfile* new_profile = new AutofillProfile(
-      autofill_specifics.guid(), autofill_specifics.origin());
-  OverwriteProfileWithServerData(autofill_specifics, new_profile);
+  std::unique_ptr<AutofillProfile> new_profile =
+      base::MakeUnique<AutofillProfile>(autofill_specifics.guid(),
+                                        autofill_specifics.origin());
+  AutofillProfile* new_profile_ptr = new_profile.get();
+  OverwriteProfileWithServerData(autofill_specifics, new_profile_ptr);
 
   // Check if profile appears under a different guid. Compares only profile
   // contents. (Ignores origin and language code in comparison.)
   //
   // Unverified profiles should never overwrite verified ones.
   AutofillProfileComparator comparator(app_locale_);
-  for (GUIDToProfileMap::iterator it = profile_map->begin();
-       it != profile_map->end(); ++it) {
+  for (auto it = profile_map->begin(); it != profile_map->end(); ++it) {
     AutofillProfile* local_profile = it->second;
     if (local_profile->Compare(*new_profile) == 0) {
       // Ensure that a verified profile can never revert back to an unverified
       // one.
       if (local_profile->IsVerified() && !new_profile->IsVerified()) {
         new_profile->set_origin(local_profile->origin());
-        bundle->profiles_to_sync_back.push_back(new_profile);
+        bundle->profiles_to_sync_back.push_back(new_profile.get());
       }
 
       bundle->profiles_to_delete.push_back(local_profile->guid());
@@ -552,14 +553,15 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
       // Add it to candidates for merge - if there is no profile with this guid
       // we will merge them.
       bundle->candidates_to_merge.insert(
-          std::make_pair(local_profile->guid(), new_profile));
+          std::make_pair(local_profile->guid(), new_profile_ptr));
       break;
     }
   }
-  profiles_.push_back(new_profile);
-  bundle->profiles_to_add.push_back(new_profile);
-  return profile_map->insert(std::make_pair(new_profile->guid(),
-                                            new_profile)).first;
+  profiles_.push_back(std::move(new_profile));
+  bundle->profiles_to_add.push_back(new_profile_ptr);
+  return profile_map
+      ->insert(std::make_pair(new_profile_ptr->guid(), new_profile_ptr))
+      .first;
 }
 
 void AutofillProfileSyncableService::ActOnChange(
@@ -585,12 +587,12 @@ void AutofillProfileSyncableService::ActOnChange(
                              CreateData(*(change.data_model()))));
       DCHECK(profiles_map_.find(change.data_model()->guid()) ==
              profiles_map_.end());
-      profiles_.push_back(new AutofillProfile(*(change.data_model())));
-      profiles_map_[change.data_model()->guid()] = profiles_.get().back();
+      profiles_.push_back(
+          base::MakeUnique<AutofillProfile>(*(change.data_model())));
+      profiles_map_[change.data_model()->guid()] = profiles_.back().get();
       break;
     case AutofillProfileChange::UPDATE: {
-      GUIDToProfileMap::iterator it = profiles_map_.find(
-          change.data_model()->guid());
+      auto it = profiles_map_.find(change.data_model()->guid());
       DCHECK(it != profiles_map_.end());
       *(it->second) = *(change.data_model());
       new_changes.push_back(

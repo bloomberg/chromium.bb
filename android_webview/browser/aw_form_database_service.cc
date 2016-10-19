@@ -106,14 +106,13 @@ void AwFormDatabaseService::HasFormDataImpl(
 
 void AwFormDatabaseService::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
-    const WDTypedResult* result) {
-
+    std::unique_ptr<WDTypedResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   bool has_form_data = false;
   if (result) {
     DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());
     const WDResult<int>* autofill_result =
-        static_cast<const WDResult<int>*>(result);
+        static_cast<const WDResult<int>*>(result.get());
     has_form_data = autofill_result->GetValue() > 0;
   }
   QueryMap::const_iterator it = result_map_.find(h);

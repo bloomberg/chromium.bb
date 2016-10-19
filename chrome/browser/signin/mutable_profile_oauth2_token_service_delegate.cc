@@ -272,9 +272,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
 
 void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle handle,
-    const WDTypedResult* result) {
+    std::unique_ptr<WDTypedResult> result) {
   VLOG(1) << "MutablePO2TS::OnWebDataServiceRequestDone. Result type: "
-          << (result == nullptr ? -1 : (int)result->GetType());
+          << (result.get() == nullptr ? -1 : (int)result->GetType());
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -289,7 +289,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
     DCHECK(result->GetType() == TOKEN_RESULT);
     const WDResult<std::map<std::string, std::string>>* token_result =
         static_cast<const WDResult<std::map<std::string, std::string>>*>(
-            result);
+            result.get());
     LoadAllCredentialsIntoMemory(token_result->GetValue());
   }
 

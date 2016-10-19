@@ -70,7 +70,7 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
   // WebDataServiceConsumer implementation.
   void OnWebDataServiceRequestDone(
       PasswordWebDataService::Handle handle,
-      const WDTypedResult* result) override;
+      std::unique_ptr<WDTypedResult> result) override;
 
   scoped_refptr<PasswordWebDataService> web_data_service_;
 
@@ -146,7 +146,7 @@ PasswordStoreWin::DBHandler::GetIE7Results(
 
 void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
     PasswordWebDataService::Handle handle,
-    const WDTypedResult* result) {
+    std::unique_ptr<WDTypedResult> result) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -170,7 +170,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   }
 
   DCHECK_EQ(PASSWORD_IE7_RESULT, result->GetType());
-  result_callback.Run(GetIE7Results(result, *form));
+  result_callback.Run(GetIE7Results(result.get(), *form));
 }
 
 PasswordStoreWin::PasswordStoreWin(

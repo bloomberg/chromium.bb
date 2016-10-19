@@ -125,7 +125,8 @@ MATCHER_P(CreditCardMatches, guid, "") {
 TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOff) {
   std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
 
-  std::vector<FormStructure*> form_structures{form_structure.get()};
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::move(form_structure));
   EXPECT_FALSE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 }
 
@@ -135,11 +136,11 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn) {
   EnableAutofillCreditCardAssist();
   std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
 
-  std::vector<FormStructure*> form_structures;
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
   EXPECT_FALSE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 
   // With valid input, the function extracts the credit card form properly.
-  form_structures.push_back(form_structure.get());
+  form_structures.push_back(std::move(form_structure));
   EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 }
 
@@ -157,8 +158,8 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
     std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
     form_structure->DetermineHeuristicTypes();
 
-    std::vector<FormStructure*> form_structures;
-    form_structures.push_back(form_structure.get());
+    std::vector<std::unique_ptr<FormStructure>> form_structures;
+    form_structures.push_back(std::move(form_structure));
     EXPECT_FALSE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
   }
 
@@ -168,8 +169,8 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
     std::unique_ptr<FormStructure> form_structure(new FormStructure(form));
     form_structure->DetermineHeuristicTypes();
 
-    std::vector<FormStructure*> form_structures;
-    form_structures.push_back(form_structure.get());
+    std::vector<std::unique_ptr<FormStructure>> form_structures;
+    form_structures.push_back(std::move(form_structure));
     EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
   }
 }
@@ -179,7 +180,8 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_CancelCvc) {
   std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
 
   // Will extract the credit card form data.
-  std::vector<FormStructure*> form_structures{form_structure.get()};
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::move(form_structure));
   EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 
   // Create a valid card for the assist.
@@ -200,7 +202,8 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
   std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
 
   // Will extract the credit card form data.
-  std::vector<FormStructure*> form_structures{form_structure.get()};
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::move(form_structure));
   EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 
   // Create a valid card for the assist.

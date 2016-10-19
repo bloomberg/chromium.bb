@@ -313,8 +313,7 @@ void UpdateProfile(int profile,
   autofill_helper::SetProfiles(profile, &profiles);
 }
 
-const std::vector<AutofillProfile*>& GetAllAutoFillProfiles(
-    int profile) {
+std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataChanged()).
       WillOnce(QuitUIMessageLoop());

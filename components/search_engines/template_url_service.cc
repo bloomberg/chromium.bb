@@ -747,7 +747,7 @@ TemplateURLService::RegisterOnLoadedCallback(const base::Closure& callback) {
 
 void TemplateURLService::OnWebDataServiceRequestDone(
     KeywordWebDataService::Handle h,
-    const WDTypedResult* result) {
+    std::unique_ptr<WDTypedResult> result) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(

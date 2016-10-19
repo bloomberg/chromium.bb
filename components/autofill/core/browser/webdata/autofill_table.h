@@ -12,7 +12,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "components/webdata/common/web_database_table.h"
 
@@ -317,11 +316,11 @@ class AutofillTable : public WebDatabaseTable {
   // Retrieves a profile with guid |guid|.
   std::unique_ptr<AutofillProfile> GetAutofillProfile(const std::string& guid);
 
-  // Retrieves local/server profiles in the database. Caller owns the returned
-  // profiles.
-  // TODO(thestig): Convert to scopers.
-  virtual bool GetAutofillProfiles(std::vector<AutofillProfile*>* profiles);
-  virtual bool GetServerProfiles(std::vector<AutofillProfile*>* profiles);
+  // Retrieves local/server profiles in the database.
+  virtual bool GetAutofillProfiles(
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles);
+  virtual bool GetServerProfiles(
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles);
 
   // Sets the server profiles. All old profiles are deleted and replaced with
   // the given ones.
@@ -333,18 +332,18 @@ class AutofillTable : public WebDatabaseTable {
   // Updates the database values for the specified credit card.
   bool UpdateCreditCard(const CreditCard& credit_card);
 
-  // Removes a row from the credit_cards table.  |guid| is the identifer of the
+  // Removes a row from the credit_cards table.  |guid| is the identifier of the
   // credit card to remove.
   bool RemoveCreditCard(const std::string& guid);
 
   // Retrieves a credit card with guid |guid|.
   std::unique_ptr<CreditCard> GetCreditCard(const std::string& guid);
 
-  // Retrieves the local/server credit cards in the database. Caller owns the
-  // returned credit cards.
-  // TODO(thestig): Convert to scopers.
-  virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
-  virtual bool GetServerCreditCards(std::vector<CreditCard*>* credit_cards);
+  // Retrieves the local/server credit cards in the database.
+  virtual bool GetCreditCards(
+      std::vector<std::unique_ptr<CreditCard>>* credit_cards);
+  virtual bool GetServerCreditCards(
+      std::vector<std::unique_ptr<CreditCard>>* credit_cards);
 
   // Replaces all server credit cards with the given vector. Unmasked cards
   // present in the new list will be preserved (even if the input is MASKED).
@@ -388,7 +387,7 @@ class AutofillTable : public WebDatabaseTable {
   bool RemoveOriginURLsModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      ScopedVector<AutofillProfile>* profiles);
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles);
 
   // Retrieves all profiles in the database that have been deleted since last
   // "empty" of the trash.

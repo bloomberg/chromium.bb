@@ -14,7 +14,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -85,8 +84,9 @@ class PersonalDataManager : public KeyedService,
   void OnSyncServiceInitialized(syncer::SyncService* sync_service);
 
   // WebDataServiceConsumer:
-  void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,
-                                   const WDTypedResult* result) override;
+  void OnWebDataServiceRequestDone(
+      WebDataServiceBase::Handle h,
+      std::unique_ptr<WDTypedResult> result) override;
 
   // AutofillWebDataServiceObserverOnUIThread:
   void AutofillMultipleChanged() override;
@@ -185,9 +185,9 @@ class PersonalDataManager : public KeyedService,
   // card information, respectively.  |GetProfiles()| returns both web and
   // auxiliary profiles.  |web_profiles()| returns only web profiles.
   virtual const std::vector<AutofillProfile*>& GetProfiles() const;
-  virtual const std::vector<AutofillProfile*>& web_profiles() const;
+  virtual std::vector<AutofillProfile*> web_profiles() const;
   // Returns just LOCAL_CARD cards.
-  virtual const std::vector<CreditCard*>& GetLocalCreditCards() const;
+  virtual std::vector<CreditCard*> GetLocalCreditCards() const;
   // Returns all credit cards, server and local.
   virtual const std::vector<CreditCard*>& GetCreditCards() const;
 
@@ -239,10 +239,11 @@ class PersonalDataManager : public KeyedService,
   // otherwise appends |new_profile| to the end of that list. Fills
   // |merged_profiles| with the result. Returns the |guid| of the new or updated
   // profile.
-  std::string MergeProfile(const AutofillProfile& new_profile,
-                           std::vector<AutofillProfile*> existing_profiles,
-                           const std::string& app_locale,
-                           std::vector<AutofillProfile>* merged_profiles);
+  std::string MergeProfile(
+      const AutofillProfile& new_profile,
+      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
+      const std::string& app_locale,
+      std::vector<AutofillProfile>* merged_profiles);
 
   // Returns true if |country_code| is a country that the user is likely to
   // be associated with the user. More concretely, it checks if there are any
@@ -255,7 +256,7 @@ class PersonalDataManager : public KeyedService,
   // will only update when Chrome is restarted.
   virtual const std::string& GetDefaultCountryCodeForNewAddress() const;
 
-  // De-dupe credit card to suggest. Full server cards are prefered over their
+  // De-dupe credit card to suggest. Full server cards are preferred over their
   // local duplicates, and local cards are preferred over their masked server
   // card duplicate.
   static void DedupeCreditCardToSuggest(
@@ -394,18 +395,18 @@ class PersonalDataManager : public KeyedService,
 
   // The loaded web profiles. These are constructed from entries on web pages
   // and from manually editing in the settings.
-  ScopedVector<AutofillProfile> web_profiles_;
+  std::vector<std::unique_ptr<AutofillProfile>> web_profiles_;
 
   // Profiles read from the user's account stored on the server.
-  mutable ScopedVector<AutofillProfile> server_profiles_;
+  mutable std::vector<std::unique_ptr<AutofillProfile>> server_profiles_;
 
   // Storage for web profiles.  Contents are weak references.  Lifetime managed
   // by |web_profiles_|.
   mutable std::vector<AutofillProfile*> profiles_;
 
   // Cached versions of the local and server credit cards.
-  ScopedVector<CreditCard> local_credit_cards_;
-  ScopedVector<CreditCard> server_credit_cards_;
+  std::vector<std::unique_ptr<CreditCard>> local_credit_cards_;
+  std::vector<std::unique_ptr<CreditCard>> server_credit_cards_;
 
   // A combination of local and server credit cards. The pointers are owned
   // by the local/sverver_credit_cards_ vectors.
@@ -483,7 +484,7 @@ class PersonalDataManager : public KeyedService,
   // This method should only be called by ApplyDedupingRoutine. It is split for
   // testing purposes.
   void DedupeProfiles(
-      std::vector<AutofillProfile*>* existing_profiles,
+      std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
       std::unordered_set<AutofillProfile*>* profile_guids_to_delete);
 
   const std::string app_locale_;
