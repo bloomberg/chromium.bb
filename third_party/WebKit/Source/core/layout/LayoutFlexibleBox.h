@@ -231,7 +231,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void setOverrideMainAxisContentSizeForChild(LayoutBox& child,
                                               LayoutUnit childPreferredSize);
   void prepareChildForPositionedLayout(LayoutBox& child);
-  size_t numberOfInFlowPositionedChildren(const OrderedFlexItemList&) const;
   void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset,
                               OrderedFlexItemList&,
                               LayoutUnit availableFreeSpace,
