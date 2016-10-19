@@ -278,6 +278,9 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
 
   void setHasWillChangeTransformHint(bool);
 
+  void setPreferredRasterScale(float);
+  void clearPreferredRasterScale();
+
  protected:
   String debugName(cc::Layer*) const;
   bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
@@ -395,6 +398,8 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   std::unique_ptr<PaintController> m_paintController;
 
   IntRect m_previousInterestRect;
+  float m_preferredRasterScale;
+  bool m_hasPreferredRasterScale;
 };
 
 }  // namespace blink

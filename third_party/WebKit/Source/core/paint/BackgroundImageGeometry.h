@@ -30,8 +30,19 @@ class BackgroundImageGeometry {
                  const FillLayer&,
                  const LayoutRect& paintRect);
 
+  // destRect() is the rect in the space of the containing box into which to
+  // draw the image.
   const LayoutRect& destRect() const { return m_destRect; }
+  // If the image is repeated via tiling, tileSize() is the size
+  // in pixels of the area into which to draw the entire image once.
+  //
+  // tileSize() need not be the same as the intrinsic size of the image; if not,
+  // it means the image will be resized (via an image filter) when painted into
+  // that tile region. This may happen because of CSS background-size and
+  // background-repeat requirements.
   const LayoutSize& tileSize() const { return m_tileSize; }
+  // phase() represents the point in the image that will appear at (0,0) in the
+  // destination space. The point is defined in tileSize() coordinates.
   const LayoutPoint& phase() const { return m_phase; }
   // Space-size represents extra width and height that may be added to
   // the image if used as a pattern with background-repeat: space.

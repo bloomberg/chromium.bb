@@ -109,7 +109,9 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       m_contentsLayer(0),
       m_contentsLayerId(0),
       m_scrollableArea(nullptr),
-      m_renderingContext3d(0) {
+      m_renderingContext3d(0),
+      m_preferredRasterScale(1.0f),
+      m_hasPreferredRasterScale(false) {
 #if ENABLE(ASSERT)
   if (m_client)
     m_client->verifyNotPainting();
@@ -147,6 +149,18 @@ LayoutRect GraphicsLayer::visualRect() const {
 
 void GraphicsLayer::setHasWillChangeTransformHint(bool hasWillChangeTransform) {
   m_layer->layer()->setHasWillChangeTransformHint(hasWillChangeTransform);
+}
+
+void GraphicsLayer::setPreferredRasterScale(float preferredRasterScale) {
+  m_preferredRasterScale = preferredRasterScale;
+  m_hasPreferredRasterScale = true;
+  m_layer->layer()->setPreferredRasterScale(preferredRasterScale);
+}
+
+void GraphicsLayer::clearPreferredRasterScale() {
+  m_preferredRasterScale = 1.0f;
+  m_hasPreferredRasterScale = false;
+  m_layer->layer()->clearPreferredRasterScale();
 }
 
 void GraphicsLayer::setParent(GraphicsLayer* layer) {
@@ -672,6 +686,9 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
   if (!m_backfaceVisibility)
     json->setString("backfaceVisibility",
                     m_backfaceVisibility ? "visible" : "hidden");
+
+  if (m_hasPreferredRasterScale)
+    json->setDouble("preferredRasterScale", m_preferredRasterScale);
 
   if (flags & LayerTreeIncludesDebugInfo)
     json->setString("client", pointerAsString(m_client));

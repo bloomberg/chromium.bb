@@ -108,6 +108,39 @@ bool bleedAvoidanceIsClipping(BackgroundBleedAvoidance bleedAvoidance) {
 
 }  // anonymous namespace
 
+// Sets a preferred composited raster scale for box with a background image,
+// if possible.
+// |srcRect| is the rect, in the space of the source image, to raster.
+// |destRect| is the rect, in the local layout space of |obj|, to raster.
+inline void updatePreferredRasterScaleFromImage(
+    const FloatRect srcRect,
+    const FloatRect& destRect,
+    const LayoutBoxModelObject& obj) {
+  if (!RuntimeEnabledFeatures::preferredImageRasterScaleEnabled())
+    return;
+  // Not yet implemented for SPv2.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+  if (destRect.width() == 0.0f || destRect.height() == 0.0f)
+    return;
+  float widthScale = srcRect.width() / destRect.width();
+  float heightScale = srcRect.height() / destRect.height();
+  float rasterScale = std::min(std::min(widthScale, heightScale), 10.0f);
+  if (PaintLayer* paintLayer = obj.layer()) {
+    if (paintLayer->compositingState() != PaintsIntoOwnBacking)
+      return;
+    paintLayer->graphicsLayerBacking()->setPreferredRasterScale(rasterScale);
+  }
+}
+
+inline void clearPreferredRasterScale(const LayoutBox& obj) {
+  if (PaintLayer* paintLayer = obj.layer()) {
+    if (paintLayer->compositingState() != PaintsIntoOwnBacking)
+      return;
+    paintLayer->graphicsLayerBacking()->clearPreferredRasterScale();
+  }
+}
+
 void BoxPainter::paintBoxDecorationBackgroundWithRect(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
@@ -143,6 +176,8 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
           paintInfo.context, displayItemClient,
           DisplayItem::kBoxDecorationBackground))
     return;
+
+  clearPreferredRasterScale(m_layoutBox);
 
   DrawingRecorder recorder(
       paintInfo.context, displayItemClient,
@@ -620,6 +655,8 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
                "data", InspectorPaintImageEvent::data(obj, *info.image));
   context.drawImageRRect(imageContext.image(), border, srcRect,
                          imageContext.compositeOp());
+
+  updatePreferredRasterScaleFromImage(srcRect, border.rect(), obj);
 
   return true;
 }

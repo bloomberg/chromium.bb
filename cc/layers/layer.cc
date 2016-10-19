@@ -67,8 +67,10 @@ Layer::Inputs::Inputs(int layer_id)
       scroll_parent(nullptr),
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
+      has_preferred_raster_scale(false),
       hide_layer_and_subtree(false),
-      client(nullptr) {}
+      client(nullptr),
+      preferred_raster_scale(1.0) {}
 
 Layer::Inputs::~Inputs() {}
 
@@ -1182,6 +1184,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUpdateRect(inputs_.update_rect);
 
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
+  if (has_preferred_raster_scale())
+    layer->SetPreferredRasterScale(preferred_raster_scale());
+  else
+    layer->ClearPreferredRasterScale();
   layer->SetNeedsPushProperties();
 
   // Reset any state that should be cleared for the next update.
@@ -1757,6 +1763,24 @@ void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   if (inputs_.has_will_change_transform_hint == has_will_change)
     return;
   inputs_.has_will_change_transform_hint = has_will_change;
+  SetNeedsCommit();
+}
+
+void Layer::SetPreferredRasterScale(float preferred_raster_scale) {
+  if (inputs_.has_preferred_raster_scale &&
+      inputs_.preferred_raster_scale == preferred_raster_scale)
+    return;
+
+  inputs_.has_preferred_raster_scale = true;
+  inputs_.preferred_raster_scale = preferred_raster_scale;
+  SetNeedsCommit();
+}
+
+void Layer::ClearPreferredRasterScale() {
+  if (!inputs_.has_preferred_raster_scale)
+    return;
+  inputs_.has_preferred_raster_scale = false;
+  inputs_.preferred_raster_scale = 1.0f;
   SetNeedsCommit();
 }
 

@@ -478,6 +478,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.has_will_change_transform_hint;
   }
 
+  void SetPreferredRasterScale(float preferred_raster_scale);
+  bool has_preferred_raster_scale() {
+    return inputs_.has_preferred_raster_scale;
+  }
+  float preferred_raster_scale() const {
+    return inputs_.preferred_raster_scale;
+  }
+  void ClearPreferredRasterScale();
+
   AnimationHost* GetAnimationHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
@@ -671,6 +680,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     Layer* clip_parent;
 
     bool has_will_change_transform_hint : 1;
+    bool has_preferred_raster_scale : 1;
 
     bool hide_layer_and_subtree : 1;
 
@@ -678,6 +688,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     LayerClient* client;
     base::Closure did_scroll_callback;
     std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
+
+    float preferred_raster_scale;
   };
 
   Layer* parent_;

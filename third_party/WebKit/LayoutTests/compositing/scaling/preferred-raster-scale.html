@@ -1,0 +1,23 @@
+<!doctype HTML>
+<div id=target style="will-change: transform; width: 310px; height: 175px; background-size: 100% 100%"></div>
+<pre id=output></pre>
+<script>
+onload = function() {
+  if (window.testRunner) {
+    window.testRunner.waitUntilDone();
+    window.testRunner.dumpAsText();
+  }
+  if (window.internals)
+    window.internals.runtimeFlags.preferredImageRasterScaleEnabled = true;
+
+  var bgImg = new Image();
+  bgImg.src = '../../paint/invalidation/resources/ducky.png';
+  bgImg.onload = function() {
+    target.style.backgroundImage = 'url(' + bgImg.src + ')';
+    if (window.internals)
+      output.innerHTML = window.internals.layerTreeAsText(document);
+    if (window.testRunner)
+      testRunner.notifyDone();
+  };
+}
+</script>

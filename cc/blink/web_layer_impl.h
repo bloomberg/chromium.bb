@@ -136,6 +136,8 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   void setCompositorMutableProperties(uint32_t properties) override;
   uint32_t compositorMutableProperties() const override;
   void setHasWillChangeTransformHint(bool has_will_change) override;
+  void setPreferredRasterScale(float raster_scale) override;
+  void clearPreferredRasterScale() override;
 
   void setScrollParent(blink::WebLayer* parent) override;
   void setClipParent(blink::WebLayer* parent) override;
