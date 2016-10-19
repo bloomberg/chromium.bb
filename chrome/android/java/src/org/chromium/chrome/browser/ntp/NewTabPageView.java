@@ -392,14 +392,16 @@ public class NewTabPageView extends FrameLayout
         if (mUseCardsUi) {
             mNewTabPageAdapter = new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
-            mRecyclerView.scrollToPosition(scrollPosition);
 
+            int scrollOffset;
             if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
-                int searchBoxHeight =
-                        getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
-                mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                        mNewTabPageAdapter.getFirstHeaderPosition(), searchBoxHeight);
+                scrollPosition = mNewTabPageAdapter.getFirstHeaderPosition();
+                scrollOffset = getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
+            } else {
+                scrollOffset = 0;
             }
+            mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
+                    scrollPosition, scrollOffset);
 
             // Set up swipe-to-dismiss
             ItemTouchHelper helper =
