@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"

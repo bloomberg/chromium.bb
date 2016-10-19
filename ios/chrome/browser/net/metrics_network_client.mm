@@ -6,7 +6,7 @@
 
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/net/metrics_network_client_manager.h"
 #include "ios/web/public/url_util.h"

@@ -5,7 +5,7 @@
 #include "ui/gl/angle_platform_impl.h"
 
 #include "base/metrics/histogram.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 
 namespace gl {

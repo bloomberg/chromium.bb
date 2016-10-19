@@ -5,7 +5,7 @@
 #include "components/nacl/browser/bad_message.h"
 
 #include "base/logging.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace nacl {

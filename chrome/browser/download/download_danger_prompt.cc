@@ -5,7 +5,7 @@
 #include "chrome/browser/download/download_danger_prompt.h"
 
 #include "base/macros.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"

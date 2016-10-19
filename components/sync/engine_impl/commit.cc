@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/engine/events/commit_request_event.h"

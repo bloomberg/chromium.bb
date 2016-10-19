@@ -5,7 +5,7 @@
 #include "components/password_manager/content/browser/bad_message.h"
 
 #include "base/logging.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace password_manager {

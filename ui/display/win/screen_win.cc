@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/win/win_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"

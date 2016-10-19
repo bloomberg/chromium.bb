@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/device_info/device_info_tracker.h"
 
 namespace syncer {

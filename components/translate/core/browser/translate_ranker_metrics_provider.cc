@@ -4,7 +4,7 @@
 
 #include "components/translate/core/browser/translate_ranker_metrics_provider.h"
 
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/proto/translate_ranker_model.pb.h"

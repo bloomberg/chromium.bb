@@ -27,7 +27,7 @@
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

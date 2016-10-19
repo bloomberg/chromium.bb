@@ -8,7 +8,7 @@
 
 #include "base/hash.h"
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"

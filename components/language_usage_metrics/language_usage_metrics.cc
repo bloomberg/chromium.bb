@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/metrics/sparse_histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/domain_reliability/util.h"
