@@ -60,14 +60,15 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
     headerGroupOffset += row->paginationStrut();
   LayoutUnit offsetToNextPage =
       pageHeight - intMod(headerGroupOffset, pageHeight);
-  paginationOffset.move(0, offsetToNextPage.toInt());
+  paginationOffset.move(LayoutUnit(), offsetToNextPage);
   // Now move paginationOffset to the top of the page the cull rect starts on.
-  if (paintInfo.cullRect().m_rect.y() > paginationOffset.y())
-    paginationOffset.move(
-        0, pageHeight.toInt() *
-               ((paintInfo.cullRect().m_rect.y() - paginationOffset.y()) /
-                pageHeight)
-                   .toInt());
+  if (paintInfo.cullRect().m_rect.y() > paginationOffset.y()) {
+    paginationOffset.move(LayoutUnit(), pageHeight *
+                                            ((paintInfo.cullRect().m_rect.y() -
+                                              paginationOffset.y()) /
+                                             pageHeight)
+                                                .toInt());
+  }
   LayoutUnit bottomBound =
       std::min(LayoutUnit(paintInfo.cullRect().m_rect.maxY()),
                paintOffset.y() + table->logicalHeight());
@@ -75,7 +76,8 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
   while (paginationOffset.y() < bottomBound) {
     LayoutPoint nestedOffset =
         paginationOffset +
-        LayoutPoint(0, m_layoutTableSection.offsetForRepeatingHeader().toInt());
+        LayoutPoint(LayoutUnit(),
+                    m_layoutTableSection.offsetForRepeatingHeader());
     if (itemToPaint == PaintCollapsedBorders)
       paintCollapsedSectionBorders(paintInfo, nestedOffset, currentBorderValue);
     else
