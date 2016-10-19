@@ -95,6 +95,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   friend class TestingServiceWorkerDispatcherHost;
 
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
+  enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
 
   // Called when mojom::ServiceWorkerDispatcherHostPtr is created on the
   // renderer-side.
@@ -238,6 +239,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       ServiceWorkerRegistration* registration);
 
   ServiceWorkerContextCore* GetContext();
+  // Returns the provider host with id equal to |provider_id|, or nullptr
+  // if the provider host could not be found or is not appropriate for
+  // initiating a request such as register/unregister/update.
+  ServiceWorkerProviderHost* GetProviderHostForRequest(
+      ProviderStatus* out_status,
+      int provider_id);
 
   const int render_process_id_;
   MessagePortMessageFilter* const message_port_message_filter_;
