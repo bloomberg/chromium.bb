@@ -702,3 +702,14 @@ TEST_F('CvoxEditableTextUnitTest', 'ContentEditableBraille', function() {
   editable.update(true);
   TestBraille.assertContent('', 0, 0);
 });
+
+TEST_F('CvoxEditableTextUnitTest', 'TypingNonBreakingSpaces', function() {
+  var tts = new TestTts();
+  var obj = new cvox.ChromeVoxEditableTextBase('Hello', 0, 0, false, tts);
+
+  obj.changed(new cvox.TextChangeEvent('h', 1, 1));
+  obj.changed(new cvox.TextChangeEvent('hi', 2, 2));
+  obj.changed(new cvox.TextChangeEvent('hi\u00a0', 3, 3));
+  obj.changed(new cvox.TextChangeEvent('hi t', 4, 4));
+  assertEqualStringArrays(['h', 'i', 'hi ', 't'], tts.get());
+});
