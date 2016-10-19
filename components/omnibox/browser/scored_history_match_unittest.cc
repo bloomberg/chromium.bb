@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/i18n/break_iterator.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -119,9 +120,15 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   RowWordStarts word_starts;
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
-  WordStarts one_word_no_offset(1, 0u);
-  return scored_match.GetTopicalityScore(1, url, one_word_no_offset,
-                                         word_starts);
+  WordStarts term_word_starts(1, 0u);
+  base::i18n::BreakIterator iter(term, base::i18n::BreakIterator::BREAK_WORD);
+  if (iter.Init()) {
+    // Find the first word start.
+    while (iter.Advance() && !iter.IsWord()) {
+    }
+    term_word_starts[0] = iter.prev();
+  }
+  return scored_match.GetTopicalityScore(1, url, term_word_starts, word_starts);
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -549,41 +556,39 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
       "http://abc.def.com/path1/path2?"
       "arg1=val1&arg2=val2#hash_component");
   base::string16 title = ASCIIToUTF16("here is a title");
-  const float hostname_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("abc"), url, title);
-  const float hostname_mid_word_score =
-      GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16("bc"), url,
-                                                 title);
-  const float domain_name_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("def"), url, title);
-  const float domain_name_mid_word_score =
-      GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16("ef"), url,
-                                                 title);
-  const float tld_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("com"), url, title);
-  const float tld_mid_word_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("om"), url, title);
-  const float path_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("path1"), url, title);
-  const float path_mid_word_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("ath1"), url, title);
-  const float arg_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("arg2"), url, title);
-  const float arg_mid_word_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("rg2"), url, title);
-  const float protocol_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("htt"), url, title);
-  const float protocol_mid_word_score =
-      GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16("tt"), url,
-                                                 title);
-  const float title_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("her"), url, title);
-  const float title_mid_word_score = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("er"), url, title);
+  auto Score = [&](const char* term) {
+    return GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16(term), url,
+                                                      title);
+  };
+  const float hostname_score = Score("abc");
+  const float hostname_mid_word_score = Score("bc");
+  const float hostname_score_preceeding_punctuation = Score("://abc");
+  const float domain_name_score = Score("def");
+  const float domain_name_mid_word_score = Score("ef");
+  const float domain_name_score_preceeding_dot = Score(".def");
+  const float tld_score = Score("com");
+  const float tld_mid_word_score = Score("om");
+  const float tld_score_preceeding_dot = Score(".com");
+  const float path_score = Score("path1");
+  const float path_mid_word_score = Score("ath1");
+  const float path_score_preceeding_slash = Score("/path1");
+  const float arg_score = Score("arg1");
+  const float arg_mid_word_score = Score("rg1");
+  const float arg_score_preceeding_question_mark = Score("?arg1");
+  const float protocol_score = Score("htt");
+  const float protocol_mid_word_score = Score("tt");
+  const float title_score = Score("her");
+  const float title_mid_word_score = Score("er");
   // Verify hostname and domain name > path > arg.
   EXPECT_GT(hostname_score, path_score);
   EXPECT_GT(domain_name_score, path_score);
   EXPECT_GT(path_score, arg_score);
+  // Verify leading punctuation doesn't confuse scoring.
+  EXPECT_EQ(hostname_score, hostname_score_preceeding_punctuation);
+  EXPECT_EQ(domain_name_score, domain_name_score_preceeding_dot);
+  EXPECT_EQ(tld_score, tld_score_preceeding_dot);
+  EXPECT_EQ(path_score, path_score_preceeding_slash);
+  EXPECT_EQ(arg_score, arg_score_preceeding_question_mark);
   // Verify that domain name > path and domain name > arg for non-word
   // boundaries.
   EXPECT_GT(hostname_mid_word_score, path_mid_word_score);

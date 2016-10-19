@@ -473,31 +473,34 @@ float ScoredHistoryMatch::GetTopicalityScore(
         0, colon_pos);
   }
   for (const auto& url_match : url_matches) {
-    const size_t term_offset = terms_to_word_starts_offsets[url_match.term_num];
+    // Calculate the offset in the URL string where the meaningful (word) part
+    // of the term starts.  This takes into account times when a term starts
+    // with punctuation such as "/foo".
+    const size_t term_word_offset =
+        url_match.offset + terms_to_word_starts_offsets[url_match.term_num];
     // Advance next_word_starts until it's >= the position of the term we're
     // considering (adjusted for where the word begins within the term).
     while ((next_word_starts != end_word_starts) &&
-           (*next_word_starts < (url_match.offset + term_offset))) {
+           (*next_word_starts < term_word_offset)) {
       ++next_word_starts;
     }
-    const bool at_word_boundary =
-        (next_word_starts != end_word_starts) &&
-        (*next_word_starts == url_match.offset + term_offset);
+    const bool at_word_boundary = (next_word_starts != end_word_starts) &&
+                                  (*next_word_starts == term_word_offset);
     if ((question_mark_pos != std::string::npos) &&
-        (url_match.offset > question_mark_pos)) {
+        (term_word_offset >= question_mark_pos)) {
       // The match is in a CGI ?... fragment.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 5;
     } else if ((end_of_hostname_pos != std::string::npos) &&
-               (url_match.offset > end_of_hostname_pos)) {
+               (term_word_offset >= end_of_hostname_pos)) {
       // The match is in the path.
       DCHECK(at_word_boundary);
       term_scores[url_match.term_num] += 8;
     } else if ((colon_pos == std::string::npos) ||
-               (url_match.offset > colon_pos)) {
+               (term_word_offset >= colon_pos)) {
       // The match is in the hostname.
       if ((last_part_of_hostname_pos == std::string::npos) ||
-          (url_match.offset < last_part_of_hostname_pos)) {
+          (term_word_offset < last_part_of_hostname_pos)) {
         // Either there are no dots in the hostname or this match isn't
         // the last dotted component.
         term_scores[url_match.term_num] += at_word_boundary ? 10 : 2;
@@ -524,20 +527,22 @@ float ScoredHistoryMatch::GetTopicalityScore(
       title_matches, terms_to_word_starts_offsets,
       word_starts.title_word_starts_, 0, std::string::npos);
   for (const auto& title_match : title_matches) {
-    const size_t term_offset =
-        terms_to_word_starts_offsets[title_match.term_num];
+    // Calculate the offset in the title string where the meaningful (word) part
+    // of the term starts.  This takes into account times when a term starts
+    // with punctuation such as "/foo".
+    const size_t term_word_offset =
+        title_match.offset + terms_to_word_starts_offsets[title_match.term_num];
     // Advance next_word_starts until it's >= the position of the term we're
     // considering (adjusted for where the word begins within the term).
     while ((next_word_starts != end_word_starts) &&
-           (*next_word_starts < (title_match.offset + term_offset))) {
+           (*next_word_starts < term_word_offset)) {
       ++next_word_starts;
       ++word_num;
     }
     if (word_num >= num_title_words_to_allow_)
       break;  // only count the first ten words
     DCHECK(next_word_starts != end_word_starts);
-    DCHECK_EQ(*next_word_starts, title_match.offset + term_offset)
-        << "not at word boundary";
+    DCHECK_EQ(*next_word_starts, term_word_offset) << "not at word boundary";
     term_scores[title_match.term_num] += 8;
   }
   // TODO(mpearson): Restore logic for penalizing out-of-order matches.
