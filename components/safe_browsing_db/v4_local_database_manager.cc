@@ -45,8 +45,10 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
     case MALWARE_THREAT:
     case SOCIAL_ENGINEERING_PUBLIC:
       return 0;
-    case API_ABUSE:
+    case UNWANTED_SOFTWARE:
       return 1;
+    case API_ABUSE:
+      return 2;
     default:
       NOTREACHED() << "Unexpected ThreatType encountered in GetThreatSeverity";
       return kLeastSeverity;
@@ -143,7 +145,7 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
 
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
       client, ClientCallbackType::CHECK_BROWSE_URL,
-      StoresToCheck({GetUrlMalwareId(), GetUrlSocEngId()}), url);
+      StoresToCheck({GetUrlMalwareId(), GetUrlSocEngId(), GetUrlUwsId()}), url);
   if (!v4_database_) {
     queued_checks_.push_back(std::move(check));
     return false;
