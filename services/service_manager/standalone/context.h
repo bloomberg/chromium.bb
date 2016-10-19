@@ -15,6 +15,7 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/standalone/tracer.h"
+#include "services/tracing/public/cpp/provider.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -72,6 +73,7 @@ class Context : public mojo::edk::ProcessDelegate {
   // Ensure this is destructed before task_runners_ since it owns a message pipe
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
+  tracing::Provider provider_;
   std::unique_ptr<catalog::Catalog> catalog_;
   std::unique_ptr<ServiceManager> service_manager_;
   base::Time main_entry_time_;

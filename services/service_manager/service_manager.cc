@@ -506,6 +506,7 @@ ServiceManager::ServiceManager(
       "service_manager::mojom::ServiceManager");
   spec.requires["*"].insert("service_manager:service_factory");
   spec.requires["service:catalog"].insert("service_manager:resolver");
+  spec.requires["service:tracing"].insert("app");
 
   service_manager_instance_ =
       CreateInstance(Identity(), CreateServiceManagerIdentity(), spec);

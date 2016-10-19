@@ -64,10 +64,6 @@ void Tracer::StopAndFlushToFile() {
     StopTracingAndFlushToDisk();
 }
 
-void Tracer::ConnectToProvider(tracing::mojom::ProviderRequest request) {
-  provider_.Bind(std::move(request));
-}
-
 void Tracer::StopTracingAndFlushToDisk() {
   tracing_ = false;
   trace_file_ = fopen(trace_filename_.c_str(), "w+");

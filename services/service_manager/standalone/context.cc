@@ -36,6 +36,7 @@
 #include "services/catalog/catalog.h"
 #include "services/catalog/store.h"
 #include "services/service_manager/connect_params.h"
+#include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/names.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/host/in_process_native_runner.h"
@@ -71,27 +72,6 @@ class Setup {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Setup);
-};
-
-class TracingInterfaceProvider : public mojom::InterfaceProvider {
- public:
-  explicit TracingInterfaceProvider(Tracer* tracer) : tracer_(tracer) {}
-  ~TracingInterfaceProvider() override {}
-
-  // mojom::InterfaceProvider:
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle client_handle) override {
-    if (tracer_ && interface_name == tracing::mojom::Provider::Name_) {
-      tracer_->ConnectToProvider(
-          mojo::MakeRequest<tracing::mojom::Provider>(
-              std::move(client_handle)));
-    }
-  }
-
- private:
-  Tracer* tracer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TracingInterfaceProvider);
 };
 
 const size_t kMaxBlockingPoolThreads = 3;
@@ -202,23 +182,18 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
     }
   }
 
-  mojom::InterfaceProviderPtr tracing_remote_interfaces;
-  mojom::InterfaceProviderPtr tracing_local_interfaces;
-  mojo::MakeStrongBinding(base::MakeUnique<TracingInterfaceProvider>(&tracer_),
-                          mojo::GetProxy(&tracing_local_interfaces));
 
-  std::unique_ptr<ConnectParams> params(new ConnectParams);
-  params->set_source(CreateServiceManagerIdentity());
-  params->set_target(Identity("service:tracing", mojom::kRootUserID));
-  params->set_remote_interfaces(mojo::GetProxy(&tracing_remote_interfaces));
-  service_manager_->Connect(std::move(params));
+  Identity source_identity = CreateServiceManagerIdentity();
+  Identity tracing_identity("service:tracing", mojom::kRootUserID);
+  tracing::mojom::FactoryPtr factory;
+  ConnectToInterface(service_manager(), source_identity, tracing_identity,
+                     &factory);
+  provider_.InitializeWithFactory(&factory);
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
     tracing::mojom::CollectorPtr coordinator;
-    auto coordinator_request = GetProxy(&coordinator);
-    tracing_remote_interfaces->GetInterface(
-        tracing::mojom::Collector::Name_,
-        coordinator_request.PassMessagePipe());
+    ConnectToInterface(service_manager(), source_identity, tracing_identity,
+                       &coordinator);
     tracer_.StartCollectingFromTracingService(std::move(coordinator));
   }
 
@@ -226,9 +201,8 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     tracing::mojom::StartupPerformanceDataCollectorPtr collector;
-    tracing_remote_interfaces->GetInterface(
-        tracing::mojom::StartupPerformanceDataCollector::Name_,
-        mojo::GetProxy(&collector).PassMessagePipe());
+    ConnectToInterface(service_manager(), source_identity, tracing_identity,
+                       &collector);
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
     // CurrentProcessInfo::CreationTime is only defined on some platforms.
     const base::Time creation_time = base::CurrentProcessInfo::CreationTime();

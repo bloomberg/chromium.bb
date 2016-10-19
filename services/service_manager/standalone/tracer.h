@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "mojo/common/data_pipe_drainer.h"
-#include "services/tracing/public/cpp/provider.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace service_manager {
@@ -78,7 +77,6 @@ class Tracer : public mojo::common::DataPipeDrainer::Client {
   tracing::mojom::CollectorPtr coordinator_;
   std::unique_ptr<mojo::common::DataPipeDrainer> drainer_;
 
-  tracing::Provider provider_;
   // Whether we're currently tracing.
   bool tracing_;
   // Categories to trace.

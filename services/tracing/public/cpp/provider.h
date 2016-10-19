@@ -24,12 +24,15 @@ class Provider : public mojom::Provider {
   Provider();
   ~Provider() override;
 
+  void InitializeWithFactory(mojom::FactoryPtr* factory);
   void Initialize(service_manager::Connector* connector,
                   const std::string& url);
 
   void Bind(mojom::ProviderRequest request);
 
  private:
+  void InitializeWithFactoryInternal(mojom::FactoryPtr* factory);
+
   // mojom::Provider implementation:
   void StartTracing(const std::string& categories,
                     mojom::RecorderPtr recorder) override;

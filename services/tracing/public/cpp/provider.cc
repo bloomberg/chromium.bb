@@ -42,24 +42,10 @@ Provider::~Provider() {
   StopTracing();
 }
 
-void Provider::Initialize(service_manager::Connector* connector,
-                          const std::string& url) {
-  {
-    base::AutoLock lock(g_singleton_lock.Get());
-    if (g_tracing_singleton_created)
-      return;
-    g_tracing_singleton_created = true;
-  }
-
-  // This will only set the name for the first app in a loaded mojo file. It's
-  // up to something like CoreServices to name its own child threads.
-  base::PlatformThread::SetName(url);
-
-  mojom::FactoryPtr factory;
-  connector->ConnectToInterface("service:tracing", &factory);
+void Provider::InitializeWithFactoryInternal(mojom::FactoryPtr* factory) {
   mojom::ProviderPtr provider;
   Bind(GetProxy(&provider));
-  factory->CreateRecorder(std::move(provider));
+  (*factory)->CreateRecorder(std::move(provider));
 #ifdef NDEBUG
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEarlyTracing)) {
@@ -68,6 +54,32 @@ void Provider::Initialize(service_manager::Connector* connector,
 #else
   ForceEnableTracing();
 #endif
+}
+
+void Provider::InitializeWithFactory(mojom::FactoryPtr* factory) {
+  {
+    base::AutoLock lock(g_singleton_lock.Get());
+    if (g_tracing_singleton_created)
+      return;
+    g_tracing_singleton_created = true;
+  }
+  InitializeWithFactoryInternal(factory);
+}
+
+void Provider::Initialize(service_manager::Connector* connector,
+                          const std::string& url) {
+  {
+    base::AutoLock lock(g_singleton_lock.Get());
+    if (g_tracing_singleton_created)
+      return;
+    g_tracing_singleton_created = true;
+  }
+  mojom::FactoryPtr factory;
+  connector->ConnectToInterface("service:tracing", &factory);
+  InitializeWithFactoryInternal(&factory);
+  // This will only set the name for the first app in a loaded mojo file. It's
+  // up to something like CoreServices to name its own child threads.
+  base::PlatformThread::SetName(url);
 }
 
 void Provider::Bind(mojom::ProviderRequest request) {
