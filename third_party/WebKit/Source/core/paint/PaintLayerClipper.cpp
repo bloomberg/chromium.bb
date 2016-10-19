@@ -441,9 +441,6 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   PropertyTreeState propertyTreeState =
       properties->localBorderBoxProperties()->propertyTreeState;
 
-  if (properties->cssClip())
-    propertyTreeState.setClip(properties->cssClip());
-
   if (isForeground && shouldClipOverflow(context) && properties->overflowClip())
     propertyTreeState.setClip(properties->overflowClip());
 
