@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -288,10 +289,11 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       playout_data_source_(playout_data_source),
-      main_thread_message_loop_(base::MessageLoop::current()),
+      main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
       typing_detected_(false),
       stopped_(false) {
+  DCHECK(main_thread_runner_);
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, input_params);
@@ -318,13 +320,14 @@ MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
   // TODO(miu): This class is ref-counted, shared among threads, and then
   // requires itself to be destroyed on the main thread only?!?!? Fix this, and
   // then remove the hack in WebRtcAudioSink::Adapter.
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   Stop();
 }
 
 void MediaStreamAudioProcessor::OnCaptureFormatChanged(
     const media::AudioParameters& input_format) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
+
   // There is no need to hold a lock here since the caller guarantees that
   // there is no more PushCaptureData() and ProcessAndConsumeData() callbacks
   // on the capture thread.
@@ -390,7 +393,7 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
 }
 
 void MediaStreamAudioProcessor::Stop() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
 
   if (stopped_)
     return;
@@ -427,7 +430,7 @@ const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
 
 void MediaStreamAudioProcessor::OnAecDumpFile(
     const IPC::PlatformFileForTransit& file_handle) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
 
   base::File file = IPC::PlatformFileForTransitToFile(file_handle);
   DCHECK(file.IsValid());
@@ -439,13 +442,13 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
 }
 
 void MediaStreamAudioProcessor::OnDisableAecDump() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (audio_processing_)
     StopEchoCancellationDump(audio_processing_.get());
 }
 
 void MediaStreamAudioProcessor::OnIpcClosing() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   aec_dump_message_filter_ = NULL;
 }
 
@@ -520,7 +523,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
 }
 
 void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   // There is no need to hold a lock here since the caller guarantees that
   // there is no more OnPlayoutData() callback on the render thread.
   render_thread_checker_.DetachFromThread();
@@ -542,7 +545,7 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::WebMediaConstraints& constraints,
     const MediaStreamDevice::AudioDeviceParameters& input_params) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   DCHECK(!audio_processing_);
 
   MediaAudioConstraints audio_constraints(constraints, input_params.effects);
@@ -661,7 +664,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
 void MediaStreamAudioProcessor::InitializeCaptureFifo(
     const media::AudioParameters& input_format) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   DCHECK(input_format.IsValid());
   input_format_ = input_format;
 
@@ -809,7 +812,7 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
     base::subtle::Release_Store(&typing_detected_, detected);
   }
 
-  main_thread_message_loop_->task_runner()->PostTask(
+  main_thread_runner_->PostTask(
       FROM_HERE, base::Bind(&MediaStreamAudioProcessor::UpdateAecStats, this));
 
   // Return 0 if the volume hasn't been changed, and otherwise the new volume.
@@ -818,7 +821,7 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
 }
 
 void MediaStreamAudioProcessor::UpdateAecStats() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (echo_information_)
     echo_information_->UpdateAecStats(audio_processing_->echo_cancellation());
 }

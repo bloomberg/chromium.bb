@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/media_stream_audio_track.h"
@@ -137,6 +138,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
  private:
+  base::MessageLoop main_thread_message_loop_;  // Needed for MSAudioProcessor.
   MockAudioDeviceFactory mock_audio_device_factory_;
   MockPeerConnectionDependencyFactory mock_dependency_factory_;
   blink::WebMediaStreamSource blink_audio_source_;

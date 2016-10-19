@@ -9,6 +9,8 @@
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -56,6 +58,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
   // |playout_data_source| won't be used.
+  //
+  // Threading note: The constructor assumes it is being run on the main render
+  // thread.
   MediaStreamAudioProcessor(
       const blink::WebMediaConstraints& constraints,
       const MediaStreamDevice::AudioDeviceParameters& input_params,
@@ -197,16 +202,13 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // lifetime of RenderThread.
   WebRtcPlayoutDataSource* playout_data_source_;
 
-  // Used to DCHECK that some methods are called on the main render thread.
-  base::ThreadChecker main_thread_checker_;
+  // Task runner for the main render thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+
   // Used to DCHECK that some methods are called on the capture audio thread.
   base::ThreadChecker capture_thread_checker_;
   // Used to DCHECK that some methods are called on the render audio thread.
   base::ThreadChecker render_thread_checker_;
-
-  // Message loop for the main render thread. We're assuming that we're created
-  // on the main render thread.
-  base::MessageLoop* main_thread_message_loop_;
 
   // Flag to enable stereo channel mirroring.
   bool audio_mirroring_;

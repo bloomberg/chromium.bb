@@ -12,7 +12,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/media/media_stream_options.h"
@@ -197,6 +199,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 #endif
   }
 
+  base::MessageLoop main_thread_message_loop_;
   media::AudioParameters params_;
   MediaStreamDevice::AudioDeviceParameters input_device_params_;
 };
@@ -208,7 +211,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 #define MAYBE_WithAudioProcessing WithAudioProcessing
 #endif
 TEST_F(MediaStreamAudioProcessorTest, MAYBE_WithAudioProcessing) {
-  base::MessageLoop message_loop;
   MockConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
@@ -443,7 +445,6 @@ TEST_F(MediaStreamAudioProcessorTest, SelectsConstraintsArrayGeometryIfExists) {
 #define MAYBE_TestAllSampleRates TestAllSampleRates
 #endif
 TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
-  base::MessageLoop message_loop;
   MockConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
@@ -480,10 +481,9 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
 // correctly in MSAP. Any IPC messages will be deleted since no sender in the
 // filter will be created.
 TEST_F(MediaStreamAudioProcessorTest, GetAecDumpMessageFilter) {
-  base::MessageLoopForUI message_loop;
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_(
-      new AecDumpMessageFilter(message_loop.task_runner(),
-                               message_loop.task_runner()));
+      new AecDumpMessageFilter(base::ThreadTaskRunnerHandle::Get(),
+                               base::ThreadTaskRunnerHandle::Get()));
 
   MockConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
@@ -567,7 +567,6 @@ TEST_F(MediaStreamAudioProcessorTest, TestStereoAudio) {
 #define MAYBE_TestWithKeyboardMicChannel TestWithKeyboardMicChannel
 #endif
 TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestWithKeyboardMicChannel) {
-  base::MessageLoop message_loop;
   MockConstraintFactory constraint_factory;
   constraint_factory.basic().googExperimentalNoiseSuppression.setExact(true);
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
