@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "blimp/common/mandatory_callback.h"
+#include "blimp/helium/result.h"
 #include "blimp/helium/version_vector.h"
 #include "blimp/helium/version_vector_generator.h"
 
@@ -55,24 +56,23 @@ class Syncable {
   // additional to that expressed by the VersionVectors, that is necessary to
   // detect and resolve conflicts.
   virtual void CreateChangesetToCurrent(
-      const VersionVector& from,
+      Revision from,
       google::protobuf::io::CodedOutputStream* output_stream) = 0;
 
   // Reads and applies a stream of changes originating from this Syncable. The
   // unconsumed bytes of |input_stream| are left intact.
-  // The VersionVectors |from| and |to| can be used to detect and resolve
-  // concurrent change conflicts.
-  virtual void ApplyChangeset(
-      const VersionVector& from,
-      const VersionVector& to,
+  // The Syncable is responsible for including sufficient revision data in the
+  // changeset in order to detect change conflicts.
+  virtual Result ApplyChangeset(
+      Revision to,
       google::protobuf::io::CodedInputStream* input_stream) = 0;
 
-  // Gives a chance for the Syncable to delete any old data previous to the
+  // Gives a chance for the Syncable to delete any old data prior to
   // |checkpoint|.
-  virtual void ReleaseCheckpointsBefore(const VersionVector& checkpoint) = 0;
+  virtual void ReleaseBefore(Revision checkpoint) = 0;
 
-  // Returns true if the object has been modified since |from|.
-  virtual bool ModifiedSince(const VersionVector& from) const = 0;
+  // Returns the VersionVector reflecting the last modified state of |this|.
+  virtual VersionVector GetVersionVector() const = 0;
 };
 
 // Extends the Syncable interface by adding support to asynchronously replicate
@@ -88,9 +88,8 @@ class Syncable {
 // 1.2) CreateChangesetToCurrent is called to actually create the changeset.
 //
 // 2. Updating
-// 2.1) ApplyChangeset is called which updates the local state.
-// 2.2) PostApplyChangeset is called to apply the state from the local
-// object into the external state.
+// 2.1) ApplyChangeset is called which updates the local state and propagates
+//      changes to external state.
 class TwoPhaseSyncable : public Syncable {
  public:
   ~TwoPhaseSyncable() override {}
@@ -100,19 +99,9 @@ class TwoPhaseSyncable : public Syncable {
   //
   // The callback |done| should be called once the local instance is ready
   // to accept the call to CreateChangesetToCurrent.
-  virtual void PreCreateChangesetToCurrent(const VersionVector& from,
+  virtual void PreCreateChangesetToCurrent(Revision from,
                                            MandatoryClosure&& done) = 0;
-
-  // This is called after calling ApplyChangeset to allow the changes to
-  // propagate to the actual external object.
-  //
-  // The callback |done| should be called once the external world object is
-  // updated.
-  virtual void PostApplyChangeset(const VersionVector& from,
-                                  const VersionVector& to,
-                                  MandatoryClosure&& done) = 0;
 };
-
 }  // namespace helium
 }  // namespace blimp
 
