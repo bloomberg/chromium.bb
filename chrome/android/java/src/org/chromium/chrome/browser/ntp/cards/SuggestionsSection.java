@@ -12,13 +12,13 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * A group of suggestions, with a header, a status card, and a progress indicator.
  */
 public class SuggestionsSection extends InnerNode {
+    private final List<TreeNode> mChildren = new ArrayList<>();
     private final List<SnippetArticle> mSuggestions = new ArrayList<>();
     private final SectionHeader mHeader;
     private final StatusItem mStatus;
@@ -32,20 +32,22 @@ public class SuggestionsSection extends InnerNode {
         mCategoryInfo = info;
         mMoreButton = new ActionItem(info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
+        resetChildren();
     }
 
     @Override
     public List<TreeNode> getChildren() {
-        // Note: Keep this coherent with the various notify** calls on ItemGroup.Observer
-        List<TreeNode> items = new ArrayList<>();
-        items.add(mHeader);
-        items.addAll(mSuggestions);
+        return mChildren;
+    }
 
-        if (mSuggestions.isEmpty()) items.add(mStatus);
-        if (mCategoryInfo.hasMoreButton() || mSuggestions.isEmpty()) items.add(mMoreButton);
-        if (mSuggestions.isEmpty()) items.add(mProgressIndicator);
+    private void resetChildren() {
+        mChildren.clear();
+        mChildren.add(mHeader);
+        mChildren.addAll(mSuggestions);
 
-        return Collections.unmodifiableList(items);
+        if (mSuggestions.isEmpty()) mChildren.add(mStatus);
+        if (mCategoryInfo.hasMoreButton() || mSuggestions.isEmpty()) mChildren.add(mMoreButton);
+        if (mSuggestions.isEmpty()) mChildren.add(mProgressIndicator);
     }
 
     public void removeSuggestion(SnippetArticle suggestion) {
@@ -54,6 +56,8 @@ public class SuggestionsSection extends InnerNode {
 
         mSuggestions.remove(removedIndex);
         if (mMoreButton != null) mMoreButton.setDismissable(!hasSuggestions());
+
+        resetChildren();
 
         // Note: Keep this coherent with getItems()
         int globalRemovedIndex = removedIndex + 1; // Header has index 0 in the section.
@@ -99,6 +103,7 @@ public class SuggestionsSection extends InnerNode {
             mMoreButton.setPosition(mSuggestions.size());
             mMoreButton.setDismissable(mSuggestions.isEmpty());
         }
+        resetChildren();
         notifySectionChanged(itemCountBefore);
     }
 
@@ -106,6 +111,7 @@ public class SuggestionsSection extends InnerNode {
     public void setStatus(@CategoryStatusEnum int status) {
         int itemCountBefore = getItemCount();
         setStatusInternal(status);
+        resetChildren();
         notifySectionChanged(itemCountBefore);
     }
 
