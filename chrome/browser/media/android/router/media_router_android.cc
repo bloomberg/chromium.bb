@@ -355,8 +355,8 @@ void MediaRouterAndroid::OnSinksReceived(
   auto it = sinks_observers_.find(source_urn);
   if (it != sinks_observers_.end()) {
     // TODO(imcheng): Pass origins to OnSinksUpdated (crbug.com/594858).
-    FOR_EACH_OBSERVER(MediaSinksObserver, *it->second,
-                      OnSinksUpdated(sinks_converted, std::vector<GURL>()));
+    for (auto& observer : *it->second)
+      observer.OnSinksUpdated(sinks_converted, std::vector<GURL>());
   }
 }
 
@@ -385,8 +385,8 @@ void MediaRouterAndroid::OnRouteCreated(
   route_requests_.Remove(jroute_request_id);
 
   active_routes_.push_back(route);
-  FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
-      OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>()));
+  for (auto& observer : routes_observers_)
+    observer.OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>());
 }
 
 void MediaRouterAndroid::OnRouteRequestError(
@@ -419,8 +419,8 @@ void MediaRouterAndroid::OnRouteClosed(
       break;
     }
 
-  FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
-      OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>()));
+  for (auto& observer : routes_observers_)
+    observer.OnRoutesUpdated(active_routes_, std::vector<MediaRoute::Id>());
   NotifyPresentationConnectionStateChange(
       route_id, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
 }
@@ -462,8 +462,8 @@ void MediaRouterAndroid::OnMessage(JNIEnv* env,
   std::vector<RouteMessage> messages(1);
   messages.front().type = RouteMessage::TEXT;
   messages.front().text = ConvertJavaStringToUTF8(env, jmessage);
-  FOR_EACH_OBSERVER(RouteMessageObserver, *observer_list,
-                    OnMessagesReceived(messages));
+  for (auto& observer : *observer_list)
+    observer.OnMessagesReceived(messages);
 }
 
 }  // namespace media_router

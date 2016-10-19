@@ -638,9 +638,8 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
       InitFromPrefs();
       MediaGalleryPrefId pref_id;
       if (GetPrefId(*dict, &pref_id)) {
-        FOR_EACH_OBSERVER(GalleryChangeObserver,
-                          gallery_change_observers_,
-                          OnGalleryInfoUpdated(this, pref_id));
+        for (auto& observer : gallery_change_observers_)
+          observer.OnGalleryInfoUpdated(this, pref_id);
       }
       return true;
     }
@@ -997,8 +996,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
     update.reset();
 
     InitFromPrefs();
-    FOR_EACH_OBSERVER(GalleryChangeObserver, gallery_change_observers_,
-                      OnGalleryInfoUpdated(this, *pref_id_it));
+    for (auto& observer : gallery_change_observers_)
+      observer.OnGalleryInfoUpdated(this, *pref_id_it);
     return *pref_id_it;
   }
 
@@ -1029,9 +1028,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
     list->Append(CreateGalleryPrefInfoDictionary(gallery_info));
   }
   InitFromPrefs();
-  FOR_EACH_OBSERVER(GalleryChangeObserver,
-                    gallery_change_observers_,
-                    OnGalleryAdded(this, gallery_info.pref_id));
+  for (auto& observer : gallery_change_observers_)
+    observer.OnGalleryAdded(this, gallery_info.pref_id);
 
   return gallery_info.pref_id;
 }
@@ -1105,9 +1103,8 @@ void MediaGalleriesPreferences::UpdateDefaultGalleriesPaths() {
   for (std::vector<MediaGalleryPrefId>::iterator iter = pref_ids.begin();
        iter != pref_ids.end();
        ++iter) {
-    FOR_EACH_OBSERVER(GalleryChangeObserver,
-                      gallery_change_observers_,
-                      OnGalleryInfoUpdated(this, *iter));
+    for (auto& observer : gallery_change_observers_)
+      observer.OnGalleryInfoUpdated(this, *iter);
   }
 }
 
@@ -1181,9 +1178,8 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
       update.reset(NULL);  // commits the update.
 
       InitFromPrefs();
-      FOR_EACH_OBSERVER(GalleryChangeObserver,
-                        gallery_change_observers_,
-                        OnGalleryRemoved(this, id));
+      for (auto& observer : gallery_change_observers_)
+        observer.OnGalleryRemoved(this, id);
       return;
     }
   }
@@ -1285,14 +1281,13 @@ bool MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     if (!SetGalleryPermissionInPrefs(extension.id(), pref_id, has_permission))
       return false;
   }
-  if (has_permission)
-    FOR_EACH_OBSERVER(GalleryChangeObserver,
-                      gallery_change_observers_,
-                      OnPermissionAdded(this, extension.id(), pref_id));
-  else
-    FOR_EACH_OBSERVER(GalleryChangeObserver,
-                      gallery_change_observers_,
-                      OnPermissionRemoved(this, extension.id(), pref_id));
+  if (has_permission) {
+    for (auto& observer : gallery_change_observers_)
+      observer.OnPermissionAdded(this, extension.id(), pref_id);
+  } else {
+    for (auto& observer : gallery_change_observers_)
+      observer.OnPermissionRemoved(this, extension.id(), pref_id);
+  }
   return true;
 }
 

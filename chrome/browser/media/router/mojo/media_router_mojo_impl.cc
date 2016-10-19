@@ -201,9 +201,10 @@ void MediaRouterMojoImpl::OnSinksReceived(
     DVLOG_WITH_INSTANCE(1)
         << "Received sink list without any active observers: " << media_source;
   } else {
-    FOR_EACH_OBSERVER(
-        MediaSinksObserver, sinks_query->observers,
-        OnSinksUpdated(sinks_query->cached_sink_list, sinks_query->origins));
+    for (auto& observer : sinks_query->observers) {
+      observer.OnSinksUpdated(sinks_query->cached_sink_list,
+                              sinks_query->origins);
+    }
   }
 }
 
@@ -227,9 +228,8 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
   for (size_t i = 0; i < routes.size(); ++i)
     routes_converted.push_back(routes[i].To<MediaRoute>());
 
-  FOR_EACH_OBSERVER(
-      MediaRoutesObserver, it->second->observers,
-      OnRoutesUpdated(routes_converted, joinable_route_ids));
+  for (auto& observer : it->second->observers)
+    observer.OnRoutesUpdated(routes_converted, joinable_route_ids);
 }
 
 void MediaRouterMojoImpl::RouteResponseReceived(
@@ -710,8 +710,8 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
     return;
   }
 
-  FOR_EACH_OBSERVER(RouteMessageObserver, *observer_list,
-                    OnMessagesReceived(messages));
+  for (auto& observer : *observer_list)
+    observer.OnMessagesReceived(messages);
 }
 
 void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(

@@ -95,8 +95,8 @@ void IssueManager::MaybeUpdateTopIssue() {
   const Issue* new_top_issue = nullptr;
 
   if (issues_.empty()) {
-    FOR_EACH_OBSERVER(IssuesObserver, issues_observers_,
-                      OnIssueUpdated(new_top_issue));
+    for (auto& observer : issues_observers_)
+      observer.OnIssueUpdated(new_top_issue);
     return;
   }
 
@@ -114,8 +114,8 @@ void IssueManager::MaybeUpdateTopIssue() {
   // If we've found a new top issue, then report it via the observer.
   if (new_top_issue->id() != top_issue_id_) {
     top_issue_id_ = new_top_issue->id();
-    FOR_EACH_OBSERVER(IssuesObserver, issues_observers_,
-                      OnIssueUpdated(new_top_issue));
+    for (auto& observer : issues_observers_)
+      observer.OnIssueUpdated(new_top_issue);
   }
 }
 

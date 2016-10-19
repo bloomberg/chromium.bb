@@ -73,8 +73,8 @@ void CommandUpdater::UpdateCommandEnabled(int id, bool enabled) {
   if (command->enabled == enabled)
     return;  // Nothing to do.
   command->enabled = enabled;
-  FOR_EACH_OBSERVER(CommandObserver, command->observers,
-                    EnabledStateChangedForCommand(id, enabled));
+  for (auto& observer : command->observers)
+    observer.EnabledStateChangedForCommand(id, enabled);
 }
 
 CommandUpdater::Command* CommandUpdater::GetCommand(int id, bool create) {

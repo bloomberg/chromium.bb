@@ -322,14 +322,14 @@ void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
 
 void MediaCaptureDevicesDispatcher::NotifyAudioDevicesChangedOnUIThread() {
   MediaStreamDevices devices = GetAudioCaptureDevices();
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnUpdateAudioDevices(devices));
+  for (auto& observer : observers_)
+    observer.OnUpdateAudioDevices(devices);
 }
 
 void MediaCaptureDevicesDispatcher::NotifyVideoDevicesChangedOnUIThread() {
   MediaStreamDevices devices = GetVideoCaptureDevices();
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnUpdateVideoDevices(devices));
+  for (auto& observer : observers_)
+    observer.OnUpdateVideoDevices(devices);
 }
 
 void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
@@ -358,19 +358,18 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
   }
 #endif
 
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnRequestUpdate(render_process_id,
-                                    render_frame_id,
-                                    stream_type,
-                                    state));
+  for (auto& observer : observers_) {
+    observer.OnRequestUpdate(render_process_id, render_frame_id, stream_type,
+                             state);
+  }
 }
 
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnCreatingAudioStream(render_process_id, render_frame_id));
+  for (auto& observer : observers_)
+    observer.OnCreatingAudioStream(render_process_id, render_frame_id);
 }
 
 bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(

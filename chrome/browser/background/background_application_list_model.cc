@@ -330,8 +330,8 @@ void BackgroundApplicationListModel::Observe(
 
 void BackgroundApplicationListModel::SendApplicationDataChangedNotifications(
     const Extension* extension) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnApplicationDataChanged(extension,
-                                                                   profile_));
+  for (auto& observer : observers_)
+    observer.OnApplicationDataChanged(extension, profile_);
 }
 
 void BackgroundApplicationListModel::OnExtensionLoaded(
@@ -398,6 +398,7 @@ void BackgroundApplicationListModel::Update() {
   }
   if (old_cursor != extensions_.end() || new_cursor != extensions.end()) {
     extensions_ = extensions;
-    FOR_EACH_OBSERVER(Observer, observers_, OnApplicationListChanged(profile_));
+    for (auto& observer : observers_)
+      observer.OnApplicationListChanged(profile_);
   }
 }

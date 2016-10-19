@@ -1574,8 +1574,8 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 }
 
 - (void)delayedScreenParametersUpdate {
-  FOR_EACH_OBSERVER(ui::WorkAreaWatcherObserver, workAreaChangeObservers_,
-      WorkAreaChanged());
+  for (auto& observer : workAreaChangeObservers_)
+    observer.WorkAreaChanged();
 }
 
 - (BOOL)application:(NSApplication*)application

@@ -622,9 +622,8 @@ void PresentationFrameManager::ClearDefaultPresentationRequest() {
     return;
 
   default_presentation_request_.reset();
-  FOR_EACH_OBSERVER(
-      PresentationServiceDelegateImpl::DefaultPresentationRequestObserver,
-      default_presentation_request_observers_, OnDefaultPresentationRemoved());
+  for (auto& observer : default_presentation_request_observers_)
+    observer.OnDefaultPresentationRemoved();
 }
 
 bool PresentationFrameManager::IsMainFrame(
@@ -641,10 +640,8 @@ void PresentationFrameManager::SetDefaultPresentationRequest(
 
   default_presentation_request_.reset(
       new PresentationRequest(default_presentation_request));
-  FOR_EACH_OBSERVER(
-      PresentationServiceDelegateImpl::DefaultPresentationRequestObserver,
-      default_presentation_request_observers_,
-      OnDefaultPresentationChanged(*default_presentation_request_));
+  for (auto& observer : default_presentation_request_observers_)
+    observer.OnDefaultPresentationChanged(*default_presentation_request_);
 }
 
 void PresentationFrameManager::SetMediaRouterForTest(MediaRouter* router) {

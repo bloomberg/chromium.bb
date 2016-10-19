@@ -99,9 +99,8 @@ BackgroundContents::~BackgroundContents() {
       chrome::NOTIFICATION_BACKGROUND_CONTENTS_DELETED,
       content::Source<Profile>(profile_),
       content::Details<BackgroundContents>(this));
-  FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
-                    deferred_start_render_host_observer_list_,
-                    OnDeferredStartRenderHostDestroyed(this));
+  for (auto& observer : deferred_start_render_host_observer_list_)
+    observer.OnDeferredStartRenderHostDestroyed(this);
 
   extension_host_delegate_->GetExtensionHostQueue()->Remove(this);
 }
@@ -174,17 +173,15 @@ void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
 void BackgroundContents::DidStartLoading() {
   // BackgroundContents only loads once, so this can only be the first time it
   // has started loading.
-  FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
-                    deferred_start_render_host_observer_list_,
-                    OnDeferredStartRenderHostDidStartFirstLoad(this));
+  for (auto& observer : deferred_start_render_host_observer_list_)
+    observer.OnDeferredStartRenderHostDidStartFirstLoad(this);
 }
 
 void BackgroundContents::DidStopLoading() {
   // BackgroundContents only loads once, so this can only be the first time
   // it has stopped loading.
-  FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
-                    deferred_start_render_host_observer_list_,
-                    OnDeferredStartRenderHostDidStopFirstLoad(this));
+  for (auto& observer : deferred_start_render_host_observer_list_)
+    observer.OnDeferredStartRenderHostDidStopFirstLoad(this);
 }
 
 void BackgroundContents::Observe(int type,
