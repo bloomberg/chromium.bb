@@ -28,7 +28,6 @@ class VM(object):
   """Class for managing a VM."""
 
   SSH_PORT = 9222
-  VM_DIR = '/var/run/cros_vm'
 
 
   def __init__(self, image_path=None, qemu_path=None, enable_kvm=True,
@@ -45,12 +44,24 @@ class VM(object):
 
     self.qemu_path = qemu_path
     self.enable_kvm = enable_kvm
+    # Software emulation doesn't need sudo access.
+    self.use_sudo = enable_kvm
     self.image_path = image_path
     self.ssh_port = ssh_port
     self.dry_run = dry_run
 
-    self.pidfile = os.path.join(self.VM_DIR, 'kvm.pid')
-    self.kvm_monitor = os.path.join(self.VM_DIR, 'kvm.monitor')
+    self.vm_dir = os.path.join(osutils.GetGlobalTempDir(), 'cros_vm')
+    if os.path.exists(self.vm_dir):
+      # For security, ensure that vm_dir is not a symlink, and is owned by us or
+      # by root.
+      assert not os.path.islink(self.vm_dir), \
+          'VM state dir is misconfigured; please recreate: %s' % self.vm_dir
+      st_uid = os.stat(self.vm_dir).st_uid
+      assert st_uid == 0 or st_uid == os.getuid(), \
+          'VM state dir is misconfigured; please recreate: %s' % self.vm_dir
+
+    self.pidfile = os.path.join(self.vm_dir, 'kvm.pid')
+    self.kvm_monitor = os.path.join(self.vm_dir, 'kvm.monitor')
     self.kvm_pipe_in = '%s.in' % self.kvm_monitor  # to KVM
     self.kvm_pipe_out = '%s.out' % self.kvm_monitor  # from KVM
     self.kvm_serial = '%s.serial' % self.kvm_monitor
@@ -58,17 +69,24 @@ class VM(object):
     # TODO(achuith): support nographics, snapshot, mem_path, usb_passthrough,
     # moblab, etc.
 
-  @staticmethod
-  def _CleanupFiles(recreate):
-    """Cleanup VM_DIR.
+
+  def _RunCommand(self, *args, **kwargs):
+    """Use SudoRunCommand or RunCommand as necessary."""
+    if self.use_sudo:
+      return cros_build_lib.SudoRunCommand(*args, **kwargs)
+    else:
+      return cros_build_lib.RunCommand(*args, **kwargs)
+
+  def _CleanupFiles(self, recreate):
+    """Cleanup vm_dir.
 
     Args:
-      recreate: recreate VM_DIR.
+      recreate: recreate vm_dir.
     """
-    cros_build_lib.SudoRunCommand(['rm', '-rf', VM.VM_DIR])
+    self._RunCommand(['rm', '-rf', self.vm_dir])
     if recreate:
-      cros_build_lib.SudoRunCommand(['mkdir', VM.VM_DIR])
-      cros_build_lib.SudoRunCommand(['chmod', '777', VM.VM_DIR])
+      self._RunCommand(['mkdir', self.vm_dir])
+      self._RunCommand(['chmod', '777', self.vm_dir])
 
   def PerformAction(self, start=False, stop=False, cmd=None):
     """Performs an action, one of start, stop, or run a command in the VM.
@@ -129,7 +147,7 @@ class VM(object):
     logging.info(' '.join(args))
     logging.info('Pid file: %s', self.pidfile)
     if not self.dry_run:
-      cros_build_lib.SudoRunCommand(args)
+      self._RunCommand(args)
 
   def _GetVMPid(self):
     """Get the pid of the VM.
@@ -137,16 +155,16 @@ class VM(object):
     Returns:
       pid of the VM.
     """
-    if not os.path.exists(self.VM_DIR):
-      logging.debug('%s not present.', self.VM_DIR)
+    if not os.path.exists(self.vm_dir):
+      logging.debug('%s not present.', self.vm_dir)
       return 0
 
     if not os.path.exists(self.pidfile):
       logging.info('%s does not exist.', self.pidfile)
       return 0
 
-    pid = cros_build_lib.SudoRunCommand(['cat', self.pidfile],
-                                        redirect_stdout=True).output.rstrip()
+    pid = self._RunCommand(['cat', self.pidfile],
+                           redirect_stdout=True).output.rstrip()
     if not pid.isdigit():
       logging.error('%s in %s is not a pid.', pid, self.pidfile)
       return 0
@@ -164,8 +182,7 @@ class VM(object):
       return False
 
     # Make sure the process actually exists.
-    res = cros_build_lib.SudoRunCommand(['kill', '-0', str(pid)],
-                                        error_code_ok=True)
+    res = self._RunCommand(['kill', '-0', str(pid)], error_code_ok=True)
     return res.returncode == 0
 
   def Stop(self):
@@ -176,8 +193,7 @@ class VM(object):
     if pid:
       logging.info('Killing %d.', pid)
       if not self.dry_run:
-        cros_build_lib.SudoRunCommand(['kill', '-9', str(pid)],
-                                      error_code_ok=True)
+        self._RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
 
     self._CleanupFiles(recreate=False)
 
@@ -190,7 +206,7 @@ class VM(object):
       timeout: maxiumum time to wait before raising an exception.
       poll_interval: interval between checks.
     """
-    if not os.path.exists(self.VM_DIR):
+    if not os.path.exists(self.vm_dir):
       self.Start()
 
     start_time = time.time()
