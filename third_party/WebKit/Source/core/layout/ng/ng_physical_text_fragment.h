@@ -17,7 +17,7 @@ namespace blink {
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
  public:
   NGPhysicalTextFragment(NGPhysicalSize size, NGPhysicalSize overflow)
-      : NGPhysicalFragmentBase(size, overflow, FragmentText, {}) {}
+      : NGPhysicalFragmentBase(size, overflow, FragmentText) {}
 
   String Text() const { return text_list_->Text(start_offset_, end_offset_); }
 

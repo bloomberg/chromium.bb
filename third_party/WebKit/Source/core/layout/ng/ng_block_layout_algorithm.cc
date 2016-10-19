@@ -24,6 +24,41 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
                   curr_margin_strut.negative_margin_block_start.abs());
 }
 
+// Whether an in-flow block-level child creates a new formatting context.
+//
+// This will *NOT* check the following cases:
+//  - The child is out-of-flow, e.g. floating or abs-pos.
+//  - The child is a inline-level, e.g. "display: inline-block".
+//  - The child establishes a new formatting context, but should be a child of
+//    another layout algorithm, e.g. "display: table-caption" or flex-item.
+bool IsNewFormattingContextForInFlowBlockLevelChild(
+    const NGConstraintSpace& space,
+    const ComputedStyle& style) {
+  // TODO(layout-dev): This doesn't capture a few cases which can't be computed
+  // directly from style yet:
+  //  - The child is a <fieldset>.
+  //  - "column-span: all" is set on the child (requires knowledge that we are
+  //    in a multi-col formatting context).
+  //    (https://drafts.csswg.org/css-multicol-1/#valdef-column-span-all)
+
+  if (style.specifiesColumns() || style.containsPaint() ||
+      style.containsLayout())
+    return true;
+
+  if (!style.isOverflowVisible())
+    return true;
+
+  EDisplay display = style.display();
+  if (display == EDisplay::Grid || display == EDisplay::Flex ||
+      display == EDisplay::Box)
+    return true;
+
+  if (space.WritingMode() != FromPlatformWritingMode(style.getWritingMode()))
+    return true;
+
+  return false;
+}
+
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
@@ -73,6 +108,10 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
     }
     case kStateChildLayout: {
       if (current_child_) {
+        constraint_space_for_children_->SetIsNewFormattingContext(
+            IsNewFormattingContextForInFlowBlockLevelChild(
+                *constraint_space, *current_child_->Style()));
+
         NGFragment* fragment;
         if (!current_child_->Layout(constraint_space_for_children_, &fragment))
           return false;

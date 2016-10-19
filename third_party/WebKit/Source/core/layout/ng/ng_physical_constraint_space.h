@@ -83,6 +83,10 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
   unsigned width_direction_fragmentation_type_ : 2;
   unsigned height_direction_fragmentation_type_ : 2;
 
+  // Whether the current constraint space is for the newly established
+  // formatting Context
+  unsigned is_new_fc_ : 1;
+
   HeapVector<Member<const NGExclusion>> exclusions_;
 };
 

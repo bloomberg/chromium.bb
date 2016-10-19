@@ -15,13 +15,6 @@
 #include "core/layout/ng/ng_writing_mode.h"
 
 namespace blink {
-namespace {
-// TODO(layout-ng): Add m_isNewFc flag to ComputedStyle and set it from
-// StyleResolver instead of getting it calculated by createsNewFormattingContext
-bool IsNewFormattingContext(const LayoutBox* layout_box) {
-  return layout_box && toLayoutBlock(layout_box)->createsNewFormattingContext();
-}
-}  // namespace
 
 NGBox::NGBox(LayoutObject* layout_object)
     : layout_box_(toLayoutBox(layout_object)) {
@@ -46,8 +39,6 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
         FromPlatformWritingMode(Style()->getWritingMode()),
         FromPlatformDirection(Style()->direction()), constraint_space);
-    child_constraint_space->SetIsNewFormattingContext(
-        IsNewFormattingContext(layout_box_));
 
     NGPhysicalFragment* fragment = nullptr;
     if (!algorithm_->Layout(child_constraint_space, &fragment))

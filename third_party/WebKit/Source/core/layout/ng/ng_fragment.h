@@ -23,6 +23,8 @@ class CORE_EXPORT NGFragment final : public NGFragmentBase {
              NGDirection direction,
              NGPhysicalFragment* physical_fragment)
       : NGFragmentBase(writing_mode, direction, physical_fragment) {}
+
+  NGMarginStrut MarginStrut() const;
 };
 
 }  // namespace blink

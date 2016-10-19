@@ -59,26 +59,21 @@ class CORE_EXPORT NGPhysicalFragmentBase
     has_been_placed_ = true;
   }
 
-  NGMarginStrut MarginStrut() const { return margin_strut_; }
-
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {}
   DECLARE_TRACE();
 
  protected:
   NGPhysicalFragmentBase(NGPhysicalSize size,
                          NGPhysicalSize overflow,
-                         NGFragmentType type,
-                         NGMarginStrut margin_strut)
+                         NGFragmentType type)
       : size_(size),
         overflow_(overflow),
-        margin_strut_(margin_strut),
         type_(type),
         has_been_placed_(false) {}
 
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
-  NGMarginStrut margin_strut_;
 
   unsigned type_ : 1;
   unsigned has_been_placed_ : 1;

@@ -20,13 +20,16 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
                      NGPhysicalSize overflow,
                      HeapVector<Member<const NGPhysicalFragmentBase>>& children,
                      NGMarginStrut margin_strut)
-      : NGPhysicalFragmentBase(size, overflow, FragmentBox, margin_strut) {
+      : NGPhysicalFragmentBase(size, overflow, FragmentBox),
+        margin_strut_(margin_strut) {
     children_.swap(children);
   }
 
   const HeapVector<Member<const NGPhysicalFragmentBase>>& Children() const {
     return children_;
   }
+
+  NGMarginStrut MarginStrut() const { return margin_strut_; }
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
     visitor->trace(children_);
@@ -35,9 +38,17 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
 
  private:
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
+
+  NGMarginStrut margin_strut_;
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(NGPhysicalFragment);
+
+DEFINE_TYPE_CASTS(NGPhysicalFragment,
+                  NGPhysicalFragmentBase,
+                  fragment,
+                  fragment->Type() == NGPhysicalFragmentBase::FragmentBox,
+                  fragment.Type() == NGPhysicalFragmentBase::FragmentBox);
 
 }  // namespace blink
 

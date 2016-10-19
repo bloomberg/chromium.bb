@@ -36,8 +36,6 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   LayoutUnit InlineOffset() const;
   LayoutUnit BlockOffset() const;
 
-  NGMarginStrut MarginStrut() const;
-
   NGPhysicalFragmentBase* PhysicalFragment() const {
     return physical_fragment_;
   };

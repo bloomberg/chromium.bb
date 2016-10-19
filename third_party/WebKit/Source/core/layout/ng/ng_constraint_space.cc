@@ -18,8 +18,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
           container_size.ConvertToPhysical(writing_mode))),
       size_(container_size),
       writing_mode_(writing_mode),
-      direction_(direction),
-      is_new_fc_(false) {}
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
@@ -27,8 +26,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
     : physical_space_(physical_space),
       size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
       writing_mode_(writing_mode),
-      direction_(direction),
-      is_new_fc_(false) {}
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
@@ -37,8 +35,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
       offset_(constraint_space->Offset()),
       size_(constraint_space->Size()),
       writing_mode_(writing_mode),
-      direction_(direction),
-      is_new_fc_(false) {}
+      direction_(direction) {}
 
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
                                      NGLogicalOffset offset,
@@ -47,17 +44,13 @@ NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
       offset_(offset),
       size_(size),
       writing_mode_(other.WritingMode()),
-      direction_(other.Direction()),
-      is_new_fc_(false) {}
+      direction_(other.Direction()) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
                                      const NGConstraintSpace& other,
                                      NGLogicalSize size)
-    : size_(size),
-      writing_mode_(writing_mode),
-      direction_(direction),
-      is_new_fc_(false) {
+    : size_(size), writing_mode_(writing_mode), direction_(direction) {
   physical_space_ =
       new NGPhysicalConstraintSpace(size.ConvertToPhysical(writing_mode));
   for (const auto& exclusion : other.PhysicalSpace()->Exclusions()) {
@@ -67,7 +60,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
-  bool fixed_inline = false, fixed_block = false;
+  bool fixed_inline = false, fixed_block = false, is_new_fc = false;
   // XXX for orthogonal writing mode this is not right
   LayoutUnit container_logical_width =
       std::max(LayoutUnit(), box.containingBlockLogicalWidthForContent());
@@ -92,6 +85,9 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     fixed_block = true;
   }
 
+  if (box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext())
+    is_new_fc = true;
+
   NGConstraintSpace* derived_constraint_space = new NGConstraintSpace(
       FromPlatformWritingMode(box.styleRef().getWritingMode()),
       FromPlatformDirection(box.styleRef().direction()),
@@ -100,12 +96,18 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
       box.styleRef().overflowInlineDirection() == OverflowAuto,
       box.styleRef().overflowBlockDirection() == OverflowAuto);
   derived_constraint_space->SetFixedSize(fixed_inline, fixed_block);
+  derived_constraint_space->SetIsNewFormattingContext(is_new_fc);
+
   return derived_constraint_space;
 }
 
 NGLogicalSize NGConstraintSpace::ContainerSize() const {
   return physical_space_->container_size_.ConvertToLogical(
       static_cast<NGWritingMode>(writing_mode_));
+}
+
+bool NGConstraintSpace::IsNewFormattingContext() const {
+  return physical_space_->is_new_fc_;
 }
 
 bool NGConstraintSpace::InlineTriggersScrollbar() const {
@@ -182,6 +184,10 @@ void NGConstraintSpace::SetFragmentationType(NGFragmentationType type) {
               FragmentNone);
     physical_space_->width_direction_triggers_scrollbar_ = type;
   }
+}
+
+void NGConstraintSpace::SetIsNewFormattingContext(bool is_new_fc) {
+  physical_space_->is_new_fc_ = is_new_fc;
 }
 
 String NGConstraintSpace::ToString() const {
