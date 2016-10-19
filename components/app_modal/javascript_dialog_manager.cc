@@ -70,9 +70,6 @@ void LogUMAMessageLengthStats(const base::string16& message) {
 
 }  // namespace
 
-////////////////////////////////////////////////////////////////////////////////
-// JavaScriptDialogManager, public:
-
 // static
 JavaScriptDialogManager* JavaScriptDialogManager::GetInstance() {
   return base::Singleton<JavaScriptDialogManager>::get();
@@ -88,14 +85,44 @@ void JavaScriptDialogManager::SetExtensionsClient(
   extensions_client_ = std::move(extensions_client);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// JavaScriptDialogManager, private:
-
 JavaScriptDialogManager::JavaScriptDialogManager()
     : extensions_client_(new DefaultExtensionsClient) {
 }
 
 JavaScriptDialogManager::~JavaScriptDialogManager() {
+}
+
+base::string16 JavaScriptDialogManager::GetTitle(
+    content::WebContents* web_contents,
+    const GURL& origin_url) {
+  // For extensions, show the extension name, but only if the origin of
+  // the alert matches the top-level WebContents.
+  std::string name;
+  if (extensions_client_->GetExtensionName(web_contents, origin_url, &name))
+    return base::UTF8ToUTF16(name);
+
+  // Otherwise, return the formatted URL. For non-standard URLs such as |data:|,
+  // just say "This page".
+  bool is_same_origin_as_main_frame =
+      (web_contents->GetURL().GetOrigin() == origin_url.GetOrigin());
+  if (origin_url.IsStandard() && !origin_url.SchemeIsFile() &&
+      !origin_url.SchemeIsFileSystem()) {
+#if defined(OS_ANDROID)
+    base::string16 url_string = url_formatter::FormatUrlForSecurityDisplay(
+        origin_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+#else
+    base::string16 url_string =
+        url_formatter::ElideHost(origin_url, gfx::FontList(), kUrlElideWidth);
+#endif
+    return l10n_util::GetStringFUTF16(
+        is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE
+                                     : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME,
+        base::i18n::GetDisplayStringInLTRDirectionality(url_string));
+  }
+  return l10n_util::GetStringUTF16(
+      is_same_origin_as_main_frame
+          ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL
+          : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
 }
 
 void JavaScriptDialogManager::RunJavaScriptDialog(
@@ -150,8 +177,7 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
     last_close_time_ = base::TimeTicks();
   }
 
-  bool is_alert = message_type == content::JAVASCRIPT_MESSAGE_TYPE_ALERT;
-  base::string16 dialog_title = GetTitle(web_contents, origin_url, is_alert);
+  base::string16 dialog_title = GetTitle(web_contents, origin_url);
 
   extensions_client_->OnDialogOpened(web_contents);
 
@@ -239,40 +265,6 @@ bool JavaScriptDialogManager::HandleJavaScriptDialog(
     dialog->native_dialog()->CancelAppModalDialog();
   }
   return true;
-}
-
-base::string16 JavaScriptDialogManager::GetTitle(
-    content::WebContents* web_contents,
-    const GURL& origin_url,
-    bool is_alert) {
-  // For extensions, show the extension name, but only if the origin of
-  // the alert matches the top-level WebContents.
-  std::string name;
-  if (extensions_client_->GetExtensionName(web_contents, origin_url, &name))
-    return base::UTF8ToUTF16(name);
-
-  // Otherwise, return the formatted URL. For non-standard URLs such as |data:|,
-  // just say "This page".
-  bool is_same_origin_as_main_frame =
-      (web_contents->GetURL().GetOrigin() == origin_url.GetOrigin());
-  if (origin_url.IsStandard() && !origin_url.SchemeIsFile() &&
-      !origin_url.SchemeIsFileSystem()) {
-#if !defined(OS_ANDROID)
-    base::string16 url_string =
-        url_formatter::ElideHost(origin_url, gfx::FontList(), kUrlElideWidth);
-#else
-    base::string16 url_string = url_formatter::FormatUrlForSecurityDisplay(
-        origin_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-#endif
-    return l10n_util::GetStringFUTF16(
-        is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE
-                                     : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME,
-        base::i18n::GetDisplayStringInLTRDirectionality(url_string));
-  }
-  return l10n_util::GetStringUTF16(
-      is_same_origin_as_main_frame
-          ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL
-          : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
 }
 
 void JavaScriptDialogManager::CancelDialogs(content::WebContents* web_contents,

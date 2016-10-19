@@ -5,14 +5,32 @@
 #ifndef CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_TAB_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+class JavaScriptDialogViews;
+
+// A class, attached to WebContentses in browser windows, that is the
+// JavaScriptDialogManager for them and handles displaying their dialogs.
+//
+// This is the primary mechanism for implementing auto-dismissing dialogs,
+// dialogs that close when the user switches away to a different tab. Because
+// JavaScript dialogs are synchronous and block arbitrary sets of renderers,
+// they cannot be made tab-modal. Therefore the next best option is to make them
+// auto-closing, so that they never block the user's access to other renderers.
+//
+// See http://bit.ly/project-oldspice for more details. Note that only part
+// one of that design is implemented.
 class JavaScriptDialogTabHelper
-    : public content::WebContentsObserver,
-      public content::JavaScriptDialogManager,
+    : public content::JavaScriptDialogManager,
+      public content::WebContentsObserver,
+      public chrome::BrowserListObserver,
       public content::WebContentsUserData<JavaScriptDialogTabHelper> {
  public:
   explicit JavaScriptDialogTabHelper(content::WebContents* web_contents);
@@ -35,10 +53,27 @@ class JavaScriptDialogTabHelper
   void CancelDialogs(content::WebContents* web_contents,
                      bool suppress_callbacks,
                      bool reset_state) override;
-  void WebContentsDestroyed() override;
+
+  // WebContentsObserver:
+  void WasHidden() override;
+
+  // BrowserListObserver:
+  void OnBrowserSetLastActive(Browser* browser) override;
 
  private:
   friend class content::WebContentsUserData<JavaScriptDialogTabHelper>;
+
+  void CloseDialog(bool suppress_callback,
+                   bool success,
+                   const base::string16& user_input);
+
+  // The dialog being displayed on the observed WebContents.
+  base::WeakPtr<JavaScriptDialogViews> dialog_;
+
+  // The callback provided for when the dialog is closed. Usually the dialog
+  // itself calls it, but in the cases where the dialog is closed not by the
+  // user's input but by a call to |CloseDialog|, this class will call it.
+  content::JavaScriptDialogManager::DialogClosedCallback dialog_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogTabHelper);
 };
