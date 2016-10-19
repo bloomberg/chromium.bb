@@ -41,10 +41,7 @@ TEST(SnapshotsUtilTest, TestSnapshotList) {
   if (scale > 1) {
     scaleModifier = [NSString stringWithFormat:@"@%.0fx", scale];
   }
-  NSString* path = @"Main";
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    path = base::SysUTF8ToNSString(base::mac::BaseBundleID());
-  }
+  NSString* path = base::SysUTF8ToNSString(base::mac::BaseBundleID());
   NSString* filename = @"UIApplicationAutomaticSnapshotDefault-LandscapeRight";
   NSString* regex = [NSString
       stringWithFormat:@".*/%@/%@%@.png$", path, filename, scaleModifier];

@@ -349,10 +349,11 @@ TEST_F(SnapshotCacheTest, Purge) {
 // Loads the color images into the cache, and pins two of them.  Ensures that
 // only the two pinned IDs remain in memory after a call to -handleLowMemory.
 TEST_F(SnapshotCacheTest, HandleLowMemory) {
-// TODO(droger): This test fails on iPad iOS8 device: http://crbug.com/455209
+// TODO(crbug.com/455209): This test failed on iPad iOS8 device, but may no
+// longer be failing on iOS 9 and up. Should test by re-enabling and monitor.
 #if !TARGET_IPHONE_SIMULATOR
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS8OrLater()) {
-    LOG(WARNING) << "Test disabled on iPad iOS8 device.";
+  if (IsIPadIdiom()) {
+    LOG(WARNING) << "Test disabled on iPad device.";
     return;
   }
 #endif
