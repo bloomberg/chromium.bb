@@ -787,7 +787,8 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSupplied) {
 
   client_socket_->Disconnect();
 
-  EXPECT_THAT(handshake_callback.GetResult(server_ret), IsError(ERR_FAILED));
+  EXPECT_THAT(handshake_callback.GetResult(server_ret),
+              IsError(ERR_CONNECTION_CLOSED));
 }
 
 TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
@@ -820,7 +821,8 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
 
   client_socket_->Disconnect();
 
-  EXPECT_THAT(handshake_callback.GetResult(server_ret), IsError(ERR_FAILED));
+  EXPECT_THAT(handshake_callback.GetResult(server_ret),
+              IsError(ERR_CONNECTION_CLOSED));
   server_socket_->Disconnect();
 
   // Below, check that the cache didn't store the result of a failed handshake.
@@ -842,7 +844,8 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
 
   client_socket_->Disconnect();
 
-  EXPECT_THAT(handshake_callback2.GetResult(server_ret2), IsError(ERR_FAILED));
+  EXPECT_THAT(handshake_callback2.GetResult(server_ret2),
+              IsError(ERR_CONNECTION_CLOSED));
 }
 
 TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSupplied) {
