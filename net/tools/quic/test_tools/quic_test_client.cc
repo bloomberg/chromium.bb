@@ -188,9 +188,8 @@ void MockableQuicClient::ProcessPacket(const IPEndPoint& self_address,
                                        const IPEndPoint& peer_address,
                                        const QuicReceivedPacket& packet) {
   QuicClient::ProcessPacket(self_address, peer_address, packet);
-  if (track_last_incoming_packet_) {
-    last_incoming_packet_.reset(packet.Clone());
-  }
+  if (track_last_incoming_packet_)
+    last_incoming_packet_ = packet.Clone();
 }
 
 MockableQuicClient::~MockableQuicClient() {
