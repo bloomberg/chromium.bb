@@ -8,6 +8,8 @@
 
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
@@ -126,13 +128,20 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   return false;
 }
 
-bool IsWebViewRequest(const net::URLRequest* request) {
+bool IsWebViewRequest(net::URLRequest* request) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   // |info| can be NULL sometimes: http://crbug.com/370070.
   if (!info)
     return false;
-  return WebViewRendererState::GetInstance()->IsGuest(info->GetChildID());
+  if (WebViewRendererState::GetInstance()->IsGuest(info->GetChildID()))
+    return true;
+
+  // GetChildId() is -1 with PlzNavigate for navigation requests, so also try
+  // the ExtensionNavigationUIData data.
+  ExtensionNavigationUIData* data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
+  return data && data->is_web_view();
 }
 
 bool AllowCrossRendererResourceLoadHelper(bool is_guest,

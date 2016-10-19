@@ -32,7 +32,7 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
 
 // Returns true if |request| corresponds to a resource request from a
 // <webview>.
-bool IsWebViewRequest(const net::URLRequest* request);
+bool IsWebViewRequest(net::URLRequest* request);
 
 // Helper method that is called by both AllowCrossRendererResourceLoad and
 // ExtensionNavigationThrottle to share logic.

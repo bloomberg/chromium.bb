@@ -35,8 +35,7 @@ int ShellNetworkDelegate::OnBeforeURLRequest(
     const net::CompletionCallback& callback,
     GURL* new_url) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      browser_context_, extension_info_map_.get(), nullptr, request, callback,
-      new_url);
+      browser_context_, extension_info_map_.get(), request, callback, new_url);
 }
 
 int ShellNetworkDelegate::OnBeforeStartTransaction(
@@ -44,15 +43,14 @@ int ShellNetworkDelegate::OnBeforeStartTransaction(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      browser_context_, extension_info_map_.get(), nullptr, request, callback,
-      headers);
+      browser_context_, extension_info_map_.get(), request, callback, headers);
 }
 
 void ShellNetworkDelegate::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
-      browser_context_, extension_info_map_.get(), nullptr, request, headers);
+      browser_context_, extension_info_map_.get(), request, headers);
 }
 
 int ShellNetworkDelegate::OnHeadersReceived(
@@ -62,7 +60,7 @@ int ShellNetworkDelegate::OnHeadersReceived(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      browser_context_, extension_info_map_.get(), nullptr, request, callback,
+      browser_context_, extension_info_map_.get(), request, callback,
       original_response_headers, override_response_headers,
       allowed_unsafe_redirect_url);
 }
@@ -71,14 +69,13 @@ void ShellNetworkDelegate::OnBeforeRedirect(
     net::URLRequest* request,
     const GURL& new_location) {
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
-      browser_context_, extension_info_map_.get(), nullptr, request,
-      new_location);
+      browser_context_, extension_info_map_.get(), request, new_location);
 }
 
 void ShellNetworkDelegate::OnResponseStarted(net::URLRequest* request,
                                              int net_error) {
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      browser_context_, extension_info_map_.get(), nullptr, request, net_error);
+      browser_context_, extension_info_map_.get(), request, net_error);
 }
 
 void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
@@ -92,12 +89,11 @@ void ShellNetworkDelegate::OnCompleted(net::URLRequest* request,
             request->response_headers()->response_code());
     if (!is_redirect) {
       ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-          browser_context_, extension_info_map_.get(), nullptr, request,
-          net_error);
+          browser_context_, extension_info_map_.get(), request, net_error);
     }
   } else {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        browser_context_, extension_info_map_.get(), nullptr, request, started,
+        browser_context_, extension_info_map_.get(), request, started,
         net_error);
   }
 }
@@ -120,8 +116,8 @@ ShellNetworkDelegate::OnAuthRequired(
     const AuthCallback& callback,
     net::AuthCredentials* credentials) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      browser_context_, extension_info_map_.get(), nullptr, request, auth_info,
-      callback, credentials);
+      browser_context_, extension_info_map_.get(), request, auth_info, callback,
+      credentials);
 }
 
 }  // namespace extensions

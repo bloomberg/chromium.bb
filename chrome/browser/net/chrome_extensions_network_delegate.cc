@@ -83,19 +83,6 @@ void ForwardRequestStatus(
   }
 }
 
-extensions::ExtensionNavigationUIData* GetExtensionNavigationUIData(
-    net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!info)
-    return nullptr;
-  ChromeNavigationUIData* navigation_data =
-      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
-  if (!navigation_data)
-    return nullptr;
-  return navigation_data->GetExtensionNavigationUIData();
-}
-
 class ChromeExtensionsNetworkDelegateImpl
     : public ChromeExtensionsNetworkDelegate {
  public:
@@ -178,8 +165,7 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     const net::CompletionCallback& callback,
     GURL* new_url) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, callback, new_url);
+      profile_, extension_info_map_.get(), request, callback, new_url);
 }
 
 int ChromeExtensionsNetworkDelegateImpl::OnBeforeStartTransaction(
@@ -187,16 +173,14 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeStartTransaction(
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, callback, headers);
+      profile_, extension_info_map_.get(), request, callback, headers);
 }
 
 void ChromeExtensionsNetworkDelegateImpl::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, headers);
+      profile_, extension_info_map_.get(), request, headers);
 }
 
 int ChromeExtensionsNetworkDelegateImpl::OnHeadersReceived(
@@ -206,8 +190,7 @@ int ChromeExtensionsNetworkDelegateImpl::OnHeadersReceived(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, callback,
+      profile_, extension_info_map_.get(), request, callback,
       original_response_headers, override_response_headers,
       allowed_unsafe_redirect_url);
 }
@@ -216,16 +199,14 @@ void ChromeExtensionsNetworkDelegateImpl::OnBeforeRedirect(
     net::URLRequest* request,
     const GURL& new_location) {
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, new_location);
+      profile_, extension_info_map_.get(), request, new_location);
 }
 
 void ChromeExtensionsNetworkDelegateImpl::OnResponseStarted(
     net::URLRequest* request,
     int net_error) {
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, net_error);
+      profile_, extension_info_map_.get(), request, net_error);
   ForwardProxyErrors(request, net_error);
 }
 
@@ -236,8 +217,7 @@ void ChromeExtensionsNetworkDelegateImpl::OnCompleted(net::URLRequest* request,
 
   if (net_error != net::OK) {
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        profile_, extension_info_map_.get(),
-        GetExtensionNavigationUIData(request), request, started, net_error);
+        profile_, extension_info_map_.get(), request, started, net_error);
     return;
   }
 
@@ -246,8 +226,7 @@ void ChromeExtensionsNetworkDelegateImpl::OnCompleted(net::URLRequest* request,
                          request->response_headers()->response_code());
   if (!is_redirect) {
     ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-        profile_, extension_info_map_.get(),
-        GetExtensionNavigationUIData(request), request, net_error);
+        profile_, extension_info_map_.get(), request, net_error);
   }
 }
 
@@ -271,8 +250,7 @@ ChromeExtensionsNetworkDelegateImpl::OnAuthRequired(
     const AuthCallback& callback,
     net::AuthCredentials* credentials) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      profile_, extension_info_map_.get(),
-      GetExtensionNavigationUIData(request), request, auth_info, callback,
+      profile_, extension_info_map_.get(), request, auth_info, callback,
       credentials);
 }
 

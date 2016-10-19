@@ -36,6 +36,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
@@ -47,6 +48,7 @@
 #include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -416,6 +418,20 @@ bool ChromeExtensionsBrowserClient::IsActivityLoggingEnabled(
     content::BrowserContext* context) {
   ActivityLog* activity_log = ActivityLog::GetInstance(context);
   return activity_log && activity_log->is_active();
+}
+
+ExtensionNavigationUIData*
+ChromeExtensionsBrowserClient::GetExtensionNavigationUIData(
+    net::URLRequest* request) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!info)
+    return nullptr;
+  ChromeNavigationUIData* navigation_data =
+      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
+  if (!navigation_data)
+    return nullptr;
+  return navigation_data->GetExtensionNavigationUIData();
 }
 
 KioskDelegate* ChromeExtensionsBrowserClient::GetKioskDelegate() {

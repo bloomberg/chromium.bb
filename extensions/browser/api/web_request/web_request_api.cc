@@ -576,10 +576,11 @@ ExtensionWebRequestEventRouter::CreateEventDetails(
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   if (ShouldHideEvent(browser_context, extension_info_map, request,
                       navigation_ui_data)) {
     return net::OK;
@@ -639,10 +640,11 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   if (ShouldHideEvent(browser_context, extension_info_map, request,
                       navigation_ui_data)) {
     return net::OK;
@@ -692,9 +694,10 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 void ExtensionWebRequestEventRouter::OnSendHeaders(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   if (ShouldHideEvent(browser_context, extension_info_map, request,
                       navigation_ui_data))
     return;
@@ -722,12 +725,13 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
 int ExtensionWebRequestEventRouter::OnHeadersReceived(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   if (ShouldHideEvent(browser_context, extension_info_map, request,
                       navigation_ui_data)) {
     return net::OK;
@@ -782,11 +786,12 @@ net::NetworkDelegate::AuthRequiredResponse
 ExtensionWebRequestEventRouter::OnAuthRequired(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     const net::AuthChallengeInfo& auth_info,
     const net::NetworkDelegate::AuthCallback& callback,
     net::AuthCredentials* credentials) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   // No browser_context means that this is for authentication challenges in the
   // system context. Skip in that case. Also skip sensitive requests.
   if (!browser_context ||
@@ -824,9 +829,10 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
 void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     const GURL& new_location) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   if (ShouldHideEvent(browser_context, extension_info_map, request,
                       navigation_ui_data)) {
     return;
@@ -860,11 +866,12 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 void ExtensionWebRequestEventRouter::OnResponseStarted(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     int net_error) {
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
 
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   if (ShouldHideEvent(browser_context, extension_info_map, request,
                       navigation_ui_data)) {
     return;
@@ -895,18 +902,18 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
 void ExtensionWebRequestEventRouter::OnResponseStarted(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request) {
-  OnResponseStarted(browser_context, extension_info_map, navigation_ui_data,
-                    request, request->status().error());
+  OnResponseStarted(browser_context, extension_info_map, request,
+                    request->status().error());
 }
 
 void ExtensionWebRequestEventRouter::OnCompleted(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     int net_error) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   // We hide events from the system context as well as sensitive requests.
   // However, if the request first became sensitive after redirecting we have
   // already signaled it and thus we have to signal the end of it. This is
@@ -948,19 +955,19 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 void ExtensionWebRequestEventRouter::OnCompleted(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request) {
-  OnCompleted(browser_context, extension_info_map, navigation_ui_data, request,
+  OnCompleted(browser_context, extension_info_map, request,
               request->status().error());
 }
 
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     bool started,
     int net_error) {
+  ExtensionNavigationUIData* navigation_ui_data =
+      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
   // We hide events from the system context as well as sensitive requests.
   // However, if the request first became sensitive after redirecting we have
   // already signaled it and thus we have to signal the end of it. This is
@@ -1004,11 +1011,10 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
     void* browser_context,
     const InfoMap* extension_info_map,
-    ExtensionNavigationUIData* navigation_ui_data,
     net::URLRequest* request,
     bool started) {
-  OnErrorOccurred(browser_context, extension_info_map, navigation_ui_data,
-                  request, started, request->status().error());
+  OnErrorOccurred(browser_context, extension_info_map, request, started,
+                  request->status().error());
 }
 
 void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(

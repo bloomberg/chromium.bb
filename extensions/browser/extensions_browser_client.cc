@@ -47,6 +47,12 @@ bool ExtensionsBrowserClient::IsActivityLoggingEnabled(
   return false;
 }
 
+ExtensionNavigationUIData*
+ExtensionsBrowserClient::GetExtensionNavigationUIData(
+    net::URLRequest* request) {
+  return nullptr;
+}
+
 ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
   return g_client;
 }

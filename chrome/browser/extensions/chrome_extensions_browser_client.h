@@ -122,6 +122,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
   bool IsActivityLoggingEnabled(content::BrowserContext* context) override;
+  extensions::ExtensionNavigationUIData* GetExtensionNavigationUIData(
+      net::URLRequest* request) override;
   KioskDelegate* GetKioskDelegate() override;
 
  private:
