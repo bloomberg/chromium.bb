@@ -25,6 +25,7 @@ GL_EXPORT extern const char kANGLEImplementationD3D9Name[];
 GL_EXPORT extern const char kANGLEImplementationD3D11Name[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLESName[];
+GL_EXPORT extern const char kANGLEImplementationNullName[];
 
 }  // namespace gl
 

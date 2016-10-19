@@ -38,11 +38,13 @@ enum DisplayType {
   ANGLE_D3D11 = 4,
   ANGLE_OPENGL = 5,
   ANGLE_OPENGLES = 6,
-  DISPLAY_TYPE_MAX = 7,
+  ANGLE_NULL = 7,
+  DISPLAY_TYPE_MAX = 8,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
                                   bool supports_angle_opengl,
+                                  bool supports_angle_null,
                                   const base::CommandLine* command_line,
                                   std::vector<DisplayType>* init_displays);
 
