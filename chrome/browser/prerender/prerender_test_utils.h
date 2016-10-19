@@ -296,7 +296,7 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
       FinalStatus expected_final_status,
       int expected_number_of_loads);
 
-  ScopedVector<TestPrerender> PrerenderTestURL(
+  std::vector<std::unique_ptr<TestPrerender>> PrerenderTestURL(
       const std::string& html_file,
       const std::vector<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads);
@@ -338,7 +338,7 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   // To be called from PrerenderTestUrlImpl. Sets up the appropraite prerenders,
   // checking for the expected final status, navigates to the loader url, and
   // waits for the load.
-  ScopedVector<TestPrerender> NavigateWithPrerenders(
+  std::vector<std::unique_ptr<TestPrerender>> NavigateWithPrerenders(
       const GURL& loader_url,
       const std::vector<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads);
@@ -350,7 +350,7 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
   // expected_number_of_loads. Specific tests can provide additional
   // verification. Note this should be called by one of the convenience wrappers
   // defined above.
-  virtual ScopedVector<TestPrerender> PrerenderTestURLImpl(
+  virtual std::vector<std::unique_ptr<TestPrerender>> PrerenderTestURLImpl(
       const GURL& prerender_url,
       const std::vector<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) = 0;

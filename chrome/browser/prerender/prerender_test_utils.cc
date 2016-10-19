@@ -530,15 +530,14 @@ std::unique_ptr<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
     int expected_number_of_loads) {
   std::vector<FinalStatus> expected_final_status_queue(1,
                                                        expected_final_status);
-  std::vector<TestPrerender*> prerenders;
-  PrerenderTestURLImpl(url, expected_final_status_queue,
-                       expected_number_of_loads)
-      .release(&prerenders);
+  auto prerenders = PrerenderTestURLImpl(url, expected_final_status_queue,
+                                         expected_number_of_loads);
   CHECK_EQ(1u, prerenders.size());
-  return std::unique_ptr<TestPrerender>(prerenders[0]);
+  return std::move(prerenders[0]);
 }
 
-ScopedVector<TestPrerender> PrerenderInProcessBrowserTest::PrerenderTestURL(
+std::vector<std::unique_ptr<TestPrerender>>
+PrerenderInProcessBrowserTest::PrerenderTestURL(
     const std::string& html_file,
     const std::vector<FinalStatus>& expected_final_status_queue,
     int expected_number_of_loads) {
@@ -615,25 +614,23 @@ base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
                                     base::ASCIIToUTF16(page_title));
 }
 
-ScopedVector<TestPrerender>
+std::vector<std::unique_ptr<TestPrerender>>
 PrerenderInProcessBrowserTest::NavigateWithPrerenders(
     const GURL& loader_url,
     const std::vector<FinalStatus>& expected_final_status_queue,
     int expected_number_of_loads) {
   CHECK(!expected_final_status_queue.empty());
-  ScopedVector<TestPrerender> prerenders;
+  std::vector<std::unique_ptr<TestPrerender>> prerenders;
   for (size_t i = 0; i < expected_final_status_queue.size(); i++) {
-    prerenders.push_back(
-        prerender_contents_factory()
-            ->ExpectPrerenderContents(expected_final_status_queue[i])
-            .release());
+    prerenders.push_back(prerender_contents_factory()
+        ->ExpectPrerenderContents(expected_final_status_queue[i]));
   }
 
   // Navigate to the loader URL and then wait for the first prerender to be
   // created.
   ui_test_utils::NavigateToURL(current_browser(), loader_url);
-  prerenders.get().at(0)->WaitForCreate();
-  prerenders.get().at(0)->WaitForLoads(expected_number_of_loads);
+  prerenders.at(0)->WaitForCreate();
+  prerenders.at(0)->WaitForLoads(expected_number_of_loads);
 
   return prerenders;
 }

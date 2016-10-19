@@ -168,7 +168,7 @@ class NoStatePrefetchBrowserTest
   BrowserTestTime* GetTimeOverride() const { return browser_test_time_; }
 
  private:
-  ScopedVector<TestPrerender> PrerenderTestURLImpl(
+  std::vector<std::unique_ptr<TestPrerender>> PrerenderTestURLImpl(
       const GURL& prerender_url,
       const std::vector<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) override {
@@ -180,8 +180,9 @@ class NoStatePrefetchBrowserTest
         kPrefetchLoaderPath, replacement_text, &replacement_path);
     GURL loader_url = src_server()->GetURL(replacement_path);
 
-    ScopedVector<TestPrerender> prerenders = NavigateWithPrerenders(
-        loader_url, expected_final_status_queue, expected_number_of_loads);
+    std::vector<std::unique_ptr<TestPrerender>> prerenders =
+        NavigateWithPrerenders(loader_url, expected_final_status_queue,
+                               expected_number_of_loads);
 
     TestPrerenderContents* prerender_contents = prerenders[0]->contents();
     if (expected_number_of_loads > 0) {

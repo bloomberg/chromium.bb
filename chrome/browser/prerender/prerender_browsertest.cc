@@ -907,7 +907,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return GetPrerenderContentsFor(dest_url_);
   }
 
-  ScopedVector<TestPrerender> PrerenderTestURLImpl(
+  std::vector<std::unique_ptr<TestPrerender>> PrerenderTestURLImpl(
       const GURL& prerender_url,
       const std::vector<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) override {
@@ -928,8 +928,9 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
       loader_replacements.SetHostStr(loader_host_override_);
     loader_url = loader_url.ReplaceComponents(loader_replacements);
 
-    ScopedVector<TestPrerender> prerenders = NavigateWithPrerenders(
-        loader_url, expected_final_status_queue, expected_number_of_loads);
+    std::vector<std::unique_ptr<TestPrerender>> prerenders =
+        NavigateWithPrerenders(loader_url, expected_final_status_queue,
+                               expected_number_of_loads);
 
     FinalStatus expected_final_status = expected_final_status_queue.front();
     if (ShouldAbortPrerenderBeforeSwap(expected_final_status)) {
@@ -1703,7 +1704,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
   expected_final_status_queue.push_back(FINAL_STATUS_USED);
   expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
 
-  ScopedVector<TestPrerender> prerenders =
+  std::vector<std::unique_ptr<TestPrerender>> prerenders =
       PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
   ASSERT_TRUE(prerenders[0]->contents());
   // Assert that the pending prerender is in there already. This relies on the
@@ -1746,7 +1747,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
   expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
 
-  ScopedVector<TestPrerender> prerenders =
+  std::vector<std::unique_ptr<TestPrerender>> prerenders =
       PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
   ASSERT_TRUE(prerenders[0]->contents());
 
