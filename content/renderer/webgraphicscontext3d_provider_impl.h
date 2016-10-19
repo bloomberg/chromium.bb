@@ -36,6 +36,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   void setLostContextCallback(const base::Closure&) override;
   void setErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>&) override;
+  void signalQuery(uint32_t, const base::Closure&) override;
 
   ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();

@@ -37,6 +37,7 @@ class WebGraphicsContext3DProviderSoftwareRenderingForTests
   void setLostContextCallback(const base::Closure&) {}
   void setErrorMessageCallback(
       const base::Callback<void(const char*, int32_t id)>&) {}
+  void signalQuery(uint32_t, const base::Closure&) override {}
 
  private:
   std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;

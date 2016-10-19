@@ -5,6 +5,7 @@
 #ifndef WebGL2RenderingContextBase_h
 #define WebGL2RenderingContextBase_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "modules/webgl/WebGLExtension.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include <memory>
@@ -15,6 +16,7 @@ class WebGLTexture;
 
 class WebGLActiveInfo;
 class WebGLBuffer;
+class WebGLGetBufferSubDataAsyncCallback;
 class WebGLProgram;
 class WebGLQuery;
 class WebGLSampler;
@@ -26,6 +28,8 @@ class WebGLVertexArrayObject;
 class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
  public:
   ~WebGL2RenderingContextBase() override;
+
+  void destroyContext() override;
 
   /* Buffer objects */
   void bufferData(GLenum, DOMArrayBufferView*, GLenum, GLuint, GLuint);
@@ -43,6 +47,17 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   void copyBufferSubData(GLenum, GLenum, long long, long long, long long);
   void getBufferSubData(GLenum, long long, DOMArrayBufferView*, GLuint, GLuint);
+  ScriptPromise getBufferSubDataAsync(ScriptState*,
+                                      GLenum target,
+                                      GLintptr srcByteOffset,
+                                      DOMArrayBufferView*,
+                                      GLuint dstOffset,
+                                      GLuint length);
+
+  void registerGetBufferSubDataAsyncCallback(
+      WebGLGetBufferSubDataAsyncCallback*);
+  void unregisterGetBufferSubDataAsyncCallback(
+      WebGLGetBufferSubDataAsyncCallback*);
 
   /* Framebuffer objects */
   bool validateTexFuncLayer(const char*, GLenum texTarget, GLint layer);
@@ -811,6 +826,20 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                         GLenum target) override;
   bool validateBufferDataUsage(const char* functionName, GLenum usage) override;
 
+  const char* validateGetBufferSubData(const char* functionName,
+                                       GLenum target,
+                                       GLintptr sourceByteOffset,
+                                       DOMArrayBufferView*,
+                                       GLuint destinationOffset,
+                                       GLuint length,
+                                       WebGLBuffer**,
+                                       void** outDestinationDataPtr,
+                                       long long* outDestinationByteLength);
+  const char* validateGetBufferSubDataBounds(const char* functionName,
+                                             WebGLBuffer*,
+                                             GLintptr sourceByteOffset,
+                                             long long destinationByteLength);
+
   bool canUseTexImageByGPU(TexImageFunctionID,
                            GLint internalformat,
                            GLenum type) override;
@@ -860,6 +889,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   GLint m_unpackSkipPixels;
   GLint m_unpackSkipRows;
   GLint m_unpackSkipImages;
+
+  HeapHashSet<Member<WebGLGetBufferSubDataAsyncCallback>>
+      m_getBufferSubDataAsyncCallbacks;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase,

@@ -649,7 +649,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   void addContextObject(WebGLContextObject*);
   void detachAndRemoveAllObjects();
 
-  void destroyContext();
+  virtual void destroyContext();
   void markContextChanged(ContentChangeType);
 
   void onErrorMessage(const char*, int32_t id);

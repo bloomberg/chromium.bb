@@ -1171,6 +1171,10 @@ void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
                                          GLint components,
                                          const GLfloat* coeffs) override;
 
+void* GetBufferSubDataAsyncCHROMIUM(GLenum target,
+                                    GLintptr offset,
+                                    GLsizeiptr size) override;
+
 void CoverageModulationCHROMIUM(GLenum components) override;
 
 GLenum GetGraphicsResetStatusKHR() override;

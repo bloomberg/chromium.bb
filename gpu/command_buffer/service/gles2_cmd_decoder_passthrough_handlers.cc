@@ -369,6 +369,39 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttribLocation(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleGetBufferSubDataAsyncCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM*>(
+          cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLintptr offset = static_cast<GLintptr>(c.offset);
+  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
+
+  int8_t* mem =
+      GetSharedMemoryAs<int8_t*>(data_shm_id, c.data_shm_offset, size);
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+
+  void* ptr = nullptr;
+  error::Error error =
+      DoMapBufferRange(target, offset, size, GL_MAP_READ_BIT, &ptr);
+  if (error != error::kNoError) {
+    return error;
+  }
+  memcpy(mem, ptr, size);
+  error = DoUnmapBuffer(target);
+  if (error != error::kNoError) {
+    return error;
+  }
+
+  return error::kNoError;
+}
+
+
 error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataLocation(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

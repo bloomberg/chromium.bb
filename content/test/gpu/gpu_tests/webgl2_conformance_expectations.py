@@ -55,6 +55,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=654187)
 
     # All platforms.
+    self.Fail('conformance2/context/methods-2.html', bug=616554)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance/buffers/buffer-uninitialized.html',
         bug=654201)

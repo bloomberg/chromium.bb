@@ -46,4 +46,9 @@ void WebGraphicsContext3DProviderImpl::setErrorMessageCallback(
   provider_->ContextSupport()->SetErrorMessageCallback(c);
 }
 
+void WebGraphicsContext3DProviderImpl::signalQuery(
+    uint32_t query, const base::Closure& callback) {
+  provider_->ContextSupport()->SignalQuery(query, callback);
+}
+
 }  // namespace content

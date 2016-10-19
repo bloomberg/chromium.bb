@@ -320,14 +320,15 @@
   OP(StencilThenCoverStrokePathInstancedCHROMIUM)          /* 561 */ \
   OP(BindFragmentInputLocationCHROMIUMBucket)              /* 562 */ \
   OP(ProgramPathFragmentInputGenCHROMIUM)                  /* 563 */ \
-  OP(CoverageModulationCHROMIUM)                           /* 564 */ \
-  OP(BlendBarrierKHR)                                      /* 565 */ \
-  OP(ApplyScreenSpaceAntialiasingCHROMIUM)                 /* 566 */ \
-  OP(BindFragDataLocationIndexedEXTBucket)                 /* 567 */ \
-  OP(BindFragDataLocationEXTBucket)                        /* 568 */ \
-  OP(GetFragDataIndexEXT)                                  /* 569 */ \
-  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 570 */ \
-  OP(SwapBuffersWithDamageCHROMIUM)                        /* 571 */
+  OP(GetBufferSubDataAsyncCHROMIUM)                        /* 564 */ \
+  OP(CoverageModulationCHROMIUM)                           /* 565 */ \
+  OP(BlendBarrierKHR)                                      /* 566 */ \
+  OP(ApplyScreenSpaceAntialiasingCHROMIUM)                 /* 567 */ \
+  OP(BindFragDataLocationIndexedEXTBucket)                 /* 568 */ \
+  OP(BindFragDataLocationEXTBucket)                        /* 569 */ \
+  OP(GetFragDataIndexEXT)                                  /* 570 */ \
+  OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 571 */ \
+  OP(SwapBuffersWithDamageCHROMIUM)                        /* 572 */
 
 enum CommandId {
   kOneBeforeStartPoint =
