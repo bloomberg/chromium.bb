@@ -60,6 +60,7 @@
 #include "third_party/WebKit/public/web/WebSelection.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
+#include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -383,9 +384,10 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
   settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
-  settings.scrollbar_fade_delay_ms = 300;
-  settings.scrollbar_fade_resize_delay_ms = 2000;
-  settings.scrollbar_fade_duration_ms = 300;
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
+  settings.scrollbar_fade_resize_delay =
+      base::TimeDelta::FromMilliseconds(2000);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   settings.renderer_settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
@@ -420,14 +422,23 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 #if !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
-    settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+    settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeOutDelay;
+    settings.scrollbar_fade_resize_delay =
+        ui::kOverlayScrollbarFadeOutDelay;
+    settings.scrollbar_fade_duration =
+        ui::kOverlayScrollbarFadeOutDuration;
+    settings.scrollbar_thinning_duration =
+        ui::kOverlayScrollbarThinningDuration;
   } else {
+    // TODO(bokan): This section is probably unneeded? We don't use scrollbar
+    // animations for non overlay scrollbars.
     settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
+    settings.scrollbar_fade_resize_delay =
+        base::TimeDelta::FromMilliseconds(500);
+    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   }
-  settings.scrollbar_fade_delay_ms = 500;
-  settings.scrollbar_fade_resize_delay_ms = 500;
-  settings.scrollbar_fade_duration_ms = 300;
 #endif  // !defined(OS_MACOSX)
 
   // On desktop, if there's over 4GB of memory on the machine, increase the

@@ -40,10 +40,9 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
              other.gpu_rasterization_msaa_sample_count &&
          create_low_res_tiling == other.create_low_res_tiling &&
          scrollbar_animator == other.scrollbar_animator &&
-         scrollbar_fade_delay_ms == other.scrollbar_fade_delay_ms &&
-         scrollbar_fade_resize_delay_ms ==
-             other.scrollbar_fade_resize_delay_ms &&
-         scrollbar_fade_duration_ms == other.scrollbar_fade_duration_ms &&
+         scrollbar_fade_delay == other.scrollbar_fade_delay &&
+         scrollbar_fade_resize_delay == other.scrollbar_fade_resize_delay &&
+         scrollbar_fade_duration == other.scrollbar_fade_duration &&
          solid_color_scrollbar_color == other.solid_color_scrollbar_color &&
          timeout_and_draw_when_animation_checkerboards ==
              other.timeout_and_draw_when_animation_checkerboards &&

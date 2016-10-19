@@ -126,12 +126,20 @@ PartPaintingParams buttonPartPaintingParams(
   return PartPaintingParams(paintPart, state);
 }
 
+static int getScrollbarThickness() {
+  return Platform::current()
+      ->themeEngine()
+      ->getSize(WebThemeEngine::PartScrollbarVerticalThumb)
+      .width;
+}
+
 }  // namespace
 
 ScrollbarTheme& ScrollbarTheme::nativeTheme() {
   if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
-    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme,
-                        (10, 0, ScrollbarThemeOverlay::AllowHitTest));
+    DEFINE_STATIC_LOCAL(
+        ScrollbarThemeOverlay, theme,
+        (getScrollbarThickness(), 0, ScrollbarThemeOverlay::AllowHitTest));
     return theme;
   }
 

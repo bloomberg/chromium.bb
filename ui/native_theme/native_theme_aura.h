@@ -53,6 +53,9 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                                           State endState,
                                           double progress,
                                           const gfx::Rect& rect) const override;
+  gfx::Size GetPartSize(Part part,
+                        State state,
+                        const ExtraParams& extra) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAura);

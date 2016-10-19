@@ -2730,8 +2730,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
     LayerTreeSettings settings = DefaultSettings();
     settings.scrollbar_animator = animator;
-    settings.scrollbar_fade_delay_ms = 20;
-    settings.scrollbar_fade_duration_ms = 20;
+    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
+    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(20);
 
     // If no animator is set, scrollbar won't show and no animation is expected.
     bool expecting_animations = animator != LayerTreeSettings::NO_ANIMATOR;
@@ -2923,8 +2923,8 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
     LayerTreeSettings settings = DefaultSettings();
     settings.scrollbar_animator = animator;
-    settings.scrollbar_fade_delay_ms = 20;
-    settings.scrollbar_fade_duration_ms = 20;
+    settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
+    settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(20);
     gfx::Size content_size(100, 100);
 
     // If no animator is set, scrollbar won't show and no animation is expected.
@@ -3054,8 +3054,8 @@ TEST_F(LayerTreeHostImplTest, ScrollbarInnerLargerThanOuter) {
 TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
   LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;
-  settings.scrollbar_fade_delay_ms = 20;
-  settings.scrollbar_fade_duration_ms = 20;
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(20);
   CreateHostImpl(settings, CreateCompositorFrameSink());
 
   gfx::Size viewport_size(300, 200);
@@ -3174,8 +3174,8 @@ TEST_F(LayerTreeHostImplTest, ScrollbarRegistration) {
 void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
     float device_scale_factor) {
   LayerTreeSettings settings = DefaultSettings();
-  settings.scrollbar_fade_delay_ms = 500;
-  settings.scrollbar_fade_duration_ms = 300;
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   settings.scrollbar_animator = LayerTreeSettings::THINNING;
 
   gfx::Size viewport_size(300, 200);

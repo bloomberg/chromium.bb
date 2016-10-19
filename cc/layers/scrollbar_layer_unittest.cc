@@ -103,8 +103,10 @@ class ScrollbarLayerTest : public testing::Test {
     layer_tree_settings_.single_thread_proxy_scheduler = false;
     layer_tree_settings_.use_zero_copy = true;
     layer_tree_settings_.scrollbar_animator = LayerTreeSettings::LINEAR_FADE;
-    layer_tree_settings_.scrollbar_fade_delay_ms = 20;
-    layer_tree_settings_.scrollbar_fade_duration_ms = 20;
+    layer_tree_settings_.scrollbar_fade_delay =
+        base::TimeDelta::FromMilliseconds(20);
+    layer_tree_settings_.scrollbar_fade_duration =
+        base::TimeDelta::FromMilliseconds(20);
     layer_tree_settings_.verify_transform_tree_calculations = true;
     layer_tree_settings_.verify_clip_tree_calculations = true;
 

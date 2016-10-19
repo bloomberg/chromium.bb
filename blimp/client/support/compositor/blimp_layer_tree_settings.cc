@@ -61,9 +61,9 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
     settings->gpu_rasterization_enabled = false;
   settings->using_synchronous_renderer_compositor = false;
   settings->scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
-  settings->scrollbar_fade_delay_ms = 300;
-  settings->scrollbar_fade_resize_delay_ms = 2000;
-  settings->scrollbar_fade_duration_ms = 300;
+  settings->scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
+  settings->scrollbar_fade_resize_delay = base::TimeDelta::FromSeconds(2);
+  settings->scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
   settings->solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   settings->renderer_settings.highp_threshold_min = 2048;
   settings->ignore_root_layer_flings = false;
@@ -89,9 +89,10 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
 #elif !defined(OS_MACOSX)
   settings->scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
   settings->solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-  settings->scrollbar_fade_delay_ms = 500;
-  settings->scrollbar_fade_resize_delay_ms = 500;
-  settings->scrollbar_fade_duration_ms = 300;
+  settings->scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
+  settings->scrollbar_fade_resize_delay =
+      base::TimeDelta::FromMilliseconds(500);
+  settings->scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
 
 // When pinching in, only show the pinch-viewport overlay scrollbars if the
 // page scale is at least some threshold away from the minimum. i.e. don't

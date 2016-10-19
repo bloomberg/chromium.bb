@@ -1359,14 +1359,11 @@ const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
 
 std::unique_ptr<ScrollbarAnimationController>
 LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
-  DCHECK(settings().scrollbar_fade_delay_ms);
-  DCHECK(settings().scrollbar_fade_duration_ms);
-  base::TimeDelta delay =
-      base::TimeDelta::FromMilliseconds(settings().scrollbar_fade_delay_ms);
-  base::TimeDelta resize_delay = base::TimeDelta::FromMilliseconds(
-      settings().scrollbar_fade_resize_delay_ms);
-  base::TimeDelta duration =
-      base::TimeDelta::FromMilliseconds(settings().scrollbar_fade_duration_ms);
+  DCHECK(!settings().scrollbar_fade_delay.is_zero());
+  DCHECK(!settings().scrollbar_fade_duration.is_zero());
+  base::TimeDelta delay = settings().scrollbar_fade_delay;
+  base::TimeDelta resize_delay = settings().scrollbar_fade_resize_delay;
+  base::TimeDelta duration = settings().scrollbar_fade_duration;
   switch (settings().scrollbar_animator) {
     case LayerTreeSettings::LINEAR_FADE: {
       return ScrollbarAnimationControllerLinearFade::Create(

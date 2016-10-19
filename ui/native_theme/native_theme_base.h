@@ -151,7 +151,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   // crbug.com/530746 is resolved.
   virtual void AdjustCheckboxRadioRectForPadding(SkRect* rect) const;
 
-  void set_scrollbar_button_length(unsigned int length) {
+  void set_scrollbar_button_length(int length) {
     scrollbar_button_length_ = length;
   }
   int scrollbar_button_length() const { return scrollbar_button_length_; }
@@ -168,6 +168,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
 
   // Returns the color used to draw the arrow.
   SkColor GetArrowColor(State state) const;
+
+  int scrollbar_width_;
 
  private:
   friend class NativeThemeAuraTest;
@@ -201,10 +203,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       const gfx::Rect& rect,
       const SkScalar borderRadius) const;
 
-  unsigned int scrollbar_width_;
-
   // The length of the arrow buttons, 0 means no buttons are drawn.
-  unsigned int scrollbar_button_length_;
+  int scrollbar_button_length_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeBase);
 };

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -21,10 +22,21 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_switches.h"
+#include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 namespace ui {
 
 namespace {
+
+// Constants for painting overlay scrollbars. Other properties needed outside
+// this painting code are defined in overlay_scrollbar_constants_aura.h.
+constexpr int kOverlayScrollbarStrokeWidth = 1;
+constexpr int kOverlayScrollbarMinimumLength = 12;
+constexpr SkAlpha kOverlayScrollbarAlphaNormal = 0x4D;
+constexpr SkAlpha kOverlayScrollbarAlphaHovered = 0x80;
+constexpr SkAlpha kOverlayScrollbarAlphaPressed = 0x80;
+constexpr SkColor kOverlayScrollbarThumbColor = SK_ColorBLACK;
+constexpr SkColor kOverlayScrollbarStrokeColor = SK_ColorWHITE;
 
 SkAlpha ThumbAlphaForState(NativeTheme::State state) {
   bool overlay = IsOverlayScrollbarEnabled();
@@ -32,29 +44,11 @@ SkAlpha ThumbAlphaForState(NativeTheme::State state) {
     case NativeTheme::kDisabled:
       return 0x00;
     case NativeTheme::kHovered:
-      return overlay ? 0xB2 : 0x4D;
+      return overlay ? kOverlayScrollbarAlphaHovered : 0x4D;
     case NativeTheme::kNormal:
-      return overlay ? 0x8C : 0x33;
+      return overlay ? kOverlayScrollbarAlphaNormal : 0x33;
     case NativeTheme::kPressed:
-      return overlay ? 0xB2 : 0x80;
-    case NativeTheme::kNumStates:
-      break;
-  }
-
-  NOTREACHED();
-  return 0xFF;
-}
-
-SkAlpha ThumbStrokeAlphaForState(NativeTheme::State state) {
-  DCHECK(IsOverlayScrollbarEnabled());
-  switch (state) {
-    case NativeTheme::kDisabled:
-      return 0x00;
-    case NativeTheme::kHovered:
-    case NativeTheme::kPressed:
-      return 0x33;
-    case NativeTheme::kNormal:
-      return 0x26;
+      return overlay ? kOverlayScrollbarAlphaPressed : 0x80;
     case NativeTheme::kNumStates:
       break;
   }
@@ -83,6 +77,11 @@ NativeThemeAura::NativeThemeAura() {
 #if defined(OS_CHROMEOS)
   set_scrollbar_button_length(0);
 #endif
+
+  if (IsOverlayScrollbarEnabled()) {
+    scrollbar_width_ =
+        kOverlayScrollbarThumbWidthPressed + kOverlayScrollbarStrokeWidth * 2;
+  }
 
   // Images and alphas declarations assume the following order.
   static_assert(kDisabled == 0, "states unexpectedly changed");
@@ -196,20 +195,28 @@ void NativeThemeAura::PaintScrollbarThumbStateTransition(
     State end_state,
     double progress,
     const gfx::Rect& rect) const {
+  TRACE_EVENT0("blink", "NativeThemeAura::PaintScrollbarThumbStateTransition");
   gfx::Rect thumb_rect(rect);
+  SkColor thumb_color;
   if (IsOverlayScrollbarEnabled()) {
     // In overlay mode, draw a stroke (border).
-    const int kStrokeWidth = 1;
+    constexpr int kStrokeWidth = kOverlayScrollbarStrokeWidth;
     SkAlpha stroke_alpha = gfx::Tween::IntValueBetween(
-        progress, ThumbStrokeAlphaForState(start_state),
-        ThumbStrokeAlphaForState(end_state));
+        progress, ThumbAlphaForState(start_state),
+        ThumbAlphaForState(end_state));
     SkPaint paint;
-    paint.setColor(SkColorSetA(SK_ColorWHITE, stroke_alpha));
+    paint.setColor(SkColorSetA(kOverlayScrollbarStrokeColor, stroke_alpha));
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(kStrokeWidth);
-    canvas->drawIRect(gfx::RectToSkIRect(thumb_rect), paint);
 
-    thumb_rect.Inset(kStrokeWidth, kStrokeWidth, kStrokeWidth, kStrokeWidth);
+    gfx::RectF stroke_rect(thumb_rect);
+    constexpr float kHalfStrokeWidth = kStrokeWidth / 2.f;
+    stroke_rect.Inset(kHalfStrokeWidth, kHalfStrokeWidth);
+    canvas->drawRect(gfx::RectFToSkRect(stroke_rect), paint);
+
+    // Inset the all the edges edges so we fill-in the stroke below.
+    thumb_rect.Inset(kStrokeWidth, kStrokeWidth);
+    thumb_color = kOverlayScrollbarThumbColor;
   } else {
     // If there are no scrollbuttons then provide some padding so that the thumb
     // doesn't touch the top of the track.
@@ -220,12 +227,14 @@ void NativeThemeAura::PaintScrollbarThumbStateTransition(
       thumb_rect.Inset(kThumbPadding, extra_padding);
     else
       thumb_rect.Inset(extra_padding, kThumbPadding);
+
+    thumb_color = SK_ColorBLACK;
   }
 
   SkPaint paint;
   SkAlpha alpha = gfx::Tween::IntValueBetween(
       progress, ThumbAlphaForState(start_state), ThumbAlphaForState(end_state));
-  paint.setColor(SkColorSetA(SK_ColorBLACK, alpha));
+  paint.setColor(SkColorSetA(thumb_color, alpha));
   canvas->drawIRect(gfx::RectToSkIRect(thumb_rect), paint);
 }
 
@@ -237,6 +246,33 @@ void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
   SkPaint paint;
   paint.setColor(SkColorSetRGB(0xDC, 0xDC, 0xDC));
   canvas->drawIRect(RectToSkIRect(rect), paint);
+}
+
+gfx::Size NativeThemeAura::GetPartSize(Part part,
+                                       State state,
+                                       const ExtraParams& extra) const {
+  if (IsOverlayScrollbarEnabled()) {
+    constexpr int minimum_length =
+        kOverlayScrollbarMinimumLength + 2 * kOverlayScrollbarStrokeWidth;
+
+    // Aura overlay scrollbars need a slight tweak from the base sizes.
+    switch (part) {
+      case kScrollbarHorizontalThumb:
+        return gfx::Size(minimum_length, scrollbar_width_);
+      case kScrollbarVerticalThumb:
+        return gfx::Size(scrollbar_width_, minimum_length);
+      default:
+        // TODO(bokan): We should probably make sure code using overlay
+        // scrollbars isn't asking for part sizes that don't exist. This
+        // currently breaks in Views layout code which indicates they aren't
+        // overlay aware yet. The Views code should be fixed and either this
+        // branch return 0 for parts that don't exist or assert NOTREACHED.
+        // crbug.com/657159.
+        break;
+    }
+  }
+
+  return NativeThemeBase::GetPartSize(part, state, extra);
 }
 
 }  // namespace ui

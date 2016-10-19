@@ -464,7 +464,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.inert_visual_viewport =
       command_line.HasSwitch(switches::kInertVisualViewport);
 
-  prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
+  prefs.use_solid_color_scrollbars = false;
 
   prefs.history_entry_requires_user_gesture =
       command_line.HasSwitch(switches::kHistoryEntryRequiresUserGesture);
@@ -482,6 +482,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       base::FeatureList::IsEnabled(features::kAutoplayMutedVideos);
 
   prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
+
+  prefs.use_solid_color_scrollbars = true;
 #endif
 
   // Handle autoplay gesture override experiment.

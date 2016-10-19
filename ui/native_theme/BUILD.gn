@@ -29,6 +29,7 @@ component("native_theme") {
       "native_theme_aura.h",
       "native_theme_dark_aura.cc",
       "native_theme_dark_aura.h",
+      "overlay_scrollbar_constants_aura.h",
     ]
   }
 
