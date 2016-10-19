@@ -205,7 +205,6 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       // Case 3: canvas is not gpu-accelerated, but compositor is
       commitType = CommitSoftwareCanvasGPUCompositing;
       setTransferableResourceToSharedGPUContext(resource, image);
-      yflipped = true;
     } else {
       // Case 4: both canvas and compositor are not gpu accelerated.
       commitType = CommitSoftwareCanvasSoftwareCompositing;
