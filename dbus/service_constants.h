@@ -863,6 +863,7 @@ const char kSystemClockServiceName[] = "org.torproject.tlsdate";
 // Methods.
 const char kSystemClockCanSet[] = "CanSetTime";
 const char kSystemClockSet[] = "SetTime";
+const char kSystemLastSyncInfo[] = "LastSyncInfo";
 
 // Signals.
 const char kSystemClockUpdated[] = "TimeUpdated";
