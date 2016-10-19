@@ -233,7 +233,7 @@ bool ArcSupportHost::Initialize() {
       "learnMoreLocationServices",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES));
   loadtime_data->SetString(
-      "learnMoreClose",
+      "overlayClose",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_CLOSE));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();

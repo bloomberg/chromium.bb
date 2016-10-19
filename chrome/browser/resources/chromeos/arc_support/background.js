@@ -167,7 +167,7 @@ class PreferenceCheckbox {
    * Called when the "Learn More" link is clicked.
    */
   onLearnMoreLinkClicked() {
-    showLearnMoreOverlay(this.learnMoreContent_);
+    showTextOverlay(this.learnMoreContent_);
   }
 };
 
@@ -366,7 +366,7 @@ function showPage(pageDivId) {
     return;
   }
 
-  hideLearnMoreOverlay();
+  hideOverlay();
   var doc = appWindow.contentWindow.document;
   var pages = doc.getElementsByClassName('section');
   var sendFeedbackElement = doc.getElementById('button-send-feedback');
@@ -409,24 +409,47 @@ function setErrorMessage(error) {
 }
 
 /**
- * Sets learn more content text and shows it as overlay dialog.
- * @param {string} content HTML formatted text to show.
+ * Shows overlay dialog and required content.
+ * @param {string} overlayClass Defines which content to show, 'overlay-url' for
+ *                              webview based content and 'overlay-text' for
+ *                              simple text view.
  */
-function showLearnMoreOverlay(content) {
+function showOverlay(overlayClass) {
   var doc = appWindow.contentWindow.document;
-  var learnMoreContainer = doc.getElementById('learn-more-container');
-  var learnMoreContent = doc.getElementById('learn-more-content');
-  learnMoreContent.innerHTML = content;
-  learnMoreContainer.hidden = false;
+  var overlayContainer = doc.getElementById('overlay-container');
+  overlayContainer.className = 'overlay ' + overlayClass;
+  overlayContainer.hidden = false;
 }
 
 /**
- * Hides learn more overlay dialog.
+ * Opens overlay dialog and shows formatted text content there.
+ * @param {string} content HTML formatted text to show.
  */
-function hideLearnMoreOverlay() {
+function showTextOverlay(content) {
   var doc = appWindow.contentWindow.document;
-  var learnMoreContainer = doc.getElementById('learn-more-container');
-  learnMoreContainer.hidden = true;
+  var textContent = doc.getElementById('overlay-text-content');
+  textContent.innerHTML = content;
+  showOverlay('overlay-text');
+}
+
+/**
+ * Opens overlay dialog and shows external URL there.
+ * @param {string} url Target URL to open in overlay dialog.
+ */
+function showURLOverlay(url) {
+  var doc = appWindow.contentWindow.document;
+  var overlayWebview = doc.getElementById('overlay-url');
+  overlayWebview.src = url;
+  showOverlay('overlay-url');
+}
+
+/**
+ * Hides overlay dialog.
+ */
+function hideOverlay() {
+  var doc = appWindow.contentWindow.document;
+  var overlayContainer = doc.getElementById('overlay-container');
+  overlayContainer.hidden = true;
 }
 
 /**
@@ -600,10 +623,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 
     // webview is not allowed to open links in the new window. Hook these events
-    // and open links in context of main page.
+    // and open links in overlay dialog.
     termsView.addEventListener('newwindow', function(event) {
       event.preventDefault();
-      chrome.browser.openTab({'url': event.targetUrl}, function() {});
+      showURLOverlay(event.targetUrl);
     });
 
     var onAgree = function() {
@@ -641,13 +664,12 @@ chrome.app.runtime.onLaunched.addListener(function() {
     doc.getElementById('button-retry').addEventListener('click', onRetry);
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);
-    doc.getElementById('learn-more-close').addEventListener(
-        'click', hideLearnMoreOverlay);
+    doc.getElementById('overlay-close').addEventListener('click', hideOverlay);
 
-    var overlay = doc.getElementById('learn-more-container');
+    var overlay = doc.getElementById('overlay-container');
     appWindow.contentWindow.cr.ui.overlay.setupOverlay(overlay);
     appWindow.contentWindow.cr.ui.overlay.globalInitialization();
-    overlay.addEventListener('cancelOverlay', hideLearnMoreOverlay);
+    overlay.addEventListener('cancelOverlay', hideOverlay);
 
     connectPort();
   };
