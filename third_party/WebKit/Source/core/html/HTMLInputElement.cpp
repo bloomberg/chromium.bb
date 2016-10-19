@@ -410,8 +410,7 @@ void HTMLInputElement::updateType() {
   InputType* newType = InputType::create(*this, newTypeName);
   removeFromRadioButtonGroup();
 
-  bool didStoreValue = m_inputType->valueMode() == ValueMode::kValue ||
-                       m_inputType->valueMode() == ValueMode::kFilename;
+  ValueMode oldValueMode = m_inputType->valueMode();
   bool didRespectHeightAndWidth =
       m_inputType->shouldRespectHeightAndWidthAttributes();
   bool couldBeSuccessfulSubmitButton = canBeSuccessfulSubmitButton();
@@ -425,8 +424,7 @@ void HTMLInputElement::updateType() {
 
   setNeedsWillValidateCheck();
 
-  bool willStoreValue = m_inputType->valueMode() == ValueMode::kValue ||
-                        m_inputType->valueMode() == ValueMode::kFilename;
+  ValueMode newValueMode = m_inputType->valueMode();
 
   // https://html.spec.whatwg.org/multipage/forms.html#input-type-change
   //
@@ -435,7 +433,10 @@ void HTMLInputElement::updateType() {
   // string, and the new state of the element's type attribute puts the value
   // IDL attribute in either the default mode or the default/on mode, then set
   // the element's value content attribute to the element's value.
-  if (didStoreValue && !willStoreValue && hasDirtyValue()) {
+  if (oldValueMode == ValueMode::kValue &&
+      (newValueMode == ValueMode::kDefault ||
+       newValueMode == ValueMode::kDefaultOn) &&
+      hasDirtyValue()) {
     setAttribute(valueAttr, AtomicString(m_valueIfDirty));
     m_valueIfDirty = String();
     m_hasDirtyValue = false;
@@ -446,11 +447,22 @@ void HTMLInputElement::updateType() {
   // value mode, then set the value of the element to the value of the value
   // content attribute, if there is one, or the empty string otherwise, and then
   // set the control's dirty value flag to false.
-  if (!didStoreValue && willStoreValue) {
+  else if (oldValueMode != ValueMode::kValue &&
+           newValueMode == ValueMode::kValue) {
     AtomicString valueString = fastGetAttribute(valueAttr);
     m_inputType->warnIfValueIsInvalid(valueString);
     m_valueIfDirty = String();
     m_hasDirtyValue = false;
+  }
+  // 3. Otherwise, if the previous state of the element's type attribute put the
+  // value IDL attribute in any mode other than the filename mode, and the new
+  // state of the element's type attribute puts the value IDL attribute in the
+  // filename mode, then set the value of the element to the empty string.
+  else if (oldValueMode != ValueMode::kFilename &&
+           newValueMode == ValueMode::kFilename) {
+    m_valueIfDirty = String();
+    m_hasDirtyValue = false;
+
   } else {
     if (!hasDirtyValue())
       m_inputType->warnIfValueIsInvalid(

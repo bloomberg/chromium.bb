@@ -63,4 +63,13 @@ input.type = "text";
 // The dirty flag should be still false, and the defaultValue should be reflected
 // to value.
 shouldBeEqualToString("input.defaultValue = 'UpdatedDefault'; input.value", "UpdatedDefault");
+
+debug("Changing the type to file should discard the dirty value.");
+input = document.createElement("input");
+input.setAttribute("value", "DEFAULT");
+input.value = "DIRTY";
+input.type = "file";
+input.type = "text";
+shouldBe("input.value", "input.getAttribute('value')");
+
 </script>

@@ -58,6 +58,8 @@ PASS input.getAttribute("type") for "x-unknown" is correctly "x-unknown".
 PASS input.removeAttribute('type'); input.getAttribute('type') is null
 Check dirty flag behavior
 PASS input.defaultValue = 'UpdatedDefault'; input.value is "UpdatedDefault"
+Changing the type to file should discard the dirty value.
+PASS input.value is input.getAttribute('value')
 PASS successfullyParsed is true
 
 TEST COMPLETE
