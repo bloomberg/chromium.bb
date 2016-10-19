@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.10",
+  "version": "9.11",
   "entries": [
     {
       "id": 1,
@@ -2121,6 +2121,41 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "unpack_image_height_workaround_with_unpack_buffer"
+      ]
+    },
+    {
+      "id": 197,
+      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Mac",
+      "cr_bugs": [644740],
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
+      ]
+    },
+    {
+      "id": 198,
+      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Linux Intel",
+      "cr_bugs": [664740],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
+      ]
+    },
+    {
+      "id": 199,
+      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Linux AMD",
+      "cr_bugs": [664740],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
       ]
     }
   ]

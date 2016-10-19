@@ -3754,7 +3754,7 @@ TEST_P(GLES3DecoderTest, BlitFramebufferDisabledReadBuffer) {
                                             1.0f,                 // depth
                                             false,  // scissor test
                                             0, 0, 128, 64);
-    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, _, _, 0, 0, _, _,
                                       GL_COLOR_BUFFER_BIT, GL_LINEAR))
         .Times(1)
         .RetiresOnSaturation();

@@ -15,6 +15,8 @@
 #define GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)                   \
   GPU_OP(ADD_AND_TRUE_TO_LOOP_CONDITION,                     \
          add_and_true_to_loop_condition)                     \
+  GPU_OP(ADJUST_SRC_DST_REGION_FOR_BLITFRAMEBUFFER,          \
+         adjust_src_dst_region_for_blitframebuffer)          \
   GPU_OP(AVDA_DONT_COPY_PICTURES,                            \
          avda_dont_copy_pictures)                            \
   GPU_OP(AVOID_EGL_IMAGE_TARGET_TEXTURE_REUSE,               \

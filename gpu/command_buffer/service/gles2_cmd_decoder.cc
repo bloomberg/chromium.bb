@@ -7992,6 +7992,96 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     }
   }
 
+  if (workarounds().adjust_src_dst_region_for_blitframebuffer) {
+    gfx::Size read_size = GetBoundReadFramebufferSize();
+    gfx::Rect src_bounds(0, 0, read_size.width(), read_size.height());
+    GLint src_x = srcX1 > srcX0 ? srcX0 : srcX1;
+    GLint src_y = srcY1 > srcY0 ? srcY0 : srcY1;
+    base::CheckedNumeric<GLint> src_width_temp = srcX1;
+    src_width_temp -= srcX0;
+    base::CheckedNumeric<GLint> src_height_temp = srcY1;
+    src_height_temp -= srcY0;
+    GLuint src_width = 0, src_height = 0;
+    if (!src_width_temp.IsValid() || !src_height_temp.IsValid()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "the width or height of src region overflow");
+      return;
+    }
+    src_width = std::abs(src_width_temp.ValueOrDefault(0));
+    src_height = std::abs(src_height_temp.ValueOrDefault(0));
+
+    gfx::Rect src_region(src_x, src_y, src_width, src_height);
+    if (!src_bounds.Contains(src_region) &&
+        (src_width != 0) && (src_height != 0)) {
+      // If pixels lying outside the read framebuffer, adjust src region
+      // and dst region to appropriate in-bounds regions respectively.
+      src_bounds.Intersect(src_region);
+      GLuint src_real_width = src_bounds.width();
+      GLuint src_real_height = src_bounds.height();
+      GLuint xoffset = src_bounds.x() - src_x;
+      GLuint yoffset = src_bounds.y() - src_y;
+      // if X/Y is reversed, use the top/right out-of-bounds region for mapping
+      // to dst region, instead of left/bottom out-of-bounds region for mapping.
+      if (((srcX1 > srcX0) && (dstX1 < dstX0)) ||
+          ((srcX1 < srcX0) && (dstX1 > dstX0))) {
+        xoffset = src_x + src_width - src_bounds.x() - src_bounds.width();
+      }
+      if (((srcY1 > srcY0) && (dstY1 < dstY0)) ||
+          ((srcY1 < srcY0) && (dstY1 > dstY0))) {
+        yoffset = src_y + src_height - src_bounds.y() - src_bounds.height();
+      }
+
+      GLint dst_x = dstX1 > dstX0 ? dstX0 : dstX1;
+      GLint dst_y = dstY1 > dstY0 ? dstY0 : dstY1;
+      base::CheckedNumeric<GLint> dst_width_temp = dstX1;
+      dst_width_temp -= dstX0;
+      base::CheckedNumeric<GLint> dst_height_temp = dstY1;
+      dst_height_temp -= dstY0;
+      GLuint dst_width = 0, dst_height = 0;
+      if (!dst_width_temp.IsValid() || !dst_height_temp.IsValid()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                           "the width or height of dst region overflow");
+        return;
+      }
+      dst_width = std::abs(dst_width_temp.ValueOrDefault(0));
+      dst_height = std::abs(dst_height_temp.ValueOrDefault(0));
+
+      GLfloat dst_mapping_width =
+          static_cast<GLfloat>(src_real_width) * dst_width / src_width;
+      GLfloat dst_mapping_height =
+          static_cast<GLfloat>(src_real_height) * dst_height / src_height;
+      GLfloat dst_mapping_xoffset =
+          static_cast<GLfloat>(xoffset) * dst_width / src_width;
+      GLfloat dst_mapping_yoffset =
+          static_cast<GLfloat>(yoffset) * dst_height / src_height;
+
+      GLuint dst_mapping_x0 =
+          std::round(dst_x + dst_mapping_xoffset);
+      GLuint dst_mapping_y0 =
+          std::round(dst_y + dst_mapping_yoffset);
+
+      GLuint dst_mapping_x1 =
+          std::round(dst_x + dst_mapping_xoffset + dst_mapping_width);
+      GLuint dst_mapping_y1 =
+          std::round(dst_y + dst_mapping_yoffset + dst_mapping_height);
+
+      // adjust the src region and dst region to fit the read framebuffer
+      srcX0 = srcX0 < srcX1 ?
+          src_bounds.x() : src_bounds.x() + src_bounds.width();
+      srcY0 = srcY0 < srcY1 ?
+          src_bounds.y() : src_bounds.y() + src_bounds.height();
+      srcX1 = srcX0 < srcX1 ?
+          src_bounds.x() + src_bounds.width() : src_bounds.x();
+      srcY1 = srcY0 < srcY1 ?
+          src_bounds.y() + src_bounds.height() : src_bounds.y();
+
+      dstX0 = dstX0 < dstX1 ? dst_mapping_x0 : dst_mapping_x1;
+      dstY0 = dstY0 < dstY1 ? dst_mapping_y0 : dst_mapping_y1;
+      dstX1 = dstX0 < dstX1 ? dst_mapping_x1 : dst_mapping_x0;
+      dstY1 = dstY0 < dstY1 ? dst_mapping_y1 : dst_mapping_y0;
+    }
+  }
+
   bool enable_srgb =
       (read_buffer_has_srgb || draw_buffers_has_srgb) &&
       ((mask & GL_COLOR_BUFFER_BIT) != 0);

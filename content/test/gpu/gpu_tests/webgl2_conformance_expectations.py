@@ -165,8 +165,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel'], bug=628395)
 
     # Mac only.
-    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
-        ['mac'], bug=644740)
 
     # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
@@ -197,8 +195,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'nvidia'], bug=641209)
 
     self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_*.html',
-        ['mac'], bug=483282)
+        'default_framebuffer_04.html',
+        ['mac', 'nvidia'], bug=483282)
 
     # Mac Retina NVIDIA
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
@@ -434,9 +432,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'single_attribute.normalize.html',
         ['mac', 'amd'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
-        ['mac', 'amd'], bug=483282)
-
     self.Fail('deqp/functional/gles3/shaderoperator/' +
         'angle_and_trigonometry_02.html',
         ['mac', 'amd'], bug=483282)
@@ -492,8 +487,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'textureprojgrad.html',
         ['mac', 'intel'], bug=483282)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
-        ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_03.html',
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_04.html',
@@ -563,11 +556,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_00.html',
-        ['linux', 'intel'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
-        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['linux', 'intel'], bug=635528)
 
@@ -810,11 +798,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_00.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
         ['linux', 'amd'], bug=483282)
 
     self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_01.html',
