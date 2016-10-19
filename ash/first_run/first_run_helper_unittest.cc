@@ -4,8 +4,8 @@
 
 #include "ash/first_run/first_run_helper.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/first_run/desktop_cleaner.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/event_handler.h"

@@ -5,8 +5,8 @@
 #include "ash/drag_drop/drag_drop_tracker.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_finder.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"

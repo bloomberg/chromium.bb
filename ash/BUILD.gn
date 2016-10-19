@@ -183,8 +183,6 @@ component("ash") {
     "common/shelf/wm_shelf_util.cc",
     "common/shelf/wm_shelf_util.h",
     "common/shell_delegate.h",
-    "common/shell_window_ids.cc",
-    "common/shell_window_ids.h",
     "common/system/accessibility_observer.h",
     "common/system/audio/audio_observer.h",
     "common/system/audio/tray_audio.cc",

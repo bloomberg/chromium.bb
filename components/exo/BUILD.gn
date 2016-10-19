@@ -46,6 +46,7 @@ source_set("exo") {
 
   deps = [
     "//ash",
+    "//ash/public/cpp",
     "//base",
     "//cc",
     "//cc/surfaces:surfaces",
@@ -114,6 +115,7 @@ source_set("unit_tests") {
     ":exo",
     ":test_support",
     "//ash",
+    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//cc",

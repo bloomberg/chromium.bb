@@ -4,8 +4,8 @@
 
 #include "ash/mus/disconnected_app_handler.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/mus/bridge/wm_window_mus.h"
+#include "ash/public/cpp/shell_window_ids.h"
 
 namespace ash {
 namespace mus {

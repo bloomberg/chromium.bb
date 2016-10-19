@@ -141,6 +141,7 @@ static_library("test_support_common") {
   ]
   deps = [
     "//ash/common/test:test_support",
+    "//ash/public/cpp",
     "//ash/resources",
     "//base:i18n",
     "//base/test:test_support",

@@ -9,7 +9,6 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/common/system/chromeos/network/vpn_list_view.h"
 #include "ash/common/system/networking_config_delegate.h"
@@ -28,6 +27,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

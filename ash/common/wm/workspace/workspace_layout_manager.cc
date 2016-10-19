@@ -8,7 +8,6 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_positioner.h"
@@ -20,6 +19,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"

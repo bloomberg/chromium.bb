@@ -4,11 +4,11 @@
 
 #include "ash/common/wm/workspace/multi_window_resize_controller.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "grit/ash_resources.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"

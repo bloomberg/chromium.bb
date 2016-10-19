@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SHELL_WINDOW_IDS_H_
-#define ASH_COMMON_SHELL_WINDOW_IDS_H_
+#ifndef ASH_PUBLIC_CPP_SHELL_WINDOW_IDS_H_
+#define ASH_PUBLIC_CPP_SHELL_WINDOW_IDS_H_
 
 #include <stddef.h>
-
-#include "ash/ash_export.h"
 
 // Declarations of ids of special shell windows.
 
@@ -112,12 +110,12 @@ const int kShellWindowId_Max = kShellWindowId_PowerButtonAnimationContainer;
 
 // These are the list of container ids of containers which may contain windows
 // that need to be activated.
-ASH_EXPORT extern const int kActivatableShellWindowIds[];
-ASH_EXPORT extern const size_t kNumActivatableShellWindowIds;
+extern const int kActivatableShellWindowIds[];
+extern const size_t kNumActivatableShellWindowIds;
 
 // Returns true if |id| is in |kActivatableShellWindowIds|.
-ASH_EXPORT bool IsActivatableShellWindowId(int id);
+bool IsActivatableShellWindowId(int id);
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SHELL_WINDOW_IDS_H_
+#endif  // ASH_PUBLIC_CPP_SHELL_WINDOW_IDS_H_

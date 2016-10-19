@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"

@@ -4,10 +4,10 @@
 
 #include "ash/wm/window_animations.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/time/time.h"

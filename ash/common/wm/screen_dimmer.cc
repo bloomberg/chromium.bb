@@ -4,12 +4,12 @@
 
 #include "ash/common/wm/screen_dimmer.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/window_dimmer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_user_data.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {

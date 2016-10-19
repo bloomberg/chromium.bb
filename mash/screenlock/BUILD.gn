@@ -16,6 +16,7 @@ service("screenlock") {
   ]
 
   deps = [
+    "//ash/public/cpp",
     "//ash/public/interfaces",
     "//base",
     "//mash/session/public/interfaces",

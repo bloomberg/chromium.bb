@@ -271,7 +271,7 @@ class ShellSurface : public SurfaceDelegate,
   aura::Window* parent_;
   const gfx::Rect initial_bounds_;
   const bool activatable_;
-  // Container Window Id (see ash/common/shell_window_ids.h)
+  // Container Window Id (see ash/public/cpp/shell_window_ids.h)
   const int container_;
   bool pending_show_widget_ = false;
   base::string16 title_;

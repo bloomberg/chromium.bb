@@ -35,6 +35,10 @@ interface WindowManager {
   // Initial bounds to create the window at. If empty the WindowManager decides
   // the initial bounds.
   const string kInitialBounds_Property = "prop:initial_bounds";
+  // The window manager will place the window in this container when the window
+  // is created. If not set a container is selected based on the window type.
+  // Type: int
+  const string kInitialContainerId_Property = "prop:initial_container_id";
   // The id of the display (display::Display::id()) to create the window on.
   // Type: int64.
   const string kInitialDisplayId_Property = "prop:initial_display_id";
@@ -100,7 +104,7 @@ interface WindowManager {
                 uint32 window_id,
                 string name,
                 array<uint8>? value);
-  
+
   // Asks the WindowManager to create a new window.
   // |requesting_client_id| is the id of the client issuing the request. This
   // allows the window manager to track top level windows by client.

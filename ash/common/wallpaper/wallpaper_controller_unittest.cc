@@ -7,12 +7,12 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wallpaper/wallpaper_view.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"

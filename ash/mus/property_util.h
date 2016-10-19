@@ -6,7 +6,6 @@
 #define ASH_MUS_PROPERTY_UTIL_H_
 
 #include "ash/public/interfaces/ash_window_type.mojom.h"
-#include "ash/public/interfaces/container.mojom.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/wm/public/window_types.h"
@@ -37,11 +36,10 @@ gfx::Rect GetWindowUserSetBounds(const ui::Window* window);
 void SetWindowPreferredSize(ui::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(const ui::Window* window);
 
-// If |window| has the |kWindowContainer_Property| set as a property, then
-// the value of |kWindowContainer_Property| is set in |container| and true is
-// returned. Otherwise false is returned.
-bool GetRequestedContainer(const ui::Window* window,
-                           mojom::Container* container);
+// If |window| has the |kInitialContainerId_Property| set as a property, then
+// the value of |kInitialContainerId_Property| is set in |container_id| and true
+// is returned. Otherwise false is returned.
+bool GetRequestedContainer(const ui::Window* window, int* container_id);
 
 // Returns a bitfield of kResizeBehavior* values from
 // window_manager_constants.mojom.

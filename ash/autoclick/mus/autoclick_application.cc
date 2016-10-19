@@ -4,7 +4,7 @@
 
 #include "ash/autoclick/mus/autoclick_application.h"
 
-#include "ash/public/interfaces/container.mojom.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -104,9 +104,9 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
                                       autoclick_controller_common_.get());
 
     std::map<std::string, std::vector<uint8_t>> properties;
-    properties[ash::mojom::kWindowContainer_Property] =
+    properties[ui::mojom::WindowManager::kInitialContainerId_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(ash::mojom::Container::OVERLAY));
+            ash::kShellWindowId_OverlayContainer);
     properties[ui::mojom::WindowManager::kShowState_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int32_t>(ui::mojom::ShowState::FULLSCREEN));

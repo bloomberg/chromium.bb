@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/display/display_manager.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

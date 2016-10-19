@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"

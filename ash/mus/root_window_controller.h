@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/mus/disconnected_app_handler.h"
-#include "ash/public/interfaces/container.mojom.h"
 #include "services/ui/public/cpp/window_observer.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
@@ -55,8 +54,6 @@ class RootWindowController {
 
   ui::Window* NewTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties);
-
-  ui::Window* GetWindowForContainer(mojom::Container container);
 
   WmWindowMus* GetWindowByShellWindowId(int id);
 

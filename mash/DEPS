@@ -1,5 +1,5 @@
 include_rules = [
-  "+ash/public/interfaces",
+  "+ash/public",
   "+components/prefs",
   "+mojo/common",
   "+mojo/converters",

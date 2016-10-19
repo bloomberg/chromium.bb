@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "base/macros.h"

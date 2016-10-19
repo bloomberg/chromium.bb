@@ -7,7 +7,6 @@
 #include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/mus/container_ids.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/window_manager.h"
 #include "services/ui/public/cpp/window.h"

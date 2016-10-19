@@ -4,10 +4,10 @@
 
 #include "ash/common/wm/focus_rules.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 
 namespace ash {
 

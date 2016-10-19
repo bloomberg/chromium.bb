@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/lock_window.h"
 
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/events/gestures/gesture_recognizer.h"

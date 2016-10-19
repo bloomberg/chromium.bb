@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/webrtc/desktop_media_list_ash.h"
 
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"

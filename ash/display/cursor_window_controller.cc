@@ -4,10 +4,10 @@
 
 #include "ash/display/cursor_window_controller.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ui/aura/env.h"

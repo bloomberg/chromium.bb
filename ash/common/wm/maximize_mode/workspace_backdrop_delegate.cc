@@ -4,12 +4,12 @@
 
 #include "ash/common/wm/maximize_mode/workspace_backdrop_delegate.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_observer.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/auto_reset.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

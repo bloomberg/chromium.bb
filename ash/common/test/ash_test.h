@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_layout.h"
@@ -103,8 +103,8 @@ class AshTest : public testing::Test {
       const gfx::Rect& bounds = gfx::Rect(),
       int shell_window_id = kShellWindowId_Invalid);
 
-  // Creates and shows a widget. See ash/common/shell_window_ids.h for values
-  // for |container_id|.
+  // Creates and shows a widget. See ash/public/cpp/shell_window_ids.h for
+  // values for |container_id|.
   static std::unique_ptr<views::Widget> CreateTestWidget(
       const gfx::Rect& bounds,
       views::WidgetDelegate* delegate = nullptr,

@@ -6,5 +6,11 @@
 source_set("cpp") {
   sources = [
     "shelf_types.h",
+    "shell_window_ids.cc",
+    "shell_window_ids.h",
+  ]
+
+  deps = [
+    "//base",
   ]
 }

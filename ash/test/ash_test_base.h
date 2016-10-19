@@ -82,8 +82,8 @@ class AshTestBase : public testing::Test {
   // primary root Window.
   aura::Window* CurrentContext();
 
-  // Creates and shows a widget. See ash/common/shell_window_ids.h for values
-  // for |container_id|.
+  // Creates and shows a widget. See ash/public/cpp/shell_window_ids.h for
+  // values for |container_id|.
   static std::unique_ptr<views::Widget> CreateTestWidget(
       views::WidgetDelegate* delegate,
       int container_id,

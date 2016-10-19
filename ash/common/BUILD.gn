@@ -17,6 +17,7 @@ source_set("unittests") {
   deps = [
     "//ash",
     "//ash/common/test:test_support",
+    "//ash/public/cpp",
     "//ash/test:test_support_without_content",
     "//ui/base",
     "//ui/display",

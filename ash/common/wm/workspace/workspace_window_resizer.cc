@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/default_window_resizer.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/dock/docked_window_resizer.h"
@@ -25,6 +24,7 @@
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/hit_test.h"

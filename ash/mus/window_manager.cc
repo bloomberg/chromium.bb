@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/mus/accelerators/accelerator_handler.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/app_list_presenter_mus.h"
@@ -23,7 +22,7 @@
 #include "ash/mus/shadow_controller.h"
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/window_manager_observer.h"
-#include "ash/public/interfaces/container.mojom.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/common/event_matcher_util.h"
 #include "services/ui/common/types.h"

@@ -7,7 +7,7 @@
 #include <map>
 #include <memory>
 
-#include "ash/public/interfaces/container.mojom.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -20,6 +20,7 @@
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/mus/aura_init.h"
@@ -48,9 +49,9 @@ class UI : public views::WidgetDelegateView,
     params.delegate = ui;
 
     std::map<std::string, std::vector<uint8_t>> properties;
-    properties[ash::mojom::kWindowContainer_Property] =
+    properties[ui::mojom::WindowManager::kInitialContainerId_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
+            ash::kShellWindowId_LockScreenContainer);
     ui::Window* window =
         views::WindowManagerConnection::Get()->NewTopLevelWindow(properties);
     params.native_widget = new views::NativeWidgetMus(

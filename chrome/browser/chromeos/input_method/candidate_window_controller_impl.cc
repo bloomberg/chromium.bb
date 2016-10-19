@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"

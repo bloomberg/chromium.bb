@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "ash/common/shelf/shelf_layout_manager.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
@@ -23,11 +22,11 @@
 #include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
-#include "ash/mus/container_ids.h"
 #include "ash/mus/non_client_frame_controller.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/screenlock_layout.h"
 #include "ash/mus/window_manager.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
@@ -41,8 +40,6 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
-
-using ash::mojom::Container;
 
 namespace ash {
 namespace mus {
@@ -101,9 +98,9 @@ ui::Window* RootWindowController::NewTopLevelWindow(
   window->SetBounds(CalculateDefaultBounds(window));
 
   ui::Window* container_window = nullptr;
-  mojom::Container container;
-  if (GetRequestedContainer(window, &container)) {
-    container_window = GetWindowForContainer(container);
+  int container_id = kShellWindowId_Invalid;
+  if (GetRequestedContainer(window, &container_id)) {
+    container_window = GetWindowByShellWindowId(container_id)->mus_window();
   } else {
     // TODO(sky): window->bounds() isn't quite right.
     container_window = WmWindowMus::GetMusWindow(wm::GetDefaultParent(
@@ -121,13 +118,6 @@ ui::Window* RootWindowController::NewTopLevelWindow(
   window_count_++;
 
   return window;
-}
-
-ui::Window* RootWindowController::GetWindowForContainer(Container container) {
-  WmWindowMus* wm_window =
-      GetWindowByShellWindowId(MashContainerToAshShellWindowId(container));
-  DCHECK(wm_window);
-  return wm_window->mus_window();
 }
 
 WmWindowMus* RootWindowController::GetWindowByShellWindowId(int id) {

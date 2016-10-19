@@ -8,8 +8,8 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/scoped_root_window_for_new_windows.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/test/test_windows.h"

@@ -4,7 +4,7 @@
 
 #include "ash/display/display_animator_chromeos.h"
 
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"

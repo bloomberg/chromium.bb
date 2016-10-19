@@ -16,6 +16,7 @@ service("login") {
   ]
 
   deps = [
+    "//ash/public/cpp",
     "//ash/public/interfaces",
     "//base",
     "//mash/init/public/interfaces",

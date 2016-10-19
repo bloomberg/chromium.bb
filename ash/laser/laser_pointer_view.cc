@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/laser/laser_pointer_points.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"

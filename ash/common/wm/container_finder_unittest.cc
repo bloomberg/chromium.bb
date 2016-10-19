@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/test/ash_test.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 

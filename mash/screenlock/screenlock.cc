@@ -4,7 +4,7 @@
 
 #include "mash/screenlock/screenlock.h"
 
-#include "ash/public/interfaces/container.mojom.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mash/session/public/interfaces/session.mojom.h"
@@ -92,9 +92,9 @@ void Screenlock::OnStart(const service_manager::Identity& identity) {
   params.delegate = new ScreenlockView(connector());
 
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ash::mojom::kWindowContainer_Property] =
+  properties[ui::mojom::WindowManager::kInitialContainerId_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
+          ash::kShellWindowId_LockScreenContainer);
   ui::Window* window =
       views::WindowManagerConnection::Get()->NewTopLevelWindow(properties);
   params.native_widget = new views::NativeWidgetMus(

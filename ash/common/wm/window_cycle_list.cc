@@ -7,13 +7,13 @@
 #include <list>
 #include <map>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/forwarding_layer_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/command_line.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

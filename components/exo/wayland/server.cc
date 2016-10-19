@@ -18,8 +18,8 @@
 #include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
 #include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
 #include <stylus-unstable-v1-server-protocol.h>             // NOLINT
-#include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
 #include <vsync-feedback-unstable-v1-server-protocol.h>     // NOLINT
+#include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
 
 #include <algorithm>
 #include <cstdlib>
@@ -28,7 +28,7 @@
 #include <utility>
 
 #include "ash/common/shell_observer.h"
-#include "ash/common/shell_window_ids.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"

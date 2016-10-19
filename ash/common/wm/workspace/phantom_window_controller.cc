@@ -6,11 +6,11 @@
 
 #include <math.h>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "grit/ash_resources.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

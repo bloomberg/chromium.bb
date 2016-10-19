@@ -4,11 +4,11 @@
 
 #include "ash/common/metrics/pointer_metrics_recorder.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shared/app_types.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/histogram_tester.h"

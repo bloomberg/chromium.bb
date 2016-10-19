@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"

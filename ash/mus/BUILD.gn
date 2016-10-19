@@ -38,8 +38,6 @@ source_set("lib") {
     "bridge/wm_window_mus.h",
     "bridge/workspace_event_handler_mus.cc",
     "bridge/workspace_event_handler_mus.h",
-    "container_ids.cc",
-    "container_ids.h",
     "context_menu_mus.cc",
     "context_menu_mus.h",
     "disconnected_app_handler.cc",
@@ -100,6 +98,7 @@ source_set("lib") {
 
   public_deps = [
     "//ash",
+    "//ash/public/cpp",
     "//ash/public/interfaces",
     "//base",
     "//base:i18n",
