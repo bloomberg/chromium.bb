@@ -334,4 +334,11 @@ TEST_F(ReadingListModelTest, CallbackEntryURLNotPresent) {
   EXPECT_FALSE(CallbackCalled());
 }
 
+// Tests that ReadingListModel calls CallbackModelBeingDeleted when destroyed.
+TEST_F(ReadingListModelTest, CallbackModelBeingDeleted) {
+  AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  model_.reset();
+  AssertObserverCount(1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+}
+
 }  // namespace

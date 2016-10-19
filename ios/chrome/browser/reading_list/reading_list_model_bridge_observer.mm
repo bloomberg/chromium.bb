@@ -16,8 +16,9 @@ ReadingListModelBridge::ReadingListModelBridge(
 }
 
 ReadingListModelBridge::~ReadingListModelBridge() {
-  DCHECK(model_);
-  model_->RemoveObserver(this);
+  if (model_) {
+    model_->RemoveObserver(this);
+  }
 }
 
 void ReadingListModelBridge::ReadingListModelLoaded(
@@ -30,6 +31,7 @@ void ReadingListModelBridge::ReadingListModelBeingDeleted(
   if ([observer_ respondsToSelector:@selector(readingListModelBeingDeleted:)]) {
     [observer_ readingListModelBeingDeleted:model];
   }
+  model_ = nullptr;
 }
 
 void ReadingListModelBridge::ReadingListWillRemoveUnreadEntry(

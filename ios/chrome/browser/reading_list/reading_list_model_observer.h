@@ -31,7 +31,8 @@ class ReadingListModelObserver {
       const ReadingListModel* model) {}
 
   // Invoked from the destructor of the model. The model is no longer valid
-  // after this call.
+  // after this call. There is no need to call RemoveObserver on the model from
+  // here, as the observers are automatically deleted.
   virtual void ReadingListModelBeingDeleted(const ReadingListModel* model) {}
 
   // Invoked when elements are about to be removed from the read or unread list.

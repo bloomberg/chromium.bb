@@ -89,7 +89,8 @@ class ReadingListModel {
       const GURL& url,
       ReadingListEntry::DistillationState state) = 0;
 
-  // Observer registration methods.
+  // Observer registration methods. The model will remove all observers upon
+  // destruction automatically.
   void AddObserver(ReadingListModelObserver* observer);
   void RemoveObserver(ReadingListModelObserver* observer);
 

@@ -5,7 +5,11 @@
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 
 ReadingListModel::ReadingListModel() : current_batch_updates_count_(0) {}
-ReadingListModel::~ReadingListModel() {}
+ReadingListModel::~ReadingListModel() {
+  for (auto& observer : observers_) {
+    observer.ReadingListModelBeingDeleted(this);
+  }
+}
 
 // Observer methods.
 void ReadingListModel::AddObserver(ReadingListModelObserver* observer) {
