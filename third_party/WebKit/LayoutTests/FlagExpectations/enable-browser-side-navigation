@@ -116,10 +116,6 @@ crbug.com/648588 http/tests/navigation/post-goback1.html [ Failure ]
 crbug.com/648588 virtual/stable/http/tests/navigation/post-frames-goback1.html [ Failure ]
 crbug.com/648588 virtual/stable/http/tests/navigation/post-goback1.html [ Failure ]
 
-# https://crbug.com/576271: Support insecure requets upgrade
-crbug.com/576271 http/tests/security/upgrade-insecure-requests/https-header-top-level.html [ Skip ]
-crbug.com/576271 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Skip ]
-
 # Properly set ZoomLevel (see IFrameZoomBrowsertests*)
 Bug(none) fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
 
