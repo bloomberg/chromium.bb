@@ -702,8 +702,18 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     lsb_release_content = self.device.RunCommand(
         ['cat', '/etc/lsb-release'],
         capture_output=True, log_output=True).output.strip()
-    return auto_update_util.GetChromeosReleaseVersion(
-        lsb_release_content=lsb_release_content)
+    regex = r'^CHROMEOS_RELEASE_VERSION=(.+)$'
+    return auto_update_util.GetChromeosBuildInfo(
+        lsb_release_content=lsb_release_content, regex=regex)
+
+  def _GetReleaseBuilderPath(self):
+    """Get release version of the device."""
+    lsb_release_content = self.device.RunCommand(
+        ['cat', '/etc/lsb-release'],
+        capture_output=True, log_output=True).output.strip()
+    regex = r'^CHROMEOS_RELEASE_BUILDER_PATH=(.+)$'
+    return auto_update_util.GetChromeosBuildInfo(
+        lsb_release_content=lsb_release_content, regex=regex)
 
   def CheckVersion(self):
     """Check the image running in DUT has the expected version.
@@ -712,9 +722,16 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       True if the DUT's image version matches the version that the
       ChromiumOSUpdater tries to update to.
     """
-    booted_version = self._GetReleaseVersion()
-    return (self.update_version and
-            self.update_version.endswith(booted_version))
+    if not self.update_version:
+      return False
+
+    # Use CHROMEOS_RELEASE_BUILDER_PATH to match the build version if it exists
+    # in lsb-release, otherwise, continue using CHROMEOS_RELEASE_VERSION.
+    release_builder_path = self._GetReleaseBuilderPath()
+    if release_builder_path:
+      return self.update_version == release_builder_path
+
+    return self.update_version.endswith(self._GetReleaseVersion())
 
   def _ResetUpdateEngine(self):
     """Resets the host to prepare for a clean update regardless of state."""

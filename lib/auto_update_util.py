@@ -14,20 +14,21 @@ from chromite.lib import cros_logging as logging
 LSB_RELEASE = '/etc/lsb-release'
 
 
-def GetChromeosReleaseVersion(lsb_release_content=None):
-  """Get chromeos version in device under test as string. None on fail.
+def GetChromeosBuildInfo(lsb_release_content=None, regex=None):
+  """Get chromeos build info in device under test as string. None on fail.
 
   Args:
     lsb_release_content: A string represents the content of lsb-release.
         If the caller is from drone, it can pass in the file content here.
+    regex: A regular expression, refers to which line this func tries to fetch
+        from lsb_release_content.
 
   Returns:
-    chromeos version in device under test as string. None on fail.
+    A kind of chromeos build info in device under test as string. None on fail.
   """
-  if not lsb_release_content:
+  if not lsb_release_content or not regex:
     return None
 
-  regex = r'^CHROMEOS_RELEASE_VERSION=(.+)$'
   for line in lsb_release_content.split('\n'):
     m = re.match(regex, line)
     if m:
@@ -35,13 +36,11 @@ def GetChromeosReleaseVersion(lsb_release_content=None):
 
   return None
 
-def VersionMatch(build_version, release_version, update_url=''):
+def VersionMatch(build_version, release_version):
   """Compare release version from lsb-release with cros-version label.
 
   build_version is a string based on build name. It is prefixed with builder
-  info and branch ID, e.g., lumpy-release/R43-6809.0.0. It may not include
-  builder info, e.g., lumpy-release, in which case, update_url shall be passed
-  in to determine if the build is a trybot or pgo-generate build.
+  info and branch ID, e.g., lumpy-release/R43-6809.0.0.
   release_version is retrieved from lsb-release.
   These two values might not match exactly.
 
@@ -82,8 +81,6 @@ def VersionMatch(build_version, release_version, update_url=''):
         peppy-release/R43-6809.0.0 or R43-6809.0.0
     release_version: Release version retrieved from lsb-release,
         e.g., 6809.0.0
-    update_url: Update url which include the full builder information.
-        Default is set to empty string.
 
   Returns:
     True if the values match, otherwise returns False.
@@ -99,18 +96,17 @@ def VersionMatch(build_version, release_version, update_url=''):
   # Trim the builder info, e.g., trybot-lumpy-paladin/
   stripped_version = stripped_version.split('/')[-1]
 
-  is_trybot_non_release_build = (
-      re.match(r'.*trybot-.+-(paladin|pre-cq|test-ap)', build_version) or
-      re.match(r'.*trybot-.+-(paladin|pre-cq|test-ap)', update_url))
+  # Add toolchain here since is_trybot_non_release_build cannot detect build
+  # like 'trybot-sentry-llvm-toolchain/R56-8885.0.0-b943'.
+  is_trybot_non_release_build = re.match(
+      r'.*trybot-.+-(paladin|pre-cq|test-ap|toolchain)', build_version)
 
   # Replace date string with 0 in release_version
   release_version_no_date = re.sub(r'\d{4}_\d{2}_\d{2}_\d+', '0',
                                    release_version)
   has_date_string = release_version != release_version_no_date
 
-  is_pgo_generate_build = (
-      re.match(r'.+-pgo-generate', build_version) or
-      re.match(r'.+-pgo-generate', update_url))
+  is_pgo_generate_build = re.match(r'.+-pgo-generate', build_version)
 
   # Remove |-pgo-generate| in release_version
   release_version_no_pgo = release_version.replace('-pgo-generate', '')
