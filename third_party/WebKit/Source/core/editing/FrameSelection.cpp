@@ -280,7 +280,9 @@ void FrameSelection::setSelectionAlgorithm(
   bool shouldClearTypingStyle = options & ClearTypingStyle;
   EUserTriggered userTriggered = selectionOptionsToUserTriggered(options);
 
-  VisibleSelectionTemplate<Strategy> s = validateSelection(newSelection);
+  // TODO(editing-dev): We should rename variable |s| to another name to avoid
+  // using one letter variable name.
+  VisibleSelectionTemplate<Strategy> s = newSelection;
   if (shouldAlwaysUseDirectionalSelection(m_frame))
     s.setIsDirectional(true);
 
@@ -1349,29 +1351,6 @@ bool FrameSelection::shouldShowBlockCursor() const {
 // https://github.com/w3c/csswg-drafts/issues/133
 void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor) {
   m_frameCaret->setShouldShowBlockCursor(shouldShowBlockCursor);
-}
-
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy> FrameSelection::validateSelection(
-    const VisibleSelectionTemplate<Strategy>& selection) {
-  if (selection.isNone())
-    return selection;
-
-  const PositionTemplate<Strategy> base = selection.base();
-  const PositionTemplate<Strategy> extent = selection.extent();
-  bool isBaseValid = base.document() == m_frame->document();
-  bool isExtentValid = extent.document() == m_frame->document();
-
-  if (isBaseValid && isExtentValid)
-    return selection;
-
-  VisibleSelectionTemplate<Strategy> newSelection;
-  if (isBaseValid) {
-    newSelection.setWithoutValidation(base, base);
-  } else if (isExtentValid) {
-    newSelection.setWithoutValidation(extent, extent);
-  }
-  return newSelection;
 }
 
 #ifndef NDEBUG

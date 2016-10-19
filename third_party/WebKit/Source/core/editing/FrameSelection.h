@@ -345,10 +345,6 @@ class CORE_EXPORT FrameSelection final
                                const Position& start,
                                const Position& end);
 
-  template <typename Strategy>
-  VisibleSelectionTemplate<Strategy> validateSelection(
-      const VisibleSelectionTemplate<Strategy>&);
-
   GranularityStrategy* granularityStrategy();
 
   // For unittests
