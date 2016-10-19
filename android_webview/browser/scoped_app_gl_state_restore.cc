@@ -65,6 +65,7 @@ bool ClearGLErrors(bool warn, const char* msg) {
 
 bool g_globals_initialized = false;
 GLint g_gl_max_texture_units = 0;
+GLint g_gl_max_vertex_attribs = 0;
 bool g_supports_oes_vertex_array_object = false;
 ScopedAppGLStateRestore* g_current_instance = nullptr;
 
@@ -86,7 +87,7 @@ class ScopedAppGLStateRestoreImpl {
   GLint pack_alignment_;
   GLint unpack_alignment_;
 
-  struct {
+  struct VertexAttributes {
     GLint enabled;
     GLint size;
     GLint type;
@@ -95,7 +96,8 @@ class ScopedAppGLStateRestoreImpl {
     GLvoid* pointer;
     GLint vertex_attrib_array_buffer_binding;
     GLfloat current_vertex_attrib[4];
-  } vertex_attrib_[3];
+  };
+  std::vector<VertexAttributes> vertex_attrib_;
 
   GLint vertex_array_buffer_binding_;
   GLint index_array_buffer_binding_;
@@ -166,6 +168,7 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
   if (!g_globals_initialized) {
     g_globals_initialized = true;
 
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &g_gl_max_vertex_attribs);
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &g_gl_max_texture_units);
 
     std::string extensions;
@@ -267,7 +270,8 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
     glBindVertexArrayOES(0);
   }
 
-  for (size_t i = 0; i < arraysize(vertex_attrib_); ++i) {
+  vertex_attrib_.resize(g_gl_max_vertex_attribs);
+  for (GLint i = 0; i < g_gl_max_vertex_attribs; ++i) {
     glGetVertexAttribiv(
         i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &vertex_attrib_[i].enabled);
     glGetVertexAttribiv(
@@ -278,8 +282,6 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
         i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &vertex_attrib_[i].normalized);
     glGetVertexAttribiv(
         i, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &vertex_attrib_[i].stride);
-    glGetVertexAttribPointerv(
-        i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &vertex_attrib_[i].pointer);
     glGetVertexAttribPointerv(
         i, GL_VERTEX_ATTRIB_ARRAY_POINTER, &vertex_attrib_[i].pointer);
     glGetVertexAttribiv(i,
@@ -309,7 +311,7 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
   if (g_supports_oes_vertex_array_object)
     glBindVertexArrayOES(0);
 
-  for (size_t i = 0; i < arraysize(vertex_attrib_); ++i) {
+  for (GLint i = 0; i < g_gl_max_vertex_attribs; ++i) {
     glBindBuffer(GL_ARRAY_BUFFER,
                  vertex_attrib_[i].vertex_attrib_array_buffer_binding);
     glVertexAttribPointer(i,
