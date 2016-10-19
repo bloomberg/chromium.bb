@@ -73,15 +73,9 @@ struct LayoutFlexibleBox::FlexItem {
         hypotheticalMainContentSize(hypotheticalMainContentSize),
         mainAxisBorderAndPadding(mainAxisBorderAndPadding),
         mainAxisMargin(mainAxisMargin),
-        frozen(false) {}
-
-  // This constructor is used for out-of-flow children
-  explicit FlexItem(LayoutBox* box)
-      : box(box),
-        flexBaseContentSize(),
-        hypotheticalMainContentSize(),
-        mainAxisBorderAndPadding(),
-        frozen(true) {}
+        frozen(false) {
+    DCHECK(!box->isOutOfFlowPositioned());
+  }
 
   LayoutUnit hypotheticalMainAxisMarginBoxSize() const {
     return hypotheticalMainContentSize + mainAxisBorderAndPadding +
@@ -995,10 +989,8 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
                  // specialized subclass (fieldsets runs).
 
     if (child->isOutOfFlowPositioned()) {
-      // TODO(cbiesinger): As abspos children are not actually flex items, we
-      // should not create FlexItem objects for them. However, this requires
-      // some refactoring to make alignment work correctly.
-      allItems.append(FlexItem(child));
+      // Out-of-flow children are not flex items, so we skip them here.
+      prepareChildForPositionedLayout(*child);
       continue;
     }
 
@@ -1041,8 +1033,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren,
     remainingFreeSpace = containerMainInnerSize;
     for (size_t i = 0; i < lineItems.size(); ++i) {
       FlexItem& flexItem = lineItems[i];
-      if (flexItem.box->isOutOfFlowPositioned())
-        continue;
+      DCHECK(!flexItem.box->isOutOfFlowPositioned());
       remainingFreeSpace -= flexItem.flexedMarginBoxSize();
     }
     // This will std::move lineItems into a newly-created LineContext.
@@ -1073,8 +1064,7 @@ LayoutUnit LayoutFlexibleBox::autoMarginOffsetInMainAxis(
   bool isHorizontal = isHorizontalFlow();
   for (size_t i = 0; i < children.size(); ++i) {
     LayoutBox* child = children[i].box;
-    if (child->isOutOfFlowPositioned())
-      continue;
+    DCHECK(!child->isOutOfFlowPositioned());
     if (isHorizontal) {
       if (child->style()->marginLeft().isAuto())
         ++numberOfAutoMargins;
@@ -1432,10 +1422,7 @@ bool LayoutFlexibleBox::computeNextFlexLine(
 
   for (; nextIndex < allItems.size(); ++nextIndex) {
     const FlexItem& flexItem = allItems[nextIndex];
-    if (flexItem.box->isOutOfFlowPositioned()) {
-      lineItems.append(flexItem);
-      continue;
-    }
+    DCHECK(!flexItem.box->isOutOfFlowPositioned());
     if (isMultiline() &&
         sumHypotheticalMainSize + flexItem.hypotheticalMainAxisMarginBoxSize() >
             lineBreakLength &&
@@ -1491,8 +1478,7 @@ void LayoutFlexibleBox::freezeInflexibleItems(FlexSign flexSign,
   for (size_t i = 0; i < children.size(); ++i) {
     FlexItem& flexItem = children[i];
     LayoutBox* child = flexItem.box;
-    if (child->isOutOfFlowPositioned())
-      continue;
+    DCHECK(!flexItem.box->isOutOfFlowPositioned());
     DCHECK(!flexItem.frozen) << i;
     float flexFactor = (flexSign == PositiveFlexibility)
                            ? child->style()->flexGrow()
@@ -1783,8 +1769,8 @@ size_t LayoutFlexibleBox::numberOfInFlowPositionedChildren(
   size_t count = 0;
   for (size_t i = 0; i < children.size(); ++i) {
     LayoutBox* child = children[i].box;
-    if (!child->isOutOfFlowPositioned())
-      ++count;
+    DCHECK(!child->isOutOfFlowPositioned());
+    ++count;
   }
   return count;
 }
@@ -1894,10 +1880,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(
     const FlexItem& flexItem = children[i];
     LayoutBox* child = flexItem.box;
 
-    if (child->isOutOfFlowPositioned()) {
-      prepareChildForPositionedLayout(*child);
-      continue;
-    }
+    DCHECK(!flexItem.box->isOutOfFlowPositioned());
 
     child->setMayNeedPaintInvalidation();
 
@@ -2024,8 +2007,7 @@ void LayoutFlexibleBox::layoutColumnReverse(const OrderedFlexItemList& children,
   for (size_t i = 0; i < children.size(); ++i) {
     LayoutBox* child = children[i].box;
 
-    if (child->isOutOfFlowPositioned())
-      continue;
+    DCHECK(!child->isOutOfFlowPositioned());
 
     mainAxisOffset -=
         mainAxisExtentForChild(*child) + flowAwareMarginEndForChild(*child);
@@ -2125,8 +2107,7 @@ void LayoutFlexibleBox::alignFlexLines(Vector<LineContext>& lineContexts) {
 
 void LayoutFlexibleBox::adjustAlignmentForChild(LayoutBox& child,
                                                 LayoutUnit delta) {
-  if (child.isOutOfFlowPositioned())
-    return;
+  DCHECK(!child.isOutOfFlowPositioned());
 
   setFlowAwareLocationForChild(child, flowAwareLocationForChild(child) +
                                           LayoutSize(LayoutUnit(), delta));
@@ -2147,9 +2128,7 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts) {
     for (size_t childNumber = 0; childNumber < lineContext.flexItems.size();
          ++childNumber) {
       const FlexItem& flexItem = lineContext.flexItems[childNumber];
-      if (flexItem.box->isOutOfFlowPositioned()) {
-        continue;
-      }
+      DCHECK(!flexItem.box->isOutOfFlowPositioned());
 
       if (updateAutoMarginsInCrossAxis(
               *flexItem.box,
@@ -2266,8 +2245,7 @@ void LayoutFlexibleBox::flipForRightToLeftColumn(
     for (size_t childNumber = 0; childNumber < lineContext.flexItems.size();
          ++childNumber) {
       const FlexItem& flexItem = lineContext.flexItems[childNumber];
-      if (flexItem.box->isOutOfFlowPositioned())
-        continue;
+      DCHECK(!flexItem.box->isOutOfFlowPositioned());
 
       LayoutPoint location = flowAwareLocationForChild(*flexItem.box);
       // For vertical flows, setFlowAwareLocationForChild will transpose x and
