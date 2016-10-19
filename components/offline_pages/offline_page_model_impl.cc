@@ -526,7 +526,7 @@ const std::vector<int64_t> OfflinePageModelImpl::MaybeGetOfflineIdsForClientId(
   std::vector<int64_t> results;
 
   // We want only all pages, including those marked for deletion.
-  // TODO(bburns): actually use an index rather than linear scan.
+  // TODO(fgorski): actually use an index rather than linear scan.
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.client_id == client_id &&
         !id_page_pair.second.IsExpired()) {
