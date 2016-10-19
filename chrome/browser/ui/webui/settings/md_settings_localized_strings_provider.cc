@@ -253,7 +253,8 @@ void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
 }
 #endif
 
-void AddAppearanceStrings(content::WebUIDataSource* html_source) {
+void AddAppearanceStrings(content::WebUIDataSource* html_source,
+                          Profile* profile) {
   LocalizedString localized_strings[] = {
     {"appearancePageTitle", IDS_SETTINGS_APPEARANCE},
     {"exampleDotCom", IDS_SETTINGS_EXAMPLE_DOT_COM},
@@ -284,6 +285,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  html_source->AddBoolean("isSupervised", profile->IsSupervised());
 }
 
 #if defined(OS_CHROMEOS)
@@ -1695,7 +1698,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   AddAccountUITweaksStrings(html_source, profile);
 #endif
-  AddAppearanceStrings(html_source);
+  AddAppearanceStrings(html_source, profile);
 #if defined(OS_CHROMEOS)
   AddBluetoothStrings(html_source);
 #endif

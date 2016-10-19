@@ -188,7 +188,19 @@ Polymer({
    * @private
    */
   showUseSystem_: function(themeId, useSystemTheme) {
-    return !!themeId || !useSystemTheme;
+    return (!!themeId || !useSystemTheme) && !this.browserProxy_.isSupervised();
+  },
+
+  /**
+   * @param {string} themeId
+   * @param {boolean} useSystemTheme
+   * @return {boolean} Whether to show the secondary area where "USE CLASSIC"
+   *     and "USE GTK+" buttons live.
+   * @private
+   */
+  showThemesSecondary_: function(themeId, useSystemTheme) {
+    return this.showUseClassic_(themeId, useSystemTheme) ||
+           this.showUseSystem_(themeId, useSystemTheme);
   },
 
   /** @private */

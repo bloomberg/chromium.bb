@@ -13,6 +13,9 @@ cr.define('settings', function() {
      */
     getThemeInfo: assertNotReached,
 
+    /** @return {boolean} Whether the current profile is supervised. */
+    isSupervised: assertNotReached,
+
 <if expr="chromeos">
     openWallpaperManager: assertNotReached,
 </if>
@@ -38,6 +41,11 @@ cr.define('settings', function() {
       return new Promise(function(resolve) {
         chrome.management.get(themeId, resolve);
       });
+    },
+
+    /** @override */
+    isSupervised: function() {
+      return loadTimeData.getBoolean('isSupervised');
     },
 
 <if expr="chromeos">

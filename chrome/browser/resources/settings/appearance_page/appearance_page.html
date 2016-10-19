@@ -67,7 +67,8 @@
           </template>
 </if>
 <if expr="is_linux and not chromeos">
-          <div class="secondary-action">
+          <div class="secondary-action" hidden="[[!showThemesSecondary_(
+            prefs.extensions.theme.id.value, useSystemTheme_)]]">
             <template is="dom-if" if="[[showUseClassic_(
                 prefs.extensions.theme.id.value, useSystemTheme_)]]" restamp>
               <paper-button id="useDefault" on-tap="onUseDefaultTap_"

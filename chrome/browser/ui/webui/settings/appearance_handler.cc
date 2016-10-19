@@ -53,7 +53,10 @@ void AppearanceHandler::HandleUseDefaultTheme(const base::ListValue* args) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void AppearanceHandler::HandleUseSystemTheme(const base::ListValue* args) {
-  ThemeServiceFactory::GetForProfile(profile_)->UseSystemTheme();
+  if (profile_->IsSupervised())
+    NOTREACHED();
+  else
+    ThemeServiceFactory::GetForProfile(profile_)->UseSystemTheme();
 }
 #endif
 
