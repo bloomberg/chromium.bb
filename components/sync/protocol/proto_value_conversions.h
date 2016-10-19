@@ -58,7 +58,7 @@ class PasswordSpecifics;
 class PasswordSpecificsData;
 class PreferenceSpecifics;
 class PriorityPreferenceSpecifics;
-class PrinterPPDData;
+class PrinterPPDReference;
 class PrinterSpecifics;
 class ReadingListSpecifics;
 class SearchEngineSpecifics;
@@ -162,8 +162,8 @@ std::unique_ptr<base::DictionaryValue> SessionSpecificsToValue(
 
 // Sub-protocol of PrinterSpecifics.
 
-std::unique_ptr<base::DictionaryValue> PrinterPPDDataToValue(
-    const sync_pb::PrinterPPDData& proto);
+std::unique_ptr<base::DictionaryValue> PrinterPPDReferenceToValue(
+    const sync_pb::PrinterPPDReference& proto);
 
 // Main *SpecificsToValue functions.
 

@@ -13,20 +13,14 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-// Properties of PPDs associated with printers.
-message PrinterPPDData {
-  // Id issued by PPD Server.  0 for user specified ppds.
-  optional int32 id = 1 [default = 0];
+// User PPD configuration
+message PrinterPPDReference {
+  // Url for user provided file.  Overrides other fields.
+  optional string user_supplied_ppd_url = 1;
 
-  // A relative path uniquely identifying the file.
-  optional string file_name = 2;
-
-  // File version number.
-  optional int64 version_number = 3;
-
-  // True if the file came from the PPD Server.  False if
-  // user provided.
-  optional bool from_quirks_server = 4 [default = false];
+  // Make and model to reference into PPD Server.
+  optional string effective_manufacturer = 2;
+  optional string effective_model = 3;
 }
 
 message PrinterSpecifics {
@@ -54,6 +48,9 @@ message PrinterSpecifics {
   // identification of printers in a zeroconf environment.
   optional string uuid = 7;
 
-  // Structure representing the PPD with which the printer was configured.
-  optional PrinterPPDData ppd = 8;
+  // PPDData was deprecated in favor of PPDReference format.
+  optional bytes ppd = 8 [deprecated = true];
+
+  // Structure representing the user's ppd configuration.
+  optional PrinterPPDReference ppd_reference = 9;
 }
