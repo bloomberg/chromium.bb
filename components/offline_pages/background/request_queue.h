@@ -95,6 +95,10 @@ class RequestQueue {
                            const SavePageRequest::RequestState new_state,
                            const UpdateCallback& callback);
 
+  // Marks attempt with |request_id| as started. Results are returned through
+  // |callback|.
+  void MarkAttemptStarted(int64_t request_id, const UpdateCallback& callback);
+
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,
       const SavePageRequest& update_request,

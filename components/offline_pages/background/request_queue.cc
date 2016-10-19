@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/background/change_requests_state_task.h"
+#include "components/offline_pages/background/mark_attempt_started_task.h"
 #include "components/offline_pages/background/remove_requests_task.h"
 #include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -156,6 +157,13 @@ void RequestQueue::ChangeRequestsState(
     const RequestQueue::UpdateCallback& callback) {
   std::unique_ptr<Task> task(new ChangeRequestsStateTask(
       store_.get(), request_ids, new_state, callback));
+  task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::MarkAttemptStarted(int64_t request_id,
+                                      const UpdateCallback& callback) {
+  std::unique_ptr<Task> task(
+      new MarkAttemptStartedTask(store_.get(), request_id, callback));
   task_queue_.AddTask(std::move(task));
 }
 

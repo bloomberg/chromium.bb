@@ -283,7 +283,14 @@ class RequestCoordinator : public KeyedService,
   // Cancels an in progress pre-rendering, and updates state appropriately.
   void StopPrerendering(Offliner::RequestStatus stop_status);
 
+  // Marks attempt on the request and sends it to offliner in continuation.
   void SendRequestToOffliner(const SavePageRequest& request);
+
+  // Continuation of |SendRequestToOffliner| after the request is marked as
+  // started.
+  void StartOffliner(int64_t request_id,
+                     const std::string& client_namespace,
+                     std::unique_ptr<UpdateRequestsResult> update_result);
 
   // Called by the offliner when an offlining request is completed. (and by
   // tests).

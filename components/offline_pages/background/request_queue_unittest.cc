@@ -384,4 +384,60 @@ TEST_F(RequestQueueTest, UpdateRequestNotPresent) {
   ASSERT_EQ(UpdateRequestResult::REQUEST_DOES_NOT_EXIST, last_update_result());
 }
 
+TEST_F(RequestQueueTest, MarkAttemptStarted) {
+  // First add a request.  Retry count will be set to 0.
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
+                          kUserRequested);
+  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
+                                          base::Unretained(this)));
+  PumpLoop();
+
+  base::Time before_time = base::Time::Now();
+  // Update the request, ensure it succeeded.
+  queue()->MarkAttemptStarted(kRequestId,
+                              base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                         base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(1ul, update_requests_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  EXPECT_EQ(1UL, update_requests_result()->updated_items.size());
+  EXPECT_LE(before_time,
+            update_requests_result()->updated_items.at(0).last_attempt_time());
+  EXPECT_GE(base::Time::Now(),
+            update_requests_result()->updated_items.at(0).last_attempt_time());
+  EXPECT_EQ(
+      1, update_requests_result()->updated_items.at(0).started_attempt_count());
+  EXPECT_EQ(SavePageRequest::RequestState::PRERENDERING,
+            update_requests_result()->updated_items.at(0).request_state());
+
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+  EXPECT_EQ(GetRequestsResult::SUCCESS, last_get_requests_result());
+  ASSERT_EQ(1ul, last_requests().size());
+  EXPECT_EQ(update_requests_result()->updated_items.at(0),
+            *last_requests().at(0));
+}
+
+TEST_F(RequestQueueTest, MarkAttempStartedRequestNotPresent) {
+  // First add a request.  Retry count will be set to 0.
+  base::Time creation_time = base::Time::Now();
+  // This request is never put into the queue.
+  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
+                           kUserRequested);
+
+  queue()->MarkAttemptStarted(kRequestId,
+                              base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                         base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(1ul, update_requests_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::NOT_FOUND,
+            update_requests_result()->item_statuses.at(0).second);
+  EXPECT_EQ(0ul, update_requests_result()->updated_items.size());
+}
+
 }  // namespace offline_pages

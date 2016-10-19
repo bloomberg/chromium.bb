@@ -547,19 +547,44 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   DCHECK(!is_busy_);
   is_busy_ = true;
 
-  // Update the request for this attempt to start it.
-  SavePageRequest updated_request(request);
-  updated_request.MarkAttemptStarted(base::Time::Now());
-  queue_->UpdateRequest(
-      updated_request,
-      base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                 weak_ptr_factory_.GetWeakPtr(), updated_request.client_id()));
-  active_request_.reset(new SavePageRequest(updated_request));
+  // Mark attempt started in the database and start offliner when completed.
+  queue_->MarkAttemptStarted(
+      request.request_id(),
+      base::Bind(&RequestCoordinator::StartOffliner,
+                 weak_ptr_factory_.GetWeakPtr(), request.request_id(),
+                 request.client_id().name_space));
+}
+
+void RequestCoordinator::StartOffliner(
+    int64_t request_id,
+    const std::string& client_namespace,
+    std::unique_ptr<UpdateRequestsResult> update_result) {
+  if (update_result->store_state != StoreState::LOADED ||
+      update_result->item_statuses.size() != 1 ||
+      update_result->item_statuses.at(0).first != request_id ||
+      update_result->item_statuses.at(0).second != ItemActionStatus::SUCCESS) {
+    is_busy_ = false;
+    // TODO(fgorski): what is the best result? Do we create a new status?
+    StopProcessing(Offliner::PRERENDERING_NOT_STARTED);
+    DVLOG(1) << "Failed to mark attempt started: " << request_id;
+    event_logger_.RecordUpdateRequestFailed(
+        client_namespace,
+        update_result->store_state != StoreState::LOADED
+            ? RequestQueue::UpdateRequestResult::STORE_FAILURE
+            : RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST);
+    return;
+  }
+
+  // TODO(fgorski): Switch to request_id only, so that this value is not written
+  // back to the store.
+  active_request_.reset(
+      new SavePageRequest(update_result->updated_items.at(0)));
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(
-          updated_request, base::Bind(&RequestCoordinator::OfflinerDoneCallback,
-                                      weak_ptr_factory_.GetWeakPtr()))) {
+          update_result->updated_items.at(0),
+          base::Bind(&RequestCoordinator::OfflinerDoneCallback,
+                     weak_ptr_factory_.GetWeakPtr()))) {
     base::TimeDelta timeout;
     if (processing_state_ == ProcessingWindowState::SCHEDULED_WINDOW) {
       timeout = base::TimeDelta::FromSeconds(
@@ -569,6 +594,8 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
       timeout = base::TimeDelta::FromSeconds(
           policy_->GetSinglePageTimeLimitForImmediateLoadInSeconds());
     }
+
+    // Start a watchdog timer to catch pre-renders running too long
     watchdog_timer_.Start(FROM_HERE, timeout, this,
                           &RequestCoordinator::HandleWatchdogTimeout);
   } else {
