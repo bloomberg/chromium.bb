@@ -129,15 +129,11 @@ cr.define('extension_item_tests', function() {
             item.$$('#inspect-views paper-button:nth-of-type(0n + 2)'),
             'inspectItemView', [item.data.id, item.data.views[1]]);
 
-        var satisfied = false;
-        var listener = function(e) {
-          expectTrue(e.detail.element == item);
-          satisfied = true;
-        };
-        item.addEventListener('extension-item-show-details', listener);
+        var listener = new extension_test_util.ListenerMock();
+        listener.addListener(item, 'extension-item-show-details',
+                             {data: item.data});
         MockInteractions.tap(item.$$('#details-button'));
-        expectTrue(satisfied);
-        item.removeEventListener('extension-item-show-details', listener);
+        listener.verify();
 
         item.set('data.disableReasons.corruptInstall', true);
         Polymer.dom.flush();

@@ -127,7 +127,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onDetailsTap_: function() {
-      this.fire('extension-item-show-details', {element: this});
+      this.fire('extension-item-show-details', {data: this.data});
     },
 
     /**

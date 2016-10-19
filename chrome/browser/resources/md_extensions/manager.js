@@ -272,7 +272,7 @@ cr.define('extensions', function() {
      * @private
      */
     onShouldShowItemDetails_: function(e) {
-      this.showItemDetails(e.detail.element.data);
+      this.showItemDetails(e.detail.data);
     },
 
     /**
