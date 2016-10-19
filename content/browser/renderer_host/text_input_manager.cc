@@ -140,8 +140,8 @@ void TextInputManager::UpdateTextInputState(
 
 void TextInputManager::ImeCancelComposition(RenderWidgetHostViewBase* view) {
   DCHECK(IsRegistered(view));
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnImeCancelComposition(this, view));
+  for (auto& observer : observer_list_)
+    observer.OnImeCancelComposition(this, view);
 }
 
 void TextInputManager::SelectionBoundsChanged(
@@ -203,8 +203,8 @@ void TextInputManager::SelectionBoundsChanged(
   selection_region_map_[view].first_selection_rect.set_size(
       params.anchor_rect.size());
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnSelectionBoundsChanged(this, view));
+  for (auto& observer : observer_list_)
+    observer.OnSelectionBoundsChanged(this, view);
 }
 
 // TODO(ekaramad): We use |range| only on Mac OS; but we still track its value
@@ -227,8 +227,8 @@ void TextInputManager::ImeCompositionRangeChanged(
   composition_range_info_map_[view].range.set_start(range.start());
   composition_range_info_map_[view].range.set_end(range.end());
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnImeCompositionRangeChanged(this, view));
+  for (auto& observer : observer_list_)
+    observer.OnImeCompositionRangeChanged(this, view);
 }
 
 void TextInputManager::SelectionChanged(RenderWidgetHostViewBase* view,
@@ -242,8 +242,8 @@ void TextInputManager::SelectionChanged(RenderWidgetHostViewBase* view,
   text_selection_map_[view].range.set_start(range.start());
   text_selection_map_[view].range.set_end(range.end());
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnTextSelectionChanged(this, view));
+  for (auto& observer : observer_list_)
+    observer.OnTextSelectionChanged(this, view);
 }
 
 void TextInputManager::Register(RenderWidgetHostViewBase* view) {
@@ -299,9 +299,8 @@ ui::TextInputType TextInputManager::GetTextInputTypeForViewForTesting(
 void TextInputManager::NotifyObserversAboutInputStateUpdate(
     RenderWidgetHostViewBase* updated_view,
     bool did_update_state) {
-  FOR_EACH_OBSERVER(
-      Observer, observer_list_,
-      OnUpdateTextInputStateCalled(this, updated_view, did_update_state));
+  for (auto& observer : observer_list_)
+    observer.OnUpdateTextInputStateCalled(this, updated_view, did_update_state);
 }
 
 TextInputManager::SelectionRegion::SelectionRegion() {}

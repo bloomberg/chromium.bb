@@ -71,8 +71,8 @@ BrowserPpapiHostImpl::~BrowserPpapiHostImpl() {
 
   // Notify instance observers about our impending destruction.
   for (auto& instance_data : instance_map_) {
-    FOR_EACH_OBSERVER(InstanceObserver, instance_data.second->observer_list,
-                      OnHostDestroyed());
+    for (auto& observer : instance_data.second->observer_list)
+      observer.OnHostDestroyed();
   }
 
   // Delete the host explicitly first. This shutdown will destroy the
@@ -180,8 +180,8 @@ void BrowserPpapiHostImpl::OnThrottleStateChanged(PP_Instance instance,
   auto* data = instance_map_.get(instance);
   if (data) {
     data->is_throttled = is_throttled;
-    FOR_EACH_OBSERVER(InstanceObserver, data->observer_list,
-                      OnThrottleStateChanged(is_throttled));
+    for (auto& observer : data->observer_list)
+      observer.OnThrottleStateChanged(is_throttled);
   }
 }
 

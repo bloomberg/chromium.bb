@@ -811,8 +811,8 @@ void CompositorImpl::RequestCopyOfOutputOnRootLayer(
 
 void CompositorImpl::OnVSync(base::TimeTicks frame_time,
                              base::TimeDelta vsync_period) {
-  FOR_EACH_OBSERVER(VSyncObserver, observer_list_,
-                    OnVSync(frame_time, vsync_period));
+  for (auto& observer : observer_list_)
+    observer.OnVSync(frame_time, vsync_period);
   if (needs_begin_frames_)
     root_window_->RequestVSyncUpdate();
 }

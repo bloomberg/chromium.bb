@@ -1946,8 +1946,8 @@ void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
     ui::LatencyInfo* latency) {
   latency_tracker_.OnInputEvent(event, latency);
-  FOR_EACH_OBSERVER(InputEventObserver, input_event_observers_,
-                    OnInputEvent(event));
+  for (auto& observer : input_event_observers_)
+    observer.OnInputEvent(event);
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(

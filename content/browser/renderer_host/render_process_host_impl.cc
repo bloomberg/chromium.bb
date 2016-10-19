@@ -748,8 +748,8 @@ void RenderProcessHostImpl::ShutDownInProcessRenderer() {
     case 1: {
       RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
           AllHostsIterator().GetCurrentValue());
-      FOR_EACH_OBSERVER(RenderProcessHostObserver, host->observers_,
-                        RenderProcessHostDestroyed(host));
+      for (auto& observer : host->observers_)
+        observer.RenderProcessHostDestroyed(host);
 #ifndef NDEBUG
       host->is_self_deleted_ = true;
 #endif
@@ -2015,9 +2015,8 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
     DCHECK(!sent_render_process_ready_);
     sent_render_process_ready_ = true;
     // Send RenderProcessReady only if we already received the process handle.
-    FOR_EACH_OBSERVER(RenderProcessHostObserver,
-                      observers_,
-                      RenderProcessReady(this));
+    for (auto& observer : observers_)
+      observer.RenderProcessReady(this);
   }
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -2136,13 +2135,13 @@ void RenderProcessHostImpl::Cleanup() {
   // will be destroyed a bit later. Observers shouldn't rely on this process
   // anymore.
   if (HasConnection()) {
-    FOR_EACH_OBSERVER(
-        RenderProcessHostObserver, observers_,
-        RenderProcessExited(this, base::TERMINATION_STATUS_NORMAL_TERMINATION,
-                            0));
+    for (auto& observer : observers_) {
+      observer.RenderProcessExited(
+          this, base::TERMINATION_STATUS_NORMAL_TERMINATION, 0);
+    }
   }
-  FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
-                    RenderProcessHostDestroyed(this));
+  for (auto& observer : observers_)
+    observer.RenderProcessHostDestroyed(this);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_TERMINATED,
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
@@ -2679,8 +2678,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<RendererClosedDetails>(&details));
-  FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
-                    RenderProcessExited(this, status, exit_code));
+  for (auto& observer : observers_)
+    observer.RenderProcessExited(this, status, exit_code);
   within_process_died_observer_ = false;
 
   message_port_message_filter_ = NULL;
@@ -2745,8 +2744,8 @@ void RenderProcessHostImpl::OnShutdownRequest() {
 
   // Notify any contents that might have swapped out renderers from this
   // process. They should not attempt to swap them back in.
-  FOR_EACH_OBSERVER(RenderProcessHostObserver, observers_,
-                    RenderProcessWillExit(this));
+  for (auto& observer : observers_)
+    observer.RenderProcessWillExit(this);
 
   Send(new ChildProcessMsg_Shutdown());
 }
@@ -2861,9 +2860,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     DCHECK(!sent_render_process_ready_);
     sent_render_process_ready_ = true;
     // Send RenderProcessReady only if the channel is already connected.
-    FOR_EACH_OBSERVER(RenderProcessHostObserver,
-                      observers_,
-                      RenderProcessReady(this));
+    for (auto& observer : observers_)
+      observer.RenderProcessReady(this);
   }
 
 #if defined(ENABLE_WEBRTC)

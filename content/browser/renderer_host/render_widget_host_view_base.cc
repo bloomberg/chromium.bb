@@ -80,9 +80,8 @@ RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
 void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
   // Note: RenderWidgetHostInputEventRouter is an observer, and uses the
   // following notification to remove this view from its surface owners map.
-  FOR_EACH_OBSERVER(RenderWidgetHostViewBaseObserver,
-                    observers_,
-                    OnRenderWidgetHostViewBaseDestroyed(this));
+  for (auto& observer : observers_)
+    observer.OnRenderWidgetHostViewBaseDestroyed(this);
   // All observers are required to disconnect after they are notified.
   DCHECK(!observers_.might_have_observers());
 }
