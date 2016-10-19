@@ -81,6 +81,7 @@
 #include "chrome/browser/apps/app_url_redirector.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/user_script_listener.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "extensions/browser/extension_throttle_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
@@ -546,14 +547,10 @@ ResourceDispatcherHostLoginDelegate*
 
 bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
-    int child_id,
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    bool is_main_frame,
-    ui::PageTransition page_transition,
-    bool has_user_gesture,
-    content::ResourceContext* resource_context) {
+    content::ResourceRequestInfo* info) {
   // Get the state, if |url| is in blacklist, whitelist or in none of those.
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  ProfileIOData* io_data =
+      ProfileIOData::FromResourceContext(info->GetContext());
   const policy::URLBlacklist::URLBlacklistState url_state =
       io_data->GetURLBlacklistState(url);
   if (url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST) {
@@ -563,11 +560,16 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     // content page.
     return false;
   }
+  int child_id = info->GetChildID();
 #if defined(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a
   // WebView.
-  if (extensions::WebViewRendererState::GetInstance()->IsGuest(child_id) &&
+  ChromeNavigationUIData* navigation_data =
+      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
+  if ((extensions::WebViewRendererState::GetInstance()->IsGuest(child_id) ||
+      (navigation_data &&
+       navigation_data->GetExtensionNavigationUIData()->is_web_view())) &&
       !url.SchemeIs(url::kMailToScheme)) {
     return false;
   }
@@ -576,7 +578,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 #if defined(OS_ANDROID)
   // Main frame external protocols are handled by
   // InterceptNavigationResourceThrottle.
-  if (is_main_frame)
+  if (info->IsMainFrame())
     return false;
 #endif  // defined(ANDROID)
 
@@ -584,8 +586,10 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
       url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LaunchURL, url, child_id, web_contents_getter,
-                 page_transition, has_user_gesture, is_whitelisted));
+      base::Bind(&LaunchURL, url, child_id,
+                 info->GetWebContentsGetterForRequest(),
+                 info->GetPageTransition(), info->HasUserGesture(),
+                 is_whitelisted));
   return true;
 }
 

@@ -44,15 +44,8 @@ class AwResourceDispatcherHostDelegate
   content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       net::URLRequest* request) override;
-  bool HandleExternalProtocol(
-      const GURL& url,
-      int child_id,
-      const content::ResourceRequestInfo::WebContentsGetter&
-          web_contents_getter,
-      bool is_main_frame,
-      ui::PageTransition page_transition,
-      bool has_user_gesture,
-      content::ResourceContext* resource_context) override;
+  bool HandleExternalProtocol(const GURL& url,
+                              content::ResourceRequestInfo* info) override;
   void OnResponseStarted(net::URLRequest* request,
                          content::ResourceContext* resource_context,
                          content::ResourceResponse* response) override;

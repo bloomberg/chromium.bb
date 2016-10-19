@@ -750,10 +750,7 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (job_factory->IsHandledURL(url))
     return false;
 
-  return delegate_->HandleExternalProtocol(
-      url, info->GetChildID(), info->GetWebContentsGetterForRequest(),
-      info->IsMainFrame(), info->GetPageTransition(), info->HasUserGesture(),
-      info->GetContext());
+  return delegate_->HandleExternalProtocol(url, info);
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
@@ -2082,7 +2079,21 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   ResourceType resource_type = info.is_main_frame ?
       RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME;
 
-  if (is_shutdown_ ||
+  // Do not allow browser plugin guests to navigate to non-web URLs, since they
+  // cannot swap processes or grant bindings. Do not check external protocols
+  // here because they're checked in
+  // ChromeResourceDispatcherHostDelegate::HandleExternalProtocol.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  bool is_external_protocol =
+      !resource_context->GetRequestContext()->job_factory()->IsHandledURL(
+          info.common_params.url);
+  bool non_web_url_in_guest =
+      info.is_for_guests_only &&
+      !policy->IsWebSafeScheme(info.common_params.url.scheme()) &&
+      !is_external_protocol;
+
+  if (is_shutdown_ || non_web_url_in_guest ||
       // TODO(davidben): Check ShouldServiceRequest here. This is important; it
       // needs to be checked relative to the child that /requested/ the
       // navigation. It's where file upload checks, etc., come in.

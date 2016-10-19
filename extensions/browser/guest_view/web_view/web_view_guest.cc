@@ -38,6 +38,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
@@ -816,11 +817,12 @@ void WebViewGuest::DidFinishNavigation(
     // trying to send the event.
     if (!navigation_handle->GetURL().SchemeIs(url::kMailToScheme) &&
         owner_web_contents()) {
-      // If it's not an error page, the request was blocked by the webrequest
-      // API.
-      int error_code = navigation_handle->IsErrorPage()
-                           ? navigation_handle->GetNetErrorCode()
-                           : net::ERR_BLOCKED_BY_CLIENT;
+      // If a load is blocked, either by WebRequest or security checks, the
+      // navigation may or may not have committed. So if we don't see an error
+      // code, mark it as blocked.
+      int error_code = navigation_handle->GetNetErrorCode();
+      if (error_code == net::OK)
+        error_code = net::ERR_BLOCKED_BY_CLIENT;
       LoadAbort(navigation_handle->IsInMainFrame(), navigation_handle->GetURL(),
                 error_code);
     }

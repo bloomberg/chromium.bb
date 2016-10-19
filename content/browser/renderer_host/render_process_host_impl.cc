@@ -2373,13 +2373,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     *url = GURL(url::kAboutBlankURL);
   }
 
-  // Do not allow browser plugin guests to navigate to non-web URLs, since they
-  // cannot swap processes or grant bindings.
-  bool non_web_url_in_guest =
-      rph->IsForGuestsOnly() &&
-      !(url->is_valid() && policy->IsWebSafeScheme(url->scheme()));
-
-  if (non_web_url_in_guest || !policy->CanRequestURL(rph->GetID(), *url)) {
+  if (!policy->CanRequestURL(rph->GetID(), *url)) {
     // If this renderer is not permitted to request this URL, we invalidate the
     // URL.  This prevents us from storing the blocked URL and becoming confused
     // later.

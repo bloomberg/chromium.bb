@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -149,6 +150,15 @@ void NavigatorImpl::DidStartProvisionalLoad(
   GURL validated_url(url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
+
+  // Do not allow browser plugin guests to navigate to non-web URLs, since they
+  // cannot swap processes or grant bindings.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (render_process_host->IsForGuestsOnly() &&
+      !policy->IsWebSafeScheme(validated_url.scheme())) {
+    validated_url = GURL(url::kAboutBlankURL);
+  }
 
   if (is_main_frame && !is_error_page) {
     DidStartMainFrameNavigation(validated_url,

@@ -15,7 +15,8 @@ NavigationRequestInfo::NavigationRequestInfo(
     bool is_main_frame,
     bool parent_is_main_frame,
     bool are_ancestors_secure,
-    int frame_tree_node_id)
+    int frame_tree_node_id,
+    bool is_for_guests_only)
     : common_params(common_params),
       begin_params(begin_params),
       first_party_for_cookies(first_party_for_cookies),
@@ -23,7 +24,8 @@ NavigationRequestInfo::NavigationRequestInfo(
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
       are_ancestors_secure(are_ancestors_secure),
-      frame_tree_node_id(frame_tree_node_id) {}
+      frame_tree_node_id(frame_tree_node_id),
+      is_for_guests_only(is_for_guests_only) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}
 

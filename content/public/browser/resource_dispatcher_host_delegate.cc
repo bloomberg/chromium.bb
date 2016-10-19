@@ -44,12 +44,7 @@ ResourceDispatcherHostLoginDelegate*
 
 bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
-    int child_id,
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    bool is_main_frame,
-    ui::PageTransition page_transition,
-    bool has_user_gesture,
-    ResourceContext* resource_context) {
+    ResourceRequestInfo* info) {
   return true;
 }
 

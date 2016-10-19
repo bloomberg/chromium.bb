@@ -98,12 +98,7 @@ class TestResourceDispatcherHostDelegate final
 
   bool HandleExternalProtocol(
       const GURL& url,
-      int child_id,
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-      bool is_main_frame,
-      ui::PageTransition page_transition,
-      bool has_user_gesture,
-      ResourceContext* resource_context) override {
+      ResourceRequestInfo* resource_request_info) override {
     ADD_FAILURE() << "HandleExternalProtocol should not be called.";
     return false;
   }
