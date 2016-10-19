@@ -18,6 +18,8 @@
 #include "chrome/browser/media/router/route_message.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -30,21 +32,30 @@ using Messaging = CastRemotingConnectorMessaging;
 class CastRemotingConnector::FrameRemoterFactory
     : public media::mojom::RemoterFactory {
  public:
-  // |render_frame_host| represents the source render frame.
+  // |render_frame_host| represents the source render frame. It could be
+  // destroyed at any time and so the process/routing IDs are used as a weak
+  // reference.
   explicit FrameRemoterFactory(content::RenderFrameHost* render_frame_host)
-      : host_(render_frame_host) {
-    DCHECK(host_);
-  }
+      : render_frame_process_id_(render_frame_host->GetProcess()->GetID()),
+        render_frame_routing_id_(render_frame_host->GetRoutingID()) {}
   ~FrameRemoterFactory() final {}
 
   void Create(media::mojom::RemotingSourcePtr source,
               media::mojom::RemoterRequest request) final {
-    CastRemotingConnector::Get(content::WebContents::FromRenderFrameHost(host_))
-        ->CreateBridge(std::move(source), std::move(request));
+    auto* const host = content::RenderFrameHost::FromID(
+        render_frame_process_id_, render_frame_routing_id_);
+    if (!host)
+      return;
+    auto* const contents = content::WebContents::FromRenderFrameHost(host);
+    if (!contents)
+      return;
+    CastRemotingConnector::Get(contents)->CreateBridge(std::move(source),
+                                                       std::move(request));
   }
 
  private:
-  content::RenderFrameHost* const host_;
+  const int render_frame_process_id_;
+  const int render_frame_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameRemoterFactory);
 };
@@ -168,6 +179,7 @@ CastRemotingConnector* CastRemotingConnector::Get(
 void CastRemotingConnector::CreateRemoterFactory(
     content::RenderFrameHost* render_frame_host,
     media::mojom::RemoterFactoryRequest request) {
+  DCHECK(render_frame_host);
   mojo::MakeStrongBinding(
       base::MakeUnique<FrameRemoterFactory>(render_frame_host),
       std::move(request));

@@ -72,9 +72,7 @@ class CastRemotingConnector
   static CastRemotingConnector* Get(content::WebContents* source_contents);
 
   // Used by ChromeContentBrowserClient to request a binding to a new
-  // RemoterFactory for each new render frame. The |render_frame_host| is
-  // expected to outlive the mojo message pipe in |request| that the service
-  // binds to.
+  // RemoterFactory for each new render frame.
   static void CreateRemoterFactory(content::RenderFrameHost* render_frame_host,
                                    media::mojom::RemoterFactoryRequest request);
 
