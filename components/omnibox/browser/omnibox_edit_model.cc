@@ -742,8 +742,6 @@ bool OmniboxEditModel::AcceptKeyword(
   keyword_mode_entry_method_ = entry_method;
   user_text_ = MaybeStripKeyword(user_text_);
 
-  user_text_ = MaybeStripKeyword(user_text_);
-
   if (PopupIsOpen())
     popup_model()->SetSelectedLineState(OmniboxPopupModel::KEYWORD);
   else
@@ -1149,18 +1147,18 @@ bool OmniboxEditModel::OnAfterPossibleChange(
     SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_TYPING);
   }
 
-  // Modifying the selection counts as accepting the autocompleted text.
-  const bool user_state_changesd =
-      state_changes.text_differs ||
-      (state_changes.selection_differs && !inline_autocomplete_text_.empty());
-
   // If something has changed while the control key is down, prevent
   // "ctrl-enter" until the control key is released.
   if ((state_changes.text_differs || state_changes.selection_differs) &&
       (control_key_state_ == DOWN_WITHOUT_CHANGE))
     control_key_state_ = DOWN_WITH_CHANGE;
 
-  if (!user_state_changesd) {
+  // If the user text does not need to be changed, return now, so we don't
+  // change any other state, lest arrowing around the omnibox do something like
+  // reset |just_deleted_text_|.  Note that modifying the selection accepts any
+  // inline autocompletion, which results in a user text change.
+  if (!state_changes.text_differs &&
+      (!state_changes.selection_differs || inline_autocomplete_text_.empty())) {
     if (state_changes.keyword_differs) {
       // We won't need the below logic for creating a keyword by a space at the
       // end or in the middle, or by typing a '?', but we do need to update the
@@ -1173,14 +1171,8 @@ bool OmniboxEditModel::OnAfterPossibleChange(
     return state_changes.keyword_differs;
   }
 
-  // If the user text has not changed, we do not want to change the model's
-  // state associated with the text.  Otherwise, we can get surprising behavior
-  // where the autocompleted text unexpectedly reappears, e.g. crbug.com/55983
   InternalSetUserText(*state_changes.new_text);
   has_temporary_text_ = false;
-
-  // Track when the user has deleted text so we won't allow inline
-  // autocomplete.
   just_deleted_text_ = state_changes.just_deleted_text;
 
   if (user_input_in_progress_ && user_text_.empty()) {
