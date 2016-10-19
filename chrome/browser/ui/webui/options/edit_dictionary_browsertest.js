@@ -60,6 +60,13 @@ EditDictionaryWebUITest.prototype = {
 };
 
 // Verify that users can add and remove words in the dictionary.
+// TODO(crbug.com/657514) Flakes on linux and chromeos too.
+GEN('#if defined(OS_LINUX) || defined(OS_CHROMEOS)');
+GEN('#define MAYBE_testAddRemoveWords ' +
+    'DISABLED_testAddRemoveWords');
+GEN('#else');
+GEN('#define MAYBE_testAddRemoveWords testAddRemoveWords');
+GEN('#endif');
 TEST_F('EditDictionaryWebUITest', 'testAddRemoveWords', function() {
   var testWord = 'foo';
   $('language-dictionary-overlay-word-list').querySelector('input').value =
@@ -114,7 +121,14 @@ TEST_F('EditDictionaryWebUITest', 'testNoCloseOnSearchEnter', function() {
 
 // Verify that dictionary shows newly added words that arrived in a
 // notification, but ignores duplicate add notifications.
-TEST_F('EditDictionaryWebUITest', 'testAddNotification', function() {
+// TODO(crbug.com/657514) Flakes on linux and chromeos.
+GEN('#if defined(OS_LINUX) || defined(OS_CHROMEOS)');
+GEN('#define MAYBE_testAddNotification ' +
+    'DISABLED_testAddNotification');
+GEN('#else');
+GEN('#define MAYBE_testAddNotification testAddNotification');
+GEN('#endif');
+TEST_F('EditDictionaryWebUITest', 'MAYBE_testAddNotification', function() {
   // Begin with an empty dictionary.
   EditDictionaryOverlay.setWordList([]);
   expectEquals(1, EditDictionaryOverlay.getWordListForTesting().items.length);
@@ -138,7 +152,8 @@ TEST_F('EditDictionaryWebUITest', 'testAddNotification', function() {
 // Verify that dictionary hides newly removed words that arrived in a
 // notification, but ignores duplicate remove notifications.
 // TODO(crbug.com/631940): Flaky on Win 7.
-GEN('#if defined(OS_WIN)');
+// TODO(crbug.com/657514) Flakes on linux and chromeos too.
+GEN('#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)');
 GEN('#define MAYBE_testRemoveNotification DISABLED_testRemoveNotification');
 GEN('#else');
 GEN('#define MAYBE_testRemoveNotification testRemoveNotification');

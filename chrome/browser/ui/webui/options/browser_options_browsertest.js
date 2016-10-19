@@ -118,7 +118,8 @@ AdvancedSettingsWebUITest.prototype = {
 };
 
 // TODO(crbug.com/617066) Flakes on Win.
-GEN('#if defined(OS_WIN)');
+// TODO(crbug.com/657514) Flakes on linux and chromeos too.
+GEN('#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)');
 GEN('#define MAYBE_testAdvancedSettingsShown ' +
     'DISABLED_testAdvancedSettingsShown');
 GEN('#else');

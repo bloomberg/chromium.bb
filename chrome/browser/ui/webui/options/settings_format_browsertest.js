@@ -132,7 +132,13 @@ SettingsFormatWebUITest.prototype = {
 /**
  * Ensure that radio and checkbox buttons have consistent layout.
  */
-TEST_F('SettingsFormatWebUITest', 'RadioCheckboxStyleCheck', function() {
+// TODO(crbug.com/657514) Flakes on linux and chromeos.
+GEN('#if defined(OS_LINUX) || defined(OS_CHROMEOS)');
+GEN('#define MAYBE_RadioCheckboxStyleCheck DISABLED_RadioCheckboxStyleCheck');
+GEN('#else');
+GEN('#define MAYBE_RadioCheckboxStyleCheck RadioCheckboxStyleCheck');
+GEN('#endif  // defined(OS_WIN)');
+TEST_F('SettingsFormatWebUITest', 'MAYBE_RadioCheckboxStyleCheck', function() {
   var settings = $('settings');
   assertTrue(settings != null, 'Unable to access settings');
   var query = 'input[type=checkbox], input[type=radio]';
