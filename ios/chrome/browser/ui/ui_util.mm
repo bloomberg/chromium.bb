@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/gfx/ios/uikit_util.h"
@@ -42,21 +41,11 @@ bool IsLandscape() {
 }
 
 CGFloat CurrentScreenHeight() {
-  CGSize screenSize = [UIScreen mainScreen].bounds.size;
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    return screenSize.height;
-  } else {
-    return IsPortrait() ? screenSize.height : screenSize.width;
-  }
+  return [UIScreen mainScreen].bounds.size.height;
 }
 
 CGFloat CurrentScreenWidth() {
-  CGSize screenSize = [UIScreen mainScreen].bounds.size;
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    return screenSize.width;
-  } else {
-    return IsPortrait() ? screenSize.width : screenSize.height;
-  }
+  return [UIScreen mainScreen].bounds.size.width;
 }
 
 CGFloat StatusBarHeight() {

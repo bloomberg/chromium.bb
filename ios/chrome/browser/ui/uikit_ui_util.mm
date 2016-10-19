@@ -454,12 +454,7 @@ UIInterfaceOrientation GetInterfaceOrientation() {
 }
 
 CGFloat CurrentKeyboardHeight(NSValue* keyboardFrameValue) {
-  CGSize keyboardSize = [keyboardFrameValue CGRectValue].size;
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    return keyboardSize.height;
-  } else {
-    return IsPortrait() ? keyboardSize.height : keyboardSize.width;
-  }
+  return [keyboardFrameValue CGRectValue].size.height;
 }
 
 UIImage* ImageWithColor(UIColor* color) {
@@ -618,13 +613,8 @@ void AddSameSizeConstraint(UIView* view1, UIView* view2) {
 }
 
 bool IsCompact(id<UITraitEnvironment> environment) {
-  if (base::ios::IsRunningOnIOS8OrLater()) {
-    return environment.traitCollection.horizontalSizeClass ==
-           UIUserInterfaceSizeClassCompact;
-  } else {
-    // Prior to iOS 8, iPad is always regular, iPhone is always compact.
-    return !IsIPadIdiom();
-  }
+  return environment.traitCollection.horizontalSizeClass ==
+         UIUserInterfaceSizeClassCompact;
 }
 
 bool IsCompact() {
