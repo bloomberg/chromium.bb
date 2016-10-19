@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include <content/test/blink_test_environment.h>
@@ -17,6 +18,8 @@ void InitializeBlinkFuzzTest(int* argc, char*** argv) {
   // is complete, this is for efficiency. We rerun the fuzzer with the same
   // environment as the previous iteration.
   base::AtExitManager atExit;
+
+  CHECK(base::i18n::InitializeICU());
 
   mojo::edk::Init();
   base::CommandLine::Init(*argc, *argv);
