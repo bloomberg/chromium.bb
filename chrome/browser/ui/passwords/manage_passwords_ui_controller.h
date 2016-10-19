@@ -137,6 +137,9 @@ class ManagePasswordsUIController
   virtual AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
       PasswordDialogController* controller);
 
+  // Check if |web_contents()| is attached to some Browser. Mocked in tests.
+  virtual bool HasBrowserWindow() const;
+
   // Overwrites the client for |passwords_data_|.
   void set_client(password_manager::PasswordManagerClient* client) {
     passwords_data_.set_client(client);

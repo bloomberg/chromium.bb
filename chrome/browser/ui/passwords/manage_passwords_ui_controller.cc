@@ -100,6 +100,8 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
+  if (!HasBrowserWindow())
+    return false;
   PasswordDialogController::FormsVector locals =
       CopyFormVector(local_credentials);
   PasswordDialogController::FormsVector federations =
@@ -411,6 +413,10 @@ AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
 AutoSigninFirstRunPrompt* ManagePasswordsUIController::CreateAutoSigninPrompt(
     PasswordDialogController* controller) {
   return CreateAutoSigninPromptView(controller, web_contents());
+}
+
+bool ManagePasswordsUIController::HasBrowserWindow() const {
+  return chrome::FindBrowserWithWebContents(web_contents()) != nullptr;
 }
 
 void ManagePasswordsUIController::DidNavigateMainFrame(
