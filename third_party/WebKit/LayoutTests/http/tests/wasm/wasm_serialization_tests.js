@@ -2,20 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function instantiateInWorker() {
-  // the file incrementer.wasm is copied from
-  // //v8/test/mjsunit/wasm. This is because currently we cannot
-  // reference files outside the LayoutTests folder. When wasm format
-  // changes require that file to be updated, there is a test on the
-  // v8 side (same folder), ensure-wasm-binaries-up-to-date.js, which
-  // fails and will require incrementer.wasm to be updated on that side.
-  return fetch('incrementer.wasm')
-    .then(response => {
-      if (!response.ok) throw new Error(response.statusText);
-      return response.arrayBuffer();
-    })
-    .then(data => {
-      var mod = new WebAssembly.Module(data);
+function TestInstantiateInWorker() {
+  return createWasmModule()
+    .then((mod) => {
       var worker = new Worker("wasm_serialization_worker.js");
       return new Promise((resolve, reject) => {
         worker.postMessage(mod);
@@ -26,4 +15,54 @@ function instantiateInWorker() {
     })
     .then(data => assert_equals(data, 43))
     .catch(error => assert_unreached(error));
+}
+
+function ascii(a) { return a.charCodeAt(0); }
+
+function findStartOfWasmHeader(byteView) {
+  for (var i = 0; i < byteView.length - 2; ++i) {
+    if (byteView[i] === ascii('a') &&
+        byteView[i+1] === ascii('s') &&
+        byteView[i+2] === ascii('m')) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function TestIncompatibleDowngrade() {
+  return createWasmModule()
+    .then((mod) => {
+      var buffer = window.internals.serializeObject(mod);
+      var byteView = new Uint8Array(buffer);
+      // The serialized payload starts with some serialization header, followed
+      // by the wasm wire bytes. Those should start with the characters
+      // 'a' 's' 'm'.
+      // Find the start of that sequence and invalidate the wire bytes by
+      // clearing the first byte.
+      var startOfWasmHeader = findStartOfWasmHeader(byteView);
+      assert_greater_than(startOfWasmHeader, 0,
+                          "The wire format should contain a wasm header.");
+      byteView[startOfWasmHeader] = 0;
+      // Also invalidate the serialized blob. That follows the wire bytes.
+      // Start from the end and clear the first non-null byte.
+      var invalidalidated = false;
+      for (var i = byteView.length - 1; i >= startOfWasmHeader + 3; --i) {
+        if (byteView[i] != 0) {
+          byteView[i] = 0;
+          invalidated = true;
+          break;
+        }
+      }
+      assert_true(invalidated,
+                  "the serialized blob should contain some non-null bytes.");
+
+      var deserialized = undefined;
+      try {
+        deserialized = window.internals.deserializeBuffer(byteView.buffer);
+        assert_unreached();
+      } catch (e) {
+        assert_equals(deserialized, undefined);
+      }
+    });
 }

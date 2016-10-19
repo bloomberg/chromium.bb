@@ -92,6 +92,7 @@ enum SerializationTag {
   SharedArrayBufferTransferTag = 'u',  // index:uint32_t -> SharedArrayBuffer.
                                        // For SharedArrayBuffer transfer
   WasmModuleTag = 'W',
+  RawBytesTag = 'y',
   CryptoKeyTag = 'K',  // subtag:byte, props, usages:uint32_t,
                        // keyDataLength:uint32_t, keyData:byte[keyDataLength]
   //                 If subtag=AesKeyTag:

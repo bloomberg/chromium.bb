@@ -122,6 +122,8 @@ class CORE_EXPORT SerializedScriptValueWriter {
   void writeFalse();
   void writeBooleanObject(bool value);
   void writeOneByteString(v8::Local<v8::String>&);
+  void writeRawStringBytes(v8::Local<v8::String>&);
+  void writeUtf8String(v8::Local<v8::String>&);
   void writeUCharString(v8::Local<v8::String>&);
   void writeStringObject(const char* data, int length);
   void writeWebCoreString(const String&);
