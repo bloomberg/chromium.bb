@@ -41,21 +41,22 @@ class CORE_EXPORT ExceptionToRejectPromiseScope {
 
  public:
   ExceptionToRejectPromiseScope(const v8::FunctionCallbackInfo<v8::Value>& info,
-                                ScriptState* scriptState,
                                 ExceptionState& exceptionState)
       : m_info(info),
-        m_scriptState(scriptState),
         m_exceptionState(exceptionState) {}
   ~ExceptionToRejectPromiseScope() {
     if (!m_exceptionState.hadException())
       return;
 
-    v8SetReturnValue(m_info, m_exceptionState.reject(m_scriptState).v8Value());
+    // As exceptions must always be created in the current realm, reject
+    // promises must also be created in the current realm while regular promises
+    // are created in the relevant realm of the context object.
+    ScriptState* scriptState = ScriptState::forFunctionObject(m_info);
+    v8SetReturnValue(m_info, m_exceptionState.reject(scriptState).v8Value());
   }
 
  private:
   const v8::FunctionCallbackInfo<v8::Value>& m_info;
-  ScriptState* m_scriptState;
   ExceptionState& m_exceptionState;
 };
 

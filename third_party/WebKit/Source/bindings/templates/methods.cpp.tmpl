@@ -16,12 +16,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if 'exceptionState' in function_call %}
     {{define_exception_state}}
     {% if method.returns_promise %}
-    {% if method.is_static %}
-    ScriptState* scriptState = ScriptState::forFunctionObject(info);
-    {% else %}
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
-    {% endif %}
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
     {% endif %}
     {% endif %}
 
@@ -407,12 +402,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
 
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{overloads.name}}");
     {% if overloads.returns_promise_all %}
-    {% if overloads.is_static %}
-    ScriptState* scriptState = ScriptState::forFunctionObject(info);
-    {% else %}
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
-    {% endif %}
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
     {% endif %}
 
     if (isArityError) {
