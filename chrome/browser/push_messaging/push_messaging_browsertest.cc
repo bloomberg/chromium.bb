@@ -511,7 +511,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTestEmptySubscriptionOptions,
             script_result);
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorker) {
+// Flaky on ChromeOS and Linux. See http://crbug.com/657202.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_SubscribeWorker DISABLED_SubscribeWorker
+#else
+#define MAYBE_SubscribeWorker SubscribeWorker
+#endif
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, MAYBE_SubscribeWorker) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
@@ -554,7 +560,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorker) {
   EXPECT_NE(push_service(), GetAppHandler());
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorkerUsingManifest) {
+// Flaky on ChromeOS and Linux. See http://crbug.com/657202.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_SubscribeWorkerUsingManifest DISABLED_SubscribeWorkerUsingManifest
+#else
+#define MAYBE_SubscribeWorkerUsingManifest SubscribeWorkerUsingManifest
+#endif
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       MAYBE_SubscribeWorkerUsingManifest) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));

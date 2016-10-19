@@ -5,6 +5,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -117,7 +118,13 @@ IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, BudgetInDocument) {
   ASSERT_FALSE(success());
 }
 
-IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, BudgetInWorker) {
+// Flaky on ChromeOS and Linux. See http://crbug.com/657202.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_BudgetInWorker DISABLED_BudgetInWorker
+#else
+#define MAYBE_BudgetInWorker BudgetInWorker
+#endif
+IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, MAYBE_BudgetInWorker) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
