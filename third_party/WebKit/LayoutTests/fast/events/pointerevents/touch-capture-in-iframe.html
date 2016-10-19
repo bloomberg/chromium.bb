@@ -22,11 +22,10 @@ iframe {
     <script>
       top.document.testEventList.forEach(function(eventName) {
         document.addEventListener(eventName, function(event) {
-
-          // TODO(crbug.com/449649): Due to inconsistency of the frame vs page
-          // event handling in EventHandler the releasePointerCapture and setPointerCapture
-          // do not work inside the iframe for touch pointer events.
-
+          if (top.document.releaseTouchCapture && event.type == 'pointerdown') {
+            top.debug('--- Release pointer capture for ' + event.pointerId + ' ---');
+            event.target.releasePointerCapture(event.pointerId);
+          }
           top.logEvent(event);
         });
       });

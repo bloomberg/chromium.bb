@@ -1182,23 +1182,53 @@ Node* EventHandler::updateMouseEventTargetNode(Node* targetNode) {
   return newNodeUnderMouse;
 }
 
+bool EventHandler::isTouchPointerIdActiveOnFrame(int pointerId,
+                                                 LocalFrame* frame) const {
+  DCHECK_EQ(m_frame, m_frame->localFrameRoot());
+  return m_pointerEventManager->isTouchPointerIdActiveOnFrame(pointerId, frame);
+}
+
+bool EventHandler::rootFrameTouchPointerActiveInCurrentFrame(
+    int pointerId) const {
+  return m_frame != m_frame->localFrameRoot() &&
+         m_frame->localFrameRoot()
+             ->eventHandler()
+             .isTouchPointerIdActiveOnFrame(pointerId, m_frame);
+}
+
 bool EventHandler::isPointerEventActive(int pointerId) {
-  return m_pointerEventManager->isActive(pointerId);
+  return m_pointerEventManager->isActive(pointerId) ||
+         rootFrameTouchPointerActiveInCurrentFrame(pointerId);
 }
 
 void EventHandler::setPointerCapture(int pointerId, EventTarget* target) {
   // TODO(crbug.com/591387): This functionality should be per page not per
   // frame.
-  m_pointerEventManager->setPointerCapture(pointerId, target);
+  if (rootFrameTouchPointerActiveInCurrentFrame(pointerId)) {
+    m_frame->localFrameRoot()->eventHandler().setPointerCapture(pointerId,
+                                                                target);
+  } else {
+    m_pointerEventManager->setPointerCapture(pointerId, target);
+  }
 }
 
 void EventHandler::releasePointerCapture(int pointerId, EventTarget* target) {
-  m_pointerEventManager->releasePointerCapture(pointerId, target);
+  if (rootFrameTouchPointerActiveInCurrentFrame(pointerId)) {
+    m_frame->localFrameRoot()->eventHandler().releasePointerCapture(pointerId,
+                                                                    target);
+  } else {
+    m_pointerEventManager->releasePointerCapture(pointerId, target);
+  }
 }
 
 bool EventHandler::hasPointerCapture(int pointerId,
                                      const EventTarget* target) const {
-  return m_pointerEventManager->hasPointerCapture(pointerId, target);
+  if (rootFrameTouchPointerActiveInCurrentFrame(pointerId)) {
+    return m_frame->localFrameRoot()->eventHandler().hasPointerCapture(
+        pointerId, target);
+  } else {
+    return m_pointerEventManager->hasPointerCapture(pointerId, target);
+  }
 }
 
 bool EventHandler::hasProcessedPointerCapture(int pointerId,

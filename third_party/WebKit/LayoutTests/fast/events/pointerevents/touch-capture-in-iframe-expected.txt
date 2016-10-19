@@ -157,10 +157,10 @@ touchend is recieved with changedTouches.length=2:
 
 ==== Finger1 in innerFrame and Finger2 in outerFrame with releaseTouchCapture ====
 *** Put first finger down in innerFrame and move ***
+--- Release pointer capture for 10 ---
 innerFrame recieved pointerdown with id=10
 touchstart is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
-innerFrame recieved gotpointercapture with id=10
 innerFrame recieved pointermove with id=10
 touchmove is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
@@ -171,7 +171,7 @@ outerFrame recieved pointerdown with id=11
 outerFrame recieved pointermove with id=11
 
 *** Move first finger to outerFrame ***
-innerFrame recieved pointermove with id=10
+outerFrame recieved pointermove with id=10
 touchmove is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
 
@@ -179,8 +179,7 @@ touchmove is recieved with changedTouches.length=1:
 innerFrame recieved pointermove with id=11
 
 *** Releasing fingers ***
-innerFrame recieved pointerup with id=10
-innerFrame recieved lostpointercapture with id=10
+outerFrame recieved pointerup with id=10
 innerFrame recieved pointerup with id=11
 touchend is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
@@ -196,10 +195,10 @@ touchmove is recieved with changedTouches.length=1:
   Touch with id=0 with target = outerFrame
 
 *** Put second finger in innerFrame and move ***
+--- Release pointer capture for 13 ---
 innerFrame recieved pointerdown with id=13
 touchstart is recieved with changedTouches.length=1:
   Touch with id=1 with target = innerFrameElement
-innerFrame recieved gotpointercapture with id=13
 innerFrame recieved pointermove with id=13
 touchmove is recieved with changedTouches.length=1:
   Touch with id=1 with target = innerFrameElement
@@ -210,14 +209,13 @@ touchmove is recieved with changedTouches.length=1:
   Touch with id=0 with target = outerFrame
 
 *** Move second finger to outerFrame ***
-innerFrame recieved pointermove with id=13
+outerFrame recieved pointermove with id=13
 touchmove is recieved with changedTouches.length=1:
   Touch with id=1 with target = innerFrameElement
 
 *** Releasing fingers ***
 innerFrame recieved pointerup with id=12
-innerFrame recieved pointerup with id=13
-innerFrame recieved lostpointercapture with id=13
+outerFrame recieved pointerup with id=13
 touchend is recieved with changedTouches.length=2:
   Touch with id=0 with target = outerFrame
   Touch with id=1 with target = innerFrameElement
@@ -227,38 +225,36 @@ touchend is recieved with changedTouches.length=2:
 
 ==== Finger1 in innerFrame and Finger2 in innerFrame with releaseTouchCapture ====
 *** Put first finger down in innerFrame and move ***
+--- Release pointer capture for 14 ---
 innerFrame recieved pointerdown with id=14
 touchstart is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
-innerFrame recieved gotpointercapture with id=14
 innerFrame recieved pointermove with id=14
 touchmove is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
 
 *** Put second finger in innerFrame and move ***
+--- Release pointer capture for 15 ---
 innerFrame recieved pointerdown with id=15
 touchstart is recieved with changedTouches.length=1:
   Touch with id=1 with target = innerFrame
-innerFrame recieved gotpointercapture with id=15
 innerFrame recieved pointermove with id=15
 touchmove is recieved with changedTouches.length=1:
   Touch with id=1 with target = innerFrame
 
 *** Move first finger to outerFrame ***
-innerFrame recieved pointermove with id=14
+outerFrame recieved pointermove with id=14
 touchmove is recieved with changedTouches.length=1:
   Touch with id=0 with target = innerFrame
 
 *** Move second finger to outerFrame ***
-innerFrame recieved pointermove with id=15
+outerFrame recieved pointermove with id=15
 touchmove is recieved with changedTouches.length=1:
   Touch with id=1 with target = innerFrame
 
 *** Releasing fingers ***
-innerFrame recieved pointerup with id=14
-innerFrame recieved lostpointercapture with id=14
-innerFrame recieved pointerup with id=15
-innerFrame recieved lostpointercapture with id=15
+outerFrame recieved pointerup with id=14
+outerFrame recieved pointerup with id=15
 touchend is recieved with changedTouches.length=2:
   Touch with id=0 with target = innerFrame
   Touch with id=1 with target = innerFrame

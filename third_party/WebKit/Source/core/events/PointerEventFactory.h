@@ -73,6 +73,10 @@ class CORE_EXPORT PointerEventFactory {
   // properties if exists otherwise s_invalidId.
   int getPointerEventId(const WebPointerProperties&) const;
 
+  // Returns pointerType of for the given pointerId if such id is active.
+  // Otherwise it returns WebPointerProperties::PointerType::Unknown.
+  WebPointerProperties::PointerType getPointerType(int pointerId) const;
+
   static const int s_mouseId;
 
  private:
@@ -81,7 +85,10 @@ class CORE_EXPORT PointerEventFactory {
     IncomingId() {}
     IncomingId(WebPointerProperties::PointerType pointerType, int rawId)
         : std::pair<int, int>(static_cast<int>(pointerType), rawId) {}
-    int pointerType() const { return first; }
+    int pointerTypeInt() const { return first; }
+    WebPointerProperties::PointerType pointerType() const {
+      return static_cast<WebPointerProperties::PointerType>(first);
+    }
     int rawId() const { return second; }
   } IncomingId;
   typedef struct PointerAttributes {

@@ -68,6 +68,10 @@ class CORE_EXPORT PointerEventManager
   // Returns whether there is any touch on the screen.
   bool isAnyTouchActive() const;
 
+  // Returns whether pointerId is for an active touch pointerevent and whether
+  // the last event was sent to the given frame.
+  bool isTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
+
   // TODO(crbug.com/625843): This can be hidden when mouse refactoring in
   // EventHandler is done.
   EventTarget* getMouseCapturingNode();

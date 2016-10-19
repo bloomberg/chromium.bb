@@ -662,6 +662,24 @@ bool PointerEventManager::isActive(const int pointerId) const {
   return m_pointerEventFactory.isActive(pointerId);
 }
 
+// This function checks the type of the pointer event to be touch as touch
+// pointer events are the only ones that are directly dispatched from the main
+// page managers to their target (event if target is in an iframe) and only
+// those managers will keep track of these pointer events.
+bool PointerEventManager::isTouchPointerIdActiveOnFrame(
+    int pointerId,
+    LocalFrame* frame) const {
+  if (m_pointerEventFactory.getPointerType(pointerId) !=
+      WebPointerProperties::PointerType::Touch)
+    return false;
+  Node* lastNodeReceivingEvent =
+      m_nodeUnderPointer.contains(pointerId)
+          ? m_nodeUnderPointer.get(pointerId).target->toNode()
+          : nullptr;
+  return lastNodeReceivingEvent &&
+         lastNodeReceivingEvent->document().frame() == frame;
+}
+
 bool PointerEventManager::isAnyTouchActive() const {
   return m_touchEventManager->isAnyTouchActive();
 }

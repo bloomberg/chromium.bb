@@ -255,6 +255,8 @@ class CORE_EXPORT EventHandler final
                      ScrollGranularity,
                      Node* startNode = nullptr);
 
+  bool isTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
+
  private:
   WebInputEventResult handleMouseMoveOrLeaveEvent(
       const PlatformMouseEvent&,
@@ -335,6 +337,8 @@ class CORE_EXPORT EventHandler final
   bool shouldTopControlsConsumeScroll(FloatSize) const;
 
   FrameHost* frameHost() const;
+
+  bool rootFrameTouchPointerActiveInCurrentFrame(int pointerId) const;
 
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |EventHandler::clear()|.
