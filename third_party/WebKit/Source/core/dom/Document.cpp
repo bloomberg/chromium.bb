@@ -425,9 +425,10 @@ Document::Document(const DocumentInit& initializer,
       m_pendingSheetLayout(NoLayoutWithPendingSheets),
       m_frame(initializer.frame()),
       m_domWindow(m_frame ? m_frame->localDOMWindow() : 0),
-      m_importsController(initializer.importsController()),
+      m_importsController(this, initializer.importsController()),
       m_contextFeatures(ContextFeatures::defaultSwitch()),
       m_wellFormed(false),
+      m_implementation(this, nullptr),
       m_printing(NotPrinting),
       m_paginatedForScreen(false),
       m_compatibilityMode(NoQuirksMode),
@@ -442,6 +443,8 @@ Document::Document(const DocumentInit& initializer,
       m_styleVersion(0),
       m_listenerTypes(0),
       m_mutationObserverTypes(0),
+      m_styleEngine(this, nullptr),
+      m_styleSheetList(this, nullptr),
       m_visitedLinkState(VisitedLinkState::create(*this)),
       m_visuallyOrdered(false),
       m_readyState(Complete),
@@ -6375,13 +6378,15 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->traceWrappers(m_implementation);
   visitor->traceWrappers(m_styleSheetList);
   visitor->traceWrappers(m_styleEngine);
-  visitor->traceWrappers(Supplementable<Document>::m_supplements.get(
-      FontFaceSet::supplementName()));
   for (int i = 0; i < numNodeListInvalidationTypes; ++i) {
     for (auto list : m_nodeLists[i]) {
       visitor->traceWrappers(list);
     }
   }
+  // Cannot trace in Supplementable<Document> as it is part of platform/ and
+  // thus cannot refer to ScriptWrappableVisitor.
+  visitor->traceWrappers(Supplementable<Document>::m_supplements.get(
+      FontFaceSet::supplementName()));
   ContainerNode::traceWrappers(visitor);
 }
 

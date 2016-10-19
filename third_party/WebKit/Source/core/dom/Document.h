@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentEncodingData.h"
@@ -1414,7 +1415,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<LocalFrame> m_frame;
   Member<LocalDOMWindow> m_domWindow;
-  Member<HTMLImportsController> m_importsController;
+  TraceWrapperMember<HTMLImportsController> m_importsController;
 
   Member<ResourceFetcher> m_fetcher;
   Member<DocumentParser> m_parser;
@@ -1439,7 +1440,7 @@ class CORE_EXPORT Document : public ContainerNode,
   AtomicString m_mimeType;
 
   Member<DocumentType> m_docType;
-  Member<DOMImplementation> m_implementation;
+  TraceWrapperMember<DOMImplementation> m_implementation;
 
   Member<CSSStyleSheet> m_elemSheet;
 
@@ -1477,8 +1478,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   MutationObserverOptions m_mutationObserverTypes;
 
-  Member<StyleEngine> m_styleEngine;
-  Member<StyleSheetList> m_styleSheetList;
+  TraceWrapperMember<StyleEngine> m_styleEngine;
+  TraceWrapperMember<StyleSheetList> m_styleSheetList;
 
   Member<FormController> m_formController;
 
