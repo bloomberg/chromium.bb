@@ -221,6 +221,8 @@ blink_core_sources("html") {
     "LinkRelAttribute.h",
     "LinkResource.cpp",
     "LinkResource.h",
+    "LinkStyle.cpp",
+    "LinkStyle.h",
     "MediaDocument.cpp",
     "MediaDocument.h",
     "MediaError.h",
