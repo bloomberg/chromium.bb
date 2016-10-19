@@ -44,9 +44,6 @@
 // In the above example, both capturing and rendering *each* take almost the
 // full 33 ms available between frames, yet we see that the required throughput
 // is obtained.
-//
-// Turning on verbose logging will cause the effective frame rate to be logged
-// at 5-second intervals.
 
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 
@@ -63,7 +60,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -115,35 +111,16 @@ void DeleteOnWorkerThread(std::unique_ptr<base::Thread> render_thread,
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
-// Responsible for logging the effective frame rate.
-class VideoFrameDeliveryLog {
- public:
-  VideoFrameDeliveryLog();
-
-  // Report that the frame posted with |frame_time| has been delivered.
-  void ChronicleFrameDelivery(base::TimeTicks frame_time);
-
- private:
-  // The following keep track of and log the effective frame rate whenever
-  // verbose logging is turned on.
-  base::TimeTicks last_frame_rate_log_time_;
-  int count_frames_rendered_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameDeliveryLog);
-};
-
 // FrameSubscriber is a proxy to the ThreadSafeCaptureOracle that's compatible
 // with RenderWidgetHostViewFrameSubscriber. We create one per event type.
 class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  public:
   FrameSubscriber(media::VideoCaptureOracle::Event event_type,
                   const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle,
-                  VideoFrameDeliveryLog* delivery_log,
                   base::WeakPtr<content::CursorRenderer> cursor_renderer,
                   base::WeakPtr<content::WindowActivityTracker> tracker)
       : event_type_(event_type),
         oracle_proxy_(oracle),
-        delivery_log_(delivery_log),
         cursor_renderer_(cursor_renderer),
         window_activity_tracker_(tracker),
         weak_ptr_factory_(this) {}
@@ -169,7 +146,6 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  private:
   const media::VideoCaptureOracle::Event event_type_;
   scoped_refptr<media::ThreadSafeCaptureOracle> oracle_proxy_;
-  VideoFrameDeliveryLog* const delivery_log_;
   // We need a weak pointer since FrameSubscriber is owned externally and
   // may outlive the cursor renderer.
   base::WeakPtr<CursorRenderer> cursor_renderer_;
@@ -221,7 +197,6 @@ class ContentCaptureSubscription {
   const int render_process_id_;
   const int render_widget_id_;
 
-  VideoFrameDeliveryLog delivery_log_;
   std::unique_ptr<FrameSubscriber> refresh_subscriber_;
   std::unique_ptr<FrameSubscriber> mouse_activity_subscriber_;
   CaptureCallback capture_callback_;
@@ -343,9 +318,6 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   // Video capture parameters that this machine is started with.
   media::VideoCaptureParams capture_params_;
 
-  // Last known RenderView size.
-  gfx::Size last_view_size_;
-
   // Responsible for forwarding events from the active RenderWidgetHost to the
   // oracle, and initiating captures accordingly.
   std::unique_ptr<ContentCaptureSubscription> subscription_;
@@ -379,8 +351,6 @@ bool FrameSubscriber::ShouldCaptureFrame(
     *deliver_frame_cb =
         base::Bind(&FrameSubscriber::DidCaptureFrame,
                    weak_ptr_factory_.GetWeakPtr(), capture_frame_cb, *storage);
-  if (oracle_decision)
-    delivery_log_->ChronicleFrameDelivery(present_time);
   return oracle_decision;
 }
 
@@ -439,7 +409,6 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     const CaptureCallback& capture_callback)
     : render_process_id_(source.GetProcess()->GetID()),
       render_widget_id_(source.GetRoutingID()),
-      delivery_log_(),
       capture_callback_(capture_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -453,15 +422,14 @@ ContentCaptureSubscription::ContentCaptureSubscription(
 #endif
   refresh_subscriber_.reset(new FrameSubscriber(
       media::VideoCaptureOracle::kActiveRefreshRequest, oracle_proxy,
-      &delivery_log_,
       cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
                        : base::WeakPtr<CursorRenderer>(),
       window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
                                : base::WeakPtr<WindowActivityTracker>()));
   mouse_activity_subscriber_.reset(new FrameSubscriber(
       media::VideoCaptureOracle::kMouseCursorUpdate, oracle_proxy,
-      &delivery_log_, cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
-                                       : base::WeakPtr<CursorRenderer>(),
+      cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
+                       : base::WeakPtr<CursorRenderer>(),
       window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
                                : base::WeakPtr<WindowActivityTracker>()));
 
@@ -471,8 +439,8 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
         new FrameSubscriber(
             media::VideoCaptureOracle::kCompositorUpdate, oracle_proxy,
-            &delivery_log_, cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
-                                             : base::WeakPtr<CursorRenderer>(),
+            cursor_renderer_ ? cursor_renderer_->GetWeakPtr()
+                             : base::WeakPtr<CursorRenderer>(),
             window_activity_tracker_ ? window_activity_tracker_->GetWeakPtr()
                                      : base::WeakPtr<WindowActivityTracker>()));
     view->BeginFrameSubscription(std::move(subscriber));
@@ -593,31 +561,6 @@ void RenderVideoFrame(
   // The result is now ready.
   ignore_result(failure_handler.Release());
   done_cb.Run(region_in_frame, true);
-}
-
-VideoFrameDeliveryLog::VideoFrameDeliveryLog()
-    : last_frame_rate_log_time_(), count_frames_rendered_(0) {}
-
-void VideoFrameDeliveryLog::ChronicleFrameDelivery(base::TimeTicks frame_time) {
-  // Log frame rate, if verbose logging is turned on.
-  static const base::TimeDelta kFrameRateLogInterval =
-      base::TimeDelta::FromSeconds(10);
-  if (last_frame_rate_log_time_.is_null()) {
-    last_frame_rate_log_time_ = frame_time;
-    count_frames_rendered_ = 0;
-  } else {
-    ++count_frames_rendered_;
-    const base::TimeDelta elapsed = frame_time - last_frame_rate_log_time_;
-    if (elapsed >= kFrameRateLogInterval) {
-      const double measured_fps = count_frames_rendered_ / elapsed.InSecondsF();
-      UMA_HISTOGRAM_COUNTS("TabCapture.FrameRate",
-                           static_cast<int>(measured_fps));
-      VLOG(1) << "Current measured frame rate for "
-              << "WebContentsVideoCaptureDevice is " << measured_fps << " FPS.";
-      last_frame_rate_log_time_ = frame_time;
-      count_frames_rendered_ = 0;
-    }
-  }
 }
 
 WebContentsCaptureMachine::WebContentsCaptureMachine(
@@ -779,15 +722,7 @@ void WebContentsCaptureMachine::Capture(
     return;
   }
 
-  gfx::Size view_size = view->GetViewBounds().size();
-  if (view_size != last_view_size_) {
-    last_view_size_ = view_size;
-
-    // Measure the number of kilopixels.
-    UMA_HISTOGRAM_COUNTS_10000("TabCapture.ViewChangeKiloPixels",
-                               view_size.width() * view_size.height() / 1024);
-  }
-
+  const gfx::Size view_size = view->GetViewBounds().size();
   if (view->CanCopyToVideoFrame()) {
     view->CopyFromCompositingSurfaceToVideoFrame(
         gfx::Rect(view_size), target,
@@ -886,10 +821,8 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
     ReadbackResponse response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::TimeTicks now = base::TimeTicks::Now();
   DCHECK(render_thread_);
   if (response == READBACK_SUCCESS) {
-    UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", target.get(),
                                  "Render");
     render_thread_->task_runner()->PostTask(
@@ -910,14 +843,9 @@ void WebContentsCaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
     const gfx::Rect& region_in_frame,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::TimeTicks now = base::TimeTicks::Now();
 
-  if (success) {
-    UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeVideoFrame", now - start_time);
-  } else {
-    // Capture can fail due to transient issues, so just skip this frame.
-    DVLOG(1) << "CopyFromCompositingSurface failed; skipping frame.";
-  }
+  // Capture can fail due to transient issues, so just skip this frame.
+  DVLOG_IF(1, !success) << "CopyFromCompositingSurface failed; skipping frame.";
   deliver_frame_cb.Run(start_time, region_in_frame, success);
 }
 
