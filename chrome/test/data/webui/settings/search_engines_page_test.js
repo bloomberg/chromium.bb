@@ -176,12 +176,18 @@ cr.define('settings_search_engines_page', function() {
       });
 
       test('Remove_Enabled', function() {
+        // Open action menu.
+        MockInteractions.tap(entry.$$('paper-icon-button'));
+        var menu = entry.$$('dialog[is=settings-action-menu]');
+        assertTrue(menu.open);
+
         var deleteButton = entry.$.delete;
         assertTrue(!!deleteButton);
         assertFalse(deleteButton.hidden);
         MockInteractions.tap(deleteButton);
         return browserProxy.whenCalled('removeSearchEngine').then(
             function(modelIndex) {
+              assertFalse(menu.open);
               assertEquals(entry.engine.modelIndex, modelIndex);
             });
       });
@@ -189,12 +195,15 @@ cr.define('settings_search_engines_page', function() {
       test('MakeDefault_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('paper-icon-button'));
+        var menu = entry.$$('dialog[is=settings-action-menu]');
+        assertTrue(menu.open);
 
         var makeDefaultButton = entry.$.makeDefault;
         assertTrue(!!makeDefaultButton);
         MockInteractions.tap(makeDefaultButton);
         return browserProxy.whenCalled('setDefaultSearchEngine').then(
             function(modelIndex) {
+              assertFalse(menu.open);
               assertEquals(entry.engine.modelIndex, modelIndex);
             });
       });
@@ -203,6 +212,8 @@ cr.define('settings_search_engines_page', function() {
       test('Edit_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('paper-icon-button'));
+        var menu = entry.$$('dialog[is=settings-action-menu]');
+        assertTrue(menu.open);
 
         var engine = entry.engine;
         var editButton = entry.$.edit;

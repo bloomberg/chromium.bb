@@ -43,6 +43,7 @@ Polymer({
   /** @private */
   onDeleteTap_: function() {
     this.browserProxy_.removeSearchEngine(this.engine.modelIndex);
+    this.closePopupMenu_();
   },
 
   /** @private */
