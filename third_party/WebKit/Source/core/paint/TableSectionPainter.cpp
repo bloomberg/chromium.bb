@@ -71,6 +71,7 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
   LayoutUnit bottomBound =
       std::min(LayoutUnit(paintInfo.cullRect().m_rect.maxY()),
                paintOffset.y() + table->logicalHeight());
+  paginationOffset.move(LayoutUnit(), -m_layoutTableSection.logicalTop());
   while (paginationOffset.y() < bottomBound) {
     LayoutPoint nestedOffset =
         paginationOffset +
