@@ -302,20 +302,6 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostTaskAfterShutdown) {
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, Bind(&ShouldNotRunCallback)));
 }
 
-// Verify that a Task doesn't run before its delay expires.
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTaskNeverRuns) {
-  // Post a task with a very long delay.
-  EXPECT_TRUE(worker_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam())
-                  ->PostDelayedTask(FROM_HERE, Bind([]() {
-                                      ADD_FAILURE()
-                                          << "The delayed task should not run.";
-                                    }),
-                                    TimeDelta::FromDays(30)));
-
-  // Wait a few milliseconds. The test will fail if the delayed task runs.
-  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-}
-
 // Verify that a Task runs shortly after its delay expires.
 TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
   TimeTicks start_time = TimeTicks::Now();
@@ -331,8 +317,11 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
   // Wait until the task runs.
   task_ran.Wait();
 
-  // Expect the task to run less than 250 ms after its delay expires.
-  EXPECT_LT(TimeTicks::Now() - start_time,
+  // Expect the task to run after its delay expires, but not more than 250 ms
+  // after that.
+  const TimeDelta actual_delay = TimeTicks::Now() - start_time;
+  EXPECT_GE(actual_delay, TestTimeouts::tiny_timeout());
+  EXPECT_LT(actual_delay,
             TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
 }
 

@@ -84,7 +84,8 @@ void TaskSchedulerImpl::Initialize(
     const std::vector<SchedulerWorkerPoolParams>& worker_pool_params_vector) {
   DCHECK(!worker_pool_params_vector.empty());
 
-  // Start the service thread.
+  // Start the service thread. On POSIX, the service thread runs a
+  // MessageLoopForIO to support FileDescriptorWatcher.
   constexpr MessageLoop::Type kServiceThreadMessageLoopType =
 #if defined(OS_POSIX)
       MessageLoop::TYPE_IO;
@@ -95,14 +96,14 @@ void TaskSchedulerImpl::Initialize(
   CHECK(service_thread_.StartWithOptions(
       Thread::Options(kServiceThreadMessageLoopType, kDefaultStackSize)));
 
-  const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
-      re_enqueue_sequence_callback =
-          Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
-
   // Instantiate the DelayedTaskManager. The service thread must be started
   // before its TaskRunner is available.
   delayed_task_manager_ =
       base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
+
+  const SchedulerWorkerPoolImpl::ReEnqueueSequenceCallback
+      re_enqueue_sequence_callback =
+          Bind(&TaskSchedulerImpl::ReEnqueueSequenceCallback, Unretained(this));
 
   // Start worker pools.
   for (const auto& worker_pool_params : worker_pool_params_vector) {
