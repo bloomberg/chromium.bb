@@ -860,6 +860,9 @@ int LayoutTableSection::calcRowLogicalHeight() {
     m_grid[r].baseline = -1;
     int baselineDescent = 0;
 
+    if (state.isPaginated() && m_grid[r].rowLayoutObject)
+      m_rowPos[r] += m_grid[r].rowLayoutObject->paginationStrut().ceil();
+
     if (m_grid[r].logicalHeight.isSpecified()) {
       // Our base size is the biggest logical height from our cells' styles
       // (excluding row spanning cells).
@@ -978,8 +981,7 @@ void LayoutTableSection::layout() {
       }
       rowLayoutObject->layoutIfNeeded();
       if (state.isPaginated()) {
-        rowLayoutObject->setLogicalHeight(
-            LayoutUnit(logicalHeightForRow(*rowLayoutObject)));
+        adjustRowForPagination(*rowLayoutObject, layouter);
         rowLogicalTop = rowLayoutObject->logicalBottom();
         rowLogicalTop += LayoutUnit(table()->vBorderSpacing());
       }
@@ -1118,57 +1120,29 @@ void LayoutTableSection::layoutRows() {
 
   int vspacing = table()->vBorderSpacing();
   unsigned nEffCols = table()->numEffectiveColumns();
-  bool isPaginated = view()->layoutState()->isPaginated();
-
-  if (isPaginated) {
-    LayoutTableSection* header = table()->header();
-    // If we're a table header nested inside a table cell then we want to repeat
-    // on each page, but below the header we're nested inside. Note we don't try
-    // to match the padding on the cell on each repeated header.
-    if (header && header == this)
-      setOffsetForRepeatingHeader(
-          view()->layoutState()->heightOffsetForTableHeaders());
-  }
-
   LayoutState state(*this, locationOffset());
 
+  // Set the rows' location and size.
   for (unsigned r = 0; r < totalRows; r++) {
-    // Set the row's x/y position and width/height.
     LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject;
-    int paginationStrutOnRow = 0;
     if (rowLayoutObject) {
       rowLayoutObject->setLogicalLocation(LayoutPoint(0, m_rowPos[r]));
       rowLayoutObject->setLogicalWidth(logicalWidth());
-      rowLayoutObject->setLogicalHeight(
-          LayoutUnit(m_rowPos[r + 1] - m_rowPos[r] - vspacing));
-      rowLayoutObject->updateLayerTransformAfterLayout();
-      if (isPaginated) {
-        paginationStrutOnRow =
-            paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
-        rowLayoutObject->setPaginationStrut(LayoutUnit(paginationStrutOnRow));
-        bool rowIsAtTopOfColumn =
-            state.heightOffsetForTableHeaders() &&
-            pageRemainingLogicalHeightForOffset(LayoutUnit(m_rowPos[r]),
-                                                AssociateWithLatterPage) ==
-                pageLogicalHeightForOffset(LayoutUnit(m_rowPos[r]));
-        if (paginationStrutOnRow || rowIsAtTopOfColumn) {
-          // If there isn't room for at least one content row on a page with a
-          // header group, then we won't repeat the header on each page.
-          if (!r && table()->header() &&
-              table()->sectionAbove(this) == table()->header() &&
-              table()->header()->getPaginationBreakability() != AllowAnyBreaks)
-            state.setHeightOffsetForTableHeaders(
-                state.heightOffsetForTableHeaders() -
-                table()->header()->logicalHeight());
-          // If we have a header group we will paint it at the top of each page,
-          // move the rows down to accomodate it.
-          paginationStrutOnRow += state.heightOffsetForTableHeaders().toInt();
-          for (unsigned rowIndex = r; rowIndex <= totalRows; rowIndex++)
-            m_rowPos[rowIndex] += paginationStrutOnRow;
-        }
+      LayoutUnit rowLogicalHeight(m_rowPos[r + 1] - m_rowPos[r] - vspacing);
+      if (state.isPaginated() && r + 1 < totalRows) {
+        // If the next row has a pagination strut, we need to subtract it. It
+        // should not be included in this row's height.
+        if (LayoutTableRow* nextRowObject = m_grid[r + 1].rowLayoutObject)
+          rowLogicalHeight -= nextRowObject->paginationStrut();
       }
+      rowLayoutObject->setLogicalHeight(rowLogicalHeight);
+      rowLayoutObject->updateLayerTransformAfterLayout();
     }
+  }
 
+  // Vertically align and flex the cells in each row.
+  for (unsigned r = 0; r < totalRows; r++) {
+    LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject;
     int rowHeightIncreaseForPagination = INT_MIN;
 
     for (unsigned c = 0; c < nEffCols; c++) {
@@ -1178,14 +1152,25 @@ void LayoutTableSection::layoutRows() {
       if (!cell || cs.inColSpan)
         continue;
 
-      int rowIndex = cell->rowIndex();
-      int rHeight =
-          m_rowPos[rowIndex + cell->rowSpan()] - m_rowPos[rowIndex] - vspacing;
+      if (cell->rowIndex() != r)
+        continue;  // Rowspanned cells are handled in the first row they occur.
+
+      int rHeight;
+      int rowLogicalTop;
+      unsigned rowSpan = std::max(1U, cell->rowSpan());
+      unsigned endRowIndex = std::min(r + rowSpan, totalRows) - 1;
+      LayoutTableRow* lastRowObject = m_grid[endRowIndex].rowLayoutObject;
+      if (lastRowObject && rowLayoutObject) {
+        rowLogicalTop = rowLayoutObject->logicalTop().toInt();
+        rHeight = lastRowObject->logicalBottom().toInt() - rowLogicalTop;
+      } else {
+        rHeight = m_rowPos[endRowIndex + 1] - m_rowPos[r] - vspacing;
+        rowLogicalTop = m_rowPos[r];
+      }
 
       relayoutCellIfFlexed(*cell, r, rHeight);
 
       SubtreeLayoutScope layouter(*cell);
-      LayoutUnit rowLogicalTop(m_rowPos[rowIndex]);
       EVerticalAlign cellVerticalAlign;
       // If the cell crosses a fragmentainer boundary, just align it at the
       // top. That's how it was laid out initially, before we knew the final
@@ -1194,7 +1179,7 @@ void LayoutTableSection::layoutRows() {
       // the requested alignment. Give up instead of risking circular
       // dependencies and unstable layout.
       if (state.isPaginated() &&
-          crossesPageBoundary(rowLogicalTop, LayoutUnit(rHeight)))
+          crossesPageBoundary(LayoutUnit(rowLogicalTop), LayoutUnit(rHeight)))
         cellVerticalAlign = VerticalAlignTop;
       else
         cellVerticalAlign = cell->style()->verticalAlign();
@@ -1996,6 +1981,54 @@ int LayoutTableSection::logicalHeightForRow(
     }
   }
   return logicalHeight;
+}
+
+void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
+                                                SubtreeLayoutScope& layouter) {
+  LayoutState& state = *view()->layoutState();
+  rowObject.setPaginationStrut(LayoutUnit());
+  rowObject.setLogicalHeight(LayoutUnit(logicalHeightForRow(rowObject)));
+  int paginationStrut =
+      paginationStrutForRow(&rowObject, rowObject.logicalTop());
+  if (!paginationStrut) {
+    bool rowIsAtTopOfColumn =
+        state.heightOffsetForTableHeaders() &&
+        pageLogicalHeightForOffset(rowObject.logicalTop()) ==
+            pageRemainingLogicalHeightForOffset(rowObject.logicalTop(),
+                                                AssociateWithLatterPage);
+    if (!rowIsAtTopOfColumn)
+      return;
+  }
+  // We need to push this row to the next fragmentainer. If there are repeated
+  // table headers, we need to make room for those at the top of the next
+  // fragmentainer, above this row. Otherwise, this row will just go at the top
+  // of the next fragmentainer.
+
+  // If there isn't room for at least one content row on a page with a
+  // header group, then we won't repeat the header on each page.
+  LayoutTableSection* header = table()->header();
+  if (!rowObject.rowIndex() && header &&
+      table()->sectionAbove(this) == header &&
+      header->getPaginationBreakability() != AllowAnyBreaks) {
+    state.setHeightOffsetForTableHeaders(state.heightOffsetForTableHeaders() -
+                                         header->logicalHeight());
+  }
+  // If we have a header group we will paint it at the top of each page,
+  // move the rows down to accomodate it.
+  paginationStrut += state.heightOffsetForTableHeaders().toInt();
+  rowObject.setPaginationStrut(LayoutUnit(paginationStrut));
+
+  // We have inserted a pagination strut before the row. Adjust the logical top
+  // and re-lay out. We no longer want to break inside the row, but rather
+  // *before* it. From the previous layout pass, there are most likely
+  // pagination struts inside some cell in this row that we need to get rid of.
+  rowObject.setLogicalTop(rowObject.logicalTop() + paginationStrut);
+  layouter.setChildNeedsLayout(&rowObject);
+  rowObject.layoutIfNeeded();
+
+  // It's very likely that re-laying out (and nuking pagination struts inside
+  // cells) gave us a new height.
+  rowObject.setLogicalHeight(LayoutUnit(logicalHeightForRow(rowObject)));
 }
 
 bool LayoutTableSection::isRepeatingHeaderGroup() const {

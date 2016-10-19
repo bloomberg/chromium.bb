@@ -196,7 +196,7 @@ layer at (0,0) size 1046x1547 backgroundClip at (0,0) size 1046x799 clip at (0,0
             LayoutTableCell {TD} at (302,697) size 148x39 [r=17 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 65x37
                 text run at (1,1) width 65: "3-18"
-          LayoutTableRow {TR} at (0,738) size 452x39
+          LayoutTableRow {TR} at (0,791) size 452x39
             LayoutTableCell {TD} at (2,791) size 148x39 [r=18 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 65x37
                 text run at (1,1) width 65: "1-19"

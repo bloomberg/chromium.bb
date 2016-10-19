@@ -196,7 +196,7 @@ layer at (0,0) size 1046x2982 backgroundClip at (0,0) size 1046x799 clip at (0,0
             LayoutTableCell {TD} at (300,697) size 147x39 [r=17 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 65x36
                 text run at (1,1) width 65: "3-18"
-          LayoutTableRow {TR} at (0,738) size 449x39
+          LayoutTableRow {TR} at (0,791) size 449x39
             LayoutTableCell {TD} at (2,791) size 147x39 [r=18 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 65x36
                 text run at (1,1) width 65: "1-19"
@@ -379,7 +379,7 @@ layer at (0,0) size 1046x2982 backgroundClip at (0,0) size 1046x799 clip at (0,0
             LayoutTableCell {TD} at (336,123) size 165x39 [r=3 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 47x36
                 text run at (1,1) width 47: "3-4"
-          LayoutTableRow {TR} at (0,164) size 503x39
+          LayoutTableRow {TR} at (0,222) size 503x39
             LayoutTableCell {TD} at (2,222) size 165x39 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 47x36
                 text run at (1,1) width 47: "1-5"
@@ -559,7 +559,7 @@ layer at (0,0) size 1046x2982 backgroundClip at (0,0) size 1046x799 clip at (0,0
             LayoutTableCell {TD} at (336,919) size 165x39 [r=21 c=2 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 65x36
                 text run at (1,1) width 65: "3-22"
-          LayoutTableRow {TR} at (0,960) size 503x39
+          LayoutTableRow {TR} at (0,1021) size 503x39
             LayoutTableCell {TD} at (2,1021) size 165x39 [r=22 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 65x36
                 text run at (1,1) width 65: "1-23"

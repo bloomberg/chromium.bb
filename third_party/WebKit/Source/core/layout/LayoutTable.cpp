@@ -621,8 +621,29 @@ void LayoutTable::layout() {
     }
 
     // Lay out table header group.
-    if (LayoutTableSection* section = header())
+    if (LayoutTableSection* section = header()) {
       layoutSection(*section, layouter, sectionLogicalLeft);
+      if (state.isPaginated()) {
+        // If the repeating header group allows at least one row of content,
+        // then store the offset for other sections to offset their rows
+        // against.
+        LayoutUnit sectionLogicalHeight = section->logicalHeight();
+        if (sectionLogicalHeight <
+                section->pageLogicalHeightForOffset(section->logicalTop()) &&
+            section->getPaginationBreakability() != AllowAnyBreaks) {
+          LayoutUnit offsetForTableHeaders =
+              state.heightOffsetForTableHeaders();
+          // Don't include any strut in the header group - we only want the
+          // height from its content.
+          offsetForTableHeaders += sectionLogicalHeight;
+          if (LayoutTableRow* row = section->firstRow())
+            offsetForTableHeaders -= row->paginationStrut();
+          section->setOffsetForRepeatingHeader(
+              state.heightOffsetForTableHeaders());
+          state.setHeightOffsetForTableHeaders(offsetForTableHeaders);
+        }
+      }
+    }
 
     // Lay out table body groups, and column groups.
     for (LayoutObject* child = firstChild(); child;
@@ -658,7 +679,6 @@ void LayoutTable::layout() {
           floorToInt(computedLogicalHeight - totalSectionLogicalHeight));
     }
 
-    bool isPaginated = view()->layoutState()->isPaginated();
     LayoutUnit logicalOffset =
         topSection ? topSection->logicalTop() : LayoutUnit();
     for (LayoutTableSection* section = topSection; section;
@@ -666,21 +686,6 @@ void LayoutTable::layout() {
       section->setLogicalTop(logicalOffset);
       section->layoutRows();
       logicalOffset += section->logicalHeight();
-      // If the section is a repeating header group that allows at least one row
-      // of content then store the offset for other sections to offset their
-      // rows against.
-      if (isPaginated && m_head && m_head == section &&
-          section->logicalHeight() <
-              section->pageLogicalHeightForOffset(logicalOffset) &&
-          section->getPaginationBreakability() != LayoutBox::AllowAnyBreaks) {
-        LayoutUnit offsetForTableHeaders = state.heightOffsetForTableHeaders();
-        // Don't include any strut in the header group - we only want the height
-        // from its content.
-        offsetForTableHeaders += section->logicalHeight();
-        if (LayoutTableRow* row = section->firstRow())
-          offsetForTableHeaders -= row->paginationStrut();
-        state.setHeightOffsetForTableHeaders(offsetForTableHeaders);
-      }
     }
 
     if (!topSection && computedLogicalHeight > totalSectionLogicalHeight &&

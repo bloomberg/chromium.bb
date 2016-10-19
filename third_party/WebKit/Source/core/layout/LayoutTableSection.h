@@ -421,6 +421,10 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   int logicalHeightForRow(const LayoutTableRow&) const;
 
+  // Honor breaking restrictions inside the table row, and adjust position and
+  // size accordingly.
+  void adjustRowForPagination(LayoutTableRow&, SubtreeLayoutScope&);
+
   // The representation of the rows and their cells (CellStruct).
   Vector<RowStruct> m_grid;
 
