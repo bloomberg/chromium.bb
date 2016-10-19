@@ -7,11 +7,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/resource_controller.h"
@@ -30,16 +32,34 @@ namespace content {
 
 namespace {
 
+class TestResourceController : public ResourceController {
+ public:
+  TestResourceController() = default;
+  void Cancel() override {}
+  void CancelAndIgnore() override {}
+  void CancelWithError(int error_code) override {}
+  void Resume() override { ++resume_calls_; }
+
+  int resume_calls() const { return resume_calls_; }
+
+ private:
+  int resume_calls_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestResourceController);
+};
+
+// TODO(yhirano): This class should use a similar pattern with
+// TestResourceHandler in mime_sniffing_resource_handler_unittest.cc. Consider
+// unifying the two classes.
 class TestResourceHandler : public ResourceHandler {
  public:
-  // A test version of a ResourceHandler. |request_status| and
-  // |final_bytes_read| will be updated when the response is complete with the
-  // final status of the request received by the handler, and the total bytes
-  // the handler saw.
+  // A test version of a ResourceHandler. |request_status| will be updated when
+  // the response is complete with the final status of the request received by
+  // the handler and |body| will be updated on each OnReadCompleted call.
   explicit TestResourceHandler(net::URLRequestStatus* request_status,
-                               size_t* final_bytes_read)
+                               std::string* body)
       : TestResourceHandler(request_status,
-                            final_bytes_read,
+                            body,
                             true /* on_response_started_result */,
                             true /* on_will_read_result */,
                             true /* on_read_completed_result */) {}
@@ -47,20 +67,41 @@ class TestResourceHandler : public ResourceHandler {
   // This constructor allows to specify return values for OnResponseStarted,
   // OnWillRead and OnReadCompleted.
   TestResourceHandler(net::URLRequestStatus* request_status,
-                      size_t* final_bytes_read,
+                      std::string* body,
                       bool on_response_started_result,
                       bool on_will_read_result,
                       bool on_read_completed_result)
+      : TestResourceHandler(request_status,
+                            body,
+                            2048 /* buffer_size */,
+                            on_response_started_result,
+                            on_will_read_result,
+                            on_read_completed_result,
+                            false /* defer_on_response_started */,
+                            false /* defer_on_response_completed */,
+                            false /* defer_on_read_completed */) {}
+
+  TestResourceHandler(net::URLRequestStatus* request_status,
+                      std::string* body,
+                      size_t buffer_size,
+                      bool on_response_started_result,
+                      bool on_will_read_result,
+                      bool on_read_completed_result,
+                      bool defer_on_response_started,
+                      bool defer_on_read_completed,
+                      bool defer_on_response_completed)
       : ResourceHandler(nullptr),
-        buffer_(new net::IOBuffer(2048)),
         request_status_(request_status),
-        final_bytes_read_(final_bytes_read),
+        body_(body),
+        buffer_(new net::IOBuffer(buffer_size)),
+        buffer_size_(buffer_size),
         on_response_started_result_(on_response_started_result),
         on_will_read_result_(on_will_read_result),
         on_read_completed_result_(on_read_completed_result),
-        bytes_read_(0),
-        is_completed_(false) {
-    memset(buffer_->data(), '\0', 2048);
+        defer_on_response_started_(defer_on_response_started),
+        defer_on_read_completed_(defer_on_read_completed),
+        defer_on_response_completed_(defer_on_response_completed) {
+    memset(buffer_->data(), '\0', buffer_size_);
   }
 
   ~TestResourceHandler() override {}
@@ -76,7 +117,11 @@ class TestResourceHandler : public ResourceHandler {
 
   bool OnResponseStarted(ResourceResponse* response, bool* defer) override {
     EXPECT_FALSE(is_completed_);
-    return on_response_started_result_;
+    if (!on_response_started_result_)
+      return false;
+    *defer = defer_on_response_started_;
+    defer_on_response_started_ = false;
+    return true;
   }
 
   bool OnWillStart(const GURL& url, bool* defer) override {
@@ -89,16 +134,20 @@ class TestResourceHandler : public ResourceHandler {
                   int min_size) override {
     EXPECT_FALSE(is_completed_);
     *buf = buffer_;
-    *buf_size = 2048;
-    memset(buffer_->data(), '\0', 2048);
+    *buf_size = buffer_size_;
+    memset(buffer_->data(), '\0', buffer_size_);
     return on_will_read_result_;
   }
 
   bool OnReadCompleted(int bytes_read, bool* defer) override {
     EXPECT_FALSE(is_completed_);
-    EXPECT_LT(bytes_read, 2048);
-    bytes_read_ += bytes_read;
-    return on_read_completed_result_;
+    EXPECT_LE(static_cast<size_t>(bytes_read), buffer_size_);
+    body_->append(buffer_->data(), bytes_read);
+    if (!on_read_completed_result_)
+      return false;
+    *defer = defer_on_read_completed_;
+    defer_on_read_completed_ = false;
+    return true;
   }
 
   void OnResponseCompleted(const net::URLRequestStatus& status,
@@ -106,24 +155,26 @@ class TestResourceHandler : public ResourceHandler {
     EXPECT_FALSE(is_completed_);
     is_completed_ = true;
     *request_status_ = status;
-    *final_bytes_read_ = bytes_read_;
+    *defer = defer_on_response_completed_;
+    defer_on_response_completed_ = false;
   }
 
   void OnDataDownloaded(int bytes_downloaded) override { NOTREACHED(); }
 
   scoped_refptr<net::IOBuffer> buffer() const { return buffer_; }
 
-  size_t bytes_read() const { return bytes_read_; }
-
  private:
-  scoped_refptr<net::IOBuffer> buffer_;
   net::URLRequestStatus* request_status_;
-  size_t* final_bytes_read_;
-  bool on_response_started_result_;
-  bool on_will_read_result_;
-  bool on_read_completed_result_;
-  size_t bytes_read_;
-  bool is_completed_;
+  std::string* body_;
+  scoped_refptr<net::IOBuffer> buffer_;
+  const size_t buffer_size_;
+  const bool on_response_started_result_;
+  const bool on_will_read_result_;
+  const bool on_read_completed_result_;
+  bool defer_on_response_started_;
+  bool defer_on_read_completed_;
+  bool defer_on_response_completed_;
+  bool is_completed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceHandler);
 };
@@ -155,11 +206,10 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> old_handler(new TestResourceHandler(
-      &old_handler_status, &old_handler_final_bytes_read));
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
   TestResourceHandler* old_test_handler = old_handler.get();
-  scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));
 
@@ -176,7 +226,7 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
   const std::string kData = "The data";
   EXPECT_NE(kData, std::string(old_test_handler->buffer()->data()));
 
-  ASSERT_EQ(read_buffer.get(), old_test_handler->buffer());
+  ASSERT_NE(read_buffer.get(), old_test_handler->buffer());
   ASSERT_GT(static_cast<size_t>(buf_size), kData.length());
   memcpy(read_buffer->data(), kData.c_str(), kData.length());
 
@@ -203,7 +253,7 @@ TEST_F(InterceptingResourceHandlerTest, NoSwitching) {
   EXPECT_TRUE(intercepting_handler->OnReadCompleted(kData2.length(), &defer));
   EXPECT_FALSE(defer);
   EXPECT_EQ(kData2, std::string(old_test_handler->buffer()->data()));
-  EXPECT_EQ(kData.length() + kData2.length(), old_test_handler->bytes_read());
+  EXPECT_EQ(kData + kData2, old_handler_body);
 }
 
 // Tests that the data received is transmitted to the newly created
@@ -225,9 +275,9 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> old_handler(new TestResourceHandler(
-      &old_handler_status, &old_handler_final_bytes_read));
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
   scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));
@@ -243,17 +293,16 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
   EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
 
   const std::string kData = "The data";
-  ASSERT_EQ(read_buffer.get(), old_buffer.get());
+  ASSERT_NE(read_buffer.get(), old_buffer.get());
   ASSERT_GT(static_cast<size_t>(buf_size), kData.length());
   memcpy(read_buffer->data(), kData.c_str(), kData.length());
 
   // Simulate the MimeSniffingResourceHandler asking the
   // InterceptingResourceHandler to switch to a new handler.
   net::URLRequestStatus new_handler_status;
-  size_t new_handler_final_bytes_read = 0;
+  std::string new_handler_body;
   std::unique_ptr<TestResourceHandler> new_handler_scoped(
-      new TestResourceHandler(&new_handler_status,
-                              &new_handler_final_bytes_read));
+      new TestResourceHandler(&new_handler_status, &new_handler_body));
   TestResourceHandler* new_test_handler = new_handler_scoped.get();
   intercepting_handler->UseNewHandler(std::move(new_handler_scoped),
                                       std::string());
@@ -265,7 +314,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
 
   EXPECT_FALSE(old_handler_status.is_success());
   EXPECT_EQ(net::ERR_ABORTED, old_handler_status.error());
-  EXPECT_EQ(0ul, old_handler_final_bytes_read);
+  EXPECT_EQ(std::string(), old_handler_body);
 
   // It should not have received the download data yet.
   EXPECT_NE(kData, std::string(new_test_handler->buffer()->data()));
@@ -289,7 +338,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchNoPayload) {
   EXPECT_TRUE(intercepting_handler->OnReadCompleted(kData2.length(), &defer));
   EXPECT_FALSE(defer);
   EXPECT_EQ(kData2, std::string(new_test_handler->buffer()->data()));
-  EXPECT_EQ(kData.length() + kData2.length(), new_test_handler->bytes_read());
+  EXPECT_EQ(kData + kData2, new_handler_body);
 }
 
 // Tests that the data received is transmitted to the newly created
@@ -311,10 +360,9 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
+  std::string old_handler_body;
   std::unique_ptr<TestResourceHandler> old_handler_scoped(
-      new TestResourceHandler(&old_handler_status,
-                              &old_handler_final_bytes_read));
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
   TestResourceHandler* old_handler = old_handler_scoped.get();
   scoped_refptr<net::IOBuffer> old_buffer = old_handler->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -332,7 +380,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
 
   const std::string kData = "The data";
-  ASSERT_EQ(read_buffer.get(), old_buffer.get());
+  ASSERT_NE(read_buffer.get(), old_buffer.get());
   ASSERT_GT(static_cast<size_t>(buf_size), kData.length());
   memcpy(read_buffer->data(), kData.c_str(), kData.length());
 
@@ -340,16 +388,14 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   // InterceptingResourceHandler to switch to a new handler.
   const std::string kPayload = "The payload";
   net::URLRequestStatus new_handler_status;
-  size_t new_handler_final_bytes_read = 0;
+  std::string new_handler_body;
   std::unique_ptr<TestResourceHandler> new_handler_scoped(
-      new TestResourceHandler(&new_handler_status,
-                              &new_handler_final_bytes_read));
+      new TestResourceHandler(&new_handler_status, &new_handler_body));
   TestResourceHandler* new_test_handler = new_handler_scoped.get();
   intercepting_handler->UseNewHandler(std::move(new_handler_scoped), kPayload);
 
   // The old handler should not have received the payload yet.
-  ASSERT_FALSE(old_handler->bytes_read());
-  EXPECT_NE(kPayload, std::string(old_buffer->data()));
+  ASSERT_EQ(std::string(), old_handler_body);
 
   // The response is received. The new ResourceHandler should be used to handle
   // the download.
@@ -357,8 +403,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   EXPECT_FALSE(defer);
 
   // The old handler should have received the payload.
-  ASSERT_TRUE(old_handler_final_bytes_read == kPayload.size());
-  EXPECT_EQ(kPayload, std::string(old_buffer->data()));
+  EXPECT_EQ(kPayload, old_handler_body);
 
   EXPECT_TRUE(old_handler_status.is_success());
   EXPECT_EQ(net::OK, old_handler_status.error());
@@ -385,7 +430,7 @@ TEST_F(InterceptingResourceHandlerTest, HandlerSwitchWithPayload) {
   EXPECT_TRUE(intercepting_handler->OnReadCompleted(kData2.length(), &defer));
   EXPECT_FALSE(defer);
   EXPECT_EQ(kData2, std::string(new_test_handler->buffer()->data()));
-  EXPECT_EQ(kData.length() + kData2.length(), new_test_handler->bytes_read());
+  EXPECT_EQ(kData + kData2, new_handler_body);
 }
 
 // Tests that the handler behaves properly if the old handler fails will read.
@@ -406,13 +451,12 @@ TEST_F(InterceptingResourceHandlerTest, OldHandlerFailsWillRead) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> old_handler(new TestResourceHandler(
-      &old_handler_status, &old_handler_final_bytes_read,
-      true,    // on_response_started
-      false,   // on_will_read
-      true));  // on_read_completed
-  scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body,
+                              true,    // on_response_started
+                              false,   // on_will_read
+                              true));  // on_read_completed
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));
 
@@ -447,9 +491,9 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsResponseStarted) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> old_handler(new TestResourceHandler(
-      &old_handler_status, &old_handler_final_bytes_read));
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
   scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));
@@ -465,19 +509,19 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsResponseStarted) {
   EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
 
   const char kData[] = "The data";
-  ASSERT_EQ(read_buffer.get(), old_buffer.get());
+  ASSERT_NE(read_buffer.get(), old_buffer.get());
   ASSERT_GT(static_cast<size_t>(buf_size), sizeof(kData));
   memcpy(read_buffer->data(), kData, sizeof(kData));
 
   // Simulate the MimeSniffingResourceHandler asking the
   // InterceptingResourceHandler to switch to a new handler.
   net::URLRequestStatus new_handler_status;
-  size_t new_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> new_handler(new TestResourceHandler(
-      &new_handler_status, &new_handler_final_bytes_read,
-      false,   // on_response_started
-      true,    // on_will_read
-      true));  // on_read_completed
+  std::string new_handler_body;
+  std::unique_ptr<TestResourceHandler> new_handler(
+      new TestResourceHandler(&new_handler_status, &new_handler_body,
+                              false,   // on_response_started
+                              true,    // on_will_read
+                              true));  // on_read_completed
   intercepting_handler->UseNewHandler(std::move(new_handler), std::string());
 
   // The response is received. The new ResourceHandler should tell us to fail.
@@ -503,9 +547,9 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsWillRead) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> old_handler(new TestResourceHandler(
-      &old_handler_status, &old_handler_final_bytes_read));
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
   scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));
@@ -521,19 +565,19 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsWillRead) {
   EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
 
   const char kData[] = "The data";
-  ASSERT_EQ(read_buffer.get(), old_buffer.get());
+  ASSERT_NE(read_buffer.get(), old_buffer.get());
   ASSERT_GT(static_cast<size_t>(buf_size), sizeof(kData));
   memcpy(read_buffer->data(), kData, sizeof(kData));
 
   // Simulate the MimeSniffingResourceHandler asking the
   // InterceptingResourceHandler to switch to a new handler.
   net::URLRequestStatus new_handler_status;
-  size_t new_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> new_handler(new TestResourceHandler(
-      &new_handler_status, &new_handler_final_bytes_read,
-      true,    // on_response_started
-      false,   // on_will_read
-      true));  // on_read_completed
+  std::string new_handler_body;
+  std::unique_ptr<TestResourceHandler> new_handler(
+      new TestResourceHandler(&new_handler_status, &new_handler_body,
+                              true,    // on_response_started
+                              false,   // on_will_read
+                              true));  // on_read_completed
   intercepting_handler->UseNewHandler(std::move(new_handler), std::string());
 
   // The response is received. The new handler should not have been asked to
@@ -568,9 +612,9 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
                                           false);   // is_using_lofi
 
   net::URLRequestStatus old_handler_status;
-  size_t old_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> old_handler(new TestResourceHandler(
-      &old_handler_status, &old_handler_final_bytes_read));
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
   scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
       new InterceptingResourceHandler(std::move(old_handler), request.get()));
@@ -586,19 +630,19 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
   EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
 
   const char kData[] = "The data";
-  ASSERT_EQ(read_buffer.get(), old_buffer.get());
+  ASSERT_NE(read_buffer.get(), old_buffer.get());
   ASSERT_GT(static_cast<size_t>(buf_size), sizeof(kData));
   memcpy(read_buffer->data(), kData, sizeof(kData));
 
   // Simulate the MimeSniffingResourceHandler asking the
   // InterceptingResourceHandler to switch to a new handler.
   net::URLRequestStatus new_handler_status;
-  size_t new_handler_final_bytes_read = 0;
-  std::unique_ptr<TestResourceHandler> new_handler(new TestResourceHandler(
-      &new_handler_status, &new_handler_final_bytes_read,
-      true,     // on_response_started
-      true,     // on_will_read
-      false));  // on_read_completed
+  std::string new_handler_body;
+  std::unique_ptr<TestResourceHandler> new_handler(
+      new TestResourceHandler(&new_handler_status, &new_handler_body,
+                              true,     // on_response_started
+                              true,     // on_will_read
+                              false));  // on_read_completed
   intercepting_handler->UseNewHandler(std::move(new_handler), std::string());
 
   // The response is received.
@@ -611,6 +655,324 @@ TEST_F(InterceptingResourceHandlerTest, NewHandlerFailsReadCompleted) {
   // should tell the caller to fail.
   EXPECT_FALSE(intercepting_handler->OnReadCompleted(sizeof(kData), &defer));
   EXPECT_FALSE(defer);
+}
+
+// The old handler sets |defer| to true in OnReadCompleted and
+// OnResponseCompleted. The new handler sets |defer| to true in
+// OnResponseStarted and OnReadCompleted.
+TEST_F(InterceptingResourceHandlerTest, DeferredOperations) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  ResourceRequestInfo::AllocateForTesting(request.get(),
+                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          nullptr,  // context
+                                          0,        // render_process_id
+                                          0,        // render_view_id
+                                          0,        // render_frame_id
+                                          true,     // is_main_frame
+                                          false,    // parent_is_main_frame
+                                          true,     // allow_download
+                                          true,     // is_async
+                                          false);   // is_using_lofi
+
+  std::unique_ptr<TestResourceController> resource_controller =
+      base::MakeUnique<TestResourceController>();
+  net::URLRequestStatus old_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body,
+                              10,       // buffer_size
+                              true,     // on_response_started
+                              true,     // on_will_read
+                              true,     // on_read_completed
+                              false,    // defer_on_response_started
+                              true,     // defer_on_read_completed
+                              false));  // defer_on_response_completed
+  scoped_refptr<net::IOBuffer> old_buffer = old_handler.get()->buffer();
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(std::move(old_handler), request.get()));
+  intercepting_handler->SetController(resource_controller.get());
+
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+
+  // Simulate the MimeSniffingResourceHandler buffering the data.
+  scoped_refptr<net::IOBuffer> read_buffer;
+  int buf_size = 0;
+  bool defer = false;
+  EXPECT_TRUE(intercepting_handler->OnWillStart(GURL(), &defer));
+  EXPECT_FALSE(defer);
+  EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
+
+  const char kData[] = "The data";
+  ASSERT_NE(read_buffer.get(), old_buffer.get());
+  ASSERT_GT(static_cast<size_t>(buf_size), strlen(kData));
+  memcpy(read_buffer->data(), kData, strlen(kData));
+
+  // Simulate the MimeSniffingResourceHandler asking the
+  // InterceptingResourceHandler to switch to a new handler.
+  net::URLRequestStatus new_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+
+  std::string new_handler_body;
+  const std::string kPayload = "The long long long long long payload";
+  ASSERT_GT(kPayload.size(), static_cast<size_t>(buf_size));
+  std::unique_ptr<TestResourceHandler> new_handler(
+      new TestResourceHandler(&new_handler_status, &new_handler_body,
+                              1,       // buffer_size
+                              true,    // on_response_started
+                              true,    // on_will_read
+                              true,    // on_read_completed
+                              true,    // defer_on_response_started
+                              true,    // defer_on_read_completed
+                              true));  // defer_on_response_completed
+  intercepting_handler->UseNewHandler(std::move(new_handler), kPayload);
+  // The response is received.
+  ASSERT_TRUE(intercepting_handler->OnResponseStarted(response.get(), &defer));
+  ASSERT_TRUE(defer);
+
+  // The old handler has received the first N bytes of the payload synchronously
+  // where N is the size of the buffer exposed via OnWillRead.
+  EXPECT_EQ("The long l", old_handler_body);
+  EXPECT_EQ(std::string(), new_handler_body);
+  EXPECT_EQ(old_handler_status.status(), net::URLRequestStatus::IO_PENDING);
+  EXPECT_EQ(new_handler_status.status(), net::URLRequestStatus::IO_PENDING);
+
+  intercepting_handler->Resume();
+  EXPECT_EQ(0, resource_controller->resume_calls());
+  EXPECT_EQ(kPayload, old_handler_body);
+  EXPECT_EQ(std::string(), new_handler_body);
+  EXPECT_EQ(old_handler_status.status(), net::URLRequestStatus::SUCCESS);
+  EXPECT_EQ(new_handler_status.status(), net::URLRequestStatus::IO_PENDING);
+
+  intercepting_handler->Resume();
+  EXPECT_EQ(1, resource_controller->resume_calls());
+
+  defer = false;
+  ASSERT_TRUE(intercepting_handler->OnReadCompleted(strlen(kData), &defer));
+  ASSERT_TRUE(defer);
+
+  EXPECT_EQ(kPayload, old_handler_body);
+  EXPECT_EQ("T", new_handler_body);
+
+  intercepting_handler->Resume();
+  EXPECT_EQ(2, resource_controller->resume_calls());
+  EXPECT_EQ(kPayload, old_handler_body);
+  EXPECT_EQ(kData, new_handler_body);
+
+  EXPECT_EQ(old_handler_status.status(), net::URLRequestStatus::SUCCESS);
+  EXPECT_EQ(new_handler_status.status(), net::URLRequestStatus::IO_PENDING);
+
+  defer = false;
+  intercepting_handler->OnResponseCompleted({net::URLRequestStatus::SUCCESS, 0},
+                                            &defer);
+  ASSERT_TRUE(defer);
+  EXPECT_EQ(old_handler_status.status(), net::URLRequestStatus::SUCCESS);
+  EXPECT_EQ(new_handler_status.status(), net::URLRequestStatus::SUCCESS);
+}
+
+// Test cancellation where there is only the old handler in an
+// InterceptingResourceHandler.
+TEST_F(InterceptingResourceHandlerTest, CancelOldHandler) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  ResourceRequestInfo::AllocateForTesting(request.get(),
+                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          nullptr,  // context
+                                          0,        // render_process_id
+                                          0,        // render_view_id
+                                          0,        // render_frame_id
+                                          true,     // is_main_frame
+                                          false,    // parent_is_main_frame
+                                          true,     // allow_download
+                                          true,     // is_async
+                                          false);   // is_using_lofi
+
+  std::unique_ptr<TestResourceController> resource_controller =
+      base::MakeUnique<TestResourceController>();
+  net::URLRequestStatus old_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
+
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(std::move(old_handler), request.get()));
+  intercepting_handler->SetController(resource_controller.get());
+
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, old_handler_status.status());
+
+  bool defer = false;
+  intercepting_handler->OnResponseCompleted(
+      {net::URLRequestStatus::CANCELED, net::ERR_FAILED}, &defer);
+  ASSERT_FALSE(defer);
+  EXPECT_EQ(0, resource_controller->resume_calls());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, old_handler_status.status());
+}
+
+// Test cancellation where there is only the new handler in an
+// InterceptingResourceHandler.
+TEST_F(InterceptingResourceHandlerTest, CancelNewHandler) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  ResourceRequestInfo::AllocateForTesting(request.get(),
+                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          nullptr,  // context
+                                          0,        // render_process_id
+                                          0,        // render_view_id
+                                          0,        // render_frame_id
+                                          true,     // is_main_frame
+                                          false,    // parent_is_main_frame
+                                          true,     // allow_download
+                                          true,     // is_async
+                                          false);   // is_using_lofi
+
+  std::unique_ptr<TestResourceController> resource_controller =
+      base::MakeUnique<TestResourceController>();
+  net::URLRequestStatus old_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body));
+
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(std::move(old_handler), request.get()));
+  intercepting_handler->SetController(resource_controller.get());
+
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+
+  // Simulate the MimeSniffingResourceHandler buffering the data.
+  scoped_refptr<net::IOBuffer> read_buffer;
+  int buf_size = 0;
+  bool defer = false;
+  EXPECT_TRUE(intercepting_handler->OnWillStart(GURL(), &defer));
+  EXPECT_FALSE(defer);
+  EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
+
+  const char kData[] = "The data";
+  ASSERT_GT(static_cast<size_t>(buf_size), strlen(kData));
+  memcpy(read_buffer->data(), kData, strlen(kData));
+
+  // Simulate the MimeSniffingResourceHandler asking the
+  // InterceptingResourceHandler to switch to a new handler.
+  net::URLRequestStatus new_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+
+  std::string new_handler_body;
+  const std::string kPayload = "The payload";
+  std::unique_ptr<TestResourceHandler> new_handler(
+      new TestResourceHandler(&new_handler_status, &new_handler_body,
+                              1,       // buffer_size
+                              true,    // on_response_started
+                              true,    // on_will_read
+                              true,    // on_read_completed
+                              true,    // defer_on_response_started
+                              false,   // defer_on_read_completed
+                              true));  // defer_on_response_completed
+  intercepting_handler->UseNewHandler(std::move(new_handler), kPayload);
+
+  // The response is received.
+  ASSERT_TRUE(intercepting_handler->OnResponseStarted(response.get(), &defer));
+  ASSERT_TRUE(defer);
+
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, old_handler_status.status());
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());
+
+  defer = false;
+  intercepting_handler->OnResponseCompleted(
+      {net::URLRequestStatus::CANCELED, net::ERR_FAILED}, &defer);
+  ASSERT_TRUE(defer);
+  EXPECT_EQ(0, resource_controller->resume_calls());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, old_handler_status.status());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, new_handler_status.status());
+}
+
+// Test cancellation where there are both the old and the new handlers in an
+// InterceptingResourceHandler.
+TEST_F(InterceptingResourceHandlerTest, CancelBothHandlers) {
+  net::URLRequestContext context;
+  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
+  ResourceRequestInfo::AllocateForTesting(request.get(),
+                                          RESOURCE_TYPE_MAIN_FRAME,
+                                          nullptr,  // context
+                                          0,        // render_process_id
+                                          0,        // render_view_id
+                                          0,        // render_frame_id
+                                          true,     // is_main_frame
+                                          false,    // parent_is_main_frame
+                                          true,     // allow_download
+                                          true,     // is_async
+                                          false);   // is_using_lofi
+
+  std::unique_ptr<TestResourceController> resource_controller =
+      base::MakeUnique<TestResourceController>();
+  net::URLRequestStatus old_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+  std::string old_handler_body;
+  std::unique_ptr<TestResourceHandler> old_handler(
+      new TestResourceHandler(&old_handler_status, &old_handler_body,
+                              2048,     // buffer_size
+                              true,     // on_response_started
+                              true,     // on_will_read
+                              true,     // on_read_completed
+                              false,    // defer_on_response_started
+                              true,     // defer_on_read_completed
+                              false));  // defer_on_response_completed
+
+  std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
+      new InterceptingResourceHandler(std::move(old_handler), request.get()));
+  intercepting_handler->SetController(resource_controller.get());
+
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
+
+  // Simulate the MimeSniffingResourceHandler buffering the data.
+  scoped_refptr<net::IOBuffer> read_buffer;
+  int buf_size = 0;
+  bool defer = false;
+  EXPECT_TRUE(intercepting_handler->OnWillStart(GURL(), &defer));
+  EXPECT_FALSE(defer);
+  EXPECT_TRUE(intercepting_handler->OnWillRead(&read_buffer, &buf_size, -1));
+
+  const char kData[] = "The data";
+  ASSERT_GT(static_cast<size_t>(buf_size), strlen(kData));
+  memcpy(read_buffer->data(), kData, strlen(kData));
+
+  // Simulate the MimeSniffingResourceHandler asking the
+  // InterceptingResourceHandler to switch to a new handler.
+  net::URLRequestStatus new_handler_status = {net::URLRequestStatus::IO_PENDING,
+                                              0};
+
+  std::string new_handler_body;
+  const std::string kPayload = "The payload";
+  std::unique_ptr<TestResourceHandler> new_handler(
+      new TestResourceHandler(&new_handler_status, &new_handler_body,
+                              1,       // buffer_size
+                              true,    // on_response_started
+                              true,    // on_will_read
+                              true,    // on_read_completed
+                              false,   // defer_on_response_started
+                              false,   // defer_on_read_completed
+                              true));  // defer_on_response_completed
+  intercepting_handler->UseNewHandler(std::move(new_handler), kPayload);
+
+  // The response is received.
+  ASSERT_TRUE(intercepting_handler->OnResponseStarted(response.get(), &defer));
+  ASSERT_TRUE(defer);
+
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, old_handler_status.status());
+  EXPECT_EQ(net::URLRequestStatus::IO_PENDING, new_handler_status.status());
+
+  defer = false;
+  intercepting_handler->OnResponseCompleted(
+      {net::URLRequestStatus::CANCELED, net::ERR_FAILED}, &defer);
+  ASSERT_TRUE(defer);
+  EXPECT_EQ(0, resource_controller->resume_calls());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, old_handler_status.status());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, new_handler_status.status());
 }
 
 }  // namespace

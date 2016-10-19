@@ -14,65 +14,51 @@ namespace content {
 InterceptingResourceHandler::InterceptingResourceHandler(
     std::unique_ptr<ResourceHandler> next_handler,
     net::URLRequest* request)
-    : LayeredResourceHandler(request, std::move(next_handler)),
-      state_(State::STARTING),
-      first_read_buffer_size_(0) {}
+    : LayeredResourceHandler(request, std::move(next_handler)) {
+  next_handler_->SetController(this);
+}
 
 InterceptingResourceHandler::~InterceptingResourceHandler() {}
+
+void InterceptingResourceHandler::SetController(
+    ResourceController* controller) {
+  if (state_ == State::PASS_THROUGH)
+    return LayeredResourceHandler::SetController(controller);
+  ResourceHandler::SetController(controller);
+}
 
 bool InterceptingResourceHandler::OnResponseStarted(ResourceResponse* response,
                                                     bool* defer) {
   // If there's no need to switch handlers, just start acting as a blind
   // pass-through ResourceHandler.
   if (!new_handler_) {
-    state_ = State::DONE;
-    first_read_buffer_ = nullptr;
+    state_ = State::PASS_THROUGH;
+    next_handler_->SetController(controller());
     return next_handler_->OnResponseStarted(response, defer);
   }
 
+  DCHECK_EQ(state_, State::STARTING);
   // Otherwise, switch handlers. First, inform the original ResourceHandler
   // that this will be handled entirely by the new ResourceHandler.
-  // TODO(clamy): We will probably need to check the return values of these for
-  // PlzNavigate.
   bool defer_ignored = false;
-  next_handler_->OnResponseStarted(response, &defer_ignored);
+  if (!next_handler_->OnResponseStarted(response, &defer_ignored))
+    return false;
 
   // Although deferring OnResponseStarted is legal, the only downstream handler
   // which does so is CrossSiteResourceHandler. Cross-site transitions should
   // not trigger when switching handlers.
   DCHECK(!defer_ignored);
 
-  // Make a copy of the data in the first read buffer. Despite not having been
-  // informed of any data being stored in first_read_buffer_, the
-  // MimeSniffingResourceHandler has read the data, it's just holding it back.
-  // This data should be passed to the alternate ResourceHandler and not to to
-  // the current ResourceHandler.
-  // TODO(clamy): see if doing the copy should be moved to the
-  // MimeSniffingResourceHandler.
-  if (first_read_buffer_) {
-    first_read_buffer_copy_ = new net::IOBuffer(first_read_buffer_size_);
-    memcpy(first_read_buffer_copy_->data(), first_read_buffer_->data(),
-           first_read_buffer_size_);
-  }
-
-  // Send the payload to the old handler.
-  SendPayloadToOldHandler();
-  first_read_buffer_ = nullptr;
-
-  // The original ResourceHandler is now no longer needed, so replace it with
-  // the new one, before sending the response to the new one.
-  next_handler_ = std::move(new_handler_);
-
-  state_ =
-      first_read_buffer_copy_ ? State::WAITING_FOR_BUFFER_COPY : State::DONE;
-
-  return next_handler_->OnResponseStarted(response, defer);
+  // TODO(yhirano): Retaining ownership from a raw pointer is bad.
+  response_ = response;
+  state_ = State::SENDING_PAYLOAD_TO_OLD_HANDLER;
+  return DoLoop(defer);
 }
 
 bool InterceptingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                              int* buf_size,
                                              int min_size) {
-  if (state_ == State::DONE)
+  if (state_ == State::PASS_THROUGH)
     return next_handler_->OnWillRead(buf, buf_size, min_size);
 
   DCHECK_EQ(State::STARTING, state_);
@@ -83,81 +69,204 @@ bool InterceptingResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 
   first_read_buffer_ = *buf;
   first_read_buffer_size_ = *buf_size;
+  first_read_buffer_double_ = new net::IOBuffer(static_cast<size_t>(*buf_size));
+  *buf = first_read_buffer_double_;
   return true;
 }
 
 bool InterceptingResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
-  DCHECK(bytes_read >= 0);
-  if (state_ == State::DONE)
+  DCHECK_GE(bytes_read, 0);
+  if (state_ == State::PASS_THROUGH) {
+    if (first_read_buffer_double_) {
+      // |first_read_buffer_double_| was allocated and the user wrote data to
+      // the buffer, but switching has not been done after all.
+      memcpy(first_read_buffer_->data(), first_read_buffer_double_->data(),
+             bytes_read);
+      first_read_buffer_ = nullptr;
+      first_read_buffer_double_ = nullptr;
+    }
     return next_handler_->OnReadCompleted(bytes_read, defer);
+  }
 
-  DCHECK_EQ(State::WAITING_FOR_BUFFER_COPY, state_);
-  state_ = State::DONE;
+  DCHECK_EQ(State::WAITING_FOR_ON_READ_COMPLETED, state_);
+  first_read_buffer_bytes_read_ = bytes_read;
+  state_ = State::SENDING_BUFFER_TO_NEW_HANDLER;
+  return DoLoop(defer);
+}
 
-  // Copy the data from the first read to the new ResourceHandler.
-  scoped_refptr<net::IOBuffer> buf;
-  int buf_len = 0;
-  if (!next_handler_->OnWillRead(&buf, &buf_len, bytes_read))
-    return false;
+void InterceptingResourceHandler::OnResponseCompleted(
+    const net::URLRequestStatus& status,
+    bool* defer) {
+  if (state_ == State::PASS_THROUGH) {
+    LayeredResourceHandler::OnResponseCompleted(status, defer);
+    return;
+  }
+  if (!new_handler_) {
+    // Therer is only one ResourceHandler in this InterceptingResourceHandler.
+    state_ = State::PASS_THROUGH;
+    first_read_buffer_double_ = nullptr;
+    next_handler_->SetController(controller());
+    next_handler_->OnResponseCompleted(status, defer);
+    return;
+  }
 
-  CHECK(buf_len >= bytes_read);
-  CHECK_GE(first_read_buffer_size_, static_cast<size_t>(bytes_read));
-  memcpy(buf->data(), first_read_buffer_copy_->data(), bytes_read);
+  // There are two ResourceHandlers in this InterceptingResourceHandler.
+  // |next_handler_| is the old handler and |new_handler_| is the new handler.
+  // As written in the class comment, this class assumes that the old handler
+  // will not set |*defer| in OnResponseCompleted.
+  next_handler_->SetController(controller());
+  next_handler_->OnResponseCompleted(status, defer);
+  DCHECK(!*defer);
 
-  first_read_buffer_copy_ = nullptr;
+  state_ = State::PASS_THROUGH;
+  first_read_buffer_double_ = nullptr;
+  new_handler_->SetController(controller());
+  next_handler_ = std::move(new_handler_);
+  next_handler_->OnResponseCompleted(status, defer);
+}
 
-  // TODO(clamy): Add a unit test to check that the deferral value is properly
-  // passed to the caller.
-  return next_handler_->OnReadCompleted(bytes_read, defer);
+void InterceptingResourceHandler::Cancel() {
+  DCHECK_NE(State::PASS_THROUGH, state_);
+  controller()->Cancel();
+}
+
+void InterceptingResourceHandler::CancelAndIgnore() {
+  DCHECK_NE(State::PASS_THROUGH, state_);
+  controller()->CancelAndIgnore();
+}
+
+void InterceptingResourceHandler::CancelWithError(int error_code) {
+  DCHECK_NE(State::PASS_THROUGH, state_);
+  controller()->CancelWithError(error_code);
+}
+
+void InterceptingResourceHandler::Resume() {
+  DCHECK_NE(State::PASS_THROUGH, state_);
+  if (state_ == State::STARTING ||
+      state_ == State::WAITING_FOR_ON_READ_COMPLETED) {
+    // Uninteresting Resume: just delegate to the original resource controller.
+    controller()->Resume();
+    return;
+  }
+  bool defer = false;
+  if (!DoLoop(&defer)) {
+    controller()->Cancel();
+    return;
+  }
+
+  if (!defer)
+    controller()->Resume();
 }
 
 void InterceptingResourceHandler::UseNewHandler(
     std::unique_ptr<ResourceHandler> new_handler,
     const std::string& payload_for_old_handler) {
   new_handler_ = std::move(new_handler);
-  new_handler_->SetController(controller());
+  new_handler_->SetController(this);
   payload_for_old_handler_ = payload_for_old_handler;
 }
 
-void InterceptingResourceHandler::SendPayloadToOldHandler() {
-  bool defer_ignored = false;
+bool InterceptingResourceHandler::DoLoop(bool* defer) {
+  bool result = true;
+  do {
+    switch (state_) {
+      case State::STARTING:
+      case State::WAITING_FOR_ON_READ_COMPLETED:
+      case State::PASS_THROUGH:
+        NOTREACHED();
+        break;
+      case State::NOTIFYING_ON_RESPONSE_STARTED_TO_NEW_HANDLER:
+        if (first_read_buffer_double_) {
+          // OnWillRead has been called, so copying the data from
+          // |first_read_buffer_double_| to |first_read_buffer_| will be needed
+          // when OnReadCompleted is called.
+          state_ = State::WAITING_FOR_ON_READ_COMPLETED;
+        } else {
+          // OnWillRead has not been called, so no special handling will be
+          // needed from now on.
+          state_ = State::PASS_THROUGH;
+          next_handler_->SetController(controller());
+        }
+        break;
+      case State::SENDING_PAYLOAD_TO_OLD_HANDLER:
+        result = SendPayloadToOldHandler(defer);
+        break;
+      case State::SENDING_BUFFER_TO_NEW_HANDLER:
+        result = SendFirstReadBufferToNewHandler(defer);
+        break;
+    }
+  } while (result && !*defer &&
+           state_ != State::WAITING_FOR_ON_READ_COMPLETED &&
+           state_ != State::PASS_THROUGH);
+  return result;
+}
+
+bool InterceptingResourceHandler::SendPayloadToOldHandler(bool* defer) {
+  DCHECK_EQ(State::SENDING_PAYLOAD_TO_OLD_HANDLER, state_);
+  while (payload_bytes_written_ < payload_for_old_handler_.size()) {
+    scoped_refptr<net::IOBuffer> buffer;
+    int size = 0;
+    if (first_read_buffer_) {
+      // |first_read_buffer_| is a buffer gotten from |next_handler_| via
+      // OnWillRead. Use the buffer.
+      buffer = first_read_buffer_;
+      size = first_read_buffer_size_;
+
+      first_read_buffer_ = nullptr;
+      first_read_buffer_size_ = 0;
+    } else {
+      if (!next_handler_->OnWillRead(&buffer, &size, -1))
+        return false;
+    }
+
+    size = std::min(size, static_cast<int>(payload_for_old_handler_.size() -
+                                           payload_bytes_written_));
+    memcpy(buffer->data(),
+           payload_for_old_handler_.data() + payload_bytes_written_, size);
+    if (!next_handler_->OnReadCompleted(size, defer))
+      return false;
+    payload_bytes_written_ += size;
+    if (*defer)
+      return true;
+  }
+
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   if (payload_for_old_handler_.empty()) {
     // If there is no payload, just finalize the request on the old handler.
-    net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
-                                 net::ERR_ABORTED);
-    next_handler_->OnResponseCompleted(status, &defer_ignored);
-    DCHECK(!defer_ignored);
-    return;
+    status = net::URLRequestStatus::FromError(net::ERR_ABORTED);
+  }
+  next_handler_->OnResponseCompleted(status, defer);
+  DCHECK(!*defer);
+
+  next_handler_ = std::move(new_handler_);
+  state_ = State::NOTIFYING_ON_RESPONSE_STARTED_TO_NEW_HANDLER;
+  return next_handler_->OnResponseStarted(response_.get(), defer);
+}
+
+bool InterceptingResourceHandler::SendFirstReadBufferToNewHandler(bool* defer) {
+  DCHECK_EQ(state_, State::SENDING_BUFFER_TO_NEW_HANDLER);
+
+  while (first_read_buffer_bytes_written_ < first_read_buffer_bytes_read_) {
+    scoped_refptr<net::IOBuffer> buf;
+    int size = 0;
+    if (!next_handler_->OnWillRead(&buf, &size, -1))
+      return false;
+    size = std::min(size, static_cast<int>(first_read_buffer_bytes_read_ -
+                                           first_read_buffer_bytes_written_));
+    memcpy(buf->data(),
+           first_read_buffer_double_->data() + first_read_buffer_bytes_written_,
+           size);
+    if (!next_handler_->OnReadCompleted(size, defer))
+      return false;
+    first_read_buffer_bytes_written_ += size;
+    if (*defer)
+      return true;
   }
 
-  // Ensure the old ResourceHandler has a buffer that can store the payload.
-  scoped_refptr<net::IOBuffer> buf;
-  int size = 0;
-  if (first_read_buffer_) {
-    // The first read buffer can be reused. The data inside it has been copied
-    // before calling this function, so it can safely be overriden.
-    buf = first_read_buffer_;
-    size = first_read_buffer_size_;
-  }
-
-  // If there is no first read buffer, ask the old ResourceHandler to create a
-  // buffer that can contain payload.
-  if (!buf)
-    next_handler_->OnWillRead(&buf, &size, -1);
-
-  DCHECK(buf);
-  CHECK_GE(size, static_cast<int>(payload_for_old_handler_.length()));
-  memcpy(buf->data(), payload_for_old_handler_.c_str(),
-         payload_for_old_handler_.length());
-  next_handler_->OnReadCompleted(payload_for_old_handler_.length(),
-                                 &defer_ignored);
-  payload_for_old_handler_ = std::string();
-  DCHECK(!defer_ignored);
-
-  // Finalize the request.
-  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
-  next_handler_->OnResponseCompleted(status, &defer_ignored);
-  DCHECK(!defer_ignored);
+  state_ = State::PASS_THROUGH;
+  first_read_buffer_double_ = nullptr;
+  next_handler_->SetController(controller());
+  return true;
 }
 
 }  // namespace content

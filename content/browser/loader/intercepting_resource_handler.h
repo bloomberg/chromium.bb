@@ -14,7 +14,9 @@
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/resource_controller.h"
 #include "net/base/io_buffer.h"
+#include "net/url_request/url_request_status.h"
 
 namespace net {
 class URLRequest;
@@ -25,19 +27,34 @@ namespace content {
 // ResourceHandler that initiates special handling of the response if needed,
 // based on the response's MIME type (starts downloads, sends data to some
 // plugin types via a special channel).
+//
+// An InterceptingResourceHandler holds two handlers (|next_handler| and
+// |new_handler|). It assumes the following:
+//  - OnResponseStarted on |next_handler| never sets |*defer|.
+//  - OnResponseCompleted on |next_handler| never sets |*defer|.
 class CONTENT_EXPORT InterceptingResourceHandler
-    : public LayeredResourceHandler {
+    : public LayeredResourceHandler,
+      public ResourceController {
  public:
   InterceptingResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
                               net::URLRequest* request);
   ~InterceptingResourceHandler() override;
 
   // ResourceHandler implementation:
+  void SetController(ResourceController* controller) override;
   bool OnResponseStarted(ResourceResponse* response, bool* defer) override;
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                   int* buf_size,
                   int min_size) override;
   bool OnReadCompleted(int bytes_read, bool* defer) override;
+  void OnResponseCompleted(const net::URLRequestStatus& status,
+                           bool* defer) override;
+
+  // ResourceController implementation:
+  void Cancel() override;
+  void CancelAndIgnore() override;
+  void CancelWithError(int error_code) override;
+  void Resume() override;
 
   // Replaces the next handler with |new_handler|, sending
   // |payload_for_old_handler| to the old handler. Must be called after
@@ -54,38 +71,64 @@ class CONTENT_EXPORT InterceptingResourceHandler
 
  private:
   enum class State {
-    // In this state, the InterceptingResourceHandler is waiting for the mime
-    // type of the response to be identified, to check if the next handler
-    // should be replaced with an appropriate one.
+    // The InterceptingResourceHandler is waiting for the mime type of the
+    // response to be identified, to check if the next handler should be
+    // replaced with an appropriate one.
     STARTING,
 
-    // In this state, the InterceptingResourceHandler is waiting to copy the
-    // read buffer to the next handler if it was replaced. This is needed
-    // because MimeTypeResourceHandler may call OnWillRead before calling
-    // OnResponseStarted, that is before the InterceptingResourceHandler
-    // replaces the original ResourceHandler of the request. Therefore, the
-    // data read at that time should be copied to the new ResourceHandler.
-    WAITING_FOR_BUFFER_COPY,
+    // The InterceptingResourceHandler is sending the payload given via
+    // UseNewHandler to the old handler and waiting for its completion via
+    // Resume().
+    SENDING_PAYLOAD_TO_OLD_HANDLER,
 
-    // In this state, the InterceptingResourceHandler has replaced its next
-    // ResourceHandler if needed, and has ensured the buffered read data was
-    // properly transmitted to the new ResourceHandler. The
-    // InterceptingResourceHandler now acts as a pass-through ResourceHandler.
-    DONE,
+    // The InterceptingResourcHandler is notifying OnResponseStarted to the new
+    // handler and waiting for its completion via Resume(). After the
+    // completion, the InterceptingResourcHandler will transit to
+    // WAITING_FOR_ON_READ_COMPLETED on success.
+    NOTIFYING_ON_RESPONSE_STARTED_TO_NEW_HANDLER,
+
+    // The InterceptingResourcHandler is waiting for OnReadCompleted to be
+    // called.
+    WAITING_FOR_ON_READ_COMPLETED,
+
+    // The InterceptingResourceHandler is sending the old handler's contents to
+    // the new handler and waiting for its completion via Resume().
+    SENDING_BUFFER_TO_NEW_HANDLER,
+
+    // The InterceptingResourceHandler has replaced its next ResourceHandler if
+    // needed, and has ensured the buffered read data was properly transmitted
+    // to the new ResourceHandler. The InterceptingResourceHandler now acts as
+    // a pass-through ResourceHandler.
+    PASS_THROUGH,
   };
 
-  void SendPayloadToOldHandler();
+  // Runs necessary operations depending on |state_|. Returns false when an
+  // error happens, and set |*defer| to true if the operation continues upon
+  // return.
+  bool DoLoop(bool* defer);
 
-  State state_;
+  // The return value and |defer| has the same meaning as DoLoop.
+  bool SendPayloadToOldHandler(bool* defer);
+  bool SendFirstReadBufferToNewHandler(bool* defer);
+  bool SendCompletionToOldHandler(bool* defer);
+
+  State state_ = State::STARTING;
 
   std::unique_ptr<ResourceHandler> new_handler_;
   std::string payload_for_old_handler_;
+  size_t payload_bytes_written_ = 0;
 
   // Result of the first read, that may have to be passed to an alternate
   // ResourceHandler instead of the original ResourceHandler.
   scoped_refptr<net::IOBuffer> first_read_buffer_;
-  size_t first_read_buffer_size_;
-  scoped_refptr<net::IOBuffer> first_read_buffer_copy_;
+  // Instead of |first_read_buffer_|, this handler creates a new IOBuffer with
+  // the same size and return it to the client.
+  scoped_refptr<net::IOBuffer> first_read_buffer_double_;
+  size_t first_read_buffer_size_ = 0;
+  size_t first_read_buffer_bytes_read_ = 0;
+  size_t first_read_buffer_bytes_written_ = 0;
+
+  scoped_refptr<ResourceResponse> response_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptingResourceHandler);
 };
