@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,6 +31,13 @@
 namespace content {
 
 namespace {
+
+// When kPrioritySupportedRequestsDelayable is enabled, requests for
+// H2/QUIC/SPDY resources can be delayed by the ResourceScheduler just as
+// HTTP/1.1 resources are. Disabling this appears to have negative performance
+// impact, see https://crbug.com/655585.
+const base::Feature kPrioritySupportedRequestsDelayable{
+    "PrioritySupportedRequestsDelayable", base::FEATURE_ENABLED_BY_DEFAULT};
 
 enum StartMode {
   START_SYNC,
@@ -304,12 +312,13 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client {
  public:
-  explicit Client(ResourceScheduler* scheduler)
+  explicit Client(bool priority_requests_delayable)
       : is_loaded_(false),
         has_html_body_(false),
         using_spdy_proxy_(false),
         in_flight_delayable_count_(0),
-        total_layout_blocking_count_(0) {}
+        total_layout_blocking_count_(0),
+        priority_requests_delayable_(priority_requests_delayable) {}
 
   ~Client() {}
 
@@ -513,14 +522,20 @@ class ResourceScheduler::Client {
       attributes |= kAttributeLayoutBlocking;
     } else if (request->url_request()->priority() <
                kDelayablePriorityThreshold) {
-      // Resources below the delayable priority threshold that are being
-      // requested from a server that does not support native prioritization are
-      // considered delayable.
-      url::SchemeHostPort scheme_host_port(request->url_request()->url());
-      net::HttpServerProperties& http_server_properties =
-          *request->url_request()->context()->http_server_properties();
-      if (!http_server_properties.SupportsRequestPriority(scheme_host_port))
+      if (priority_requests_delayable_) {
+        // Resources below the delayable priority threshold that are considered
+        // delayable.
         attributes |= kAttributeDelayable;
+      } else {
+        // Resources below the delayable priority threshold that are being
+        // requested from a server that does not support native prioritization
+        // are considered delayable.
+        url::SchemeHostPort scheme_host_port(request->url_request()->url());
+        net::HttpServerProperties& http_server_properties =
+            *request->url_request()->context()->http_server_properties();
+        if (!http_server_properties.SupportsRequestPriority(scheme_host_port))
+          attributes |= kAttributeDelayable;
+      }
     }
 
     return attributes;
@@ -595,20 +610,24 @@ class ResourceScheduler::Client {
     if (!url_request.url().SchemeIsHTTPOrHTTPS())
       return START_REQUEST;
 
-    if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
-      return START_REQUEST;
-
     net::HostPortPair host_port_pair =
         net::HostPortPair::FromURL(url_request.url());
-    url::SchemeHostPort scheme_host_port(url_request.url());
-    net::HttpServerProperties& http_server_properties =
-        *url_request.context()->http_server_properties();
 
-    // TODO(willchan): We should really improve this algorithm as described in
-    // crbug.com/164101. Also, theoretically we should not count a
-    // request-priority capable request against the delayable requests limit.
-    if (http_server_properties.SupportsRequestPriority(scheme_host_port))
-      return START_REQUEST;
+    if (!priority_requests_delayable_) {
+      if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
+        return START_REQUEST;
+
+      url::SchemeHostPort scheme_host_port(url_request.url());
+
+      net::HttpServerProperties& http_server_properties =
+          *url_request.context()->http_server_properties();
+
+      // TODO(willchan): We should really improve this algorithm as described in
+      // crbug.com/164101. Also, theoretically we should not count a
+      // request-priority capable request against the delayable requests limit.
+      if (http_server_properties.SupportsRequestPriority(scheme_host_port))
+        return START_REQUEST;
+    }
 
     // Non-delayable requests.
     if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
@@ -698,9 +717,15 @@ class ResourceScheduler::Client {
   size_t in_flight_delayable_count_;
   // The number of layout-blocking in-flight requests.
   size_t total_layout_blocking_count_;
+
+  // True if requests to servers that support priorities (e.g., H2/QUIC) can
+  // be delayed.
+  bool priority_requests_delayable_;
 };
 
-ResourceScheduler::ResourceScheduler() {}
+ResourceScheduler::ResourceScheduler()
+    : priority_requests_delayable_(
+          base::FeatureList::IsEnabled(kPrioritySupportedRequestsDelayable)) {}
 
 ResourceScheduler::~ResourceScheduler() {
   DCHECK(unowned_requests_.empty());
@@ -757,7 +782,7 @@ void ResourceScheduler::OnClientCreated(int child_id,
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!base::ContainsKey(client_map_, client_id));
 
-  Client* client = new Client(this);
+  Client* client = new Client(priority_requests_delayable_);
   client_map_[client_id] = client;
 }
 

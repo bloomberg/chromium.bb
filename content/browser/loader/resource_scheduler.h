@@ -137,6 +137,10 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   size_t max_num_delayable_requests_;
   RequestSet unowned_requests_;
 
+  // True if requests to servers that support priorities (e.g., H2/QUIC) can
+  // be delayed.
+  bool priority_requests_delayable_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceScheduler);
 };
 
