@@ -31,8 +31,6 @@ void DefaultWallpaperDelegate::InitializeWallpaper() {
   WmShell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
 }
 
-void DefaultWallpaperDelegate::OpenSetWallpaperPage() {}
-
 bool DefaultWallpaperDelegate::CanOpenSetWallpaperPage() {
   return false;
 }

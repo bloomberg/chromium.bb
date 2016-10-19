@@ -191,7 +191,7 @@ SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
-  return base::MakeUnique<WallpaperDelegateMus>(connector_);
+  return base::MakeUnique<WallpaperDelegateMus>();
 }
 
 SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {

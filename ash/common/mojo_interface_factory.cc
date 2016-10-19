@@ -9,6 +9,7 @@
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
+#include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -23,13 +24,17 @@ void BindLocaleNotificationControllerOnMainThread(
       std::move(request));
 }
 
-void BindShelfControllerRequestOnMainThread(
-    mojom::ShelfControllerRequest request) {
+void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   WmShell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
 
 void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
   WmShell::Get()->system_tray_controller()->BindRequest(std::move(request));
+}
+
+void BindWallpaperRequestOnMainThread(
+    mojom::WallpaperControllerRequest request) {
+  WmShell::Get()->wallpaper_controller()->BindRequest(std::move(request));
 }
 
 }  // namespace
@@ -42,9 +47,11 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::Bind(&BindLocaleNotificationControllerOnMainThread),
       main_thread_task_runner);
-  registry->AddInterface(base::Bind(&BindShelfControllerRequestOnMainThread),
+  registry->AddInterface(base::Bind(&BindShelfRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindWallpaperRequestOnMainThread),
                          main_thread_task_runner);
 }
 

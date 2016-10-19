@@ -26,6 +26,10 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/common/context_menu_params.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Returns true if the user can modify the |shelf|'s auto-hide behavior.
@@ -95,9 +99,13 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_PIN:
       return controller_->IsPinnable(item_.id);
     case MENU_CHANGE_WALLPAPER:
+#if defined(OS_CHROMEOS)
       return ash::WmShell::Get()
           ->wallpaper_delegate()
           ->CanOpenSetWallpaperPage();
+#else
+      return false;
+#endif  // defined(OS_CHROMEOS)
     case MENU_AUTO_HIDE:
       return CanUserModifyShelfAutoHideBehavior(controller_->profile());
     default:
@@ -137,7 +145,9 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case MENU_ALIGNMENT_MENU:
       break;
     case MENU_CHANGE_WALLPAPER:
-      ash::WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
+#if defined(OS_CHROMEOS)
+      chromeos::WallpaperManager::Get()->Open();
+#endif  // defined(OS_CHROMEOS)
       break;
     default:
       NOTREACHED();

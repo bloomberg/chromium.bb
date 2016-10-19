@@ -11,7 +11,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_registrar_impl.h"
 #include "ash/mus/native_widget_factory_mus.h"
-#include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -164,7 +163,6 @@ bool WindowManagerApplication::OnConnect(
   mojo_interface_factory::RegisterInterfaces(
       registry, base::ThreadTaskRunnerHandle::Get());
 
-  registry->AddInterface<mojom::WallpaperController>(this);
   registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (remote_identity.name() == "service:mash_session") {
     connector()->ConnectToInterface(remote_identity, &session_);
@@ -172,16 +170,6 @@ bool WindowManagerApplication::OnConnect(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }
   return true;
-}
-
-void WindowManagerApplication::Create(
-    const ::service_manager::Identity& remote_identity,
-    mojom::WallpaperControllerRequest request) {
-  mojom::WallpaperController* wallpaper_controller =
-      static_cast<WallpaperDelegateMus*>(WmShell::Get()->wallpaper_delegate());
-  DCHECK(wallpaper_controller);
-  wallpaper_controller_bindings_.AddBinding(wallpaper_controller,
-                                            std::move(request));
 }
 
 void WindowManagerApplication::Create(

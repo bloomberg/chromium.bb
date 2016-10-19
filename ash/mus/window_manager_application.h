@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/common/types.h"
@@ -53,7 +52,6 @@ class WindowManager;
 // Hosts the window manager and the ash system user interface for mash.
 class WindowManagerApplication
     : public service_manager::Service,
-      public service_manager::InterfaceFactory<mojom::WallpaperController>,
       public service_manager::InterfaceFactory<ui::mojom::AcceleratorRegistrar>,
       public mash::session::mojom::ScreenlockStateListener {
  public:
@@ -83,10 +81,6 @@ class WindowManagerApplication
   bool OnConnect(const service_manager::Identity& remote_identity,
                  service_manager::InterfaceRegistry* registry) override;
 
-  // InterfaceFactory<mojom::WallpaperController>:
-  void Create(const service_manager::Identity& remote_identity,
-              mojom::WallpaperControllerRequest request) override;
-
   // service_manager::InterfaceFactory<ui::mojom::AcceleratorRegistrar>:
   void Create(const service_manager::Identity& remote_identity,
               ui::mojom::AcceleratorRegistrarRequest request) override;
@@ -105,8 +99,6 @@ class WindowManagerApplication
 
   // A blocking pool used by the WindowManager's shell; not used in tests.
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
-
-  mojo::BindingSet<mojom::WallpaperController> wallpaper_controller_bindings_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;
 

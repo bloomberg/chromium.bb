@@ -10,10 +10,13 @@
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm_display_observer.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/wallpaper/wallpaper_layout.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
@@ -29,14 +32,19 @@ namespace ash {
 class WallpaperControllerObserver;
 
 // Controls the desktop background wallpaper.
-class ASH_EXPORT WallpaperController : public WmDisplayObserver,
-                                       public ShellObserver {
+class ASH_EXPORT WallpaperController
+    : public NON_EXPORTED_BASE(mojom::WallpaperController),
+      public WmDisplayObserver,
+      public ShellObserver {
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
   explicit WallpaperController(
       const scoped_refptr<base::TaskRunner>& task_runner);
   ~WallpaperController() override;
+
+  // Binds the mojom::WallpaperController interface request to this object.
+  void BindRequest(mojom::WallpaperControllerRequest request);
 
   // Add/Remove observers.
   void AddObserver(WallpaperControllerObserver* observer);
@@ -94,6 +102,13 @@ class ASH_EXPORT WallpaperController : public WmDisplayObserver,
     wallpaper_reload_delay_ = value;
   }
 
+  // Opens the set wallpaper page in the browser.
+  void OpenSetWallpaperPage();
+
+  // mojom::WallpaperController overrides:
+  void SetWallpaper(const SkBitmap& wallpaper,
+                    wallpaper::WallpaperLayout layout) override;
+
  private:
   // Creates a WallpaperWidgetController for |root_window|.
   void InstallDesktopController(WmWindow* root_window);
@@ -115,6 +130,9 @@ class ASH_EXPORT WallpaperController : public WmDisplayObserver,
   bool locked_;
 
   WallpaperMode wallpaper_mode_;
+
+  // Bindings for the WallpaperController interface.
+  mojo::BindingSet<mojom::WallpaperController> bindings_;
 
   base::ObserverList<WallpaperControllerObserver> observers_;
 

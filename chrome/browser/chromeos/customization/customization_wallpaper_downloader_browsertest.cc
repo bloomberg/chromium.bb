@@ -95,9 +95,7 @@ class TestWallpaperImageURLFetcherCallback {
       const GURL& url,
       const size_t require_retries,
       const std::vector<unsigned char>& jpeg_data_raw)
-      : url_(url),
-        require_retries_(require_retries),
-        factory_(NULL) {
+      : url_(url), require_retries_(require_retries), factory_(nullptr) {
     jpeg_data_.resize(jpeg_data_raw.size());
     std::copy(jpeg_data_raw.begin(), jpeg_data_raw.end(), jpeg_data_.begin());
   }
@@ -199,7 +197,7 @@ class WallpaperImageFetcherFactory {
     url_callback_.reset(new TestWallpaperImageURLFetcherCallback(
         url, require_retries, oem_wallpaper_));
     fallback_fetcher_factory_.reset(new net::TestURLFetcherFactory);
-    net::URLFetcherImpl::set_factory(NULL);
+    net::URLFetcherImpl::set_factory(nullptr);
     fetcher_factory_.reset(new net::FakeURLFetcherFactory(
         fallback_fetcher_factory_.get(),
         base::Bind(&TestWallpaperImageURLFetcherCallback::CreateURLFetcher,
@@ -220,24 +218,13 @@ class WallpaperImageFetcherFactory {
 class CustomizationWallpaperDownloaderBrowserTest
     : public InProcessBrowserTest {
  public:
-  CustomizationWallpaperDownloaderBrowserTest()
-      : controller_(NULL),
-        local_state_(NULL) {
-  }
-
+  CustomizationWallpaperDownloaderBrowserTest() {}
   ~CustomizationWallpaperDownloaderBrowserTest() override {}
-
-  void SetUpOnMainThread() override {
-    controller_ = ash::WmShell::Get()->wallpaper_controller();
-    local_state_ = g_browser_process->local_state();
-  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
-
-  void TearDownOnMainThread() override { controller_ = NULL; }
 
  protected:
   void CreateCmdlineWallpapers() {
@@ -247,8 +234,6 @@ class CustomizationWallpaperDownloaderBrowserTest
         *cmdline_wallpaper_dir_, &wallpaper_manager_command_line_);
   }
 
-  ash::WallpaperController* controller_;
-  PrefService* local_state_;
   std::unique_ptr<base::CommandLine> wallpaper_manager_command_line_;
 
   // Directory created by CreateCmdlineWallpapersAndSetFlags() to store default
@@ -265,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
   WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
-      controller_->GetWallpaper(),
+      ash::WmShell::Get()->wallpaper_controller()->GetWallpaper(),
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
 
   WallpaperImageFetcherFactory url_factory(
@@ -283,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
 
   observer.WaitForWallpaperAnimationFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
-      controller_->GetWallpaper(),
+      ash::WmShell::Get()->wallpaper_controller()->GetWallpaper(),
       wallpaper_manager_test_utils::kCustomWallpaperColor));
   EXPECT_EQ(1U, url_factory.num_attempts());
 }
@@ -294,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
   WallpaperManager::Get()->SetDefaultWallpaperNow(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
-      controller_->GetWallpaper(),
+      ash::WmShell::Get()->wallpaper_controller()->GetWallpaper(),
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
 
   WallpaperImageFetcherFactory url_factory(
@@ -312,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
 
   observer.WaitForWallpaperAnimationFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
-      controller_->GetWallpaper(),
+      ash::WmShell::Get()->wallpaper_controller()->GetWallpaper(),
       wallpaper_manager_test_utils::kCustomWallpaperColor));
 
   EXPECT_EQ(2U, url_factory.num_attempts());

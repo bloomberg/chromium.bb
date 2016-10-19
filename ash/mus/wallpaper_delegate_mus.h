@@ -6,19 +6,13 @@
 #define ASH_MUS_WALLPAPER_DELEGATE_MUS_H_
 
 #include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace ash {
 
-class WallpaperDelegateMus : public WallpaperDelegate,
-                             public mojom::WallpaperController {
+class WallpaperDelegateMus : public WallpaperDelegate {
  public:
-  explicit WallpaperDelegateMus(service_manager::Connector* connector);
+  WallpaperDelegateMus();
   ~WallpaperDelegateMus() override;
 
  private:
@@ -29,16 +23,9 @@ class WallpaperDelegateMus : public WallpaperDelegate,
   bool ShouldShowInitialAnimation() override;
   void UpdateWallpaper(bool clear_cache) override;
   void InitializeWallpaper() override;
-  void OpenSetWallpaperPage() override;
   bool CanOpenSetWallpaperPage() override;
   void OnWallpaperAnimationFinished() override;
   void OnWallpaperBootAnimationFinished() override;
-
-  // mojom::WallpaperController overrides:
-  void SetWallpaper(const SkBitmap& wallpaper,
-                    mojom::WallpaperLayout layout) override;
-
-  service_manager::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperDelegateMus);
 };

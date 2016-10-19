@@ -34,10 +34,6 @@ class Insets;
 class Point;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;

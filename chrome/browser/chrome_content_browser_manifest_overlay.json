@@ -19,7 +19,9 @@
         "ash::mojom::LocaleNotificationController",
         "ash::mojom::ShelfController",
         "ash::mojom::SystemTray",
-        "ash::mojom::SystemTrayClient"
+        "ash::mojom::SystemTrayClient",
+        "ash::mojom::WallpaperController",
+        "ash::mojom::WallpaperManager"
       ],
       "mash:launchable": [
         "mash::mojom::Launchable"

@@ -41,9 +41,6 @@ class ASH_EXPORT WallpaperDelegate {
   // Initialize wallpaper.
   virtual void InitializeWallpaper() = 0;
 
-  // Opens the set wallpaper page in the browser.
-  virtual void OpenSetWallpaperPage() = 0;
-
   // Returns true if user can open set wallpaper page.
   virtual bool CanOpenSetWallpaperPage() = 0;
 

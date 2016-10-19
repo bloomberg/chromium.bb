@@ -86,11 +86,6 @@ class WallpaperDelegate : public ash::WallpaperDelegate {
     chromeos::WallpaperManager::Get()->InitializeWallpaper();
   }
 
-  void OpenSetWallpaperPage() override {
-    if (CanOpenSetWallpaperPage())
-      wallpaper_manager_util::OpenWallpaperManager();
-  }
-
   bool CanOpenSetWallpaperPage() override {
     const LoginState* login_state = LoginState::Get();
     const LoginState::LoggedInUserType user_type =

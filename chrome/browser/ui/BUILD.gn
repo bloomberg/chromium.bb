@@ -1285,8 +1285,6 @@ split_static_library("ui") {
       "ash/chrome_shell_content_state_chromeos.cc",
       "ash/chrome_shell_delegate.cc",
       "ash/chrome_shell_delegate.h",
-      "ash/chrome_wallpaper_manager.cc",
-      "ash/chrome_wallpaper_manager.h",
       "ash/ime_controller_chromeos.cc",
       "ash/ime_controller_chromeos.h",
       "ash/keyboard_ui_service.cc",

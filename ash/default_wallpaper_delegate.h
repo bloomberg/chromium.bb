@@ -23,7 +23,6 @@ class ASH_EXPORT DefaultWallpaperDelegate : public WallpaperDelegate {
   bool ShouldShowInitialAnimation() override;
   void UpdateWallpaper(bool clear_cache) override;
   void InitializeWallpaper() override;
-  void OpenSetWallpaperPage() override;
   bool CanOpenSetWallpaperPage() override;
   void OnWallpaperAnimationFinished() override;
   void OnWallpaperBootAnimationFinished() override;

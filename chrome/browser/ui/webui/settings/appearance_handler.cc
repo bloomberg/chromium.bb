@@ -13,8 +13,7 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/wallpaper/wallpaper_delegate.h"  // nogncheck
-#include "ash/common/wm_shell.h"  // nogncheck
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #endif
 
 namespace settings {
@@ -63,7 +62,7 @@ void AppearanceHandler::HandleUseSystemTheme(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
 void AppearanceHandler::HandleOpenWallpaperManager(
     const base::ListValue* /*args*/) {
-  ash::WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
+  chromeos::WallpaperManager::Get()->Open();
 }
 #endif
 

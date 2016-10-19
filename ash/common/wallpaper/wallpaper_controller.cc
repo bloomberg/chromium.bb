@@ -4,6 +4,7 @@
 
 #include "ash/common/wallpaper/wallpaper_controller.h"
 
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wallpaper/wallpaper_view.h"
@@ -16,6 +17,7 @@
 #include "base/logging.h"
 #include "base/task_runner.h"
 #include "components/wallpaper/wallpaper_resizer.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -41,6 +43,11 @@ WallpaperController::WallpaperController(
 WallpaperController::~WallpaperController() {
   WmShell::Get()->RemoveDisplayObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
+}
+
+void WallpaperController::BindRequest(
+    mojom::WallpaperControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 gfx::ImageSkia WallpaperController::GetWallpaper() const {
@@ -180,6 +187,26 @@ bool WallpaperController::WallpaperIsAlreadyLoaded(
 
   return wallpaper::WallpaperResizer::GetImageId(image) ==
          current_wallpaper_->original_image_id();
+}
+
+void WallpaperController::OpenSetWallpaperPage() {
+  WmShell* shell = WmShell::Get();
+  service_manager::Connector* connector =
+      shell->delegate()->GetShellConnector();
+  if (!connector || !shell->wallpaper_delegate()->CanOpenSetWallpaperPage())
+    return;
+
+  mojom::WallpaperManagerPtr wallpaper_manager;
+  connector->ConnectToInterface("service:content_browser", &wallpaper_manager);
+  wallpaper_manager->Open();
+}
+
+void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
+                                       wallpaper::WallpaperLayout layout) {
+  if (wallpaper.isNull())
+    return;
+
+  SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), layout);
 }
 
 void WallpaperController::InstallDesktopController(WmWindow* root_window) {
