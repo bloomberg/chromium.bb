@@ -157,7 +157,8 @@ void LogoTracker::ReturnToIdle(int outcome) {
   is_cached_logo_valid_ = false;
 
   // Clear obsevers.
-  FOR_EACH_OBSERVER(LogoObserver, logo_observers_, OnObserverRemoved());
+  for (auto& observer : logo_observers_)
+    observer.OnObserverRemoved();
   logo_observers_.Clear();
 }
 
@@ -186,7 +187,8 @@ void LogoTracker::OnCachedLogoAvailable(const LogoMetadata& metadata,
   }
   is_cached_logo_valid_ = true;
   Logo* logo = cached_logo_.get();
-  FOR_EACH_OBSERVER(LogoObserver, logo_observers_, OnLogoAvailable(logo, true));
+  for (auto& observer : logo_observers_)
+    observer.OnLogoAvailable(logo, true);
   FetchLogo();
 }
 
@@ -294,9 +296,8 @@ void LogoTracker::OnFreshLogoAvailable(
     // Notify observers if a new logo was fetched, or if the new logo is NULL
     // but the cached logo was non-NULL.
     if (logo || cached_logo_) {
-      FOR_EACH_OBSERVER(LogoObserver,
-                        logo_observers_,
-                        OnLogoAvailable(logo.get(), false));
+      for (auto& observer : logo_observers_)
+        observer.OnLogoAvailable(logo.get(), false);
       SetCachedLogo(std::move(encoded_logo));
     }
   }

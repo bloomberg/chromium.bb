@@ -51,8 +51,8 @@ TabRestoreServiceHelper::TabRestoreServiceHelper(
 }
 
 TabRestoreServiceHelper::~TabRestoreServiceHelper() {
-  FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
-                    TabRestoreServiceDestroyed(tab_restore_service_));
+  for (auto& observer : observer_list_)
+    observer.TabRestoreServiceDestroyed(tab_restore_service_);
 }
 
 void TabRestoreServiceHelper::AddObserver(
@@ -265,13 +265,13 @@ bool TabRestoreServiceHelper::IsRestoring() const {
 }
 
 void TabRestoreServiceHelper::NotifyTabsChanged() {
-  FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
-                    TabRestoreServiceChanged(tab_restore_service_));
+  for (auto& observer : observer_list_)
+    observer.TabRestoreServiceChanged(tab_restore_service_);
 }
 
 void TabRestoreServiceHelper::NotifyLoaded() {
-  FOR_EACH_OBSERVER(TabRestoreServiceObserver, observer_list_,
-                    TabRestoreServiceLoaded(tab_restore_service_));
+  for (auto& observer : observer_list_)
+    observer.TabRestoreServiceLoaded(tab_restore_service_);
 }
 
 void TabRestoreServiceHelper::AddEntry(std::unique_ptr<Entry> entry,

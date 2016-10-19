@@ -37,8 +37,8 @@ ZoomEventManager::AddZoomLevelChangedCallback(
 }
 
 void ZoomEventManager::OnDefaultZoomLevelChanged() {
-  FOR_EACH_OBSERVER(ZoomEventManagerObserver, observers_,
-                    OnDefaultZoomLevelChanged());
+  for (auto& observer : observers_)
+    observer.OnDefaultZoomLevelChanged();
 }
 
 void ZoomEventManager::AddZoomEventManagerObserver(

@@ -351,9 +351,8 @@ void RenderViewContextMenuBase::MenuClosed(ui::SimpleMenuModel* source) {
   source_web_contents_->NotifyContextMenuClosed(params_.custom_context);
 
   if (!command_executed_) {
-    FOR_EACH_OBSERVER(RenderViewContextMenuObserver,
-                      observers_,
-                      OnMenuCancel());
+    for (auto& observer : observers_)
+      observer.OnMenuCancel();
   }
 }
 

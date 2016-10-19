@@ -626,11 +626,11 @@ void VariationsService::NotifyObservers(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (result.kill_critical_group_change_count > 0) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnExperimentChangesDetected(Observer::CRITICAL));
+    for (auto& observer : observer_list_)
+      observer.OnExperimentChangesDetected(Observer::CRITICAL);
   } else if (result.kill_best_effort_group_change_count > 0) {
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnExperimentChangesDetected(Observer::BEST_EFFORT));
+    for (auto& observer : observer_list_)
+      observer.OnExperimentChangesDetected(Observer::BEST_EFFORT);
   }
 }
 

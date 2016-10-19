@@ -24,8 +24,8 @@ void SegregatedPrefStore::AggregatingObserver::OnPrefValueChanged(
   if (failed_sub_initializations_ + successful_sub_initializations_ < 2)
     return;
 
-  FOR_EACH_OBSERVER(PrefStore::Observer, outer_->observers_,
-                    OnPrefValueChanged(key));
+  for (auto& observer : outer_->observers_)
+    observer.OnPrefValueChanged(key);
 }
 
 void SegregatedPrefStore::AggregatingObserver::OnInitializationCompleted(
@@ -44,9 +44,8 @@ void SegregatedPrefStore::AggregatingObserver::OnInitializationCompleted(
         outer_->read_error_delegate_->OnError(read_error);
     }
 
-    FOR_EACH_OBSERVER(
-        PrefStore::Observer, outer_->observers_,
-        OnInitializationCompleted(successful_sub_initializations_ == 2));
+    for (auto& observer : outer_->observers_)
+      observer.OnInitializationCompleted(successful_sub_initializations_ == 2);
   }
 }
 

@@ -630,7 +630,8 @@ void WallpaperManagerBase::SetUserWallpaperNow(const AccountId& account_id) {
 }
 
 void WallpaperManagerBase::UpdateWallpaper(bool clear_cache) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnUpdateWallpaperForTesting());
+  for (auto& observer : observers_)
+    observer.OnUpdateWallpaperForTesting();
   if (clear_cache)
     wallpaper_cache_.clear();
   SetUserWallpaperNow(last_selected_user_);
@@ -647,8 +648,8 @@ void WallpaperManagerBase::RemoveObserver(
 }
 
 void WallpaperManagerBase::NotifyAnimationFinished() {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnWallpaperAnimationFinished(last_selected_user_));
+  for (auto& observer : observers_)
+    observer.OnWallpaperAnimationFinished(last_selected_user_);
 }
 
 // WallpaperManager, protected: -----------------------------------------------

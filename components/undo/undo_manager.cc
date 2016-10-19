@@ -203,8 +203,8 @@ void UndoManager::Undo(bool* performing_indicator,
 }
 
 void UndoManager::NotifyOnUndoManagerStateChange() {
-  FOR_EACH_OBSERVER(
-      UndoManagerObserver, observers_, OnUndoManagerStateChange());
+  for (auto& observer : observers_)
+    observer.OnUndoManagerStateChange();
 }
 
 void UndoManager::AddUndoGroup(UndoGroup* new_undo_group) {

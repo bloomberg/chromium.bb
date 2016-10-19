@@ -538,8 +538,8 @@ void PrefModelAssociator::NotifySyncedPrefObservers(const std::string& path,
   if (observer_iter == synced_pref_observers_.end())
     return;
   SyncedPrefObserverList* observers = observer_iter->second.get();
-  FOR_EACH_OBSERVER(SyncedPrefObserver, *observers,
-                    OnSyncedPrefChanged(path, from_sync));
+  for (auto& observer : *observers)
+    observer.OnSyncedPrefChanged(path, from_sync);
 }
 
 }  // namespace syncable_prefs

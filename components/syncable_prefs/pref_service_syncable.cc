@@ -180,8 +180,8 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(
 }
 
 void PrefServiceSyncable::OnIsSyncingChanged() {
-  FOR_EACH_OBSERVER(PrefServiceSyncableObserver, observer_list_,
-                    OnIsSyncingChanged());
+  for (auto& observer : observer_list_)
+    observer.OnIsSyncingChanged();
 }
 
 void PrefServiceSyncable::ProcessPrefChange(const std::string& name) {

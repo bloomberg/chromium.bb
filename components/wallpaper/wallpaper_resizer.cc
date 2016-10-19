@@ -144,7 +144,8 @@ void WallpaperResizer::RemoveObserver(WallpaperResizerObserver* observer) {
 
 void WallpaperResizer::OnResizeFinished(SkBitmap* resized_bitmap) {
   image_ = gfx::ImageSkia::CreateFrom1xBitmap(*resized_bitmap);
-  FOR_EACH_OBSERVER(WallpaperResizerObserver, observers_, OnWallpaperResized());
+  for (auto& observer : observers_)
+    observer.OnWallpaperResized();
 }
 
 }  // namespace wallpaper

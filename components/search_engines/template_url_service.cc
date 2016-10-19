@@ -2115,8 +2115,8 @@ void TemplateURLService::NotifyObservers() {
   if (!loaded_)
     return;
 
-  FOR_EACH_OBSERVER(TemplateURLServiceObserver, model_observers_,
-                    OnTemplateURLServiceChanged());
+  for (auto& observer : model_observers_)
+    observer.OnTemplateURLServiceChanged();
 }
 
 // |template_urls| are the TemplateURLs loaded from the database.

@@ -187,7 +187,8 @@ void UpdateClientImpl::RemoveObserver(Observer* observer) {
 void UpdateClientImpl::NotifyObservers(Observer::Events event,
                                        const std::string& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnEvent(event, id));
+  for (auto& observer : observer_list_)
+    observer.OnEvent(event, id);
 }
 
 bool UpdateClientImpl::GetCrxUpdateState(const std::string& id,
