@@ -366,7 +366,7 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
 
     case VIDEO_CAPTURE_STATE_PAUSED:
     case VIDEO_CAPTURE_STATE_RESUMED:
-      // Not applicable to reporting on device start success/failure.
+      // Not applicable to reporting on device starts or errors.
       break;
   }
 }
@@ -481,18 +481,25 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
     SetPowerLineFrequencyParamFromConstraints(constraints, &new_params);
   }
 
-  source_->StartCapture(new_params,
-                          frame_callback,
-                          base::Bind(&MediaStreamVideoCapturerSource::OnStarted,
-                                     base::Unretained(this)));
+  is_capture_starting_ = true;
+  source_->StartCapture(
+      new_params, frame_callback,
+      base::Bind(&MediaStreamVideoCapturerSource::OnRunStateChanged,
+                 base::Unretained(this)));
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
   source_->StopCapture();
 }
 
-void MediaStreamVideoCapturerSource::OnStarted(bool result) {
-  OnStartDone(result ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE);
+void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
+  if (is_capture_starting_) {
+    OnStartDone(is_running ? MEDIA_DEVICE_OK
+                           : MEDIA_DEVICE_TRACK_START_FAILURE);
+    is_capture_starting_ = false;
+  } else if (!is_running) {
+    StopSource();
+  }
 }
 
 const char*

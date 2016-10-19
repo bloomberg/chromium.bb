@@ -113,7 +113,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     source_stopped_ = true;
     EXPECT_EQ(source.id(), webkit_source_id_);
   }
-  void OnStarted(bool result) { source_->OnStarted(result); }
+  void OnStarted(bool result) { source_->OnRunStateChanged(result); }
 
  protected:
   void OnConstraintsApplied(MediaStreamSource* source,
