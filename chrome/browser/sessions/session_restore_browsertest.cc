@@ -1252,6 +1252,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
 
 // Regression test for crbug.com/240156. When restoring tabs with a navigation,
 // the navigation should take active tab focus.
+// Flaky on Mac. http://crbug.com/656211.
+#if defined(OS_MACOSX)
+#define MAYBE_RestoreWithNavigateSelectedTab \
+  DISABLED_RestoreWithNavigateSelectedTab
+#else
+#define MAYBE_RestoreWithNavigateSelectedTab RestoreWithNavigateSelectedTab
+#endif
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWithNavigateSelectedTab) {
   // Create 2 tabs.
   ui_test_utils::NavigateToURL(browser(), url1_);

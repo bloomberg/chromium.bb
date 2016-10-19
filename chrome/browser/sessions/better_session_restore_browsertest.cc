@@ -460,6 +460,12 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_CookiesClearedOnExit) {
       ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
+// Flaky on Mac. http://crbug.com/656211.
+#if defined(OS_MACOSX)
+#define MAYBE_CookiesClearedOnExit DISABLED_CookiesClearedOnExit
+#else
+#define MAYBE_CookiesClearedOnExit CookiesClearedOnExit
+#endif
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, CookiesClearedOnExit) {
   CheckReloadedPageNotRestored();
 }
