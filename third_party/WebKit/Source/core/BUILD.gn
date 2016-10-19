@@ -1088,6 +1088,7 @@ source_set("unit_tests") {
     "editing/iterators/SearchBufferTest.cpp",
     "editing/iterators/SimplifiedBackwardsTextIteratorTest.cpp",
     "editing/iterators/TextIteratorTest.cpp",
+    "editing/iterators/TextSearcherICUTest.cpp",
     "editing/markers/DocumentMarkerControllerTest.cpp",
     "editing/serializers/StyledMarkupSerializerTest.cpp",
     "editing/spellcheck/SpellCheckerTest.cpp",

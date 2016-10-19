@@ -31,8 +31,11 @@
 #include "core/editing/FindOptions.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace blink {
+
+class TextSearcherICU;
 
 // Buffer that knows how to compare with a search target.
 // Keeps enough of the previous text to be able to search in the future, but no
@@ -84,6 +87,8 @@ class SearchBuffer {
   bool m_targetRequiresKanaWorkaround;
   Vector<UChar> m_normalizedTarget;
   mutable Vector<UChar> m_normalizedMatch;
+
+  std::unique_ptr<TextSearcherICU> m_textSearcher;
 };
 
 CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange,
