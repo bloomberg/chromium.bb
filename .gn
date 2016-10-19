@@ -246,7 +246,7 @@ exec_script_whitelist = [
 
   "//jingle/BUILD.gn",
   "//net/BUILD.gn",
-  "//remoting/host/BUILD.gn",
+  "//remoting/host/installer/linux/BUILD.gn",
   "//remoting/remoting_version.gni",
   "//remoting/host/installer/win/generate_clsids.gni",
   "//third_party/angle/BUILD.gn",
