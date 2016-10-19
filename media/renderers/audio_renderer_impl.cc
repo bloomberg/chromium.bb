@@ -103,10 +103,12 @@ AudioRendererImpl::~AudioRendererImpl() {
 void AudioRendererImpl::StartTicking() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  base::AutoLock auto_lock(lock_);
+
   DCHECK(!rendering_);
   rendering_ = true;
 
-  base::AutoLock auto_lock(lock_);
   // Wait for an eventual call to SetPlaybackRate() to start rendering.
   if (playback_rate_ == 0) {
     DCHECK(!sink_playing_);
@@ -133,10 +135,12 @@ void AudioRendererImpl::StartRendering_Locked() {
 void AudioRendererImpl::StopTicking() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  base::AutoLock auto_lock(lock_);
+
   DCHECK(rendering_);
   rendering_ = false;
 
-  base::AutoLock auto_lock(lock_);
   // Rendering should have already been stopped with a zero playback rate.
   if (playback_rate_ == 0) {
     DCHECK(!sink_playing_);
