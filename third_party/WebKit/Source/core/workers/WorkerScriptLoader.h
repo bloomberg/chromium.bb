@@ -64,9 +64,7 @@ class CORE_EXPORT WorkerScriptLoader final
                          const KURL&,
                          CrossOriginRequestPolicy,
                          WebAddressSpace);
-  // TODO: |finishedCallback| is not currently guaranteed to be invoked if
-  // used from worker context and the worker shuts down in the middle of an
-  // operation. This will cause leaks when we support nested workers.
+
   // Note that callbacks could be invoked before loadAsynchronously() returns.
   void loadAsynchronously(ExecutionContext&,
                           const KURL&,
