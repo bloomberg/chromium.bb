@@ -36,6 +36,7 @@ class FakeHostResolverInterface : public nacl_io::HostResolverInterface {
   std::string fake_hostname;
   std::vector<struct sockaddr_in> fake_addresses_v4;
   std::vector<struct sockaddr_in6> fake_addresses_v6;
+
  private:
   FakePepperInterface* ppapi_;
 

@@ -12,6 +12,7 @@
 #include <ppapi/c/pp_directory_entry.h>
 
 #include "fake_ppapi/fake_core_interface.h"
+#include "fake_ppapi/fake_file_io_interface.h"
 #include "fake_ppapi/fake_var_interface.h"
 #include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
@@ -97,40 +98,6 @@ class FakeHtml5FsFilesystem {
   PP_FileSystemType filesystem_type_;
 };
 
-class FakeFileIoInterface : public nacl_io::FileIoInterface {
- public:
-  explicit FakeFileIoInterface(FakeCoreInterface* core_interface);
-
-  virtual PP_Resource Create(PP_Resource instance);
-  virtual int32_t Open(PP_Resource file_io,
-                       PP_Resource file_ref,
-                       int32_t open_flags,
-                       PP_CompletionCallback callback);
-  virtual int32_t Query(PP_Resource file_io,
-                        PP_FileInfo* info,
-                        PP_CompletionCallback callback);
-  virtual int32_t Read(PP_Resource file_io,
-                       int64_t offset,
-                       char* buffer,
-                       int32_t bytes_to_read,
-                       PP_CompletionCallback callback);
-  virtual int32_t Write(PP_Resource file_io,
-                        int64_t offset,
-                        const char* buffer,
-                        int32_t bytes_to_write,
-                        PP_CompletionCallback callback);
-  virtual int32_t SetLength(PP_Resource file_io,
-                            int64_t length,
-                            PP_CompletionCallback callback);
-  virtual int32_t Flush(PP_Resource file_io, PP_CompletionCallback callback);
-  virtual void Close(PP_Resource file_io);
-
- private:
-  FakeCoreInterface* core_interface_;  // Weak reference.
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFileIoInterface);
-};
-
 class FakeFileRefInterface : public nacl_io::FileRefInterface {
  public:
   FakeFileRefInterface(FakeCoreInterface* core_interface,
@@ -154,8 +121,8 @@ class FakeFileRefInterface : public nacl_io::FileRefInterface {
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.
-  FakeVarInterface* var_interface_;  // Weak reference.
-  FakeVarManager* var_manager_;  // Weak reference
+  FakeVarInterface* var_interface_;    // Weak reference.
+  FakeVarManager* var_manager_;        // Weak reference
 
   DISALLOW_COPY_AND_ASSIGN(FakeFileRefInterface);
 };

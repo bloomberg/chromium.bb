@@ -12,6 +12,7 @@
 
 #include "gtest/gtest.h"
 
+#include "fake_ppapi/fake_util.h"
 #include "nacl_io/osinttypes.h"
 
 namespace {
@@ -101,24 +102,6 @@ class FakeURLResponseInfoResource : public FakeResource {
   std::string url;
   std::string headers;
 };
-
-// Helper function to call the completion callback if it is defined (an
-// asynchronous call), or return the result directly if it isn't (a synchronous
-// call).
-//
-// Use like this:
-//   if (<some error condition>)
-//     return RunCompletionCallback(callback, PP_ERROR_FUBAR);
-//
-//   /* Everything worked OK */
-//   return RunCompletionCallback(callback, PP_OK);
-int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result) {
-  if (callback->func) {
-    PP_RunCompletionCallback(callback, result);
-    return PP_OK_COMPLETIONPENDING;
-  }
-  return result;
-}
 
 void HandleContentLength(FakeURLLoaderResource* loader,
                          FakeURLResponseInfoResource* response,

@@ -9,9 +9,10 @@
 #include "fake_ppapi/fake_pepper_interface.h"
 #include "fake_ppapi/fake_resource_manager.h"
 #include "fake_ppapi/fake_var_manager.h"
+#include "fake_ppapi/fake_util.h"
 #include "gtest/gtest.h"
 
-namespace  {
+namespace {
 
 class FakeHostResolverResource : public FakeResource {
  public:
@@ -21,15 +22,6 @@ class FakeHostResolverResource : public FakeResource {
   bool resolved;
   PP_HostResolver_Hint hints;
 };
-
-int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result) {
-  if (callback->func) {
-    PP_RunCompletionCallback(callback, result);
-    return PP_OK_COMPLETIONPENDING;
-  }
-  return result;
-}
-
 }
 
 FakeHostResolverInterface::FakeHostResolverInterface(FakePepperInterface* ppapi)
@@ -41,8 +33,7 @@ PP_Resource FakeHostResolverInterface::Create(PP_Instance instance) {
 
   FakeHostResolverResource* resolver_resource = new FakeHostResolverResource();
 
-  return CREATE_RESOURCE(ppapi_->resource_manager(),
-                         FakeHostResolverResource,
+  return CREATE_RESOURCE(ppapi_->resource_manager(), FakeHostResolverResource,
                          resolver_resource);
 }
 
