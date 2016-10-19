@@ -17,9 +17,28 @@ _chrome_flag() {
     return 0
 }
 
+_gtest_flag() {
+    local cur gtest_flags launcher_flags
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    gtest_flags=$(sed -ne 's/^.*FromGTestEnv("\([^" /]\+\)".*$/--gtest_\1/p' \
+      "$chrome_source/testing/gtest/src/gtest.cc")
+    chrome_test_launcher_flags=$(sed -ne 's/^[^/]*"\([^" /]\{1,\}\)".*/--\1/p' \
+      "$chrome_source/base/test/test_switches.cc")
+    COMPREPLY=($(
+      compgen -W "$gtest_flags $chrome_test_launcher_flags" -- "$cur"))
+    return 0
+}
+
 complete -F _chrome_flag google-chrome
 complete -F _chrome_flag chrome
 if [ $(uname) = "Darwin" ]
 then
   complete -F _chrome_flag Chromium
 fi
+
+for gtest_test_executable in $(
+  cd $chrome_source;
+  git ls-files '*/BUILD.gn' | xargs sed -ne 's/^test("\([^"]\+\)").*$/\1/p'
+); do
+  complete -F _gtest_flag $gtest_test_executable
+done
