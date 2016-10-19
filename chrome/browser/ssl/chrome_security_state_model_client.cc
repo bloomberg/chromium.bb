@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -184,6 +185,28 @@ blink::WebSecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
   const blink::WebSecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_info.security_level);
 
+  if (security_info.security_level ==
+      security_state::SecurityStateModel::HTTP_SHOW_WARNING) {
+    // If the HTTP_SHOW_WARNING field trial is in use, display an
+    // unauthenticated explanation explaining why the omnibox warning is
+    // present.
+    security_style_explanations->unauthenticated_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
+            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
+  } else if (security_info.security_level ==
+                 security_state::SecurityStateModel::NONE &&
+             security_info.displayed_private_user_data_input_on_http) {
+    // If the HTTP_SHOW_WARNING field trial isn't in use yet, display an
+    // informational note that the omnibox will contain a warning for
+    // this site in a future version of Chrome.
+    security_style_explanations->info_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
+            l10n_util::GetStringUTF8(
+                IDS_PRIVATE_USER_DATA_INPUT_FUTURE_DESCRIPTION)));
+  }
+
   security_style_explanations->ran_insecure_content_style =
       SecurityLevelToSecurityStyle(
           SecurityStateModel::kRanInsecureContentLevel);
@@ -191,7 +214,7 @@ blink::WebSecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
       SecurityLevelToSecurityStyle(
           SecurityStateModel::kDisplayedInsecureContentLevel);
 
-  // Check if the page is HTTP; if so, no explanations are needed. Note
+  // Check if the page is HTTP; if so, no more explanations are needed. Note
   // that SecurityStyleUnauthenticated does not necessarily mean that
   // the page is loaded over HTTP, because the security style merely
   // represents how the embedder wishes to display the security state of

@@ -250,6 +250,7 @@ TEST(SecurityStateModelTest, PasswordFieldWarning) {
   client.set_displayed_password_field_on_http(true);
   SecurityStateModel::SecurityInfo security_info;
   model.GetSecurityInfo(&security_info);
+  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
   EXPECT_EQ(SecurityStateModel::HTTP_SHOW_WARNING,
             security_info.security_level);
 }
@@ -267,6 +268,7 @@ TEST(SecurityStateModelTest, CreditCardFieldWarning) {
   client.set_displayed_credit_card_field_on_http(true);
   SecurityStateModel::SecurityInfo security_info;
   model.GetSecurityInfo(&security_info);
+  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
   EXPECT_EQ(SecurityStateModel::HTTP_SHOW_WARNING,
             security_info.security_level);
 }
@@ -283,6 +285,20 @@ TEST(SecurityStateModelTest, HttpWarningNotSetWithoutSwitch) {
   client.set_displayed_credit_card_field_on_http(true);
   SecurityStateModel::SecurityInfo security_info;
   model.GetSecurityInfo(&security_info);
+  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
+  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
+}
+
+// Tests that |displayed_private_user_data_input_on_http| is not set
+// when the corresponding VisibleSecurityState flags are not set.
+TEST(SecurityStateModelTest, PrivateUserDataNotSet) {
+  TestSecurityStateModelClient client;
+  client.UseHttpUrl();
+  SecurityStateModel model;
+  model.SetClient(&client);
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
+  EXPECT_FALSE(security_info.displayed_private_user_data_input_on_http);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
 }
 

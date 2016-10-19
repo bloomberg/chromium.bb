@@ -213,4 +213,33 @@ TEST(ChromeSecurityStateModelClientTest, ConnectionExplanation) {
   }
 }
 
+// Tests that a security level of HTTP_SHOW_WARNING produces a
+// content::SecurityStyle of UNAUTHENTICATED, with an explanation.
+TEST(ChromeSecurityStateModelClientTest, HTTPWarning) {
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  content::SecurityStyleExplanations explanations;
+  security_info.security_level =
+      security_state::SecurityStateModel::HTTP_SHOW_WARNING;
+  blink::WebSecurityStyle security_style =
+      ChromeSecurityStateModelClient::GetSecurityStyle(security_info,
+                                                       &explanations);
+  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
+  EXPECT_EQ(1u, explanations.unauthenticated_explanations.size());
+}
+
+// Tests that a security level of NONE when there is a password or
+// credit card field on HTTP produces a content::SecurityStyle of
+// UNAUTHENTICATED, with an info explanation.
+TEST(ChromeSecurityStateModelClientTest, HTTPWarningInFuture) {
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  content::SecurityStyleExplanations explanations;
+  security_info.security_level = security_state::SecurityStateModel::NONE;
+  security_info.displayed_private_user_data_input_on_http = true;
+  blink::WebSecurityStyle security_style =
+      ChromeSecurityStateModelClient::GetSecurityStyle(security_info,
+                                                       &explanations);
+  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
+  EXPECT_EQ(1u, explanations.info_explanations.size());
+}
+
 }  // namespace

@@ -241,6 +241,10 @@ void SecurityInfoForRequest(
   security_info->fails_malware_check =
       visible_security_state.fails_malware_check;
 
+  security_info->displayed_private_user_data_input_on_http =
+      visible_security_state.displayed_password_field_on_http ||
+      visible_security_state.displayed_credit_card_field_on_http;
+
   security_info->security_level = GetSecurityLevelForRequest(
       visible_security_state, client, security_info->sha1_deprecation_status,
       security_info->mixed_content_status,
