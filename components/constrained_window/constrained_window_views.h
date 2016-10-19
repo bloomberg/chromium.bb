@@ -73,8 +73,10 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 
 // Create a widget for |dialog| that has a modality given by
 // |dialog->GetModalType()|.  The modal type must be either
-// ui::MODAL_TYPE_SYSTEM or ui::MODAL_TYPE_WINDOW.  This places the
-// dialog appropriately if |parent| is a valid browser window.
+// ui::MODAL_TYPE_SYSTEM or ui::MODAL_TYPE_WINDOW.  This places the dialog
+// appropriately if |parent| is a valid browser window. Currently, |parent| may
+// be null for MODAL_TYPE_WINDOW, but that's a bug and callers shouldn't rely on
+// that working. See http://crbug.com/657293.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent);
 

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/constrained_window/constrained_window_views_client.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -31,15 +32,64 @@ class DialogContents : public views::DialogDelegateView {
     preferred_size_ = preferred_size;
   }
 
-  // Overriden from DialogDelegateView:
+  void set_modal_type(ui::ModalType modal_type) { modal_type_ = modal_type; }
+
+  // DialogDelegateView:
   views::View* GetContentsView() override { return this; }
   gfx::Size GetPreferredSize() const override { return preferred_size_; }
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
 
+  // WidgetDelegate:
+  ui::ModalType GetModalType() const override { return modal_type_; }
+
  private:
   gfx::Size preferred_size_;
+  ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(DialogContents);
+};
+
+// Dummy client that returns a null modal dialog host and host view.
+class TestConstrainedWindowViewsClient
+    : public constrained_window::ConstrainedWindowViewsClient {
+ public:
+  TestConstrainedWindowViewsClient() {}
+
+  // ConstrainedWindowViewsClient:
+  web_modal::ModalDialogHost* GetModalDialogHost(
+      gfx::NativeWindow parent) override {
+    return nullptr;
+  }
+  gfx::NativeView GetDialogHostView(gfx::NativeWindow parent) override {
+    return nullptr;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestConstrainedWindowViewsClient);
+};
+
+// ViewsDelegate to provide context to dialog creation functions such as
+// CreateBrowserModalDialogViews() which do not allow InitParams to be set, and
+// pass a null |context| argument to DialogDelegate::CreateDialogWidget().
+class TestViewsDelegateWithContext : public views::TestViewsDelegate {
+ public:
+  TestViewsDelegateWithContext() {}
+
+  void set_context(gfx::NativeWindow context) { context_ = context; }
+
+  // ViewsDelegate:
+  void OnBeforeWidgetInit(
+      views::Widget::InitParams* params,
+      views::internal::NativeWidgetDelegate* delegate) override {
+    if (!params->context)
+      params->context = context_;
+    TestViewsDelegate::OnBeforeWidgetInit(params, delegate);
+  }
+
+ private:
+  gfx::NativeWindow context_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TestViewsDelegateWithContext);
 };
 
 class ConstrainedWindowViewsTest : public views::ViewsTestBase {
@@ -48,7 +98,16 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
   ~ConstrainedWindowViewsTest() override {}
 
   void SetUp() override {
+    std::unique_ptr<TestViewsDelegateWithContext> views_delegate(
+        new TestViewsDelegateWithContext);
+
+    // set_views_delegate() must be called before SetUp(), and GetContext() is
+    // null before that, so take a reference.
+    TestViewsDelegateWithContext* views_delegate_weak = views_delegate.get();
+    set_views_delegate(std::move(views_delegate));
     views::ViewsTestBase::SetUp();
+    views_delegate_weak->set_context(GetContext());
+
     contents_ = new DialogContents;
     dialog_ = views::DialogDelegate::CreateDialogWidget(
         contents_, GetContext(), nullptr);
@@ -152,6 +211,21 @@ TEST_F(ConstrainedWindowViewsTest, MaximumWebContentsDialogSize) {
   dialog_host()->set_max_dialog_size(max_dialog_size);
   UpdateWebContentsModalDialogPosition(dialog(), dialog_host());
   EXPECT_EQ(full_dialog_size.ToString(), GetDialogSize().ToString());
+}
+
+// Ensure CreateBrowserModalDialogViews() works correctly with a null parent.
+TEST_F(ConstrainedWindowViewsTest, NullModalParent) {
+  // Use desktop widgets (except on ChromeOS) for extra coverage.
+  views_delegate()->set_use_desktop_native_widgets(true);
+
+  SetConstrainedWindowViewsClient(
+      base::MakeUnique<TestConstrainedWindowViewsClient>());
+  DialogContents* contents = new DialogContents;
+  contents->set_modal_type(ui::MODAL_TYPE_WINDOW);
+  views::Widget* widget = CreateBrowserModalDialogViews(contents, nullptr);
+  widget->Show();
+  EXPECT_TRUE(widget->IsVisible());
+  widget->CloseNow();
 }
 
 }  // namespace constrained_window
