@@ -55,12 +55,13 @@ const size_t maxHeight = 256;
 const size_t maxBlockSize = maxWidth * maxHeight;
 const int horizOffset = 32;
 const int vertiOffset = 32;
+const size_t testMaxBlk = 128;
 const int stride = 128;
 const int x_step_q4 = 16;
 
-class VP10ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
+class AV1ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
  public:
-  virtual ~VP10ConvolveOptimzTest() {}
+  virtual ~AV1ConvolveOptimzTest() {}
   virtual void SetUp() {
     conv_horiz_ = GET_PARAM(0);
     conv_vert_ = GET_PARAM(1);
@@ -90,7 +91,7 @@ class VP10ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
   void RunVertFilterBitExactCheck();
 
  private:
-  void PrepFilterBuffer();
+  void PrepFilterBuffer(int w, int h);
   void DiffFilterBuffer();
   conv_filter_t conv_horiz_;
   conv_filter_t conv_vert_;
@@ -106,7 +107,7 @@ class VP10ConvolveOptimzTest : public ::testing::TestWithParam<ConvParams> {
   int avg_;
 };
 
-void VP10ConvolveOptimzTest::PrepFilterBuffer() {
+void AV1ConvolveOptimzTest::PrepFilterBuffer(int w, int h) {
   int r, c;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
 
@@ -131,7 +132,7 @@ void VP10ConvolveOptimzTest::PrepFilterBuffer() {
   }
 }
 
-void VP10ConvolveOptimzTest::DiffFilterBuffer() {
+void AV1ConvolveOptimzTest::DiffFilterBuffer() {
   int r, c;
   const uint8_t *dst_ptr = dst_;
   const uint8_t *dst_ref_ptr = dst_ref_;
@@ -149,8 +150,8 @@ void VP10ConvolveOptimzTest::DiffFilterBuffer() {
   }
 }
 
-void VP10ConvolveOptimzTest::RunHorizFilterBitExactCheck() {
-  PrepFilterBuffer();
+void AV1ConvolveOptimzTest::RunHorizFilterBitExactCheck() {
+  PrepFilterBuffer(testMaxBlk, testMaxBlk);
 
   InterpFilterParams filter_params = get_interp_filter_params(filter_);
 
@@ -167,7 +168,7 @@ void VP10ConvolveOptimzTest::RunHorizFilterBitExactCheck() {
   // and test again.
   int intermediate_height =
       (((height_ - 1) * 16 + subpel_) >> SUBPEL_BITS) + filter_params.taps;
-  PrepFilterBuffer();
+  PrepFilterBuffer(testMaxBlk, testMaxBlk);
 
   av1_convolve_horiz_c(src_ref_, stride, dst_ref_, stride, width_,
                        intermediate_height, filter_params, subpel_, x_step_q4,
@@ -179,8 +180,8 @@ void VP10ConvolveOptimzTest::RunHorizFilterBitExactCheck() {
   DiffFilterBuffer();
 }
 
-void VP10ConvolveOptimzTest::RunVertFilterBitExactCheck() {
-  PrepFilterBuffer();
+void AV1ConvolveOptimzTest::RunVertFilterBitExactCheck() {
+  PrepFilterBuffer(testMaxBlk, testMaxBlk);
 
   InterpFilterParams filter_params = get_interp_filter_params(filter_);
 
@@ -193,10 +194,10 @@ void VP10ConvolveOptimzTest::RunVertFilterBitExactCheck() {
   DiffFilterBuffer();
 }
 
-TEST_P(VP10ConvolveOptimzTest, HorizBitExactCheck) {
+TEST_P(AV1ConvolveOptimzTest, HorizBitExactCheck) {
   RunHorizFilterBitExactCheck();
 }
-TEST_P(VP10ConvolveOptimzTest, VerticalBitExactCheck) {
+TEST_P(AV1ConvolveOptimzTest, VerticalBitExactCheck) {
   RunVertFilterBitExactCheck();
 }
 
@@ -222,7 +223,7 @@ const int kAvg[] = { 0, 1 };
 
 #if HAVE_SSSE3 && CONFIG_EXT_INTERP
 INSTANTIATE_TEST_CASE_P(
-    SSSE3, VP10ConvolveOptimzTest,
+    SSSE3, AV1ConvolveOptimzTest,
     ::testing::Combine(::testing::Values(av1_convolve_horiz_ssse3),
                        ::testing::Values(av1_convolve_vert_ssse3),
                        ::testing::ValuesIn(kBlockDim),
@@ -233,9 +234,9 @@ INSTANTIATE_TEST_CASE_P(
 
 #if CONFIG_AOM_HIGHBITDEPTH
 typedef ::testing::TestWithParam<HbdConvParams> TestWithHbdConvParams;
-class VP10HbdConvolveOptimzTest : public TestWithHbdConvParams {
+class AV1HbdConvolveOptimzTest : public TestWithHbdConvParams {
  public:
-  virtual ~VP10HbdConvolveOptimzTest() {}
+  virtual ~AV1HbdConvolveOptimzTest() {}
   virtual void SetUp() {
     conv_horiz_ = GET_PARAM(0);
     conv_vert_ = GET_PARAM(1);
@@ -266,7 +267,7 @@ class VP10HbdConvolveOptimzTest : public TestWithHbdConvParams {
   void RunVertFilterBitExactCheck();
 
  private:
-  void PrepFilterBuffer();
+  void PrepFilterBuffer(int w, int h);
   void DiffFilterBuffer();
   hbd_conv_filter_t conv_horiz_;
   hbd_conv_filter_t conv_vert_;
@@ -283,7 +284,7 @@ class VP10HbdConvolveOptimzTest : public TestWithHbdConvParams {
   int bit_depth_;
 };
 
-void VP10HbdConvolveOptimzTest::PrepFilterBuffer() {
+void AV1HbdConvolveOptimzTest::PrepFilterBuffer(int w, int h) {
   int r, c;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
 
@@ -306,7 +307,7 @@ void VP10HbdConvolveOptimzTest::PrepFilterBuffer() {
   }
 }
 
-void VP10HbdConvolveOptimzTest::DiffFilterBuffer() {
+void AV1HbdConvolveOptimzTest::DiffFilterBuffer() {
   int r, c;
   const uint16_t *dst_ptr = dst_;
   const uint16_t *dst_ref_ptr = dst_ref_;
@@ -325,8 +326,8 @@ void VP10HbdConvolveOptimzTest::DiffFilterBuffer() {
   }
 }
 
-void VP10HbdConvolveOptimzTest::RunHorizFilterBitExactCheck() {
-  PrepFilterBuffer();
+void AV1HbdConvolveOptimzTest::RunHorizFilterBitExactCheck() {
+  PrepFilterBuffer(testMaxBlk, testMaxBlk);
 
   InterpFilterParams filter_params = get_interp_filter_params(filter_);
 
@@ -344,7 +345,7 @@ void VP10HbdConvolveOptimzTest::RunHorizFilterBitExactCheck() {
   // and test again.
   int intermediate_height =
       (((height_ - 1) * 16 + subpel_) >> SUBPEL_BITS) + filter_params.taps;
-  PrepFilterBuffer();
+  PrepFilterBuffer(testMaxBlk, testMaxBlk);
 
   av1_highbd_convolve_horiz_c(src_, stride, dst_ref_, stride, width_,
                               intermediate_height, filter_params, subpel_,
@@ -356,8 +357,8 @@ void VP10HbdConvolveOptimzTest::RunHorizFilterBitExactCheck() {
   DiffFilterBuffer();
 }
 
-void VP10HbdConvolveOptimzTest::RunVertFilterBitExactCheck() {
-  PrepFilterBuffer();
+void AV1HbdConvolveOptimzTest::RunVertFilterBitExactCheck() {
+  PrepFilterBuffer(testMaxBlk, testMaxBlk);
 
   InterpFilterParams filter_params = get_interp_filter_params(filter_);
 
@@ -371,10 +372,10 @@ void VP10HbdConvolveOptimzTest::RunVertFilterBitExactCheck() {
   DiffFilterBuffer();
 }
 
-TEST_P(VP10HbdConvolveOptimzTest, HorizBitExactCheck) {
+TEST_P(AV1HbdConvolveOptimzTest, HorizBitExactCheck) {
   RunHorizFilterBitExactCheck();
 }
-TEST_P(VP10HbdConvolveOptimzTest, VertBitExactCheck) {
+TEST_P(AV1HbdConvolveOptimzTest, VertBitExactCheck) {
   RunVertFilterBitExactCheck();
 }
 
@@ -383,7 +384,7 @@ TEST_P(VP10HbdConvolveOptimzTest, VertBitExactCheck) {
 const int kBitdepth[] = { 10, 12 };
 
 INSTANTIATE_TEST_CASE_P(
-    SSE4_1, VP10HbdConvolveOptimzTest,
+    SSE4_1, AV1HbdConvolveOptimzTest,
     ::testing::Combine(::testing::Values(av1_highbd_convolve_horiz_sse4_1),
                        ::testing::Values(av1_highbd_convolve_vert_sse4_1),
                        ::testing::ValuesIn(kBlockDim),
