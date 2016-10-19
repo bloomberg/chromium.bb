@@ -115,8 +115,10 @@ bool ParseCookieLifetime(net::ParsedCookie* cookie,
   }
 
   Time parsed_expiry_time;
-  if (cookie->HasExpires())
-    parsed_expiry_time = net::cookie_util::ParseCookieTime(cookie->Expires());
+  if (cookie->HasExpires()) {
+    parsed_expiry_time =
+        net::cookie_util::ParseCookieExpirationTime(cookie->Expires());
+  }
 
   if (!parsed_expiry_time.is_null()) {
     *seconds_till_expiry =
