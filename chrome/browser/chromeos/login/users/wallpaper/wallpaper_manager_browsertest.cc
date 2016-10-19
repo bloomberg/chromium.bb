@@ -792,9 +792,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
       wallpaper_manager_test_utils::kLargeGuestWallpaperColor));
 }
 
-// Fails (crbug/657180)
-IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
-                       DISABLED_SmallChildWallpaper) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallChildWallpaper) {
   if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
     return;
   CreateCmdlineWallpapers();
@@ -807,9 +805,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       wallpaper_manager_test_utils::kSmallChildWallpaperColor));
 }
 
-// Fails (crbug/657180)
-IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
-                       DISABLED_LargeChildWallpaper) {
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeChildWallpaper) {
   if (!ash::test::AshTestHelper::SupportsMultipleDisplays())
     return;
 

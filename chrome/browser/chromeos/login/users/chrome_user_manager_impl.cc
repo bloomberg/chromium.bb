@@ -151,6 +151,7 @@ extensions::FeatureSessionType GetFeatureSessionTypeForUser(
     const user_manager::User* user) {
   switch (user->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_CHILD:
       return extensions::FeatureSessionType::REGULAR;
     case user_manager::USER_TYPE_KIOSK_APP:
       return extensions::FeatureSessionType::KIOSK;
