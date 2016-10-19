@@ -27,17 +27,18 @@ class ScopedPersistent;
 
 // TODO(hlopko): Find a way to remove special-casing using templates
 #define WRAPPER_VISITOR_SPECIAL_CLASSES(V) \
-  V(DocumentStyleSheetCollection);         \
-  V(ElementRareData);                      \
-  V(ElementShadow);                        \
+  V(DocumentStyleSheetCollection)          \
+  V(ElementRareData)                       \
+  V(ElementShadow)                         \
+  V(ElementShadowV0)                       \
   V(HTMLImportsController)                 \
-  V(MutationObserverRegistration);         \
+  V(MutationObserverRegistration)          \
   V(NodeIntersectionObserverData)          \
-  V(NodeListsNodeData);                    \
-  V(NodeMutationObserverData);             \
-  V(NodeRareData);                         \
-  V(StyleEngine);                          \
-  V(V8AbstractEventListener);
+  V(NodeListsNodeData)                     \
+  V(NodeMutationObserverData)              \
+  V(NodeRareData)                          \
+  V(StyleEngine)                           \
+  V(V8AbstractEventListener)
 
 #define FORWARD_DECLARE_SPECIAL_CLASSES(className) class className;
 

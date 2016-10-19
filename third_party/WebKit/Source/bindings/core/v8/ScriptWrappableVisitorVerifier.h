@@ -13,6 +13,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ElementShadowV0.h"
 #include "core/html/imports/HTMLImportsController.h"
 
 namespace blink {

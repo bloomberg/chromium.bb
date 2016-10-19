@@ -143,7 +143,12 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
   WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
-  void dispatchTraceWrappers(const void*) const override {}
+
+  void dispatchTraceWrappers(const void*) const override {
+    // Getting here means that we lack the proper infrastructure for handling
+    // a specific type. Crash instead of failing silently to flush out issues.
+    NOTREACHED();
+  }
 
   void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
   void traceWrappers(const ScopedPersistent<v8::Object>*) const override;
