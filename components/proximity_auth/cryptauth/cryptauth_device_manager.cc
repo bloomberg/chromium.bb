@@ -215,11 +215,12 @@ void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
   sync_request_->OnDidComplete(true);
   cryptauth_client_.reset();
   sync_request_.reset();
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnSyncFinished(SyncResult::SUCCESS, unlock_keys_changed
-                                              ? DeviceChangeResult::CHANGED
-                                              : DeviceChangeResult::UNCHANGED));
+  for (auto& observer : observers_) {
+    observer.OnSyncFinished(SyncResult::SUCCESS,
+                            unlock_keys_changed
+                                ? DeviceChangeResult::CHANGED
+                                : DeviceChangeResult::UNCHANGED);
+  }
 }
 
 void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
@@ -229,9 +230,8 @@ void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
   sync_request_->OnDidComplete(false);
   cryptauth_client_.reset();
   sync_request_.reset();
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnSyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED));
+  for (auto& observer : observers_)
+    observer.OnSyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED);
 }
 
 std::unique_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
@@ -268,7 +268,8 @@ void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {
 
 void CryptAuthDeviceManager::OnSyncRequested(
     std::unique_ptr<SyncScheduler::SyncRequest> sync_request) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnSyncStarted());
+  for (auto& observer : observers_)
+    observer.OnSyncStarted();
 
   sync_request_ = std::move(sync_request);
   cryptauth_client_ = client_factory_->CreateInstance();

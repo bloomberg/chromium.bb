@@ -107,8 +107,8 @@ void RemoteDeviceLifeCycleImpl::TransitionToState(
                << " => " << static_cast<int>(new_state);
   RemoteDeviceLifeCycle::State old_state = state_;
   state_ = new_state;
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnLifeCycleStateChanged(old_state, new_state));
+  for (auto& observer : observers_)
+    observer.OnLifeCycleStateChanged(old_state, new_state);
 }
 
 void RemoteDeviceLifeCycleImpl::FindConnection() {

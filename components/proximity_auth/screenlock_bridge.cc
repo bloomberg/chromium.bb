@@ -134,10 +134,13 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
 
   focused_account_id_ = EmptyAccountId();
   lock_handler_ = lock_handler;
-  if (lock_handler_)
-    FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidLock(screen_type));
-  else
-    FOR_EACH_OBSERVER(Observer, observers_, OnScreenDidUnlock(screen_type));
+  if (lock_handler_) {
+    for (auto& observer : observers_)
+      observer.OnScreenDidLock(screen_type);
+  } else {
+    for (auto& observer : observers_)
+      observer.OnScreenDidUnlock(screen_type);
+  }
 }
 
 void ScreenlockBridge::SetFocusedUser(const AccountId& account_id) {
@@ -145,7 +148,8 @@ void ScreenlockBridge::SetFocusedUser(const AccountId& account_id) {
     return;
   PA_LOG(INFO) << "Focused user changed to " << account_id.Serialize();
   focused_account_id_ = account_id;
-  FOR_EACH_OBSERVER(Observer, observers_, OnFocusedUserChanged(account_id));
+  for (auto& observer : observers_)
+    observer.OnFocusedUserChanged(account_id);
 }
 
 bool ScreenlockBridge::IsLocked() const {

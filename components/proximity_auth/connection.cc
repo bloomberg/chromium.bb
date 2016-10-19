@@ -60,8 +60,8 @@ void Connection::SetStatus(Status status) {
 
   Status old_status = status_;
   status_ = status;
-  FOR_EACH_OBSERVER(ConnectionObserver, observers_,
-                    OnConnectionStatusChanged(this, old_status, status_));
+  for (auto& observer : observers_)
+    observer.OnConnectionStatusChanged(this, old_status, status_);
 }
 
 void Connection::OnDidSendMessage(const WireMessage& message, bool success) {
@@ -71,8 +71,8 @@ void Connection::OnDidSendMessage(const WireMessage& message, bool success) {
   }
 
   is_sending_message_ = false;
-  FOR_EACH_OBSERVER(
-      ConnectionObserver, observers_, OnSendCompleted(*this, message, success));
+  for (auto& observer : observers_)
+    observer.OnSendCompleted(*this, message, success);
 }
 
 void Connection::OnBytesReceived(const std::string& bytes) {
@@ -90,8 +90,8 @@ void Connection::OnBytesReceived(const std::string& bytes) {
     return;
 
   if (message) {
-    FOR_EACH_OBSERVER(
-        ConnectionObserver, observers_, OnMessageReceived(*this, *message));
+    for (auto& observer : observers_)
+      observer.OnMessageReceived(*this, *message);
   }
 
   // Whether the message was parsed successfully or not, clear the

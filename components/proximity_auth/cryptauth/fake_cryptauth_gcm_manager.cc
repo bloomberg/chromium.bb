@@ -36,15 +36,18 @@ void FakeCryptAuthGCMManager::CompleteRegistration(
   registration_in_progress_ = false;
   registration_id_ = registration_id;
   bool success = !registration_id_.empty();
-  FOR_EACH_OBSERVER(Observer, observers_, OnGCMRegistrationResult(success));
+  for (auto& observer : observers_)
+    observer.OnGCMRegistrationResult(success);
 }
 
 void FakeCryptAuthGCMManager::PushReenrollMessage() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnReenrollMessage());
+  for (auto& observer : observers_)
+    observer.OnReenrollMessage();
 }
 
 void FakeCryptAuthGCMManager::PushResyncMessage() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnResyncMessage());
+  for (auto& observer : observers_)
+    observer.OnResyncMessage();
 }
 
 }  // namespace proximity_auth

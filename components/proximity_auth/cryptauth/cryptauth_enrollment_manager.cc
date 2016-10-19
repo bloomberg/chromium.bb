@@ -155,7 +155,8 @@ void CryptAuthEnrollmentManager::OnEnrollmentFinished(bool success) {
   sync_request_->OnDidComplete(success);
   cryptauth_enroller_.reset();
   sync_request_.reset();
-  FOR_EACH_OBSERVER(Observer, observers_, OnEnrollmentFinished(success));
+  for (auto& observer : observers_)
+    observer.OnEnrollmentFinished(success);
 }
 
 std::unique_ptr<SyncScheduler>
@@ -230,7 +231,8 @@ void CryptAuthEnrollmentManager::OnReenrollMessage() {
 
 void CryptAuthEnrollmentManager::OnSyncRequested(
     std::unique_ptr<SyncScheduler::SyncRequest> sync_request) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnEnrollmentStarted());
+  for (auto& observer : observers_)
+    observer.OnEnrollmentStarted();
 
   sync_request_ = std::move(sync_request);
   if (gcm_manager_->GetRegistrationId().empty() ||

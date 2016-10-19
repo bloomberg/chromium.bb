@@ -51,12 +51,14 @@ void LogBuffer::AddLogMessage(const LogMessage& log_message) {
   log_messages_.push_back(log_message);
   if (log_messages_.size() > MaxBufferSize())
     log_messages_.pop_front();
-  FOR_EACH_OBSERVER(Observer, observers_, OnLogMessageAdded(log_message));
+  for (auto& observer : observers_)
+    observer.OnLogMessageAdded(log_message);
 }
 
 void LogBuffer::Clear() {
   log_messages_.clear();
-  FOR_EACH_OBSERVER(Observer, observers_, OnLogBufferCleared());
+  for (auto& observer : observers_)
+    observer.OnLogBufferCleared();
 }
 
 size_t LogBuffer::MaxBufferSize() const {

@@ -677,8 +677,8 @@ void UserManagerBase::RemoveSessionStateObserver(
 
 void UserManagerBase::NotifyLocalStateChanged() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(
-      UserManager::Observer, observer_list_, LocalStateChanged(this));
+  for (auto& observer : observer_list_)
+    observer.LocalStateChanged(this);
 }
 
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
@@ -977,24 +977,21 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
 
 void UserManagerBase::NotifyActiveUserChanged(const User* active_user) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
-                    session_state_observer_list_,
-                    ActiveUserChanged(active_user));
+  for (auto& observer : session_state_observer_list_)
+    observer.ActiveUserChanged(active_user);
 }
 
 void UserManagerBase::NotifyUserAddedToSession(const User* added_user,
                                                bool user_switch_pending) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
-                    session_state_observer_list_,
-                    UserAddedToSession(added_user));
+  for (auto& observer : session_state_observer_list_)
+    observer.UserAddedToSession(added_user);
 }
 
 void UserManagerBase::NotifyActiveUserHashChanged(const std::string& hash) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
-                    session_state_observer_list_,
-                    ActiveUserHashChanged(hash));
+  for (auto& observer : session_state_observer_list_)
+    observer.ActiveUserHashChanged(hash);
 }
 
 void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
@@ -1005,9 +1002,8 @@ void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
   SaveUserType(user->GetAccountId(), is_child
                                          ? user_manager::USER_TYPE_CHILD
                                          : user_manager::USER_TYPE_REGULAR);
-  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
-                    session_state_observer_list_,
-                    UserChangedChildStatus(user));
+  for (auto& observer : session_state_observer_list_)
+    observer.UserChangedChildStatus(user);
 }
 
 void UserManagerBase::Initialize() {

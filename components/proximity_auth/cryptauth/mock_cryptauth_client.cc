@@ -30,8 +30,8 @@ std::unique_ptr<CryptAuthClient> MockCryptAuthClientFactory::CreateInstance() {
   else
     client.reset(new testing::NiceMock<MockCryptAuthClient>());
 
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnCryptAuthClientCreated(client.get()));
+  for (auto& observer : observer_list_)
+    observer.OnCryptAuthClientCreated(client.get());
   return std::move(client);
 }
 
