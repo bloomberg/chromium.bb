@@ -2518,6 +2518,23 @@ class ValidationPool(object):
            'the end of this CQ run.')
     self.SendNotification(change, msg)
 
+  def HandleNoConfigTargetFailure(self, change, config):
+    """Handler for when the target config not found.
+
+    This handler removes the commit queue ready and trybot ready bits,
+    and sends out the notifications explaining the config errors.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+      config: The name (string) of the config to test.
+    """
+    msg = ('No configuration target found for %s.\nYou can check the available '
+           'configs by running `cbuildbot --list --all`.\nThe config may have '
+           'been changed or removed, you can try to rebase your CL so it can '
+           'get re-screened by the Pre-cq-launcher.' % config)
+    self.SendNotification(change, msg)
+    self.RemoveReady(change)
+
   def HandleValidationTimeout(self, changes=None, sanity=True):
     """Handles changes that timed out.
 

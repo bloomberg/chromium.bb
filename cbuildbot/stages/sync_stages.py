@@ -1457,7 +1457,7 @@ class PreCQLauncherStage(SyncStage):
 
     return config_buildbucket_id_map
 
-  def LaunchTrybot(self, plan, configs):
+  def LaunchTrybot(self, pool, plan, configs):
     """Launch a Pre-CQ run with the provided list of CLs.
 
     Args:
@@ -1465,6 +1465,16 @@ class PreCQLauncherStage(SyncStage):
       plan: The list of patches to test in the pre-cq tryjob.
       configs: A list of pre-cq config names to launch.
     """
+    # Verify the configs to test are in the cbuildbot config list.
+    for config in configs:
+      if config not in self._run.site_config:
+        for change in plan:
+          logging.error('No such configuraton target: %s. '
+                        'Skipping trybots for %s %s',
+                        config, str(change), change.url)
+          pool.HandleNoConfigTargetFailure(change, config)
+          return
+
     cmd = ['cbuildbot', '--remote',
            '--timeout', str(self.INFLIGHT_TIMEOUT * 60)] + configs
     for patch in plan:
@@ -1839,7 +1849,7 @@ class PreCQLauncherStage(SyncStage):
                      launch_count_limit, configs,
                      cros_patch.GetChangesAsString(plan))
       else:
-        self.LaunchTrybot(plan, configs)
+        self.LaunchTrybot(pool, plan, configs)
         launch_count += len(configs)
         cl_launch_count += len(configs) * len(plan)
 

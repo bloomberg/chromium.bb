@@ -1036,7 +1036,8 @@ pre-cq-configs: link-pre-cq
 
   def testRetryInPreCQ(self):
     # Create a change that is ready to be tested.
-    change = self._PrepareChangesWithPendingVerifications([['orange']])[0]
+    change = (
+        self._PrepareChangesWithPendingVerifications([['mixed-a-pre-cq']])[0])
     change.approval_timestamp = 0
 
     # Change should be launched now.
@@ -1053,7 +1054,7 @@ pre-cq-configs: link-pre-cq
     # Pretend that the build failed with an infrastructure failure so the change
     # should be retried.
     self.fake_db.InsertCLActions(
-        build_ids['orange'],
+        build_ids['mixed-a-pre-cq'],
         [clactions.CLAction.FromGerritPatchAndAction(
             change, constants.CL_ACTION_FORGIVEN)])
 
@@ -1064,7 +1065,8 @@ pre-cq-configs: link-pre-cq
 
   def testPreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
-        [['orange', 'apple'], ['banana'], ['banana'], ['banana'], ['banana']])
+        [['mixed-a-pre-cq', 'mixed-b-pre-cq'], ['rambi-pre-cq'],
+         ['rambi-pre-cq'], ['rambi-pre-cq'], ['rambi-pre-cq']])
     # After 2 runs, the changes should be screened but not
     # yet launched (due to pre-launch timeout).
     for c in changes:
@@ -1102,19 +1104,19 @@ pre-cq-configs: link-pre-cq
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
     self.assertAllStatuses(changes, constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
 
-    # Fake INFLIGHT_TIMEOUT+1 passing with banana and orange config succeeding,
-    # and apple never launching. The first change should pass the pre-cq, the
-    # second should fail due to inflight timeout.
+    # Fake INFLIGHT_TIMEOUT+1 passing with rambi-pre-cq and mixed-a-pre-cq
+    # config succeeding, and mixed-b-pre-cq never launching. The first change
+    # should pass the pre-cq, the second should fail due to inflight timeout.
     fake_time = datetime.datetime.now() + datetime.timedelta(
         minutes=sync_stages.PreCQLauncherStage.INFLIGHT_TIMEOUT + 1)
     self.fake_db.SetTime(fake_time)
     self.fake_db.InsertCLActions(
-        build_ids['orange'],
+        build_ids['mixed-a-pre-cq'],
         [clactions.CLAction.FromGerritPatchAndAction(
             changes[0], constants.CL_ACTION_VERIFIED)])
     for change in changes[1:3]:
       self.fake_db.InsertCLActions(
-          build_ids['banana'],
+          build_ids['rambi-pre-cq'],
           [clactions.CLAction.FromGerritPatchAndAction(
               change, constants.CL_ACTION_VERIFIED)])
 
@@ -1138,15 +1140,15 @@ pre-cq-configs: link-pre-cq
                      runs=3)
     action_history = self.fake_db.GetActionsForChanges(changes)
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
-    self.assertEqual(progress_map[changes[0]]['apple'][0],
+    self.assertEqual(progress_map[changes[0]]['mixed-b-pre-cq'][0],
                      constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
-    self.assertEqual(progress_map[changes[1]]['banana'][0],
+    self.assertEqual(progress_map[changes[1]]['rambi-pre-cq'][0],
                      constants.CL_PRECQ_CONFIG_STATUS_VERIFIED)
-    self.assertEqual(progress_map[changes[2]]['banana'][0],
+    self.assertEqual(progress_map[changes[2]]['rambi-pre-cq'][0],
                      constants.CL_PRECQ_CONFIG_STATUS_VERIFIED)
-    self.assertEqual(progress_map[changes[3]]['banana'][0],
+    self.assertEqual(progress_map[changes[3]]['rambi-pre-cq'][0],
                      constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
-    self.assertEqual(progress_map[changes[4]]['banana'][0],
+    self.assertEqual(progress_map[changes[4]]['rambi-pre-cq'][0],
                      constants.CL_PRECQ_CONFIG_STATUS_FAILED)
 
     # These actions should only be recorded at most once for every
