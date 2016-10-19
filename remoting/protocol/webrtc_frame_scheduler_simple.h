@@ -16,9 +16,10 @@
 namespace remoting {
 namespace protocol {
 
-// WebrtcFrameSchedulerSimple is a simple implementation of
-// WebrtcFrameScheduler that always keeps only one frame in the pipeline.
-// It schedules each frame after the previous one is expected to finish sending.
+// WebrtcFrameSchedulerSimple is a simple implementation of WebrtcFrameScheduler
+// that always keeps only one frame in the pipeline. It schedules each frame
+// such that it is encoded and ready to be sent by the time previous one is
+// expected to finish sending.
 class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
                                    public WebrtcFrameScheduler {
  public:
@@ -52,6 +53,9 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   base::TimeTicks last_capture_started_time_;
 
   LeakyBucket pacing_bucket_;
+
+  // Set to true when a frame is being captured or encoded.
+  bool frame_pending_ = false;
 
   // Set to true when encoding unchanged frames for top-off.
   bool top_off_is_active_ = false;

@@ -88,6 +88,10 @@ class WebrtcDummyVideoEncoderFactory
 
   void SetVideoChannelStateObserver(
       base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
+  base::WeakPtr<VideoChannelStateObserver>
+  get_video_channel_state_observer_for_tests() {
+    return video_channel_state_observer_;
+  }
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

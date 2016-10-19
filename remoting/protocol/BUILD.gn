@@ -326,6 +326,7 @@ source_set("unit_tests") {
     "validating_authenticator_unittest.cc",
     "video_frame_pump_unittest.cc",
     "webrtc_audio_source_adapter_unittest.cc",
+    "webrtc_frame_scheduler_unittest.cc",
     "webrtc_transport_unittest.cc",
   ]
 

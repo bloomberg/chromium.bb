@@ -64,8 +64,7 @@ WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
   DCHECK(thread_checker_.CalledOnValidThread());
   key_frame_request_ = true;
-  if (!capture_timer_.IsRunning())
-    ScheduleNextFrame(base::TimeTicks::Now());
+  ScheduleNextFrame(base::TimeTicks::Now());
 }
 
 void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
@@ -109,6 +108,7 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
 
   if (frame.updated_region().is_empty() && !top_off_is_active_ &&
       !key_frame_request_) {
+    frame_pending_ = false;
     ScheduleNextFrame(now);
     return false;
   }
@@ -157,6 +157,8 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
     const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
     const webrtc::EncodedImageCallback::Result& send_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(frame_pending_);
+  frame_pending_ = false;
 
   base::TimeTicks now = base::TimeTicks::Now();
   pacing_bucket_.RefillOrSpill(encoded_frame.data.size(), now);
@@ -177,10 +179,10 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Don't capture frames when paused or target bitrate is 0 or there is
-  // no capture callback set.
-  if (paused_ || pacing_bucket_.rate() == 0 || capture_callback_.is_null())
+  if (paused_ || pacing_bucket_.rate() == 0 || capture_callback_.is_null() ||
+      frame_pending_) {
     return;
+  }
 
   // If this is not the first frame then capture next frame after the previous
   // one has finished sending.
@@ -205,8 +207,9 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
 
 void WebrtcFrameSchedulerSimple::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
+  DCHECK(!frame_pending_);
   last_capture_started_time_ = base::TimeTicks::Now();
+  frame_pending_ = true;
   capture_callback_.Run();
 }
 
