@@ -41,6 +41,7 @@ source_set("wayland") {
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/display",
     "//ui/events",
     "//ui/events/platform",
     "//ui/gfx",
