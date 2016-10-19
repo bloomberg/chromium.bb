@@ -166,8 +166,7 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
   EXPECT_TRUE(backgroundChunk.properties.scroll->isRoot());
 
-  const EffectPaintPropertyNode* effectNode =
-      div.objectPaintProperties()->effect();
+  const EffectPaintPropertyNode* effectNode = div.paintProperties()->effect();
   EXPECT_EQ(0.5f, effectNode->opacity());
   const PaintChunk& chunk = rootPaintController().paintChunks()[1];
   EXPECT_EQ(*div.layer(), chunk.id->client);

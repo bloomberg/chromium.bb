@@ -157,7 +157,7 @@ void ScrollableAreaPainter::paintOverflowControls(
     Optional<ScopedPaintChunkProperties> scopedTransformProperty;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       const auto* objectProperties =
-          getScrollableArea().box().objectPaintProperties();
+          getScrollableArea().box().paintProperties();
       if (objectProperties && objectProperties->scrollbarPaintOffset()) {
         PaintChunkProperties properties(
             context.getPaintController().currentPaintChunkProperties());

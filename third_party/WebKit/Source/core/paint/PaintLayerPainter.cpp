@@ -420,8 +420,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
 
     Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      const ObjectPaintProperties* objectPaintProperties =
-          m_paintLayer.layoutObject()->objectPaintProperties();
+      const auto* objectPaintProperties =
+          m_paintLayer.layoutObject()->paintProperties();
       ASSERT(objectPaintProperties &&
              objectPaintProperties->localBorderBoxProperties());
       PaintChunkProperties properties(
@@ -866,8 +866,8 @@ void PaintLayerPainter::paintFragmentWithPhase(
   Optional<ScrollRecorder> scrollRecorder;
   LayoutPoint paintOffset = -m_paintLayer.layoutBoxLocation();
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    const ObjectPaintProperties* objectPaintProperties =
-        m_paintLayer.layoutObject()->objectPaintProperties();
+    const auto* objectPaintProperties =
+        m_paintLayer.layoutObject()->paintProperties();
     ASSERT(objectPaintProperties &&
            objectPaintProperties->localBorderBoxProperties());
     paintOffset +=

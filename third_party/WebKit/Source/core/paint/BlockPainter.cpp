@@ -198,7 +198,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo,
     Optional<ScrollRecorder> scrollRecorder;
     Optional<PaintInfo> scrolledPaintInfo;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      const auto* objectProperties = m_layoutBlock.objectPaintProperties();
+      const auto* objectProperties = m_layoutBlock.paintProperties();
       if (auto* scroll =
               objectProperties ? objectProperties->scroll() : nullptr) {
         PaintChunkProperties properties(paintInfo.context.getPaintController()

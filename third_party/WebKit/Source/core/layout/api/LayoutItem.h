@@ -214,8 +214,8 @@ class LayoutItem {
     return m_layoutObject->resolveColor(colorProperty);
   }
 
-  const ObjectPaintProperties* objectPaintProperties() const {
-    return m_layoutObject->objectPaintProperties();
+  const ObjectPaintProperties* paintProperties() const {
+    return m_layoutObject->paintProperties();
   }
 
   void invalidatePaintRectangle(const LayoutRect& dirtyRect) const {

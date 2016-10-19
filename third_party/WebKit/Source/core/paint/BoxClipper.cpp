@@ -40,7 +40,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     return;
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    const auto* objectProperties = m_box.objectPaintProperties();
+    const auto* objectProperties = m_box.paintProperties();
     if (objectProperties && objectProperties->overflowClip()) {
       PaintChunkProperties properties(
           paintInfo.context.getPaintController().currentPaintChunkProperties());

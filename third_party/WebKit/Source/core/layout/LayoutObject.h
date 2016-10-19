@@ -416,10 +416,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // property tree nodes that are created by the layout object for painting.
   // The property nodes are only updated during InUpdatePaintProperties phase
   // of the document lifecycle and shall remain immutable during other phases.
-  const ObjectPaintProperties* objectPaintProperties() const;
+  const ObjectPaintProperties* paintProperties() const;
 
  private:
-  ObjectPaintProperties& ensureObjectPaintProperties();
+  ObjectPaintProperties& ensurePaintProperties();
 
  private:
   //////////////////////////////////////////
@@ -1727,12 +1727,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     friend class PaintPropertyTreeBuilder;
     // The following two functions can be called from PaintPropertyTreeBuilder
     // only.
-    ObjectPaintProperties& ensureObjectPaintProperties() {
-      return m_layoutObject.ensureObjectPaintProperties();
+    ObjectPaintProperties& ensurePaintProperties() {
+      return m_layoutObject.ensurePaintProperties();
     }
-    ObjectPaintProperties* objectPaintProperties() {
+    ObjectPaintProperties* paintProperties() {
       return const_cast<ObjectPaintProperties*>(
-          m_layoutObject.objectPaintProperties());
+          m_layoutObject.paintProperties());
     }
 
     friend class LayoutObject;

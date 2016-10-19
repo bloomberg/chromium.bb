@@ -90,8 +90,8 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
         context.treeBuilderContext.current.clip,
         context.treeBuilderContext.currentEffect,
         context.treeBuilderContext.current.scroll);
-    const ObjectPaintProperties* containerPaintProperties =
-        context.paintInvalidationContainer->objectPaintProperties();
+    const auto* containerPaintProperties =
+        context.paintInvalidationContainer->paintProperties();
     auto containerContentsProperties =
         containerPaintProperties->contentsProperties();
 
@@ -151,8 +151,8 @@ LayoutPoint PaintInvalidator::computeLocationFromPaintInvalidationBacking(
         context.treeBuilderContext.current.clip,
         context.treeBuilderContext.currentEffect,
         context.treeBuilderContext.current.scroll);
-    const ObjectPaintProperties* containerPaintProperties =
-        context.paintInvalidationContainer->objectPaintProperties();
+    const auto* containerPaintProperties =
+        context.paintInvalidationContainer->paintProperties();
     auto containerContentsProperties =
         containerPaintProperties->contentsProperties();
 

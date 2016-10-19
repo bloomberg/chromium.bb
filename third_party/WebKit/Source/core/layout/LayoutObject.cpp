@@ -137,14 +137,12 @@ static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
 bool LayoutObject::s_affectsParentBlock = false;
 
 // The pointer to paint properties is implemented as a global hash map
-// temporarily,
-// to avoid memory regression during the transition towards SPv2.
+// temporarily, to avoid memory regression during the transition towards SPv2.
 typedef HashMap<const LayoutObject*, std::unique_ptr<ObjectPaintProperties>>
-    ObjectPaintPropertiesMap;
-static ObjectPaintPropertiesMap& objectPaintPropertiesMap() {
-  DEFINE_STATIC_LOCAL(ObjectPaintPropertiesMap, staticObjectPaintPropertiesMap,
-                      ());
-  return staticObjectPaintPropertiesMap;
+    PaintPropertiesMap;
+static PaintPropertiesMap& paintPropertiesMap() {
+  DEFINE_STATIC_LOCAL(PaintPropertiesMap, staticPaintPropertiesMap, ());
+  return staticPaintPropertiesMap;
 }
 
 void* LayoutObject::operator new(size_t sz) {
@@ -2566,7 +2564,7 @@ void LayoutObject::willBeDestroyed() {
   ObjectPaintInvalidator::objectWillBeDestroyed(*this);
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    objectPaintPropertiesMap().remove(this);
+    paintPropertiesMap().remove(this);
 
   clearLayoutRootIfNeeded();
 
@@ -3488,14 +3486,14 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(
     frameView()->removeBackgroundAttachmentFixedObject(this);
 }
 
-const ObjectPaintProperties* LayoutObject::objectPaintProperties() const {
+const ObjectPaintProperties* LayoutObject::paintProperties() const {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-  return objectPaintPropertiesMap().get(this);
+  return paintPropertiesMap().get(this);
 }
 
-ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties() {
+ObjectPaintProperties& LayoutObject::ensurePaintProperties() {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-  auto addResult = objectPaintPropertiesMap().add(this, nullptr);
+  auto addResult = paintPropertiesMap().add(this, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = ObjectPaintProperties::create();
 

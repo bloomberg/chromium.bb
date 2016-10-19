@@ -82,8 +82,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
       "0px);'></div>");
   LayoutObject* transformedObject =
       document().getElementById("transform")->layoutObject();
-  const ObjectPaintProperties* transformedObjectProperties =
-      transformedObject->objectPaintProperties();
+  const auto* transformedObjectProperties =
+      transformedObject->paintProperties();
   String transformPathAsString = transformPaintPropertyPathAsString(
       transformedObjectProperties->transform());
   EXPECT_THAT(transformPathAsString.ascii().data(),
@@ -99,8 +99,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
       "40px);'></div>");
   LayoutObject* clippedObject =
       document().getElementById("clip")->layoutObject();
-  const ObjectPaintProperties* clippedObjectProperties =
-      clippedObject->objectPaintProperties();
+  const auto* clippedObjectProperties = clippedObject->paintProperties();
   String clipPathAsString =
       clipPaintPropertyPathAsString(clippedObjectProperties->cssClip());
   EXPECT_THAT(clipPathAsString.ascii().data(),
@@ -113,8 +112,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
   setBodyInnerHTML("<div id='effect' style='opacity: 0.9;'></div>");
   LayoutObject* effectObject =
       document().getElementById("effect")->layoutObject();
-  const ObjectPaintProperties* effectObjectProperties =
-      effectObject->objectPaintProperties();
+  const auto* effectObjectProperties = effectObject->paintProperties();
   String effectPathAsString =
       effectPaintPropertyPathAsString(effectObjectProperties->effect());
   EXPECT_THAT(effectPathAsString.ascii().data(),
@@ -129,8 +127,7 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
       "</div>");
   LayoutObject* scrollObject =
       document().getElementById("scroll")->layoutObject();
-  const ObjectPaintProperties* scrollObjectProperties =
-      scrollObject->objectPaintProperties();
+  const auto* scrollObjectProperties = scrollObject->paintProperties();
   String scrollPathAsString =
       scrollPaintPropertyPathAsString(scrollObjectProperties->scroll());
   EXPECT_THAT(scrollPathAsString.ascii().data(),

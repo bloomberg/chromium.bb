@@ -152,75 +152,69 @@ class CORE_EXPORT ObjectPaintProperties {
   void clearScroll() { m_scroll = nullptr; }
 
   template <typename... Args>
-  TransformPaintPropertyNode* createOrUpdatePaintOffsetTranslation(
-      Args&&... args) {
-    return createOrUpdateProperty(m_paintOffsetTranslation,
-                                  std::forward<Args>(args)...);
+  TransformPaintPropertyNode* updatePaintOffsetTranslation(Args&&... args) {
+    return updateProperty(m_paintOffsetTranslation,
+                          std::forward<Args>(args)...);
   }
   template <typename... Args>
-  TransformPaintPropertyNode* createOrUpdateTransform(Args&&... args) {
-    return createOrUpdateProperty(m_transform, std::forward<Args>(args)...);
+  TransformPaintPropertyNode* updateTransform(Args&&... args) {
+    return updateProperty(m_transform, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  TransformPaintPropertyNode* createOrUpdatePerspective(Args&&... args) {
-    return createOrUpdateProperty(m_perspective, std::forward<Args>(args)...);
+  TransformPaintPropertyNode* updatePerspective(Args&&... args) {
+    return updateProperty(m_perspective, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  TransformPaintPropertyNode* createOrUpdateSvgLocalToBorderBoxTransform(
+  TransformPaintPropertyNode* updateSvgLocalToBorderBoxTransform(
       Args&&... args) {
     DCHECK(!scrollTranslation()) << "SVG elements cannot scroll so there "
                                     "should never be both a scroll translation "
                                     "and an SVG local to border box transform.";
-    return createOrUpdateProperty(m_svgLocalToBorderBoxTransform,
-                                  std::forward<Args>(args)...);
+    return updateProperty(m_svgLocalToBorderBoxTransform,
+                          std::forward<Args>(args)...);
   }
   template <typename... Args>
-  TransformPaintPropertyNode* createOrUpdateScrollTranslation(Args&&... args) {
+  TransformPaintPropertyNode* updateScrollTranslation(Args&&... args) {
     DCHECK(!svgLocalToBorderBoxTransform())
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
-    return createOrUpdateProperty(m_scrollTranslation,
-                                  std::forward<Args>(args)...);
+    return updateProperty(m_scrollTranslation, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  TransformPaintPropertyNode* createOrUpdateScrollbarPaintOffset(
-      Args&&... args) {
-    return createOrUpdateProperty(m_scrollbarPaintOffset,
-                                  std::forward<Args>(args)...);
+  TransformPaintPropertyNode* updateScrollbarPaintOffset(Args&&... args) {
+    return updateProperty(m_scrollbarPaintOffset, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  ScrollPaintPropertyNode* createOrUpdateScroll(Args&&... args) {
-    return createOrUpdateProperty(m_scroll, std::forward<Args>(args)...);
+  ScrollPaintPropertyNode* updateScroll(Args&&... args) {
+    return updateProperty(m_scroll, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  EffectPaintPropertyNode* createOrUpdateEffect(Args&&... args) {
-    return createOrUpdateProperty(m_effect, std::forward<Args>(args)...);
+  EffectPaintPropertyNode* updateEffect(Args&&... args) {
+    return updateProperty(m_effect, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  ClipPaintPropertyNode* createOrUpdateCssClip(Args&&... args) {
-    return createOrUpdateProperty(m_cssClip, std::forward<Args>(args)...);
+  ClipPaintPropertyNode* updateCssClip(Args&&... args) {
+    return updateProperty(m_cssClip, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  ClipPaintPropertyNode* createOrUpdateCssClipFixedPosition(Args&&... args) {
-    return createOrUpdateProperty(m_cssClipFixedPosition,
-                                  std::forward<Args>(args)...);
+  ClipPaintPropertyNode* updateCssClipFixedPosition(Args&&... args) {
+    return updateProperty(m_cssClipFixedPosition, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  ClipPaintPropertyNode* createOrUpdateInnerBorderRadiusClip(Args&&... args) {
-    return createOrUpdateProperty(m_innerBorderRadiusClip,
-                                  std::forward<Args>(args)...);
+  ClipPaintPropertyNode* updateInnerBorderRadiusClip(Args&&... args) {
+    return updateProperty(m_innerBorderRadiusClip, std::forward<Args>(args)...);
   }
   template <typename... Args>
-  ClipPaintPropertyNode* createOrUpdateOverflowClip(Args&&... args) {
-    return createOrUpdateProperty(m_overflowClip, std::forward<Args>(args)...);
+  ClipPaintPropertyNode* updateOverflowClip(Args&&... args) {
+    return updateProperty(m_overflowClip, std::forward<Args>(args)...);
   }
 
  private:
   ObjectPaintProperties() {}
 
   template <typename PaintPropertyNode, typename... Args>
-  PaintPropertyNode* createOrUpdateProperty(RefPtr<PaintPropertyNode>& field,
-                                            Args&&... args) {
+  PaintPropertyNode* updateProperty(RefPtr<PaintPropertyNode>& field,
+                                    Args&&... args) {
     if (field)
       field->update(std::forward<Args>(args)...);
     else

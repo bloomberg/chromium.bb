@@ -214,11 +214,11 @@ LayoutRect PaintLayerClipper::localClipRect(
     FloatRect clippedRectInLocalSpace =
         m_geometryMapper->mapRectToDestinationSpace(
             FloatRect(clipRect.rect()), clippingRootLayer->layoutObject()
-                                            ->objectPaintProperties()
+                                            ->paintProperties()
                                             ->localBorderBoxProperties()
                                             ->propertyTreeState,
             m_layer.layoutObject()
-                ->objectPaintProperties()
+                ->paintProperties()
                 ->localBorderBoxProperties()
                 ->propertyTreeState,
             success);
@@ -257,16 +257,15 @@ void PaintLayerClipper::mapLocalToRootWithGeometryMapper(
   bool success;
 
   const ObjectPaintProperties::PropertyTreeStateWithOffset*
-      layerBorderBoxProperties = m_layer.layoutObject()
-                                     ->objectPaintProperties()
-                                     ->localBorderBoxProperties();
+      layerBorderBoxProperties =
+          m_layer.layoutObject()->paintProperties()->localBorderBoxProperties();
   FloatRect localRect(layoutRect);
   localRect.moveBy(FloatPoint(layerBorderBoxProperties->paintOffset));
 
   layoutRect = LayoutRect(m_geometryMapper->mapRectToDestinationSpace(
       localRect, layerBorderBoxProperties->propertyTreeState,
       context.rootLayer->layoutObject()
-          ->objectPaintProperties()
+          ->paintProperties()
           ->localBorderBoxProperties()
           ->propertyTreeState,
       success));
@@ -436,16 +435,15 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   DCHECK(m_geometryMapper);
   LayoutRect source(LayoutRect::infiniteIntRect());
   bool success = false;
-  const ObjectPaintProperties* properties =
-      m_layer.layoutObject()->objectPaintProperties();
+  const auto* properties = m_layer.layoutObject()->paintProperties();
   PropertyTreeState propertyTreeState =
       properties->localBorderBoxProperties()->propertyTreeState;
 
   if (isForeground && shouldClipOverflow(context) && properties->overflowClip())
     propertyTreeState.setClip(properties->overflowClip());
 
-  const ObjectPaintProperties* ancestorProperties =
-      context.rootLayer->layoutObject()->objectPaintProperties();
+  const auto* ancestorProperties =
+      context.rootLayer->layoutObject()->paintProperties();
   PropertyTreeState destinationPropertyTreeState =
       ancestorProperties->localBorderBoxProperties()->propertyTreeState;
   if (!context.rootLayer->clipper().shouldRespectOverflowClip(context)) {
