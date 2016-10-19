@@ -104,9 +104,7 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
       const override {
     return m_supportedConfigurations;
   }
-  SecurityOrigin* getSecurityOrigin() const override {
-    return m_resolver->getExecutionContext()->getSecurityOrigin();
-  }
+  SecurityOrigin* getSecurityOrigin() const override;
   void requestSucceeded(WebContentDecryptionModuleAccess*) override;
   void requestNotSupported(const WebString& errorMessage) override;
 
@@ -118,6 +116,9 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   }
 
  private:
+  // Returns true if the ExecutionContext is valid, false otherwise.
+  bool isExecutionContextValid() const;
+
   // For widevine key system, generate warning and report to UMA if
   // |m_supportedConfigurations| contains any video capability with empty
   // robustness string.
@@ -194,10 +195,19 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
   checkVideoCapabilityRobustness();
 }
 
+SecurityOrigin* MediaKeySystemAccessInitializer::getSecurityOrigin() const {
+  return isExecutionContextValid()
+             ? m_resolver->getExecutionContext()->getSecurityOrigin()
+             : nullptr;
+}
+
 void MediaKeySystemAccessInitializer::requestSucceeded(
     WebContentDecryptionModuleAccess* access) {
   checkEmptyCodecs(access->getConfiguration());
   checkCapabilities(access->getConfiguration());
+
+  if (!isExecutionContextValid())
+    return;
 
   m_resolver->resolve(
       new MediaKeySystemAccess(m_keySystem, wrapUnique(access)));
@@ -206,8 +216,19 @@ void MediaKeySystemAccessInitializer::requestSucceeded(
 
 void MediaKeySystemAccessInitializer::requestNotSupported(
     const WebString& errorMessage) {
+  if (!isExecutionContextValid())
+    return;
+
   m_resolver->reject(DOMException::create(NotSupportedError, errorMessage));
   m_resolver.clear();
+}
+
+bool MediaKeySystemAccessInitializer::isExecutionContextValid() const {
+  // activeDOMObjectsAreStopped() is called to see if the context is in the
+  // process of being destroyed. If it is true, assume the context is no
+  // longer valid as it is about to be destroyed anyway.
+  ExecutionContext* context = m_resolver->getExecutionContext();
+  return context && !context->activeDOMObjectsAreStopped();
 }
 
 void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const {

@@ -138,9 +138,21 @@ void WebEncryptedMediaClientImpl::OnRequestSucceeded(
   GetReporter(request.keySystem())->ReportSupported();
   // TODO(sandersd): Pass |are_secure_codecs_required| along and use it to
   // configure the CDM security level and use of secure surfaces on Android.
+
+  // If the frame is closed while the permission prompt is displayed,
+  // the permission prompt is dismissed and this may result in the
+  // requestMediaKeySystemAccess request succeeding. However, the blink
+  // objects may have been cleared, so check if this is the case and simply
+  // reject the request.
+  blink::WebSecurityOrigin origin = request.getSecurityOrigin();
+  if (origin.isNull()) {
+    request.requestNotSupported("Unable to create MediaKeySystemAccess");
+    return;
+  }
+
   request.requestSucceeded(WebContentDecryptionModuleAccessImpl::Create(
-      request.keySystem(), request.getSecurityOrigin(),
-      accumulated_configuration, cdm_config, weak_factory_.GetWeakPtr()));
+      request.keySystem(), origin, accumulated_configuration, cdm_config,
+      weak_factory_.GetWeakPtr()));
 }
 
 void WebEncryptedMediaClientImpl::OnRequestNotSupported(
