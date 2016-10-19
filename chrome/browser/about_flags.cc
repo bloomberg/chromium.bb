@@ -1668,9 +1668,11 @@ const FeatureEntry kFeatureEntries[] = {
      // NOTE: if we want to add additional experiment entries for other
      // features controlled by kBlinkSettings, we'll need to add logic to
      // merge the flag values.
-     SINGLE_VALUE_TYPE_AND_VALUE(
+     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
          switches::kBlinkSettings,
-         "disallowFetchForDocWrittenScriptsInMainFrame=true")},
+         "disallowFetchForDocWrittenScriptsInMainFrame=true",
+         switches::kBlinkSettings,
+         "disallowFetchForDocWrittenScriptsInMainFrame=false")},
 #if defined(OS_ANDROID)
     {"enable-ntp-popular-sites", IDS_FLAGS_NTP_POPULAR_SITES_NAME,
      IDS_FLAGS_NTP_POPULAR_SITES_DESCRIPTION, kOsAndroid,
