@@ -133,6 +133,9 @@ void Pointer::SetStylusDelegate(PointerStylusDelegate* delegate) {
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   Surface* target = GetEffectiveTargetForEvent(event);
 
+  if (event->flags() & ui::EF_TOUCH_ACCESSIBILITY)
+    return;
+
   auto new_pointer_type = pointer_type_;
   if ((event->flags() & ui::EF_IS_SYNTHESIZED) == 0) {
     new_pointer_type = event->pointer_details().pointer_type;

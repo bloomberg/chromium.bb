@@ -4,9 +4,11 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 
+#include "ash/aura/wm_root_window_controller_aura.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -25,6 +27,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
       audio_handler_(chromeos::CrasAudioHandler::Get()) {
   WmShell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   UpdateTouchExplorationState();
 }
 
@@ -34,6 +37,7 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
   if (system_tray_notifier)
     system_tray_notifier->RemoveAccessibilityObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void AshTouchExplorationManager::OnAccessibilityModeChanged(
@@ -88,6 +92,16 @@ void AshTouchExplorationManager::HandleAccessibilityGesture(
   WmShell::Get()->accessibility_delegate()->HandleAccessibilityGesture(gesture);
 }
 
+void AshTouchExplorationManager::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (root_window_controller_->wm_root_window_controller()
+          ->GetWindow()
+          ->GetDisplayNearestWindow()
+          .id() == display.id())
+    UpdateTouchExplorationState();
+}
+
 void AshTouchExplorationManager::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -115,16 +129,26 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
   const bool spoken_feedback_enabled =
       WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 
-  if (!pass_through_surface && spoken_feedback_enabled &&
-      !touch_exploration_controller_.get()) {
-    touch_exploration_controller_.reset(new ui::TouchExplorationController(
-        root_window_controller_->GetRootWindow(), this));
-  } else if (!spoken_feedback_enabled || pass_through_surface) {
-    touch_exploration_controller_.reset();
-    if (spoken_feedback_enabled) {
+  if (spoken_feedback_enabled) {
+    if (!touch_exploration_controller_.get()) {
+      touch_exploration_controller_ =
+          base::MakeUnique<ui::TouchExplorationController>(
+              root_window_controller_->GetRootWindow(), this);
+    }
+    if (pass_through_surface) {
+      const gfx::Rect& work_area =
+          root_window_controller_->wm_root_window_controller()
+              ->GetWindow()
+              ->GetDisplayNearestWindow()
+              .work_area();
+      touch_exploration_controller_->SetExcludeBounds(work_area);
       SilenceSpokenFeedback();
       WmShell::Get()->accessibility_delegate()->ClearFocusHighlight();
+    } else {
+      touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
     }
+  } else {
+    touch_exploration_controller_.reset();
   }
 }
 

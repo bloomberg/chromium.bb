@@ -189,6 +189,10 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // other than touch exploration.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
+  // Events within the exclude bounds will not be rewritten.
+  // |bounds| are in root window coordinates.
+  void SetExcludeBounds(const gfx::Rect& bounds);
+
  private:
   friend class TouchExplorationControllerTestApi;
 
@@ -499,6 +503,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // This toggles whether VLOGS are turned on or not.
   bool VLOG_on_;
+
+  // LocatedEvents within this area should be left alone.
+  gfx::Rect exclude_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };

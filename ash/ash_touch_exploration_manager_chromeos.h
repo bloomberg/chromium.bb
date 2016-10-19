@@ -11,6 +11,7 @@
 #include "ash/common/system/accessibility_observer.h"
 #include "base/macros.h"
 #include "ui/chromeos/touch_exploration_controller.h"
+#include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace chromeos {
@@ -27,6 +28,7 @@ class RootWindowController;
 class ASH_EXPORT AshTouchExplorationManager
     : public AccessibilityObserver,
       public ui::TouchExplorationControllerDelegate,
+      public display::DisplayObserver,
       public aura::client::ActivationChangeObserver {
  public:
   explicit AshTouchExplorationManager(
@@ -45,6 +47,10 @@ class ASH_EXPORT AshTouchExplorationManager
   void PlayExitScreenEarcon() override;
   void PlayEnterScreenEarcon() override;
   void HandleAccessibilityGesture(ui::AXGesture gesture) override;
+
+  // display::DisplayObserver overrides:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // aura::client::ActivationChangeObserver overrides:
   void OnWindowActivated(

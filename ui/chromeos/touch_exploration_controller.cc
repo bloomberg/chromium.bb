@@ -63,6 +63,10 @@ void TouchExplorationController::SetTouchAccessibilityAnchorPoint(
   anchor_point_state_ = ANCHOR_POINT_EXPLICITLY_SET;
 }
 
+void TouchExplorationController::SetExcludeBounds(const gfx::Rect& bounds) {
+  exclude_bounds_ = bounds;
+}
+
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
@@ -77,6 +81,23 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     return ui::EVENT_REWRITE_CONTINUE;
   }
   const ui::TouchEvent& touch_event = static_cast<const ui::TouchEvent&>(event);
+
+  if (!exclude_bounds_.IsEmpty()) {
+    gfx::Point location = touch_event.location();
+    root_window_->GetHost()->ConvertPointFromNativeScreen(&location);
+    bool in_exclude_area = exclude_bounds_.Contains(location);
+    if (in_exclude_area) {
+      if (state_ == NO_FINGERS_DOWN)
+        return ui::EVENT_REWRITE_CONTINUE;
+      if (touch_event.type() == ui::ET_TOUCH_MOVED ||
+          touch_event.type() == ui::ET_TOUCH_PRESSED) {
+        return ui::EVENT_REWRITE_DISCARD;
+      }
+      // Otherwise, continue handling events. Basically, we want to let
+      // CANCELLED or RELEASE events through so this can get back to
+      // the NO_FINGERS_DOWN state.
+    }
+  }
 
   // If the tap timer should have fired by now but hasn't, run it now and
   // stop the timer. This is important so that behavior is consistent with
@@ -111,7 +132,8 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     std::vector<int>::iterator it = std::find(
         current_touch_ids_.begin(), current_touch_ids_.end(), touch_id);
 
-    // Can happen if touch exploration is enabled while fingers were down.
+    // Can happen if touch exploration is enabled while fingers were down
+    // or if an additional press occurred within the exclusion bounds.
     if (it == current_touch_ids_.end())
       return ui::EVENT_REWRITE_CONTINUE;
 
