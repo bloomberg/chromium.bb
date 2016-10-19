@@ -14,20 +14,13 @@
 @class BrowserWindowController;
 @class CrTrackingArea;
 @class DropdownAnimation;
+@class FullscreenMenubarTracker;
 
 enum class FullscreenSlidingStyle {
   OMNIBOX_TABS_PRESENT,  // Tab strip and omnibox both visible.
   OMNIBOX_TABS_HIDDEN,   // Tab strip and omnibox both hidden.
   OMNIBOX_TABS_NONE,     // Tab strip and omnibox both hidden and never
                          // shown.
-};
-
-// State of the menubar in the window's screen.
-enum class FullscreenMenubarState {
-  SHOWN,    // Menubar is fully shown.
-  HIDDEN,   // Menubar is fully hidden.
-  SHOWING,  // Menubar is animating in.
-  HIDING,   // Menubar is animating out.
 };
 
 // Provides a controller to fullscreen toolbar for a single browser
@@ -58,6 +51,10 @@ enum class FullscreenMenubarState {
   // but the mouse is still on the toolbar.
   base::scoped_nsobject<CrTrackingArea> trackingArea_;
 
+  // Updates the fullscreen toolbar layout for changes in the menubar. This
+  // object is only set when the browser is in fullscreen mode.
+  base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;
+
   // Pointer to the currently running animation.  Is nil if no animation is
   // running.
   base::scoped_nsobject<DropdownAnimation> currentAnimation_;
@@ -79,16 +76,6 @@ enum class FullscreenMenubarState {
 
   // Whether the omnibox is hidden in fullscreen.
   FullscreenSlidingStyle slidingStyle_;
-
-  // The fraction of the AppKit Menubar that is showing. Ranges from 0 to 1.
-  // Only used in AppKit Fullscreen.
-  CGFloat menubarFraction_;
-
-  // The state of the menubar in fullscreen.
-  FullscreenMenubarState menubarState_;
-
-  // A Carbon event handler that tracks the revealed fraction of the menu bar.
-  EventHandlerRef menuBarTrackingHandler_;
 
   // True when the toolbar is dropped to show tabstrip changes.
   BOOL isRevealingToolbarForTabStripChanges_;
@@ -120,12 +107,6 @@ enum class FullscreenMenubarState {
 // controller is released.
 - (void)setupFullscreenToolbarForContentView:(NSView*)contentView;
 - (void)exitFullscreenMode;
-
-// Returns the amount by which the floating bar should be offset downwards (to
-// avoid the menu) and by which the overlay view should be enlarged vertically.
-// Generally, this is > 0 when the window is on the primary screen and 0
-// otherwise.
-- (CGFloat)floatingBarVerticalOffset;
 
 // Shows/hides the toolbar with animation to reflect changes for the toolbar
 // visibility locks. lockBarVisibilityWithAnimation: should only be called when
@@ -174,6 +155,9 @@ enum class FullscreenMenubarState {
 
 // Updates the toolbar by updating the layout, menubar and dock.
 - (void)updateToolbar;
+
+// Returns |browserController_|.
+- (BrowserWindowController*)browserWindowController;
 
 @end
 

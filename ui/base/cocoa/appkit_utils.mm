@@ -4,6 +4,8 @@
 
 #import "ui/base/cocoa/appkit_utils.h"
 
+#include <cmath>
+
 #include "base/mac/mac_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -107,6 +109,10 @@ bool ForceClickInvokesQuickLook() {
   return [[NSUserDefaults standardUserDefaults]
              integerForKey:@"com.apple.trackpad.forceClick"] ==
          static_cast<NSInteger>(ForceTouchAction::QUICK_LOOK);
+}
+
+bool IsCGFloatEqual(CGFloat a, CGFloat b) {
+  return std::fabs(a - b) <= std::numeric_limits<CGFloat>::epsilon();
 }
 
 }  // namespace ui

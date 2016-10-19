@@ -11,8 +11,10 @@
 #import "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
+#include "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #import "ui/base/cocoa/tracking_area.h"
 
@@ -33,52 +35,14 @@ const NSTimeInterval kTabStripChangesDelay = 0.75;
 // hides.
 const CGFloat kTrackingAreaAdditionalThreshold = 20;
 
-// The event kind value for a undocumented menubar show/hide Carbon event.
-const CGFloat kMenuBarRevealEventKind = 2004;
-
-// The amount by which the floating bar is offset downwards (to avoid the menu)
-// when the toolbar is hidden. (We can't use |-[NSMenu menuBarHeight]| since it
-// returns 0 when the menu bar is hidden.)
-const CGFloat kFloatingBarVerticalOffset = 22;
-
 // Visibility fractions for the menubar and toolbar.
 const CGFloat kHideFraction = 0.0;
 const CGFloat kShowFraction = 1.0;
 
-// Helper function for comparing CGFloat values.
-BOOL IsCGFloatEqual(CGFloat a, CGFloat b) {
-  return fabs(a - b) <= std::numeric_limits<CGFloat>::epsilon();
-}
-
-OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
-                              EventRef event,
-                              void* context) {
-  FullscreenToolbarController* self =
-      static_cast<FullscreenToolbarController*>(context);
-
-  // If Chrome has multiple fullscreen windows in their own space, the Handler
-  // becomes flaky and might start receiving kMenuBarRevealEventKind events
-  // from another space. Since the menubar in the another space is in either a
-  // shown or hidden state, it will give us a reveal fraction of 0.0 or 1.0.
-  // As such, we should ignore the kMenuBarRevealEventKind event if it gives
-  // us a fraction of 0.0 or 1.0, and rely on kEventMenuBarShown and
-  // kEventMenuBarHidden to set these values.
-  if (![self isFullscreenTransitionInProgress] && [self isInFullscreen]) {
-    if (GetEventKind(event) == kMenuBarRevealEventKind) {
-      CGFloat revealFraction = 0;
-      GetEventParameter(event, FOUR_CHAR_CODE('rvlf'), typeCGFloat, NULL,
-                        sizeof(CGFloat), NULL, &revealFraction);
-      if (revealFraction > kHideFraction && revealFraction < kShowFraction)
-        [self setMenuBarRevealProgress:revealFraction];
-    } else if (GetEventKind(event) == kEventMenuBarShown) {
-      [self setMenuBarRevealProgress:kShowFraction];
-    } else {
-      [self setMenuBarRevealProgress:kHideFraction];
-    }
-  }
-
-  return CallNextEventHandler(handler, event);
-}
+// The amount by which the toolbar is offset downwards (to avoid the menu)
+// when the toolbar style is OMNIBOX_TABS_HIDDEN. (We can't use
+// |-[NSMenu menuBarHeight]| since it returns 0 when the menu bar is hidden.)
+const CGFloat kToolbarVerticalOffset = 22;
 
 }  // end namespace
 
@@ -192,30 +156,12 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     browserController_ = controller;
     systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
     slidingStyle_ = style;
-    menubarState_ = FullscreenMenubarState::HIDDEN;
   }
-
-  // Install the Carbon event handler for the menubar show, hide and
-  // undocumented reveal event.
-  EventTypeSpec eventSpecs[3];
-
-  eventSpecs[0].eventClass = kEventClassMenu;
-  eventSpecs[0].eventKind = kMenuBarRevealEventKind;
-
-  eventSpecs[1].eventClass = kEventClassMenu;
-  eventSpecs[1].eventKind = kEventMenuBarShown;
-
-  eventSpecs[2].eventClass = kEventClassMenu;
-  eventSpecs[2].eventKind = kEventMenuBarHidden;
-
-  InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler), 3,
-                                 eventSpecs, self, &menuBarTrackingHandler_);
 
   return self;
 }
 
 - (void)dealloc {
-  RemoveEventHandler(menuBarTrackingHandler_);
   DCHECK(!inFullscreenMode_);
   [super dealloc];
 }
@@ -224,6 +170,9 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   DCHECK(!inFullscreenMode_);
   contentView_ = contentView;
   inFullscreenMode_ = YES;
+
+  menubarTracker_.reset([[FullscreenMenubarTracker alloc]
+      initWithFullscreenToolbarController:self]);
 
   [self updateMenuBarAndDockVisibility];
 
@@ -240,13 +189,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
          selector:@selector(windowDidResignMain:)
              name:NSWindowDidResignMainNotification
            object:window];
-
-  // Register for Active Space change notifications.
-  [[[NSWorkspace sharedWorkspace] notificationCenter]
-      addObserver:self
-         selector:@selector(activeSpaceDidChange:)
-             name:NSWorkspaceActiveSpaceDidChangeNotification
-           object:nil];
 }
 
 - (void)exitFullscreenMode {
@@ -270,16 +212,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (void)windowDidResignMain:(NSNotification*)notification {
   [self updateMenuBarAndDockVisibility];
-}
-
-- (void)activeSpaceDidChange:(NSNotification*)notification {
-  menubarFraction_ = kHideFraction;
-  menubarState_ = FullscreenMenubarState::HIDDEN;
-  [browserController_ layoutSubviews];
-}
-
-- (CGFloat)floatingBarVerticalOffset {
-  return kFloatingBarVerticalOffset;
 }
 
 - (void)lockBarVisibilityWithAnimation:(BOOL)animate {
@@ -317,7 +249,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     return;
 
   if ([self mouseInsideTrackingArea] ||
-      menubarState_ == FullscreenMenubarState::SHOWN) {
+      [menubarTracker_ state] == FullscreenMenubarState::SHOWN) {
     return;
   }
 
@@ -338,7 +270,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   }
 
   // Reveal the toolbar for tabstrip changes if the toolbar is hidden.
-  if (IsCGFloatEqual([self toolbarFraction], kHideFraction)) {
+  if (ui::IsCGFloatEqual([self toolbarFraction], kHideFraction)) {
     isRevealingToolbarForTabStripChanges_ = YES;
     [self ensureOverlayShownWithAnimation:YES];
   }
@@ -368,7 +300,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     return;
 
   // If the menubar is gone, animate the toolbar out.
-  if (menubarState_ == FullscreenMenubarState::HIDDEN) {
+  if ([menubarTracker_ state] == FullscreenMenubarState::HIDDEN) {
     base::AutoReset<BOOL> autoReset(&shouldAnimateToolbarOut_, YES);
     [self ensureOverlayHiddenWithAnimation:YES];
   }
@@ -378,11 +310,16 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (void)updateToolbar {
   [browserController_ layoutSubviews];
+  [self updateTrackingArea];
 
   // In AppKit fullscreen, moving the mouse to the top of the screen toggles
   // menu visibility. Replicate the same effect for immersive fullscreen.
   if ([browserController_ isInImmersiveFullscreen])
     [self updateMenuBarAndDockVisibility];
+}
+
+- (BrowserWindowController*)browserWindowController {
+  return browserController_;
 }
 
 // This method works, but is fragile.
@@ -397,12 +334,13 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 // Immersive Fullscreen, this class controls the visibility of the menu bar, so
 // the logic is correct and not fragile.
 - (CGFloat)menubarOffset {
-  if ([browserController_ isInAppKitFullscreen])
-    return -std::floor(menubarFraction_ * [self floatingBarVerticalOffset]);
+  if ([browserController_ isInAppKitFullscreen]) {
+    return -std::floor([menubarTracker_ menubarFraction] *
+                       kToolbarVerticalOffset);
+  }
 
-  return [self shouldShowMenubarInImmersiveFullscreen]
-             ? -[self floatingBarVerticalOffset]
-             : 0;
+  return [self shouldShowMenubarInImmersiveFullscreen] ? -kToolbarVerticalOffset
+                                                       : 0;
 }
 
 - (CGFloat)toolbarFraction {
@@ -415,7 +353,8 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     case FullscreenSlidingStyle::OMNIBOX_TABS_NONE:
       return kHideFraction;
     case FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN:
-      if (menubarState_ == FullscreenMenubarState::SHOWN)
+      FullscreenMenubarState menubarState = [menubarTracker_ state];
+      if (menubarState == FullscreenMenubarState::SHOWN)
         return kShowFraction;
 
       if ([self mouseInsideTrackingArea])
@@ -434,7 +373,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
       if (hideTimer_.get() || shouldAnimateToolbarOut_)
         return kShowFraction;
 
-      return menubarFraction_;
+      return [menubarTracker_ menubarFraction];
   }
 }
 
@@ -484,43 +423,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   [self updateTrackingArea];
 }
 
-- (void)setMenuBarRevealProgress:(CGFloat)progress {
-  // If the menubarFraction increases, check if we are in the right screen
-  // so that the toolbar is not revealed on the wrong screen.
-  if (![self isMouseOnScreen] && progress > menubarFraction_)
-    return;
-
-  // Ignore the menubarFraction changes if the Space is inactive.
-  if (![[browserController_ window] isOnActiveSpace])
-    return;
-
-  if (IsCGFloatEqual(progress, kShowFraction))
-    menubarState_ = FullscreenMenubarState::SHOWN;
-  else if (IsCGFloatEqual(progress, kHideFraction))
-    menubarState_ = FullscreenMenubarState::HIDDEN;
-  else if (progress < menubarFraction_)
-    menubarState_ = FullscreenMenubarState::HIDING;
-  else if (progress > menubarFraction_)
-    menubarState_ = FullscreenMenubarState::SHOWING;
-
-  menubarFraction_ = progress;
-
-  if (slidingStyle_ == FullscreenSlidingStyle::OMNIBOX_TABS_HIDDEN) {
-    if (menubarState_ == FullscreenMenubarState::HIDDEN ||
-        menubarState_ == FullscreenMenubarState::SHOWN) {
-      [self updateTrackingArea];
-    }
-  }
-
-  // If an animation is not running, then -layoutSubviews will not be called
-  // for each tick of the menu bar reveal. Do that manually.
-  // TODO(erikchen): The animation is janky. layoutSubviews need a refactor so
-  // that it calls setFrameOffset: instead of setFrame: if the frame's size has
-  // not changed.
-  if (!currentAnimation_.get())
-    [browserController_ layoutSubviews];
-}
-
 @end
 
 @implementation FullscreenToolbarController (PrivateMethods)
@@ -543,7 +445,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (void)updateTrackingArea {
   // Remove the tracking area if the toolbar isn't fully shown.
-  if (!IsCGFloatEqual([self toolbarFraction], kShowFraction)) {
+  if (!ui::IsCGFloatEqual([self toolbarFraction], kShowFraction)) {
     [self removeTrackingAreaIfNecessary];
     return;
   }
@@ -652,7 +554,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 - (void)cleanup {
   [self cancelAnimationAndTimer];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
 
   [self removeTrackingAreaIfNecessary];
 
@@ -660,6 +561,8 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   // since we will no longer be receiving actual status resignation
   // notifications.
   [self setSystemFullscreenModeTo:base::mac::kFullScreenModeNormal];
+
+  menubarTracker_.reset();
 
   // No more calls back up to the BWC.
   browserController_ = nil;

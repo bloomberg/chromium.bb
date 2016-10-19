@@ -2641,6 +2641,8 @@ split_static_library("ui") {
         "cocoa/framed_browser_window.mm",
         "cocoa/full_size_content_window.h",
         "cocoa/full_size_content_window.mm",
+        "cocoa/fullscreen/fullscreen_menubar_tracker.h",
+        "cocoa/fullscreen/fullscreen_menubar_tracker.mm",
         "cocoa/fullscreen_low_power_coordinator.h",
         "cocoa/fullscreen_low_power_coordinator.mm",
         "cocoa/fullscreen_toolbar_controller.h",
