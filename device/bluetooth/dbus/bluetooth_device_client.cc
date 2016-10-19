@@ -465,16 +465,16 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
   // is created. Informs observers.
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                      DeviceAdded(object_path));
+    for (auto& observer : observers_)
+      observer.DeviceAdded(object_path);
   }
 
   // Called by dbus::ObjectManager when an object with the device interface
   // is removed. Informs observers.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                      DeviceRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.DeviceRemoved(object_path);
   }
 
   // Called by BluetoothPropertySet when a property value is changed,
@@ -482,8 +482,8 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
   // call. Informs observers.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
-    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                      DevicePropertyChanged(object_path, property_name));
+    for (auto& observer : observers_)
+      observer.DevicePropertyChanged(object_path, property_name);
   }
 
   // Called when a response for successful method call is received.

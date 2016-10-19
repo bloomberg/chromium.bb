@@ -196,20 +196,20 @@ void FakeBluetoothGattDescriptorClient::OnPropertyChanged(
   VLOG(2) << "Descriptor property changed: " << object_path.value() << ": "
           << property_name;
 
-  FOR_EACH_OBSERVER(BluetoothGattDescriptorClient::Observer, observers_,
-                    GattDescriptorPropertyChanged(object_path, property_name));
+  for (auto& observer : observers_)
+    observer.GattDescriptorPropertyChanged(object_path, property_name);
 }
 
 void FakeBluetoothGattDescriptorClient::NotifyDescriptorAdded(
     const dbus::ObjectPath& object_path) {
-  FOR_EACH_OBSERVER(BluetoothGattDescriptorClient::Observer, observers_,
-                    GattDescriptorAdded(object_path));
+  for (auto& observer : observers_)
+    observer.GattDescriptorAdded(object_path);
 }
 
 void FakeBluetoothGattDescriptorClient::NotifyDescriptorRemoved(
     const dbus::ObjectPath& object_path) {
-  FOR_EACH_OBSERVER(BluetoothGattDescriptorClient::Observer, observers_,
-                    GattDescriptorRemoved(object_path));
+  for (auto& observer : observers_)
+    observer.GattDescriptorRemoved(object_path);
 }
 
 }  // namespace bluez

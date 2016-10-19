@@ -130,8 +130,8 @@ void BluetoothAdvertisementBlueZ::Unregister(
 void BluetoothAdvertisementBlueZ::Released() {
   LOG(WARNING) << "Advertisement released.";
   provider_.reset();
-  FOR_EACH_OBSERVER(BluetoothAdvertisement::Observer, observers_,
-                    AdvertisementReleased(this));
+  for (auto& observer : observers_)
+    observer.AdvertisementReleased(this);
 }
 
 }  // namespace bluez

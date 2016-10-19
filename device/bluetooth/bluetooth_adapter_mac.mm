@@ -234,9 +234,8 @@ void BluetoothAdapterMac::ClassicDiscoveryStopped(bool unexpected) {
     num_discovery_sessions_ = 0;
     MarkDiscoverySessionsAsInactive();
   }
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                    observers_,
-                    AdapterDiscoveringChanged(this, false));
+  for (auto& observer : observers_)
+    observer.AdapterDiscoveringChanged(this, false);
 }
 
 void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
@@ -298,9 +297,8 @@ void BluetoothAdapterMac::AddDiscoverySession(
 
   DVLOG(1) << "Added a discovery session";
   num_discovery_sessions_++;
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
-                    observers_,
-                    AdapterDiscoveringChanged(this, true));
+  for (auto& observer : observers_)
+    observer.AdapterDiscoveringChanged(this, true);
   callback.Run();
 }
 
@@ -431,8 +429,8 @@ void BluetoothAdapterMac::PollAdapter() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461181 BluetoothAdapterMac::PollAdapter::AdapterPresentChanged"));
   if (was_present != is_present) {
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      AdapterPresentChanged(this, is_present));
+    for (auto& observer : observers_)
+      observer.AdapterPresentChanged(this, is_present);
   }
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
@@ -442,8 +440,8 @@ void BluetoothAdapterMac::PollAdapter() {
           "461181 BluetoothAdapterMac::PollAdapter::AdapterPowerChanged"));
   if (classic_powered_ != classic_powered) {
     classic_powered_ = classic_powered;
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      AdapterPoweredChanged(this, classic_powered_));
+    for (auto& observer : observers_)
+      observer.AdapterPoweredChanged(this, classic_powered_);
   }
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
@@ -484,8 +482,8 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
   devices_.set(device_address, base::WrapUnique(device_classic));
   VLOG(1) << "Adding new classic device: " << device_classic->GetAddress();
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    DeviceAdded(this, device_classic));
+  for (auto& observer : observers_)
+    observer.DeviceAdded(this, device_classic);
 }
 
 void BluetoothAdapterMac::LowEnergyDeviceUpdated(
@@ -562,11 +560,11 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     std::string device_address =
         BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(peripheral);
     devices_.add(device_address, std::unique_ptr<BluetoothDevice>(device_mac));
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceAdded(this, device_mac));
+    for (auto& observer : observers_)
+      observer.DeviceAdded(this, device_mac);
   } else {
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceChanged(this, device_mac));
+    for (auto& observer : observers_)
+      observer.DeviceChanged(this, device_mac);
   }
 }
 

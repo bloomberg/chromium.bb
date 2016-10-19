@@ -220,11 +220,11 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
 
   if (is_new_device) {
     devices_.add(device_address, std::move(device_android_owner));
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceAdded(this, device_android));
+    for (auto& observer : observers_)
+      observer.DeviceAdded(this, device_android);
   } else {
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceChanged(this, device_android));
+    for (auto& observer : observers_)
+      observer.DeviceChanged(this, device_android);
   }
 }
 

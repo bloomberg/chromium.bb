@@ -355,9 +355,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       // Return to avoid giving observers phantom detach events.
       return;
     }
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      StorageChanged(false /* detach */, storage_name));
+    for (auto& observer : observers_)
+      observer.StorageChanged(false /* detach */, storage_name);
   }
 
   void OnStorageChanged(bool is_attach, const std::string& storage_name) {
@@ -398,9 +397,8 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
     // New storage. Add it and let the observers know.
     storage_info_map_.insert(std::make_pair(storage_name, storage_info));
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      StorageChanged(true /* is attach */, storage_name));
+    for (auto& observer : observers_)
+      observer.StorageChanged(true /* is attach */, storage_name);
   }
 
   void OnGetStorageInfoFromDevice(const MtpStorageInfo& storage_info) {

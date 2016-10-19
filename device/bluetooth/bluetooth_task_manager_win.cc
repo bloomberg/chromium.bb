@@ -361,27 +361,27 @@ void BluetoothTaskManagerWin::LogPollingError(const char* message,
 
 void BluetoothTaskManagerWin::OnAdapterStateChanged(const AdapterState* state) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
-                    AdapterStateChanged(*state));
+  for (auto& observer : observers_)
+    observer.AdapterStateChanged(*state);
 }
 
 void BluetoothTaskManagerWin::OnDiscoveryStarted(bool success) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
-                    DiscoveryStarted(success));
+  for (auto& observer : observers_)
+    observer.DiscoveryStarted(success);
 }
 
 void BluetoothTaskManagerWin::OnDiscoveryStopped() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
-                    DiscoveryStopped());
+  for (auto& observer : observers_)
+    observer.DiscoveryStopped();
 }
 
 void BluetoothTaskManagerWin::OnDevicesPolled(
     const ScopedVector<DeviceState>* devices) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  FOR_EACH_OBSERVER(
-      BluetoothTaskManagerWin::Observer, observers_, DevicesPolled(*devices));
+  for (auto& observer : observers_)
+    observer.DevicesPolled(*devices);
 }
 
 void BluetoothTaskManagerWin::PollAdapter() {

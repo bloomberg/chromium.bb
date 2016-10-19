@@ -105,7 +105,8 @@ void PlatformSensor::NotifySensorReadingChanged() {
 }
 
 void PlatformSensor::NotifySensorError() {
-  FOR_EACH_OBSERVER(Client, clients_, OnSensorError());
+  for (auto& observer : clients_)
+    observer.OnSensorError();
 }
 
 bool PlatformSensor::UpdateSensorInternal(const ConfigMap& configurations) {

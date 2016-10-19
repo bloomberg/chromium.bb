@@ -73,7 +73,8 @@ void UsbDevice::ActiveConfigurationChanged(int configuration_value) {
 }
 
 void UsbDevice::NotifyDeviceRemoved() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(this));
+  for (auto& observer : observer_list_)
+    observer.OnDeviceRemoved(this);
 }
 
 void UsbDevice::OnDisconnect() {

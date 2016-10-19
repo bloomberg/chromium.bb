@@ -100,8 +100,8 @@ void FakeBluetoothMediaClient::SetVisible(bool visible) {
     SetEndpointRegistered(endpoints_.begin()->second, false);
 
   // Notifies observers about the change on |visible_|.
-  FOR_EACH_OBSERVER(BluetoothMediaClient::Observer, observers_,
-                    MediaRemoved(object_path_));
+  for (auto& observer : observers_)
+    observer.MediaRemoved(object_path_);
 }
 
 void FakeBluetoothMediaClient::SetEndpointRegistered(

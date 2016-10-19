@@ -765,8 +765,8 @@ void FakeBluetoothDeviceClient::CreateDevice(
   properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
 
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DeviceAdded(device_path));
+  for (auto& observer : observers_)
+    observer.DeviceAdded(device_path);
 }
 
 void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
@@ -799,8 +799,8 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
   properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
   pairing_options_map_.insert(std::make_pair(device_path, std::move(options)));
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DeviceAdded(device_path));
+  for (auto& observer : observers_)
+    observer.DeviceAdded(device_path);
 }
 
 std::unique_ptr<base::ListValue>
@@ -1076,8 +1076,8 @@ void FakeBluetoothDeviceClient::RemoveDevice(
     gatt_service_client->HideHeartRateService();
   }
 
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DeviceRemoved(device_path));
+  for (auto& observer : observers_)
+    observer.DeviceRemoved(device_path);
 
   properties_map_.erase(iter);
   PairingOptionsMap::const_iterator options_iter =
@@ -1093,8 +1093,8 @@ void FakeBluetoothDeviceClient::OnPropertyChanged(
     const std::string& property_name) {
   VLOG(2) << "Fake Bluetooth device property changed: " << object_path.value()
           << ": " << property_name;
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DevicePropertyChanged(object_path, property_name));
+  for (auto& observer : observers_)
+    observer.DevicePropertyChanged(object_path, property_name);
 }
 
 void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
@@ -1790,8 +1790,8 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
 
   properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DeviceAdded(device_path));
+  for (auto& observer : observers_)
+    observer.DeviceAdded(device_path);
 }
 
 }  // namespace bluez

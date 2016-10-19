@@ -166,23 +166,23 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
 }
 
 void BluetoothAdapter::NotifyAdapterPoweredChanged(bool powered) {
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    AdapterPoweredChanged(this, powered));
+  for (auto& observer : observers_)
+    observer.AdapterPoweredChanged(this, powered);
 }
 
 void BluetoothAdapter::NotifyDeviceChanged(BluetoothDevice* device) {
   DCHECK(device);
   DCHECK_EQ(device->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    DeviceChanged(this, device));
+  for (auto& observer : observers_)
+    observer.DeviceChanged(this, device);
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
                                                  bool new_paired_status) {
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    DevicePairedChanged(this, device, new_paired_status));
+  for (auto& observer : observers_)
+    observer.DevicePairedChanged(this, device, new_paired_status);
 }
 #endif
 
@@ -190,55 +190,55 @@ void BluetoothAdapter::NotifyGattServiceAdded(
     BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattServiceAdded(this, service->GetDevice(), service));
+  for (auto& observer : observers_)
+    observer.GattServiceAdded(this, service->GetDevice(), service);
 }
 
 void BluetoothAdapter::NotifyGattServiceRemoved(
     BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattServiceRemoved(this, service->GetDevice(), service));
+  for (auto& observer : observers_)
+    observer.GattServiceRemoved(this, service->GetDevice(), service);
 }
 
 void BluetoothAdapter::NotifyGattServiceChanged(
     BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattServiceChanged(this, service));
+  for (auto& observer : observers_)
+    observer.GattServiceChanged(this, service);
 }
 
 void BluetoothAdapter::NotifyGattServicesDiscovered(BluetoothDevice* device) {
   DCHECK(device->GetAdapter() == this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattServicesDiscovered(this, device));
+  for (auto& observer : observers_)
+    observer.GattServicesDiscovered(this, device);
 }
 
 void BluetoothAdapter::NotifyGattDiscoveryComplete(
     BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattDiscoveryCompleteForService(this, service));
+  for (auto& observer : observers_)
+    observer.GattDiscoveryCompleteForService(this, service);
 }
 
 void BluetoothAdapter::NotifyGattCharacteristicAdded(
     BluetoothRemoteGattCharacteristic* characteristic) {
   DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattCharacteristicAdded(this, characteristic));
+  for (auto& observer : observers_)
+    observer.GattCharacteristicAdded(this, characteristic);
 }
 
 void BluetoothAdapter::NotifyGattCharacteristicRemoved(
     BluetoothRemoteGattCharacteristic* characteristic) {
   DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattCharacteristicRemoved(this, characteristic));
+  for (auto& observer : observers_)
+    observer.GattCharacteristicRemoved(this, characteristic);
 }
 
 void BluetoothAdapter::NotifyGattDescriptorAdded(
@@ -247,8 +247,8 @@ void BluetoothAdapter::NotifyGattDescriptorAdded(
       descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
       this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattDescriptorAdded(this, descriptor));
+  for (auto& observer : observers_)
+    observer.GattDescriptorAdded(this, descriptor);
 }
 
 void BluetoothAdapter::NotifyGattDescriptorRemoved(
@@ -257,8 +257,8 @@ void BluetoothAdapter::NotifyGattDescriptorRemoved(
       descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
       this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattDescriptorRemoved(this, descriptor));
+  for (auto& observer : observers_)
+    observer.GattDescriptorRemoved(this, descriptor);
 }
 
 void BluetoothAdapter::NotifyGattCharacteristicValueChanged(
@@ -266,9 +266,8 @@ void BluetoothAdapter::NotifyGattCharacteristicValueChanged(
     const std::vector<uint8_t>& value) {
   DCHECK_EQ(characteristic->GetService()->GetDevice()->GetAdapter(), this);
 
-  FOR_EACH_OBSERVER(
-      BluetoothAdapter::Observer, observers_,
-      GattCharacteristicValueChanged(this, characteristic, value));
+  for (auto& observer : observers_)
+    observer.GattCharacteristicValueChanged(this, characteristic, value);
 }
 
 void BluetoothAdapter::NotifyGattDescriptorValueChanged(
@@ -278,8 +277,8 @@ void BluetoothAdapter::NotifyGattDescriptorValueChanged(
       descriptor->GetCharacteristic()->GetService()->GetDevice()->GetAdapter(),
       this);
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    GattDescriptorValueChanged(this, descriptor, value));
+  for (auto& observer : observers_)
+    observer.GattDescriptorValueChanged(this, descriptor, value);
 }
 
 BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this) {
@@ -399,8 +398,8 @@ void BluetoothAdapter::RemoveTimedOutDevices() {
         devices_.take_and_erase(it);
     it = next;
 
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceRemoved(this, removed_device.get()));
+    for (auto& observer : observers_)
+      observer.DeviceRemoved(this, removed_device.get());
   }
 }
 

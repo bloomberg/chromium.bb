@@ -40,9 +40,8 @@ void MockBluetoothGattNotifySession::DoNotify(
     MockBluetoothAdapter* adapter,
     MockBluetoothGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {
-  FOR_EACH_OBSERVER(
-      BluetoothAdapter::Observer, adapter->GetObservers(),
-      GattCharacteristicValueChanged(adapter, characteristic, value));
+  for (auto& observer : adapter->GetObservers())
+    observer.GattCharacteristicValueChanged(adapter, characteristic, value);
 }
 
 }  // namespace device

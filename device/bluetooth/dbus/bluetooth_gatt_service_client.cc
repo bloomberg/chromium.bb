@@ -81,16 +81,16 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
     VLOG(2) << "Remote GATT service added: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
-                      GattServiceAdded(object_path));
+    for (auto& observer : observers_)
+      observer.GattServiceAdded(object_path);
   }
 
   // dbus::ObjectManager::Interface override.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
     VLOG(2) << "Remote GATT service removed: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
-                      GattServiceRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.GattServiceRemoved(object_path);
   }
 
  protected:
@@ -112,8 +112,8 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
                                  const std::string& property_name) {
     VLOG(2) << "Remote GATT service property changed: " << object_path.value()
             << ": " << property_name;
-    FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
-                      GattServicePropertyChanged(object_path, property_name));
+    for (auto& observer : observers_)
+      observer.GattServicePropertyChanged(object_path, property_name);
   }
 
   dbus::ObjectManager* object_manager_;

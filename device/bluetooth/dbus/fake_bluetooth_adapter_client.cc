@@ -274,15 +274,15 @@ void FakeBluetoothAdapterClient::SetVisible(bool visible) {
     // Adapter becoming visible
     visible_ = visible;
 
-    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      AdapterAdded(dbus::ObjectPath(kAdapterPath)));
+    for (auto& observer : observers_)
+      observer.AdapterAdded(dbus::ObjectPath(kAdapterPath));
 
   } else if (visible_ && !visible) {
     // Adapter becoming invisible
     visible_ = visible;
 
-    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      AdapterRemoved(dbus::ObjectPath(kAdapterPath)));
+    for (auto& observer : observers_)
+      observer.AdapterRemoved(dbus::ObjectPath(kAdapterPath));
   }
 }
 
@@ -291,15 +291,15 @@ void FakeBluetoothAdapterClient::SetSecondVisible(bool visible) {
     // Second adapter becoming visible
     second_visible_ = visible;
 
-    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      AdapterAdded(dbus::ObjectPath(kSecondAdapterPath)));
+    for (auto& observer : observers_)
+      observer.AdapterAdded(dbus::ObjectPath(kSecondAdapterPath));
 
   } else if (second_visible_ && !visible) {
     // Second adapter becoming invisible
     second_visible_ = visible;
 
-    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
-                      AdapterRemoved(dbus::ObjectPath(kSecondAdapterPath)));
+    for (auto& observer : observers_)
+      observer.AdapterRemoved(dbus::ObjectPath(kSecondAdapterPath));
   }
 }
 
@@ -329,9 +329,10 @@ void FakeBluetoothAdapterClient::OnPropertyChanged(
     }
   }
 
-  FOR_EACH_OBSERVER(
-      BluetoothAdapterClient::Observer, observers_,
-      AdapterPropertyChanged(dbus::ObjectPath(kAdapterPath), property_name));
+  for (auto& observer : observers_) {
+    observer.AdapterPropertyChanged(dbus::ObjectPath(kAdapterPath),
+                                    property_name);
+  }
 }
 
 void FakeBluetoothAdapterClient::PostDelayedTask(

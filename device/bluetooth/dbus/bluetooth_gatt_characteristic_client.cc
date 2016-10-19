@@ -202,16 +202,16 @@ class BluetoothGattCharacteristicClientImpl
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
     VLOG(2) << "Remote GATT characteristic added: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
-                      GattCharacteristicAdded(object_path));
+    for (auto& observer : observers_)
+      observer.GattCharacteristicAdded(object_path);
   }
 
   // dbus::ObjectManager::Interface override.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
     VLOG(2) << "Remote GATT characteristic removed: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothGattCharacteristicClient::Observer, observers_,
-                      GattCharacteristicRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.GattCharacteristicRemoved(object_path);
   }
 
  protected:
@@ -234,9 +234,8 @@ class BluetoothGattCharacteristicClientImpl
                                  const std::string& property_name) {
     VLOG(2) << "Remote GATT characteristic property changed: "
             << object_path.value() << ": " << property_name;
-    FOR_EACH_OBSERVER(
-        BluetoothGattCharacteristicClient::Observer, observers_,
-        GattCharacteristicPropertyChanged(object_path, property_name));
+    for (auto& observer : observers_)
+      observer.GattCharacteristicPropertyChanged(object_path, property_name);
   }
 
   // Called when a response for successful method call is received.

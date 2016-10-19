@@ -150,16 +150,16 @@ class BluetoothAdvertisementManagerClientImpl
   // interface is created. Informs observers.
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    FOR_EACH_OBSERVER(BluetoothLEAdvertisingManagerClient::Observer, observers_,
-                      AdvertisingManagerAdded(object_path));
+    for (auto& observer : observers_)
+      observer.AdvertisingManagerAdded(object_path);
   }
 
   // Called by dbus::ObjectManager when an object with the advertising manager
   // interface is removed. Informs observers.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    FOR_EACH_OBSERVER(BluetoothLEAdvertisingManagerClient::Observer, observers_,
-                      AdvertisingManagerRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.AdvertisingManagerRemoved(object_path);
   }
 
   // Called when a response for successful method call is received.

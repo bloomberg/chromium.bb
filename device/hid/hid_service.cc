@@ -103,7 +103,8 @@ void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {
                   << device_info->device_id() << "'";
 
     if (enumeration_ready_) {
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device_info));
+      for (auto& observer : observer_list_)
+        observer.OnDeviceAdded(device_info);
     }
   }
 }
@@ -116,12 +117,13 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
 
     scoped_refptr<HidDeviceInfo> device = it->second;
     if (enumeration_ready_) {
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
+      for (auto& observer : observer_list_)
+        observer.OnDeviceRemoved(device);
     }
     devices_.erase(it);
     if (enumeration_ready_) {
-      FOR_EACH_OBSERVER(Observer, observer_list_,
-                        OnDeviceRemovedCleanup(device));
+      for (auto& observer : observer_list_)
+        observer.OnDeviceRemovedCleanup(device);
     }
   }
 }

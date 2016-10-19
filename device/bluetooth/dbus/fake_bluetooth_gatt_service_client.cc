@@ -181,22 +181,22 @@ void FakeBluetoothGattServiceClient::OnPropertyChanged(
     const std::string& property_name) {
   VLOG(2) << "Fake GATT Service property changed: " << object_path.value()
           << ": " << property_name;
-  FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
-                    GattServicePropertyChanged(object_path, property_name));
+  for (auto& observer : observers_)
+    observer.GattServicePropertyChanged(object_path, property_name);
 }
 
 void FakeBluetoothGattServiceClient::NotifyServiceAdded(
     const dbus::ObjectPath& object_path) {
   VLOG(2) << "GATT service added: " << object_path.value();
-  FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
-                    GattServiceAdded(object_path));
+  for (auto& observer : observers_)
+    observer.GattServiceAdded(object_path);
 }
 
 void FakeBluetoothGattServiceClient::NotifyServiceRemoved(
     const dbus::ObjectPath& object_path) {
   VLOG(2) << "GATT service removed: " << object_path.value();
-  FOR_EACH_OBSERVER(BluetoothGattServiceClient::Observer, observers_,
-                    GattServiceRemoved(object_path));
+  for (auto& observer : observers_)
+    observer.GattServiceRemoved(object_path);
 }
 
 void FakeBluetoothGattServiceClient::ExposeHeartRateCharacteristics() {

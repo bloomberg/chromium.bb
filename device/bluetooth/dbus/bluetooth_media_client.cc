@@ -73,15 +73,15 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient,
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
     VLOG(1) << "Remote Media added: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothMediaClient::Observer, observers_,
-                      MediaAdded(object_path));
+    for (auto& observer : observers_)
+      observer.MediaAdded(object_path);
   }
 
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
     VLOG(1) << "Remote Media removed: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothMediaClient::Observer, observers_,
-                      MediaRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.MediaRemoved(object_path);
   }
 
   // BluetoothMediaClient overrides.

@@ -241,12 +241,14 @@ bool InputServiceLinux::GetDeviceInfo(const std::string& id,
 
 void InputServiceLinux::AddDevice(const InputDeviceInfo& info) {
   devices_[info.id] = info;
-  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceAdded(info));
+  for (auto& observer : observers_)
+    observer.OnInputDeviceAdded(info);
 }
 
 void InputServiceLinux::RemoveDevice(const std::string& id) {
   devices_.erase(id);
-  FOR_EACH_OBSERVER(Observer, observers_, OnInputDeviceRemoved(id));
+  for (auto& observer : observers_)
+    observer.OnInputDeviceRemoved(id);
 }
 
 bool InputServiceLinux::CalledOnValidThread() const {

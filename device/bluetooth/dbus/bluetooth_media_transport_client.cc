@@ -92,15 +92,15 @@ class BluetoothMediaTransportClientImpl
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
     VLOG(1) << "Remote Media Transport added: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer, observers_,
-                      MediaTransportAdded(object_path));
+    for (auto& observer : observers_)
+      observer.MediaTransportAdded(object_path);
   }
 
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
     VLOG(1) << "Remote Media Transport removed: " << object_path.value();
-    FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer, observers_,
-                      MediaTransportRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.MediaTransportRemoved(object_path);
   }
 
   // BluetoothMediaTransportClient overrides.
@@ -206,9 +206,8 @@ class BluetoothMediaTransportClientImpl
     VLOG(1) << "Name of the changed property: " << property_name;
 
     // Dispatches the change to the corresponding property-changed handler.
-    FOR_EACH_OBSERVER(
-        BluetoothMediaTransportClient::Observer, observers_,
-        MediaTransportPropertyChanged(object_path, property_name));
+    for (auto& observer : observers_)
+      observer.MediaTransportPropertyChanged(object_path, property_name);
   }
 
   // Called when a response for successful method call is received.

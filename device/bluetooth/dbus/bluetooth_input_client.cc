@@ -83,16 +83,16 @@ class BluetoothInputClientImpl : public BluetoothInputClient,
   // is created. Informs observers.
   void ObjectAdded(const dbus::ObjectPath& object_path,
                    const std::string& interface_name) override {
-    FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                      InputAdded(object_path));
+    for (auto& observer : observers_)
+      observer.InputAdded(object_path);
   }
 
   // Called by dbus::ObjectManager when an object with the input interface
   // is removed. Informs observers.
   void ObjectRemoved(const dbus::ObjectPath& object_path,
                      const std::string& interface_name) override {
-    FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                      InputRemoved(object_path));
+    for (auto& observer : observers_)
+      observer.InputRemoved(object_path);
   }
 
   // Called by BluetoothPropertySet when a property value is changed,
@@ -100,8 +100,8 @@ class BluetoothInputClientImpl : public BluetoothInputClient,
   // call. Informs observers.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
-    FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                      InputPropertyChanged(object_path, property_name));
+    for (auto& observer : observers_)
+      observer.InputPropertyChanged(object_path, property_name);
   }
 
   dbus::ObjectManager* object_manager_;

@@ -193,8 +193,8 @@ void FakeBluetoothMediaTransportClient::SetValid(
   ObjectPath transport_path = transport->path;
 
   // Notifies observers about the state change of the transport.
-  FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer, observers_,
-                    MediaTransportRemoved(transport_path));
+  for (auto& observer : observers_)
+    observer.MediaTransportRemoved(transport_path);
 
   endpoint->ClearConfiguration(transport_path);
   delete transport;
@@ -212,10 +212,10 @@ void FakeBluetoothMediaTransportClient::SetState(
     return;
 
   transport->properties->state.ReplaceValue(state);
-  FOR_EACH_OBSERVER(
-      BluetoothMediaTransportClient::Observer, observers_,
-      MediaTransportPropertyChanged(
-          transport->path, BluetoothMediaTransportClient::kStateProperty));
+  for (auto& observer : observers_) {
+    observer.MediaTransportPropertyChanged(
+        transport->path, BluetoothMediaTransportClient::kStateProperty);
+  }
 }
 
 void FakeBluetoothMediaTransportClient::SetVolume(
@@ -226,10 +226,10 @@ void FakeBluetoothMediaTransportClient::SetVolume(
     return;
 
   transport->properties->volume.ReplaceValue(volume);
-  FOR_EACH_OBSERVER(
-      BluetoothMediaTransportClient::Observer, observers_,
-      MediaTransportPropertyChanged(
-          transport->path, BluetoothMediaTransportClient::kVolumeProperty));
+  for (auto& observer : observers_) {
+    observer.MediaTransportPropertyChanged(
+        transport->path, BluetoothMediaTransportClient::kVolumeProperty);
+  }
 }
 
 void FakeBluetoothMediaTransportClient::WriteData(

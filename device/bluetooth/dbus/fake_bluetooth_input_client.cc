@@ -95,8 +95,8 @@ void FakeBluetoothInputClient::AddInputDevice(
 
   properties_map_[object_path] = properties;
 
-  FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                    InputAdded(object_path));
+  for (auto& observer : observers_)
+    observer.InputAdded(object_path);
 }
 
 void FakeBluetoothInputClient::RemoveInputDevice(
@@ -106,8 +106,8 @@ void FakeBluetoothInputClient::RemoveInputDevice(
   if (it == properties_map_.end())
     return;
 
-  FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                    InputRemoved(object_path));
+  for (auto& observer : observers_)
+    observer.InputRemoved(object_path);
 
   delete it->second;
   properties_map_.erase(it);
@@ -116,8 +116,8 @@ void FakeBluetoothInputClient::RemoveInputDevice(
 void FakeBluetoothInputClient::OnPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
-                    InputPropertyChanged(object_path, property_name));
+  for (auto& observer : observers_)
+    observer.InputPropertyChanged(object_path, property_name);
 }
 
 }  // namespace bluez
