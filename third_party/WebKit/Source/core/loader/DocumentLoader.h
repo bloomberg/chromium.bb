@@ -199,7 +199,7 @@ class CORE_EXPORT DocumentLoader
 
   void ensureWriter(const AtomicString& mimeType,
                     const KURL& overridingURL = KURL());
-  void endWriting(DocumentWriter*);
+  void endWriting();
 
   FrameLoader* frameLoader() const;
 

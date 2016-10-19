@@ -302,7 +302,7 @@ void DocumentLoader::finishedLoading(double finishTime) {
     return;
 
   m_applicationCacheHost->finishedLoadingMainResource();
-  endWriting(m_writer.get());
+  endWriting();
   if (m_state < MainResourceDone)
     m_state = MainResourceDone;
   clearMainResourceHandle();
@@ -726,8 +726,7 @@ void DocumentLoader::startLoadingMainResource() {
   m_mainResource->addClient(this);
 }
 
-void DocumentLoader::endWriting(DocumentWriter* writer) {
-  DCHECK_EQ(m_writer, writer);
+void DocumentLoader::endWriting() {
   m_writer->end();
   m_writer.clear();
 }
@@ -785,7 +784,7 @@ void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(
                              ForceSynchronousParsing);
   if (!source.isNull())
     m_writer->appendReplacingData(source);
-  endWriting(m_writer.get());
+  endWriting();
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
