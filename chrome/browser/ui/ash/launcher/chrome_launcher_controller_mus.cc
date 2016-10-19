@@ -279,31 +279,36 @@ void ChromeLauncherControllerMus::PinAppsFromPrefs() {
   if (!ConnectToShelfController())
     return;
 
-  std::vector<std::string> pinned_apps = ash::launcher::GetPinnedAppsFromPrefs(
-      profile()->GetPrefs(), launcher_controller_helper());
+  std::vector<ash::launcher::AppLauncherId> pinned_apps =
+      ash::launcher::GetPinnedAppsFromPrefs(profile()->GetPrefs(),
+                                            launcher_controller_helper());
 
-  for (const auto& app : pinned_apps) {
-    if (app == ash::launcher::kPinnedAppsPlaceholder)
+  for (const auto& app_launcher_id : pinned_apps) {
+    const std::string app_launcher_id_str = app_launcher_id.ToString();
+    if (app_launcher_id_str == ash::launcher::kPinnedAppsPlaceholder)
       continue;
 
     ash::mojom::ShelfItemPtr item(ash::mojom::ShelfItem::New());
-    item->app_id = app;
-    item->app_title = mojo::String::From(
-        launcher_controller_helper()->GetAppTitle(profile(), app));
+    item->app_id = app_launcher_id_str;
+    item->app_title =
+        mojo::String::From(launcher_controller_helper()->GetAppTitle(
+            profile(), app_launcher_id_str));
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Image& image = rb.GetImageNamed(IDR_APP_DEFAULT_ICON);
     item->image = *image.ToSkBitmap();
     std::unique_ptr<ChromeShelfItemDelegate> delegate(
-        new ChromeShelfItemDelegate(app, this));
+        new ChromeShelfItemDelegate(app_launcher_id_str, this));
     shelf_controller()->PinItem(std::move(item),
                                 delegate->CreateInterfacePtrInfoAndBind(
                                     shelf_controller().associated_group()));
-    app_id_to_item_delegate_.insert(std::make_pair(app, std::move(delegate)));
+    app_id_to_item_delegate_.insert(
+        std::make_pair(app_launcher_id_str, std::move(delegate)));
 
-    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app);
+    AppIconLoader* app_icon_loader =
+        GetAppIconLoaderForApp(app_launcher_id_str);
     if (app_icon_loader) {
-      app_icon_loader->FetchImage(app);
-      app_icon_loader->UpdateImage(app);
+      app_icon_loader->FetchImage(app_launcher_id_str);
+      app_icon_loader->UpdateImage(app_launcher_id_str);
     }
   }
 }

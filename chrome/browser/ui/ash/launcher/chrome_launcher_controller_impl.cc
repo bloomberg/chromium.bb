@@ -375,8 +375,10 @@ void ChromeLauncherControllerImpl::UnpinAndUpdatePrefs(ash::ShelfID id,
   LauncherItemController* controller = GetLauncherItemController(id);
   CHECK(controller);
 
-  if (update_prefs)
-    ash::launcher::RemovePinPosition(profile(), GetAppIDForShelfID(id));
+  if (update_prefs) {
+    ash::launcher::RemovePinPosition(
+        profile(), ash::launcher::AppLauncherId(GetAppIDForShelfID(id)));
+  }
 
   if (controller->type() == LauncherItemController::TYPE_APP ||
       controller->locked()) {
@@ -1157,7 +1159,7 @@ void ChromeLauncherControllerImpl::SyncPinPosition(ash::ShelfID shelf_id) {
   DCHECK(!app_id.empty());
 
   std::string app_id_before;
-  std::vector<std::string> app_ids_after;
+  std::vector<ash::launcher::AppLauncherId> app_launcher_ids_after;
 
   for (int i = index - 1; i > 0; --i) {
     const ash::ShelfID shelf_id_before = model_->items()[i].id;
@@ -1173,12 +1175,17 @@ void ChromeLauncherControllerImpl::SyncPinPosition(ash::ShelfID shelf_id) {
     if (IsPinned(shelf_id_after)) {
       const std::string app_id_after = GetAppIDForShelfID(shelf_id_after);
       DCHECK(!app_id_after.empty());
-      app_ids_after.push_back(app_id_after);
+      app_launcher_ids_after.push_back(
+          ash::launcher::AppLauncherId(app_id_after));
     }
   }
 
-  ash::launcher::SetPinPosition(profile(), app_id, app_id_before,
-                                app_ids_after);
+  ash::launcher::AppLauncherId app_launcher_id_before =
+      app_id_before.empty() ? ash::launcher::AppLauncherId()
+                            : ash::launcher::AppLauncherId(app_id_before);
+
+  ash::launcher::SetPinPosition(profile(), ash::launcher::AppLauncherId(app_id),
+                                app_launcher_id_before, app_launcher_ids_after);
 }
 
 void ChromeLauncherControllerImpl::OnSyncModelUpdated() {
@@ -1201,7 +1208,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // into the pref state. Therefore we tell |persistPinnedState| to ignore any
   // invocations while we are running.
   base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
-  const std::vector<std::string> pinned_apps =
+  const std::vector<ash::launcher::AppLauncherId> pinned_apps =
       ash::launcher::GetPinnedAppsFromPrefs(profile()->GetPrefs(),
                                             launcher_controller_helper());
 
@@ -1213,16 +1220,18 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // Apply pins in two steps. At the first step, go through the list of apps to
   // pin, move existing pin to current position specified by |index| or create
   // the new pin at that position.
-  for (const auto& pref_app_id : pinned_apps) {
+  for (const auto& pref_app_launcher_id : pinned_apps) {
     // Filter out apps that may be mapped wrongly.
     // TODO(khmel):  b/31703859 is to refactore shelf mapping.
+    const std::string app_launcher_id_str = pref_app_launcher_id.ToString();
     const std::string shelf_app_id =
-        ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(pref_app_id);
-    if (shelf_app_id != pref_app_id)
+        ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(
+            app_launcher_id_str);
+    if (shelf_app_id != app_launcher_id_str)
       continue;
 
     // Update apps icon if applicable.
-    OnAppUpdated(profile(), pref_app_id);
+    OnAppUpdated(profile(), app_launcher_id_str);
 
     // Find existing pin or app from the right of current |index|.
     int app_index = index;
@@ -1231,7 +1240,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
       const IDToItemControllerMap::iterator it =
           id_to_item_controller_map_.find(item.id);
       if (it != id_to_item_controller_map_.end() &&
-          it->second->app_id() == pref_app_id) {
+          it->second->app_id() == app_launcher_id_str) {
         break;
       }
     }
@@ -1248,8 +1257,8 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
       DCHECK_EQ(model_->ItemIndexByID(item.id), index);
     } else {
       // This is fresh pin. Create new one.
-      DCHECK_NE(pref_app_id, extension_misc::kChromeAppId);
-      CreateAppShortcutLauncherItem(pref_app_id, index);
+      DCHECK_NE(app_launcher_id_str, extension_misc::kChromeAppId);
+      CreateAppShortcutLauncherItem(app_launcher_id_str, index);
     }
     ++index;
   }
