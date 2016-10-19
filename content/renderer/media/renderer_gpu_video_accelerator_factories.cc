@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/unguessable_token.h"
 #include "cc/output/context_provider.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
@@ -21,6 +22,7 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
+#include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -111,6 +113,19 @@ bool RendererGpuVideoAcceleratorFactories::CheckContextLost() {
 
 bool RendererGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
   return video_accelerator_enabled_;
+}
+
+base::UnguessableToken RendererGpuVideoAcceleratorFactories::GetChannelToken() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (CheckContextLost())
+    return base::UnguessableToken();
+
+  if (channel_token_.is_empty()) {
+    context_provider_->GetCommandBufferProxy()->channel()->Send(
+        new GpuCommandBufferMsg_GetChannelToken(&channel_token_));
+  }
+
+  return channel_token_;
 }
 
 std::unique_ptr<media::VideoDecodeAccelerator>
