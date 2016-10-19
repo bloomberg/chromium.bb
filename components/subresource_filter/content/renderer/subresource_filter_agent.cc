@@ -70,7 +70,7 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
 
   if (activation_state_for_provisional_load_ != ActivationState::DISABLED) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
-                          !!ruleset_dealer_->ruleset());
+                          ruleset_dealer_->IsRulesetAvailable());
   }
 }
 
@@ -104,16 +104,17 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
     bool is_same_page_navigation) {
   RecordHistogramsOnLoadCommitted();
   if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
-      ruleset_dealer_->ruleset()) {
+      ruleset_dealer_->IsRulesetAvailable()) {
     std::vector<GURL> ancestor_document_urls = GetAncestorDocumentURLs();
     base::Closure first_disallowed_load_callback(
         base::Bind(&SubresourceFilterAgent::
                        SignalFirstSubresourceDisallowedForCommittedLoad,
                    AsWeakPtr()));
     std::unique_ptr<DocumentSubresourceFilter> filter(
-        new DocumentSubresourceFilter(
-            activation_state_for_provisional_load_, ruleset_dealer_->ruleset(),
-            ancestor_document_urls, first_disallowed_load_callback));
+        new DocumentSubresourceFilter(activation_state_for_provisional_load_,
+                                      ruleset_dealer_->GetRuleset(),
+                                      ancestor_document_urls,
+                                      first_disallowed_load_callback));
     filter_for_last_committed_load_ = filter->AsWeakPtr();
     SetSubresourceFilterForCommittedLoad(std::move(filter));
   }

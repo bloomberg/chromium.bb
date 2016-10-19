@@ -26,6 +26,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "document_subresource_filter_unittest.cc",
+    "ruleset_dealer_unittest.cc",
     "subresource_filter_agent_unittest.cc",
   ]
   deps = [

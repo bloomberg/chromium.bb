@@ -19,7 +19,28 @@ RulesetDealer::~RulesetDealer() = default;
 
 void RulesetDealer::SetRulesetFile(base::File ruleset_file) {
   DCHECK(ruleset_file.IsValid());
-  ruleset_ = new MemoryMappedRuleset(std::move(ruleset_file));
+  ruleset_file_ = std::move(ruleset_file);
+  weak_cached_ruleset_.reset();
+}
+
+bool RulesetDealer::IsRulesetAvailable() const {
+  return ruleset_file_.IsValid();
+}
+
+scoped_refptr<const MemoryMappedRuleset> RulesetDealer::GetRuleset() {
+  if (!ruleset_file_.IsValid())
+    return nullptr;
+
+  scoped_refptr<const MemoryMappedRuleset> strong_ruleset_ref;
+  if (weak_cached_ruleset_) {
+    strong_ruleset_ref = weak_cached_ruleset_.get();
+  } else {
+    MemoryMappedRuleset* ruleset =
+        new MemoryMappedRuleset(ruleset_file_.Duplicate());
+    strong_ruleset_ref = ruleset;
+    weak_cached_ruleset_ = ruleset->AsWeakPtr();
+  }
+  return strong_ruleset_ref;
 }
 
 bool RulesetDealer::OnControlMessageReceived(const IPC::Message& message) {
