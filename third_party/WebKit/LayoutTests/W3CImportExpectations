@@ -768,3 +768,6 @@ imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_p
 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-1.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-2.html [ Skip ]
 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_popups_nonescaping-3.html [ Skip ]
+
+# crbug.com/656171: w3c-test-importer fails to import file with non-valid utf8 (004.worker.js).
+crbug.com/656171 imported/wpt/workers/semantics/encodings [ Skip ]
