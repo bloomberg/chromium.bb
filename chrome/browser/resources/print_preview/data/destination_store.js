@@ -339,28 +339,108 @@ cr.define('print_preview', function() {
    */
   DestinationStore.localizeCapabilities_ = function(capabilities) {
     var mediaSize = capabilities.printer.media_size;
-    if (mediaSize) {
-      var mediaDisplayNames = {
-        'ISO_A0': 'A0',
-        'ISO_A1': 'A1',
-        'ISO_A2': 'A2',
-        'ISO_A3': 'A3',
-        'ISO_A4': 'A4',
-        'ISO_A5': 'A5',
-        'NA_LEGAL': 'Legal',
-        'NA_LETTER': 'Letter',
-        'NA_LEDGER': 'Tabloid'
-      };
-      for (var i = 0, media; media = mediaSize.option[i]; i++) {
-        // No need to patch capabilities with localized names provided.
-        if (!media.custom_display_name_localized) {
-          media.custom_display_name =
-              media.custom_display_name ||
-              mediaDisplayNames[media.name] ||
-              media.name;
-        }
+    if (!mediaSize)
+      return capabilities;
+
+    var mediaDisplayNames = {
+      'ISO_A0': 'A0',
+      'ISO_A1': 'A1',
+      'ISO_A2': 'A2',
+      'ISO_A3': 'A3',
+      'ISO_A4': 'A4',
+      'ISO_A5': 'A5',
+      'ISO_A6': 'A6',
+      'JIS_B5': 'B5 (JIS)',
+      'NA_EXECUTIVE': 'Executive',
+      'NA_LEGAL': 'Legal',
+      'NA_LETTER': 'Letter',
+      'NA_LEDGER': 'Tabloid',
+      'OM_FOLIO': 'Folio'
+    };
+    for (var i = 0, media; media = mediaSize.option[i]; i++) {
+      // No need to patch capabilities with localized names provided.
+      if (!media.custom_display_name_localized) {
+        media.custom_display_name =
+            media.custom_display_name ||
+            mediaDisplayNames[media.name] ||
+            media.name;
       }
     }
+    return capabilities;
+  };
+
+  /**
+   * Compare two media sizes by their names.
+   * @param {!Object} a Media to compare.
+   * @param {!Object} b Media to compare.
+   * @return {number} 1 if a > b, -1 if a < b, or 0 if a == b.
+   * @private
+   */
+  DestinationStore.compareMediaNames_ = function(a, b) {
+    var nameA = a.custom_display_name_localized || a.custom_display_name;
+    var nameB = b.custom_display_name_localized || b.custom_display_name;
+    return nameA == nameB ? 0 : (nameA > nameB ? 1 : -1);
+  };
+
+  /**
+   * Sort printer media sizes.
+   * @param {!Object} capabilities Printer capabilities to localize.
+   * @return {!Object} Localized capabilities.
+   * @private
+   */
+  DestinationStore.sortMediaSizes_ = function(capabilities) {
+    var mediaSize = capabilities.printer.media_size;
+    if (!mediaSize)
+      return capabilities;
+
+    // For the standard sizes, separate into categories, as seen in the Cloud
+    // Print CDD guide:
+    // - North American
+    // - Chinese
+    // - ISO
+    // - Japanese
+    // - Other metric
+    // Otherwise, assume they are custom sizes.
+    var categoryStandardNA = [];
+    var categoryStandardCN = [];
+    var categoryStandardISO = [];
+    var categoryStandardJP = [];
+    var categoryStandardMisc = [];
+    var categoryCustom = [];
+    for (var i = 0, media; media = mediaSize.option[i]; i++) {
+      var name = media.name;
+      var category;
+      if (name.startsWith('NA_')) {
+        category = categoryStandardNA;
+      } else if (name.startsWith('PRC_') || name.startsWith('ROC_') ||
+                 name == 'OM_DAI_PA_KAI' || name == 'OM_JUURO_KU_KAI' ||
+                 name == 'OM_PA_KAI') {
+        category = categoryStandardCN;
+      } else if (name.startsWith('ISO_')) {
+        category = categoryStandardISO;
+      } else if (name.startsWith('JIS_') || name.startsWith('JPN_')) {
+        category = categoryStandardJP;
+      } else if (name.startsWith('OM_')) {
+        category = categoryStandardMisc;
+      } else {
+        assert(name == 'CUSTOM', 'Unknown media size. Assuming custom');
+        category = categoryCustom;
+      }
+      category.push(media);
+    }
+
+    // For each category, sort by name.
+    categoryStandardNA.sort(DestinationStore.compareMediaNames_);
+    categoryStandardCN.sort(DestinationStore.compareMediaNames_);
+    categoryStandardISO.sort(DestinationStore.compareMediaNames_);
+    categoryStandardJP.sort(DestinationStore.compareMediaNames_);
+    categoryStandardMisc.sort(DestinationStore.compareMediaNames_);
+    categoryCustom.sort(DestinationStore.compareMediaNames_);
+
+    // Then put it all back together.
+    mediaSize.option = categoryStandardNA;
+    mediaSize.option.push(...categoryStandardCN, ...categoryStandardISO,
+        ...categoryStandardJP, ...categoryStandardMisc, ...categoryCustom);
     return capabilities;
   };
 
@@ -378,9 +458,8 @@ cr.define('print_preview', function() {
         return this.destinations_.filter(function(destination) {
           return !destination.account || destination.account == opt_account;
         });
-      } else {
-        return this.destinations_.slice(0);
       }
+      return this.destinations_.slice(0);
     },
 
     /**
@@ -1067,7 +1146,7 @@ cr.define('print_preview', function() {
      * @param {print_preview.Destination=} opt_destination The only destination
      *     that was changed or skipped if possibly more than one destination was
      *     changed. Used as a hint to limit destination search scope against
-     *     {@code autoSelectMatchingDestination_).
+     *     {@code autoSelectMatchingDestination_}.
      */
     destinationsInserted_: function(opt_destination) {
       cr.dispatchSimpleEvent(
@@ -1088,12 +1167,14 @@ cr.define('print_preview', function() {
      * Updates an existing print destination with capabilities and display name
      * information. If the destination doesn't already exist, it will be added.
      * @param {!print_preview.Destination} destination Destination to update.
-     * @return {!print_preview.Destination} The existing destination that was
-     *     updated or {@code null} if it was the new destination.
      * @private
      */
     updateDestination_: function(destination) {
       assert(destination.constructor !== Array, 'Single printer expected');
+      destination.capabilities_ = DestinationStore.localizeCapabilities_(
+          destination.capabilities_);
+      destination.capabilities_ = DestinationStore.sortMediaSizes_(
+          destination.capabilities_);
       var existingDestination = this.destinationMap_[this.getKey_(destination)];
       if (existingDestination != null) {
         existingDestination.capabilities = destination.capabilities;
@@ -1108,8 +1189,6 @@ cr.define('print_preview', function() {
             this,
             DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
       }
-
-      return existingDestination;
     },
 
     /**
