@@ -13,8 +13,6 @@
 
 namespace ios {
 
-class TestUpdatableResourceProvider;
-
 class TestChromeBrowserProvider : public ChromeBrowserProvider {
  public:
   TestChromeBrowserProvider();
@@ -31,11 +29,12 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const override NS_RETURNS_RETAINED;
   NSArray* GetAvailableVoiceSearchLanguages() const override;
+  VoiceSearchProvider* GetVoiceSearchProvider() const override;
 
  private:
   std::unique_ptr<ChromeIdentityService> chrome_identity_service_;
-  std::unique_ptr<TestUpdatableResourceProvider>
-      test_updatable_resource_provider_;
+  std::unique_ptr<UpdatableResourceProvider> updatable_resource_provider_;
+  std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);
 };

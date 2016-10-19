@@ -126,4 +126,8 @@ NSArray* ChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
   return [NSArray array];
 }
 
+VoiceSearchProvider* ChromeBrowserProvider::GetVoiceSearchProvider() const {
+  return nullptr;
+}
+
 }  // namespace ios

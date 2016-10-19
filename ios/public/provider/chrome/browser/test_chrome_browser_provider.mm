@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
+#import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
 @interface TestStyledTextField : UITextField<TextFieldStyling>
@@ -27,7 +28,9 @@
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : test_updatable_resource_provider_(new TestUpdatableResourceProvider) {}
+    : updatable_resource_provider_(
+          base::MakeUnique<TestUpdatableResourceProvider>()),
+      voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
 
@@ -52,7 +55,7 @@ ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
 
 UpdatableResourceProvider*
 TestChromeBrowserProvider::GetUpdatableResourceProvider() {
-  return test_updatable_resource_provider_.get();
+  return updatable_resource_provider_.get();
 }
 
 UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(
@@ -61,11 +64,11 @@ UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(
 }
 
 NSArray* TestChromeBrowserProvider::GetAvailableVoiceSearchLanguages() const {
-  base::scoped_nsobject<VoiceSearchLanguage> en([[VoiceSearchLanguage alloc]
-          initWithIdentifier:@"en-US"
-                 displayName:@"English (US)"
-      localizationPreference:nil]);
-  return @[ en ];
+  return voice_search_provider_->GetAvailableLanguages();
+}
+
+VoiceSearchProvider* TestChromeBrowserProvider::GetVoiceSearchProvider() const {
+  return voice_search_provider_.get();
 }
 
 }  // namespace ios

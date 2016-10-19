@@ -22,6 +22,7 @@ class GURL;
 class InfoBarViewDelegate;
 class PrefRegistrySimple;
 class PrefService;
+class VoiceSearchProvider;
 
 namespace autofill {
 class CardUnmaskPromptController;
@@ -141,7 +142,11 @@ class ChromeBrowserProvider {
   virtual bool IsSafeBrowsingEnabled(const base::Closure& on_update_callback);
 
   // Returns the list of available voice search languages.
+  // TODO(rohitrao): Remove once callers are going through VoiceSearchProvider.
   virtual NSArray* GetAvailableVoiceSearchLanguages() const;
+
+  // Returns an instance of the voice search provider, if one exists.
+  virtual VoiceSearchProvider* GetVoiceSearchProvider() const;
 
   // Returns the SyncedWindowDelegatesGetter implementation.
   virtual std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
