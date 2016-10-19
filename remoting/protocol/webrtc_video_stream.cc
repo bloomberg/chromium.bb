@@ -219,11 +219,11 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
     return;
   }
 
-  scheduler_->OnFrameEncoded(*frame.frame, result);
+  HostFrameStats stats;
+  scheduler_->OnFrameEncoded(*frame.frame, result, &stats);
 
   // Send FrameStats message.
   if (video_stats_dispatcher_.is_connected()) {
-    HostFrameStats stats;
     stats.frame_size = frame.frame->data.size();
 
     if (!frame.timestamps->input_event_timestamps.is_null()) {
@@ -246,10 +246,6 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithTimestamps frame) {
 
     stats.encode_delay = frame.timestamps->encode_ended_time -
                          frame.timestamps->encode_started_time;
-
-    // TODO(sergeyu): Figure out how to measure send_pending time with WebRTC
-    // and set it here.
-    stats.send_pending_delay = base::TimeDelta();
 
     video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
   }

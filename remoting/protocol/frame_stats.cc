@@ -84,10 +84,16 @@ HostFrameStats HostFrameStats::FromFrameStatsMessage(
     result.encode_pending_delay =
         base::TimeDelta::FromMilliseconds(message.encode_pending_time_ms());
   }
-
   if (message.has_send_pending_time_ms()) {
     result.send_pending_delay =
         base::TimeDelta::FromMilliseconds(message.send_pending_time_ms());
+  }
+  if (message.has_rtt_estimate_ms()) {
+    result.rtt_estimate =
+        base::TimeDelta::FromMilliseconds(message.rtt_estimate_ms());
+  }
+  if (message.has_bandwidth_estimate_kbps()) {
+    result.bandwidth_estimate_kbps = message.bandwidth_estimate_kbps();
   }
 
   return result;
@@ -121,7 +127,12 @@ void HostFrameStats::ToFrameStatsMessage(FrameStatsMessage* message_out) const {
   if (send_pending_delay != base::TimeDelta::Max()) {
     message_out->set_send_pending_time_ms(send_pending_delay.InMilliseconds());
   }
-
+  if (rtt_estimate != base::TimeDelta::Max()) {
+    message_out->set_rtt_estimate_ms(rtt_estimate.InMilliseconds());
+  }
+  if (bandwidth_estimate_kbps >= 0) {
+    message_out->set_bandwidth_estimate_kbps(bandwidth_estimate_kbps);
+  }
 }
 
 FrameStats::FrameStats() = default;

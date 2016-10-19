@@ -38,9 +38,9 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   bool GetEncoderFrameParams(
       const webrtc::DesktopFrame& frame,
       WebrtcVideoEncoder::FrameParams* params_out) override;
-  void OnFrameEncoded(
-      const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
-      const webrtc::EncodedImageCallback::Result& send_result) override;
+  void OnFrameEncoded(const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
+                      const webrtc::EncodedImageCallback::Result& send_result,
+                      HostFrameStats* frame_stats) override;
 
  private:
   void ScheduleNextFrame(base::TimeTicks now);
@@ -56,6 +56,8 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
 
   // Set to true when a frame is being captured or encoded.
   bool frame_pending_ = false;
+
+  base::TimeDelta rtt_estimate_;
 
   // Set to true when encoding unchanged frames for top-off.
   bool top_off_is_active_ = false;

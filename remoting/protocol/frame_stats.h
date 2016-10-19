@@ -39,6 +39,8 @@ struct HostFrameStats {
   base::TimeDelta capture_overhead_delay = base::TimeDelta::Max();
   base::TimeDelta encode_pending_delay = base::TimeDelta::Max();
   base::TimeDelta send_pending_delay = base::TimeDelta::Max();
+  base::TimeDelta rtt_estimate = base::TimeDelta::Max();
+  int bandwidth_estimate_kbps = -1;
 };
 
 struct ClientFrameStats {

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
@@ -70,6 +71,8 @@ void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
 void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
                                                      base::TimeDelta rtt) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  rtt_estimate_ = rtt;
 }
 
 void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bitrate_kbps) {
@@ -155,12 +158,20 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
 
 void WebrtcFrameSchedulerSimple::OnFrameEncoded(
     const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
-    const webrtc::EncodedImageCallback::Result& send_result) {
+    const webrtc::EncodedImageCallback::Result& send_result,
+    HostFrameStats* frame_stats) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(frame_pending_);
   frame_pending_ = false;
 
   base::TimeTicks now = base::TimeTicks::Now();
+
+  if (frame_stats) {
+    // Calculate |send_pending_delay| before refilling |pacing_bucket_|.
+    frame_stats->send_pending_delay =
+        std::max(base::TimeDelta(), pacing_bucket_.GetEmptyTime() - now);
+  }
+
   pacing_bucket_.RefillOrSpill(encoded_frame.data.size(), now);
 
   if (encoded_frame.data.empty()) {
@@ -174,6 +185,11 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
   }
 
   ScheduleNextFrame(now);
+
+  if (frame_stats) {
+    frame_stats->rtt_estimate = rtt_estimate_;
+    frame_stats->bandwidth_estimate_kbps = pacing_bucket_.rate() * 8 / 1000;
+  }
 }
 
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {

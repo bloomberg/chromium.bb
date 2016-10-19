@@ -37,6 +37,12 @@ message FrameStatsMessage {
   optional int32 encode_time_ms = 8;
 
   // Time for which the frame is blocked until it's sent to the client.
-  optional int64 send_pending_time_ms = 9;
+  optional int32 send_pending_time_ms = 9;
+
+  // Current network RTT estimate.
+  optional int32 rtt_estimate_ms = 10;
+
+  // Current bandwidth estimate in kb/s.
+  optional int32 bandwidth_estimate_kbps = 11;
 }
 

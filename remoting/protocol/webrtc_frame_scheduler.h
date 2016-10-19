@@ -13,6 +13,7 @@
 namespace remoting {
 namespace protocol {
 
+struct HostFrameStats;
 class VideoChannelStateObserver;
 class WebrtcDummyVideoEncoderFactory;
 
@@ -39,10 +40,13 @@ class WebrtcFrameScheduler {
       const webrtc::DesktopFrame& frame,
       WebrtcVideoEncoder::FrameParams* params_out) = 0;
 
-  // Called after a frame has been encoded and passed to the sender.
+  // Called after a frame has been encoded and passed to the sender. If
+  // |frame_stats| is not null then sets send_pending_delay, rtt_estimate and
+  // bandwidth_estimate_kbps fields.
   virtual void OnFrameEncoded(
       const WebrtcVideoEncoder::EncodedFrame& encoded_frame,
-      const webrtc::EncodedImageCallback::Result& send_result) = 0;
+      const webrtc::EncodedImageCallback::Result& send_result,
+      HostFrameStats* frame_stats) = 0;
 };
 
 }  // namespace protocol
