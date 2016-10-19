@@ -23,7 +23,6 @@ import re
 import stat
 import sys
 import textwrap
-import time
 import traceback
 import urllib
 import urllib2
@@ -146,6 +145,13 @@ def BranchExists(branch):
   code, _ = RunGitWithCode(['rev-parse', '--verify', branch],
                            suppress_stderr=True)
   return not code
+
+
+def time_sleep(seconds):
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  import time  # Local import to discourage others from importing time globally.
+  return time.sleep(seconds)
 
 
 def ask_for_data(prompt):
@@ -313,7 +319,7 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
 
     # status >= 500 means transient failures.
     logging.debug('Transient errors when %s. Will retry.', operation_name)
-    time.sleep(0.5 + 1.5*try_count)
+    time_sleep(0.5 + 1.5*try_count)
     try_count += 1
   assert False, 'unreachable'
 
