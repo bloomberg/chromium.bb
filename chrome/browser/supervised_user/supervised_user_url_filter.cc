@@ -425,8 +425,8 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
   if (reason != supervised_user_error_page::DEFAULT || behavior == BLOCK ||
       !async_url_checker_) {
     callback.Run(behavior, reason, false);
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnURLChecked(url, behavior, reason, false));
+    for (Observer& observer : observers_)
+      observer.OnURLChecked(url, behavior, reason, false);
     return true;
   }
 
@@ -609,7 +609,8 @@ GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
 void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
   DCHECK(CalledOnValidThread());
   contents_ = std::move(contents);
-  FOR_EACH_OBSERVER(Observer, observers_, OnSiteListUpdated());
+  for (Observer& observer : observers_)
+    observer.OnSiteListUpdated();
 }
 
 void SupervisedUserURLFilter::CheckCallback(
@@ -623,8 +624,8 @@ void SupervisedUserURLFilter::CheckCallback(
       GetBehaviorFromSafeSearchClassification(classification);
 
   callback.Run(behavior, supervised_user_error_page::ASYNC_CHECKER, uncertain);
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnURLChecked(url, behavior, supervised_user_error_page::ASYNC_CHECKER,
-                   uncertain));
+  for (Observer& observer : observers_) {
+    observer.OnURLChecked(url, behavior,
+                          supervised_user_error_page::ASYNC_CHECKER, uncertain);
+  }
 }

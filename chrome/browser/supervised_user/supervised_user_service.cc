@@ -657,8 +657,8 @@ void SupervisedUserService::SetActive(bool active) {
     }
 
     url_filter_context_.Clear();
-    FOR_EACH_OBSERVER(
-        SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+    for (SupervisedUserServiceObserver& observer : observer_list_)
+      observer.OnURLFilterChanged();
 
 #if !defined(OS_ANDROID)
     if (waiting_for_sync_initialization_)
@@ -753,8 +753,8 @@ bool SupervisedUserService::ProfileIsSupervised() const {
 }
 
 void SupervisedUserService::OnCustodianInfoChanged() {
-  FOR_EACH_OBSERVER(
-      SupervisedUserServiceObserver, observer_list_, OnCustodianInfoChanged());
+  for (SupervisedUserServiceObserver& observer : observer_list_)
+    observer.OnCustodianInfoChanged();
 }
 
 SupervisedUserSettingsService* SupervisedUserService::GetSettingsService() {
@@ -812,8 +812,8 @@ void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
       SupervisedUserURLFilter::BehaviorFromInt(behavior_value);
   url_filter_context_.SetDefaultFilteringBehavior(behavior);
 
-  FOR_EACH_OBSERVER(
-      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+  for (SupervisedUserServiceObserver& observer : observer_list_)
+    observer.OnURLFilterChanged();
 }
 
 void SupervisedUserService::OnSafeSitesSettingChanged() {
@@ -909,8 +909,8 @@ void SupervisedUserService::OnBlacklistLoaded() {
 void SupervisedUserService::UpdateBlacklist() {
   bool use_blacklist = supervised_users::IsSafeSitesBlacklistEnabled(profile_);
   url_filter_context_.SetBlacklist(use_blacklist ? &blacklist_ : nullptr);
-  FOR_EACH_OBSERVER(
-      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+  for (SupervisedUserServiceObserver& observer : observer_list_)
+    observer.OnURLFilterChanged();
 }
 
 void SupervisedUserService::UpdateManualHosts() {
@@ -926,8 +926,8 @@ void SupervisedUserService::UpdateManualHosts() {
   }
   url_filter_context_.SetManualHosts(std::move(host_map));
 
-  FOR_EACH_OBSERVER(
-      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+  for (SupervisedUserServiceObserver& observer : observer_list_)
+    observer.OnURLFilterChanged();
 }
 
 void SupervisedUserService::UpdateManualURLs() {
@@ -942,8 +942,8 @@ void SupervisedUserService::UpdateManualURLs() {
   }
   url_filter_context_.SetManualURLs(std::move(url_map));
 
-  FOR_EACH_OBSERVER(
-      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+  for (SupervisedUserServiceObserver& observer : observer_list_)
+    observer.OnURLFilterChanged();
 }
 
 std::string SupervisedUserService::GetSupervisedUserName() const {
@@ -1281,6 +1281,6 @@ void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
 #endif  // !defined(OS_ANDROID)
 
 void SupervisedUserService::OnSiteListUpdated() {
-  FOR_EACH_OBSERVER(
-      SupervisedUserServiceObserver, observer_list_, OnURLFilterChanged());
+  for (SupervisedUserServiceObserver& observer : observer_list_)
+    observer.OnURLFilterChanged();
 }

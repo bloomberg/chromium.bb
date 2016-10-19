@@ -114,8 +114,8 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
 }
 
 TabSpecificContentSettings::~TabSpecificContentSettings() {
-  FOR_EACH_OBSERVER(
-      SiteDataObserver, observer_list_, ContentSettingsDestroyed());
+  for (SiteDataObserver& observer : observer_list_)
+    observer.ContentSettingsDestroyed();
 }
 
 TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
@@ -862,7 +862,8 @@ void TabSpecificContentSettings::RemoveSiteDataObserver(
 }
 
 void TabSpecificContentSettings::NotifySiteDataObservers() {
-  FOR_EACH_OBSERVER(SiteDataObserver, observer_list_, OnSiteDataAccessed());
+  for (SiteDataObserver& observer : observer_list_)
+    observer.OnSiteDataAccessed();
 }
 
 void TabSpecificContentSettings::ClearGeolocationContentSettings() {

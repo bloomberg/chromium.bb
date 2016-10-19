@@ -560,19 +560,18 @@ void SupervisedUserSyncService::GoogleSignedOut(
 
 void SupervisedUserSyncService::NotifySupervisedUserAcknowledged(
     const std::string& supervised_user_id) {
-  FOR_EACH_OBSERVER(SupervisedUserSyncServiceObserver, observers_,
-                    OnSupervisedUserAcknowledged(supervised_user_id));
+  for (SupervisedUserSyncServiceObserver& observer : observers_)
+    observer.OnSupervisedUserAcknowledged(supervised_user_id);
 }
 
 void SupervisedUserSyncService::NotifySupervisedUsersSyncingStopped() {
-  FOR_EACH_OBSERVER(SupervisedUserSyncServiceObserver, observers_,
-                    OnSupervisedUsersSyncingStopped());
+  for (SupervisedUserSyncServiceObserver& observer : observers_)
+    observer.OnSupervisedUsersSyncingStopped();
 }
 
 void SupervisedUserSyncService::NotifySupervisedUsersChanged() {
-  FOR_EACH_OBSERVER(SupervisedUserSyncServiceObserver,
-                    observers_,
-                    OnSupervisedUsersChanged());
+  for (SupervisedUserSyncServiceObserver& observer : observers_)
+    observer.OnSupervisedUsersChanged();
 }
 
 void SupervisedUserSyncService::DispatchCallbacks() {
