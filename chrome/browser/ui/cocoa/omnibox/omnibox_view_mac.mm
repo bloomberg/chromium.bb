@@ -442,7 +442,7 @@ void OmniboxViewMac::UpdatePopup() {
   }
 
   model()->StartAutocomplete([editor selectedRange].length != 0,
-                            prevent_inline_autocomplete, false);
+                            prevent_inline_autocomplete);
 }
 
 void OmniboxViewMac::CloseOmniboxPopup() {

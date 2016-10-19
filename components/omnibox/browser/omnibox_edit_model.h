@@ -179,8 +179,7 @@ class OmniboxEditModel {
 
   // Directs the popup to start autocomplete.
   void StartAutocomplete(bool has_selected_text,
-                         bool prevent_inline_autocomplete,
-                         bool entering_keyword_mode);
+                         bool prevent_inline_autocomplete);
 
   // Closes the popup and cancels any pending asynchronous queries.
   void StopAutocomplete();

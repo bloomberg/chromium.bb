@@ -869,6 +869,21 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   EXPECT_EQ(old_text.size(), end);
 }
 
+// Make sure the cursor position doesn't get set past the last character of
+// user input text when the URL is longer than the keyword.
+// (http://crbug.com/656209)
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FocusSearchLongUrl) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+
+  ASSERT_GT(strlen(url::kAboutBlankURL), strlen(kSearchKeyword));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Make sure nothing DCHECKs.
+  chrome::FocusSearch(browser());
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+}
+
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordByTypingQuestionMark) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
