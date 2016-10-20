@@ -871,7 +871,8 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(Text* textNode,
   // See http://crbug.com/310149
   const bool nextSiblingIsTextNode =
       textNode->nextSibling() && textNode->nextSibling()->isTextNode() &&
-      toText(textNode->nextSibling())->data().length();
+      toText(textNode->nextSibling())->data().length() &&
+      toText(textNode->nextSibling())->data()[0] != ' ';
   const bool shouldEmitNBSPbeforeEnd =
       (isEndOfParagraph(visibleDownstreamPos) ||
        (unsigned)downstream == text.length()) &&

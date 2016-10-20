@@ -25,7 +25,7 @@ test(() => assert_selection(
 test(() => assert_selection(
   '<div contenteditable><p id="para"></p></div>',
   selection => {
-   var para = selection.document.getElementById('para');
+    var para = selection.document.getElementById('para');
     para.appendChild(selection.document.createTextNode('A'));
     para.appendChild(selection.document.createTextNode(''));
     selection.collapse(para.firstChild, 1);
@@ -34,4 +34,17 @@ test(() => assert_selection(
   },
   '<div contenteditable><p id="para">A\u00A0|</p></div>'),
   'Insert a &nbsp; instead of plain space when it is inserted before the empty text node');
+
+test(() => assert_selection(
+  '<div contenteditable><p id="para"></p></div>',
+  selection => {
+    var para = selection.document.getElementById('para');
+    para.appendChild(selection.document.createTextNode('A'));
+    para.appendChild(selection.document.createTextNode(' B'));
+    selection.collapse(para.firstChild, 1);
+
+    selection.document.execCommand('insertText', false, ' ');
+  },
+  '<div contenteditable><p id="para">A\u00A0| B</p></div>'),
+  'Insert a &nbsp; instead of plain space when it is inserted before the text node that has a leading plain space');
 </script>
