@@ -83,7 +83,7 @@ class DepsUpdaterTest(unittest.TestCase):
             'some/test/a.html': 'new/a.html',
             'some/test/c.html': 'new/c.html',
         }
-        updater.update_test_expectations(deleted_tests, renamed_test_pairs)
+        updater.update_all_test_expectations_files(deleted_tests, renamed_test_pairs)
         self.assertMultiLineEqual(
             host.filesystem.read_text_file('/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'),
             ('Bug(test) new/a.html [ Failure ]\n'

@@ -14,7 +14,7 @@ import json
 
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.layout_tests.models.test_expectations import TestExpectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 
 # Import destination directories (under LayoutTests/imported/).
 WPT_DEST_NAME = 'wpt'
@@ -196,7 +196,7 @@ class DepsUpdater(object):
             self.rmtree(temp_repo_path)
 
         self.print_('## Updating TestExpectations for any removed or renamed tests.')
-        self.update_test_expectations(self._list_deleted_tests(), self._list_renamed_tests())
+        self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
 
         return '%s@%s' % (dest_dir_name, master_commitish)
 
@@ -392,18 +392,22 @@ class DepsUpdater(object):
         self.check_run(['git', 'commit', '-a', '-m', message])
         self.git_cl.run(['upload', '-m', message, '--rietveld'])
 
-    def update_test_expectations(self, deleted_tests, renamed_tests):
-        """Updates the TestExpectations file entries for tests that have been deleted or renamed."""
+    def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
+        """Updates all test expectations files for tests that have been deleted or renamed."""
         port = self.host.port_factory.get()
-        test_expectations = TestExpectations(port, include_overrides=False)
-        # Tests for which files don't exist aren't stored in TestExpectationsModel,
-        # so methods like TestExpectations.remove_expectation_line don't work; instead
-        # we can run through the TestExpectationLine objects that were parsed.
+        for path, file_contents in port.all_expectations_dict().iteritems():
+
+            parser = TestExpectationParser(port, all_tests=None, is_lint_mode=False)
+            expectation_lines = parser.parse(path, file_contents)
+            self._update_single_test_expectations_file(path, expectation_lines, deleted_tests, renamed_tests)
+
+    def _update_single_test_expectations_file(self, path, expectation_lines, deleted_tests, renamed_tests):
+        """Updates single test expectations file."""
         # FIXME: This won't work for removed or renamed directories with test expectations
         # that are directories rather than individual tests.
         new_lines = []
         changed_lines = []
-        for expectation_line in test_expectations.expectations():
+        for expectation_line in expectation_lines:
             if expectation_line.name in deleted_tests:
                 continue
             if expectation_line.name in renamed_tests:
@@ -415,9 +419,8 @@ class DepsUpdater(object):
                 expectation_line.warnings = []
                 changed_lines.append(expectation_line)
             new_lines.append(expectation_line)
-        self.host.filesystem.write_text_file(
-            port.path_to_generic_test_expectations_file(),
-            TestExpectations.list_to_string(new_lines, reconstitute_only_these=changed_lines))
+        new_file_contents = TestExpectations.list_to_string(new_lines, reconstitute_only_these=changed_lines)
+        self.host.filesystem.write_text_file(path, new_file_contents)
 
     def _list_deleted_tests(self):
         """Returns a list of layout tests that have been deleted."""
