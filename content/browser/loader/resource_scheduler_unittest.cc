@@ -344,6 +344,11 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
 
 TEST_F(ResourceSchedulerTest,
        OneLowLoadsUntilBodyInsertedEvenSpdyWhenDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
+                                          "");
+
+  InitializeScheduler();
   http_server_properties_.SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
   std::unique_ptr<TestRequest> high(
@@ -684,6 +689,11 @@ TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
 }
 
 TEST_F(ResourceSchedulerTest, SpdyProxyDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
+                                          "");
+  InitializeScheduler();
+
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
@@ -741,6 +751,11 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
 }
 
 TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
+                                          "");
+  InitializeScheduler();
+
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
   const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
 

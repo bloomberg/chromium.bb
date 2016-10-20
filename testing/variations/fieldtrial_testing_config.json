@@ -1386,6 +1386,25 @@
             ]
         }
     ],
+    "PrioritySupportedRequestsDelayableStudy": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrioritySupportedRequestsDelayable"
+                    ]
+                }
+            ]
+        }
+    ],
     "ProgressBarAnimationAndroid": [
         {
             "platforms": [
