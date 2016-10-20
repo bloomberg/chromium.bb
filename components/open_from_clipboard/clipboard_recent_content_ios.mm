@@ -98,7 +98,8 @@ const char* kAuthorizedSchemes[] = {
 // having copied a given string.
 NSData* WeakMD5FromNSString(NSString* string) {
   unsigned char hash[CC_MD5_DIGEST_LENGTH];
-  const char* c_string = [string UTF8String];
+  const std::string clipboard = base::SysNSStringToUTF8(string);
+  const char* c_string = clipboard.c_str();
   CC_MD5(c_string, strlen(c_string), hash);
   NSData* data = [NSData dataWithBytes:hash length:4];
   return data;
