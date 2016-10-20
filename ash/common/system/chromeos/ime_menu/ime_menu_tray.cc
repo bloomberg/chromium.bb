@@ -8,6 +8,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
@@ -277,7 +278,8 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf),
       label_(new ImeMenuLabel()),
       show_keyboard_(false),
-      force_show_keyboard_(false) {
+      force_show_keyboard_(false),
+      should_block_shelf_auto_hide_(false) {
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
   SetContentsBackground();
@@ -351,12 +353,14 @@ void ImeMenuTray::ShowImeMenuBubble() {
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
   SetDrawBackgroundAsActive(true);
+  should_block_shelf_auto_hide_ = true;
 }
 
 void ImeMenuTray::HideImeMenuBubble() {
   bubble_.reset();
   ime_list_view_ = nullptr;
   SetDrawBackgroundAsActive(false);
+  should_block_shelf_auto_hide_ = false;
 }
 
 bool ImeMenuTray::IsImeMenuBubbleShown() {
@@ -395,6 +399,10 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
     keyboard_controller->AddObserver(this);
     keyboard_controller->ShowKeyboard(false);
   }
+}
+
+bool ImeMenuTray::ShouldBlockShelfAutoHide() const {
+  return should_block_shelf_auto_hide_;
 }
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {

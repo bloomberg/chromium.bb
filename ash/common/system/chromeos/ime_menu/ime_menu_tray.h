@@ -46,6 +46,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // voice.
   void ShowKeyboardWithKeyset(const std::string& keyset);
 
+  // Returns true if it should block the auto hide behavior of the shelf.
+  bool ShouldBlockShelfAutoHide() const;
+
   // TrayBackgroundView:
   void SetShelfAlignment(ShelfAlignment alignment) override;
   base::string16 GetAccessibleNameForTray() override;
@@ -91,6 +94,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   IMEInfo current_ime_;
   bool show_keyboard_;
   bool force_show_keyboard_;
+  bool should_block_shelf_auto_hide_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTray);
 };
