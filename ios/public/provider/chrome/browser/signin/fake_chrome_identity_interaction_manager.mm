@@ -6,7 +6,6 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 
@@ -162,8 +161,7 @@
 }
 
 - (NSError*)canceledError {
-  ios::SigninErrorProvider* provider =
-      ios::GetChromeBrowserProvider()->GetSigninErrorProvider();
+  ios::SigninErrorProvider* provider = ios::GetSigninErrorProvider();
   return [NSError errorWithDomain:provider->GetSigninErrorDomain()
                              code:provider->GetCode(ios::SigninError::CANCELED)
                          userInfo:nil];

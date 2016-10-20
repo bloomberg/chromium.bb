@@ -58,7 +58,6 @@ class ChromeBrowserProvider;
 class ChromeBrowserState;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
-class SigninErrorProvider;
 class SigninResourcesProvider;
 class LiveTabContextProvider;
 class UpdatableResourceProvider;
@@ -87,8 +86,6 @@ class ChromeBrowserProvider {
   virtual InfoBarViewPlaceholder CreateInfoBarView(
       CGRect frame,
       InfoBarViewDelegate* delegate) NS_RETURNS_RETAINED;
-  // Returns an instance of a signing error provider.
-  virtual SigninErrorProvider* GetSigninErrorProvider();
   // Returns an instance of a signin resources provider.
   virtual SigninResourcesProvider* GetSigninResourcesProvider();
   // Sets the current instance of Chrome identity service. Used for testing.
