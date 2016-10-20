@@ -670,8 +670,9 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
       m_clientBinding.CreateInterfacePtrAndBind(),
       mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(
           validatedMethodData),
-      maybeKeepShippingOptions(mojom::blink::PaymentDetails::From(details),
-                               keepShippingOptions),
+      maybeKeepShippingOptions(
+          mojom::blink::PaymentDetails::From(details),
+          keepShippingOptions && m_options.requestShipping()),
       mojom::blink::PaymentOptions::From(m_options));
 }
 
