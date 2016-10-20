@@ -33,41 +33,6 @@ using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
-namespace {
-// Fetches a boolean value from javascript. Returns whether the fetch
-// succeeded; the value of the variable is returned in value. If
-// javascript_variable does not exist, this returns false and value is
-// unchanged. The function checks that script execution works.
-bool GetJavascriptBoolean(const std::string& javascript_variable,
-                          content::WebContents* web_contents,
-                          bool* value) {
-  // In order to detect unknown variables a three-valued return is needed.
-  int result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      web_contents,
-      "try { if (" + javascript_variable + ") { " +
-          "window.domAutomationController.send(1) } else { " +
-          "window.domAutomationController.send(0); } } catch(err) {" +
-          "window.domAutomationController.send(2) }",
-      &result));
-  if (result == 2) {
-    // This means an exception was caught, usually because of a missing
-    // variable.
-    return false;
-  }
-  *value = (result == 1);
-  return true;
-}
-
-// As above, but just checks for a missing variable.
-bool JavascriptVariableMissing(const std::string& javascript_variable,
-                               content::WebContents* web_contents) {
-  bool unused;
-  return !GetJavascriptBoolean(javascript_variable, web_contents, &unused);
-}
-
-}  // namespace
-
 namespace prerender {
 
 // These URLs used for test resources must be relative with the exception of
@@ -86,9 +51,6 @@ const char kPrefetchScript[] = "prerender/prefetch.js";
 const char kPrefetchScript2[] = "prerender/prefetch2.js";
 const char kPrefetchSubresourceRedirectPage[] =
     "prerender/prefetch_subresource_redirect.html";
-
-const char kPageBool[] = "pageBool";
-const char kScriptBool[] = "scriptBool";
 
 class NoStatePrefetchBrowserTest
     : public test_utils::PrerenderInProcessBrowserTest {
@@ -199,56 +161,21 @@ class NoStatePrefetchBrowserTest
   BrowserTestTime* browser_test_time_;
 };
 
-// Performs a full load of the target page and check that javascript values are
-// set as expected. This confirms that our test system is working correctly, so
-// that when the target page is prefetched it can be confirmed that javascript
-// is not executed.
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, CheckJavascript) {
-  ui_test_utils::NavigateToURL(
-      current_browser(), src_server()->GetURL(MakeAbsolute(kPrefetchPage)));
-  content::WebContents* web_contents =
-      current_browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Confirms that true and false values can appear.
-  bool value = false;
-  EXPECT_TRUE(GetJavascriptBoolean(kPageBool, web_contents, &value));
-  EXPECT_TRUE(value);
-  value = true;
-  EXPECT_TRUE(GetJavascriptBoolean("pageAntiBool", web_contents, &value));
-  EXPECT_FALSE(value);
-
-  // Confirm a value from the script is plumbed through.
-  value = false;
-  EXPECT_TRUE(GetJavascriptBoolean(kScriptBool, web_contents, &value));
-  EXPECT_TRUE(value);
-
-  // Confirm that the expected happens when a value doesn't exist.
-  EXPECT_TRUE(JavascriptVariableMissing("iDontExist", web_contents));
-}
-
 // Checks that a page is correctly prefetched in the case of a
-// <link rel=prerender> tag and then loaded into a tab in response to a
-// navigation, when NoState Prefetch is enabled, but that the page is not loaded
-// (which confirmed by checking that javascript is not executed).
+// <link rel=prerender> tag and the JavaScript on the page is not executed.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimple) {
-  RequestCounter script_counter;
-  CountRequestFor(kPrefetchScript, &script_counter);
   RequestCounter main_counter;
   CountRequestFor(kPrefetchPage, &main_counter);
+  RequestCounter script_counter;
+  CountRequestFor(kPrefetchScript, &script_counter);
+  RequestCounter script2_counter;
+  CountRequestFor(kPrefetchScript2, &script2_counter);
 
   std::unique_ptr<TestPrerender> test_prerender =
       PrerenderTestURL(kPrefetchPage, FINAL_STATUS_APP_TERMINATING, 1);
   main_counter.WaitForCount(1);
   script_counter.WaitForCount(1);
-
-  content::WebContents* contents =
-      test_prerender->contents()->prerender_contents();
-  content::WebContents* active_contents =
-      current_browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(JavascriptVariableMissing(kPageBool, contents));
-  EXPECT_TRUE(JavascriptVariableMissing(kScriptBool, contents));
-  EXPECT_TRUE(JavascriptVariableMissing(kPageBool, active_contents));
-  EXPECT_TRUE(JavascriptVariableMissing(kScriptBool, active_contents));
+  script2_counter.WaitForCount(0);
 }
 
 // Checks the prefetch of an img tag.
@@ -334,9 +261,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
   RequestCounter second_script_counter;
   CountRequestFor(kPrefetchScript2, &second_script_counter);
 
-  // The first prerender is marked as canceled as when the second starts, it
-  // sees that the first has been abandoned (presumably because it is detached
-  // immediately and so dies quickly).
+  // The first prerender is marked as canceled. When the second prerender
+  // starts, it sees that the first has been abandoned (because the earlier
+  // prerender is detached immediately and so dies quickly).
   PrerenderTestURL(kPrefetchPage, FINAL_STATUS_CANCELLED, 1);
   PrerenderTestURL(kPrefetchPage2, FINAL_STATUS_APP_TERMINATING, 1);
   first_main_counter.WaitForCount(1);

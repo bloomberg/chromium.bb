@@ -2,6 +2,4 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// JS for prefetch testing. As prefetch should not be executing
-// javascript, we just check that things don't exist.
-var scriptBool = true;
+var theScriptHasExecuted = true;
