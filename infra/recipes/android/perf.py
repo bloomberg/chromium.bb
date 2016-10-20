@@ -156,6 +156,21 @@ def RunSteps(api):
   api.path['checkout'] = api.path['slave_build'].join('src')
   api.chromium_android.clean_local_files()
 
+  # TODO(jbudorick): Remove this after resolving
+  # https://github.com/catapult-project/catapult/issues/2901
+  devil_path = api.path['checkout'].join('third_party', 'catapult', 'devil')
+  api.python.inline(
+      'initialize devil',
+      """
+      import sys
+      sys.path.append(sys.argv[1])
+      from devil import devil_env
+      devil_env.config.Initialize()
+      """,
+      args=[devil_path])
+  api.adb.set_adb_path(
+      devil_path.join('bin', 'deps', 'linux2', 'x86_64', 'bin', 'adb'))
+
   api.chromium_android.download_build(bucket=builder['bucket'],
     path=builder['path'](api))
 
