@@ -2352,7 +2352,7 @@
 
     <!-- Stylus -->
     <message name="IDS_SETTINGS_STYLUS_TITLE" desc="Title of the stylus settings page.">
-      Stylus settings
+      Stylus
     </message>
     <message name="IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS" desc="Label that tells the user that the stylus tools will be automatically opened and closed when they insert or eject the stylus.">
       Open stylus tools when the stylus is removed

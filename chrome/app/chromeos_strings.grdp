@@ -2332,6 +2332,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_BATTERY_STATUS_LABEL" desc="The label for the battery information in the 'Power' overlay.">
     Battery:
   </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_STYLUS_SETTINGS_BUTTON" desc="Text on button/link to take user to the 'Stylus' overlay.">
+    Stylus settings
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON" desc="In the settings tab, the prompt on the button to open a dialog to set date and time.">
     Set date and time
   </message>

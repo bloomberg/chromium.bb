@@ -23,7 +23,8 @@ void OptionsStylusHandler::GetLocalizedValues(
 
   localized_strings->SetString(
       "stylusSettingsButtonTitle",
-      l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_TITLE));
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_DEVICE_GROUP_STYLUS_SETTINGS_BUTTON));
   localized_strings->SetString(
       "stylusAutoOpenStylusTools",
       l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS));
