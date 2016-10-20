@@ -249,3 +249,39 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PopupWindowFocus) {
   // The popup should be focused now.
   EXPECT_EQ(popup, browser()->tab_strip_model()->GetActiveWebContents());
 }
+
+// Verify that ctrl-click of an anchor targeting a remote frame works (i.e. that
+// it opens the link in a new tab).  See also https://crbug.com/647772.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       AnchorCtrlClickWhenTargetIsCrossSite) {
+  // Navigate to anchor_targeting_remote_frame.html.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/anchor_targeting_remote_frame.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Verify that there is only 1 active tab (with the right contents committed).
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  EXPECT_EQ(main_url, main_contents->GetLastCommittedURL());
+
+  // Ctrl-click the anchor/link in the page.
+  content::WebContentsAddedObserver new_tab_observer;
+#if defined(OS_MACOSX)
+  std::string new_tab_click_script = "simulateClick({ metaKey: true });";
+#else
+  std::string new_tab_click_script = "simulateClick({ ctrlKey: true });";
+#endif
+  EXPECT_TRUE(ExecuteScript(main_contents, new_tab_click_script));
+
+  // Wait for a new tab to appear (the whole point of this test).
+  content::WebContents* new_contents = new_tab_observer.GetWebContents();
+
+  // Verify that the new tab has the right contents and is in the right, new
+  // place in the tab strip.
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(new_contents, browser()->tab_strip_model()->GetWebContentsAt(1));
+  GURL expected_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_EQ(expected_url, new_contents->GetLastCommittedURL());
+}
