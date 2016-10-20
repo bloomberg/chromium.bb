@@ -395,7 +395,6 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   void resetListAttributeTargetObserver();
   void parseMaxLengthAttribute(const AtomicString&);
   void parseMinLengthAttribute(const AtomicString&);
-  void updateValueIfNeeded();
 
   // Returns null if this isn't associated with any radio button group.
   RadioButtonGroupScope* radioButtonGroupScope() const;

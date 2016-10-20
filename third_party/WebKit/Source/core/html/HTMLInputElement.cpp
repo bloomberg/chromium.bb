@@ -467,7 +467,10 @@ void HTMLInputElement::updateType() {
     if (!hasDirtyValue())
       m_inputType->warnIfValueIsInvalid(
           fastGetAttribute(valueAttr).getString());
-    updateValueIfNeeded();
+    String newValue = sanitizeValue(m_valueIfDirty);
+    DCHECK(!m_valueIfDirty.isNull() || newValue.isNull());
+    if (newValue != m_valueIfDirty)
+      setValue(newValue);
   }
 
   m_needsToUpdateViewValue = true;
@@ -1689,10 +1692,7 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value) {
     maxLength = -1;
   if (maxLength > maximumLength)
     maxLength = maximumLength;
-  int oldMaxLength = m_maxLength;
   m_maxLength = maxLength;
-  if (oldMaxLength != maxLength)
-    updateValueIfNeeded();
   setNeedsValidityCheck();
 }
 
@@ -1702,13 +1702,6 @@ void HTMLInputElement::parseMinLengthAttribute(const AtomicString& value) {
     minLength = -1;
   m_minLength = minLength;
   setNeedsValidityCheck();
-}
-
-void HTMLInputElement::updateValueIfNeeded() {
-  String newValue = sanitizeValue(m_valueIfDirty);
-  DCHECK(!m_valueIfDirty.isNull() || newValue.isNull());
-  if (newValue != m_valueIfDirty)
-    setValue(newValue);
 }
 
 bool HTMLInputElement::supportsAutocapitalize() const {
