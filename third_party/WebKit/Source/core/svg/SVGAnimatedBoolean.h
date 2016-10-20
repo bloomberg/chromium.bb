@@ -43,9 +43,8 @@ class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean>,
 
  public:
   static SVGAnimatedBoolean* create(SVGElement* contextElement,
-                                    const QualifiedName& attributeName,
-                                    SVGBoolean* initialValue) {
-    return new SVGAnimatedBoolean(contextElement, attributeName, initialValue);
+                                    const QualifiedName& attributeName) {
+    return new SVGAnimatedBoolean(contextElement, attributeName);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
@@ -54,11 +53,10 @@ class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean>,
 
  protected:
   SVGAnimatedBoolean(SVGElement* contextElement,
-                     const QualifiedName& attributeName,
-                     SVGBoolean* initialValue)
+                     const QualifiedName& attributeName)
       : SVGAnimatedProperty<SVGBoolean>(contextElement,
                                         attributeName,
-                                        initialValue) {}
+                                        SVGBoolean::create()) {}
 };
 
 }  // namespace blink

@@ -61,8 +61,7 @@ SVGFitToViewBox::SVGFitToViewBox(SVGElement* element,
     : m_viewBox(SVGAnimatedViewBoxRect::create(element)),
       m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(
           element,
-          SVGNames::preserveAspectRatioAttr,
-          SVGPreserveAspectRatio::create())) {
+          SVGNames::preserveAspectRatioAttr)) {
   ASSERT(element);
   if (propertyMapPolicy == PropertyMapPolicyAdd) {
     element->addToPropertyMap(m_viewBox);

@@ -36,9 +36,7 @@ SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tagName,
     : SVGElement(tagName, document, constructionType),
       SVGTests(this),
       m_transform(
-          SVGAnimatedTransformList::create(this,
-                                           SVGNames::transformAttr,
-                                           SVGTransformList::create())) {
+          SVGAnimatedTransformList::create(this, SVGNames::transformAttr)) {
   addToPropertyMap(m_transform);
 }
 

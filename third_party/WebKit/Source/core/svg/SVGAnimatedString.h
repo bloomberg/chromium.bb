@@ -43,9 +43,8 @@ class SVGAnimatedString : public SVGAnimatedProperty<SVGString>,
 
  public:
   static SVGAnimatedString* create(SVGElement* contextElement,
-                                   const QualifiedName& attributeName,
-                                   SVGString* initialValue) {
-    return new SVGAnimatedString(contextElement, attributeName, initialValue);
+                                   const QualifiedName& attributeName) {
+    return new SVGAnimatedString(contextElement, attributeName);
   }
 
   virtual String baseVal();
@@ -56,11 +55,10 @@ class SVGAnimatedString : public SVGAnimatedProperty<SVGString>,
 
  protected:
   SVGAnimatedString(SVGElement* contextElement,
-                    const QualifiedName& attributeName,
-                    SVGString* initialValue)
+                    const QualifiedName& attributeName)
       : SVGAnimatedProperty<SVGString>(contextElement,
                                        attributeName,
-                                       initialValue) {}
+                                       SVGString::create()) {}
 };
 
 }  // namespace blink

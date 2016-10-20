@@ -50,8 +50,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
                                     SVGLength::create(SVGLengthMode::Height))),
       m_patternTransform(
           SVGAnimatedTransformList::create(this,
-                                           SVGNames::patternTransformAttr,
-                                           SVGTransformList::create())),
+                                           SVGNames::patternTransformAttr)),
       m_patternUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
           this,
           SVGNames::patternUnitsAttr,

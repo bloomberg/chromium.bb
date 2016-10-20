@@ -47,9 +47,7 @@ SVGTextPositioningElement::SVGTextPositioningElement(
           this,
           SVGNames::dyAttr,
           SVGLengthList::create(SVGLengthMode::Height))),
-      m_rotate(SVGAnimatedNumberList::create(this,
-                                             SVGNames::rotateAttr,
-                                             SVGNumberList::create())) {
+      m_rotate(SVGAnimatedNumberList::create(this, SVGNames::rotateAttr)) {
   addToPropertyMap(m_x);
   addToPropertyMap(m_y);
   addToPropertyMap(m_dx);

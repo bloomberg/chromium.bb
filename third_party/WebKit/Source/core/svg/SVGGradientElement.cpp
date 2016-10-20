@@ -47,8 +47,7 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName,
       SVGURIReference(this),
       m_gradientTransform(
           SVGAnimatedTransformList::create(this,
-                                           SVGNames::gradientTransformAttr,
-                                           SVGTransformList::create())),
+                                           SVGNames::gradientTransformAttr)),
       m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(
           this,
           SVGNames::spreadMethodAttr,

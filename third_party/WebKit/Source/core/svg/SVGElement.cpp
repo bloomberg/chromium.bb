@@ -67,9 +67,7 @@ SVGElement::SVGElement(const QualifiedName& tagName,
       m_inRelativeLengthClientsInvalidation(false),
 #endif
       m_SVGRareData(nullptr),
-      m_className(SVGAnimatedString::create(this,
-                                            HTMLNames::classAttr,
-                                            SVGString::create())) {
+      m_className(SVGAnimatedString::create(this, HTMLNames::classAttr)) {
   addToPropertyMap(m_className);
   setHasCustomStyleCallbacks();
 }

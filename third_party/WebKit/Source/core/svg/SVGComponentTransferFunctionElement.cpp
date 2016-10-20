@@ -47,9 +47,8 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(
     const QualifiedName& tagName,
     Document& document)
     : SVGElement(tagName, document),
-      m_tableValues(SVGAnimatedNumberList::create(this,
-                                                  SVGNames::tableValuesAttr,
-                                                  SVGNumberList::create())),
+      m_tableValues(
+          SVGAnimatedNumberList::create(this, SVGNames::tableValuesAttr)),
       m_slope(SVGAnimatedNumber::create(this,
                                         SVGNames::slopeAttr,
                                         SVGNumber::create(1))),

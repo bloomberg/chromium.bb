@@ -35,9 +35,7 @@ inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feComponentTransferTag,
                                            document),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())) {
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
   addToPropertyMap(m_in1);
 }
 

@@ -47,8 +47,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
                                     SVGLength::create(SVGLengthMode::Height))),
       m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(
           this,
-          SVGNames::preserveAspectRatioAttr,
-          SVGPreserveAspectRatio::create())),
+          SVGNames::preserveAspectRatioAttr)),
       m_imageLoader(SVGImageLoader::create(this)),
       m_needsLoaderURIUpdate(true) {
   addToPropertyMap(m_x);

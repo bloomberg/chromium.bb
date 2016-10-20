@@ -39,10 +39,8 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     //    SVGViewSpec.
     : SVGFitToViewBox(contextElement, PropertyMapPolicySkip),
       m_contextElement(contextElement),
-      m_transform(
-          SVGAnimatedTransformList::create(contextElement,
-                                           SVGNames::transformAttr,
-                                           SVGTransformList::create())) {
+      m_transform(SVGAnimatedTransformList::create(contextElement,
+                                                   SVGNames::transformAttr)) {
   ASSERT(m_contextElement);
 
   viewBox()->setReadOnly();

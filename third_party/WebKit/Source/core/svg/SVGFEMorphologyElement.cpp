@@ -39,9 +39,7 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feMorphologyTag, document),
       m_radius(
           SVGAnimatedNumberOptionalNumber::create(this, SVGNames::radiusAttr)),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())),
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)),
       m_svgOperator(SVGAnimatedEnumeration<MorphologyOperatorType>::create(
           this,
           SVGNames::operatorAttr,

@@ -21,12 +21,9 @@ DEFINE_TRACE(SVGAnimatedHref) {
 }
 
 SVGAnimatedHref::SVGAnimatedHref(SVGElement* contextElement)
-    : SVGAnimatedString(contextElement,
-                        SVGNames::hrefAttr,
-                        SVGString::create()),
-      m_xlinkHref(SVGAnimatedString::create(contextElement,
-                                            XLinkNames::hrefAttr,
-                                            SVGString::create())) {}
+    : SVGAnimatedString(contextElement, SVGNames::hrefAttr),
+      m_xlinkHref(
+          SVGAnimatedString::create(contextElement, XLinkNames::hrefAttr)) {}
 
 void SVGAnimatedHref::addToPropertyMap(SVGElement* element) {
   element->addToPropertyMap(this);

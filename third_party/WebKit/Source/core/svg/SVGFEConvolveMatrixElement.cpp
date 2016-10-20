@@ -83,23 +83,19 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
       m_divisor(SVGAnimatedNumber::create(this,
                                           SVGNames::divisorAttr,
                                           SVGNumber::create())),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())),
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)),
       m_edgeMode(
           SVGAnimatedEnumeration<EdgeModeType>::create(this,
                                                        SVGNames::edgeModeAttr,
                                                        EDGEMODE_DUPLICATE)),
-      m_kernelMatrix(SVGAnimatedNumberList::create(this,
-                                                   SVGNames::kernelMatrixAttr,
-                                                   SVGNumberList::create())),
+      m_kernelMatrix(
+          SVGAnimatedNumberList::create(this, SVGNames::kernelMatrixAttr)),
       m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(
           this,
           SVGNames::kernelUnitLengthAttr)),
       m_order(SVGAnimatedOrder::create(this)),
-      m_preserveAlpha(SVGAnimatedBoolean::create(this,
-                                                 SVGNames::preserveAlphaAttr,
-                                                 SVGBoolean::create())),
+      m_preserveAlpha(
+          SVGAnimatedBoolean::create(this, SVGNames::preserveAlphaAttr)),
       m_targetX(SVGAnimatedInteger::create(this,
                                            SVGNames::targetXAttr,
                                            SVGInteger::create())),

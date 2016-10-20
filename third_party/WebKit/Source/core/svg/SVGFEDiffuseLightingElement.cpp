@@ -40,9 +40,7 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(
       m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(
           this,
           SVGNames::kernelUnitLengthAttr)),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())) {
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
   addToPropertyMap(m_diffuseConstant);
   addToPropertyMap(m_surfaceScale);
   addToPropertyMap(m_kernelUnitLength);

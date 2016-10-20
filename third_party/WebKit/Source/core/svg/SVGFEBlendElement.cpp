@@ -95,12 +95,8 @@ unsigned short getMaxExposedEnumValue<SVGFEBlendElement::Mode>() {
 
 inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())),
-      m_in2(SVGAnimatedString::create(this,
-                                      SVGNames::in2Attr,
-                                      SVGString::create())),
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)),
+      m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr)),
       m_mode(
           SVGAnimatedEnumeration<Mode>::create(this,
                                                SVGNames::modeAttr,

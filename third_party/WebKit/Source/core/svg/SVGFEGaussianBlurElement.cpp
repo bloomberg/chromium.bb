@@ -34,9 +34,7 @@ inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
                                                   SVGNames::stdDeviationAttr,
                                                   0,
                                                   0)),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())) {
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
   addToPropertyMap(m_stdDeviation);
   addToPropertyMap(m_in1);
 }

@@ -45,10 +45,8 @@ class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList>,
 
  public:
   static SVGAnimatedNumberList* create(SVGElement* contextElement,
-                                       const QualifiedName& attributeName,
-                                       SVGNumberList* initialValue) {
-    return new SVGAnimatedNumberList(contextElement, attributeName,
-                                     initialValue);
+                                       const QualifiedName& attributeName) {
+    return new SVGAnimatedNumberList(contextElement, attributeName);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
@@ -57,11 +55,10 @@ class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList>,
 
  protected:
   SVGAnimatedNumberList(SVGElement* contextElement,
-                        const QualifiedName& attributeName,
-                        SVGNumberList* initialValue)
+                        const QualifiedName& attributeName)
       : SVGAnimatedProperty<SVGNumberList>(contextElement,
                                            attributeName,
-                                           initialValue) {}
+                                           SVGNumberList::create()) {}
 };
 
 }  // namespace blink

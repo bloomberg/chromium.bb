@@ -41,12 +41,8 @@ const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrixType>() {
 inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feColorMatrixTag,
                                            document),
-      m_values(SVGAnimatedNumberList::create(this,
-                                             SVGNames::valuesAttr,
-                                             SVGNumberList::create())),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())),
+      m_values(SVGAnimatedNumberList::create(this, SVGNames::valuesAttr)),
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)),
       m_type(SVGAnimatedEnumeration<ColorMatrixType>::create(
           this,
           SVGNames::typeAttr,

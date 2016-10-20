@@ -54,9 +54,7 @@ using namespace HTMLNames;
 inline SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(SVGNames::aTag, document),
       SVGURIReference(this),
-      m_svgTarget(SVGAnimatedString::create(this,
-                                            SVGNames::targetAttr,
-                                            SVGString::create())),
+      m_svgTarget(SVGAnimatedString::create(this, SVGNames::targetAttr)),
       m_wasFocusedByMouse(false) {
   addToPropertyMap(m_svgTarget);
 }

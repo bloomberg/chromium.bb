@@ -41,9 +41,7 @@ inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
                                                   SVGNames::stdDeviationAttr,
                                                   2,
                                                   2)),
-      m_in1(SVGAnimatedString::create(this,
-                                      SVGNames::inAttr,
-                                      SVGString::create())) {
+      m_in1(SVGAnimatedString::create(this, SVGNames::inAttr)) {
   addToPropertyMap(m_dx);
   addToPropertyMap(m_dy);
   addToPropertyMap(m_stdDeviation);

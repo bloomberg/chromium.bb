@@ -49,9 +49,7 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(
           SVGAnimatedLength::create(this,
                                     SVGNames::heightAttr,
                                     SVGLength::create(SVGLengthMode::Height))),
-      m_result(SVGAnimatedString::create(this,
-                                         SVGNames::resultAttr,
-                                         SVGString::create())) {
+      m_result(SVGAnimatedString::create(this, SVGNames::resultAttr)) {
   // Spec: If the x/y attribute is not specified, the effect is as if a value of
   // "0%" were specified.
   m_x->setDefaultValueAsString("0%");

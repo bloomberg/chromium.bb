@@ -45,10 +45,8 @@ class SVGAnimatedPreserveAspectRatio
  public:
   static SVGAnimatedPreserveAspectRatio* create(
       SVGElement* contextElement,
-      const QualifiedName& attributeName,
-      SVGPreserveAspectRatio* initialValue) {
-    return new SVGAnimatedPreserveAspectRatio(contextElement, attributeName,
-                                              initialValue);
+      const QualifiedName& attributeName) {
+    return new SVGAnimatedPreserveAspectRatio(contextElement, attributeName);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
@@ -57,11 +55,11 @@ class SVGAnimatedPreserveAspectRatio
 
  protected:
   SVGAnimatedPreserveAspectRatio(SVGElement* contextElement,
-                                 const QualifiedName& attributeName,
-                                 SVGPreserveAspectRatio* initialValue)
-      : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement,
-                                                    attributeName,
-                                                    initialValue) {}
+                                 const QualifiedName& attributeName)
+      : SVGAnimatedProperty<SVGPreserveAspectRatio>(
+            contextElement,
+            attributeName,
+            SVGPreserveAspectRatio::create()) {}
 };
 
 }  // namespace blink
