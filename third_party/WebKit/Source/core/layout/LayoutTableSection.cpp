@@ -852,9 +852,6 @@ int LayoutTableSection::calcRowLogicalHeight() {
     m_rowPos[0] = 0;
 
   SpanningLayoutTableCells rowSpanCells;
-#if ENABLE(ASSERT)
-  HashSet<const LayoutTableCell*> uniqueCells;
-#endif
 
   for (unsigned r = 0; r < m_grid.size(); r++) {
     m_grid[r].baseline = -1;
@@ -879,30 +876,25 @@ int LayoutTableSection::calcRowLogicalHeight() {
 
     Row& row = m_grid[r].row;
     unsigned totalCols = row.size();
-    LayoutTableCell* lastRowSpanCell = nullptr;
 
     for (unsigned c = 0; c < totalCols; c++) {
       CellStruct& current = cellAt(r, c);
+      if (current.inColSpan)
+        continue;
       for (unsigned i = 0; i < current.cells.size(); i++) {
         cell = current.cells[i];
-        if (current.inColSpan && cell->rowSpan() == 1)
+
+        // For row spanning cells, we only handle them for the first row they
+        // span. This ensures we take their baseline into account.
+        if (cell->rowIndex() != r)
           continue;
 
         if (cell->rowSpan() > 1) {
-          // For row spanning cells, we only handle them for the first row they
-          // span. This ensures we take their baseline into account.
-          if (lastRowSpanCell != cell && cell->rowIndex() == r) {
-#if ENABLE(ASSERT)
-            ASSERT(!uniqueCells.contains(cell));
-            uniqueCells.add(cell);
-#endif
-
-            rowSpanCells.append(cell);
-            lastRowSpanCell = cell;
-          }
+          DCHECK(!rowSpanCells.contains(cell));
+          rowSpanCells.append(cell);
         }
 
-        if (cell->rowIndex() == r && cell->hasOverrideLogicalContentHeight()) {
+        if (cell->hasOverrideLogicalContentHeight()) {
           cell->clearIntrinsicPadding();
           cell->clearOverrideSize();
           cell->forceChildLayout();
@@ -914,8 +906,7 @@ int LayoutTableSection::calcRowLogicalHeight() {
 
         // Find out the baseline. The baseline is set on the first row in a
         // rowSpan.
-        if (cell->rowIndex() == r)
-          updateBaselineForCell(cell, r, baselineDescent);
+        updateBaselineForCell(cell, r, baselineDescent);
       }
     }
 
