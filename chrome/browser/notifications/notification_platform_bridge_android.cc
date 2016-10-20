@@ -27,6 +27,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
+#include "jni/ActionInfo_jni.h"
 #include "jni/NotificationPlatformBridge_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -42,27 +43,59 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-ScopedJavaLocalRef<jobjectArray> ConvertToJavaBitmaps(
-    const std::vector<message_center::ButtonInfo>& buttons) {
-  std::vector<SkBitmap> skbitmaps;
-  for (const message_center::ButtonInfo& button : buttons)
-    skbitmaps.push_back(button.icon.AsBitmap());
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.notifications
+enum NotificationActionType {
+  // NB. Making this a one-line enum breaks code generation! crbug.com/657847
+  BUTTON,
+  TEXT
+};
 
+ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(JNIEnv* env,
+                                                const gfx::Image& icon) {
+  SkBitmap skbitmap = icon.AsBitmap();
+  ScopedJavaLocalRef<jobject> j_bitmap;
+  if (!skbitmap.drawsNothing())
+    j_bitmap = gfx::ConvertToJavaBitmap(&skbitmap);
+  return j_bitmap;
+}
+
+NotificationActionType GetNotificationActionType(
+    message_center::ButtonInfo button) {
+  switch (button.type) {
+    case message_center::ButtonType::BUTTON:
+      return NotificationActionType::BUTTON;
+    case message_center::ButtonType::TEXT:
+      return NotificationActionType::TEXT;
+  }
+  NOTREACHED();
+  return NotificationActionType::TEXT;
+}
+
+ScopedJavaLocalRef<jobjectArray> ConvertToJavaActionInfos(
+    const std::vector<message_center::ButtonInfo>& buttons) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jclass> clazz =
-      base::android::GetClass(env, "android/graphics/Bitmap");
-  jobjectArray array = env->NewObjectArray(skbitmaps.size(), clazz.obj(),
-                                           nullptr /* initialElement */);
+  ScopedJavaLocalRef<jclass> clazz = base::android::GetClass(
+      env, "org/chromium/chrome/browser/notifications/ActionInfo");
+  jobjectArray actions = env->NewObjectArray(buttons.size(), clazz.obj(),
+                                             nullptr /* initialElement */);
   base::android::CheckException(env);
 
-  for (size_t i = 0; i < skbitmaps.size(); ++i) {
-    if (!skbitmaps[i].drawsNothing()) {
-      env->SetObjectArrayElement(
-          array, i, gfx::ConvertToJavaBitmap(&(skbitmaps[i])).obj());
-    }
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    const auto& button = buttons[i];
+    ScopedJavaLocalRef<jstring> title =
+        base::android::ConvertUTF16ToJavaString(env, button.title);
+    int type = GetNotificationActionType(button);
+    ScopedJavaLocalRef<jstring> placeholder =
+        base::android::ConvertUTF16ToJavaString(env, button.placeholder);
+    ScopedJavaLocalRef<jobject> icon = ConvertToJavaBitmap(env, button.icon);
+    ScopedJavaLocalRef<jobject> action_info =
+        Java_ActionInfo_createActionInfo(AttachCurrentThread(), title.obj(),
+                                         icon.obj(), type, placeholder.obj());
+    env->SetObjectArrayElement(actions, i, action_info.obj());
   }
 
-  return ScopedJavaLocalRef<jobjectArray>(env, array);
+  return ScopedJavaLocalRef<jobjectArray>(env, actions);
 }
 
 // Callback to run once the profile has been loaded in order to perform a
@@ -228,36 +261,8 @@ void NotificationPlatformBridgeAndroid::Display(
   if (!badge_bitmap.drawsNothing())
     badge = gfx::ConvertToJavaBitmap(&badge_bitmap);
 
-  // TODO(crbug.com/650302): Combine these action_* vectors into a single vector
-  // of objects.
-  std::vector<base::string16> action_titles_vector;
-  std::vector<base::string16> action_types_vector;
-  std::vector<base::string16> action_placeholders_vector;
-  for (const message_center::ButtonInfo& button : notification.buttons()) {
-    action_titles_vector.push_back(button.title);
-    action_placeholders_vector.push_back(button.placeholder);
-    base::string16 type;
-    switch (button.type) {
-      case message_center::ButtonType::BUTTON:
-        type = base::ASCIIToUTF16("button");
-        break;
-      case message_center::ButtonType::TEXT:
-        type = base::ASCIIToUTF16("text");
-        break;
-    }
-    action_types_vector.push_back(std::move(type));
-  }
-  ScopedJavaLocalRef<jobjectArray> action_titles =
-      base::android::ToJavaArrayOfStrings(env, action_titles_vector);
-
-  ScopedJavaLocalRef<jobjectArray> action_types =
-      base::android::ToJavaArrayOfStrings(env, action_types_vector);
-
-  ScopedJavaLocalRef<jobjectArray> action_placeholders =
-      base::android::ToJavaArrayOfStrings(env, action_placeholders_vector);
-
-  ScopedJavaLocalRef<jobjectArray> action_icons =
-      ConvertToJavaBitmaps(notification.buttons());
+  ScopedJavaLocalRef<jobjectArray> actions =
+      ConvertToJavaActionInfos(notification.buttons());
 
   ScopedJavaLocalRef<jintArray> vibration_pattern =
       base::android::ToJavaIntArray(env, notification.vibration_pattern());
@@ -269,8 +274,7 @@ void NotificationPlatformBridgeAndroid::Display(
       env, java_object_, j_notification_id, j_origin, j_profile_id, incognito,
       tag, webapk_package, title, body, image, notification_icon, badge,
       vibration_pattern, notification.timestamp().ToJavaTime(),
-      notification.renotify(), notification.silent(), action_titles,
-      action_icons, action_types, action_placeholders);
+      notification.renotify(), notification.silent(), actions);
 
   regenerated_notification_infos_[notification_id] =
       RegeneratedNotificationInfo(origin_url.spec(), notification.tag(),

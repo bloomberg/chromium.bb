@@ -3853,6 +3853,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/mojo/ChromeInterfaceRegistrar.java",
       "../android/java/src/org/chromium/chrome/browser/net/qualityprovider/ExternalEstimateProviderAndroid.java",
       "../android/java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java",
+      "../android/java/src/org/chromium/chrome/browser/notifications/ActionInfo.java",
       "../android/java/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridge.java",
       "../android/java/src/org/chromium/chrome/browser/ntp/ForeignSessionHelper.java",
       "../android/java/src/org/chromium/chrome/browser/ntp/LogoBridge.java",
