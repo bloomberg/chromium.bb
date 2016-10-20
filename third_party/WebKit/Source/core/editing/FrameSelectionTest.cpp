@@ -142,9 +142,8 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
   // Simulate to type "Hello, World!".
   DisableCompositingQueryAsserts disabler;
   document().updateStyleAndLayout();
-  selection().moveTo(
-      createVisiblePosition(selection().end(), selection().affinity()),
-      NotUserTriggered);
+  selection().setSelection(
+      SelectionInDOMTree::Builder().collapse(selection().end()).build());
   selection().setCaretRectNeedsUpdate();
   EXPECT_TRUE(selection().isCaretBoundsDirty());
   EXPECT_FALSE(isPreviousCaretDirtyForTesting());
@@ -155,9 +154,8 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
   // Simulate to remove all except for "H".
   text->replaceWholeText("H");
   document().updateStyleAndLayout();
-  selection().moveTo(
-      createVisiblePosition(selection().end(), selection().affinity()),
-      NotUserTriggered);
+  selection().setSelection(
+      SelectionInDOMTree::Builder().collapse(selection().end()).build());
   selection().setCaretRectNeedsUpdate();
   EXPECT_TRUE(selection().isCaretBoundsDirty());
   // "H" remains so early previousCaret invalidation isn't needed.

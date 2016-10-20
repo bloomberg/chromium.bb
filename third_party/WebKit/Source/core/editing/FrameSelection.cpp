@@ -154,12 +154,20 @@ const VisibleSelectionInFlatTree& FrameSelection::selectionInFlatTree() const {
   return visibleSelection<EditingInFlatTreeStrategy>();
 }
 
-void FrameSelection::moveTo(const VisiblePosition& pos,
-                            EUserTriggered userTriggered,
-                            CursorAlignOnScroll align) {
-  SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
-  setSelection(createVisibleSelection(pos, pos, selection().isDirectional()),
-               options, align);
+void FrameSelection::moveCaretSelection(const IntPoint& point) {
+  DCHECK(!document().needsLayoutTreeUpdate());
+
+  Element* const editable = rootEditableElement();
+  if (!editable)
+    return;
+
+  const VisiblePosition position =
+      visiblePositionForContentsPoint(point, frame());
+  SelectionInDOMTree::Builder builder;
+  builder.setIsDirectional(selection().isDirectional());
+  if (position.isNotNull())
+    builder.collapse(position.toPositionWithAffinity());
+  setSelection(builder.build(), CloseTyping | ClearTypingStyle | UserTriggered);
 }
 
 // TODO(xiaochengh): We should not use reference to return value.

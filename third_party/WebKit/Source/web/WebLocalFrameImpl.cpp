@@ -1262,13 +1262,9 @@ void WebLocalFrameImpl::moveCaretSelection(const WebPoint& pointInViewport) {
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  Element* editable = frame()->selection().rootEditableElement();
-  if (!editable)
-    return;
-
-  VisiblePosition position = visiblePositionForViewportPoint(pointInViewport);
-  frame()->selection().moveTo(position, UserTriggered);
+  const IntPoint pointInContents =
+      frame()->view()->viewportToContents(pointInViewport);
+  frame()->selection().moveCaretSelection(pointInContents);
 }
 
 bool WebLocalFrameImpl::setEditableSelectionOffsets(int start, int end) {
