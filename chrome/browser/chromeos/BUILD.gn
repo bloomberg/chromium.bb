@@ -664,8 +664,6 @@ source_set("chromeos") {
     "login/language_list.h",
     "login/lock/screen_locker.cc",
     "login/lock/screen_locker.h",
-    "login/lock/screen_locker_delegate.cc",
-    "login/lock/screen_locker_delegate.h",
     "login/lock/webui_screen_locker.cc",
     "login/lock/webui_screen_locker.h",
     "login/login_wizard.h",

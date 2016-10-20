@@ -139,8 +139,7 @@ void NetworkScreenHandler::ShowConnectingStatus(
 
 void NetworkScreenHandler::ReloadLocalizedContent() {
   base::DictionaryValue localized_strings;
-  static_cast<OobeUI*>(web_ui()->GetController())
-      ->GetLocalizedStrings(&localized_strings);
+  GetOobeUI()->GetLocalizedStrings(&localized_strings);
   core_oobe_actor_->ReloadContent(localized_strings);
 }
 

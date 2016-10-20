@@ -22,18 +22,11 @@ LockWindow::LockWindow() {
   params.parent =
       ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                ash::kShellWindowId_LockScreenContainer);
-  views::Widget::Init(params);
+  Init(params);
   SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
 }
 
 LockWindow::~LockWindow() {}
-
-void LockWindow::Grab() {
-  // We already have grab from the lock screen container, just call the ready
-  // callback immediately.
-  if (observer_)
-    observer_->OnLockWindowReady();
-}
 
 views::Widget* LockWindow::GetWidget() {
   return this;

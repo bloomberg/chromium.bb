@@ -179,8 +179,7 @@ content::RenderViewHost* WebUIScreenLockerTester::RenderViewHost() const {
 
 WebUIScreenLocker* WebUIScreenLockerTester::webui_screen_locker() const {
   DCHECK(ScreenLocker::screen_locker_);
-  return static_cast<WebUIScreenLocker*>(
-      ScreenLocker::screen_locker_->delegate_.get());
+  return ScreenLocker::screen_locker_->web_ui();
 }
 
 content::WebUI* WebUIScreenLockerTester::webui() const {

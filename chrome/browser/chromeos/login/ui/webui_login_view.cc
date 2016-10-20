@@ -172,12 +172,7 @@ class WebUILoginView::StatusAreaFocusTraversable
 
 // WebUILoginView public: ------------------------------------------------------
 
-WebUILoginView::WebUILoginView()
-    : webui_login_(NULL),
-      is_hidden_(false),
-      webui_visible_(false),
-      should_emit_login_prompt_visible_(true),
-      forward_keyboard_event_(true) {
+WebUILoginView::WebUILoginView() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
@@ -381,6 +376,10 @@ content::WebContents* WebUILoginView::GetWebContents() {
   return webui_login_->web_contents();
 }
 
+OobeUI* WebUILoginView::GetOobeUI() {
+  return static_cast<OobeUI*>(GetWebUI()->GetController());
+}
+
 void WebUILoginView::OpenProxySettings() {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
@@ -425,7 +424,7 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
 
   // We disable the UI to prevent user from interracting with UI elements,
   // particullary with the system tray menu. However, in case if the system tray
-  // bubble is opened at this point, it remains opened and interactictive even
+  // bubble is opened at this point, it remains opened and interactive even
   // after SystemTray::SetEnabled(false) call, which can be dangerous
   // (http://crbug.com/497080). Close the menu to fix it. Calling
   // SystemTray::SetEnabled(false) guarantees, that the menu will not be opened
@@ -605,7 +604,7 @@ void WebUILoginView::OnLoginPromptVisible() {
     VLOG(1) << "Login WebUI >> not emitting signal, hidden: " << is_hidden_;
     return;
   }
-  TRACE_EVENT0("chromeos", "WebUILoginView::OnLoginPromoptVisible");
+  TRACE_EVENT0("chromeos", "WebUILoginView::OnLoginPromptVisible");
   if (should_emit_login_prompt_visible_) {
     VLOG(1) << "Login WebUI >> login-prompt-visible";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->

@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/lock_window.h"
@@ -46,12 +45,9 @@ namespace test {
 class WebUIScreenLockerTester;
 }
 
-// This version of ScreenLockerDelegate displays a WebUI lock screen based on
-// the Oobe account picker screen.
+// Displays a WebUI lock screen based on the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
-                          public ScreenLockerDelegate,
-                          public LockWindow::Observer,
                           public ash::LockStateObserver,
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
@@ -61,21 +57,40 @@ class WebUIScreenLocker : public WebUILoginView,
                           public content::WebContentsObserver {
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
+  ~WebUIScreenLocker() override;
 
-  // ScreenLockerDelegate:
-  void LockScreen() override;
-  void ScreenLockReady() override;
-  void OnAuthenticate() override;
-  void SetInputEnabled(bool enabled) override;
+  // Begin initializing the widget and views::WebView that show the lock screen.
+  // ScreenLockReady is called when all initialization has finished.
+  void LockScreen();
+
+  // Enable/disable password input.
+  void SetInputEnabled(bool enabled);
+
+  // Disables all UI needed and shows error bubble with |message|. If
+  // |sign_out_only| is true then all other input except "Sign Out" button is
+  // blocked.
   void ShowErrorMessage(int error_msg_id,
-                        HelpAppLauncher::HelpTopic help_topic_id) override;
-  void ClearErrors() override;
-  void AnimateAuthenticationSuccess() override;
-  gfx::NativeWindow GetNativeWindow() const override;
-  content::WebUI* GetAssociatedWebUI() override;
-  void OnLockWebUIReady() override;
-  void OnLockBackgroundDisplayed() override;
-  void OnHeaderBarVisible() override;
+                        HelpAppLauncher::HelpTopic help_topic_id);
+
+  // Close message bubble to clear error messages.
+  void ClearErrors();
+
+  // Allows to have visual effects once unlock authentication is successful,
+  // Must call ScreenLocker::UnlockOnLoginSuccess() once all effects are done.
+  void AnimateAuthenticationSuccess();
+
+  // Called when the webui lock screen is ready. This gets invoked by a
+  // chrome.send from the embedded webui.
+  void OnLockWebUIReady();
+
+  // Called when webui lock screen wallpaper is loaded and displayed.
+  void OnLockBackgroundDisplayed();
+
+  // Called when the webui header bar becomes visible.
+  void OnHeaderBarVisible();
+
+ private:
+  friend class test::WebUIScreenLockerTester;
 
   // LoginDisplay::Delegate:
   void CancelPasswordChangedFlow() override;
@@ -96,9 +111,6 @@ class WebUIScreenLocker : public WebUILoginView,
   void SetDisplayEmail(const std::string& email) override;
   void Signout() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
-
-  // LockWindow::Observer:
-  void OnLockWindowReady() override;
 
   // LockStateObserver:
   void OnLockStateEvent(ash::LockStateObserver::EventType event) override;
@@ -127,13 +139,14 @@ class WebUIScreenLocker : public WebUILoginView,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // Returns instance of the OOBE WebUI.
-  OobeUI* GetOobeUI();
+  // Inform the screen locker that the screen has been locked
+  void ScreenLockReady();
 
- private:
-  friend class test::WebUIScreenLockerTester;
+  // Called when the lock window is ready.
+  void OnLockWindowReady();
 
-  ~WebUIScreenLocker() override;
+  // Returns the native window displaying the lock screen.
+  gfx::NativeWindow GetNativeWindow() const;
 
   // Ensures that user pod is focused.
   void FocusUserPod();
@@ -141,8 +154,11 @@ class WebUIScreenLocker : public WebUILoginView,
   // Reset user pod and ensures that user pod is focused.
   void ResetAndFocusUserPod();
 
+  // The ScreenLocker that owns this instance.
+  ScreenLocker* screen_locker_ = nullptr;
+
   // The screen locker window.
-  views::Widget* lock_window_ = nullptr;
+  LockWindow* lock_window_ = nullptr;
 
   // Sign-in Screen controller instance (owns login screens).
   std::unique_ptr<SignInScreenController> signin_screen_controller_;

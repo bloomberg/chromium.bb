@@ -13,7 +13,7 @@
 #include "base/process/process_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/lock/screen_locker_delegate.h"
+#include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -148,12 +148,9 @@ void RendererFreezer::OnScreenLockStateChanged(chromeos::ScreenLocker* locker,
   // RendererFreezer::SuspendImminent(), it is guaranteed that the screen locker
   // renderer will not be frozen at any point.
   if (is_locked) {
-    delegate_->SetShouldFreezeRenderer(locker->delegate()
-                                           ->GetAssociatedWebUI()
-                                           ->GetWebContents()
-                                           ->GetRenderProcessHost()
-                                           ->GetHandle(),
-                                       false);
+    delegate_->SetShouldFreezeRenderer(
+        locker->web_ui()->GetWebContents()->GetRenderProcessHost()->GetHandle(),
+        false);
   }
 }
 

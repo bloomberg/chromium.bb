@@ -140,8 +140,7 @@ void TermsOfServiceScreenHandler::OnLanguageChangedCallback(
     const locale_util::LanguageSwitchResult& result) {
   // Update the screen contents to the new locale.
   base::DictionaryValue localized_strings;
-  static_cast<OobeUI*>(web_ui()->GetController())
-      ->GetLocalizedStrings(&localized_strings);
+  GetOobeUI()->GetLocalizedStrings(&localized_strings);
   core_oobe_actor_->ReloadContent(localized_strings);
 
   DoShow();

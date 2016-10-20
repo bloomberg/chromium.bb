@@ -425,9 +425,6 @@ class SigninScreenHandler
   // input_method::ImeKeyboard::Observer implementation:
   void OnCapsLockChanged(bool enabled) override;
 
-  // Returns OobeUI object of NULL.
-  OobeUI* GetOobeUI() const;
-
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
 

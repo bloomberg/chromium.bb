@@ -31,6 +31,7 @@ class LocalizedValuesBuilder;
 namespace chromeos {
 
 class BaseScreen;
+class OobeUI;
 
 // Base class for the OOBE/Login WebUI handlers.
 class BaseScreenHandler : public content::WebUIMessageHandler,
@@ -151,6 +152,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
   // Show selected WebUI |screen|. Pass screen initialization using the |data|
   // parameter.
   void ShowScreenWithData(OobeScreen screen, const base::DictionaryValue* data);
+
+  // Returns the OobeUI instance.
+  OobeUI* GetOobeUI() const;
 
   // Returns current visible OOBE screen.
   OobeScreen GetCurrentScreen() const;

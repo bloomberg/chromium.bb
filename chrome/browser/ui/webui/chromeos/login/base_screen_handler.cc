@@ -87,8 +87,12 @@ void BaseScreenHandler::ShowScreenWithData(OobeScreen screen,
                                          screen_params);
 }
 
+OobeUI* BaseScreenHandler::GetOobeUI() const {
+  return static_cast<OobeUI*>(web_ui()->GetController());
+}
+
 OobeScreen BaseScreenHandler::GetCurrentScreen() const {
-  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
+  OobeUI* oobe_ui = GetOobeUI();
   if (!oobe_ui)
     return OobeScreen::SCREEN_UNKNOWN;
   return oobe_ui->current_screen();

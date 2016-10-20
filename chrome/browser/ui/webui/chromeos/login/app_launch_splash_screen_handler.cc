@@ -184,12 +184,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
       break;
   }
 
-  OobeScreen screen = OobeScreen::SCREEN_UNKNOWN;
-  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
-  if (oobe_ui)
-    screen = oobe_ui->current_screen();
-
-  if (screen != OobeScreen::SCREEN_ERROR_MESSAGE)
+  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE)
     network_error_model_->SetParentScreen(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   network_error_model_->Show();
 }

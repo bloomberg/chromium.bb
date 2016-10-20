@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -1231,8 +1232,9 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
 void SigninScreenHandler::HandleWallpaperReady() {
   if (ScreenLocker::default_screen_locker()) {
-    ScreenLocker::default_screen_locker()->delegate()->
-        OnLockBackgroundDisplayed();
+    ScreenLocker::default_screen_locker()
+        ->web_ui()
+        ->OnLockBackgroundDisplayed();
   }
 }
 
@@ -1448,10 +1450,6 @@ void SigninScreenHandler::CancelPasswordChangedFlowInternal() {
     ShowImpl();
     delegate_->CancelPasswordChangedFlow();
   }
-}
-
-OobeUI* SigninScreenHandler::GetOobeUI() const {
-  return static_cast<OobeUI*>(web_ui()->GetController());
 }
 
 bool SigninScreenHandler::IsGaiaVisible() const {

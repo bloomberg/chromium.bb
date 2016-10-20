@@ -172,17 +172,17 @@ class CoreOobeHandler : public BaseScreenHandler,
   //
   // The instance becomes initialized after the corresponding message is
   // received from javascript side.
-  bool is_initialized_;
+  bool is_initialized_ = false;
 
   // Javascript calls that have been deferred while the instance was not
   // initialized yet.
   std::vector<base::Closure> deferred_js_calls_;
 
   // Owner of this handler.
-  OobeUI* oobe_ui_;
+  OobeUI* oobe_ui_ = nullptr;
 
   // True if we should show OOBE instead of login.
-  bool show_oobe_ui_;
+  bool show_oobe_ui_ = false;
 
   // Updates when version info is changed.
   VersionInfoUpdater version_info_updater_;
@@ -190,7 +190,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
 
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 

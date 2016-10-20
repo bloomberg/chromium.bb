@@ -230,8 +230,7 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     if (!tester->IsLocked())
       lock_state_observer.Wait();
     ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
-    WebUIScreenLocker* web_ui_screen_locker =
-        static_cast<WebUIScreenLocker*>(screen_locker->delegate());
+    WebUIScreenLocker* web_ui_screen_locker = screen_locker->web_ui();
     ASSERT_TRUE(web_ui_screen_locker);
     content::WebUI* web_ui = web_ui_screen_locker->GetWebUI();
     ASSERT_TRUE(web_ui);
@@ -239,8 +238,7 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     ASSERT_TRUE(contents_);
 
     // Wait for the login UI to be ready.
-    WaitUntilOobeUIIsReady(
-        static_cast<OobeUI*>(web_ui->GetController()));
+    WaitUntilOobeUIIsReady(web_ui_screen_locker->GetOobeUI());
   }
 
  private:

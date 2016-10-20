@@ -61,7 +61,7 @@ namespace chromeos {
 // WebUIScreenLocker implementation.
 
 WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
-    : ScreenLockerDelegate(screen_locker),
+    : screen_locker_(screen_locker),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
@@ -76,22 +76,45 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
   }
 }
 
+WebUIScreenLocker::~WebUIScreenLocker() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
+  ash::WmShell::Get()->RemoveLockStateObserver(this);
+  ash::WmShell::Get()->RemoveShellObserver(this);
+  // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
+  if (lock_window_) {
+    lock_window_->RemoveObserver(this);
+    lock_window_->Close();
+  }
+  // If LockScreen() was called, we need to clear the signin screen handler
+  // delegate set in ShowSigninScreen so that it no longer points to us.
+  if (login_display_.get())
+    GetOobeUI()->ResetSigninScreenHandlerDelegate();
+
+  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
+    is_observing_keyboard_ = false;
+  }
+
+  ResetKeyboardOverscrollOverride();
+}
+
 void WebUIScreenLocker::LockScreen() {
   gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
   lock_time_ = base::TimeTicks::Now();
-  auto* lock_window = new LockWindow();
-  lock_window->set_observer(this);
-  lock_window->set_initially_focused_view(this);
-  lock_window_ = lock_window->GetWidget();
+  lock_window_ = new LockWindow();
+  lock_window_->set_initially_focused_view(this);
   lock_window_->AddObserver(this);
-  WebUILoginView::Init();
+
+  Init();
   content::WebContentsObserver::Observe(webui_login_->GetWebContents());
+
   lock_window_->SetContentsView(this);
   lock_window_->SetBounds(bounds);
   lock_window_->Show();
   LoadURL(GURL(kLoginURL));
-  lock_window->Grab();
+  OnLockWindowReady();
 
   signin_screen_controller_.reset(
       new SignInScreenController(GetOobeUI(), this));
@@ -99,22 +122,12 @@ void WebUIScreenLocker::LockScreen() {
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(screen_locker()->users(), false, true, false);
+  login_display_->Init(screen_locker_->users(), false, true, false);
 
   GetOobeUI()->ShowSigninScreen(
       LoginScreenContext(), login_display_.get(), login_display_.get());
 
   DisableKeyboardOverscroll();
-}
-
-void WebUIScreenLocker::ScreenLockReady() {
-  UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
-                      base::TimeTicks::Now() - lock_time_);
-  ScreenLockerDelegate::ScreenLockReady();
-  SetInputEnabled(true);
-}
-
-void WebUIScreenLocker::OnAuthenticate() {
 }
 
 void WebUIScreenLocker::SetInputEnabled(bool enabled) {
@@ -138,12 +151,22 @@ void WebUIScreenLocker::ClearErrors() {
   GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearErrors");
 }
 
-gfx::NativeWindow WebUIScreenLocker::GetNativeWindow() const {
-  return lock_window_->GetNativeWindow();
+void WebUIScreenLocker::ScreenLockReady() {
+  UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
+                      base::TimeTicks::Now() - lock_time_);
+  screen_locker_->ScreenLockReady();
+  SetInputEnabled(true);
 }
 
-content::WebUI* WebUIScreenLocker::GetAssociatedWebUI() {
-  return GetWebUI();
+void WebUIScreenLocker::OnLockWindowReady() {
+  VLOG(1) << "Lock window ready; WebUI is " << (webui_ready_ ? "too" : "not");
+  lock_ready_ = true;
+  if (webui_ready_)
+    ScreenLockReady();
+}
+
+gfx::NativeWindow WebUIScreenLocker::GetNativeWindow() const {
+  return lock_window_->GetNativeWindow();
 }
 
 void WebUIScreenLocker::FocusUserPod() {
@@ -159,31 +182,6 @@ void WebUIScreenLocker::ResetAndFocusUserPod() {
     return;
   GetWebUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.clearUserPodPassword");
   FocusUserPod();
-}
-
-WebUIScreenLocker::~WebUIScreenLocker() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
-  ash::WmShell::Get()->RemoveLockStateObserver(this);
-  ash::WmShell::Get()->RemoveShellObserver(this);
-  // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
-  if (lock_window_) {
-    lock_window_->RemoveObserver(this);
-    lock_window_->Close();
-  }
-  // If LockScreen() was called, we need to clear the signin screen handler
-  // delegate set in ShowSigninScreen so that it no longer points to us.
-  if (login_display_.get()) {
-    static_cast<OobeUI*>(GetWebUI()->GetController())->
-        ResetSigninScreenHandlerDelegate();
-  }
-
-  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
-    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    is_observing_keyboard_ = false;
-  }
-
-  ResetKeyboardOverscrollOverride();
 }
 
 void WebUIScreenLocker::OnLockWebUIReady() {
@@ -203,10 +201,6 @@ void WebUIScreenLocker::OnHeaderBarVisible() {
   DCHECK(ash::Shell::HasInstance());
 
   ash::Shell::GetInstance()->power_event_observer()->OnLockAnimationsComplete();
-}
-
-OobeUI* WebUIScreenLocker::GetOobeUI() {
-  return static_cast<OobeUI*>(GetWebUI()->GetController());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -281,15 +275,6 @@ void WebUIScreenLocker::Signout() {
 bool WebUIScreenLocker::IsUserWhitelisted(const AccountId& account_id) {
   NOTREACHED();
   return true;
-}
-////////////////////////////////////////////////////////////////////////////////
-// LockWindow::Observer:
-
-void WebUIScreenLocker::OnLockWindowReady() {
-  VLOG(1) << "Lock window ready; WebUI is " << (webui_ready_ ? "too" : "not");
-  lock_ready_ = true;
-  if (webui_ready_)
-    ScreenLockReady();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

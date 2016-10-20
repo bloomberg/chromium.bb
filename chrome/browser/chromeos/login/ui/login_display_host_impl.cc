@@ -799,8 +799,8 @@ void LoginDisplayHostImpl::OnBrowserCreated() {
 
 OobeUI* LoginDisplayHostImpl::GetOobeUI() const {
   if (!login_view_)
-    return NULL;
-  return static_cast<OobeUI*>(login_view_->GetWebUI()->GetController());
+    return nullptr;
+  return login_view_->GetOobeUI();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -103,8 +103,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
                        MAYBE_ProxyAuthDialogOnUserBoardScreen) {
   LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
   WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
-  OobeUI* oobe_ui =
-      static_cast<OobeUI*>(web_ui_login_view->GetWebUI()->GetController());
+  OobeUI* oobe_ui = web_ui_login_view->GetOobeUI();
 
   {
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);

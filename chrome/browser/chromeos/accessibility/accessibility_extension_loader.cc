@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -216,7 +217,7 @@ void AccessibilityExtensionLoader::LoadToLockScreen(
 
   ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
   if (screen_locker && screen_locker->locked()) {
-    content::WebUI* lock_web_ui = screen_locker->GetAssociatedWebUI();
+    content::WebUI* lock_web_ui = screen_locker->web_ui()->GetWebUI();
     if (lock_web_ui) {
       Profile* profile = Profile::FromWebUI(lock_web_ui);
       loaded_on_lock_screen_ = true;
