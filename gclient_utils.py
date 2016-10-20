@@ -179,9 +179,8 @@ def rmtree(path):
   Recursively removes a directory, even if it's marked read-only.
 
   shutil.rmtree() doesn't work on Windows if any of the files or directories
-  are read-only, which svn repositories and some .svn files are.  We need to
-  be able to force the files to be writable (i.e., deletable) as we traverse
-  the tree.
+  are read-only. We need to be able to force the files to be writable (i.e.,
+  deletable) as we traverse the tree.
 
   Even with all this, Windows still sometimes fails to delete a file, citing
   a permission error (maybe something to do with antivirus scans or disk
@@ -494,8 +493,9 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
 
     # Also, we need to forward stdout to prevent weird re-ordering of output.
     # This has to be done on a per byte basis to make sure it is not buffered:
-    # normally buffering is done for each line, but if svn requests input, no
-    # end-of-line character is output after the prompt and it would not show up.
+    # normally buffering is done for each line, but if the process requests
+    # input, no end-of-line character is output after the prompt and it would
+    # not show up.
     try:
       in_byte = kid.stdout.read(1)
       if in_byte:
@@ -1060,7 +1060,7 @@ def GetEditor(git_editor=None):
   """Returns the most plausible editor to use.
 
   In order of preference:
-  - GIT_EDITOR/SVN_EDITOR environment variable
+  - GIT_EDITOR environment variable
   - core.editor git configuration variable (if supplied by git-cl)
   - VISUAL environment variable
   - EDITOR environment variable

@@ -67,24 +67,16 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'rmtree')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, '_CaptureInfo')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
     self.mox.StubOutWithMock(subprocess2, 'communicate')
     self.mox.StubOutWithMock(subprocess2, 'Popen')
     self._scm_wrapper = gclient_scm.CreateSCM
-    gclient_scm.scm.SVN.current_version = None
-    self._original_SVNBinaryExists = gclient_scm.SVNWrapper.BinaryExists
     self._original_GitBinaryExists = gclient_scm.GitWrapper.BinaryExists
-    gclient_scm.SVNWrapper.BinaryExists = staticmethod(lambda : True)
     gclient_scm.GitWrapper.BinaryExists = staticmethod(lambda : True)
     # Absolute path of the fake checkout directory.
     self.base_path = join(self.root_dir, self.relpath)
 
   def tearDown(self):
     SuperMoxTestBase.tearDown(self)
-    gclient_scm.SVNWrapper.BinaryExists = self._original_SVNBinaryExists
     gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
 
 
@@ -123,7 +115,6 @@ class BaseGitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
       self.auto_rebase = False
       self.verbose = verbose
       self.revision = revision
-      self.manually_grab_svn_rev = True
       self.deps_os = None
       self.force = False
       self.reset = False
@@ -249,9 +240,7 @@ from :3
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
     StdoutCheck.setUp(self)
     self._original_GitBinaryExists = gclient_scm.GitWrapper.BinaryExists
-    self._original_SVNBinaryExists = gclient_scm.SVNWrapper.BinaryExists
     gclient_scm.GitWrapper.BinaryExists = staticmethod(lambda : True)
-    gclient_scm.SVNWrapper.BinaryExists = staticmethod(lambda : True)
 
   def tearDown(self):
     try:
@@ -262,7 +251,6 @@ from :3
     finally:
       # TODO(maruel): Use auto_stub.TestCase.
       gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
-      gclient_scm.SVNWrapper.BinaryExists = self._original_SVNBinaryExists
 
 
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
@@ -607,10 +595,14 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsValidRevision', True)
     gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=self.fake_hash_1
         ).AndReturn(True)
-
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
-    gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
+    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev='1'
         ).AndReturn(False)
+    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev='1'
+        ).AndReturn(False)
+
+    self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Fetch', True)
+    # pylint: disable=no-value-for-parameter
+    gclient_scm.GitWrapper._Fetch(options).AndReturn(None)
 
     gclient_scm.scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
@@ -626,79 +618,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     # An SVN rev with an existing purely git repo should raise an exception.
     self.assertRaises(gclient_scm.gclient_utils.Error,
                       git_scm.GetUsableRev, '1', options)
-
-  def testGetUsableRevGitSvn(self):
-    # pylint: disable=E1101
-    options = self.Options()
-    too_big = str(1e7)
-
-    # Pretend like the git-svn repo's HEAD is at r2.
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'GetGitSvnHeadRev', True)
-    gclient_scm.scm.GIT.GetGitSvnHeadRev(cwd=self.base_path).MultipleTimes(
-        ).AndReturn(2)
-
-    self.mox.StubOutWithMock(
-        gclient_scm.scm.GIT, 'GetBlessedSha1ForSvnRev', True)
-    # r1 -> first fake hash, r3 -> second fake hash.
-    gclient_scm.scm.GIT.GetBlessedSha1ForSvnRev(cwd=self.base_path, rev='1'
-        ).AndReturn(self.fake_hash_1)
-    gclient_scm.scm.GIT.GetBlessedSha1ForSvnRev(cwd=self.base_path, rev='3'
-        ).MultipleTimes().AndReturn(self.fake_hash_2)
-
-    # Ensure that we call git svn fetch if our LKGR is > the git-svn HEAD rev.
-    self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Fetch', True)
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'Capture', True)
-    gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
-                                cwd=self.base_path).AndReturn('blah')
-    # pylint: disable=E1120
-    gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
-    error = subprocess2.CalledProcessError(1, 'cmd', '/cwd', 'stdout', 'stderr')
-    gclient_scm.scm.GIT.Capture(['config', '--get', 'svn-remote.svn.fetch'],
-                                cwd=self.base_path).AndRaise(error)
-    gclient_scm.GitWrapper._Fetch(options)
-    gclient_scm.scm.GIT.Capture(['svn', 'fetch'], cwd=self.base_path)
-    gclient_scm.GitWrapper._Fetch(options)
-
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsGitSvn', True)
-    gclient_scm.scm.GIT.IsGitSvn(cwd=self.base_path).MultipleTimes(
-        ).AndReturn(True)
-
-    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsValidRevision', True)
-    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=self.fake_hash_1
-        ).AndReturn(True)
-    gclient_scm.scm.GIT.IsValidRevision(cwd=self.base_path, rev=too_big
-        ).MultipleTimes(2).AndReturn(False)
-
-    gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
-    gclient_scm.os.path.isdir(self.base_path).MultipleTimes().AndReturn(True)
-
-    self.mox.ReplayAll()
-
-    git_svn_scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                                    relpath=self.relpath)
-    # Without an existing checkout, this should fail.
-    # TODO(dbeam) Fix this. http://crbug.com/109184
-    self.assertRaises(gclient_scm.gclient_utils.Error,
-                      git_svn_scm.GetUsableRev, '1', options)
-    # Given an SVN revision with a git-svn checkout, it should be translated to
-    # a git sha1 and be usable.
-    self.assertEquals(git_svn_scm.GetUsableRev('1', options),
-                      self.fake_hash_1)
-    # Our fake HEAD rev is r2, so this should call git fetch and git svn fetch
-    # to get more revs (pymox will complain if this doesn't happen). We mock an
-    # optimized checkout the first time, so this run should call git fetch.
-    self.assertEquals(git_svn_scm.GetUsableRev('3', options),
-                      self.fake_hash_2)
-    # The time we pretend we're not optimized, so no git fetch should fire.
-    self.assertEquals(git_svn_scm.GetUsableRev('3', options),
-                      self.fake_hash_2)
-    # Given a git sha1 with a git-svn checkout, it should be used as is.
-    self.assertEquals(git_svn_scm.GetUsableRev(self.fake_hash_1, options),
-                      self.fake_hash_1)
-    # We currently check for seemingly valid SVN revisions by assuming 6 digit
-    # numbers, so assure that numeric revs >= 1000000 don't work.
-    self.assertRaises(gclient_scm.gclient_utils.Error,
-                      git_svn_scm.GetUsableRev, too_big, options)
 
   def testUpdateNoDotGit(self):
     options = self.Options()

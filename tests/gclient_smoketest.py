@@ -156,11 +156,7 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
 
 
 class GClientSmoke(GClientSmokeBase):
-  """Doesn't require either svnserve nor git-daemon."""
-  @property
-  def svn_base(self):
-    return 'svn://random.server/svn/'
-
+  """Doesn't require git-daemon."""
   @property
   def git_base(self):
     return 'git://random.server/git/'
@@ -203,10 +199,10 @@ class GClientSmoke(GClientSmokeBase):
       self.check(('', '', 0), results)
       self.checkString(expected, open(p, 'rU').read())
 
-    test(['config', self.svn_base + 'trunk/src/'],
+    test(['config', self.git_base + 'src/'],
          ('solutions = [\n'
           '  { "name"        : "src",\n'
-          '    "url"         : "%strunk/src",\n'
+          '    "url"         : "%ssrc",\n'
           '    "deps_file"   : "DEPS",\n'
           '    "managed"     : True,\n'
           '    "custom_deps" : {\n'
@@ -214,7 +210,7 @@ class GClientSmoke(GClientSmokeBase):
           '    "safesync_url": "",\n'
           '  },\n'
           ']\n'
-          'cache_dir = None\n') % self.svn_base)
+          'cache_dir = None\n') % self.git_base)
 
     test(['config', self.git_base + 'repo_1', '--name', 'src'],
          ('solutions = [\n'
@@ -287,14 +283,19 @@ class GClientSmoke(GClientSmokeBase):
   def testDifferentTopLevelDirectory(self):
     # Check that even if the .gclient file does not mention the directory src
     # itself, but it is included via dependencies, the .gclient file is used.
-    self.gclient(['config', self.svn_base + 'trunk/src.DEPS'])
+    self.gclient(['config', self.git_base + 'src.DEPS'])
     deps = join(self.root_dir, 'src.DEPS')
     os.mkdir(deps)
+    subprocess2.check_output(['git', 'init'], cwd=deps)
     write(join(deps, 'DEPS'),
-        'deps = { "src": "%strunk/src" }' % (self.svn_base))
+        'deps = { "src": "%ssrc" }' % (self.git_base))
+    subprocess2.check_output(['git', 'add', 'DEPS'], cwd=deps)
+    subprocess2.check_output(
+        ['git', 'commit', '-a', '-m', 'DEPS file'], cwd=deps)
     src = join(self.root_dir, 'src')
     os.mkdir(src)
-    res = self.gclient(['status', '--jobs', '1'], src)
+    subprocess2.check_output(['git', 'init'], cwd=src)
+    res = self.gclient(['status', '--jobs', '1', '-v'], src)
     self.checkBlock(res[0], [('running', deps), ('running', src)])
 
 
