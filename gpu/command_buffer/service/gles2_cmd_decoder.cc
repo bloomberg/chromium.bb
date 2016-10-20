@@ -12653,11 +12653,9 @@ std::unique_ptr<uint8_t[]> DecompressTextureData(
   return decompressed_data;
 }
 
-bool IsValidDXTSize(GLint level, GLsizei size) {
-  // TODO(zmo): Linux NVIDIA driver does allow size of 1 and 2 on level 0.
-  // However, the WebGL conformance test and blink side code forbid it.
-  // For now, let's be on the cautious side. If all drivers behaves the same
-  // as Linux NVIDIA, then we can remove this limitation.
+bool IsValidS3TCSizeForWebGL(GLint level, GLsizei size) {
+  // WebGL only allows multiple-of-4 sizes, except for levels > 0 where it also
+  // allows 1 or 2. See WEBGL_compressed_texture_s3tc.
   return (level && size == 1) ||
          (level && size == 2) ||
          !(size % kS3TCBlockWidth);
@@ -12852,7 +12850,9 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
     case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
     case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
       DCHECK_EQ(1, depth);  // 2D formats.
-      if (!IsValidDXTSize(level, width) || !IsValidDXTSize(level, height)) {
+      if (feature_info_->IsWebGLContext() &&
+          (!IsValidS3TCSizeForWebGL(level, width) ||
+           !IsValidS3TCSizeForWebGL(level, height))) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, function_name,
             "width or height invalid for level");
@@ -12980,8 +12980,14 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
             GL_INVALID_OPERATION, function_name, "dimensions out of range");
         return false;
       }
-      return ValidateCompressedTexDimensions(
-          function_name, target, level, width, height, 1, format);
+      if ((((width % kBlockWidth) != 0) && (width + xoffset != tex_width)) ||
+          (((height % kBlockHeight) != 0) &&
+           (height + yoffset != tex_height))) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                           "dimensions do not align to a block boundary");
+        return false;
+      }
+      return true;
     }
     case GL_ATC_RGB_AMD:
     case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:

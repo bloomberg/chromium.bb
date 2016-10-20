@@ -1745,10 +1745,11 @@ struct S3TCTestData {
 
 }  // anonymous namespace.
 
-TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
+TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TCWebGL) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
   init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_WEBGL1;
   InitDecoder(init);
   const uint32_t kBucketId = 123;
   CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
@@ -1898,6 +1899,234 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
           }
         }
       }
+    }
+  }
+}
+
+TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
+  InitState init;
+  init.extensions = "GL_EXT_texture_compression_s3tc";
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+  const uint32_t kBucketId = 123;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+
+  static const S3TCTestData test_data[] = {
+      {
+       GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 8,
+      },
+      {
+       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, 8,
+      },
+      {
+       GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 16,
+      },
+      {
+       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, 16,
+      },
+  };
+
+  for (size_t ii = 0; ii < arraysize(test_data); ++ii) {
+    const S3TCTestData& test = test_data[ii];
+    CompressedTexImage2DBucket cmd;
+    // test small width.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 1, test.format, 2, 4, 0, test.block_size, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // test non-block-size width.
+    bucket->SetSize(test.block_size * 2);
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 5, 4, 0, test.block_size * 2, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // test small height.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 1, test.format, 4, 2, 0, test.block_size, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // test non-block-size height.
+    bucket->SetSize(test.block_size * 2);
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 4, 5, 0, test.block_size * 2, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // test small for level 0.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 1, test.format, 1, 1, 0, test.block_size, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // test small for level 0.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 1, test.format, 2, 2, 0, test.block_size, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // test size too large.
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 4, kBucketId);
+    bucket->SetSize(test.block_size * 2);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+    // test size too small.
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 4, kBucketId);
+    bucket->SetSize(test.block_size / 2);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+    // test with 3 mips.
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 0, test.format, 4, 4, 0, test.block_size, kBucketId);
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 1, test.format, 2, 2, 0, test.block_size, kBucketId);
+    DoCompressedTexImage2D(
+        GL_TEXTURE_2D, 2, test.format, 1, 1, 0, test.block_size, kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    // Test a 16x16
+    DoCompressedTexImage2D(GL_TEXTURE_2D,
+                           0,
+                           test.format,
+                           16,
+                           16,
+                           0,
+                           test.block_size * 4 * 4,
+                           kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    CompressedTexSubImage2DBucket sub_cmd;
+    bucket->SetSize(test.block_size);
+    // Test sub image bad xoffset
+    sub_cmd.Init(GL_TEXTURE_2D, 0, 1, 0, 4, 4, test.format, kBucketId);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+    // Test sub image bad yoffset
+    sub_cmd.Init(GL_TEXTURE_2D, 0, 0, 2, 4, 4, test.format, kBucketId);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+    // Test sub image bad width
+    bucket->SetSize(test.block_size * 2);
+    sub_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 5, 4, test.format, kBucketId);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+    // Test sub image bad height
+    sub_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 4, 5, test.format, kBucketId);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+    // Test sub image bad size
+    bucket->SetSize(test.block_size + 1);
+    sub_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 4, 4, test.format, kBucketId);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+    for (GLint yoffset = 0; yoffset <= 8; yoffset += 4) {
+      for (GLint xoffset = 0; xoffset <= 8; xoffset += 4) {
+        for (GLsizei height = 4; height <= 8; height += 4) {
+          for (GLsizei width = 4; width <= 8; width += 4) {
+            GLsizei size = test.block_size * (width / 4) * (height / 4);
+            bucket->SetSize(size);
+            EXPECT_CALL(*gl_,
+                        CompressedTexSubImage2D(GL_TEXTURE_2D,
+                                                0,
+                                                xoffset,
+                                                yoffset,
+                                                width,
+                                                height,
+                                                test.format,
+                                                size,
+                                                _))
+                .Times(1)
+                .RetiresOnSaturation();
+            sub_cmd.Init(GL_TEXTURE_2D,
+                         0,
+                         xoffset,
+                         yoffset,
+                         width,
+                         height,
+                         test.format,
+                         kBucketId);
+            EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+            EXPECT_EQ(GL_NO_ERROR, GetGLError());
+          }
+        }
+      }
+    }
+
+    // Test a 13x13
+    DoCompressedTexImage2D(GL_TEXTURE_2D,
+                           0,
+                           test.format,
+                           13,
+                           13,
+                           0,
+                           test.block_size * 4 * 4,
+                           kBucketId);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    {
+      // Accept non-multiple-of-4 width sub image if it aligns to the right
+      GLint xoffset = 12;
+      GLint width = 1;
+      GLint yoffset = 0;
+      GLint height = 4;
+      bucket->SetSize(test.block_size);
+
+      EXPECT_CALL(*gl_,
+                  CompressedTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset,
+                                          width, height, test.format, _, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      sub_cmd.Init(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
+                   test.format, kBucketId);
+      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    {
+      // Accept non-multiple-of-4 height sub image if it aligns to the bottom
+      GLint xoffset = 0;
+      GLint width = 4;
+      GLint yoffset = 12;
+      GLint height = 1;
+      bucket->SetSize(test.block_size);
+
+      EXPECT_CALL(*gl_,
+                  CompressedTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset,
+                                          width, height, test.format, _, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      sub_cmd.Init(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
+                   test.format, kBucketId);
+      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    }
+    {
+      // Check that partial blocks are still fully counted.
+      // Those 25 pixels still need to use 4 blocks.
+      GLint xoffset = 8;
+      GLint width = 5;
+      GLint yoffset = 8;
+      GLint height = 5;
+      bucket->SetSize(test.block_size * 3);
+
+      sub_cmd.Init(GL_TEXTURE_2D, 0, xoffset, yoffset, width, height,
+                   test.format, kBucketId);
+      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+      EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+      bucket->SetSize(test.block_size * 4);
+      EXPECT_CALL(*gl_,
+                  CompressedTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset,
+                                          width, height, test.format, _, _))
+          .Times(1)
+          .RetiresOnSaturation();
+      EXPECT_EQ(error::kNoError, ExecuteCmd(sub_cmd));
+      EXPECT_EQ(GL_NO_ERROR, GetGLError());
     }
   }
 }
