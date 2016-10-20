@@ -6,18 +6,19 @@
   // If you need to require or provide capabilities from Chrome itself within
   // the Mash environment, you should instead modify
   // chrome_mash_content_browser_manifest_overlay.json.
-  "manifest_version": 1,
   "name": "service:chrome_mash",
   "display_name": "Chrome Mash Packaged Services",
-  "capabilities": {
-    "provided": {
-      "service_manager:service_factory": [
-        "service_manager::mojom::ServiceFactory"
-      ]
-    },
-    "required": {
-      "service:mash_session": [ "app" ],
-      "service:catalog": [ "control" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      },
+      "requires": {
+        "service:mash_session": [ "app" ],
+        "service:catalog": [ "control" ]
+      }
     }
   }
 }

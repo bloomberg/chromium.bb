@@ -1,11 +1,12 @@
 {
-  "manifest_version":  1,
   "name": "exe:mash_unittests",
   "display_name": "Mash Unittests",
-  "capabilities": {
-    "required": {
-      "*": [ "app", "test" ],
-      "service:ash": [ "mus:window_manager" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "*": [ "app", "test" ],
+        "service:ash": [ "mus:window_manager" ]
+      }
     }
   }
 }

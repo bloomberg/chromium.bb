@@ -1,13 +1,14 @@
 {
-  "manifest_version":  1,
   "name": "service:task_viewer",
   "display_name": "Task Viewer",
-  "capabilities": {
-    "provided": { "mash:launchable": ["mash::mojom::Launchable"] },
-    "required": {
-      "*": [ "app" ],
-      "service:catalog": [ "catalog:catalog" ],
-      "service:service_manager": [ "service_manager:service_manager" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
+      "requires": {
+        "*": [ "app" ],
+        "service:catalog": [ "catalog:catalog" ],
+        "service:service_manager": [ "service_manager:service_manager" ]
+      }
     }
   }
 }

@@ -1,17 +1,18 @@
 {
-  "manifest_version":  1,
   "name": "service:mus_ws_unittests_app",
   "display_name": "Mus Window Server Unittests",
-  "capabilities": {
-    "provided": {
-      "ui:window_tree_client": [
-        "ui::mojom::WindowTreeClient"
-      ]
-    },
-    "required": {
-      "*": [ "app" ],
-      "service:mus_ws_unittests_app": [ "ui:window_tree_client" ],
-      "service:ui": [ "ui:window_tree_host_factory" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "ui:window_tree_client": [
+          "ui::mojom::WindowTreeClient"
+        ]
+      },
+      "requires": {
+        "*": [ "app" ],
+        "service:mus_ws_unittests_app": [ "ui:window_tree_client" ],
+        "service:ui": [ "ui:window_tree_host_factory" ]
+      }
     }
   }
 }

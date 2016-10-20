@@ -1,12 +1,13 @@
 {
-  "manifest_version": 1,
   "name": "service:background_service_manager_unittest",
   "display_name": "Background Service Manager Unittest",
-  "capabilities": {
-    "required": {
-      "service:background_service_manager_test_service": [
-        "background_service_manager_unittest:test_service"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "service:background_service_manager_test_service": [
+          "background_service_manager_unittest:test_service"
+        ]
+      }
     }
   }
 }

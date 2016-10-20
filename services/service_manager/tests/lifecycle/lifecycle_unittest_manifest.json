@@ -1,16 +1,17 @@
 {
-  "manifest_version": 1,
   "name": "service:lifecycle_unittest",
   "display_name": "Lifecycle Unittest",
-  "capabilities": {
-    "required": {
-      "*": [ "lifecycle_unittest:lifecycle_control" ],
-      "service:lifecycle_unittest_parent": [ "lifecycle_unittest:parent" ],
-      "service:service_manager": [
-        "service_manager:service_manager",
-        "service_manager:instance_name",
-        "service_manager:client_process"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "*": [ "lifecycle_unittest:lifecycle_control" ],
+        "service:lifecycle_unittest_parent": [ "lifecycle_unittest:parent" ],
+        "service:service_manager": [
+          "service_manager:service_manager",
+          "service_manager:instance_name",
+          "service_manager:client_process"
+        ]
+      }
     }
   }
 }

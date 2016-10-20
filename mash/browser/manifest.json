@@ -1,11 +1,12 @@
 {
-  "manifest_version":  1,
   "name": "service:browser",
   "display_name": "Browser",
-  "capabilities": {
-    "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
-    "required": {
-      "*": [ "app" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
+      "requires": {
+        "*": [ "app" ]
+      }
     }
   }
 }

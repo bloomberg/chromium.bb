@@ -1,8 +1,9 @@
 {
-  "manifest_version":  1,
   "name": "exe:mus_clipboard_unittests",
   "display_name": "Clipboard Service Unittests",
-  "capabilities": {
-    "required": { "service:ui": [ "app" ] }
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": { "service:ui": [ "app" ] }
+    }
   }
 }

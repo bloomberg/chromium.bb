@@ -1,10 +1,11 @@
 {
-  "manifest_version":  1,
   "name": "service:test_wm",
   "display_name": "Test Window Manager",
-  "capabilities": {
-    "required": {
-      "service:ui": [ "ui:window_manager" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "service:ui": [ "ui:window_manager" ]
+      }
     }
   }
 }

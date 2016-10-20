@@ -1,11 +1,12 @@
 {
-  "manifest_version":  1,
   "name": "service:media_apptests",
   "display_name": "Media Apptests",
-  "capabilities": {
-    "required": {
-      "*": [ "app" ],
-      "service:media": [ "media:service_factory" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "*": [ "app" ],
+        "service:media": [ "media:service_factory" ]
+      }
     }
   }
 }

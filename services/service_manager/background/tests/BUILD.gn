@@ -7,19 +7,6 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
-static_library("test_support") {
-  sources = [
-    "test_catalog_store.cc",
-    "test_catalog_store.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/catalog:lib",
-    "//url",
-  ]
-}
-
 source_set("unittests") {
   testonly = true
   sources = [

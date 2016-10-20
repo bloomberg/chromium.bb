@@ -1,12 +1,13 @@
 {
-  "manifest_version":  1,
   "name": "service:lifecycle_unittest_app",
   "display_name": "Lifecycle Unittest App",
-  "capabilities": {
-    "provided": {
-      "lifecycle_unittest:lifecycle_control": [
-        "service_manager::test::mojom::LifecycleControl"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "lifecycle_unittest:lifecycle_control": [
+          "service_manager::test::mojom::LifecycleControl"
+        ]
+      }
     }
   }
 }

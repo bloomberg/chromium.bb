@@ -1,19 +1,20 @@
 {
-  "manifest_version":  1,
   "name": "service:content_gpu",
   "display_name": "Content (GPU process)",
-  "capabilities": {
-    "provided": {
-      "browser": [
-        "IPC::mojom::ChannelBootstrap",
-        "service_manager::mojom::ServiceFactory"
-      ],
-      "service_manager:service_factory": [
-        "service_manager::mojom::ServiceFactory"
-      ]
-    },
-    "required": {
-      "service:content_browser": [ "gpu" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "browser": [
+          "IPC::mojom::ChannelBootstrap",
+          "service_manager::mojom::ServiceFactory"
+        ],
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      },
+      "requires": {
+        "service:content_browser": [ "gpu" ]
+      }
     }
   }
 }

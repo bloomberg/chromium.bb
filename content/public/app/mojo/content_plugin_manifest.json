@@ -1,16 +1,17 @@
 {
-  "manifest_version":  1,
   "name": "service:content_plugin",
   "display_name": "Content (plugin process)",
-  "capabilities": {
-    "provided": {
-      "browser": [ "IPC::mojom::ChannelBootstrap" ],
-      "service_manager:service_factory": [
-        "service_manager::mojom::ServiceFactory"
-      ]
-    },
-    "required": {
-      "service:content_browser": [ "plugin" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "browser": [ "IPC::mojom::ChannelBootstrap" ],
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      },
+      "requires": {
+        "service:content_browser": [ "plugin" ]
+      }
     }
   }
 }

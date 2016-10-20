@@ -1,11 +1,12 @@
 {
-  "manifest_version":  1,
   "name": "service:foo",
   "display_name": "Foo",
   "process-group": "bar",
-  "capabilities": {
-    "required": {
-      "service:bar": [ "bar:bar" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "service:bar": [ "bar:bar" ]
+      }
     }
   }
 }

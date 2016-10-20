@@ -1,9 +1,10 @@
 {
-  "manifest_version":  1,
   "name": "service:views_examples",
   "display_name": "Views Examples",
-  "capabilities": {
-    "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
-    "required": { "*": [ "app" ] }
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
+      "requires": { "*": [ "app" ] }
+    }
   }
 }

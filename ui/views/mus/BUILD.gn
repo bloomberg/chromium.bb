@@ -132,7 +132,6 @@ static_library("test_support") {
     "//base",
     "//base/test:test_support",
     "//services/service_manager/background:lib",
-    "//services/service_manager/background/tests:test_support",
     "//services/service_manager/public/cpp:sources",
     "//services/ui/common:mus_common",
     "//testing/gtest",

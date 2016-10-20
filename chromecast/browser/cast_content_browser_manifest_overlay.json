@@ -1,9 +1,11 @@
 {
-  "capabilities": {
-    "provided": {
-      "renderer": [
-        "chromecast::media::mojom::MediaCaps"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "renderer": [
+          "chromecast::media::mojom::MediaCaps"
+        ]
+      }
     }
   }
 }

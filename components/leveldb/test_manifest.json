@@ -1,11 +1,12 @@
 {
-  "manifest_version":  1,
   "name": "exe:leveldb_service_unittests",
   "display_name": "LevelDB Service Unittests",
-  "capabilities": {
-    "required": {
-      "service:filesystem": [ "filesystem:filesystem" ],
-      "service:leveldb": [ "leveldb:leveldb" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "service:filesystem": [ "filesystem:filesystem" ],
+        "service:leveldb": [ "leveldb:leveldb" ]
+      }
     }
   }
 }

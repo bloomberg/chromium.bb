@@ -1,10 +1,11 @@
 {
-  "manifest_version":  1,
   "name": "service:mus_demo",
   "display_name": "MUS Demo",
-  "capabilities": {
-    "required": {
-      "service:ui": [ "app", "ui:window_manager" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "service:ui": [ "app", "ui:window_manager" ]
+      }
     }
   }
 }

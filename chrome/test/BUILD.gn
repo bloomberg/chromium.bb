@@ -1183,7 +1183,6 @@ static_library("browser_tests_runner") {
     deps += [
       "//mash/package",
       "//services/service_manager/background:lib",
-      "//services/service_manager/background/tests:test_support",
     ]
 
     data_deps = [

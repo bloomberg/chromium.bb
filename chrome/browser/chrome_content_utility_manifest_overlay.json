@@ -1,14 +1,16 @@
 {
   "name": "service:content_utility",
-  "capabilities": {
-    "provided": {
-      "browser": [
-        "mojom::ImageDecoder",
-        "mojom::ResourceUsageReporter",
-        "mojom::ShellHandler",
-        "net::interfaces::ProxyResolverFactory",
-        "safe_json::mojom::SafeJsonParser"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "browser": [
+          "mojom::ImageDecoder",
+          "mojom::ResourceUsageReporter",
+          "mojom::ShellHandler",
+          "net::interfaces::ProxyResolverFactory",
+          "safe_json::mojom::SafeJsonParser"
+        ]
+      }
     }
   }
 }

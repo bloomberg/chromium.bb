@@ -19,7 +19,6 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/background/tests/test_catalog_store.h"
 #include "services/service_manager/native_runner_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"

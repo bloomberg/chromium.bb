@@ -6,19 +6,21 @@
 // manifest for "service:content_browser" (i.e. the browser process) when Chrome
 // is run in a Mash environment.
 {
-  "capabilities": {
-    "provided": {
-      "content_browser:ash": [
-        "ash::mojom::SystemTrayClient",
-        "ash::mojom::WallpaperManager",
-        "app_list::mojom::AppListPresenter",
-        "keyboard::mojom::Keyboard"
-      ]
-    },
-    "required": {
-      "service:ash": [ "ash" ],
-      "service:accessibility_autoclick": [ "ash:autoclick" ],
-      "service:mash_session": [ "app" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "content_browser:ash": [
+          "ash::mojom::SystemTrayClient",
+          "ash::mojom::WallpaperManager",
+          "app_list::mojom::AppListPresenter",
+          "keyboard::mojom::Keyboard"
+        ]
+      },
+      "requires": {
+        "service:ash": [ "ash" ],
+        "service:accessibility_autoclick": [ "ash:autoclick" ],
+        "service:mash_session": [ "app" ]
+      }
     }
   }
 }

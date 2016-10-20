@@ -1,31 +1,33 @@
 {
   "name": "service:content_browser",
   "display_name": "Chrome",
-  "capabilities": {
-    "provided": {
-      "renderer": [
-        "autofill::mojom::AutofillDriver",
-        "autofill::mojom::PasswordManagerDriver",
-        "extensions::StashService",
-        "metrics::mojom::LeakDetector",
-        "rappor::mojom::RapporRecorder",
-        "startup_metric_utils::mojom::StartupMetricHost",
-        "translate::mojom::ContentTranslateDriver"
-      ],
-      "gpu": [
-        "metrics::mojom::CallStackProfileCollector"
-      ],
-      "ash": [
-        "ash::mojom::LocaleNotificationController",
-        "ash::mojom::ShelfController",
-        "ash::mojom::SystemTray",
-        "ash::mojom::SystemTrayClient",
-        "ash::mojom::WallpaperController",
-        "ash::mojom::WallpaperManager"
-      ],
-      "mash:launchable": [
-        "mash::mojom::Launchable"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "renderer": [
+          "autofill::mojom::AutofillDriver",
+          "autofill::mojom::PasswordManagerDriver",
+          "extensions::StashService",
+          "metrics::mojom::LeakDetector",
+          "rappor::mojom::RapporRecorder",
+          "startup_metric_utils::mojom::StartupMetricHost",
+          "translate::mojom::ContentTranslateDriver"
+        ],
+        "gpu": [
+          "metrics::mojom::CallStackProfileCollector"
+        ],
+        "ash": [
+          "ash::mojom::LocaleNotificationController",
+          "ash::mojom::ShelfController",
+          "ash::mojom::SystemTray",
+          "ash::mojom::SystemTrayClient",
+          "ash::mojom::WallpaperController",
+          "ash::mojom::WallpaperManager"
+        ],
+        "mash:launchable": [
+          "mash::mojom::Launchable"
+        ]
+      }
     }
   }
 }

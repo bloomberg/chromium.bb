@@ -1,11 +1,12 @@
 {
-  "manifest_version":  1,
   "name": "exe:media_mojo_shell_unittests",
   "display_name": "Media Mojo Shell Unittests",
-  "capabilities": {
-    "required": {
-      "*": [ "app" ],
-      "service:media": [ "media:service_factory" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "*": [ "app" ],
+        "service:media": [ "media:service_factory" ]
+      }
     }
   }
 }

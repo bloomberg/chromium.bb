@@ -1,15 +1,16 @@
 {
-  "manifest_version":  1,
   "name": "service:connect_test_package",
   "display_name": "Connect Test Package",
-  "capabilities": {
-    "provided": {
-      "connect_unittests:connect_test_service": [
-        "service_manager::test::mojom::ConnectTestService"
-      ],
-      "service_manager:service_factory": [
-        "service_manager::mojom::ServiceFactory"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "connect_unittests:connect_test_service": [
+          "service_manager::test::mojom::ConnectTestService"
+        ],
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      }
     }
   }
 }

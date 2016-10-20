@@ -1,10 +1,11 @@
 {
-  "manifest_version":  1,
   "name": "exe:video_capture_unittests",
   "display_name": "Video Capture Unittests",
-  "capabilities": {
-    "required": {
-      "service:video_capture": [ "tests" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "service:video_capture": [ "tests" ]
+      }
     }
   }
 }

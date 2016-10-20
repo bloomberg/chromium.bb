@@ -1,13 +1,14 @@
 {
-  "manifest_version":  1,
   "name": "service:video_capture",
   "display_name": "Video Capture",
-  "capabilities": {
-    "provided": {
-      "tests": ["*"]
-    },
-    "required": {
-      "service:service_manager": [ "service_manager:all_users" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "tests": [ "*" ]
+      },
+      "requires": {
+        "service:service_manager": [ "service_manager:all_users" ]
+      }
     }
   }
 }

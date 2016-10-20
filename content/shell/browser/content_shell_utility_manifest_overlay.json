@@ -1,10 +1,12 @@
 {
   "name": "service:content_utility",
-  "capabilities": {
-    "provided": {
-      "browser": [
-        "content::mojom::TestService"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "browser": [
+          "content::mojom::TestService"
+        ]
+      }
     }
   }
 }

@@ -54,7 +54,8 @@ def MergeDicts(left, right):
 
 
 def MergeManifestOverlay(manifest, overlay):
-  MergeDicts(manifest["capabilities"], overlay["capabilities"])
+  MergeDicts(manifest["interface_provider_specs"],
+             overlay["interface_provider_specs"])
 
   if "services" in overlay:
     if "services" not in manifest:

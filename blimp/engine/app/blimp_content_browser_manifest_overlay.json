@@ -1,10 +1,12 @@
 {
   "name": "service:content_browser",
-  "capabilities": {
-    "provided": {
-      "renderer": [
-        "blimp::engine::mojom::BlobChannel"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "renderer": [
+          "blimp::engine::mojom::BlobChannel"
+        ]
+      }
     }
   }
 }

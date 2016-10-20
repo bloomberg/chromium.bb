@@ -1,15 +1,16 @@
 {
-  "manifest_version":  1,
   "name": "service:lifecycle_unittest_parent",
   "display_name": "Lifecycle Unittest Parent",
-  "capabilities": {
-    "provided": {
-      "lifecycle_unittest:parent": [ "service_manager::test::mojom::Parent" ]
-    },
-    "required": {
-      "service:lifecycle_unittest_app": [
-        "lifecycle_unittest:lifecycle_control"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "lifecycle_unittest:parent": [ "service_manager::test::mojom::Parent" ]
+      },
+      "requires": {
+        "service:lifecycle_unittest_app": [
+          "lifecycle_unittest:lifecycle_control"
+        ]
+      }
     }
   }
 }

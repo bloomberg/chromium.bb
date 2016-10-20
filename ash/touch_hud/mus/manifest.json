@@ -1,12 +1,13 @@
 {
-  "manifest_version":  1,
   "name": "service:touch_hud",
   "display_name": "Touch Hud",
-  "capabilities": {
-    "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },
-    "required": {
-      "*": [ "app" ],
-      "service:service_manager": [ "service_manager:service_manager" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
+      "requires": {
+        "*": [ "app" ],
+        "service:service_manager": [ "service_manager:service_manager" ]
+      }
     }
   }
 }

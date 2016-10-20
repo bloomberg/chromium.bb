@@ -1,6 +1,5 @@
 {
-  "manifest_version":  1,
   "name": "service:foo",
   "display_name": "Foo",
-  "capabilities": { }
+  "interface_provider_specs": { }
 }

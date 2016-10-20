@@ -1,11 +1,13 @@
 {
   "name": "service:content_gpu",
-  "capabilities": {
-    "provided": {
-      "browser": [
-        "arc::mojom::VideoAcceleratorService",
-        "arc::mojom::VideoAcceleratorServiceClient"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "browser": [
+          "arc::mojom::VideoAcceleratorService",
+          "arc::mojom::VideoAcceleratorServiceClient"
+        ]
+      }
     }
   }
 }

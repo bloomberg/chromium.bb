@@ -1,16 +1,17 @@
 {
-  "manifest_version":  1,
   "name": "service:lifecycle_unittest_package",
   "process-group": "package",
   "display_name": "Lifecycle Unittest Package",
-  "capabilities": {
-    "provided": {
-      "lifecycle_unittest:lifecycle_control": [
-        "service_manager::test::mojom::LifecycleControl"
-      ],
-      "service_manager:service_factory": [
-        "service_manager::mojom::ServiceFactory"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "lifecycle_unittest:lifecycle_control": [
+          "service_manager::test::mojom::LifecycleControl"
+        ],
+        "service_manager:service_factory": [
+          "service_manager::mojom::ServiceFactory"
+        ]
+      }
     }
   }
 }

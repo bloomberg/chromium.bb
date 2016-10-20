@@ -1,12 +1,13 @@
 {
-  "manifest_version":  1,
   "name": "exe:connect_test_driver",
   "display_name": "Connect Test Driver",
-  "capabilities": {
-    "provided": {
-      "connect_unittests:client_process_test": [
-        "service_manager::test::mojom::ClientProcessTest"
-      ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "connect_unittests:client_process_test": [
+          "service_manager::test::mojom::ClientProcessTest"
+        ]
+      }
     }
   }
 }

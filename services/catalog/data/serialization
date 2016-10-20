@@ -1,15 +1,16 @@
 {
-  "manifest_version": 1,
   "name": "service:foo",
   "display_name": "Foo",
   "process-group": "bar",
-  "capabilities": {
-    "provided": {
-      "foo": ["mojo::Bar", "mojo::Baz"],
-      "bar": ["mojo::Bork"]
-    },
-    "required": {
-      "service:bar":["a", "b"]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "foo": [ "mojo::Bar", "mojo::Baz" ],
+        "bar": [ "mojo::Bork" ]
+      },
+      "requires": {
+        "service:bar": [ "a", "b" ]
+      }
     }
   }
 }

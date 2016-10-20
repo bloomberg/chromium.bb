@@ -1,6 +1,5 @@
 {
-  "manifest_version":  1,
   "name": "service:connect_test_b",
   "display_name": "Connect Test B",
-  "capabilities": { }
+  "interface_provider_specs": { }
 }

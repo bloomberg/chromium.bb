@@ -1,15 +1,16 @@
 {
-  "manifest_version":  1,
   "name": "service:shutdown_service",
   "display_name": "Shutdown Service",
-  "capabilities": {
-    "provided": {
-      "shutdown_unittest:shutdown_test_service": [
-        "service_manager::mojom::ShutdownTestService"
-      ]
-    },
-    "required": {
-      "service:service_manager": [ "service_manager:service_manager" ]
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "shutdown_unittest:shutdown_test_service": [
+          "service_manager::mojom::ShutdownTestService"
+        ]
+      },
+      "requires": {
+        "service:service_manager": [ "service_manager:service_manager" ]
+      }
     }
   }
 }

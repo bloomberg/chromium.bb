@@ -4,6 +4,7 @@
 
 #include "services/catalog/entry.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "services/catalog/store.h"
 #include "services/service_manager/public/cpp/names.h"
@@ -35,7 +36,7 @@ bool ReadStringSetFromValue(const base::Value& value,
   return ReadStringSet(*list_value, string_set);
 }
 
-bool BuildInterfaceProviderSpecs(
+bool BuildInterfaceProviderSpec(
     const base::DictionaryValue& value,
     service_manager::InterfaceProviderSpec* interface_provider_specs) {
   DCHECK(interface_provider_specs);
@@ -103,51 +104,43 @@ Entry::Entry(const std::string& name)
 Entry::~Entry() {}
 
 std::unique_ptr<base::DictionaryValue> Entry::Serialize() const {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetInteger(Store::kManifestVersionKey, 1);
+  auto value = base::MakeUnique<base::DictionaryValue>();
   value->SetString(Store::kNameKey, name_);
   value->SetString(Store::kDisplayNameKey, display_name_);
   value->SetString(Store::kQualifierKey, qualifier_);
-  std::unique_ptr<base::DictionaryValue> spec(new base::DictionaryValue);
 
-  std::unique_ptr<base::DictionaryValue> provides(new base::DictionaryValue);
+  auto specs = base::MakeUnique<base::DictionaryValue>();
+  auto connection_spec = base::MakeUnique<base::DictionaryValue>();
+
+  auto provides = base::MakeUnique<base::DictionaryValue>();
   for (const auto& i : connection_spec_.provides) {
-    std::unique_ptr<base::ListValue> interfaces(new base::ListValue);
+    auto interfaces = base::MakeUnique<base::ListValue>();
     for (const auto& interface_name : i.second)
       interfaces->AppendString(interface_name);
     provides->Set(i.first, std::move(interfaces));
   }
-  spec->Set(Store::kInterfaceProviderSpecs_ProvidesKey, std::move(provides));
+  connection_spec->Set(Store::kInterfaceProviderSpecs_ProvidesKey,
+                       std::move(provides));
 
-  std::unique_ptr<base::DictionaryValue> requires(new base::DictionaryValue);
+  auto requires = base::MakeUnique<base::DictionaryValue>();
   for (const auto& i : connection_spec_.requires) {
-    std::unique_ptr<base::ListValue> capabilities(new base::ListValue);
+    auto capabilities = base::MakeUnique<base::ListValue>();
     for (const auto& class_name : i.second)
       capabilities->AppendString(class_name);
     requires->Set(i.first, std::move(capabilities));
   }
-  spec->Set(Store::kInterfaceProviderSpecs_RequiresKey, std::move(requires));
+  connection_spec->Set(Store::kInterfaceProviderSpecs_RequiresKey,
+                       std::move(requires));
 
-  value->Set(Store::kInterfaceProviderSpecsKey, std::move(spec));
+  specs->Set(Store::kInterfaceProvider_ConnectionSpecKey,
+             std::move(connection_spec));
+  value->Set(Store::kInterfaceProviderSpecsKey, std::move(specs));
   return value;
 }
 
 // static
 std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
-  std::unique_ptr<Entry> entry(new Entry);
-
-  // Manifest version.
-  int manifest_version = 0;
-  if (!value.GetInteger(Store::kManifestVersionKey, &manifest_version)) {
-    LOG(ERROR) << "Entry::Deserialize: " << Store::kManifestVersionKey
-               << " must be an integer.";
-    return nullptr;
-  }
-  if (manifest_version != 1) {
-    LOG(ERROR) << "Entry::Deserialize: Unsupported value of "
-               << Store::kManifestVersionKey << ":" << manifest_version;
-    return nullptr;
-  }
+  auto entry = base::MakeUnique<Entry>();
 
   // Name.
   std::string name_string;
@@ -194,13 +187,17 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     return nullptr;
   }
 
-  service_manager::InterfaceProviderSpec spec;
-  if (!BuildInterfaceProviderSpecs(*interface_provider_specs, &spec)) {
-    LOG(ERROR) << "Entry::Deserialize: failed to build InterfaceProvider spec "
-               << "for " << entry->name();
-    return nullptr;
+  const base::DictionaryValue* connection_spec = nullptr;
+  if (interface_provider_specs->GetDictionary(
+      Store::kInterfaceProvider_ConnectionSpecKey, &connection_spec)) {
+    service_manager::InterfaceProviderSpec spec;
+    if (!BuildInterfaceProviderSpec(*connection_spec, &spec)) {
+      LOG(ERROR) << "Entry::Deserialize: failed to build InterfaceProvider "
+        << "spec for " << entry->name();
+      return nullptr;
+    }
+    entry->set_connection_spec(spec);
   }
-  entry->set_connection_spec(spec);
 
   if (value.HasKey(Store::kServicesKey)) {
     const base::ListValue* services = nullptr;

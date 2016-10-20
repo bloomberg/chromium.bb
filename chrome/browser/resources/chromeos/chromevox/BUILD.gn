@@ -544,7 +544,6 @@ test("chromevox_tests") {
     "//chrome/test:test_support_ui",
     "//content/test:test_support",
     "//services/service_manager/background:lib",
-    "//services/service_manager/background/tests:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/keyboard:resources",
