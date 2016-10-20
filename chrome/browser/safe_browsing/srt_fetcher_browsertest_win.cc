@@ -24,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 namespace safe_browsing {
@@ -312,8 +313,7 @@ class SRTFetcherTest : public InProcessBrowserTest,
     ASSERT_NE(browser, nullptr);
     Profile* profile = browser->profile();
     ASSERT_NE(profile, nullptr);
-    profile->GetPrefs()->SetBoolean(
-        prefs::kSafeBrowsingExtendedReportingEnabled, true);
+    profile->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(), true);
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

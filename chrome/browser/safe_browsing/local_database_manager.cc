@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -893,9 +894,8 @@ bool LocalSafeBrowsingDatabaseManager::GetExtendedReporting() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager) {
     Profile* profile = profile_manager->GetLastUsedProfile();
-    is_extended_reporting = profile &&
-                            profile->GetPrefs()->GetBoolean(
-                                prefs::kSafeBrowsingExtendedReportingEnabled);
+    is_extended_reporting =
+        profile && IsExtendedReportingEnabled(*profile->GetPrefs());
   }
   return is_extended_reporting;
 }

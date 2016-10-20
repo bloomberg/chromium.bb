@@ -34,7 +34,6 @@
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
@@ -42,6 +41,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/page_navigator.h"
@@ -518,9 +518,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
   void SetExtendedReportingPreference(bool is_extended_reporting) {
-    profile_->GetPrefs()->SetBoolean(
-        prefs::kSafeBrowsingExtendedReportingEnabled,
-        is_extended_reporting);
+    profile_->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(),
+                                     is_extended_reporting);
   }
 
   // Check scenarios where we should/shouldn't send a report for

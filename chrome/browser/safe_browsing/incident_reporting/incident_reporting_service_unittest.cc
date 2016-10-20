@@ -34,6 +34,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/quota_service.h"
@@ -267,7 +268,7 @@ class IncidentReportingServiceTest : public testing::Test {
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
                       safe_browsing_opt_in != SAFE_BROWSING_OPT_OUT);
-    prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+    prefs->SetBoolean(safe_browsing::GetExtendedReportingPrefName(),
                       safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
     if (incidents_sent)
       prefs->Set(prefs::kSafeBrowsingIncidentsSent, *incidents_sent);
@@ -814,7 +815,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
 
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
+  profile->GetPrefs()->SetBoolean(safe_browsing::GetExtendedReportingPrefName(),
                                   true);
 
   // Add a variation on the incident to the service.

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
@@ -185,5 +186,5 @@ PrefService* ChromeControllerClient::GetPrefService() {
 }
 
 const std::string ChromeControllerClient::GetExtendedReportingPrefName() {
-  return prefs::kSafeBrowsingExtendedReportingEnabled;
+  return safe_browsing::GetExtendedReportingPrefName();
 }

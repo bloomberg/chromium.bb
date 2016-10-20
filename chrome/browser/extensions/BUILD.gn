@@ -859,6 +859,7 @@ static_library("extensions") {
     "//components/rappor",
     "//components/resources",
     "//components/safe_browsing_db:database_manager",
+    "//components/safe_browsing_db:safe_browsing_prefs",
     "//components/safe_json",
     "//components/search_engines",
     "//components/sessions",
