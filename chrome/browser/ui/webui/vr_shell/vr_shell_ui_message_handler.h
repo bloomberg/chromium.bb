@@ -22,9 +22,12 @@ class VrShellUIMessageHandler : public content::WebUIMessageHandler {
   VrShellUIMessageHandler();
   ~VrShellUIMessageHandler() override;
 
+  void SendCommandToUi(const base::Value& value);
+
  private:
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
 
   void HandleDomLoaded(const base::ListValue* args);
   void HandleUpdateScene(const base::ListValue* args);

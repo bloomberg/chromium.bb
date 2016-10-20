@@ -28,6 +28,7 @@ class WindowAndroid;
 
 namespace vr_shell {
 
+class UiInterface;
 class UiScene;
 class VrCompositor;
 class VrController;
@@ -79,6 +80,7 @@ class VrShell : public device::GvrDelegate {
   static base::WeakPtr<VrShell> GetWeakPtr(
       const content::WebContents* web_contents);
   UiScene* GetScene();
+  UiInterface* GetUiInterface();
   void OnDomContentsLoaded();
 
   // device::GvrDelegate implementation
@@ -141,6 +143,7 @@ class VrShell : public device::GvrDelegate {
   float desktop_height_;
 
   std::unique_ptr<UiScene> scene_;
+  std::unique_ptr<UiInterface> html_interface_;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;

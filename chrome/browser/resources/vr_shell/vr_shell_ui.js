@@ -112,8 +112,12 @@ var vrShellUi = (function() {
     api.domLoaded();
   }
 
+  function command(dict) {
+  }
+
   return {
     initialize: initialize,
+    command: command,
   };
 })();
 

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
@@ -142,6 +143,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
   scene_.reset(new UiScene);
+  html_interface_.reset(new UiInterface);
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
 
@@ -749,6 +751,7 @@ void VrShell::OnDomContentsLoaded() {
   // should fix.
   ui_contents_->GetRenderWidgetHostView()->SetBackgroundColor(
       SK_ColorTRANSPARENT);
+  html_interface_->OnDomContentsLoaded();
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,
@@ -810,6 +813,10 @@ void VrShell::UiSurfaceChanged(JNIEnv* env,
 
 UiScene* VrShell::GetScene() {
   return scene_.get();
+}
+
+UiInterface* VrShell::GetUiInterface() {
+  return html_interface_.get();
 }
 
 void VrShell::QueueTask(base::Callback<void()>& callback) {

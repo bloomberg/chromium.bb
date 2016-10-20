@@ -16,6 +16,8 @@ static_library("vr_common") {
     "easing.h",
     "ui_elements.cc",
     "ui_elements.h",
+    "ui_interface.cc",
+    "ui_interface.h",
     "ui_scene.cc",
     "ui_scene.h",
     "vr_compositor.cc",
