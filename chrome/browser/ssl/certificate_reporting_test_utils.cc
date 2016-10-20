@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_reporting/error_report.h"
-#include "components/certificate_reporting/error_reporter.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/url_request/report_sender.h"
@@ -81,34 +80,7 @@ class MockSSLCertReporter : public SSLCertReporter {
 
 namespace certificate_reporting_test_utils {
 
-// This class is used to test invalid certificate chain reporting when
-// the user opts in to do so on the interstitial. It keeps track of the
-// most recent hostname for which an extended reporting report would
-// have been sent over the network.
-class CertificateReportingTest::MockReporter
-    : public certificate_reporting::ErrorReporter {
- public:
-  MockReporter(net::URLRequestContext* request_context,
-               const GURL& upload_url,
-               net::ReportSender::CookiesPreference cookies_preference);
-
-  // ErrorReporter implementation.
-  void SendExtendedReportingReport(
-      const std::string& serialized_report) override;
-
-  // Returns the hostname in the report for the last call to
-  // |SendReport|.
-  const std::string& latest_hostname_reported() {
-    return latest_hostname_reported_;
-  }
-
- private:
-  std::string latest_hostname_reported_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockReporter);
-};
-
-CertificateReportingTest::MockReporter::MockReporter(
+MockErrorReporter::MockErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
     net::ReportSender::CookiesPreference cookies_preference)
@@ -116,7 +88,7 @@ CertificateReportingTest::MockReporter::MockReporter(
                                            upload_url,
                                            cookies_preference) {}
 
-void CertificateReportingTest::MockReporter::SendExtendedReportingReport(
+void MockErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report) {
   certificate_reporting::ErrorReport report;
   ASSERT_TRUE(report.InitializeFromString(serialized_report));
@@ -126,12 +98,11 @@ void CertificateReportingTest::MockReporter::SendExtendedReportingReport(
 void CertificateReportingTest::SetUpMockReporter() {
   // Set up the mock reporter to track the hostnames that reports get
   // sent for. The request_context argument is null here
-  // because the MockReporter doesn't actually use a
+  // because the MockErrorReporter doesn't actually use a
   // request_context. (In order to pass a real request_context, the
   // reporter would have to be constructed on the IO thread.)
-  reporter_ = new CertificateReportingTest::MockReporter(
-      nullptr, GURL("http://example.test"),
-      net::ReportSender::DO_NOT_SEND_COOKIES);
+  reporter_ = new MockErrorReporter(nullptr, GURL("http://example.test"),
+                                    net::ReportSender::DO_NOT_SEND_COOKIES);
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service =
       g_browser_process->safe_browsing_service();

@@ -8,11 +8,15 @@
 #include <memory>
 #include <string>
 
-#include "chrome/test/base/in_process_browser_test.h"
+#include "components/certificate_reporting/error_reporter.h"
 
 class Browser;
 class GURL;
 class SSLCertReporter;
+
+namespace base {
+class RunLoop;
+}
 
 namespace net {
 class URLRequestContext;
@@ -24,9 +28,34 @@ enum OptIn { EXTENDED_REPORTING_OPT_IN, EXTENDED_REPORTING_DO_NOT_OPT_IN };
 
 enum ExpectReport { CERT_REPORT_EXPECTED, CERT_REPORT_NOT_EXPECTED };
 
+// This class is used to test invalid certificate chain reporting when
+// the user opts in to do so on the interstitial. It keeps track of the
+// most recent hostname for which an extended reporting report would
+// have been sent over the network.
+class MockErrorReporter : public certificate_reporting::ErrorReporter {
+ public:
+  MockErrorReporter(net::URLRequestContext* request_context,
+                    const GURL& upload_url,
+                    net::ReportSender::CookiesPreference cookies_preference);
+
+  // ErrorReporter implementation.
+  void SendExtendedReportingReport(
+      const std::string& serialized_report) override;
+
+  // Returns the hostname in the report for the last call to |SendReport|.
+  const std::string& latest_hostname_reported() {
+    return latest_hostname_reported_;
+  }
+
+ private:
+  std::string latest_hostname_reported_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockErrorReporter);
+};
+
 // A test class that tracks the latest hostname for which a certificate
 // report would have been sent over the network.
-class CertificateReportingTest : public InProcessBrowserTest {
+class CertificateReportingTest {
  public:
   // Set up the mock reporter that keeps track of certificate reports
   // that the safe browsing service sends.
@@ -38,8 +67,7 @@ class CertificateReportingTest : public InProcessBrowserTest {
   const std::string& GetLatestHostnameReported() const;
 
  private:
-  class MockReporter;
-  MockReporter* reporter_;
+  MockErrorReporter* reporter_;
 };
 
 // Sets the browser preference to enable or disable extended reporting.

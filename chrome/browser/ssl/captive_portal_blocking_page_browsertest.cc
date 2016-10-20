@@ -89,7 +89,8 @@ class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
 };
 
 class CaptivePortalBlockingPageTest
-    : public certificate_reporting_test_utils::CertificateReportingTest {
+    : public certificate_reporting_test_utils::CertificateReportingTest,
+      public InProcessBrowserTest {
  public:
   CaptivePortalBlockingPageTest() {}
 

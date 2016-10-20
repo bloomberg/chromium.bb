@@ -272,7 +272,8 @@ std::string EncodeQuery(const std::string& query) {
 }  // namespace
 
 class SSLUITest
-    : public certificate_reporting_test_utils::CertificateReportingTest {
+    : public certificate_reporting_test_utils::CertificateReportingTest,
+      public InProcessBrowserTest {
  public:
   SSLUITest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
