@@ -191,14 +191,15 @@ bool passesAccessControlCheck(const ResourceResponse& response,
       return true;
     if (response.isHTTP()) {
       errorDescription = buildAccessControlFailureMessage(
-          "A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' "
-          "header when the credentials flag is true.",
+          "The value of the 'Access-Control-Allow-Origin' header in the "
+          "response must not be the wildcard '*' when the request's "
+          "credentials mode is 'include'.",
           securityOrigin);
 
       if (context == WebURLRequest::RequestContextXMLHttpRequest) {
         errorDescription.append(
-            " The credentials mode of an XMLHttpRequest is controlled by the "
-            "withCredentials attribute.");
+            " The credentials mode of requests initiated by the "
+            "XMLHttpRequest is controlled by the withCredentials attribute.");
       }
 
       return false;
@@ -260,11 +261,19 @@ bool passesAccessControlCheck(const ResourceResponse& response,
         response.httpHeaderField(allowCredentialsHeaderName);
     if (allowCredentialsHeaderValue != "true") {
       errorDescription = buildAccessControlFailureMessage(
-          "Credentials flag is 'true', but the "
-          "'Access-Control-Allow-Credentials' header is '" +
+          "The value of the 'Access-Control-Allow-Credentials' header in "
+          "the response is '" +
               allowCredentialsHeaderValue +
-              "'. It must be 'true' to allow credentials.",
+              "' which must "
+              "be 'true' when the request's credentials mode is 'include'.",
           securityOrigin);
+
+      if (context == WebURLRequest::RequestContextXMLHttpRequest) {
+        errorDescription.append(
+            " The credentials mode of requests initiated by the "
+            "XMLHttpRequest is controlled by the withCredentials attribute.");
+      }
+
       return false;
     }
   }

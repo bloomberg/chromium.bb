@@ -1,4 +1,4 @@
-CONSOLE ERROR: XMLHttpRequest cannot load http://127.0.0.1:8000/xmlhttprequest/resources/access-control-basic-allow-access-control-origin-header.cgi. Response to preflight request doesn't pass access control check: A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin 'http://127.0.0.1:8000' is therefore not allowed access. The credentials mode of an XMLHttpRequest is controlled by the withCredentials attribute.
+CONSOLE ERROR: XMLHttpRequest cannot load http://127.0.0.1:8000/xmlhttprequest/resources/access-control-basic-allow-access-control-origin-header.cgi. Response to preflight request doesn't pass access control check: The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'. Origin 'http://127.0.0.1:8000' is therefore not allowed access. The credentials mode of requests initiated by the XMLHttpRequest is controlled by the withCredentials attribute.
 Test for bug 4343: XMLHttpRequest doesn't work in a JavaScript-created window.
 
 SUCCESS
