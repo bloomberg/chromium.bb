@@ -505,9 +505,10 @@ void SelectionController::selectClosestWordOrLinkFromMouseEvent(
   const VisiblePositionInFlatTree pos =
       visiblePositionOfHitTestResult(result.hitTestResult());
   if (pos.isNotNull() &&
-      pos.deepEquivalent().anchorNode()->isDescendantOf(URLElement))
-    newSelection =
-        VisibleSelectionInFlatTree::selectionFromContentsOfNode(URLElement);
+      pos.deepEquivalent().anchorNode()->isDescendantOf(URLElement)) {
+    newSelection = createVisibleSelection(
+        SelectionInFlatTree::Builder().selectAllChildren(*URLElement).build());
+  }
 
   updateSelectionForMouseDownDispatchingSelectStart(
       innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection),

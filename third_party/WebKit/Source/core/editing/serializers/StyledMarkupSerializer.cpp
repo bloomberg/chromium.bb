@@ -160,7 +160,8 @@ static bool areSameRanges(Node* node,
                           const PositionTemplate<Strategy>& endPosition) {
   DCHECK(node);
   const EphemeralRange range =
-      VisibleSelection::selectionFromContentsOfNode(node)
+      createVisibleSelection(
+          SelectionInDOMTree::Builder().selectAllChildren(*node).build())
           .toNormalizedEphemeralRange();
   return toPositionInDOMTree(startPosition) == range.startPosition() &&
          toPositionInDOMTree(endPosition) == range.endPosition();

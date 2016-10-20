@@ -1242,7 +1242,8 @@ void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode,
 
   DCHECK(anchorNode->isLink()) << anchorNode;
 
-  setEndingSelection(VisibleSelection::selectionFromContentsOfNode(anchorNode));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder().selectAllChildren(*anchorNode).build()));
   applyStyledElement(anchorNode, editingState);
   if (editingState->isAborted())
     return;

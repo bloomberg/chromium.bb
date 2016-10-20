@@ -46,6 +46,9 @@ class CORE_EXPORT SelectionTemplate final {
     // document.
     Builder& extend(const PositionTemplate<Strategy>& extent);
 
+    // Select all children in |node|.
+    Builder& selectAllChildren(const Node& /* node */);
+
     Builder& setBaseAndExtent(const EphemeralRangeTemplate<Strategy>&);
 
     // |extent| can not be null if |base| isn't null.

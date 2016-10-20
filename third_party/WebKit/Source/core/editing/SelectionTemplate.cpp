@@ -185,6 +185,14 @@ SelectionTemplate<Strategy>::Builder::extend(
 
 template <typename Strategy>
 typename SelectionTemplate<Strategy>::Builder&
+SelectionTemplate<Strategy>::Builder::selectAllChildren(const Node& node) {
+  DCHECK(node.canContainRangeEndPoint()) << node;
+  return setBaseAndExtent(
+      EphemeralRangeTemplate<Strategy>::rangeOfContents(node));
+}
+
+template <typename Strategy>
+typename SelectionTemplate<Strategy>::Builder&
 SelectionTemplate<Strategy>::Builder::setAffinity(TextAffinity affinity) {
   m_selection.m_affinity = affinity;
   return *this;

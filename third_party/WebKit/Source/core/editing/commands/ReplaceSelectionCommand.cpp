@@ -233,7 +233,8 @@ ReplacementFragment::ReplacementFragment(Document* document,
   }
 
   const EphemeralRange range =
-      VisibleSelection::selectionFromContentsOfNode(holder)
+      createVisibleSelection(
+          SelectionInDOMTree::Builder().selectAllChildren(*holder).build())
           .toNormalizedEphemeralRange();
   String text = plainText(range, static_cast<TextIteratorBehavior>(
                                      TextIteratorEmitsOriginalText |

@@ -1102,7 +1102,7 @@ bool DragController::startDrag(LocalFrame* src,
       // the enclosing anchor element
       if (Node* node = enclosingAnchorElement(src->selection().base())) {
         src->selection().setSelection(
-            VisibleSelection::selectionFromContentsOfNode(node));
+            SelectionInDOMTree::Builder().selectAllChildren(*node).build());
       }
     }
 

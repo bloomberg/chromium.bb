@@ -217,8 +217,8 @@ void SpellChecker::didBeginEditing(Element* element) {
       return;
     // We always recheck textfields because markers are removed from them on
     // blur.
-    VisibleSelection selection =
-        VisibleSelection::selectionFromContentsOfNode(element);
+    const VisibleSelection selection = createVisibleSelection(
+        SelectionInDOMTree::Builder().selectAllChildren(*element).build());
     markMisspellingsAndBadGrammar(selection);
     if (!isTextField)
       parent->setAlreadySpellChecked(true);

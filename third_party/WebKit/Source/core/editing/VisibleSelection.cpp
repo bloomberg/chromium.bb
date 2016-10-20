@@ -168,19 +168,6 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
 }
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy>
-VisibleSelectionTemplate<Strategy>::selectionFromContentsOfNode(Node* node) {
-  DCHECK(node);
-  DCHECK(!Strategy::editingIgnoresContent(node));
-  DCHECK(!needsLayoutTreeUpdate(*node));
-
-  typename SelectionTemplate<Strategy>::Builder builder;
-  builder.collapse(PositionTemplate<Strategy>::firstPositionInNode(node))
-      .extend(PositionTemplate<Strategy>::lastPositionInNode(node));
-  return VisibleSelectionTemplate::create(builder.build());
-}
-
-template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(
     const PositionTemplate<Strategy>& position) {
   DCHECK(!needsLayoutTreeUpdate(position));
