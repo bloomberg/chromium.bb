@@ -131,13 +131,13 @@ class CleanUpStage(generic_stages.BuilderStage):
           buildbucket_ids.extend(ids)
 
       if buildbucket_ids:
+        # Only enable cancellation when debug is False and cidb is in Prod mode
+        cancel_dryrun = self._run.options.debug or not self._run.InProduction()
         logging.info('Going to cancel buildbucket_ids: %s', buildbucket_ids)
-        # TODO: set dryrun to True for now to prevent it from cancelling builds,
-        # should set it back to options.debug after confirming it works on prod.
         cancel_content = buildbucket_client.CancelBatchBuildsRequest(
             buildbucket_ids,
             self._run.options.test_tryjob,
-            dryrun=True)
+            dryrun=cancel_dryrun)
 
         result_map = buildbucket_lib.GetResultMap(cancel_content)
         for build_id, result in result_map.iteritems():
@@ -192,11 +192,9 @@ class CleanUpStage(generic_stages.BuilderStage):
       else:
         tasks.append(self._CleanChroot)
 
-      # Only enable CancelObsoleteSlaveBuilds on the master-paladin
-      # in the production mode, it checks for builds in ChromiumOs
-      # and ChromeOs waterfalls.
-      if (self._run.config.name == constants.CQ_MASTER and
-          self._run.InProduction()):
+      # Only enable CancelObsoleteSlaveBuilds on the master-paladin,
+      # it checks for builds in ChromiumOs and ChromeOs waterfalls.
+      if self._run.config.name == constants.CQ_MASTER:
         tasks.append(self.CancelObsoleteSlaveBuilds)
 
       parallel.RunParallelSteps(tasks)
