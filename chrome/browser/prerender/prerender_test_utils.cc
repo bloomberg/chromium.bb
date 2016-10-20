@@ -250,23 +250,6 @@ TestPrerenderContents::~TestPrerenderContents() {
   EXPECT_EQ(should_be_shown_, was_shown_);
 }
 
-void TestPrerenderContents::RenderProcessGone(base::TerminationStatus status) {
-  // On quit, it's possible to end up here when render processes are closed
-  // before the PrerenderManager is destroyed.  As a result, it's possible to
-  // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
-  // on quit.
-  //
-  // It's also possible for this to be called after we've been notified of
-  // app termination, but before we've been deleted, which is why the second
-  // check is needed.
-  if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING &&
-      final_status() != expected_final_status_) {
-    expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
-  }
-
-  PrerenderContents::RenderProcessGone(status);
-}
-
 bool TestPrerenderContents::CheckURL(const GURL& url) {
   // Prevent FINAL_STATUS_UNSUPPORTED_SCHEME when navigating to about:crash in
   // the PrerenderRendererCrash test.

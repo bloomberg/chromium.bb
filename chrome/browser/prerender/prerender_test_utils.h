@@ -105,7 +105,6 @@ class TestPrerenderContents : public PrerenderContents {
 
   ~TestPrerenderContents() override;
 
-  void RenderProcessGone(base::TerminationStatus status) override;
   bool CheckURL(const GURL& url) override;
 
   // For tests that open the prerender in a new background tab, the RenderView

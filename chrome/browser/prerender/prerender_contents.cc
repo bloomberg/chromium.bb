@@ -529,6 +529,11 @@ bool PrerenderContents::Matches(
 }
 
 void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
+  if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
+    // The renderer process is being killed because of the browser/test
+    // shutdown, before the termination notification is received.
+    Destroy(FINAL_STATUS_APP_TERMINATING);
+  }
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 
