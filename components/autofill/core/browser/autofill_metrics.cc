@@ -258,10 +258,16 @@ void AutofillMetrics::LogCardUploadDecisionMetric(
 }
 
 // static
-void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
+void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric,
+                                                 bool is_uploading) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar", metric,
-                            NUM_INFO_BAR_METRICS);
+  if (is_uploading) {
+    UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar.Server", metric,
+                              NUM_INFO_BAR_METRICS);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar.Local", metric,
+                              NUM_INFO_BAR_METRICS);
+  }
 }
 
 // static

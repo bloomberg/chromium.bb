@@ -43,7 +43,8 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
   if (legal_message)
     LegalMessageLine::Parse(*legal_message, &legal_messages_);
 
-  AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
+  AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN,
+                                              upload_);
 }
 
 AutofillSaveCardInfoBarDelegateMobile::
@@ -120,7 +121,7 @@ void AutofillSaveCardInfoBarDelegateMobile::LogUserAction(
     AutofillMetrics::InfoBarMetric user_action) {
   DCHECK(!had_user_interaction_);
 
-  AutofillMetrics::LogCreditCardInfoBarMetric(user_action);
+  AutofillMetrics::LogCreditCardInfoBarMetric(user_action, upload_);
   had_user_interaction_ = true;
 }
 

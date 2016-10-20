@@ -54,7 +54,7 @@ class AutofillSaveCardInfoBarDelegateMobileTest
   void TearDown() override;
 
  protected:
-  std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate();
+  std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate(bool is_uploading);
 
   std::unique_ptr<TestPersonalDataManager> personal_data_;
 
@@ -88,63 +88,119 @@ void AutofillSaveCardInfoBarDelegateMobileTest::TearDown() {
 }
 
 std::unique_ptr<ConfirmInfoBarDelegate>
-AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate() {
+AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate(bool is_uploading) {
   base::HistogramTester histogram_tester;
   CreditCard credit_card;
   std::unique_ptr<base::DictionaryValue> legal_message;
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
-          false, credit_card, std::move(legal_message),
+          is_uploading, credit_card, std::move(legal_message),
           base::Bind(base::IgnoreResult(
                          &TestPersonalDataManager::SaveImportedCreditCard),
                      base::Unretained(personal_data_.get()), credit_card)));
-  histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
+  std::string destination = is_uploading ? ".Server" : ".Local";
+  histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar"
+                                          + destination,
                                       AutofillMetrics::INFOBAR_SHOWN, 1);
   return delegate;
 }
 
-// Test that credit card infobar metrics are logged correctly.
-TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics) {
+// Test that local credit card save infobar metrics are logged correctly.
+TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Local) {
   ::testing::InSequence dummy;
 
   // Accept the infobar.
   {
-    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ false));
     EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Accept());
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
                                         AutofillMetrics::INFOBAR_ACCEPTED, 1);
   }
 
   // Cancel the infobar.
   {
-    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ false));
 
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(infobar->Cancel());
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
                                         AutofillMetrics::INFOBAR_DENIED, 1);
   }
 
   // Dismiss the infobar.
   {
-    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ false));
 
     base::HistogramTester histogram_tester;
     infobar->InfoBarDismissed();
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
                                         AutofillMetrics::INFOBAR_DENIED, 1);
   }
 
   // Ignore the infobar.
   {
-    std::unique_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate());
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ false));
 
     base::HistogramTester histogram_tester;
     infobar.reset();
-    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Local",
+                                        AutofillMetrics::INFOBAR_IGNORED, 1);
+  }
+}
+
+// Test that server credit card save infobar metrics are logged correctly.
+TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics_Server) {
+  ::testing::InSequence dummy;
+
+  // Accept the infobar.
+  {
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ true));
+    EXPECT_CALL(*personal_data_, SaveImportedCreditCard(_));
+
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(infobar->Accept());
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
+                                        AutofillMetrics::INFOBAR_ACCEPTED, 1);
+  }
+
+  // Cancel the infobar.
+  {
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ true));
+
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(infobar->Cancel());
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
+                                        AutofillMetrics::INFOBAR_DENIED, 1);
+  }
+
+  // Dismiss the infobar.
+  {
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ true));
+
+    base::HistogramTester histogram_tester;
+    infobar->InfoBarDismissed();
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
+                                        AutofillMetrics::INFOBAR_DENIED, 1);
+  }
+
+  // Ignore the infobar.
+  {
+    std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+        CreateDelegate(/* is_uploading= */ true));
+
+    base::HistogramTester histogram_tester;
+    infobar.reset();
+    histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar.Server",
                                         AutofillMetrics::INFOBAR_IGNORED, 1);
   }
 }
