@@ -12,8 +12,6 @@ import android.os.Looper;
 import android.os.StrictMode;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.json.JSONObject;
-
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
@@ -23,6 +21,7 @@ import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -281,8 +280,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testRealTimeNetworkQualityObservationsQuicDisabled() throws Exception {
         CronetEngine.Builder mCronetEngineBuilder = new CronetEngine.Builder(getContext());
-        assert RttThroughputValues.INVALID_RTT_THROUGHPUT < 0;
-
         Executor listenersExecutor = Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
         ConditionVariable waitForThroughput = new ConditionVariable();
         TestNetworkQualityRttListener rttListener =
@@ -332,22 +329,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // effective connection type is correctly set.
         assertTrue(testFramework.mCronetEngine.getEffectiveConnectionType()
                 != EffectiveConnectionType.TYPE_UNKNOWN);
-
-        // Verify that the HTTP RTT, transport RTT and downstream throughput
-        // estimates are available.
-        if (testFramework.mCronetEngine.getEffectiveConnectionType()
-                != EffectiveConnectionType.TYPE_OFFLINE) {
-            assertTrue(testFramework.mCronetEngine.getHttpRttMs() > 0);
-            assertTrue(testFramework.mCronetEngine.getTransportRttMs() > 0);
-            assertTrue(testFramework.mCronetEngine.getDownstreamThroughputKbps() > 0);
-        } else {
-            assertEquals(RttThroughputValues.INVALID_RTT_THROUGHPUT,
-                    testFramework.mCronetEngine.getHttpRttMs());
-            assertEquals(RttThroughputValues.INVALID_RTT_THROUGHPUT,
-                    testFramework.mCronetEngine.getTransportRttMs());
-            assertEquals(RttThroughputValues.INVALID_RTT_THROUGHPUT,
-                    testFramework.mCronetEngine.getDownstreamThroughputKbps());
-        }
 
         testFramework.mCronetEngine.shutdown();
     }

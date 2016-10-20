@@ -34,12 +34,6 @@ java_cpp_enum("effective_connection_type_java") {
   ]
 }
 
-java_cpp_enum("rtt_throughput_values_java") {
-  sources = [
-    "//net/nqe/network_quality.h",
-  ]
-}
-
 java_cpp_enum("chromium_url_request_java") {
   sources = [
     "chromium_url_request.h",
@@ -72,7 +66,6 @@ android_library("cronet_javadoc_classpath") {
   ]
   srcjar_deps = [
     ":effective_connection_type_java",
-    ":rtt_throughput_values_java",
     ":url_request_error_java",
   ]
 }
@@ -315,7 +308,6 @@ android_library("cronet_api") {
   srcjar_deps = [
     ":cronet_api_version_srcjar",
     ":effective_connection_type_java",
-    ":rtt_throughput_values_java",
     ":http_cache_type_java",
     ":url_request_error_java",
     ":load_states_list",
@@ -872,10 +864,7 @@ jar_src("jar_cronet_api_source") {
   src_search_dirs = [ "api/src" ]
 
   # Include generated Java files which should be a part of the API.
-  srcjar_deps = [
-    ":effective_connection_type_java",
-    ":rtt_throughput_values_java",
-  ]
+  srcjar_deps = [ ":effective_connection_type_java" ]
   source_deps = [ ":cronet_api" ]
   jar_path = "$_package_dir/cronet_api-src.jar"
 }

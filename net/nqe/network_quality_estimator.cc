@@ -409,14 +409,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       weak_ptr_factory_(this) {
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
-  static_assert(kMinimumRTTVariationParameterMsec > 0 &&
-                    kMinimumRTTVariationParameterMsec >
-                        nqe::internal::INVALID_RTT_THROUGHPUT,
-                "kMinimumRTTVariationParameterMsec is set incorrectly");
-  static_assert(kMinimumThroughputVariationParameterKbps > 0 &&
-                    kMinimumThroughputVariationParameterKbps >
-                        nqe::internal::kInvalidThroughput,
-                "kMinimumThroughputVariationParameterKbps is set incorrectly");
   // None of the algorithms can have an empty name.
   DCHECK(algorithm_name_to_enum_.end() ==
          algorithm_name_to_enum_.find(std::string()));
@@ -722,8 +714,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   base::TimeDelta observed_http_rtt =
       load_timing_info.receive_headers_end - load_timing_info.send_start;
   DCHECK_GE(observed_http_rtt, base::TimeDelta());
-  if (observed_http_rtt < peak_network_quality_.http_rtt() ||
-      peak_network_quality_.http_rtt() == nqe::internal::InvalidRTT()) {
+  if (observed_http_rtt < peak_network_quality_.http_rtt()) {
     peak_network_quality_ = nqe::internal::NetworkQuality(
         observed_http_rtt, peak_network_quality_.transport_rtt(),
         peak_network_quality_.downstream_throughput_kbps());
@@ -1712,9 +1703,7 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
 
   DCHECK_NE(nqe::internal::kInvalidThroughput, downstream_kbps);
 
-  if (downstream_kbps > peak_network_quality_.downstream_throughput_kbps() ||
-      peak_network_quality_.downstream_throughput_kbps() ==
-          nqe::internal::kInvalidThroughput) {
+  if (downstream_kbps > peak_network_quality_.downstream_throughput_kbps()) {
     peak_network_quality_ = nqe::internal::NetworkQuality(
         peak_network_quality_.http_rtt(), peak_network_quality_.transport_rtt(),
         downstream_kbps);
