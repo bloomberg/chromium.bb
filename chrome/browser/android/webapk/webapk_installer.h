@@ -141,7 +141,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // successful request the WebAPK server responds with the URL of the generated
   // WebAPK.
   void SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
-                   net::URLFetcher::RequestType request_type,
                    const GURL& server_url);
 
   // Called with the URL of generated WebAPK and the package name that the

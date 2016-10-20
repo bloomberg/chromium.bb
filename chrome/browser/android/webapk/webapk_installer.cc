@@ -343,7 +343,7 @@ void WebApkInstaller::OnGotIconMurmur2Hash(
 
 void WebApkInstaller::SendCreateWebApkRequest(
     std::unique_ptr<webapk::WebApk> webapk) {
-  SendRequest(std::move(webapk), net::URLFetcher::POST, server_url_);
+  SendRequest(std::move(webapk), server_url_);
 }
 
 void WebApkInstaller::SendUpdateWebApkRequest(
@@ -351,18 +351,18 @@ void WebApkInstaller::SendUpdateWebApkRequest(
   webapk->set_package_name(webapk_package_);
   webapk->set_version(std::to_string(webapk_version_));
 
-  SendRequest(std::move(webapk), net::URLFetcher::PUT, server_url_);
+  SendRequest(std::move(webapk), server_url_);
 }
 
 void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
-                                  net::URLFetcher::RequestType request_type,
                                   const GURL& server_url) {
   timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(webapk_download_url_timeout_ms_),
       base::Bind(&WebApkInstaller::OnTimeout, weak_ptr_factory_.GetWeakPtr()));
 
-  url_fetcher_ = net::URLFetcher::Create(server_url, request_type, this);
+  url_fetcher_ =
+      net::URLFetcher::Create(server_url, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_getter_);
   std::string serialized_request;
   request_proto->SerializeToString(&serialized_request);
