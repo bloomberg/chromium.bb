@@ -4,19 +4,17 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.util.JsonWriter;
 
-import org.json.JSONObject;
-
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.FullCardRequestDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentItem;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -29,7 +27,6 @@ import javax.annotation.Nullable;
  */
 public class AutofillPaymentInstrument
         extends PaymentInstrument implements FullCardRequestDelegate {
-    private final Context mContext;
     private final WebContents mWebContents;
     private CreditCard mCard;
     private boolean mIsComplete;
@@ -43,14 +40,10 @@ public class AutofillPaymentInstrument
      * @param card           The autofill card that can be used for payment.
      * @param billingAddress The billing address for the card.
      */
-    public AutofillPaymentInstrument(Context context, WebContents webContents, CreditCard card,
-            @Nullable AutofillProfile billingAddress) {
+    public AutofillPaymentInstrument(
+            WebContents webContents, CreditCard card, @Nullable AutofillProfile billingAddress) {
         super(card.getGUID(), card.getObfuscatedNumber(), card.getName(),
-                card.getIssuerIconDrawableId() == 0
-                ? null
-                : ApiCompatibilityUtils.getDrawable(
-                        context.getResources(), card.getIssuerIconDrawableId()));
-        mContext = context;
+                card.getIssuerIconDrawableId());
         mWebContents = webContents;
         mCard = card;
         mIsComplete = false;
@@ -156,14 +149,12 @@ public class AutofillPaymentInstrument
         assert billingAddress != null;
         assert card.getBillingAddressId() != null;
         assert card.getBillingAddressId().equals(billingAddress.getGUID());
-        assert card.getIssuerIconDrawableId() != 0;
 
         mCard = card;
         mBillingAddress = billingAddress;
         mIsComplete = true;
         updateIdentifierLabelsAndIcon(card.getGUID(), card.getObfuscatedNumber(), card.getName(),
-                null, ApiCompatibilityUtils.getDrawable(
-                              mContext.getResources(), card.getIssuerIconDrawableId()));
+                null, card.getIssuerIconDrawableId());
     }
 
     /** @return The credit card represented by this payment instrument. */

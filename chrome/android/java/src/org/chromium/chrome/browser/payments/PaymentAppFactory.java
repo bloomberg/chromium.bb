@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.Context;
-
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.WebContents;
 
@@ -47,9 +45,9 @@ public class PaymentAppFactory {
      *
      * @param webContents The web contents where PaymentRequest was invoked.
      */
-    public static List<PaymentApp> create(Context context, WebContents webContents) {
+    public static List<PaymentApp> create(WebContents webContents) {
         List<PaymentApp> result = new ArrayList<>(2);
-        result.add(new AutofillPaymentApp(context, webContents));
+        result.add(new AutofillPaymentApp(webContents));
         if (sAdditionalFactory != null) result.addAll(sAdditionalFactory.create(webContents));
         return result;
     }

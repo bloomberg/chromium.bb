@@ -234,7 +234,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     }
                 });
 
-        mApps = PaymentAppFactory.create(mContext, webContents);
+        mApps = PaymentAppFactory.create(webContents);
 
         mAddressEditor = new AddressEditor();
         mCardEditor = new CardEditor(webContents, mAddressEditor, sObserverForTest);
@@ -654,7 +654,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (int i = 0; i < options.length; i++) {
             PaymentShippingOption option = options[i];
             result.add(new PaymentOption(option.id, option.label,
-                    formatter.format(option.amount.value), null));
+                    formatter.format(option.amount.value), PaymentOption.NO_ICON));
             if (option.selected) selectedItemIndex = i;
         }
 

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
-import android.graphics.drawable.Drawable;
-
 import javax.annotation.Nullable;
 
 /**
@@ -13,15 +11,17 @@ import javax.annotation.Nullable;
  * method.
  */
 public class PaymentOption implements Completable {
+    /** The placeholder value that indicates the absence of an icon for this option. */
+    public static final int NO_ICON = 0;
+
     protected boolean mIsComplete;
     private String mId;
-    private Drawable mIcon;
+    private int mIcon;
     private String[] mLabels = {null, null, null};
     private boolean mIsValid = true;
 
     /** See {@link #PaymentOption(String, String, String, String, int)}. */
-    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel,
-             @Nullable Drawable icon) {
+    public PaymentOption(String id, @Nullable String label, @Nullable String sublabel, int icon) {
         this(id, label, sublabel, null, icon);
     }
 
@@ -32,10 +32,10 @@ public class PaymentOption implements Completable {
      * @param label         The label.
      * @param sublabel      The optional sublabel.
      * @param tertiarylabel The optional tertiary label.
-     * @param icon          The drawable icon identifier or null.
+     * @param icon          The drawable icon identifier or NO_ICON.
      */
     public PaymentOption(String id, @Nullable String label, @Nullable String sublabel,
-            @Nullable String tertiarylabel, @Nullable Drawable icon) {
+            @Nullable String tertiarylabel, int icon) {
         updateIdentifierLabelsAndIcon(id, label, sublabel, tertiarylabel, icon);
     }
 
@@ -95,17 +95,20 @@ public class PaymentOption implements Completable {
      * @param label         The new label to use. Should not be null.
      * @param sublabel      The new sublabel to use. Can be null.
      * @param tertiarylabel The new tertiary label to use. Can be null.
-     * @param icon          The drawable icon identifier or null.
+     * @param icon          The drawable icon identifier or NO_ICON.
      */
     protected void updateIdentifierLabelsAndIcon(
             String id, String label, @Nullable String sublabel, @Nullable String tertiarylabel,
-            @Nullable Drawable icon) {
+            int icon) {
         updateIdentifierAndLabels(id, label, sublabel, tertiarylabel);
         mIcon = icon;
     }
 
-    /** * The drawable icon for this payment option. */
-    public Drawable getDrawableIcon() {
+    /**
+     * The identifier for the drawable icon for this payment option. For example, R.drawable.pr_visa
+     * or NO_ICON.
+     */
+    public int getDrawableIconId() {
         return mIcon;
     }
 

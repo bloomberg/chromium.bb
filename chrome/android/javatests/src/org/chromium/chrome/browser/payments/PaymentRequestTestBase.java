@@ -11,8 +11,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import org.json.JSONObject;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -35,6 +33,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentItem;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -718,7 +717,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         private final String mMethodName;
 
         TestPayInstrument(String methodName) {
-            super(methodName, "Test Pay", null, null);
+            super(methodName, "Test Pay", null, NO_ICON);
             mMethodName = methodName;
         }
 
