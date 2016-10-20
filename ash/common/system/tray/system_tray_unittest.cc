@@ -9,6 +9,7 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
@@ -581,6 +582,11 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
 // Tests that touch on an item in the system bubble triggers it to become
 // active.
 TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
+  // Material design will use the ink drop ripple framework to show
+  // active states.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
@@ -600,6 +606,11 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
 // Tests that touch events on an item in the system bubble cause it to stop
 // being active.
 TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
+  // Material design will use the ink drop ripple framework to show
+  // active states.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
