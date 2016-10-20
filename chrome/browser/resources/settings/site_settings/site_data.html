@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/settings_page/settings_subpage_search.html">
 <link rel="import" href="/settings_shared_css.html">
 <link rel="import" href="/site_settings/site_data_details_dialog.html">
@@ -11,30 +12,37 @@
 <dom-module id="site-data">
   <template>
     <style include="settings-shared">
-      :host {
-        display: block;
-        margin-top: 18px;
-        width: 100%;
-      }
-
-      .list-frame {
-        -webkit-margin-end: -29px;
-        -webkit-padding-start: 36px;
-        margin-top: 10px;
-      }
-
-      .site-header {
-        margin-top: 10px;
-      }
-
-      .site {
-        margin-top: 7px;
-      }
-
-      #filter {
-        margin-top: -4px;
+      .secondary-button {
+        margin-top: 12px;  /* Align with <h2>. */
       }
     </style>
+    <div class="settings-box first">
+      <h2 class="start">$i18n{siteSettingsCookieHeader}</h2>
+      <paper-button class="secondary-button"
+          on-tap="onConfirmDeleteMultipleSites_"
+          hidden$="[[!isRemoveButtonVisible_(sites, renderedItemCount)]]">
+          [[computeRemoveLabel_(filterString_)]]
+      </paper-button>
+    </div>
+
+    <div class="list-frame vertical-list">
+      <settings-subpage-search id="filter" on-search-changed="onSearchChanged_"
+          label="$i18n{siteSettingsCookieSearch}">
+      </settings-subpage-search>
+      <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_"
+          rendered-item-count="{{renderedItemCount}}">
+        <div class="list-item two-line" on-tap="onSiteTap_" actionable>
+          <div class="favicon-image" style$="[[computeSiteIcon(item.site)]]">
+          </div>
+          <div class="middle">
+            [[item.site]]
+            <div class="secondary">[[item.localData]]</div>
+          </div>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        </div>
+      </template>
+    </div>
+
     <!-- Confirm Delete dialog -->
     <dialog is="cr-dialog" id="confirmDeleteDialog">
       <div class="title">$i18n{siteSettingsCookieRemoveDialogTitle}</div>
@@ -48,37 +56,6 @@
         </paper-button>
       </div>
     </dialog>
-
-    <div class="layout horizontal">
-      <div class="flex site-header">$i18n{siteSettingsCookieHeader}</div>
-      <div class="secondary-action"
-          hidden$="[[!isRemoveButtonVisible_(sites, renderedItemCount)]]">
-        <paper-button on-tap="onConfirmDeleteMultipleSites_"
-            class="secondary-button">
-          [[computeRemoveLabel_(filterString_)]]
-        </paper-button>
-      </div>
-      <settings-subpage-search id="filter" on-search-changed="onSearchChanged_"
-          label="$i18n{siteSettingsCookieSearch}">
-      </settings-subpage-search>
-    </div>
-
-    <div class="list-frame vertical-list">
-      <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_"
-          rendered-item-count="{{renderedItemCount}}">
-        <div class="list-item layout horizontal">
-          <div class="layout horizontal flex" on-tap="onSiteTap_" actionable>
-            <div class="favicon-image site"
-                style$="[[computeSiteIcon(item.site)]]">
-            </div>
-            <div class="flex middle">[[item.site]]</div>
-            <div class="site">[[item.localData]]</div>
-          </div>
-          <paper-icon-button on-tap="onConfirmDeleteSite_"
-              icon="cr:delete"></paper-icon-button>
-        </div>
-      </template>
-    </div>
   </template>
   <script src="cookie_info.js"></script>
   <script src="cookie_tree_node.js"></script>

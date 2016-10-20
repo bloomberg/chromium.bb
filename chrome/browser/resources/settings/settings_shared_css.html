@@ -163,8 +163,9 @@
       .secondary-button {
         --paper-button: {
           color: var(--paper-grey-600);
-          text-decoration: none;
           font-weight: 500;
+          min-width: 1em;  /* A tighter fit than 5.14em for short buttons. */
+          text-decoration: none;
         };
         --paper-button-flat-keyboard-focus: {
           background: rgba(0, 0, 0, .12);
@@ -227,11 +228,6 @@
         @apply(--settings-list-frame-padding);
         align-items: center;
         display: block;
-      }
-
-      .list-frame .secondary,
-      .list-item .secondary {
-        @apply(--settings-secondary);
       }
 
       /* A list-item is intended to be contained within a list-frame. The list
@@ -322,6 +318,15 @@
       /* The lower line of text in a two-line row. */
       .secondary {
         @apply(--settings-secondary);
+      }
+
+      /* The |:empty| CSS selector only works when there is no whitespace.
+       * E.g. <div>[[foo]]</div> will be |:empty| when foo == ""; and
+       * <div> [[foo]] </div> will not be |:empty| when foo == "". Ensure there
+       * is no extra whitespace when the contents of .secondary may be "".
+       */
+      .secondary:empty {
+        margin: 0;
       }
 
       /* The middle part (horizontally) of a row. */

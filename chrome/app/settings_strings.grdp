@@ -1787,9 +1787,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_EXCEPTIONS" desc="Label for exception sites in site settings.">
     Exceptions
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ADD_SITE" desc="Label for add site button in site settings.">
-    Add Site
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_URL" desc="Label for site URL text entry in site settings.">
     Site URL
   </message>
@@ -1840,9 +1837,6 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data and resetting permissions.">
     Clear and reset site
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_CONFIRMATION" desc="Text for the dialog that warns about deleting all site data.">
-    This will delete any data <ph name="SITE">$1<ex>www.example.com</ex></ph> stored on your device. Do you want to continue?
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_REMOVE_CONFIRMATION" desc="Text for the dialog that warns about deleting all site data and permissions.">
     This will delete any data <ph name="SITE">$1<ex>www.example.com</ex></ph> stored on your device, and reset any permissions you granted to run. Do you want to continue?

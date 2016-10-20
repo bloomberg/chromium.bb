@@ -71,7 +71,7 @@ Polymer({
   /**
    * A filter function for the list.
    * @param {!CookieDataSummaryItem} item The item to possibly filter out.
-   * @return {!boolean} Whether to show the item.
+   * @return {boolean} Whether to show the item.
    * @private
    */
   showItem_: function(item) {
@@ -93,7 +93,7 @@ Polymer({
 
   /**
    * Returns the string to use for the Remove label.
-   * @return {!string} filterString The current filter string.
+   * @return {string} filterString The current filter string.
    * @private
    */
   computeRemoveLabel_: function(filterString) {
@@ -154,18 +154,6 @@ Polymer({
   /** @private */
   onCloseDialog_: function() {
     this.$.confirmDeleteDialog.close();
-  },
-
-  /**
-   * Shows a dialog to confirm the deletion of a site.
-   * @param {!{model: !{item: CookieDataSummaryItem}}} event
-   * @private
-   */
-  onConfirmDeleteSite_: function(event) {
-    this.idToDelete_ = event.model.item.id;
-    this.confirmationDeleteMsg_ = loadTimeData.getStringF(
-        'siteSettingsCookieRemoveConfirmation', event.model.item.site);
-    this.$.confirmDeleteDialog.showModal();
   },
 
   /**

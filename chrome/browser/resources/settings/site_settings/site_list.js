@@ -169,40 +169,7 @@ Polymer({
     }
 
     this.setUpActionMenu_();
-    this.ensureOpened_();
     this.populateList_();
-  },
-
-  /**
-   * Ensures the widget is |opened| when needed when displayed initially.
-   * @private
-   */
-  ensureOpened_: function() {
-    // Allowed list and Clear on Exit lists are always shown opened by default
-    // and All Sites is presented all in one list (nothing closed by default).
-    if (this.allSites ||
-        this.categorySubtype == settings.PermissionValues.ALLOW ||
-        this.categorySubtype == settings.PermissionValues.SESSION_ONLY) {
-      this.$.category.opened = true;
-      return;
-    }
-
-    // Block list should only be shown opened if there is nothing to show in
-    // the other lists.
-    if (this.category != settings.INVALID_CATEGORY_SUBTYPE) {
-      this.browserProxy_.getExceptionList(this.category).then(
-        function(exceptionList) {
-          var othersExists = exceptionList.some(function(exception) {
-            return exception.setting == settings.PermissionValues.ALLOW ||
-                exception.setting == settings.PermissionValues.SESSION_ONLY;
-          });
-          if (othersExists)
-            return;
-          this.$.category.opened = true;
-      }.bind(this));
-    } else {
-      this.$.category.opened = true;
-    }
   },
 
   /**
@@ -250,17 +217,6 @@ Polymer({
     dialog.addEventListener('close', function() {
       dialog.remove();
     });
-  },
-
-  /**
-   * Handles the expanding and collapsing of the sites list.
-   * @private
-   */
-  onToggle_: function(e) {
-    if (this.$.category.opened)
-      this.$.icon.icon = 'cr:expand-less';
-    else
-      this.$.icon.icon = 'cr:expand-more';
   },
 
   /**

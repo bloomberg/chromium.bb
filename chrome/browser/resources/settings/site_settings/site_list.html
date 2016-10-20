@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/route.html">
@@ -17,6 +16,10 @@
 <dom-module id="site-list">
   <template>
     <style include="settings-shared">
+      paper-button {
+        margin-top: 12px;  /* Align with <h2>. */
+      }
+
       paper-icon-button {
         left: 8px;
         right: 8px;
@@ -26,11 +29,12 @@
         -webkit-user-select: text;
       }
     </style>
-    <paper-submenu id="category" hidden
-        on-paper-submenu-open="onToggle_" on-paper-submenu-close="onToggle_">
-      <div class="menu-trigger settings-box" hidden$="[[allSites]]" actionable>
-        <div class="flex" id="header">[[categoryHeader]]</div>
-        <iron-icon id="icon" icon="cr:expand-more"></iron-icon>
+    <div id="category" hidden>
+      <div class="settings-box first" hidden$="[[allSites]]">
+        <h2 class="start">[[categoryHeader]]</h2>
+        <paper-button class="secondary-button" id="icon" on-tap="onAddSiteTap_">
+          $i18n{add}
+        </paper-button>
       </div>
 
       <div class="list-frame menu-content vertical-list" id="listContainer">
@@ -43,9 +47,10 @@
               </div>
               <div class="middle">
                 <div class="selectable">[[item.originForDisplay]]</div>
-                <div class="selectable secondary">
-                  [[computeSiteDescription_(item)]]
-                </div>
+
+                <!-- This div must not contain extra whitespace. -->
+                <div class="selectable secondary"
+                    >[[computeSiteDescription_(item)]]</div>
               </div>
             </div>
 
@@ -89,14 +94,8 @@
             </template>
           </div>
         </template>
-
-        <template is="dom-if" if="[[!allSites]]">
-          <div class="list-item list-button" on-tap="onAddSiteTap_">
-            $i18n{addSiteLink}
-          </div>
-        </template>
       </div>
-    </paper-submenu>
+    </div>
   </template>
   <script src="site_list.js"></script>
 </dom-module>

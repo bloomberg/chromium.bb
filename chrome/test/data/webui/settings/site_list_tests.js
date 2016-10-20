@@ -600,9 +600,7 @@ cr.define('site_list', function() {
             function(contentType) {
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
-
               assertFalse(testElement.$.category.hidden);
-              assertTrue(testElement.$.category.opened);
             }).then(function() {
               assertNotEquals(0, testElement.$.listContainer.offsetHeight);
             });
@@ -616,9 +614,7 @@ cr.define('site_list', function() {
             function(contentType) {
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
-
               assertFalse(testElement.$.category.hidden);
-              assertFalse(testElement.$.category.opened);
               assertEquals(0, testElement.$.listContainer.offsetHeight);
             });
       });
@@ -633,7 +629,6 @@ cr.define('site_list', function() {
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
               assertFalse(testElement.$.category.hidden);
-              assertTrue(testElement.$.category.opened);
             }).then(function() {
               assertNotEquals(0, testElement.$.listContainer.offsetHeight);
             });
@@ -647,9 +642,7 @@ cr.define('site_list', function() {
             function(contentType) {
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
-
               assertFalse(testElement.$.category.hidden);
-              assertTrue(testElement.$.category.opened);
             }).then(function() {
               assertNotEquals(0, testElement.$.listContainer.offsetHeight);
             });
@@ -663,7 +656,6 @@ cr.define('site_list', function() {
             function(contentType) {
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
-
               assertFalse(testElement.$.category.hidden);
             });
       });
@@ -676,7 +668,6 @@ cr.define('site_list', function() {
             function(contentType) {
               assertEquals(
                   settings.ContentSettingsTypes.GEOLOCATION, contentType);
-
               assertFalse(testElement.$.category.hidden);
             });
       });
@@ -701,7 +692,6 @@ cr.define('site_list', function() {
                 // Required for firstItem to be found below.
                 Polymer.dom.flush();
 
-                assertTrue(testElement.$.category.opened);
                 assertFalse(testElement.$.category.hidden);
                 // Validate that the sites gets populated from pre-canned prefs.
                 assertEquals(3, testElement.sites.length,
@@ -746,7 +736,6 @@ cr.define('site_list', function() {
                 // Required for firstItem to be found below.
                 Polymer.dom.flush();
 
-                assertTrue(testElement.$.category.opened);
                 assertFalse(testElement.$.category.hidden);
                 // Validate that the sites gets populated from pre-canned prefs.
                 assertEquals(1, testElement.sites.length,
