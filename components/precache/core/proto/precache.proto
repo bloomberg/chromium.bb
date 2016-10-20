@@ -16,6 +16,10 @@ message PrecacheResource {
 
   // The tophost this resource corresponds to.
   optional string top_host_name = 2;
+
+  // How important this resource is for the host. It ranges from 0.0 to 1.0.
+  // Higher values mean more important.
+  optional double weight_ratio = 3;
 };
 
 message PrecacheManifestId {
@@ -89,4 +93,16 @@ message PrecacheConfigurationSettings {
   // day. After this limit is reached, no more resources will be downloaded,
   // until the quota gets replenished the next day.
   optional uint64 daily_quota_total = 6 [default = 40000000 /* 40 MB */];
+
+  // The number of resources to fetch per precache run. Only the first
+  // |total_resources_count| resource URLs are fetched.
+  optional uint32 total_resources_count = 7 [default = 999999];
+
+  // The minimum visit-adjusted weight for which a resource will be downloaded.
+  optional double min_weight = 8 [default = 0];
+
+  // Whether to sort resources by weight, descending, before fetching. This
+  // affects the fetcher's behavior with respect to max_bytes_total and
+  // total_resources_count.
+  optional bool global_ranking = 9 [default = false];
 };

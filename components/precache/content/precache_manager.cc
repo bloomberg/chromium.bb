@@ -138,15 +138,19 @@ void PrecacheManager::StartPrecaching(
 
 void PrecacheManager::OnGetUnfinishedWorkDone(
     std::unique_ptr<PrecacheUnfinishedWork> unfinished_work) {
-  if (!unfinished_work->has_start_time() ||
-      base::Time::Now() - base::Time::FromInternalValue(
-      unfinished_work->start_time()) > base::TimeDelta::FromHours(6)) {
+  // Reset progress on a prefetch that has taken too long to complete.
+  if (unfinished_work->has_start_time() &&
+      base::Time::Now() -
+              base::Time::FromInternalValue(unfinished_work->start_time()) >
+          base::TimeDelta::FromHours(6)) {
     PrecacheFetcher::RecordCompletionStatistics(
         *unfinished_work, unfinished_work->top_host_size(),
         unfinished_work->resource_size());
-    unfinished_work.reset(new PrecacheUnfinishedWork());
-    unfinished_work->set_start_time(base::Time::Now().ToInternalValue());
+    unfinished_work.reset(new PrecacheUnfinishedWork);
   }
+  // If this prefetch is new, set the start time.
+  if (!unfinished_work->has_start_time())
+    unfinished_work->set_start_time(base::Time::Now().ToInternalValue());
   unfinished_work_ = std::move(unfinished_work);
   bool needs_top_hosts = unfinished_work_->top_host_size() == 0;
 
@@ -320,9 +324,11 @@ void PrecacheManager::OnHostsReceived(
     const history::TopHostsList& host_counts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::vector<std::string> hosts;
-  for (const auto& host_count : host_counts)
-    unfinished_work_->add_top_host()->set_hostname(host_count.first);
+  for (const auto& host_count : host_counts) {
+    TopHost* top_host = unfinished_work_->add_top_host();
+    top_host->set_hostname(host_count.first);
+    top_host->set_visits(host_count.second);
+  }
   InitializeAndStartFetcher();
 }
 
