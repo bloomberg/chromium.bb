@@ -33,6 +33,8 @@ PLATFORM_EXPORT PassRefPtr<SharedBuffer> parseDataURL(const KURL&,
                                                       AtomicString& mimetype,
                                                       AtomicString& charset);
 
+PLATFORM_EXPORT bool isRedirectResponseCode(int);
+
 }  // NetworkUtils
 
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/URLConversion.h"
@@ -75,6 +76,10 @@ PassRefPtr<SharedBuffer> parseDataURL(const KURL& url,
     return SharedBuffer::create(data.data(), data.size());
   }
   return nullptr;
+}
+
+bool isRedirectResponseCode(int responseCode) {
+  return net::HttpResponseHeaders::IsRedirectResponseCode(responseCode);
 }
 
 }  // NetworkUtils

@@ -30,6 +30,7 @@
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/HTTPNames.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -45,11 +46,6 @@
 namespace blink {
 
 namespace {
-
-bool IsRedirectStatusCode(int statusCode) {
-  return (statusCode == 301 || statusCode == 302 || statusCode == 303 ||
-          statusCode == 307 || statusCode == 308);
-}
 
 class SRIBytesConsumer final : public BytesConsumer {
  public:
@@ -433,7 +429,7 @@ void FetchManager::Loader::didReceiveResponse(
 
   FetchResponseData* taintedResponse = nullptr;
 
-  if (IsRedirectStatusCode(m_responseHttpStatusCode)) {
+  if (NetworkUtils::isRedirectResponseCode(m_responseHttpStatusCode)) {
     Vector<String> locations;
     responseData->headerList()->getAll(HTTPNames::Location, locations);
     if (locations.size() > 1) {

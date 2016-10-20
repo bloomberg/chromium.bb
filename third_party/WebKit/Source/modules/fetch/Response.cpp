@@ -26,6 +26,7 @@
 #include "modules/fetch/ResponseInit.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
+#include "platform/network/NetworkUtils.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "wtf/RefPtr.h"
 #include <memory>
@@ -312,8 +313,7 @@ Response* Response::redirect(ExecutionContext* context,
     return nullptr;
   }
 
-  if (status != 301 && status != 302 && status != 303 && status != 307 &&
-      status != 308) {
+  if (!NetworkUtils::isRedirectResponseCode(status)) {
     exceptionState.throwRangeError("Invalid status code");
     return nullptr;
   }
