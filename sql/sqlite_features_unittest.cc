@@ -270,4 +270,37 @@ TEST_F(SQLiteFeaturesTest, Mmap) {
 }
 #endif
 
+// Verify that http://crbug.com/248608 is fixed.  In this bug, the
+// compiled regular expression is effectively cached with the prepared
+// statement, causing errors if the regular expression is rebound.
+TEST_F(SQLiteFeaturesTest, CachedRegexp) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE r (id INTEGER UNIQUE, x TEXT)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO r VALUES (1, 'this is a test')"));
+  ASSERT_TRUE(db().Execute("INSERT INTO r VALUES (2, 'that was a test')"));
+  ASSERT_TRUE(db().Execute("INSERT INTO r VALUES (3, 'this is a stickup')"));
+  ASSERT_TRUE(db().Execute("INSERT INTO r VALUES (4, 'that sucks')"));
+
+  const char* kSimpleSql = "SELECT SUM(id) FROM r WHERE x REGEXP ?";
+  sql::Statement s(db().GetCachedStatement(SQL_FROM_HERE, kSimpleSql));
+
+  s.BindString(0, "this.*");
+  ASSERT_TRUE(s.Step());
+  EXPECT_EQ(4, s.ColumnInt(0));
+
+  s.Reset(true);
+  s.BindString(0, "that.*");
+  ASSERT_TRUE(s.Step());
+  EXPECT_EQ(6, s.ColumnInt(0));
+
+  s.Reset(true);
+  s.BindString(0, ".*test");
+  ASSERT_TRUE(s.Step());
+  EXPECT_EQ(3, s.ColumnInt(0));
+
+  s.Reset(true);
+  s.BindString(0, ".* s[a-z]+");
+  ASSERT_TRUE(s.Step());
+  EXPECT_EQ(7, s.ColumnInt(0));
+}
+
 }  // namespace
