@@ -7,12 +7,11 @@
 #import <UIKit/UIKit.h>
 #include <limits>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 bool UseRTLLayout() {
-  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater();
+  return base::i18n::IsRTL();
 }
 
 base::i18n::TextDirection LayoutDirection() {
@@ -231,15 +230,13 @@ CGFloat CGRectGetTrailingEdge(CGRect rect) {
 }
 
 UIViewAutoresizing UIViewAutoresizingFlexibleLeadingMargin() {
-  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
-             ? UIViewAutoresizingFlexibleRightMargin
-             : UIViewAutoresizingFlexibleLeftMargin;
+  return base::i18n::IsRTL() ? UIViewAutoresizingFlexibleRightMargin
+                             : UIViewAutoresizingFlexibleLeftMargin;
 }
 
 UIViewAutoresizing UIViewAutoresizingFlexibleTrailingMargin() {
-  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
-             ? UIViewAutoresizingFlexibleLeftMargin
-             : UIViewAutoresizingFlexibleRightMargin;
+  return base::i18n::IsRTL() ? UIViewAutoresizingFlexibleLeftMargin
+                             : UIViewAutoresizingFlexibleRightMargin;
 }
 
 UIEdgeInsets UIEdgeInsetsMakeUsingDirection(
