@@ -231,6 +231,7 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glGetIntegervProc>(GetGLProcAddress("glGetIntegerv"));
   fn.glGetIntegervRobustANGLEFn = 0;
   fn.glGetInternalformativFn = 0;
+  fn.glGetInternalformativRobustANGLEFn = 0;
   fn.glGetMultisamplefvRobustANGLEFn = 0;
   fn.glGetnUniformfvRobustANGLEFn = 0;
   fn.glGetnUniformivRobustANGLEFn = 0;
@@ -1486,6 +1487,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 0u)) {
     fn.glGetInternalformativFn = reinterpret_cast<glGetInternalformativProc>(
         GetGLProcAddress("glGetInternalformativ"));
+  }
+
+  debug_fn.glGetInternalformativRobustANGLEFn = 0;
+  if (ext.b_GL_ANGLE_robust_client_memory) {
+    fn.glGetInternalformativRobustANGLEFn =
+        reinterpret_cast<glGetInternalformativRobustANGLEProc>(
+            GetGLProcAddress("glGetInternalformativRobustANGLE"));
   }
 
   debug_fn.glGetMultisamplefvRobustANGLEFn = 0;
@@ -4323,6 +4331,24 @@ static void GL_BINDING_CALL Debug_glGetInternalformativ(GLenum target,
   DCHECK(g_driver_gl.debug_fn.glGetInternalformativFn != nullptr);
   g_driver_gl.debug_fn.glGetInternalformativFn(target, internalformat, pname,
                                                bufSize, params);
+}
+
+static void GL_BINDING_CALL
+Debug_glGetInternalformativRobustANGLE(GLenum target,
+                                       GLenum internalformat,
+                                       GLenum pname,
+                                       GLsizei bufSize,
+                                       GLsizei* length,
+                                       GLint* params) {
+  GL_SERVICE_LOG("glGetInternalformativRobustANGLE"
+                 << "(" << GLEnums::GetStringEnum(target) << ", "
+                 << GLEnums::GetStringEnum(internalformat) << ", "
+                 << GLEnums::GetStringEnum(pname) << ", " << bufSize << ", "
+                 << static_cast<const void*>(length) << ", "
+                 << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetInternalformativRobustANGLEFn != nullptr);
+  g_driver_gl.debug_fn.glGetInternalformativRobustANGLEFn(
+      target, internalformat, pname, bufSize, length, params);
 }
 
 static void GL_BINDING_CALL Debug_glGetMultisamplefvRobustANGLE(GLenum pname,
@@ -7701,6 +7727,12 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetInternalformativFn = fn.glGetInternalformativFn;
     fn.glGetInternalformativFn = Debug_glGetInternalformativ;
   }
+  if (!debug_fn.glGetInternalformativRobustANGLEFn) {
+    debug_fn.glGetInternalformativRobustANGLEFn =
+        fn.glGetInternalformativRobustANGLEFn;
+    fn.glGetInternalformativRobustANGLEFn =
+        Debug_glGetInternalformativRobustANGLE;
+  }
   if (!debug_fn.glGetMultisamplefvRobustANGLEFn) {
     debug_fn.glGetMultisamplefvRobustANGLEFn =
         fn.glGetMultisamplefvRobustANGLEFn;
@@ -9630,6 +9662,16 @@ void GLApiBase::glGetInternalformativFn(GLenum target,
                                         GLint* params) {
   driver_->fn.glGetInternalformativFn(target, internalformat, pname, bufSize,
                                       params);
+}
+
+void GLApiBase::glGetInternalformativRobustANGLEFn(GLenum target,
+                                                   GLenum internalformat,
+                                                   GLenum pname,
+                                                   GLsizei bufSize,
+                                                   GLsizei* length,
+                                                   GLint* params) {
+  driver_->fn.glGetInternalformativRobustANGLEFn(target, internalformat, pname,
+                                                 bufSize, length, params);
 }
 
 void GLApiBase::glGetMultisamplefvRobustANGLEFn(GLenum pname,
@@ -12282,6 +12324,18 @@ void TraceGLApi::glGetInternalformativFn(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetInternalformativ")
   gl_api_->glGetInternalformativFn(target, internalformat, pname, bufSize,
                                    params);
+}
+
+void TraceGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
+                                                    GLenum internalformat,
+                                                    GLenum pname,
+                                                    GLsizei bufSize,
+                                                    GLsizei* length,
+                                                    GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glGetInternalformativRobustANGLE")
+  gl_api_->glGetInternalformativRobustANGLEFn(target, internalformat, pname,
+                                              bufSize, length, params);
 }
 
 void TraceGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
@@ -15341,6 +15395,18 @@ void NoContextGLApi::glGetInternalformativFn(GLenum target,
       << "Trying to call glGetInternalformativ() without current GL context";
   LOG(ERROR)
       << "Trying to call glGetInternalformativ() without current GL context";
+}
+
+void NoContextGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
+                                                        GLenum internalformat,
+                                                        GLenum pname,
+                                                        GLsizei bufSize,
+                                                        GLsizei* length,
+                                                        GLint* params) {
+  NOTREACHED() << "Trying to call glGetInternalformativRobustANGLE() without "
+                  "current GL context";
+  LOG(ERROR) << "Trying to call glGetInternalformativRobustANGLE() without "
+                "current GL context";
 }
 
 void NoContextGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,

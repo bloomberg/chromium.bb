@@ -1542,6 +1542,18 @@ MockGLInterface::Mock_glGetInternalformativ(GLenum target,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glGetInternalformativRobustANGLE(GLenum target,
+                                                       GLenum internalformat,
+                                                       GLenum pname,
+                                                       GLsizei bufSize,
+                                                       GLsizei* length,
+                                                       GLint* params) {
+  MakeFunctionUnique("glGetInternalformativRobustANGLE");
+  interface_->GetInternalformativRobustANGLE(target, internalformat, pname,
+                                             bufSize, length, params);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glGetMultisamplefvRobustANGLE(GLenum pname,
                                                     GLuint index,
                                                     GLsizei bufSize,
@@ -4059,6 +4071,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetIntegervRobustANGLE);
   if (strcmp(name, "glGetInternalformativ") == 0)
     return reinterpret_cast<void*>(Mock_glGetInternalformativ);
+  if (strcmp(name, "glGetInternalformativRobustANGLE") == 0)
+    return reinterpret_cast<void*>(Mock_glGetInternalformativRobustANGLE);
   if (strcmp(name, "glGetMultisamplefvRobustANGLE") == 0)
     return reinterpret_cast<void*>(Mock_glGetMultisamplefvRobustANGLE);
   if (strcmp(name, "glGetPointervRobustANGLERobustANGLE") == 0)

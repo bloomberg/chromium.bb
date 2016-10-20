@@ -530,6 +530,13 @@ typedef void(GL_BINDING_CALL* glGetInternalformativProc)(GLenum target,
                                                          GLenum pname,
                                                          GLsizei bufSize,
                                                          GLint* params);
+typedef void(GL_BINDING_CALL* glGetInternalformativRobustANGLEProc)(
+    GLenum target,
+    GLenum internalformat,
+    GLenum pname,
+    GLsizei bufSize,
+    GLsizei* length,
+    GLint* params);
 typedef void(GL_BINDING_CALL* glGetMultisamplefvRobustANGLEProc)(
     GLenum pname,
     GLuint index,
@@ -1648,6 +1655,7 @@ struct ProcsGL {
   glGetIntegervProc glGetIntegervFn;
   glGetIntegervRobustANGLEProc glGetIntegervRobustANGLEFn;
   glGetInternalformativProc glGetInternalformativFn;
+  glGetInternalformativRobustANGLEProc glGetInternalformativRobustANGLEFn;
   glGetMultisamplefvRobustANGLEProc glGetMultisamplefvRobustANGLEFn;
   glGetnUniformfvRobustANGLEProc glGetnUniformfvRobustANGLEFn;
   glGetnUniformivRobustANGLEProc glGetnUniformivRobustANGLEFn;
@@ -2339,6 +2347,12 @@ class GL_EXPORT GLApi {
                                        GLenum pname,
                                        GLsizei bufSize,
                                        GLint* params) = 0;
+  virtual void glGetInternalformativRobustANGLEFn(GLenum target,
+                                                  GLenum internalformat,
+                                                  GLenum pname,
+                                                  GLsizei bufSize,
+                                                  GLsizei* length,
+                                                  GLint* params) = 0;
   virtual void glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                GLuint index,
                                                GLsizei bufSize,
@@ -3349,6 +3363,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glGetIntegervRobustANGLEFn
 #define glGetInternalformativ \
   ::gl::g_current_gl_context->glGetInternalformativFn
+#define glGetInternalformativRobustANGLE \
+  ::gl::g_current_gl_context->glGetInternalformativRobustANGLEFn
 #define glGetMultisamplefvRobustANGLE \
   ::gl::g_current_gl_context->glGetMultisamplefvRobustANGLEFn
 #define glGetnUniformfvRobustANGLE \

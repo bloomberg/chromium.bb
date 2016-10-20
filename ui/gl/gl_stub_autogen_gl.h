@@ -456,6 +456,12 @@ void glGetInternalformativFn(GLenum target,
                              GLenum pname,
                              GLsizei bufSize,
                              GLint* params) override {}
+void glGetInternalformativRobustANGLEFn(GLenum target,
+                                        GLenum internalformat,
+                                        GLenum pname,
+                                        GLsizei bufSize,
+                                        GLsizei* length,
+                                        GLint* params) override {}
 void glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                      GLuint index,
                                      GLsizei bufSize,

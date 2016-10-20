@@ -446,6 +446,13 @@ MOCK_METHOD5(GetInternalformativ,
                   GLenum pname,
                   GLsizei bufSize,
                   GLint* params));
+MOCK_METHOD6(GetInternalformativRobustANGLE,
+             void(GLenum target,
+                  GLenum internalformat,
+                  GLenum pname,
+                  GLsizei bufSize,
+                  GLsizei* length,
+                  GLint* params));
 MOCK_METHOD5(GetMultisamplefvRobustANGLE,
              void(GLenum pname,
                   GLuint index,

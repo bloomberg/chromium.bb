@@ -708,6 +708,12 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLenum internalformat, GLenum pname, '
                'GLsizei bufSize, GLint* params', },
 { 'return_type': 'void',
+  'versions': [{'name': 'glGetInternalformativRobustANGLE',
+                'extensions': ['GL_ANGLE_robust_client_memory']}],
+  'arguments':
+      'GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, '
+      'GLsizei* length, GLint* params', },
+{ 'return_type': 'void',
   'versions': [{'name': 'glGetMultisamplefvRobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
   'arguments':
