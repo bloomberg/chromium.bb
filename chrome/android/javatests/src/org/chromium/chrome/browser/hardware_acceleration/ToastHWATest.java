@@ -15,6 +15,7 @@ import android.view.View;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -22,7 +23,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadTestBase;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.widget.Toast;
 

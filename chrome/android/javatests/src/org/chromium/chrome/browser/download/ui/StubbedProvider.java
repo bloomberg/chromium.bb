@@ -14,12 +14,12 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

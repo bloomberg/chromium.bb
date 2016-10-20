@@ -7,8 +7,8 @@ package org.chromium.chrome.test.util;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
-import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;

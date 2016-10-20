@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.base.test.util.CallbackHelper;
 
 /**
  * CallbackHelper subclass which implements WebappRegistry.FetchWebappDataStorageCallback for tests.

@@ -16,8 +16,8 @@ import android.webkit.WebViewClient;
 
 import org.junit.Assert;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;

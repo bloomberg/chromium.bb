@@ -6,8 +6,8 @@ package org.chromium.content.browser.webcontents;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;

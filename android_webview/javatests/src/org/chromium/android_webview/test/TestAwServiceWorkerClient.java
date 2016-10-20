@@ -7,7 +7,7 @@ package org.chromium.android_webview.test;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwServiceWorkerClient;
 import org.chromium.android_webview.AwWebResourceResponse;
-import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.base.test.util.CallbackHelper;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -14,7 +14,7 @@ import android.os.IBinder;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.base.test.util.CallbackHelper;
 
 /**
  * Instrumentation tests for {@link org.chromium.webapk.WebApkServiceImpl}.

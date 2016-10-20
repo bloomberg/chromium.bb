@@ -9,8 +9,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.Surface;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 import org.chromium.ui.display.DisplayAndroid;

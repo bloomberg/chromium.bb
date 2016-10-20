@@ -8,7 +8,7 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.test.AwTestBase;
-import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.base.test.util.CallbackHelper;
 
 import java.util.concurrent.Callable;
 

@@ -8,6 +8,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Instrumentation;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.InstrumentationUtils;
 import org.chromium.content_public.browser.WebContents;
 

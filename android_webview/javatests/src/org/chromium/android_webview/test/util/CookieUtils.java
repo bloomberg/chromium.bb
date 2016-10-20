@@ -10,7 +10,7 @@ import junit.framework.Assert;
 
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.test.AwTestBase;
-import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.base.test.util.CallbackHelper;
 
 /**
  * Useful functions for testing the CookieManager.

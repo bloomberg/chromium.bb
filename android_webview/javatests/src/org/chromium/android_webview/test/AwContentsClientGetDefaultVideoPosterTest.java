@@ -12,8 +12,8 @@ import android.util.Log;
 
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.DefaultVideoPosterRequestHandler;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.io.IOException;
 import java.io.InputStream;

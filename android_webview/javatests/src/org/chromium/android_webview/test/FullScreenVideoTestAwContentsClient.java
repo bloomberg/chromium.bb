@@ -15,7 +15,7 @@ import android.widget.FrameLayout;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.base.test.util.CallbackHelper;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;

@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.autofill;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.PersonalDataManagerObserver;
-import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;

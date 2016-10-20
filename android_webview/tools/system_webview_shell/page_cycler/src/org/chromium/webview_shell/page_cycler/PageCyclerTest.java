@@ -10,8 +10,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.webview_shell.PageCyclerTestActivity;
 
 import java.util.concurrent.TimeUnit;
