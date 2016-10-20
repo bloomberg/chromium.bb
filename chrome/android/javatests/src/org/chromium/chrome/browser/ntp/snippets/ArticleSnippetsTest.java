@@ -25,13 +25,13 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallbac
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
-import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 
@@ -353,7 +353,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {}
+        public void setDestructionObserver(DestructionObserver destructionObserver) {}
 
         @Override
         public void closeContextMenu() {

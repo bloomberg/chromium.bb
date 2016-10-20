@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -26,7 +27,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
-import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -140,22 +140,12 @@ public class NewTabPageAdapter
             }
         };
 
-        mSigninPromo = new SignInPromo(mRoot);
+        mSigninPromo = new SignInPromo(mRoot, this);
+        DestructionObserver signInObserver = mSigninPromo.getObserver();
+        if (signInObserver != null) mNewTabPageManager.setDestructionObserver(signInObserver);
+
         resetSections(/*alwaysAllowEmptySections=*/false);
         mNewTabPageManager.getSuggestionsSource().setObserver(this);
-
-        mNewTabPageManager.registerSignInStateObserver(new SignInStateObserver() {
-            @Override
-            public void onSignedIn() {
-                mSigninPromo.hide();
-                resetSections(/*alwaysAllowEmptySections=*/false);
-            }
-
-            @Override
-            public void onSignedOut() {
-                mSigninPromo.maybeShow();
-            }
-        });
     }
 
     /**

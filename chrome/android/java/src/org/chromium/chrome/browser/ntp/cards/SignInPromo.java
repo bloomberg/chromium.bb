@@ -6,18 +6,22 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 
 /**
  * Shows a card prompting the user to sign in. This item is also a {@link TreeNode}, and calling
@@ -38,11 +42,16 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
      */
     private boolean mDismissed;
 
-    public SignInPromo(NodeParent parent) {
+    @Nullable
+    private final SigninObserver mObserver;
+
+    public SignInPromo(NodeParent parent, NewTabPageAdapter adapter) {
         super(parent);
         mDismissed = ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                              .getNewTabPageSigninPromoDismissed();
-        SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
+
+        final SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
+        mObserver = mDismissed ? null : new SigninObserver(signinManager, adapter);
         mVisible = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
     }
 
@@ -58,6 +67,15 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
     public int getItemViewType(int position) {
         checkIndex(position);
         return ItemViewType.PROMO;
+    }
+
+    /**
+     * @returns a {@link DestructionObserver} observer that updates the visibility of the signin
+     * promo and unregisters itself when the New Tab Page is destroyed.
+     */
+    @Nullable
+    public DestructionObserver getObserver() {
+        return mObserver;
     }
 
     @Override
@@ -127,6 +145,59 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
         mDismissed = true;
         ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                 .setNewTabPageSigninPromoDismissed(true);
+        mObserver.unregister();
+    }
+
+    private class SigninObserver
+            implements SignInStateObserver, SignInAllowedObserver, DestructionObserver {
+        private final SigninManager mSigninManager;
+        private final NewTabPageAdapter mAdapter;
+
+        /** Guards {@link #unregister()}, which can be called multiple times. */
+        private boolean mUnregistered;
+
+        private SigninObserver(SigninManager signinManager, NewTabPageAdapter adapter) {
+            mSigninManager = signinManager;
+            mAdapter = adapter;
+            mSigninManager.addSignInAllowedObserver(this);
+            mSigninManager.addSignInStateObserver(this);
+        }
+
+        private void unregister() {
+            if (mUnregistered) return;
+            mUnregistered = true;
+
+            mSigninManager.removeSignInAllowedObserver(this);
+            mSigninManager.removeSignInStateObserver(this);
+        }
+
+        @Override
+        public void onDestroy() {
+            unregister();
+        }
+
+        @Override
+        public void onSignInAllowedChanged() {
+            // Listening to onSignInAllowedChanged is important for the FRE. Sign in is not allowed
+            // until it is completed, but the NTP is initialised before the FRE is even shown. By
+            // implementing this we can show the promo if the user did not sign in during the FRE.
+            if (mSigninManager.isSignInAllowed()) {
+                maybeShow();
+            } else {
+                hide();
+            }
+        }
+
+        @Override
+        public void onSignedIn() {
+            hide();
+            mAdapter.resetSections(/*alwaysAllowEmptySections=*/false);
+        }
+
+        @Override
+        public void onSignedOut() {
+            maybeShow();
+        }
     }
 
     /**

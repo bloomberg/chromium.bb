@@ -60,8 +60,6 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObse
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
-import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.sync.SyncSessionsMetrics;
@@ -153,8 +151,7 @@ public class NewTabPage
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
 
-    /** Used by {@link #mNewTabPageManager}. Observer tracked for de-registration purposes. */
-    private SignInStateObserver mSignInStateObserver;
+    private DestructionObserver mDestructionObserver;
 
     /**
      * Allows clients to listen for updates to the scroll changes of the search box on the
@@ -171,6 +168,13 @@ public class NewTabPage
          */
         void onNtpScrollChanged(float scrollPercentage);
     }
+
+    /**
+     * Object that registered through the {@link NewTabPageManager}, and that will be notified when
+     * the {@link NewTabPage} is destroyed.
+     * @see NewTabPageManager#setDestructionObserver(DestructionObserver)
+     */
+    public interface DestructionObserver { void onDestroy(); }
 
     /**
      * Handles user interaction with the fakebox (the URL bar in the NTP).
@@ -661,11 +665,10 @@ public class NewTabPage
         }
 
         @Override
-        public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {
+        public void setDestructionObserver(DestructionObserver destructionObserver) {
             if (mIsDestroyed) return;
-            assert mSignInStateObserver == null;
-            mSignInStateObserver = signInStateObserver;
-            SigninManager.get(mActivity).addSignInStateObserver(mSignInStateObserver);
+            assert mDestructionObserver == null;
+            mDestructionObserver = destructionObserver;
         }
 
         @Override
@@ -972,8 +975,8 @@ public class NewTabPage
         if (mMostVisitedItemRemovedController != null) {
             mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
         }
-        if (mSignInStateObserver != null) {
-            SigninManager.get(mActivity).removeSignInStateObserver(mSignInStateObserver);
+        if (mDestructionObserver != null) {
+            mDestructionObserver.onDestroy();
         }
         TemplateUrlService.getInstance().removeObserver(this);
         mTab.removeObserver(mTabObserver);

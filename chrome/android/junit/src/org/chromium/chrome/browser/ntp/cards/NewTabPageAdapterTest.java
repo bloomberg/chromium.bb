@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallbac
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -55,6 +56,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -776,10 +778,18 @@ public class NewTabPageAdapterTest {
         assertEquals(1, signinPromo.getItemCount());
         assertEquals(ItemViewType.PROMO, signinPromo.getItemViewType(0));
 
-        ntpManager.mSignInStateObserver.onSignedIn();
+        ((SignInStateObserver) ntpManager.mDestructionObserver).onSignedIn();
         assertEquals(0, signinPromo.getItemCount());
 
-        ntpManager.mSignInStateObserver.onSignedOut();
+        ((SignInStateObserver) ntpManager.mDestructionObserver).onSignedOut();
+        assertEquals(1, signinPromo.getItemCount());
+
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(false);
+        ((SignInAllowedObserver) ntpManager.mDestructionObserver).onSignInAllowedChanged();
+        assertEquals(0, signinPromo.getItemCount());
+
+        when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
+        ((SignInAllowedObserver) ntpManager.mDestructionObserver).onSignInAllowedChanged();
         assertEquals(1, signinPromo.getItemCount());
     }
 
@@ -840,7 +850,7 @@ public class NewTabPageAdapterTest {
 
     private static class MockNewTabPageManager implements NewTabPageManager {
         SuggestionsSource mSuggestionsSource;
-        SignInStateObserver mSignInStateObserver;
+        DestructionObserver mDestructionObserver;
 
         public MockNewTabPageManager(SuggestionsSource suggestionsSource) {
             mSuggestionsSource = suggestionsSource;
@@ -1002,8 +1012,8 @@ public class NewTabPageAdapterTest {
         }
 
         @Override
-        public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {
-            mSignInStateObserver = signInStateObserver;
+        public void setDestructionObserver(DestructionObserver destructionObserver) {
+            mDestructionObserver  = destructionObserver;
         }
 
         @Override

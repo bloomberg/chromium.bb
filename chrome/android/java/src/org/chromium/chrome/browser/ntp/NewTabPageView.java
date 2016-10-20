@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
+import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
@@ -57,7 +58,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
-import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -297,10 +297,9 @@ public class NewTabPageView extends FrameLayout
         @Nullable SuggestionsSource getSuggestionsSource();
 
         /**
-         * Registers a {@link SignInStateObserver}, will handle the de-registration when the New Tab
-         * Page goes away.
+         * Registers a {@link DestructionObserver}, notified when the New Tab Page goes away.
          */
-        void registerSignInStateObserver(SignInStateObserver signInStateObserver);
+        void setDestructionObserver(DestructionObserver destructionObserver);
 
         /**
          * @return whether the {@link NewTabPage} associated with this manager is the current page
