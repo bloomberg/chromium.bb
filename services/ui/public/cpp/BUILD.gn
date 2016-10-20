@@ -142,7 +142,6 @@ source_set("internal") {
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
     "//services/ui/public/interfaces",
-    "//services/ui/public/interfaces",
     "//ui/display",
     "//ui/events",
     "//ui/gfx/geometry",

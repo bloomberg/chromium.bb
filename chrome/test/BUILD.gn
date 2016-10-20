@@ -639,7 +639,6 @@ if (!is_android) {
         "../browser/chromeos/login/screenshot_testing/SkPMetric.h",
         "../browser/chromeos/login/screenshot_testing/screenshot_tester.cc",
         "../browser/chromeos/login/screenshot_testing/screenshot_tester.h",
-        "../browser/chromeos/login/screenshot_testing/screenshot_tester.h",
         "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.cc",
         "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h",
         "../browser/chromeos/login/test/https_forwarder.cc",

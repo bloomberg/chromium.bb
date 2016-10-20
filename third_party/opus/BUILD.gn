@@ -296,7 +296,6 @@ static_library("opus") {
       "src/silk/fixed/schur_FIX.c",
       "src/silk/fixed/solve_LS_FIX.c",
       "src/silk/fixed/structs_FIX.h",
-      "src/silk/fixed/structs_FIX.h",
       "src/silk/fixed/vector_ops_FIX.c",
       "src/silk/fixed/warped_autocorrelation_FIX.c",
     ]

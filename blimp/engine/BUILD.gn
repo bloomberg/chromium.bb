@@ -219,7 +219,6 @@ source_set("app_ui") {
     "//ui/events",
     "//ui/gfx",
     "//ui/platform_window",
-    "//ui/platform_window",
     "//ui/platform_window/stub/",
   ]
 }

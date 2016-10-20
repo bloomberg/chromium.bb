@@ -356,7 +356,6 @@ if (enable_configuration_policy) {
       "//base/test:test_support",
       "//components/policy:generated",
       "//components/prefs:test_support",
-      "//components/prefs:test_support",
       "//google_apis",
       "//net:test_support",
       "//testing/gmock",

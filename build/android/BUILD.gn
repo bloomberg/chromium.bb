@@ -48,7 +48,6 @@ if (enable_java_templates) {
   CR = "$0x0A"
   _json = "{$CR"
   _json += "  \"android_sdk_root\": \"$_rebased_android_sdk_root\",$CR"
-  _json += "  \"android_sdk_root\": \"$_rebased_android_sdk_root\",$CR"
   _json += "  \"compile_sdk_version\": \"$android_sdk_version\",$CR"
   _json += "  \"build_tools_version\": \"$android_sdk_build_tools_version\"$CR"
   _json += "}$CR"

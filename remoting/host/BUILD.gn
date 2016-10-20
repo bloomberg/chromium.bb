@@ -446,7 +446,6 @@ static_library("test_support") {
     "fake_host_extension.cc",
     "fake_host_extension.h",
     "fake_host_status_monitor.h",
-    "fake_host_status_monitor.h",
     "fake_mouse_cursor_monitor.cc",
     "fake_mouse_cursor_monitor.h",
     "fake_oauth_token_getter.cc",

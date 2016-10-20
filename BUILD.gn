@@ -791,7 +791,6 @@ group("gn_only") {
       "//third_party/libsrtp:roc_driver",
       "//third_party/libsrtp:rtpw",
       "//third_party/libsrtp:srtp_driver",
-      "//third_party/libsrtp:srtp_driver",
       "//third_party/libsrtp:srtp_test_aes_calc",
       "//third_party/libsrtp:srtp_test_cipher_driver",
       "//third_party/libsrtp:srtp_test_datatypes_driver",

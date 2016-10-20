@@ -20,7 +20,6 @@ source_set("declarative_webrequest") {
 
   deps = [
     "//content/public/browser",
-    "//content/public/browser",
     "//extensions/common/api",
     "//third_party/re2",
   ]
