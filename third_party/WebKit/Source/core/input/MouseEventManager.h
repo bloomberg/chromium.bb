@@ -171,7 +171,7 @@ class CORE_EXPORT MouseEventManager
   // is different from the given element.
   bool slideFocusOnShadowHostIfNecessary(const Element&);
 
-  bool dragHysteresisExceeded(const IntPoint&) const;
+  bool dragThresholdExceeded(const IntPoint&) const;
   bool handleDrag(const MouseEventWithHitTestResults&, DragInitiator);
   bool tryStartDrag(const MouseEventWithHitTestResults&);
   void clearDragDataTransfer();

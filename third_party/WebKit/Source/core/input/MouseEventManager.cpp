@@ -59,19 +59,16 @@ PlatformMouseEvent mouseEventWithRegion(Node* node,
 // during a scroll.
 const double kFakeMouseMoveInterval = 0.1;
 
+// TODO(crbug.com/653490): Read these values from the OS.
 #if OS(MACOSX)
+const int kDragThresholdX = 3;
+const int kDragThresholdY = 3;
 const double kTextDragDelay = 0.15;
 #else
+const int kDragThresholdX = 4;
+const int kDragThresholdY = 4;
 const double kTextDragDelay = 0.0;
 #endif
-
-// The link drag hysteresis is much larger than the others because there
-// needs to be enough space to cancel the link press without starting a link
-// drag, and because dragging links is rare.
-const int kLinkDragHysteresis = 40;
-const int kImageDragHysteresis = 5;
-const int kTextDragHysteresis = 3;
-const int kGeneralDragHysteresis = 3;
 
 }  // namespace
 
@@ -782,11 +779,11 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
   m_frame->view()->setCursor(pointerCursor());
 
   if (initiator == DragInitiator::Mouse &&
-      !dragHysteresisExceeded(event.event().position()))
+      !dragThresholdExceeded(event.event().position()))
     return true;
 
-  // Once we're past the hysteresis point, we don't want to treat this gesture
-  // as a click
+  // Once we're past the drag threshold, we don't want to treat this gesture as
+  // a click.
   invalidateClick();
 
   if (!tryStartDrag(event)) {
@@ -930,7 +927,7 @@ DragState& MouseEventManager::dragState() {
   return state;
 }
 
-bool MouseEventManager::dragHysteresisExceeded(
+bool MouseEventManager::dragThresholdExceeded(
     const IntPoint& dragLocationInRootFrame) const {
   FrameView* view = m_frame->view();
   if (!view)
@@ -938,24 +935,12 @@ bool MouseEventManager::dragHysteresisExceeded(
   IntPoint dragLocation = view->rootFrameToContents(dragLocationInRootFrame);
   IntSize delta = dragLocation - m_mouseDownPos;
 
-  int threshold = kGeneralDragHysteresis;
-  switch (dragState().m_dragType) {
-    case DragSourceActionSelection:
-      threshold = kTextDragHysteresis;
-      break;
-    case DragSourceActionImage:
-      threshold = kImageDragHysteresis;
-      break;
-    case DragSourceActionLink:
-      threshold = kLinkDragHysteresis;
-      break;
-    case DragSourceActionDHTML:
-      break;
-    case DragSourceActionNone:
-      NOTREACHED();
-  }
+  // WebKit's drag thresholds depend on the type of object being dragged. If we
+  // want to revive that behavior, we can multiply the threshold constants with
+  // a number based on dragState().m_dragType.
 
-  return abs(delta.width()) >= threshold || abs(delta.height()) >= threshold;
+  return abs(delta.width()) >= kDragThresholdX ||
+         abs(delta.height()) >= kDragThresholdY;
 }
 
 void MouseEventManager::clearDragHeuristicState() {
