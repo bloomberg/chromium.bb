@@ -14,7 +14,7 @@ class DepsUpdaterTest(unittest.TestCase):
     def test_is_manual_test_regular_test(self):
         # TODO(qyearsley): Refactor these tests to re-use the MockFileSystem from the MockHost.
         updater = DepsUpdater(MockHost())
-        fs = MockFileSystem()
+        fs = updater.host.filesystem
         dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
         self.assertFalse(updater.is_manual_test(fs, dirname, 'test.html'))
         self.assertFalse(updater.is_manual_test(fs, dirname, 'manual-foo.htm'))
@@ -23,7 +23,7 @@ class DepsUpdaterTest(unittest.TestCase):
 
     def test_is_manual_test_no_automation_file(self):
         updater = DepsUpdater(MockHost())
-        fs = MockFileSystem()
+        fs = updater.host.filesystem
         dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
         self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.html'))
         self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.htm'))
@@ -32,10 +32,11 @@ class DepsUpdaterTest(unittest.TestCase):
     def test_is_manual_test_with_corresponding_automation_file(self):
         updater = DepsUpdater(MockHost())
         imported_dir = '/mock-checkout/third_party/WebKit/LayoutTests/imported/'
-        fs = MockFileSystem(files={
+        fs = updater.host.filesystem
+        fs.files = {
             imported_dir + 'wpt_automation/a/x-manual-input.js': '',
             imported_dir + 'wpt_automation/a/y-manual-automation.js': '',
-        })
+        }
         self.assertTrue(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'x-manual.html'))
         self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'y-manual.html'))
 
