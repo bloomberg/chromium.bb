@@ -51,8 +51,8 @@
       {
         "id": "CreateType",
         "type": "string",
-        "description": "Specifies what type of browser window to create. The 'panel' and 'detached_panel' types create a popup unless the '--enable-panels' flag is set.",
-        "enum": ["normal", "popup", "panel", "detached_panel"]
+        "description": "Specifies what type of browser window to create. 'panel' is deprecated and only available to existing whitelisted extensions on Chrome OS.",
+        "enum": ["normal", "popup", "panel"]
       }
     ],
     "properties": {
@@ -198,7 +198,7 @@
               "type": {
                 "$ref": "CreateType",
                 "optional": true,
-                "description": "Specifies what type of browser window to create. The 'panel' and 'detached_panel' types create a popup unless the '--enable-panels' flag is set."
+                "description": "Specifies what type of browser window to create."
               },
               "state": {
                 "$ref": "WindowState",

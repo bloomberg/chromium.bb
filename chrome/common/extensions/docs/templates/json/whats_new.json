@@ -171,7 +171,7 @@
     },
     "experimental-permission-no-longer-required-for-panel-type": {
         "type": "additionsToExistingApis",
-        "description": "The experimental permission is no longer required for the panel type. By default, the panel type creates a popup unless the <code>--enable-panels</code> flag is set.",
+        "description": "Experimental permission for deprecated windows.create panel type.",
         "version": 16
     },
     "offline_enabled.field-specify-without-connection": {
