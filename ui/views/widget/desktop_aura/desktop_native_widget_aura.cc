@@ -11,7 +11,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
@@ -168,19 +168,19 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetTopLevelHandler);
 };
 
-class DesktopNativeWidgetAuraWindowTreeClient :
-    public aura::client::WindowTreeClient {
+class DesktopNativeWidgetAuraWindowParentingClient
+    : public aura::client::WindowParentingClient {
  public:
-  explicit DesktopNativeWidgetAuraWindowTreeClient(
+  explicit DesktopNativeWidgetAuraWindowParentingClient(
       aura::Window* root_window)
       : root_window_(root_window) {
-    aura::client::SetWindowTreeClient(root_window_, this);
+    aura::client::SetWindowParentingClient(root_window_, this);
   }
-  ~DesktopNativeWidgetAuraWindowTreeClient() override {
-    aura::client::SetWindowTreeClient(root_window_, NULL);
+  ~DesktopNativeWidgetAuraWindowParentingClient() override {
+    aura::client::SetWindowParentingClient(root_window_, NULL);
   }
 
-  // Overridden from client::WindowTreeClient:
+  // Overridden from client::WindowParentingClient:
   aura::Window* GetDefaultParent(aura::Window* context,
                                  aura::Window* window,
                                  const gfx::Rect& bounds) override {
@@ -204,7 +204,7 @@ class DesktopNativeWidgetAuraWindowTreeClient :
  private:
   aura::Window* root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraWindowTreeClient);
+  DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraWindowParentingClient);
 };
 
 }  // namespace
@@ -292,7 +292,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
     tooltip_controller_.reset();
   }
 
-  window_tree_client_.reset();  // Uses host_->dispatcher() at destruction.
+  window_parenting_client_.reset();  // Uses host_->dispatcher() at destruction.
 
   capture_client_.reset();  // Uses host_->dispatcher() at destruction.
 
@@ -472,8 +472,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   host_->AddObserver(this);
 
-  window_tree_client_.reset(
-      new DesktopNativeWidgetAuraWindowTreeClient(host_->window()));
+  window_parenting_client_.reset(
+      new DesktopNativeWidgetAuraWindowParentingClient(host_->window()));
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   aura::client::SetDragDropDelegate(content_window_, this);
 

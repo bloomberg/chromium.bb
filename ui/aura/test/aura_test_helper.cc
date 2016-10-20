@@ -14,7 +14,7 @@
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/aura/test/test_window_tree_client.h"
+#include "ui/aura/test/test_window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -77,7 +77,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
   focus_client_.reset(new TestFocusClient);
   client::SetFocusClient(root_window(), focus_client_.get());
-  stacking_client_.reset(new TestWindowTreeClient(root_window()));
+  parenting_client_.reset(new TestWindowParentingClient(root_window()));
   capture_client_.reset(new client::DefaultCaptureClient(root_window()));
 
   root_window()->Show();
@@ -87,7 +87,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
 void AuraTestHelper::TearDown() {
   teardown_called_ = true;
-  stacking_client_.reset();
+  parenting_client_.reset();
   capture_client_.reset();
   focus_client_.reset();
   client::SetFocusClient(root_window(), nullptr);

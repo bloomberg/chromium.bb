@@ -14,7 +14,7 @@ namespace aura {
 namespace client {
 class DefaultCaptureClient;
 class FocusClient;
-class WindowTreeClient;
+class WindowParentingClient;
 }
 }
 
@@ -42,7 +42,7 @@ class ShellPlatformDataAura {
   std::unique_ptr<aura::WindowTreeHost> host_;
   std::unique_ptr<aura::client::FocusClient> focus_client_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellPlatformDataAura);
 };

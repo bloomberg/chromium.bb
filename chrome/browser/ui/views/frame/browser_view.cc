@@ -159,7 +159,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #endif

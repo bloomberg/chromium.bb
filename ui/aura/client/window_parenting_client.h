@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_CLIENT_WINDOW_TREE_CLIENT_H_
-#define UI_AURA_CLIENT_WINDOW_TREE_CLIENT_H_
+#ifndef UI_AURA_CLIENT_WINDOW_PARENTING_CLIENT_H_
+#define UI_AURA_CLIENT_WINDOW_PARENTING_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
 
@@ -17,9 +17,9 @@ namespace client {
 
 // Implementations of this object are used to help locate a default parent for
 // NULL-parented Windows.
-class AURA_EXPORT WindowTreeClient {
+class AURA_EXPORT WindowParentingClient {
  public:
-  virtual ~WindowTreeClient() {}
+  virtual ~WindowParentingClient() {}
 
   // Called by the Window when it looks for a default parent. Returns the
   // window that |window| should be added to instead. |context| provides a
@@ -30,20 +30,21 @@ class AURA_EXPORT WindowTreeClient {
   //
   // TODO(erg): Remove |context|, and maybe after oshima's patch lands,
   // |bounds|.
-  virtual Window* GetDefaultParent(
-      Window* context,
-      Window* window,
-      const gfx::Rect& bounds) = 0;
+  virtual Window* GetDefaultParent(Window* context,
+                                   Window* window,
+                                   const gfx::Rect& bounds) = 0;
 };
 
 // Set/Get a window tree client for the RootWindow containing |window|. |window|
 // must not be NULL.
-AURA_EXPORT void SetWindowTreeClient(Window* window,
-                                     WindowTreeClient* window_tree_client);
-WindowTreeClient* GetWindowTreeClient(Window* window);
+AURA_EXPORT void SetWindowParentingClient(
+    Window* window,
+    WindowParentingClient* window_tree_client);
+WindowParentingClient* GetWindowParentingClient(Window* window);
 
 // Adds |window| to an appropriate parent by consulting an implementation of
-// WindowTreeClient attached at the root Window containing |context|. The final
+// WindowParentingClient attached at the root Window containing |context|. The
+// final
 // location may be a window hierarchy other than the one supplied via
 // |context|, which must not be NULL. |screen_bounds| may be empty.
 AURA_EXPORT void ParentWindowWithContext(Window* window,
@@ -53,4 +54,4 @@ AURA_EXPORT void ParentWindowWithContext(Window* window,
 }  // namespace client
 }  // namespace aura
 
-#endif  // UI_AURA_CLIENT_WINDOW_TREE_CLIENT_H_
+#endif  // UI_AURA_CLIENT_WINDOW_PARENTING_CLIENT_H_

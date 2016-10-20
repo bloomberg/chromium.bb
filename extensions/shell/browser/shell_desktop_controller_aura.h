@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "extensions/shell/browser/desktop_controller.h"
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host_observer.h"
 
 #if defined(OS_CHROMEOS)
@@ -57,7 +57,7 @@ class ShellScreen;
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopControllerAura
     : public DesktopController,
-      public aura::client::WindowTreeClient,
+      public aura::client::WindowParentingClient,
 #if defined(OS_CHROMEOS)
       public chromeos::PowerManagerClient::Observer,
       public ui::DisplayConfigurator::Observer,
@@ -75,7 +75,7 @@ class ShellDesktopControllerAura
   void RemoveAppWindow(AppWindow* window) override;
   void CloseAppWindows() override;
 
-  // aura::client::WindowTreeClient overrides:
+  // aura::client::WindowParentingClient overrides:
   aura::Window* GetDefaultParent(aura::Window* context,
                                  aura::Window* window,
                                  const gfx::Rect& bounds) override;

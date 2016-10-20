@@ -30,7 +30,7 @@ class WindowTreeHost;
 
 namespace client {
 class DefaultCaptureClient;
-class WindowTreeClient;
+class WindowParentingClient;
 }  // namespace client
 }  // namespace aura
 
@@ -177,7 +177,7 @@ class BlimpEngineSession : public BlimpMessageProcessor,
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
 
   // Used to attach null-parented windows (e.g. popups) to the root window.
-  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
 
   // Manages all global settings for the engine session.
   SettingsManager* settings_manager_;

@@ -8,17 +8,18 @@
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 
 namespace ash {
 class AlwaysOnTopController;
 
-class ASH_EXPORT StackingController : public aura::client::WindowTreeClient {
+class ASH_EXPORT StackingController
+    : public aura::client::WindowParentingClient {
  public:
   StackingController();
   ~StackingController() override;
 
-  // Overridden from aura::client::WindowTreeClient:
+  // Overridden from aura::client::WindowParentingClient:
   aura::Window* GetDefaultParent(aura::Window* context,
                                  aura::Window* window,
                                  const gfx::Rect& bounds) override;

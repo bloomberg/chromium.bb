@@ -20,7 +20,7 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
   host_->InitHost();
   input_method_glue_.reset(new aura::InputMethodGlue(host_.get()));
-  aura::client::SetWindowTreeClient(host_->window(), this);
+  aura::client::SetWindowParentingClient(host_->window(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
   aura::client::SetFocusClient(host_->window(), focus_client_.get());

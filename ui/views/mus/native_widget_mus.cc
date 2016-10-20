@@ -27,7 +27,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/client/default_capture_client.h"
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
@@ -138,17 +138,18 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
 };
 
-class NativeWidgetMusWindowTreeClient : public aura::client::WindowTreeClient {
+class NativeWidgetMusWindowParentingClient
+    : public aura::client::WindowParentingClient {
  public:
-  explicit NativeWidgetMusWindowTreeClient(aura::Window* root_window)
+  explicit NativeWidgetMusWindowParentingClient(aura::Window* root_window)
       : root_window_(root_window) {
-    aura::client::SetWindowTreeClient(root_window_, this);
+    aura::client::SetWindowParentingClient(root_window_, this);
   }
-  ~NativeWidgetMusWindowTreeClient() override {
-    aura::client::SetWindowTreeClient(root_window_, nullptr);
+  ~NativeWidgetMusWindowParentingClient() override {
+    aura::client::SetWindowParentingClient(root_window_, nullptr);
   }
 
-  // Overridden from client::WindowTreeClient:
+  // Overridden from client::WindowParentingClient:
   aura::Window* GetDefaultParent(aura::Window* context,
                                  aura::Window* window,
                                  const gfx::Rect& bounds) override {
@@ -158,7 +159,7 @@ class NativeWidgetMusWindowTreeClient : public aura::client::WindowTreeClient {
  private:
   aura::Window* root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMusWindowTreeClient);
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMusWindowParentingClient);
 };
 
 // A screen position client that applies the offset of the ui::Window.
@@ -610,7 +611,7 @@ void NativeWidgetMus::OnPlatformWindowClosed() {
     tooltip_controller_.reset();
   }
 
-  window_tree_client_.reset();  // Uses |content_|.
+  window_parenting_client_.reset();  // Uses |content_|.
   capture_client_.reset();      // Uses |content_|.
 
   window_tree_host_->RemoveObserver(this);
@@ -756,8 +757,8 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
     aura::client::SetCursorClient(hosted_window, cursor_manager_.get());
   }
 
-  window_tree_client_ =
-      base::MakeUnique<NativeWidgetMusWindowTreeClient>(hosted_window);
+  window_parenting_client_ =
+      base::MakeUnique<NativeWidgetMusWindowParentingClient>(hosted_window);
   hosted_window->AddPreTargetHandler(focus_client_.get());
   hosted_window->SetLayoutManager(
       new ContentWindowLayoutManager(hosted_window, content_));

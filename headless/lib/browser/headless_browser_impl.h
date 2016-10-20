@@ -20,7 +20,7 @@ namespace aura {
 class WindowTreeHost;
 
 namespace client {
-class WindowTreeClient;
+class WindowParentingClient;
 }
 }
 
@@ -78,7 +78,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   // is used for all web contents. We should probably use one
   // window per web contents, but additional investigation is needed.
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
-  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
       browser_contexts_;

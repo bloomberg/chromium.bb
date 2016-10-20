@@ -26,7 +26,7 @@ namespace client {
 class DragDropClient;
 class FocusClient;
 class ScreenPositionClient;
-class WindowTreeClient;
+class WindowParentingClient;
 }
 }
 
@@ -263,7 +263,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   std::unique_ptr<wm::FocusController> focus_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> position_client_;
   std::unique_ptr<aura::client::DragDropClient> drag_drop_client_;
-  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
   std::unique_ptr<DesktopEventClient> event_client_;
   std::unique_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
 

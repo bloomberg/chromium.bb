@@ -418,7 +418,8 @@ RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
   wm_root_window_controller_ = WmRootWindowControllerAura::Get(root_window);
 
   stacking_controller_.reset(new StackingController);
-  aura::client::SetWindowTreeClient(root_window, stacking_controller_.get());
+  aura::client::SetWindowParentingClient(root_window,
+                                         stacking_controller_.get());
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window));
 }
 

@@ -18,7 +18,7 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/lib/browser/headless_window_tree_client.h"
+#include "headless/lib/browser/headless_window_parenting_client.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
@@ -123,8 +123,8 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
       aura::WindowTreeHost::Create(gfx::Rect(options()->window_size)));
   window_tree_host_->InitHost();
 
-  window_tree_client_.reset(
-      new HeadlessWindowTreeClient(window_tree_host_->window()));
+  window_parenting_client_.reset(
+      new HeadlessWindowParentingClient(window_tree_host_->window()));
 
   on_start_callback_.Run(this);
   on_start_callback_ = base::Callback<void(HeadlessBrowser*)>();

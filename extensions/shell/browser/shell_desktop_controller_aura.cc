@@ -321,7 +321,7 @@ void ShellDesktopControllerAura::CreateRootWindow() {
   // TODO(mukai): Set up input method.
 
   host_.reset(screen_->CreateHostForPrimaryDisplay());
-  aura::client::SetWindowTreeClient(host_->window(), this);
+  aura::client::SetWindowParentingClient(host_->window(), this);
   root_window_event_filter_.reset(new wm::CompoundEventFilter);
   host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
   InitWindowManager();

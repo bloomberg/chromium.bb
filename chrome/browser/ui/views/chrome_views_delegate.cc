@@ -427,8 +427,8 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
     params->context = ash::Shell::GetPrimaryRootWindow();
 #elif defined(USE_AURA)
   // While the majority of the time, context wasn't plumbed through due to the
-  // existence of a global WindowTreeClient, if this window is toplevel, it's
-  // possible that there is no contextual state that we can use.
+  // existence of a global WindowParentingClient, if this window is toplevel,
+  // it's possible that there is no contextual state that we can use.
   if (params->parent == NULL && params->context == NULL && !params->child) {
     params->native_widget = new views::DesktopNativeWidgetAura(delegate);
   } else if (use_non_toplevel_window) {

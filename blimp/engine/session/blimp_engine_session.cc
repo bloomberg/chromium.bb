@@ -21,7 +21,7 @@
 #include "blimp/engine/app/switches.h"
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
-#include "blimp/engine/app/ui/blimp_window_tree_client.h"
+#include "blimp/engine/app/ui/blimp_window_parenting_client.h"
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/engine/common/blimp_user_agent.h"
@@ -281,8 +281,8 @@ void BlimpEngineSession::Initialize() {
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
 
-  window_tree_client_.reset(
-      new BlimpWindowTreeClient(window_tree_host_->window()));
+  window_parenting_client_.reset(
+      new BlimpWindowParentingClient(window_tree_host_->window()));
 
   window_tree_host_->GetInputMethod()->AddObserver(this);
 

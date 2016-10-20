@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 
 namespace aura {
@@ -38,7 +38,7 @@ class CompoundEventFilter;
 // Creates a minimal environment for running the shell. We can't pull in all of
 // ash here, but we can create attach several of the same things we'd find in
 // the ash parts of the code.
-class WMTestHelper : public aura::client::WindowTreeClient {
+class WMTestHelper : public aura::client::WindowParentingClient {
  public:
   WMTestHelper(const gfx::Size& default_window_size,
                ui::ContextFactory* context_factory);
@@ -46,7 +46,7 @@ class WMTestHelper : public aura::client::WindowTreeClient {
 
   aura::WindowTreeHost* host() { return host_.get(); }
 
-  // Overridden from client::WindowTreeClient:
+  // Overridden from client::WindowParentingClient:
   aura::Window* GetDefaultParent(aura::Window* context,
                                  aura::Window* window,
                                  const gfx::Rect& bounds) override;

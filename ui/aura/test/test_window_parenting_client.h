@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_TEST_WINDOW_TREE_CLIENT_H_
-#define UI_AURA_TEST_TEST_WINDOW_TREE_CLIENT_H_
+#ifndef UI_AURA_TEST_TEST_WINDOW_PARENTING_CLIENT_H_
+#define UI_AURA_TEST_TEST_WINDOW_PARENTING_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/client/window_parenting_client.h"
 
 namespace aura {
 namespace test {
 
-class TestWindowTreeClient : public client::WindowTreeClient {
+class TestWindowParentingClient : public client::WindowParentingClient {
  public:
-  explicit TestWindowTreeClient(Window* root_window);
-  ~TestWindowTreeClient() override;
+  explicit TestWindowParentingClient(Window* root_window);
+  ~TestWindowParentingClient() override;
 
-  // Overridden from client::WindowTreeClient:
+  // Overridden from client::WindowParentingClient:
   Window* GetDefaultParent(Window* context,
                            Window* window,
                            const gfx::Rect& bounds) override;
@@ -26,10 +26,10 @@ class TestWindowTreeClient : public client::WindowTreeClient {
  private:
   Window* root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowParentingClient);
 };
 
 }  // namespace test
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_TEST_WINDOW_TREE_CLIENT_H_
+#endif  // UI_AURA_TEST_TEST_WINDOW_PARENTING_CLIENT_H_

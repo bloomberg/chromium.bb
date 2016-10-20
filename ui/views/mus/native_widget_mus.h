@@ -30,7 +30,7 @@ namespace client {
 class DefaultCaptureClient;
 class DragDropClient;
 class ScreenPositionClient;
-class WindowTreeClient;
+class WindowParentingClient;
 }
 class Window;
 }
@@ -292,7 +292,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   std::unique_ptr<wm::FocusController> focus_client_;
   std::unique_ptr<MusCaptureClient> capture_client_;
   std::unique_ptr<aura::client::DragDropClient> drag_drop_client_;
-  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   std::unique_ptr<wm::CursorManager> cursor_manager_;
 

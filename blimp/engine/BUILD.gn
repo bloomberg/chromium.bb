@@ -203,8 +203,8 @@ source_set("app_ui") {
     "app/ui/blimp_layout_manager.h",
     "app/ui/blimp_screen.cc",
     "app/ui/blimp_screen.h",
-    "app/ui/blimp_window_tree_client.cc",
-    "app/ui/blimp_window_tree_client.h",
+    "app/ui/blimp_window_parenting_client.cc",
+    "app/ui/blimp_window_parenting_client.h",
     "app/ui/blimp_window_tree_host.cc",
     "app/ui/blimp_window_tree_host.h",
   ]
