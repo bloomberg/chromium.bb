@@ -144,7 +144,7 @@ cr-menu.chrome-menu > [checked]::before {
 }
 
 .cr-dialog-buttons > button.cr-dialog-ok {
-  background-color: rgb(33, 150, 243);
+  background-color: rgb(51, 103, 214);
   color: white;
 }
 
@@ -153,7 +153,7 @@ cr-menu.chrome-menu > [checked]::before {
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel:hover {
-  color: rgb(33, 150, 243);
+  color: rgb(51, 103, 214);
 }
 
 .cr-dialog-buttons > button[disabled],
@@ -163,7 +163,7 @@ cr-menu.chrome-menu > [checked]::before {
 }
 
 .cr-dialog-buttons > button:focus:not(:active) {
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
+  box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
 }
 
 .buttonbar button {

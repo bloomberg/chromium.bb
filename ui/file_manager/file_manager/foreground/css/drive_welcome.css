@@ -18,7 +18,7 @@
 
 .drive-welcome .imitate-paper-button {
   background-color: white;
-  color: rgb(49, 102, 212);
+  color: rgb(79, 129, 232);
   font-size: 13px;
   font-weight: 500;
   margin: 0;
@@ -40,7 +40,7 @@
 
 .drive-welcome.header .drive-welcome-wrapper {
   align-items: center;
-  background-color: rgb(49, 102, 212);
+  background-color: rgb(79, 129, 232);
   bottom: 0;
   color: white;
   display: flex;
@@ -214,7 +214,7 @@ html[dir='rtl'] .drive-welcome.header .banner-people {
 
 .drive-welcome.page .primary,
 .drive-welcome.page .primary:hover {
-  background-color: rgb(33, 150, 243);
+  background-color: rgb(51, 103, 214);
   color: white;
 }
 
@@ -223,7 +223,7 @@ html[dir='rtl'] .drive-welcome.header .banner-people {
 }
 
 .drive-welcome.page .secondary:hover {
-  color: rgb(33, 150, 243);
+  color: rgb(51, 103, 214);
 }
 
 body:not([type='full-page']) .drive-welcome.page .drive-welcome-wrapper {

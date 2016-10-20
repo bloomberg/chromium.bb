@@ -350,7 +350,7 @@ div.splitter {
 }
 
 #directory-tree .tree-row > paper-ripple {
-  color: rgb(19, 120, 185);
+  color: rgb(51, 103, 214);
 }
 
 #directory-tree [renaming] > .tree-row > paper-ripple {
@@ -362,7 +362,7 @@ div.splitter {
 #directory-tree .tree-row[lead],
 #directory-tree .tree-row[selected],
 #directory-tree .tree-row[anchor] {
-  color: rgb(19, 120, 185);
+  color: rgb(51, 103, 214);
 }
 
 #directory-tree .tree-row > .root-eject {
@@ -391,7 +391,7 @@ div.splitter {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   align-items: center;
-  background: rgb(33, 150, 243);
+  background: rgb(51, 103, 214);
   box-sizing: border-box;
   color: white;
   display: flex;
@@ -707,7 +707,7 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details .status .destination-link {
-  color: #1BA8F3;
+  color: #3367D6;
   cursor: pointer;
 }
 
@@ -735,7 +735,7 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details paper-button.import {
-  background-color: #1BA8F3;
+  background-color: #3367D6;
 }
 
 #cloud-import-details paper-button.cancel {
@@ -957,7 +957,7 @@ html[dir='rtl'] #search-box .clear {
 
 .dialog-footer .primary,
 .dialog-footer .primary:hover {
-  background-color: rgb(33, 150, 243);
+  background-color: rgb(51, 103, 214);
   color: white;
 }
 
@@ -966,7 +966,7 @@ html[dir='rtl'] #search-box .clear {
 }
 
 .dialog-footer .secondary:hover {
-  color: rgb(33, 150, 243);
+  color: rgb(51, 103, 214);
 }
 
 .dialog-footer input {
@@ -1007,7 +1007,7 @@ html[dir='rtl'] #search-box .clear {
 .dialog-footer .primary:focus:not(:active),
 .dialog-footer .secondary:focus:not(:active),
 .dialog-footer select:focus:not(:active) {
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
+  box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
 }
 
 .progressable:not([progress]) .progress-bar,
@@ -1190,7 +1190,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 
 .downloads-warning {
   align-items: center;
-  background-color: rgb(49, 102, 212);
+  background-color: rgb(79, 129, 232);
   color: white;
   display: flex;
   flex: none;
@@ -1238,7 +1238,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 .volume-warning {
   -webkit-animation: heightAnimation 70ms linear;
   align-items: center;
-  background-color: rgb(49, 102, 212);
+  background-color: rgb(79, 129, 232);
   color: white;
   display: flex;
   flex: none;
@@ -1275,7 +1275,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 .volume-warning .imitate-paper-button {
   background-color: white;
   border-radius: 2px;
-  color: rgb(49, 102, 212);
+  color: rgb(79, 129, 232);
   font-size: 13px;
   font-weight: 500;
   height: 32px;
@@ -1457,7 +1457,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid:focus .shield {
-  background-color: rgba(27, 168, 243, 0.5);
+  background-color: rgba(51, 103, 214, 0.5);
 }
 
 .thumbnail-grid .thumbnail-item[selected] .shield {
@@ -1553,7 +1553,7 @@ html[dir='rtl'] .badge {
 #list-container list:focus > li[selected],
 #list-container list:focus > li.accepts[selected],
 #default-tasks-list:focus > li[selected] {
-  background-color: rgb(213, 234, 245);
+  background-color: rgb(216, 223, 240);
 }
 
 #list-container.nohover grid > .accepts {
