@@ -476,7 +476,7 @@ cr.define('device_page_tests', function() {
             displayPage.displays[1].id, displayPage.selectedDisplay.id);
 
         displayPage.onMakePrimaryTap_();
-        displayPage.onSetOrientation_({detail: {selected: '90'}});
+        displayPage.onOrientationChange_({target: {value: '90'}});
         fakeSystemDisplay.onDisplayChanged.callListeners();
 
         return Promise.all([

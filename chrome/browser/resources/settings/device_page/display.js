@@ -279,12 +279,13 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: !{selected: string}}} e
+   * @param {!Event} event
    * @private
    */
-  onSetOrientation_: function(e) {
+  onOrientationChange_: function(event) {
+    let target = /** @type {!HTMLSelectElement} */ (event.target);
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
-      rotation: parseInt(e.detail.selected, 10)
+      rotation: parseInt(target.value, 10)
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
