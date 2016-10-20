@@ -13,7 +13,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "platform/scheduler/base/intrusive_heap.h"
 #include "platform/scheduler/base/task_queue_impl.h"
+#include "platform/scheduler/base/work_queue.h"
 #include "public/platform/WebCommon.h"
 
 namespace blink {
@@ -55,7 +57,7 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   bool IsSetEmpty(size_t set_index) const;
 
 #if DCHECK_IS_ON() || !defined(NDEBUG)
-  // Note this iterates over everything in |enqueue_order_to_work_queue_maps_|.
+  // Note this iterates over everything in |work_queue_heaps_|.
   // It's intended for use with DCHECKS and for testing
   bool ContainsWorkQueueForTest(const WorkQueue* queue) const;
 #endif
@@ -63,8 +65,22 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   const char* name() const { return name_; }
 
  private:
-  typedef std::map<EnqueueOrder, WorkQueue*> EnqueueOrderToWorkQueueMap;
-  std::vector<EnqueueOrderToWorkQueueMap> enqueue_order_to_work_queue_maps_;
+  struct OldestTaskEnqueueOrder {
+    EnqueueOrder key;
+    WorkQueue* value;
+
+    bool operator<=(const OldestTaskEnqueueOrder& other) const {
+      return key <= other.key;
+    }
+
+    void SetHeapHandle(HeapHandle handle) { value->set_heap_handle(handle); }
+
+    void ClearHeapHandle() { value->set_heap_handle(HeapHandle()); }
+  };
+
+  // For each set |work_queue_heaps_| has a queue of WorkQueue ordered by the
+  // oldest task in each WorkQueue.
+  std::vector<IntrusiveHeap<OldestTaskEnqueueOrder>> work_queue_heaps_;
   const char* name_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueueSets);

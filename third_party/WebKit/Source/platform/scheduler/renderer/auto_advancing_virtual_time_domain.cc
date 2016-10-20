@@ -25,8 +25,9 @@ bool AutoAdvancingVirtualTimeDomain::MaybeAdvanceTime() {
 
 void AutoAdvancingVirtualTimeDomain::RequestWakeup(base::TimeTicks now,
                                                    base::TimeDelta delay) {
-  base::TimeTicks dummy;
-  if (can_advance_virtual_time_ && !NextScheduledRunTime(&dummy))
+  // Avoid posting pointless DoWorks.  I.e. if the time domain has more then one
+  // scheduled wake up then we don't need to do anything.
+  if (can_advance_virtual_time_ && NumberOfScheduledWakeups() == 1u)
     RequestDoWork();
 }
 

@@ -42,8 +42,8 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
   }
 
   void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override {
-    base::TimeTicks dummy;
-    if (!NextScheduledRunTime(&dummy))
+    // De-dupe DoWorks.
+    if (NumberOfScheduledWakeups() == 1u)
       RequestDoWork();
   }
 

@@ -79,8 +79,8 @@ TEST_F(WorkQueueSetsTest, OnPushQueue) {
   EXPECT_FALSE(
       work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
 
+  // Calls OnPushQueue.
   work_queue->Push(FakeTaskWithEnqueueOrder(10));
-  work_queue_sets_->OnPushQueue(work_queue);
 
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
   EXPECT_EQ(work_queue, selected_work_queue);
@@ -139,9 +139,9 @@ TEST_F(WorkQueueSetsTest, OnPopQueue) {
 }
 
 TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
-  WorkQueue* queue1 = NewTaskQueue("queue");
-  WorkQueue* queue2 = NewTaskQueue("queue");
-  WorkQueue* queue3 = NewTaskQueue("queue");
+  WorkQueue* queue1 = NewTaskQueue("queue1");
+  WorkQueue* queue2 = NewTaskQueue("queue2");
+  WorkQueue* queue3 = NewTaskQueue("queue3");
   queue1->Push(FakeTaskWithEnqueueOrder(6));
   queue2->Push(FakeTaskWithEnqueueOrder(5));
   queue3->Push(FakeTaskWithEnqueueOrder(4));

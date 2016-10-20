@@ -1509,6 +1509,42 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   manager_->UnregisterTimeDomain(domain_b.get());
 }
 
+TEST_F(TaskQueueManagerTest,
+       PostDelayedTasksReverseOrderAlternatingTimeDomains) {
+  Initialize(1u);
+
+  std::vector<EnqueueOrder> run_order;
+
+  std::unique_ptr<RealTimeDomain> domain_a(new RealTimeDomain("test"));
+  std::unique_ptr<RealTimeDomain> domain_b(new RealTimeDomain("test"));
+  manager_->RegisterTimeDomain(domain_a.get());
+  manager_->RegisterTimeDomain(domain_b.get());
+
+  runners_[0]->SetTimeDomain(domain_a.get());
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                               base::TimeDelta::FromMilliseconds(40));
+
+  runners_[0]->SetTimeDomain(domain_b.get());
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+                               base::TimeDelta::FromMilliseconds(30));
+
+  runners_[0]->SetTimeDomain(domain_a.get());
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
+                               base::TimeDelta::FromMilliseconds(20));
+
+  runners_[0]->SetTimeDomain(domain_b.get());
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order),
+                               base::TimeDelta::FromMilliseconds(10));
+
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(40));
+  EXPECT_THAT(run_order, ElementsAre(4, 3, 2, 1));
+
+  runners_[0]->UnregisterTaskQueue();
+
+  manager_->UnregisterTimeDomain(domain_a.get());
+  manager_->UnregisterTimeDomain(domain_b.get());
+}
+
 namespace {
 void ChromiumRunloopInspectionTask(
     scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner) {

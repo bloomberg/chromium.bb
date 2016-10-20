@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/scheduler/base/enqueue_order.h"
+#include "platform/scheduler/base/intrusive_heap.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 
 namespace blink {
@@ -82,6 +83,10 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
 
   size_t work_queue_set_index() const { return work_queue_set_index_; }
 
+  HeapHandle heap_handle() const { return heap_handle_; }
+
+  void set_heap_handle(HeapHandle handle) { heap_handle_ = handle; }
+
   // Test support function. This should not be used in production code.
   void PopTaskForTest();
 
@@ -112,6 +117,7 @@ class BLINK_PLATFORM_EXPORT WorkQueue {
   WorkQueueSets* work_queue_sets_;  // NOT OWNED.
   TaskQueueImpl* task_queue_;       // NOT OWNED.
   size_t work_queue_set_index_;
+  HeapHandle heap_handle_;
   const char* name_;
   EnqueueOrder fence_;
 
