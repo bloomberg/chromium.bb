@@ -31,7 +31,7 @@ InspectorTest.dumpSelectedElementAccessibilityNode = function()
 }
 
 /**
- * @param {!AccessibilityAgent.AXNode} accessibilityNode
+ * @param {!WebInspector.AccessibilityNode} accessibilityNode
  */
 InspectorTest.dumpAccessibilityNode = function(accessibilityNode)
 {
@@ -42,11 +42,11 @@ InspectorTest.dumpAccessibilityNode = function(accessibilityNode)
     }
 
     var builder = [];
-    builder.push(accessibilityNode.role.value);
-    builder.push(accessibilityNode.name ? '"' + accessibilityNode.name.value + '"'
+    builder.push(accessibilityNode.role().value);
+    builder.push(accessibilityNode.name() ? '"' + accessibilityNode.name().value + '"'
                 : "<undefined>");
-    if ("properties" in accessibilityNode) {
-        for (var property of accessibilityNode.properties) {
+    if (accessibilityNode.properties()) {
+        for (var property of accessibilityNode.properties()) {
             if ("value" in property)
                 builder.push(property.name + '="' + property.value.value + '"');
         }
