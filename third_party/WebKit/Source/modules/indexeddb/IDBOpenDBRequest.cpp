@@ -67,6 +67,12 @@ DEFINE_TRACE(IDBOpenDBRequest) {
   IDBRequest::trace(visitor);
 }
 
+void IDBOpenDBRequest::contextDestroyed() {
+  IDBRequest::contextDestroyed();
+  if (m_databaseCallbacks)
+    m_databaseCallbacks->detachWebCallbacks();
+}
+
 const AtomicString& IDBOpenDBRequest::interfaceName() const {
   return EventTargetNames::IDBOpenDBRequest;
 }
@@ -89,12 +95,6 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion,
                                        WebIDBDataLoss dataLoss,
                                        String dataLossMessage) {
   IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
-  if (m_contextStopped || !getExecutionContext()) {
-    std::unique_ptr<WebIDBDatabase> db = std::move(backend);
-    db->abort(m_transactionId);
-    db->close();
-    return;
-  }
   if (!shouldEnqueueEvent())
     return;
 
@@ -126,12 +126,6 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion,
 void IDBOpenDBRequest::onSuccess(std::unique_ptr<WebIDBDatabase> backend,
                                  const IDBDatabaseMetadata& metadata) {
   IDB_TRACE("IDBOpenDBRequest::onSuccess()");
-  if (m_contextStopped || !getExecutionContext()) {
-    std::unique_ptr<WebIDBDatabase> db = std::move(backend);
-    if (db)
-      db->close();
-    return;
-  }
   if (!shouldEnqueueEvent())
     return;
 

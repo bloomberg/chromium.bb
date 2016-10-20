@@ -18,27 +18,49 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
-#include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
-#include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_return_value.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
+#include "content/common/indexed_db/indexed_db_metadata.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/quota/quota_manager.h"
 
+using indexed_db::mojom::CallbacksAssociatedPtrInfo;
 using storage::ShareableFileReference;
 
 namespace content {
 
 namespace {
 const int32_t kNoCursor = -1;
-const int32_t kNoDatabaseCallbacks = -1;
 const int64_t kNoTransaction = -1;
 }
+
+class IndexedDBCallbacks::IOThreadHelper {
+ public:
+  explicit IOThreadHelper(CallbacksAssociatedPtrInfo callbacks_info);
+  ~IOThreadHelper();
+
+  void SendError(const IndexedDBDatabaseError& error);
+  void SendSuccessStringList(const std::vector<base::string16>& value);
+  void SendBlocked(int64_t existing_version);
+  void SendUpgradeNeeded(int32_t database_id,
+                         int64_t old_version,
+                         blink::WebIDBDataLoss data_loss,
+                         const std::string& data_loss_message,
+                         const content::IndexedDBDatabaseMetadata& metadata);
+  void SendSuccessDatabase(int32_t database_id,
+                           const content::IndexedDBDatabaseMetadata& metadata);
+  void SendSuccessInteger(int64_t value);
+
+ private:
+  ::indexed_db::mojom::CallbacksAssociatedPtr callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
+};
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32_t ipc_thread_id,
@@ -49,9 +71,9 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_cursor_id_(kNoCursor),
       host_transaction_id_(kNoTransaction),
       ipc_database_id_(kNoDatabase),
-      ipc_database_callbacks_id_(kNoDatabaseCallbacks),
       data_loss_(blink::WebIDBDataLossNone),
-      sent_blocked_(false) {}
+      sent_blocked_(false),
+      io_helper_(nullptr) {}
 
 IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32_t ipc_thread_id,
@@ -63,35 +85,38 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
       ipc_cursor_id_(ipc_cursor_id),
       host_transaction_id_(kNoTransaction),
       ipc_database_id_(kNoDatabase),
-      ipc_database_callbacks_id_(kNoDatabaseCallbacks),
       data_loss_(blink::WebIDBDataLossNone),
-      sent_blocked_(false) {}
+      sent_blocked_(false),
+      io_helper_(nullptr) {}
 
-IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                       int32_t ipc_thread_id,
-                                       int32_t ipc_callbacks_id,
-                                       int32_t ipc_database_callbacks_id,
-                                       int64_t host_transaction_id,
-                                       const url::Origin& origin)
+IndexedDBCallbacks::IndexedDBCallbacks(
+    IndexedDBDispatcherHost* dispatcher_host,
+    const url::Origin& origin,
+    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info)
     : dispatcher_host_(dispatcher_host),
-      ipc_callbacks_id_(ipc_callbacks_id),
-      ipc_thread_id_(ipc_thread_id),
       ipc_cursor_id_(kNoCursor),
-      host_transaction_id_(host_transaction_id),
+      host_transaction_id_(kNoTransaction),
       origin_(origin),
       ipc_database_id_(kNoDatabase),
-      ipc_database_callbacks_id_(ipc_database_callbacks_id),
       data_loss_(blink::WebIDBDataLossNone),
-      sent_blocked_(false) {}
+      sent_blocked_(false),
+      io_helper_(new IOThreadHelper(std::move(callbacks_info))) {}
 
 IndexedDBCallbacks::~IndexedDBCallbacks() {}
 
 void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
   DCHECK(dispatcher_host_.get());
 
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
-      ipc_thread_id_, ipc_callbacks_id_, error.code(), error.message()));
-  dispatcher_host_ = NULL;
+  if (io_helper_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&IOThreadHelper::SendError,
+                   base::Unretained(io_helper_.get()), error));
+  } else {
+    dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
+        ipc_thread_id_, ipc_callbacks_id_, error.code(), error.message()));
+  }
+  dispatcher_host_ = nullptr;
 
   if (!connection_open_start_time_.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -103,37 +128,32 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
 
 void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
   DCHECK(dispatcher_host_.get());
-
+  DCHECK(io_helper_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
-  std::vector<base::string16> list;
-  for (unsigned i = 0; i < value.size(); ++i)
-    list.push_back(value[i]);
-
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessStringList(
-      ipc_thread_id_, ipc_callbacks_id_, list));
-  dispatcher_host_ = NULL;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IOThreadHelper::SendSuccessStringList,
+                 base::Unretained(io_helper_.get()), value));
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
   DCHECK(dispatcher_host_.get());
-
+  DCHECK(io_helper_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
-  // No transaction/db callbacks for DeleteDatabase.
-  DCHECK_EQ(kNoTransaction == host_transaction_id_,
-            kNoDatabaseCallbacks == ipc_database_callbacks_id_);
-  DCHECK_EQ(kNoDatabase, ipc_database_id_);
 
   if (sent_blocked_)
     return;
 
   sent_blocked_ = true;
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksIntBlocked(
-      ipc_thread_id_, ipc_callbacks_id_, existing_version));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IOThreadHelper::SendBlocked,
+                 base::Unretained(io_helper_.get()), existing_version));
 
   if (!connection_open_start_time_.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -149,29 +169,26 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
     const IndexedDBDatabaseMetadata& metadata,
     const IndexedDBDataLossInfo& data_loss_info) {
   DCHECK(dispatcher_host_.get());
-
-  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+  DCHECK(io_helper_);
   DCHECK_NE(kNoTransaction, host_transaction_id_);
+  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_NE(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
   data_loss_ = data_loss_info.status;
   dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_);
   int32_t ipc_database_id =
-      dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_);
+      dispatcher_host_->Add(connection.release(), origin_);
   if (ipc_database_id < 0)
     return;
+
   ipc_database_id_ = ipc_database_id;
-  IndexedDBMsg_CallbacksUpgradeNeeded_Params params;
-  params.ipc_thread_id = ipc_thread_id_;
-  params.ipc_callbacks_id = ipc_callbacks_id_;
-  params.ipc_database_id = ipc_database_id;
-  params.ipc_database_callbacks_id = ipc_database_callbacks_id_;
-  params.old_version = old_version;
-  params.idb_metadata = IndexedDBDispatcherHost::ConvertMetadata(metadata);
-  params.data_loss = data_loss_info.status;
-  params.data_loss_message = data_loss_info.message;
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksUpgradeNeeded(params));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IOThreadHelper::SendUpgradeNeeded,
+                 base::Unretained(io_helper_.get()), ipc_database_id,
+                 old_version, data_loss_info.status, data_loss_info.message,
+                 metadata));
 
   if (!connection_open_start_time_.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -185,28 +202,24 @@ void IndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
   DCHECK(dispatcher_host_.get());
-
+  DCHECK(io_helper_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_NE(kNoTransaction, host_transaction_id_);
   DCHECK_NE(ipc_database_id_ == kNoDatabase, !connection);
-  DCHECK_NE(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
   scoped_refptr<IndexedDBCallbacks> self(this);
 
   int32_t ipc_object_id = kNoDatabase;
   // Only register if the connection was not previously sent in OnUpgradeNeeded.
   if (ipc_database_id_ == kNoDatabase) {
-    ipc_object_id =
-        dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_);
+    ipc_object_id = dispatcher_host_->Add(connection.release(), origin_);
   }
 
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIDBDatabase(
-      ipc_thread_id_,
-      ipc_callbacks_id_,
-      ipc_database_callbacks_id_,
-      ipc_object_id,
-      IndexedDBDispatcherHost::ConvertMetadata(metadata)));
-  dispatcher_host_ = NULL;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IOThreadHelper::SendSuccessDatabase,
+                 base::Unretained(io_helper_.get()), ipc_object_id, metadata));
+  dispatcher_host_ = nullptr;
 
   if (!connection_open_start_time_.is_null()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -335,12 +348,12 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                                    const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    IndexedDBValue* value) {
+  DCHECK(!io_helper_);
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   int32_t ipc_object_id = dispatcher_host_->Add(cursor.get());
@@ -368,18 +381,18 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
             base::Owned(params.release()), dispatcher_host_, value->blob_info,
             base::Unretained(&p->value.blob_or_file_info)));
   }
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    IndexedDBValue* value) {
+  DCHECK(!io_helper_);
   DCHECK(dispatcher_host_.get());
 
   DCHECK_NE(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   IndexedDBCursor* idb_cursor =
@@ -415,13 +428,14 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
                    value->blob_info,
                    base::Unretained(&p->value.blob_or_file_info)));
   }
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
     std::vector<IndexedDBValue>* values) {
+  DCHECK(!io_helper_);
   DCHECK_EQ(keys.size(), primary_keys.size());
   DCHECK_EQ(keys.size(), values->size());
 
@@ -430,7 +444,6 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   DCHECK_NE(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::vector<IndexedDBKey> msg_keys;
@@ -475,10 +488,11 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
     dispatcher_host_->Send(
         new IndexedDBMsg_CallbacksSuccessCursorPrefetch(*params.get()));
   }
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
+  DCHECK(!io_helper_);
   DCHECK(dispatcher_host_.get());
 
   if (value && value->primary_key.IsValid()) {
@@ -488,7 +502,6 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
   }
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::unique_ptr<IndexedDBMsg_CallbacksSuccessValue_Params> params(
@@ -514,17 +527,17 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
                    value->blob_info,
                    base::Unretained(&p->value.blob_or_file_info)));
   }
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccessArray(
     std::vector<IndexedDBReturnValue>* values,
     const IndexedDBKeyPath& key_path) {
+  DCHECK(!io_helper_);
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   std::unique_ptr<IndexedDBMsg_CallbacksSuccessArray_Params> params(
@@ -559,49 +572,54 @@ void IndexedDBCallbacks::OnSuccessArray(
     dispatcher_host_->Send(
         new IndexedDBMsg_CallbacksSuccessArray(*params.get()));
   }
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
+  DCHECK(!io_helper_);
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
       ipc_thread_id_, ipc_callbacks_id_, value));
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccess(int64_t value) {
   DCHECK(dispatcher_host_.get());
+  if (io_helper_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&IOThreadHelper::SendSuccessInteger,
+                   base::Unretained(io_helper_.get()), value));
+  } else {
+    DCHECK_EQ(kNoCursor, ipc_cursor_id_);
+    DCHECK_EQ(kNoTransaction, host_transaction_id_);
+    DCHECK_EQ(kNoDatabase, ipc_database_id_);
+    DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
-  DCHECK_EQ(kNoCursor, ipc_cursor_id_);
-  DCHECK_EQ(kNoTransaction, host_transaction_id_);
-  DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
-  DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
-
-  dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessInteger(
-      ipc_thread_id_, ipc_callbacks_id_, value));
-  dispatcher_host_ = NULL;
+    dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessInteger(
+        ipc_thread_id_, ipc_callbacks_id_, value));
+  }
+  dispatcher_host_ = nullptr;
 }
 
 void IndexedDBCallbacks::OnSuccess() {
+  DCHECK(!io_helper_);
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
-  DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
   DCHECK_EQ(blink::WebIDBDataLossNone, data_loss_);
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessUndefined(
       ipc_thread_id_, ipc_callbacks_id_));
-  dispatcher_host_ = NULL;
+  dispatcher_host_ = nullptr;
 }
 
 bool IndexedDBCallbacks::IsValid() const {
@@ -613,6 +631,48 @@ bool IndexedDBCallbacks::IsValid() const {
 void IndexedDBCallbacks::SetConnectionOpenStartTime(
     const base::TimeTicks& start_time) {
   connection_open_start_time_ = start_time;
+}
+
+IndexedDBCallbacks::IOThreadHelper::IOThreadHelper(
+    CallbacksAssociatedPtrInfo callbacks_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callbacks_.Bind(std::move(callbacks_info));
+}
+
+IndexedDBCallbacks::IOThreadHelper::~IOThreadHelper() {}
+
+void IndexedDBCallbacks::IOThreadHelper::SendError(
+    const IndexedDBDatabaseError& error) {
+  callbacks_->Error(error.code(), error.message());
+}
+
+void IndexedDBCallbacks::IOThreadHelper::SendSuccessStringList(
+    const std::vector<base::string16>& value) {
+  callbacks_->SuccessStringList(value);
+}
+
+void IndexedDBCallbacks::IOThreadHelper::SendBlocked(int64_t existing_version) {
+  callbacks_->Blocked(existing_version);
+}
+
+void IndexedDBCallbacks::IOThreadHelper::SendUpgradeNeeded(
+    int32_t database_id,
+    int64_t old_version,
+    blink::WebIDBDataLoss data_loss,
+    const std::string& data_loss_message,
+    const content::IndexedDBDatabaseMetadata& metadata) {
+  callbacks_->UpgradeNeeded(database_id, old_version, data_loss,
+                            data_loss_message, metadata);
+}
+
+void IndexedDBCallbacks::IOThreadHelper::SendSuccessDatabase(
+    int32_t database_id,
+    const content::IndexedDBDatabaseMetadata& metadata) {
+  callbacks_->SuccessDatabase(database_id, metadata);
+}
+
+void IndexedDBCallbacks::IOThreadHelper::SendSuccessInteger(int64_t value) {
+  callbacks_->SuccessInteger(value);
 }
 
 }  // namespace content

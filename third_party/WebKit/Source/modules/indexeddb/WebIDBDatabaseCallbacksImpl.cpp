@@ -41,25 +41,37 @@ WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(
     IDBDatabaseCallbacks* callbacks)
     : m_callbacks(callbacks) {}
 
-WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl() {}
+WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl() {
+  if (m_callbacks)
+    m_callbacks->webCallbacksDestroyed();
+}
 
 void WebIDBDatabaseCallbacksImpl::onForcedClose() {
-  m_callbacks->onForcedClose();
+  if (m_callbacks)
+    m_callbacks->onForcedClose();
 }
 
 void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion,
                                                   long long newVersion) {
-  m_callbacks->onVersionChange(oldVersion, newVersion);
+  if (m_callbacks)
+    m_callbacks->onVersionChange(oldVersion, newVersion);
 }
 
 void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId,
                                           const WebIDBDatabaseError& error) {
-  m_callbacks->onAbort(transactionId,
-                       DOMException::create(error.code(), error.message()));
+  if (m_callbacks) {
+    m_callbacks->onAbort(transactionId,
+                         DOMException::create(error.code(), error.message()));
+  }
 }
 
 void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId) {
-  m_callbacks->onComplete(transactionId);
+  if (m_callbacks)
+    m_callbacks->onComplete(transactionId);
+}
+
+void WebIDBDatabaseCallbacksImpl::detach() {
+  m_callbacks.clear();
 }
 
 }  // namespace blink

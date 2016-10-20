@@ -49,6 +49,7 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
                     const blink::WebIDBMetadata&,
                     unsigned short dataLoss,
                     blink::WebString dataLossMessage));
+  MOCK_METHOD0(detach, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebIDBCallbacks);

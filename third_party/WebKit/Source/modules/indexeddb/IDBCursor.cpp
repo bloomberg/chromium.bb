@@ -38,7 +38,6 @@
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
-#include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include <limits>
@@ -174,7 +173,7 @@ void IDBCursor::advance(unsigned count, ExceptionState& exceptionState) {
 
   m_request->setPendingCursor(this);
   m_gotValue = false;
-  m_backend->advance(count, WebIDBCallbacksImpl::create(m_request).release());
+  m_backend->advance(count, m_request->createWebCallbacks().release());
 }
 
 void IDBCursor::continueFunction(ScriptState* scriptState,
@@ -323,7 +322,7 @@ void IDBCursor::continueFunction(IDBKey* key,
   m_request->setPendingCursor(this);
   m_gotValue = false;
   m_backend->continueFunction(key, primaryKey,
-                              WebIDBCallbacksImpl::create(m_request).release());
+                              m_request->createWebCallbacks().release());
 }
 
 IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState,
@@ -373,7 +372,7 @@ IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState,
                                            m_transaction.get());
   m_transaction->backendDB()->deleteRange(
       m_transaction->id(), effectiveObjectStore()->id(), keyRange,
-      WebIDBCallbacksImpl::create(request).release());
+      request->createWebCallbacks().release());
   return request;
 }
 

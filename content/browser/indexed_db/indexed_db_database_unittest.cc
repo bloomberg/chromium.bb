@@ -27,6 +27,7 @@
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -37,7 +38,12 @@ const int kFakeChildProcessId = 0;
 
 namespace content {
 
-TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
+class IndexedDBDatabaseTest : public ::testing::Test {
+ private:
+  TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(IndexedDBDatabaseTest, BackingStoreRetention) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());
@@ -56,7 +62,7 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 }
 
-TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
+TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());  // local
@@ -110,7 +116,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   db = NULL;
 }
 
-TEST(IndexedDBDatabaseTest, ForcedClose) {
+TEST_F(IndexedDBDatabaseTest, ForcedClose) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());
@@ -177,7 +183,7 @@ class MockCallbacks : public IndexedDBCallbacks {
   DISALLOW_COPY_AND_ASSIGN(MockCallbacks);
 };
 
-TEST(IndexedDBDatabaseTest, PendingDelete) {
+TEST_F(IndexedDBDatabaseTest, PendingDelete) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());  // local
@@ -233,7 +239,7 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
   EXPECT_TRUE(request2->success_called());
 }
 
-TEST(IndexedDBDatabaseTest, ConnectionRequestsNoLongerValid) {
+TEST_F(IndexedDBDatabaseTest, ConnectionRequestsNoLongerValid) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
 
@@ -390,8 +396,8 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
   leveldb::Status commit_success_;
 
  private:
-  base::MessageLoop message_loop_;
   scoped_refptr<MockIndexedDBFactory> factory_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseOperationTest);
 };

@@ -41,6 +41,7 @@ class WebIDBDatabaseCallbacks {
 
   virtual void onAbort(long long transactionId, const WebIDBDatabaseError&) = 0;
   virtual void onComplete(long long transactionId) = 0;
+  virtual void detach() = 0;
 };
 
 }  // namespace blink

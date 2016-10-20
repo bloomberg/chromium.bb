@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_STL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_STL_H_
 
+#include <map>
+#include <set>
 #include <vector>
 
 #include "mojo/public/cpp/bindings/array_traits.h"
@@ -83,6 +85,41 @@ struct ArrayTraits<std::set<T>> {
   static const T& GetValue(ConstIterator& iterator) {
     return *iterator;
   }
+};
+
+template <typename K, typename V>
+struct MapValuesArrayView {
+  explicit MapValuesArrayView(const std::map<K, V>& map) : map(map) {}
+  const std::map<K, V>& map;
+};
+
+// Convenience function to create a MapValuesArrayView<> that infers the
+// template arguments from its argument type.
+template <typename K, typename V>
+MapValuesArrayView<K, V> MapValuesToArray(const std::map<K, V>& map) {
+  return MapValuesArrayView<K, V>(map);
+}
+
+// This ArrayTraits specialization is used only for serialization and converts
+// a map<K, V> into an array<V>, discarding the keys.
+template <typename K, typename V>
+struct ArrayTraits<MapValuesArrayView<K, V>> {
+  using Element = V;
+  using ConstIterator = typename std::map<K, V>::const_iterator;
+
+  static bool IsNull(const MapValuesArrayView<K, V>& input) {
+    // std::map<> is always converted to non-null mojom array.
+    return false;
+  }
+
+  static size_t GetSize(const MapValuesArrayView<K, V>& input) {
+    return input.map.size();
+  }
+  static ConstIterator GetBegin(const MapValuesArrayView<K, V>& input) {
+    return input.map.begin();
+  }
+  static void AdvanceIterator(ConstIterator& iterator) { ++iterator; }
+  static const V& GetValue(ConstIterator& iterator) { return iterator->second; }
 };
 
 }  // namespace mojo

@@ -28,7 +28,6 @@ class ThreadSafeSender;
 class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
  public:
   WebIDBDatabaseImpl(int32_t ipc_database_id,
-                     int32_t ipc_database_callbacks_id,
                      ThreadSafeSender* thread_safe_sender);
   ~WebIDBDatabaseImpl() override;
 
@@ -126,7 +125,6 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
 
  private:
   int32_t ipc_database_id_;
-  int32_t ipc_database_callbacks_id_;
   std::set<int32_t> observer_ids_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 };

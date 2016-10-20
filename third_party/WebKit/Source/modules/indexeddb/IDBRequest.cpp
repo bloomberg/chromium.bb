@@ -42,6 +42,7 @@
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBValue.h"
+#include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
 #include <memory>
@@ -130,6 +131,19 @@ const String& IDBRequest::readyState() const {
     return IndexedDBNames::pending;
 
   return IndexedDBNames::done;
+}
+
+std::unique_ptr<WebIDBCallbacks> IDBRequest::createWebCallbacks() {
+  DCHECK(!m_webCallbacks);
+  std::unique_ptr<WebIDBCallbacks> callbacks =
+      WebIDBCallbacksImpl::create(this);
+  m_webCallbacks = callbacks.get();
+  return callbacks;
+}
+
+void IDBRequest::webCallbacksDestroyed() {
+  DCHECK(m_webCallbacks);
+  m_webCallbacks = nullptr;
 }
 
 void IDBRequest::abort() {
@@ -397,6 +411,10 @@ void IDBRequest::contextDestroyed() {
     m_result->contextWillBeDestroyed();
   if (m_pendingCursor)
     m_pendingCursor->contextWillBeDestroyed();
+  if (m_webCallbacks) {
+    m_webCallbacks->detach();
+    m_webCallbacks = nullptr;
+  }
 }
 
 const AtomicString& IDBRequest::interfaceName() const {

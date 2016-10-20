@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/indexed_db/indexed_db.mojom.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 class IndexedDBDatabaseError;
@@ -19,9 +21,10 @@ class IndexedDBObserverChanges;
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
  public:
-  IndexedDBDatabaseCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                             int ipc_thread_id,
-                             int ipc_database_callbacks_id);
+  IndexedDBDatabaseCallbacks(
+      scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
+      int32_t ipc_thread_id,
+      ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo callbacks_info);
 
   virtual void OnForcedClose();
   virtual void OnVersionChange(int64_t old_version, int64_t new_version);
@@ -39,9 +42,11 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
  private:
   friend class base::RefCounted<IndexedDBDatabaseCallbacks>;
 
+  class IOThreadHelper;
+
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int ipc_thread_id_;
-  int ipc_database_callbacks_id_;
+  int32_t ipc_thread_id_;
+  std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseCallbacks);
 };

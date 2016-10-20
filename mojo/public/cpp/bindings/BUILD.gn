@@ -138,6 +138,7 @@ component("bindings") {
     "string_traits_stl.h",
     "string_traits_string16.h",
     "string_traits_string_piece.h",
+    "strong_associated_binding.h",
     "strong_binding.h",
     "struct_ptr.h",
     "sync_call_restrictions.h",

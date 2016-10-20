@@ -84,6 +84,9 @@ foreach(configuration, _bindings_configurations) {
 #         - convert all users to use the new mode;
 #         - remove support for the old mode.
 #
+#   cpp_only (optional)
+#       If set to true, only the C++ bindings targets will be generated.
+#
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
 # export settings for classes. The first three are for the chromium variant, and
@@ -214,6 +217,9 @@ template("mojom") {
   # Generate code for variants.
   foreach(bindings_configuration, _bindings_configurations) {
     cpp_only = false
+    if (defined(invoker.cpp_only)) {
+      cpp_only = invoker.cpp_only
+    }
     variant_suffix = ""
     if (defined(bindings_configuration.variant)) {
       variant = bindings_configuration.variant

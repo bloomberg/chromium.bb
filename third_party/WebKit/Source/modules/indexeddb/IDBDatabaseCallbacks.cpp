@@ -26,6 +26,7 @@
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 
 #include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 
 namespace blink {
 
@@ -52,12 +53,6 @@ void IDBDatabaseCallbacks::onVersionChange(int64_t oldVersion,
     m_database->onVersionChange(oldVersion, newVersion);
 }
 
-void IDBDatabaseCallbacks::connect(IDBDatabase* database) {
-  ASSERT(!m_database);
-  ASSERT(database);
-  m_database = database;
-}
-
 void IDBDatabaseCallbacks::onAbort(int64_t transactionId, DOMException* error) {
   if (m_database)
     m_database->onAbort(transactionId, error);
@@ -66,6 +61,33 @@ void IDBDatabaseCallbacks::onAbort(int64_t transactionId, DOMException* error) {
 void IDBDatabaseCallbacks::onComplete(int64_t transactionId) {
   if (m_database)
     m_database->onComplete(transactionId);
+}
+
+void IDBDatabaseCallbacks::connect(IDBDatabase* database) {
+  DCHECK(!m_database);
+  DCHECK(database);
+  m_database = database;
+}
+
+std::unique_ptr<WebIDBDatabaseCallbacks>
+IDBDatabaseCallbacks::createWebCallbacks() {
+  DCHECK(!m_webCallbacks);
+  std::unique_ptr<WebIDBDatabaseCallbacks> callbacks =
+      WebIDBDatabaseCallbacksImpl::create(this);
+  m_webCallbacks = callbacks.get();
+  return callbacks;
+}
+
+void IDBDatabaseCallbacks::detachWebCallbacks() {
+  if (m_webCallbacks) {
+    m_webCallbacks->detach();
+    m_webCallbacks = nullptr;
+  }
+}
+
+void IDBDatabaseCallbacks::webCallbacksDestroyed() {
+  DCHECK(m_webCallbacks);
+  m_webCallbacks = nullptr;
 }
 
 }  // namespace blink

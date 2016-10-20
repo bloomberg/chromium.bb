@@ -74,6 +74,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
                        const WebIDBMetadata&,
                        unsigned short dataLoss,
                        WebString dataLossMessage) override;
+  void detach() override;
 
  private:
   explicit WebIDBCallbacksImpl(IDBRequest*);

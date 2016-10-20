@@ -38,12 +38,11 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IndexedDBClient.h"
-#include "modules/indexeddb/WebIDBCallbacksImpl.h"
-#include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 #include "platform/Histogram.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "public/platform/modules/indexeddb/WebIDBFactory.h"
 #include <memory>
 
@@ -88,7 +87,7 @@ IDBRequest* IDBFactory::getDatabaseNames(ScriptState* scriptState,
   }
 
   Platform::current()->idbFactory()->getDatabaseNames(
-      WebIDBCallbacksImpl::create(request).release(),
+      request->createWebCallbacks().release(),
       WebSecurityOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin()));
   return request;
@@ -135,9 +134,8 @@ IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState,
   }
 
   Platform::current()->idbFactory()->open(
-      name, version, transactionId,
-      WebIDBCallbacksImpl::create(request).release(),
-      WebIDBDatabaseCallbacksImpl::create(databaseCallbacks).release(),
+      name, version, transactionId, request->createWebCallbacks().release(),
+      databaseCallbacks->createWebCallbacks().release(),
       WebSecurityOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin()));
   return request;
@@ -177,7 +175,7 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState,
   }
 
   Platform::current()->idbFactory()->deleteDatabase(
-      name, WebIDBCallbacksImpl::create(request).release(),
+      name, request->createWebCallbacks().release(),
       WebSecurityOrigin(
           scriptState->getExecutionContext()->getSecurityOrigin()));
   return request;

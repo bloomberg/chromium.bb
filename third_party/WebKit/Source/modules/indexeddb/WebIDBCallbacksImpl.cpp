@@ -67,17 +67,26 @@ WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
 }
 
 WebIDBCallbacksImpl::~WebIDBCallbacksImpl() {
-  InspectorInstrumentation::asyncTaskCanceled(m_request->getExecutionContext(),
-                                              this);
+  if (m_request) {
+    InspectorInstrumentation::asyncTaskCanceled(
+        m_request->getExecutionContext(), this);
+    m_request->webCallbacksDestroyed();
+  }
 }
 
 void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onError(DOMException::create(error.code(), error.message()));
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebVector<WebString>& webStringList) {
+  if (!m_request)
+    return;
+
   Vector<String> stringList;
   for (size_t i = 0; i < webStringList.size(); ++i)
     stringList.append(webStringList[i]);
@@ -90,6 +99,9 @@ void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor,
                                     const WebIDBKey& key,
                                     const WebIDBKey& primaryKey,
                                     const WebIDBValue& value) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(wrapUnique(cursor), key, primaryKey,
@@ -98,24 +110,38 @@ void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor,
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBDatabase* backend,
                                     const WebIDBMetadata& metadata) {
-  InspectorInstrumentation::AsyncTask asyncTask(
-      m_request->getExecutionContext(), this);
-  m_request->onSuccess(wrapUnique(backend), IDBDatabaseMetadata(metadata));
+  std::unique_ptr<WebIDBDatabase> db = wrapUnique(backend);
+  if (m_request) {
+    InspectorInstrumentation::AsyncTask asyncTask(
+        m_request->getExecutionContext(), this);
+    m_request->onSuccess(std::move(db), IDBDatabaseMetadata(metadata));
+  } else if (db) {
+    db->close();
+  }
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(key);
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebIDBValue& value) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(IDBValue::create(value));
 }
 
 void WebIDBCallbacksImpl::onSuccess(const WebVector<WebIDBValue>& values) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   Vector<RefPtr<IDBValue>> idbValues(values.size());
@@ -125,12 +151,18 @@ void WebIDBCallbacksImpl::onSuccess(const WebVector<WebIDBValue>& values) {
 }
 
 void WebIDBCallbacksImpl::onSuccess(long long value) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(value);
 }
 
 void WebIDBCallbacksImpl::onSuccess() {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess();
@@ -139,12 +171,18 @@ void WebIDBCallbacksImpl::onSuccess() {
 void WebIDBCallbacksImpl::onSuccess(const WebIDBKey& key,
                                     const WebIDBKey& primaryKey,
                                     const WebIDBValue& value) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onSuccess(key, primaryKey, IDBValue::create(value));
 }
 
 void WebIDBCallbacksImpl::onBlocked(long long oldVersion) {
+  if (!m_request)
+    return;
+
   InspectorInstrumentation::AsyncTask asyncTask(
       m_request->getExecutionContext(), this);
   m_request->onBlocked(oldVersion);
@@ -155,11 +193,20 @@ void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion,
                                           const WebIDBMetadata& metadata,
                                           unsigned short dataLoss,
                                           WebString dataLossMessage) {
-  InspectorInstrumentation::AsyncTask asyncTask(
-      m_request->getExecutionContext(), this);
-  m_request->onUpgradeNeeded(
-      oldVersion, wrapUnique(database), IDBDatabaseMetadata(metadata),
-      static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
+  std::unique_ptr<WebIDBDatabase> db = wrapUnique(database);
+  if (m_request) {
+    InspectorInstrumentation::AsyncTask asyncTask(
+        m_request->getExecutionContext(), this);
+    m_request->onUpgradeNeeded(
+        oldVersion, std::move(db), IDBDatabaseMetadata(metadata),
+        static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
+  } else {
+    db->close();
+  }
+}
+
+void WebIDBCallbacksImpl::detach() {
+  m_request.clear();
 }
 
 }  // namespace blink

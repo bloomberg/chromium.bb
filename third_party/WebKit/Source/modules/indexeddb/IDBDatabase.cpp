@@ -394,6 +394,9 @@ void IDBDatabase::closeConnection() {
     m_backend.reset();
   }
 
+  if (m_databaseCallbacks)
+    m_databaseCallbacks->detachWebCallbacks();
+
   if (m_contextStopped || !getExecutionContext())
     return;
 
@@ -526,6 +529,9 @@ void IDBDatabase::contextDestroyed() {
     m_backend->close();
     m_backend.reset();
   }
+
+  if (m_databaseCallbacks)
+    m_databaseCallbacks->detachWebCallbacks();
 }
 
 const AtomicString& IDBDatabase::interfaceName() const {

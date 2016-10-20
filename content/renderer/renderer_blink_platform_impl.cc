@@ -284,7 +284,9 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blob_registry_.reset(new WebBlobRegistryImpl(
         RenderThreadImpl::current()->GetIOTaskRunner().get(),
         base::ThreadTaskRunnerHandle::Get(), thread_safe_sender_.get()));
-    web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_.get()));
+    web_idb_factory_.reset(new WebIDBFactoryImpl(
+        sync_message_filter_, thread_safe_sender_,
+        RenderThreadImpl::current()->GetIOTaskRunner().get()));
     web_database_observer_impl_.reset(
         new WebDatabaseObserverImpl(sync_message_filter_.get()));
   }

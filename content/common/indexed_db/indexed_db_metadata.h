@@ -35,7 +35,6 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
 };
 
 struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
-
   static const int64_t kInvalidId = -1;
 
   IndexedDBObjectStoreMetadata();

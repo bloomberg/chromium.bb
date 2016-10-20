@@ -85,6 +85,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
   const String& readyState() const;
 
+  // Returns a new WebIDBCallbacks for this request. Must only be called once.
+  std::unique_ptr<WebIDBCallbacks> createWebCallbacks();
+  void webCallbacksDestroyed();
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
@@ -123,7 +127,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void contextDestroyed() final;
+  void contextDestroyed() override;
 
   // EventTarget
   const AtomicString& interfaceName() const override;
@@ -185,6 +189,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool m_didFireUpgradeNeededEvent = false;
   bool m_preventPropagation = false;
   bool m_resultDirty = true;
+
+  // Pointer back to the WebIDBCallbacks that holds a persistent reference to
+  // this object.
+  WebIDBCallbacks* m_webCallbacks = nullptr;
 };
 
 }  // namespace blink

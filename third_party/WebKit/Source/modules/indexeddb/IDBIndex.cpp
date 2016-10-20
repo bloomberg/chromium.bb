@@ -35,7 +35,6 @@
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
-#include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include <memory>
 
@@ -163,7 +162,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* scriptState,
   request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
   backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), id(),
                           keyRange, direction, false, WebIDBTaskTypeNormal,
-                          WebIDBCallbacksImpl::create(request).release());
+                          request->createWebCallbacks().release());
   return request;
 }
 
@@ -201,7 +200,7 @@ IDBRequest* IDBIndex::count(ScriptState* scriptState,
   IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this),
                                            m_transaction.get());
   backendDB()->count(m_transaction->id(), m_objectStore->id(), id(), keyRange,
-                     WebIDBCallbacksImpl::create(request).release());
+                     request->createWebCallbacks().release());
   return request;
 }
 
@@ -242,7 +241,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* scriptState,
   request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
   backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), id(),
                           keyRange, direction, true, WebIDBTaskTypeNormal,
-                          WebIDBCallbacksImpl::create(request).release());
+                          request->createWebCallbacks().release());
   return request;
 }
 
@@ -329,7 +328,7 @@ IDBRequest* IDBIndex::getInternal(ScriptState* scriptState,
   IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this),
                                            m_transaction.get());
   backendDB()->get(m_transaction->id(), m_objectStore->id(), id(), keyRange,
-                   keyOnly, WebIDBCallbacksImpl::create(request).release());
+                   keyOnly, request->createWebCallbacks().release());
   return request;
 }
 
@@ -371,7 +370,7 @@ IDBRequest* IDBIndex::getAllInternal(ScriptState* scriptState,
                                            m_transaction.get());
   backendDB()->getAll(m_transaction->id(), m_objectStore->id(), id(), keyRange,
                       maxCount, keyOnly,
-                      WebIDBCallbacksImpl::create(request).release());
+                      request->createWebCallbacks().release());
   return request;
 }
 

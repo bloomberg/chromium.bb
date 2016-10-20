@@ -49,6 +49,7 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   void onVersionChange(long long oldVersion, long long newVersion) override;
   void onAbort(long long transactionId, const WebIDBDatabaseError&) override;
   void onComplete(long long transactionId) override;
+  void detach() override;
 
  private:
   explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);

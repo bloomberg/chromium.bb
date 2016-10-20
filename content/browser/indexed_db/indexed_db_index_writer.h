@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
+#include "content/common/indexed_db/indexed_db_metadata.h"
 
 namespace content {
 

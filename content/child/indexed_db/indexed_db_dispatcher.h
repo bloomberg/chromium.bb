@@ -17,13 +17,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
+#include "content/child/indexed_db/indexed_db_callbacks_impl.h"
+#include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/public/child/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObserver.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "url/origin.h"
@@ -70,8 +71,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  static blink::WebIDBMetadata ConvertMetadata(
-      const IndexedDBDatabaseMetadata& idb_metadata);
   static std::vector<blink::WebIDBObservation> ConvertObservations(
       const std::vector<IndexedDBMsg_Observation>& idb_observation);
 
@@ -94,20 +93,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   // Removes observers from our local map observers_ . No IPC message generated.
   void RemoveIDBObservers(const std::set<int32_t>& observer_ids_to_remove);
-
-  void RequestIDBFactoryGetDatabaseNames(blink::WebIDBCallbacks* callbacks,
-                                         const url::Origin& origin);
-
-  void RequestIDBFactoryOpen(const base::string16& name,
-                             int64_t version,
-                             int64_t transaction_id,
-                             blink::WebIDBCallbacks* callbacks,
-                             blink::WebIDBDatabaseCallbacks* database_callbacks,
-                             const url::Origin& origin);
-
-  void RequestIDBFactoryDeleteDatabase(const base::string16& name,
-                                       blink::WebIDBCallbacks* callbacks,
-                                       const url::Origin& origin);
 
   // This method is virtual so it can be overridden in unit tests.
   virtual void RequestIDBCursorAdvance(unsigned long count,
@@ -132,8 +117,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
                                              int unused_prefetches,
                                              int32_t ipc_cursor_id);
 
-  void RequestIDBDatabaseClose(int32_t ipc_database_id,
-                               int32_t ipc_database_callbacks_id);
+  void RequestIDBDatabaseClose(int32_t ipc_database_id);
 
   void NotifyIDBDatabaseVersionChangeIgnored(int32_t ipc_database_id);
 
@@ -202,6 +186,16 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   virtual void CursorDestroyed(int32_t ipc_cursor_id);
   void DatabaseDestroyed(int32_t ipc_database_id);
+  blink::WebIDBDatabase* RegisterDatabase(int32_t ipc_database_id);
+
+  void RegisterMojoOwnedCallbacks(
+      IndexedDBCallbacksImpl::InternalState* callback_state);
+  void UnregisterMojoOwnedCallbacks(
+      IndexedDBCallbacksImpl::InternalState* callback_state);
+  void RegisterMojoOwnedDatabaseCallbacks(
+      blink::WebIDBDatabaseCallbacks* callback_state);
+  void UnregisterMojoOwnedDatabaseCallbacks(
+      blink::WebIDBDatabaseCallbacks* callback_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
@@ -221,11 +215,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   }
 
   // IDBCallback message handlers.
-  void OnSuccessIDBDatabase(int32_t ipc_thread_id,
-                            int32_t ipc_callbacks_id,
-                            int32_t ipc_database_callbacks_id,
-                            int32_t ipc_object_id,
-                            const IndexedDBDatabaseMetadata& idb_metadata);
   void OnSuccessIndexedDBKey(int32_t ipc_thread_id,
                              int32_t ipc_callbacks_id,
                              const IndexedDBKey& key);
@@ -236,9 +225,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
       const IndexedDBMsg_CallbacksSuccessCursorContinue_Params& p);
   void OnSuccessCursorPrefetch(
       const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
-  void OnSuccessStringList(int32_t ipc_thread_id,
-                           int32_t ipc_callbacks_id,
-                           const std::vector<base::string16>& value);
   void OnSuccessValue(const IndexedDBMsg_CallbacksSuccessValue_Params& p);
   void OnSuccessArray(const IndexedDBMsg_CallbacksSuccessArray_Params& p);
   void OnSuccessInteger(int32_t ipc_thread_id,
@@ -249,27 +235,9 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
                int32_t ipc_callbacks_id,
                int code,
                const base::string16& message);
-  void OnIntBlocked(int32_t ipc_thread_id,
-                    int32_t ipc_callbacks_id,
-                    int64_t existing_version);
-  void OnUpgradeNeeded(const IndexedDBMsg_CallbacksUpgradeNeeded_Params& p);
-  void OnAbort(int32_t ipc_thread_id,
-               int32_t ipc_database_id,
-               int64_t transaction_id,
-               int code,
-               const base::string16& message);
-  void OnComplete(int32_t ipc_thread_id,
-                  int32_t ipc_database_id,
-                  int64_t transaction_id);
   void OnDatabaseChanges(int32_t ipc_thread_id,
                          int32_t ipc_database_id,
                          const IndexedDBMsg_ObserverChanges&);
-
-  void OnForcedClose(int32_t ipc_thread_id, int32_t ipc_database_id);
-  void OnVersionChange(int32_t ipc_thread_id,
-                       int32_t ipc_database_id,
-                       int64_t old_version,
-                       int64_t new_version);
 
   // Reset cursor prefetch caches for all cursors except exception_cursor_id.
   void ResetCursorPrefetchCaches(int64_t transaction_id,
@@ -286,9 +254,17 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
   IDMap<blink::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
-  IDMap<blink::WebIDBDatabaseCallbacks, IDMapOwnPointer>
-      pending_database_callbacks_;
   IDMap<blink::WebIDBObserver, IDMapOwnPointer> observers_;
+
+  // Holds pointers to the worker-thread owned state of IndexedDBCallbacksImpl
+  // and IndexedDBDatabaseCallbacksImpl objects to makes sure that it is
+  // destroyed on thread exit if the Mojo pipe is not yet closed. Otherwise the
+  // object will leak because the thread's task runner is no longer executing
+  // tasks.
+  std::unordered_set<IndexedDBCallbacksImpl::InternalState*>
+      mojo_owned_callback_state_;
+  std::unordered_set<blink::WebIDBDatabaseCallbacks*>
+      mojo_owned_database_callback_state_;
 
   // Maps the ipc_callback_id from an open cursor request to the request's
   // transaction_id. Used to assign the transaction_id to the WebIDBCursorImpl

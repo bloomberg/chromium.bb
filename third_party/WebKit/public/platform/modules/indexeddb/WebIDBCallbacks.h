@@ -65,6 +65,7 @@ class WebIDBCallbacks {
                                const WebIDBMetadata&,
                                unsigned short dataLoss,
                                WebString dataLossMessage) = 0;
+  virtual void detach() = 0;
 };
 
 }  // namespace blink

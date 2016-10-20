@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -19,6 +18,7 @@
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -81,9 +81,6 @@ class IndexedDBFactoryTest : public testing::Test {
   }
 
  protected:
-  // For timers to post events.
-  base::MessageLoop loop_;
-
   MockIDBFactory* factory() const { return idb_factory_.get(); }
   void clear_factory() { idb_factory_ = nullptr; }
   IndexedDBContextImpl* context() const { return context_.get(); }
@@ -93,6 +90,8 @@ class IndexedDBFactoryTest : public testing::Test {
   scoped_refptr<IndexedDBContextImpl> context_;
   scoped_refptr<MockIDBFactory> idb_factory_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
+  TestBrowserThreadBundle thread_bundle_;
+
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryTest);
 };
 
@@ -251,7 +250,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   scoped_refptr<LookingForQuotaErrorMockCallbacks> callbacks =
       new LookingForQuotaErrorMockCallbacks;
   scoped_refptr<IndexedDBDatabaseCallbacks> dummy_database_callbacks =
-      new IndexedDBDatabaseCallbacks(nullptr, 0, 0);
+      new IndexedDBDatabaseCallbacks(nullptr, 0, nullptr);
   const base::string16 name(ASCIIToUTF16("name"));
   std::unique_ptr<IndexedDBPendingConnection> connection(
       base::MakeUnique<IndexedDBPendingConnection>(

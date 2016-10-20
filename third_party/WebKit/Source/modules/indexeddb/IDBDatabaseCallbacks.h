@@ -34,6 +34,7 @@ namespace blink {
 
 class DOMException;
 class IDBDatabase;
+class WebIDBDatabaseCallbacks;
 
 class MODULES_EXPORT IDBDatabaseCallbacks
     : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
@@ -51,6 +52,12 @@ class MODULES_EXPORT IDBDatabaseCallbacks
 
   void connect(IDBDatabase*);
 
+  // Returns a new WebIDBDatabaseCallbacks for this object. Must only be
+  // called once.
+  std::unique_ptr<WebIDBDatabaseCallbacks> createWebCallbacks();
+  void detachWebCallbacks();
+  void webCallbacksDestroyed();
+
  protected:
   // Exposed to subclasses for unit tests.
   IDBDatabaseCallbacks();
@@ -64,6 +71,10 @@ class MODULES_EXPORT IDBDatabaseCallbacks
   // can survive too. m_database should be a weak reference to avoid that an
   // IDBDatabase survives the GC with the IDBDatabaseCallbacks.
   WeakMember<IDBDatabase> m_database;
+
+  // Pointer back to the WebIDBDatabaseCallbacks that holds a persistent
+  // reference to this object.
+  WebIDBDatabaseCallbacks* m_webCallbacks = nullptr;
 };
 
 }  // namespace blink

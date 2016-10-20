@@ -18,6 +18,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/common/indexed_db/indexed_db.mojom.h"
+#include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -49,9 +51,11 @@ class Origin;
 
 namespace content {
 class IndexedDBBlobInfo;
+class IndexedDBCallbacks;
 class IndexedDBConnection;
 class IndexedDBContextImpl;
 class IndexedDBCursor;
+class IndexedDBDatabaseCallbacks;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
@@ -60,7 +64,10 @@ class IndexedDBObserverChanges;
 struct IndexedDBDatabaseMetadata;
 
 // Handles all IndexedDB related messages from a particular renderer process.
-class IndexedDBDispatcherHost : public BrowserMessageFilter {
+class IndexedDBDispatcherHost
+    : public BrowserMessageFilter,
+      public BrowserAssociatedInterface<::indexed_db::mojom::Factory>,
+      public ::indexed_db::mojom::Factory {
  public:
   // Only call the constructor from the UI thread.
   IndexedDBDispatcherHost(int ipc_process_id,
@@ -68,8 +75,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                           IndexedDBContextImpl* indexed_db_context,
                           ChromeBlobStorageContext* blob_storage_context);
 
-  static ::IndexedDBDatabaseMetadata ConvertMetadata(
-      const content::IndexedDBDatabaseMetadata& metadata);
   static IndexedDBMsg_ObserverChanges ConvertObserverChanges(
       std::unique_ptr<IndexedDBObserverChanges> changes);
   static IndexedDBMsg_Observation ConvertObservation(
@@ -94,7 +99,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // applicable map.  See below for more details.
   int32_t Add(IndexedDBCursor* cursor);
   int32_t Add(IndexedDBConnection* connection,
-              int32_t ipc_thread_id,
               const url::Origin& origin);
 
   void RegisterTransactionId(int64_t host_transaction_id,
@@ -291,15 +295,38 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   template <typename MapType>
   void DestroyObject(MapType* map, int32_t ipc_object_id);
 
+  // indexed_db::mojom::Factory implementation:
+  void GetDatabaseNames(
+      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+      const url::Origin& origin) override;
+  void Open(int32_t worker_thread,
+            ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+            ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
+                database_callbacks_info,
+            const url::Origin& origin,
+            const base::string16& name,
+            int64_t version,
+            int64_t transaction_id) override;
+  void DeleteDatabase(
+      ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+      const url::Origin& origin,
+      const base::string16& name) override;
+
+  void GetDatabaseNamesOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                   const url::Origin& origin);
+  void OpenOnIDBThread(
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+      const url::Origin& origin,
+      const base::string16& name,
+      int64_t version,
+      int64_t transaction_id);
+  void DeleteDatabaseOnIDBThread(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                 const url::Origin& origin,
+                                 const base::string16& name);
+
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.
-  void OnIDBFactoryGetDatabaseNames(
-      const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& p);
-  void OnIDBFactoryOpen(const IndexedDBHostMsg_FactoryOpen_Params& p);
-
-  void OnIDBFactoryDeleteDatabase(
-      const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);
-
   void OnAckReceivedBlobs(const std::vector<std::string>& uuids);
   void OnPutHelper(
       const IndexedDBHostMsg_DatabasePut_Params& params,

@@ -1,0 +1,87 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO: This will move to //third_party/WebKit when //content/child/indexed_db
+// is deleted but for now this will depend on //content/common types and so
+// so belongs here.
+
+module indexed_db.mojom;
+
+import "mojo/common/common_custom_types.mojom";
+import "url/mojo/origin.mojom";
+
+[Native]
+enum DataLoss;
+
+[Native]
+struct KeyPath;
+
+struct IndexMetadata {
+  int64 id;
+  mojo.common.mojom.String16 name;
+  KeyPath key_path;
+  bool unique;
+  bool multi_entry;
+};
+
+struct ObjectStoreMetadata {
+  int64 id;
+  mojo.common.mojom.String16 name;
+  KeyPath key_path;
+  bool auto_increment;
+  int64 max_index_id;
+  array<IndexMetadata> indexes;
+};
+
+struct DatabaseMetadata {
+  int64 id;
+  mojo.common.mojom.String16 name;
+  int64 version;
+  int64 max_object_store_id;
+  array<ObjectStoreMetadata> object_stores;
+};
+
+// The Callbacks interface is used to return results for individual requests.
+// Some requests may return multiple results before completion, such as
+// UpgradeNeeded before SuccessDatabase.
+//
+// TODO(https://crbug.com/627484): Many of these could be replaced with
+// replies associated with particular messages.
+interface Callbacks {
+  Error(int32 code, mojo.common.mojom.String16 message);
+
+  // Factory::GetDatabaseNames
+  SuccessStringList(array<mojo.common.mojom.String16> value);
+
+  // Factory::Open / DeleteDatabase
+  Blocked(int64 existing_version);
+
+  // Factory::Open
+  UpgradeNeeded(int32 database_id, int64 old_version, DataLoss data_loss,
+                string data_loss_message, DatabaseMetadata db_metadata);
+  SuccessDatabase(int32 database_id, DatabaseMetadata metadata);
+
+  // Factory::DeleteDatabase
+  SuccessInteger(int64 value);
+};
+
+// The DatabaseCallbacks interface is used to notification of events out of
+// band to individual requests. A single instance is used for the lifetime of
+// a database connection.
+interface DatabaseCallbacks {
+  ForcedClose();
+  VersionChange(int64 old_version, int64 new_version);
+  Abort(int64 transaction_id, int32 code,
+        mojo.common.mojom.String16 message);
+  Complete(int64 transaction_id);
+};
+
+interface Factory {
+  GetDatabaseNames(associated Callbacks callbacks, url.mojom.Origin origin);
+  Open(int32 worker_thread, associated Callbacks callbacks,
+       associated DatabaseCallbacks database_callbacks, url.mojom.Origin origin,
+       mojo.common.mojom.String16 name, int64 version, int64 transaction_id);
+  DeleteDatabase(associated Callbacks callbacks, url.mojom.Origin origin,
+                 mojo.common.mojom.String16 name);
+};

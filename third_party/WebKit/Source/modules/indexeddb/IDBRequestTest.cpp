@@ -38,6 +38,7 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
+#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -94,20 +95,20 @@ TEST(IDBRequestTest, ConnectionsAfterStopping) {
   const int64_t transactionId = 1234;
   const int64_t version = 1;
   const int64_t oldVersion = 0;
-  const IDBDatabaseMetadata metadata;
+  const WebIDBMetadata metadata;
   Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
 
   {
     std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
-    EXPECT_CALL(*backend, abort(transactionId)).Times(1);
     EXPECT_CALL(*backend, close()).Times(1);
     IDBOpenDBRequest* request = IDBOpenDBRequest::create(
         scope.getScriptState(), callbacks, transactionId, version);
     EXPECT_EQ(request->readyState(), "pending");
+    std::unique_ptr<WebIDBCallbacks> callbacks = request->createWebCallbacks();
 
     scope.getExecutionContext()->notifyContextDestroyed();
-    request->onUpgradeNeeded(oldVersion, std::move(backend), metadata,
-                             WebIDBDataLossNone, String());
+    callbacks->onUpgradeNeeded(oldVersion, backend.release(), metadata,
+                               WebIDBDataLossNone, String());
   }
 
   {
@@ -116,9 +117,10 @@ TEST(IDBRequestTest, ConnectionsAfterStopping) {
     IDBOpenDBRequest* request = IDBOpenDBRequest::create(
         scope.getScriptState(), callbacks, transactionId, version);
     EXPECT_EQ(request->readyState(), "pending");
+    std::unique_ptr<WebIDBCallbacks> callbacks = request->createWebCallbacks();
 
     scope.getExecutionContext()->notifyContextDestroyed();
-    request->onSuccess(std::move(backend), metadata);
+    callbacks->onSuccess(backend.release(), metadata);
   }
 }
 

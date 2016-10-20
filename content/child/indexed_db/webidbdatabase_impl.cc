@@ -37,10 +37,8 @@ using blink::WebVector;
 namespace content {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(int32_t ipc_database_id,
-                                       int32_t ipc_database_callbacks_id,
                                        ThreadSafeSender* thread_safe_sender)
     : ipc_database_id_(ipc_database_id),
-      ipc_database_callbacks_id_(ipc_database_callbacks_id),
       thread_safe_sender_(thread_safe_sender) {}
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() {
@@ -99,8 +97,7 @@ void WebIDBDatabaseImpl::close() {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RemoveIDBObservers(observer_ids_);
-  dispatcher->RequestIDBDatabaseClose(ipc_database_id_,
-                                      ipc_database_callbacks_id_);
+  dispatcher->RequestIDBDatabaseClose(ipc_database_id_);
 }
 
 void WebIDBDatabaseImpl::versionChangeIgnored() {

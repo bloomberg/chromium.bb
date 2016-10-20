@@ -21,13 +21,13 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
-#include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_observation.h"
 #include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
+#include "content/common/indexed_db/indexed_db_metadata.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
@@ -47,6 +47,8 @@ namespace content {
 
 namespace {
 
+const char kInvalidOrigin[] = "Origin is invalid";
+
 bool IsValidOrigin(const url::Origin& origin) {
   return !origin.unique();
 }
@@ -59,6 +61,7 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     IndexedDBContextImpl* indexed_db_context,
     ChromeBlobStorageContext* blob_storage_context)
     : BrowserMessageFilter(IndexedDBMsgStart),
+      BrowserAssociatedInterface(this, this),
       request_context_getter_(request_context_getter),
       indexed_db_context_(indexed_db_context),
       blob_storage_context_(blob_storage_context),
@@ -134,11 +137,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   if (!handled) {
     handled = true;
     IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcherHost, message)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryGetDatabaseNames,
-                          OnIDBFactoryGetDatabaseNames)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
-                          OnIDBFactoryDeleteDatabase)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_AckReceivedBlobs, OnAckReceivedBlobs)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -154,7 +152,6 @@ int32_t IndexedDBDispatcherHost::Add(IndexedDBCursor* cursor) {
 }
 
 int32_t IndexedDBDispatcherHost::Add(IndexedDBConnection* connection,
-                                     int32_t ipc_thread_id,
                                      const url::Origin& origin) {
   if (!database_dispatcher_host_) {
     connection->Close();
@@ -262,40 +259,6 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
   return cursor_dispatcher_host_->map_.Lookup(ipc_cursor_id);
 }
 
-::IndexedDBDatabaseMetadata IndexedDBDispatcherHost::ConvertMetadata(
-    const content::IndexedDBDatabaseMetadata& web_metadata) {
-  ::IndexedDBDatabaseMetadata metadata;
-  metadata.id = web_metadata.id;
-  metadata.name = web_metadata.name;
-  metadata.version = web_metadata.version;
-  metadata.max_object_store_id = web_metadata.max_object_store_id;
-
-  for (const auto& iter : web_metadata.object_stores) {
-    const content::IndexedDBObjectStoreMetadata& web_store_metadata =
-        iter.second;
-    ::IndexedDBObjectStoreMetadata idb_store_metadata;
-    idb_store_metadata.id = web_store_metadata.id;
-    idb_store_metadata.name = web_store_metadata.name;
-    idb_store_metadata.key_path = web_store_metadata.key_path;
-    idb_store_metadata.auto_increment = web_store_metadata.auto_increment;
-    idb_store_metadata.max_index_id = web_store_metadata.max_index_id;
-
-    for (const auto& index_iter : web_store_metadata.indexes) {
-      const content::IndexedDBIndexMetadata& web_index_metadata =
-          index_iter.second;
-      ::IndexedDBIndexMetadata idb_index_metadata;
-      idb_index_metadata.id = web_index_metadata.id;
-      idb_index_metadata.name = web_index_metadata.name;
-      idb_index_metadata.key_path = web_index_metadata.key_path;
-      idb_index_metadata.unique = web_index_metadata.unique;
-      idb_index_metadata.multi_entry = web_index_metadata.multi_entry;
-      idb_store_metadata.indexes.push_back(idb_index_metadata);
-    }
-    metadata.object_stores.push_back(idb_store_metadata);
-  }
-  return metadata;
-}
-
 IndexedDBMsg_ObserverChanges IndexedDBDispatcherHost::ConvertObserverChanges(
     std::unique_ptr<IndexedDBObserverChanges> changes) {
   IndexedDBMsg_ObserverChanges idb_changes;
@@ -315,71 +278,117 @@ IndexedDBMsg_Observation IndexedDBDispatcherHost::ConvertObservation(
   return idb_observation;
 }
 
-void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
-    const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& params) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+void IndexedDBDispatcherHost::GetDatabaseNames(
+    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!IsValidOrigin(params.origin)) {
-    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_INVALID_ORIGIN);
+  if (!IsValidOrigin(origin)) {
+    mojo::ReportBadMessage(kInvalidOrigin);
     return;
   }
+
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
+  indexed_db_context_->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread, this,
+                 callbacks, origin));
+}
+
+void IndexedDBDispatcherHost::Open(
+    int32_t worker_thread,
+    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+    ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
+        database_callbacks_info,
+    const url::Origin& origin,
+    const base::string16& name,
+    int64_t version,
+    int64_t transaction_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!IsValidOrigin(origin)) {
+    mojo::ReportBadMessage(kInvalidOrigin);
+    return;
+  }
+
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
+  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
+      new IndexedDBDatabaseCallbacks(this, worker_thread,
+                                     std::move(database_callbacks_info)));
+  indexed_db_context_->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&IndexedDBDispatcherHost::OpenOnIDBThread, this, callbacks,
+                 database_callbacks, origin, name, version, transaction_id));
+}
+
+void IndexedDBDispatcherHost::DeleteDatabase(
+    ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+    const url::Origin& origin,
+    const base::string16& name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!IsValidOrigin(origin)) {
+    mojo::ReportBadMessage(kInvalidOrigin);
+    return;
+  }
+
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
+  indexed_db_context_->TaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread,
+                            this, callbacks, origin, name));
+}
+
+void IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread(
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    const url::Origin& origin) {
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   context()->GetIDBFactory()->GetDatabaseNames(
-      new IndexedDBCallbacks(this, params.ipc_thread_id,
-                             params.ipc_callbacks_id),
-      params.origin, indexed_db_path, request_context_getter_);
+      callbacks, origin, indexed_db_path, request_context_getter_);
 }
 
-void IndexedDBDispatcherHost::OnIDBFactoryOpen(
-    const IndexedDBHostMsg_FactoryOpen_Params& params) {
+void IndexedDBDispatcherHost::OpenOnIDBThread(
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    const url::Origin& origin,
+    const base::string16& name,
+    int64_t version,
+    int64_t transaction_id) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-
-  if (!IsValidOrigin(params.origin)) {
-    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_INVALID_ORIGIN);
-    return;
-  }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  int64_t host_transaction_id = HostTransactionId(params.transaction_id);
+  int64_t host_transaction_id = HostTransactionId(transaction_id);
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  scoped_refptr<IndexedDBCallbacks> callbacks = new IndexedDBCallbacks(
-      this, params.ipc_thread_id, params.ipc_callbacks_id,
-      params.ipc_database_callbacks_id, host_transaction_id, params.origin);
   callbacks->SetConnectionOpenStartTime(begin_time);
-  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
-      new IndexedDBDatabaseCallbacks(
-          this, params.ipc_thread_id, params.ipc_database_callbacks_id);
+  callbacks->set_host_transaction_id(host_transaction_id);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       base::MakeUnique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, host_transaction_id,
-          params.version);
+          version);
   DCHECK(request_context_getter_);
-  context()->GetIDBFactory()->Open(params.name, std::move(connection),
-                                   request_context_getter_, params.origin,
+  context()->GetIDBFactory()->Open(name, std::move(connection),
+                                   request_context_getter_, origin,
                                    indexed_db_path);
 }
 
-void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
-    const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
+void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    const url::Origin& origin,
+    const base::string16& name) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-
-  if (!IsValidOrigin(params.origin)) {
-    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_INVALID_ORIGIN);
-    return;
-  }
 
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_getter_);
   context()->GetIDBFactory()->DeleteDatabase(
-      params.name, request_context_getter_,
-      new IndexedDBCallbacks(this, params.ipc_thread_id,
-                             params.ipc_callbacks_id),
-      params.origin, indexed_db_path);
+      name, request_context_getter_, callbacks, origin, indexed_db_path);
 }
 
 // OnPutHelper exists only to allow us to hop threads while holding a reference
