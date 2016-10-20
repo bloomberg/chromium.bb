@@ -166,6 +166,10 @@ class CORE_EXPORT FrameView final
   }
   bool layoutSizeFixedToFrameSize() { return m_layoutSizeFixedToFrameSize; }
 
+  void setInitialViewportSize(const IntSize&);
+  int initialViewportWidth() const;
+  int initialViewportHeight() const;
+
   void updateAcceleratedCompositingSettings();
 
   void recalcOverflowAfterStyleChange();
@@ -978,6 +982,7 @@ class CORE_EXPORT FrameView final
   float m_inputEventsScaleFactorForEmulation;
 
   IntSize m_layoutSize;
+  IntSize m_initialViewportSize;
   bool m_layoutSizeFixedToFrameSize;
 
   Timer<FrameView> m_didScrollTimer;

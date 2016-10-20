@@ -120,6 +120,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -1707,6 +1708,10 @@ void WebLocalFrameImpl::createFrameView() {
 
   frame()->createView(initialSize, webView->baseBackgroundColor(),
                       isTransparent);
+  if (isMainFrame) {
+    frame()->view()->setInitialViewportSize(
+        webView->pageScaleConstraintsSet().initialViewportSize());
+  }
   if (webView->shouldAutoResize() && frame()->isLocalRoot())
     frame()->view()->enableAutoSizeMode(webView->minAutoSize(),
                                         webView->maxAutoSize());

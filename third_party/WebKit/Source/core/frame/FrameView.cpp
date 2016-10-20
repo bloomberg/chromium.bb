@@ -4493,4 +4493,26 @@ bool FrameView::canThrottleRendering() const {
          (m_hiddenForThrottling && m_crossOriginForThrottling);
 }
 
+void FrameView::setInitialViewportSize(const IntSize& viewportSize) {
+  if (viewportSize == m_initialViewportSize)
+    return;
+
+  m_initialViewportSize = viewportSize;
+  // TODO(rune@opera.com): Notify the viewport style resolver about the changed
+  // initial viewport:
+  //
+  // if (Document* document = m_frame->document())
+  //   document->styleEngine().initialViewportChanged();
+}
+
+int FrameView::initialViewportWidth() const {
+  DCHECK(m_frame->isMainFrame());
+  return m_initialViewportSize.width();
+}
+
+int FrameView::initialViewportHeight() const {
+  DCHECK(m_frame->isMainFrame());
+  return m_initialViewportSize.height();
+}
+
 }  // namespace blink

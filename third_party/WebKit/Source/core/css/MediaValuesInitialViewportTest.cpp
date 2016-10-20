@@ -17,6 +17,7 @@ class MediaValuesInitialViewportTest : public ::testing::Test {
  private:
   void SetUp() override {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(320, 480));
+    document().view()->setInitialViewportSize(IntSize(320, 480));
   }
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;

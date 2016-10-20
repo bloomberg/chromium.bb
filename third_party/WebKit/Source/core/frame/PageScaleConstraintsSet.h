@@ -107,6 +107,7 @@ class CORE_EXPORT PageScaleConstraintsSet {
   void didChangeInitialContainingBlockSize(const IntSize&);
 
   IntSize layoutSize() const;
+  IntSize initialViewportSize() const { return m_icbSize; }
 
  private:
   PageScaleConstraintsSet();

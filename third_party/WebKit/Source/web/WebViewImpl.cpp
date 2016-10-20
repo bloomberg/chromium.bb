@@ -1907,6 +1907,7 @@ void WebViewImpl::performResize() {
   page()->frameHost().visualViewport().setSize(m_size);
 
   if (mainFrameImpl()->frameView()) {
+    mainFrameImpl()->frameView()->setInitialViewportSize(ICBSize);
     if (!mainFrameImpl()->frameView()->needsLayout())
       postLayoutResize(mainFrameImpl());
   }
@@ -4010,6 +4011,7 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe) {
 
       page()->frameHost().visualViewport().setSize(m_size);
       pageScaleConstraintsSet().didChangeInitialContainingBlockSize(m_size);
+      frame->view()->setInitialViewportSize(m_size);
 
       m_client->didAutoResize(m_size);
       sendResizeEventAndRepaint();
