@@ -557,7 +557,7 @@ message InstallableLaunch {
 }
 
 // Used to report the device location.
-message DeviceLocation {
+message OBSOLETE_DeviceLocation {
   enum ErrorCode {
     ERROR_CODE_NONE                 = 0;
     ERROR_CODE_POSITION_UNAVAILABLE = 1;
@@ -708,7 +708,7 @@ message DeviceStatusReportRequest {
 
   // Device active times collection since last report rpc call.
   // No longer used -- use active_period instead.
-  repeated TimePeriod active_time = 4 [deprecated = true];
+  repeated TimePeriod OBSOLETE_active_time = 4 [deprecated = true];
 
   // The browser version string as shown in the About dialog.
   // e.g. 17.0.963.18.
@@ -718,7 +718,7 @@ message DeviceStatusReportRequest {
   repeated ActiveTimePeriod active_period = 6;
 
   // The device location.
-  optional DeviceLocation deprecated_device_location = 7 [deprecated = true];
+  optional OBSOLETE_DeviceLocation OBSOLETE_device_location = 7 [deprecated = true];
 
   // List of network interfaces.
   repeated NetworkInterface network_interface = 8;
@@ -736,7 +736,7 @@ message DeviceStatusReportRequest {
   repeated int32 cpu_utilization_pct = 12;
 
   // Free RAM (unreliable due to GC).
-  optional int64 deprecated_system_ram_free = 13 [deprecated = true];
+  optional int64 OBSOLETE_system_ram_free = 13 [deprecated = true];
 
   // Total RAM on the device.
   optional int64 system_ram_total = 14;
@@ -808,11 +808,11 @@ message AndroidStatus {
 message SessionStatusReportRequest {
   // Installed apps for this user on this device.
   // No longer used -- use installed_apps instead.
-  repeated string installed_app_id = 1 [deprecated = true];
+  repeated string OBSOLETE_installed_app_id = 1 [deprecated = true];
 
   // Installed extensions for this user on this device.
   // No longer used -- use installed_extensions instead.
-  repeated string installed_extension_id = 2 [deprecated = true];
+  repeated string OBSOLETE_installed_extension_id = 2 [deprecated = true];
 
   // One stat per app for top 30 apps.
   repeated InstallableLaunch app_launch_stat = 3;
