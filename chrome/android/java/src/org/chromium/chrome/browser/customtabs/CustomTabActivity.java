@@ -77,6 +77,12 @@ public class CustomTabActivity extends ChromeActivity {
     private static final String TAG = "CustomTabActivity";
     private static final String LAST_URL_PREF = "pref_last_custom_tab_url";
 
+    // For CustomTabs.WebContentsStateOnLaunch, see histograms.xml. Append only.
+    private static final int WEBCONTENTS_STATE_NO_WEBCONTENTS = 0;
+    private static final int WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS = 1;
+    private static final int WEBCONTENTS_STATE_SPARE_WEBCONTENTS = 2;
+    private static final int WEBCONTENTS_STATE_MAX = 3;
+
     private static CustomTabContentHandler sActiveContentHandler;
 
     private FindToolbarManager mFindToolbarManager;
@@ -456,12 +462,17 @@ public class CustomTabActivity extends ChromeActivity {
         tab.setAppAssociatedWith(customTabsConnection.getClientPackageNameForSession(mSession));
 
         mPrerenderedUrl = customTabsConnection.getPrerenderedUrl(mSession);
+        int webContentsStateOnLaunch = WEBCONTENTS_STATE_NO_WEBCONTENTS;
         WebContents webContents =
                 customTabsConnection.takePrerenderedUrl(mSession, url, referrerUrl);
         mHasPrerendered = webContents != null;
+        if (mHasPrerendered) webContentsStateOnLaunch = WEBCONTENTS_STATE_PRERENDERED_WEBCONTENTS;
         if (!mHasPrerendered) {
             webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
+            if (webContents != null) webContentsStateOnLaunch = WEBCONTENTS_STATE_SPARE_WEBCONTENTS;
         }
+        RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebcontentsStateOnLaunch",
+                webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
         if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
         tab.initialize(
                 webContents, getTabContentManager(),
