@@ -1271,3 +1271,8 @@ crbug.com/655458 imported/wpt/workers/semantics/xhr/004.html [ Failure Timeout ]
 
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/dedicated.html [ Crash Failure Timeout ]
 crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ Crash Failure Timeout ]
+
+crbug.com/656622 inspector/sources/debugger-pause/debugger-eval-while-paused-throws.html [ NeedsManualRebaseline ]
+
+# Web platform tests for the service workers cannot work without --enable-wptserve.
+crbug.com/602693 imported/wpt/service-workers [ Skip ]

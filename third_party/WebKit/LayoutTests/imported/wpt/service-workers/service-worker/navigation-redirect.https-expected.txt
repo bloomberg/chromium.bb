@@ -1,0 +1,31 @@
+CONSOLE ERROR: line 50: Uncaught TypeError: Cannot read property 'unregister' of undefined
+This is a testharness.js-based test.
+FAIL Normal redirect to same-origin scope. assert_unreached: unregister should not fail: Failed to get a ServiceWorkerRegistration: The origin of the provided documentURL ('https://127.0.0.1:8444') does not match the current origin ('https://web-platform.test:8444'). Reached unreachable code
+FAIL Normal redirect to other-origin scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fallbacked redirect to same-origin out-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fallbacked redirect to same-origin same-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fallbacked redirect to same-origin other-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fallbacked redirect to other-origin out-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fallbacked redirect to other-origin in-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-generated redirect to same-origin out-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-generated redirect to same-origin same-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-generated redirect to same-origin other-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-generated redirect to other-origin out-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-generated redirect to other-origin in-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fetched redirect to same-origin out-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fetched redirect to same-origin same-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fetched redirect to same-origin other-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fetched redirect to other-origin out-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL SW-fetched redirect to other-origin in-scope. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to same-origin out-scope with opaque redirect response. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to same-origin same-scope with opaque redirect response. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to same-origin other-scope with opaque redirect response. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to other-origin out-scope with opaque redirect response. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to other-origin in-scope with opaque redirect response. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to same-origin out-scope with opaque redirect response which is passed through Cache. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to same-origin same-scope with opaque redirect response which is passed through Cache. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to same-origin other-scope with opaque redirect response which is passed through Cache. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to other-origin out-scope with opaque redirect response which is passed through Cache. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+FAIL Redirect to other-origin in-scope with opaque redirect response which is passed through Cache. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+Harness: the test ran to completion.
+

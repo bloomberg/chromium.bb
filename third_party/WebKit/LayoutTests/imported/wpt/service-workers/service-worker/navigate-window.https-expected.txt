@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL Clients.matchAll() should not show an old window as controlled after it navigates. assert_unreached: unregister should not fail: Failed to get a ServiceWorkerRegistration: The origin of the provided documentURL ('https://127.0.0.1:8444') does not match the current origin ('https://web-platform.test:8444'). Reached unreachable code
+FAIL Clients.matchAll() should not show an old window after it navigates. assert_unreached: unregister should not fail: Failed to get a ServiceWorkerRegistration: The origin of the provided documentURL ('https://127.0.0.1:8444') does not match the current origin ('https://web-platform.test:8444'). Reached unreachable code
+Harness: the test ran to completion.
+

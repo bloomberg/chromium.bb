@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 2443: Uncaught Error: assert_array_equals: property 2, expected "https://web-platform.test:8444/service-workers/service-worker/resources/clients-matchall-client-types-iframe.html" but got "https://web-platform.test:8444/service-workers/service-worker/resources/new-url.html"
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_array_equals: property 2, expected "https://web-platform.test:8444/service-workers/service-worker/resources/clients-matchall-client-types-iframe.html" but got "https://web-platform.test:8444/service-workers/service-worker/resources/new-url.html"
+TIMEOUT Verify matchAll() with various client types Test timed out
+Harness: the test ran to completion.
+

@@ -292,7 +292,9 @@ imported/wpt/selectors-api [ Skip ]
 imported/wpt/serve [ Skip ]
 imported/wpt/serve.py [ Skip ]
 imported/wpt/server-side.md [ Skip ]
-imported/wpt/service-workers [ Skip ]
+## Owners: shimazu@chromium.org
+# imported/wpt/service-workers [ Pass ]
+imported/wpt/service-workers/cache-storage [ Skip ]
 ## Owners: kochi@chromium.org crbug.com/505364
 # imported/wpt/shadow-dom [ Pass ]
 ## Owners: jww@chromium.org

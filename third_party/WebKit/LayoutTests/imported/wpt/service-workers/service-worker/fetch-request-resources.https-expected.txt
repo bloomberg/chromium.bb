@@ -1,0 +1,19 @@
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('This is not a valid integrity because it has no dashes'). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
+CONSOLE ERROR: line 54: Error parsing 'integrity' attribute ('sha256-'). The digest must be a valid, base64-encoded value.
+CONSOLE ERROR: line 54: Ignoring unrecogized 'integrity' attribute option '123'.
+CONSOLE ERROR: Uncaught (in promise) NetworkError: A network error occurred.
+CONSOLE ERROR: Uncaught (in promise) NetworkError: A network error occurred.
+This is a testharness.js-based test.
+FAIL Verify FetchEvent for resources. assert_equals: integrity of Script load (url:https://127.0.0.1:8444/service-workers/service-worker/resources/dummy?test21) must be      . expected "     " but got ""
+Harness: the test ran to completion.
+

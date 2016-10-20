@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS CSP test for script-src in ServiceWorkerGlobalScope 
+PASS importScripts test for script-src 
+FAIL Fetch test for script-src assert_unreached: unexpected rejection: assert_unreached: fetch should not fail. Reached unreachable code Reached unreachable code
+FAIL Redirected fetch test for script-src assert_unreached: unexpected rejection: assert_unreached: Redirected fetch should not fail. Reached unreachable code Reached unreachable code
+Harness: the test ran to completion.
+

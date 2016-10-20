@@ -1,0 +1,9 @@
+CONSOLE ERROR: line 37: Uncaught SecurityError: Failed to read the 'contentDocument' property from 'HTMLIFrameElement': Blocked a frame with origin "https://web-platform.test:8444" from accessing a frame with origin "null".  The frame requesting access has a protocol of "https", the frame being accessed has a protocol of "data". Protocols must match.
+
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught SecurityError: Failed to read the 'contentDocument' property from 'HTMLIFrameElement': Blocked a frame with origin "https://web-platform.test:8444" from accessing a cross-origin frame.
+FAIL Verify redirect mode of Fetch API and ServiceWorker FetchEvent. promise_test: Unhandled rejection with value: object "Error: Redirected iframe loading with Request.redirect=follow should fail."
+FAIL Verify redirected of Response(Fetch API) and ServiceWorker FetchEvent. promise_test: Unhandled rejection with value: object "Error: wait_for_state must be passed a ServiceWorker"
+FAIL Verify redirected of Response(Fetch API), Cache API and ServiceWorker FetchEvent. promise_test: Unhandled rejection with value: object "Error: wait_for_state must be passed a ServiceWorker"
+Harness: the test ran to completion.
+

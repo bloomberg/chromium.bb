@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 177: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://www1.127.0.0.1:8444') does not match the recipient window's origin ('null').
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 2 , harness_status.message = null
+TIMEOUT Verify canvas tainting of fetched image in a Service Worker Test timed out
+Harness: the test ran to completion.
+

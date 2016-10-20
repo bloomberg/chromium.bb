@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL controller is set upon reload after registration promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'active' of undefined"
+Harness: the test ran to completion.
+
