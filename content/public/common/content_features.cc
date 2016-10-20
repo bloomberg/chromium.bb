@@ -157,6 +157,12 @@ const base::Feature kRenderingPipelineThrottling{
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Navigation preload feature of service workers.
+// TODO(horo): Revise link when this lands in the spec:
+// https://github.com/w3c/ServiceWorker/pull/983/files
+const base::Feature kServiceWorkerNavigationPreload{
+    "ServiceWorkerNavigationPreload", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

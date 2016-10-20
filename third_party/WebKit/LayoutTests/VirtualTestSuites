@@ -295,6 +295,11 @@
     "args": ["--mojo-service-worker"]
   },
   {
+    "prefix": "service-worker-navigation-preload",
+    "base": "http/tests/serviceworker",
+    "args": ["--enable-features=ServiceWorkerNavigationPreload"]
+  },
+  {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
     "args": ["--enable-blink-features=LayoutNG"]

@@ -459,13 +459,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method postMessage
 [Worker]     method start
 [Worker]     setter onmessage
-[Worker] interface NavigationPreloadManager
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method disable
-[Worker]     method enable
-[Worker]     method getState
-[Worker]     method setHeaderValue
 [Worker] interface NetworkInformation : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter downlinkMax
@@ -666,7 +659,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter active
 [Worker]     getter installing
-[Worker]     getter navigationPreload
 [Worker]     getter onupdatefound
 [Worker]     getter pushManager
 [Worker]     getter scope

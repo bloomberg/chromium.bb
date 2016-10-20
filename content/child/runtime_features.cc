@@ -303,6 +303,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kWebPayments));
 #endif
 
+  if (base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload))
+    WebRuntimeFeatures::enableServiceWorkerNavigationPreload(true);
+
   if (base::FeatureList::IsEnabled(features::kSpeculativeLaunchServiceWorker))
     WebRuntimeFeatures::enableSpeculativeLaunchServiceWorker(true);
 

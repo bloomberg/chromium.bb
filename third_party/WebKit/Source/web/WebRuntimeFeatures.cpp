@@ -332,6 +332,10 @@ void WebRuntimeFeatures::enableScrollAnchoring(bool enable) {
   RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableServiceWorkerNavigationPreload(bool enable) {
+  RuntimeEnabledFeatures::setServiceWorkerNavigationPreloadEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableAutoplayMutedVideos(bool enable) {
   RuntimeEnabledFeatures::setAutoplayMutedVideosEnabled(enable);
 }

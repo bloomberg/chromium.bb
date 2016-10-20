@@ -46,6 +46,7 @@ CONTENT_EXPORT extern const base::Feature kPointerEventV1SpecCapturing;
 CONTENT_EXPORT extern const base::Feature kRafAlignedInputEvents;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
+CONTENT_EXPORT extern const base::Feature kServiceWorkerNavigationPreload;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSpeculativeLaunchServiceWorker;
 CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;
