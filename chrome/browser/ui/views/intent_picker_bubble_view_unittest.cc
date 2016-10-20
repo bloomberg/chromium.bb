@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -12,14 +14,14 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "url/gurl.h"
 
-using NameAndIcon = arc::ArcNavigationThrottle::NameAndIcon;
+using AppInfo = arc::ArcNavigationThrottle::AppInfo;
 using content::WebContents;
 using content::OpenURLParams;
 using content::Referrer;
@@ -38,8 +40,8 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
  protected:
   void CreateBubbleView(bool use_icons) {
     // Pushing a couple of fake apps just to check they are created on the UI.
-    app_info_.emplace_back("dank app 1", gfx::Image());
-    app_info_.emplace_back("dank app 2", gfx::Image());
+    app_info_.emplace_back(AppInfo(gfx::Image(), "package_1", "dank app 1"));
+    app_info_.emplace_back(AppInfo(gfx::Image(), "package_2", "dank_app_2"));
 
     if (use_icons)
       FillAppListWithDummyIcons();
@@ -61,15 +63,15 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::Image dummy_icon = rb.GetImageNamed(IDR_CLOSE);
     for (auto& app : app_info_)
-      app.second = dummy_icon;
+      app.icon = dummy_icon;
   }
 
   // Dummy method to be called upon bubble closing.
-  void OnBubbleClosed(size_t selected_app_tag,
+  void OnBubbleClosed(std::string selected_app_package,
                       arc::ArcNavigationThrottle::CloseReason close_reason) {}
 
   std::unique_ptr<IntentPickerBubbleView> bubble_;
-  std::vector<NameAndIcon> app_info_;
+  std::vector<AppInfo> app_info_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleViewTest);
@@ -80,9 +82,8 @@ TEST_F(IntentPickerBubbleViewTest, NullIcons) {
   CreateBubbleView(false);
   size_t size = bubble_->app_info_.size();
   for (size_t i = 0; i < size; ++i) {
-    views::LabelButton* app = bubble_->GetLabelButtonAt(i);
-    EXPECT_TRUE(
-        app->GetImage(views::Button::ButtonState::STATE_NORMAL).isNull()) << i;
+    gfx::ImageSkia image = bubble_->GetAppImageForTesting(i);
+    EXPECT_TRUE(image.isNull()) << i;
   }
 }
 
@@ -91,9 +92,8 @@ TEST_F(IntentPickerBubbleViewTest, NonNullIcons) {
   CreateBubbleView(true);
   size_t size = bubble_->app_info_.size();
   for (size_t i = 0; i < size; ++i) {
-    views::LabelButton* app = bubble_->GetLabelButtonAt(i);
-    EXPECT_FALSE(
-        app->GetImage(views::Button::ButtonState::STATE_NORMAL).isNull()) << i;
+    gfx::ImageSkia image = bubble_->GetAppImageForTesting(i);
+    EXPECT_FALSE(image.isNull()) << i;
   }
 }
 
@@ -102,4 +102,45 @@ TEST_F(IntentPickerBubbleViewTest, NonNullIcons) {
 TEST_F(IntentPickerBubbleViewTest, LabelsPtrVectorSize) {
   CreateBubbleView(true);
   EXPECT_EQ(app_info_.size(), bubble_->app_info_.size());
+}
+
+// Verifies the InkDrop state when creating a new bubble.
+TEST_F(IntentPickerBubbleViewTest, VerifyStartingInkDrop) {
+  CreateBubbleView(true);
+  size_t size = bubble_->app_info_.size();
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_EQ(bubble_->GetInkDropStateForTesting(i),
+              views::InkDropState::HIDDEN);
+  }
+}
+
+// Press each button at a time and make sure it goes to ACTIVATED state,
+// followed by HIDDEN state after selecting other button.
+TEST_F(IntentPickerBubbleViewTest, InkDropStateTransition) {
+  CreateBubbleView(true);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+  size_t size = bubble_->app_info_.size();
+  for (size_t i = 0; i < size; ++i) {
+    bubble_->PressButtonForTesting((i + 1) % size, event);
+    EXPECT_EQ(bubble_->GetInkDropStateForTesting(i),
+              views::InkDropState::HIDDEN);
+    EXPECT_EQ(bubble_->GetInkDropStateForTesting((i + 1) % size),
+              views::InkDropState::ACTIVATED);
+  }
+}
+
+// Arbitrary press the first button twice, check that the InkDropState remains
+// the same.
+TEST_F(IntentPickerBubbleViewTest, PressButtonTwice) {
+  CreateBubbleView(true);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+  EXPECT_EQ(bubble_->GetInkDropStateForTesting(0), views::InkDropState::HIDDEN);
+  bubble_->PressButtonForTesting(0, event);
+  EXPECT_EQ(bubble_->GetInkDropStateForTesting(0),
+            views::InkDropState::ACTIVATED);
+  bubble_->PressButtonForTesting(0, event);
+  EXPECT_EQ(bubble_->GetInkDropStateForTesting(0),
+            views::InkDropState::ACTIVATED);
 }

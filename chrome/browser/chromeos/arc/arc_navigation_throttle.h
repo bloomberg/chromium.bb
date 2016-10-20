@@ -47,11 +47,18 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   // ScrollView.
   enum { kMaxAppResults = 3 };
 
-  using NameAndIcon = std::pair<std::string, gfx::Image>;
-  using ShowIntentPickerCallback =
-      base::Callback<void(content::WebContents* web_contents,
-                          const std::vector<NameAndIcon>& app_info,
-                          const base::Callback<void(size_t, CloseReason)>& cb)>;
+  struct AppInfo {
+    explicit AppInfo(gfx::Image img, std::string package, std::string activity)
+        : icon(img), package_name(package), activity_name(activity) {}
+    gfx::Image icon;
+    std::string package_name;
+    std::string activity_name;
+  };
+
+  using ShowIntentPickerCallback = base::Callback<void(
+      content::WebContents* web_contents,
+      const std::vector<AppInfo>& app_info,
+      const base::Callback<void(std::string, CloseReason)>& cb)>;
   ArcNavigationThrottle(content::NavigationHandle* navigation_handle,
                         const ShowIntentPickerCallback& show_intent_picker_cb);
   ~ArcNavigationThrottle() override;
@@ -71,7 +78,7 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
       mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
   void OnIntentPickerClosed(mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
-                            size_t selected_app_index,
+                            std::string selected_app_package,
                             CloseReason close_reason);
   // A callback object that allow us to display an IntentPicker when Run() is
   // executed, it also allow us to report the user's selection back to

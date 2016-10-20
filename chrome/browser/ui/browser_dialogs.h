@@ -174,12 +174,19 @@ class ContentSettingBubbleViewsBridge {
 
 #if defined(OS_CHROMEOS)
 
+// This callback informs the package name of the app selected by the user, along
+// with the reason why the Bubble was closed. The string param must have a valid
+// package name, except when the CloseReason is ERROR or DIALOG_DEACTIVATED, for
+// these cases we return a dummy value which won't be used at all and has no
+// significance.
+using IntentPickerResponse =
+    base::Callback<void(std::string, arc::ArcNavigationThrottle::CloseReason)>;
+
 // Return a pointer to the IntentPickerBubbleView::ShowBubble method.
-using BubbleShowPtr = void (*)(
-    content::WebContents*,
-    const std::vector<std::pair<std::basic_string<char>, gfx::Image>>&,
-    const base::Callback<void(size_t,
-                              arc::ArcNavigationThrottle::CloseReason)>&);
+using BubbleShowPtr =
+    void (*)(content::WebContents*,
+             const std::vector<arc::ArcNavigationThrottle::AppInfo>&,
+             const IntentPickerResponse&);
 
 BubbleShowPtr ShowIntentPickerBubble();
 
