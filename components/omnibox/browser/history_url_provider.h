@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_checker.h"
 #include "components/history/core/browser/history_match.h"
@@ -25,7 +26,7 @@ class AutocompleteProviderListener;
 class SearchTermsData;
 
 namespace base {
-class MessageLoop;
+class SequencedTaskRunner;
 }
 
 namespace history {
@@ -107,7 +108,7 @@ struct HistoryURLProviderParams {
                            const SearchTermsData& search_terms_data);
   ~HistoryURLProviderParams();
 
-  base::MessageLoop* message_loop;
+  const scoped_refptr<base::SequencedTaskRunner> origin_task_runner;
 
   // A copy of the autocomplete input. We need the copy since this object will
   // live beyond the original query while it runs on the history thread.
