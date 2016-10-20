@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/atomicops.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -265,6 +266,8 @@ class MediaStreamAudioTest : public ::testing::Test {
 
   blink::WebMediaStreamSource blink_audio_source_;
   blink::WebMediaStreamTrack blink_audio_track_;
+
+  base::MessageLoop message_loop_;
 };
 
 // Tests that a simple source-->track-->sink connection and audio data flow

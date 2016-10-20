@@ -72,10 +72,7 @@ void ExternalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
 }
 
 void ExternalMediaStreamAudioSource::OnCaptureError(const std::string& why) {
-  // As of this writing, this method doesn't get called for anything useful,
-  // and all other implementors just log the message, but don't disconnect sinks
-  // or take any other action. So, just log the error.
-  LOG(ERROR) << why;
+  StopSourceOnError(why);
 }
 
 }  // namespace content

@@ -17,6 +17,10 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 class MediaStreamAudioTrack;
@@ -123,6 +127,11 @@ class CONTENT_EXPORT MediaStreamAudioSource
   void DeliverDataToTracks(const media::AudioBus& audio_bus,
                            base::TimeTicks reference_time);
 
+  // Called by subclasses when capture error occurs.
+  // Note: This can be called on any thread, and will post a task to the main
+  // thread to stop the source soon.
+  void StopSourceOnError(const std::string& why);
+
  private:
   // MediaStreamSource override.
   void DoStopSource() final;
@@ -136,15 +145,16 @@ class CONTENT_EXPORT MediaStreamAudioSource
   // remote (e.g., streamed-in from a server).
   const bool is_local_source_;
 
-  // In debug builds, check that all methods that could cause object graph
-  // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
-
   // Set to true once this source has been permanently stopped.
   bool is_stopped_;
 
   // Manages tracks connected to this source and the audio format and data flow.
   MediaStreamAudioDeliverer<MediaStreamAudioTrack> deliverer_;
+
+  // The task runner for main thread. Also used to check that all methods that
+  // could cause object graph or data flow changes are being called on the main
+  // thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Provides weak pointers so that MediaStreamAudioTracks won't call
   // StopAudioDeliveryTo() if this instance dies first.

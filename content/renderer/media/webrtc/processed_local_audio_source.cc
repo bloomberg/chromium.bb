@@ -339,6 +339,7 @@ void ProcessedLocalAudioSource::Capture(const media::AudioBus* audio_bus,
 
 void ProcessedLocalAudioSource::OnCaptureError(const std::string& message) {
   WebRtcLogMessage("ProcessedLocalAudioSource::OnCaptureError: " + message);
+  StopSourceOnError(message);
 }
 
 media::AudioParameters ProcessedLocalAudioSource::GetInputFormat() const {
