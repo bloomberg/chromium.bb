@@ -8,7 +8,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
-source_set("generic_sensor") {
+component("generic_sensor") {
+  output_name = "generic_sensor"
   sources = [
     "platform_sensor.cc",
     "platform_sensor.h",
@@ -29,8 +30,13 @@ source_set("generic_sensor") {
     "sensor_provider_impl.h",
   ]
 
+  defines = [ "DEVICE_GENERIC_SENSOR_IMPLEMENTATION" ]
+
   deps = [
     "//base",
+  ]
+
+  public_deps = [
     "//device/generic_sensor/public/cpp",
     "//device/generic_sensor/public/interfaces",
   ]
@@ -49,6 +55,8 @@ source_set("generic_sensor") {
     sources -= [ "platform_sensor_provider_default.cc" ]
 
     deps += [ "//device/sensors/public/cpp" ]
+
+    libs = [ "IOKit.framework" ]
   }
 }
 
@@ -85,6 +93,5 @@ static_library("testing") {
   public_deps = [
     ":generic_sensor",
     "//base",
-    "//device/generic_sensor/public/interfaces",
   ]
 }

@@ -6,6 +6,7 @@
 #define DEVICE_GENERIC_SENSOR_SENSOR_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
+#include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 
 namespace device {
@@ -16,7 +17,8 @@ class PlatformSensor;
 // Implementation of SensorProvider mojo interface.
 // Uses PlatformSensorProvider singleton to create platform specific instances
 // of PlatformSensor which are used by SensorImpl.
-class SensorProviderImpl final : public mojom::SensorProvider {
+class DEVICE_GENERIC_SENSOR_EXPORT SensorProviderImpl final
+    : public mojom::SensorProvider {
  public:
   static void Create(mojom::SensorProviderRequest request);
 

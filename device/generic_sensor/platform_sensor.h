@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/cpp/sensor_reading.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -23,7 +24,8 @@ class PlatformSensorConfiguration;
 
 // Base class for the sensors provided by the platform. Concrete instances of
 // this class are created by platform specific PlatformSensorProvider.
-class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
+class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensor
+    : public base::RefCountedThreadSafe<PlatformSensor> {
  public:
   // The interface that must be implemented by PlatformSensor clients.
   class Client {

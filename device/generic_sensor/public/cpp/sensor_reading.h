@@ -6,6 +6,7 @@
 #define DEVICE_GENERIC_SENSOR_PUBLIC_CPP_SENSOR_READING_H_
 
 #include "device/base/synchronization/one_writer_seqlock.h"
+#include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom.h"
 
 namespace device {
@@ -39,7 +40,7 @@ class SensorReadingField {
 };
 
 // This structure represents sensor reading data: timestamp and 3 values.
-struct SensorReading {
+struct DEVICE_GENERIC_SENSOR_EXPORT SensorReading {
   SensorReading();
   ~SensorReading();
   SensorReading(const SensorReading& other);

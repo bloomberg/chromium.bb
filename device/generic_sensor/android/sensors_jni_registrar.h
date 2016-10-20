@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+#include "device/generic_sensor/generic_sensor_export.h"
+
 namespace device {
 namespace android {
 
@@ -14,7 +16,7 @@ namespace android {
 // See https://www.chromium.org/developers/design-documents/android-jni
 //
 // Must be called before classes in the Sensors module are used.
-bool RegisterSensorsJni(JNIEnv* env);
+bool DEVICE_GENERIC_SENSOR_EXPORT RegisterSensorsJni(JNIEnv* env);
 
 }  // namespace android
 }  // namespace device

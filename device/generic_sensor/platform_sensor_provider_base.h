@@ -8,13 +8,15 @@
 #include "base/macros.h"
 
 #include "base/threading/non_thread_safe.h"
+#include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/platform_sensor.h"
 
 namespace device {
 
 // Base class that defines factory methods for PlatformSensor creation.
 // Its implementations must be accessed via GetInstance() method.
-class PlatformSensorProviderBase : public base::NonThreadSafe {
+class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
+    : public base::NonThreadSafe {
  public:
   using CreateSensorCallback =
       base::Callback<void(scoped_refptr<PlatformSensor>)>;
