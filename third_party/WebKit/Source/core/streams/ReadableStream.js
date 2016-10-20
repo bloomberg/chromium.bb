@@ -172,11 +172,13 @@
       }
 
       if (mode === 'byob') {
-        if (IsReadableByteStreamDefaultController(this[readableStreamController]) === false) {
-          throw new TypeError(errGetReaderNotByteStream);
-        }
-
-        return AcquireReadableStreamBYOBReader(this);
+        // TODO(ricea): When BYOB readers are supported:
+        //
+        // a. If
+        // ! IsReadableByteStreamController(this.[[readableStreamController]])
+        // is false, throw a TypeError exception.
+        // b. Return ? AcquireReadableStreamBYOBReader(this).
+        throw new TypeError(errGetReaderNotByteStream);
       }
 
       if (mode === undefined) {
