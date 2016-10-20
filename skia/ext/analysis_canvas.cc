@@ -54,7 +54,7 @@ bool IsFullQuad(SkCanvas* canvas, const SkRect& drawn_rect) {
   SkIRect clip_irect;
   if (!canvas->getClipDeviceBounds(&clip_irect))
     return false;
-  
+
   // if the clip is smaller than the canvas, we're partly clipped, so abort.
   if (!clip_irect.contains(SkIRect::MakeSize(canvas->getBaseLayerSize())))
     return false;
@@ -113,6 +113,7 @@ void AnalysisCanvas::onDrawRect(const SkRect& rect, const SkPaint& paint) {
       quickReject(paint.computeFastBounds(rect, &scratch))) {
     TRACE_EVENT_INSTANT0("disabled-by-default-skia", "Quick reject.",
                          TRACE_EVENT_SCOPE_THREAD);
+    ++rejected_op_count_;
     return;
   }
 
@@ -349,7 +350,8 @@ AnalysisCanvas::AnalysisCanvas(int width, int height)
       is_solid_color_(true),
       color_(SK_ColorTRANSPARENT),
       is_transparent_(true),
-      draw_op_count_(0) {
+      draw_op_count_(0),
+      rejected_op_count_(0) {
 }
 
 AnalysisCanvas::~AnalysisCanvas() {}
@@ -367,11 +369,11 @@ bool AnalysisCanvas::GetColorIfSolid(SkColor* color) const {
 }
 
 bool AnalysisCanvas::abort() {
-  // Early out as soon as we have more than one draw op.
-  // TODO(vmpstr): Investigate if 1 is the correct metric here. We need to
-  // balance the amount of time we spend analyzing vs how many tiles would be
-  // solid if the number was higher.
-  if (draw_op_count_ > 1) {
+  // Early out as soon as we have more than 1 draw op or 5 rejected ops.
+  // TODO(vmpstr): Investigate if 1 and 5 are the correct metrics here. We need
+  // to balance the amount of time we spend analyzing vs how many tiles would be
+  // solid if the numbers were higher.
+  if (draw_op_count_ > 1 || rejected_op_count_ > 5) {
     TRACE_EVENT0("disabled-by-default-skia",
                  "AnalysisCanvas::abort() -- aborting");
     // We have to reset solid/transparent state to false since we don't

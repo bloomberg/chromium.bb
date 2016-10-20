@@ -137,6 +137,7 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
   SkColor color_;
   bool is_transparent_;
   int draw_op_count_;
+  int rejected_op_count_;
 };
 
 }  // namespace skia
