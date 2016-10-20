@@ -583,19 +583,14 @@ class TaskSchedulerWorkerPoolHistogramTest
   TaskSchedulerWorkerPoolHistogramTest() = default;
 
  protected:
+  // Override SetUp() to allow every test case to initialize a worker pool with
+  // its own arguments.
   void SetUp() override {}
-
-  void TearDown() override {
-    // |worker_pool_| initialization is done in test body.
-    if (worker_pool_)
-      worker_pool_->JoinForTesting();
-  }
 
  private:
   std::unique_ptr<StatisticsRecorder> statistics_recorder_ =
       StatisticsRecorder::CreateTemporaryForTesting();
 
- private:
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolHistogramTest);
 };
 
@@ -709,39 +704,50 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaitsWithDetach) {
   worker_pool_->DisallowWorkerDetachmentForTesting();
 }
 
+namespace {
+
+void CaptureThreadId(PlatformThreadId* thread_id) {
+  ASSERT_TRUE(thread_id);
+  *thread_id = PlatformThread::CurrentId();
+}
+
+void VerifyThreadIdIsNot(PlatformThreadId thread_id) {
+  EXPECT_NE(thread_id, PlatformThread::CurrentId());
+}
+
+}  // namespace
+
 TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeDetach) {
   InitializeWorkerPool(kReclaimTimeForDetachTests, kNumWorkersInWorkerPool);
+
+  // This test assumes that the TaskRunners aren't assigned to the same worker.
   auto task_runner = worker_pool_->CreateTaskRunnerWithTraits(
       TaskTraits(), ExecutionMode::SINGLE_THREADED);
   auto other_task_runner = worker_pool_->CreateTaskRunnerWithTraits(
       TaskTraits(), ExecutionMode::SINGLE_THREADED);
 
   // Post 3 tasks and wait until they run.
-  task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  PlatformThreadId thread_id;
+  task_runner->PostTask(FROM_HERE,
+                        Bind(&CaptureThreadId, Unretained(&thread_id)));
   task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
   task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
   worker_pool_->WaitForAllWorkersIdleForTesting();
 
   // To allow the SchedulerWorker associated with |task_runner| to detach:
   // - Make sure it isn't on top of the idle stack by waking up another
-  //   SchedulerWorker.
+  //   SchedulerWorker and waiting until it goes back to sleep.
   // - Release |task_runner|.
-  other_task_runner->PostTask(FROM_HERE, Bind(&DoNothing));
+  other_task_runner->PostTask(FROM_HERE, Bind(&VerifyThreadIdIsNot, thread_id));
+  worker_pool_->WaitForAllWorkersIdleForTesting();
   task_runner = nullptr;
 
-  // Allow the SchedulerWorker to detach.
+  // Allow the SchedulerWorker that was associated with |task_runner| to detach.
   PlatformThread::Sleep(kReclaimTimeForDetachTests + kExtraTimeToWaitForDetach);
-
-  // Join the SchedulerWorkerPool. This forces SchedulerWorkers that detached
-  // during the test to record to the histogram.
-  worker_pool_->WaitForAllWorkersIdleForTesting();
   worker_pool_->DisallowWorkerDetachmentForTesting();
-  worker_pool_->JoinForTesting();
-  const auto* histogram = worker_pool_->num_tasks_before_detach_histogram();
-  other_task_runner = nullptr;
-  worker_pool_.reset();
 
   // Verify that counts were recorded to the histogram as expected.
+  const auto* histogram = worker_pool_->num_tasks_before_detach_histogram();
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
   EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(3));
   EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
