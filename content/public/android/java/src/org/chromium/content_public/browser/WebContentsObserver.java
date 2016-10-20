@@ -83,6 +83,16 @@ public abstract class WebContentsObserver {
     public void didFirstVisuallyNonEmptyPaint() {}
 
     /**
+     * The web contents was shown.
+     */
+    public void wasShown() {}
+
+    /**
+     * The web contents was hidden.
+     */
+    public void wasHidden() {}
+
+    /**
      * Similar to didNavigateMainFrame but also called on subframe navigations.
      * @param url The validated url for the page.
      * @param baseUrl The validated base url for the page.

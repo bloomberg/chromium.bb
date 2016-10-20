@@ -294,6 +294,18 @@ void WebContentsObserverProxy::DidFirstVisuallyNonEmptyPaint() {
   Java_WebContentsObserverProxy_didFirstVisuallyNonEmptyPaint(env, obj);
 }
 
+void WebContentsObserverProxy::WasShown() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(java_observer_);
+  Java_WebContentsObserverProxy_wasShown(env, obj);
+}
+
+void WebContentsObserverProxy::WasHidden() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(java_observer_);
+  Java_WebContentsObserverProxy_wasHidden(env, obj);
+}
+
 void WebContentsObserverProxy::DidStartNavigationToPendingEntry(
     const GURL& url,
     ReloadType reload_type) {

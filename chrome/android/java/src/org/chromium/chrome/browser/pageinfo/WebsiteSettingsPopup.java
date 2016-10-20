@@ -423,6 +423,13 @@ public class WebsiteSettingsPopup implements OnClickListener {
             }
 
             @Override
+            public void wasHidden() {
+                // The web contents were hidden (potentially by loading another URL via an intent),
+                // so dismiss the dialog).
+                mDialog.dismiss();
+            }
+
+            @Override
             public void destroy() {
                 super.destroy();
                 // Force the dialog to close immediately in case the destroy was from Chrome

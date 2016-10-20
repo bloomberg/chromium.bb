@@ -52,6 +52,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
                            const FrameNavigateParams& params) override;
   void DocumentAvailableInMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint() override;
+  void WasShown() override;
+  void WasHidden() override;
   void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
                                        const GURL& validated_url,
                                        bool is_error_page,

@@ -140,6 +140,22 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void wasShown() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().wasShown();
+        }
+    }
+
+    @Override
+    @CalledByNative
+    public void wasHidden() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().wasHidden();
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didNavigateAnyFrame(url, baseUrl, isReload);
