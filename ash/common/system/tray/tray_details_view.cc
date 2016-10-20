@@ -153,8 +153,15 @@ void TrayDetailsView::TransitionToDefaultView() {
   // Cache pointer to owner in this function scope. TrayDetailsView will be
   // deleted after called ShowDefaultView.
   SystemTrayItem* owner = owner_;
-  if (title_row_ && title_row_->content() && title_row_->content()->HasFocus())
-    owner->set_restore_focus(true);
+  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    if (back_button_ && back_button_->HasFocus())
+      owner->set_restore_focus(true);
+  } else {
+    if (title_row_ && title_row_->content() &&
+        title_row_->content()->HasFocus()) {
+      owner->set_restore_focus(true);
+    }
+  }
   owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   owner->set_restore_focus(false);
 }
