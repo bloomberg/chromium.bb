@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+
+<body>
+  <img id="myImage">
+</body>
+
+<script>
+  var img = document.getElementById("myImage");
+
+  function detectFacesOnImageUrl(url) {
+    img.src = url;
+    img.onload = function() {
+      var detector = new FaceDetector();
+      var results = "";
+      detector.detect(img)
+        .then(boundingBoxes => {
+          for (var i=0; i<boundingBoxes.length; i++) {
+            var boundingBox = boundingBoxes[i];
+            var result = boundingBox.x + "," + boundingBox.y + "," +
+                         boundingBox.width + "," + boundingBox.height;
+            results += result + "#";
+          }
+          window.domAutomationController.send(results);
+        })
+        .catch(error => {
+          error = new Error("Error during detection:" + error);
+          window.domAutomationController.send(error.stack);
+        });
+    }
+  }
+  </script>
+</html>
