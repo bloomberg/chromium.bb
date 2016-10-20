@@ -306,7 +306,7 @@ void FrameSelection::setSelectionAlgorithm(
 
   const VisibleSelectionTemplate<Strategy> oldSelection =
       visibleSelection<Strategy>();
-  const VisibleSelection oldSelectionInDOMTree = selection();
+  const Position& oldSelectionStart = selection().start();
 
   m_selectionEditor->setVisibleSelection(s, options);
   m_frameCaret->setCaretRectNeedsUpdate();
@@ -352,7 +352,7 @@ void FrameSelection::setSelectionAlgorithm(
     m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
     return;
   }
-  m_frame->editor().respondToChangedSelection(oldSelectionInDOMTree, options);
+  m_frame->editor().respondToChangedSelection(oldSelectionStart, options);
   if (userTriggered == UserTriggered) {
     ScrollAlignment alignment;
 

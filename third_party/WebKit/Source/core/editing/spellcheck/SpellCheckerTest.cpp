@@ -63,7 +63,7 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   forceLayout();
   int startCount = layoutCount();
   spellChecker->respondToChangedSelection(
-      oldSelection,
+      oldSelection.start(),
       FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
   EXPECT_EQ(startCount, layoutCount());
 }

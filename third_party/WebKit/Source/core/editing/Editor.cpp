@@ -1571,9 +1571,9 @@ void Editor::setMarkedTextMatchesAreHighlighted(bool flag) {
 }
 
 void Editor::respondToChangedSelection(
-    const VisibleSelection& oldSelection,
+    const Position& oldSelectionStart,
     FrameSelection::SetSelectionOptions options) {
-  spellChecker().respondToChangedSelection(oldSelection, options);
+  spellChecker().respondToChangedSelection(oldSelectionStart, options);
   frame().inputMethodController().cancelCompositionIfSelectionIsInvalid();
   client().respondToChangedSelection(&frame(),
                                      frame().selection().getSelectionType());

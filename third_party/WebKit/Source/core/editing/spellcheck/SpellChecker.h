@@ -70,7 +70,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
       const VisibleSelection&);
   void markMisspellingsAndBadGrammarForMovingParagraphs(
       const VisibleSelection&);
-  void respondToChangedSelection(const VisibleSelection& oldSelection,
+  void respondToChangedSelection(const Position& oldSelectionStart,
                                  FrameSelection::SetSelectionOptions);
   void replaceMisspelledRange(const String&);
   void removeSpellingMarkers();
@@ -123,7 +123,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void markMisspellingsAndBadGrammar(const VisibleSelection&);
   void chunkAndMarkAllMisspellingsAndBadGrammar(
       const TextCheckingParagraph& fullParagraphToCheck);
-  void spellCheckOldSelection(const VisibleSelection& oldSelection,
+  void spellCheckOldSelection(const Position& oldSelectionStart,
                               const VisibleSelection& newAdjacentWords);
 
   Member<LocalFrame> m_frame;
