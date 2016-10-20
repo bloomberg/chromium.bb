@@ -26,6 +26,8 @@ class GL_EXPORT GLFenceARB : public GLFence {
  private:
   GLsync sync_ = 0;
 
+  void HandleClientWaitFailure();
+
   DISALLOW_COPY_AND_ASSIGN(GLFenceARB);
 };
 

@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 
 namespace gl {
 
@@ -40,7 +41,8 @@ bool GLFenceARB::HasCompleted() {
   // glClientWaitSync works better, so let's use that instead.
   GLenum result = glClientWaitSync(sync_, 0, 0);
   if (result == GL_WAIT_FAILED) {
-    LOG(FATAL) << "Failed to wait for GLFence. error code:" << GetGLErrors();
+    HandleClientWaitFailure();
+    return false;
   }
   return result != GL_TIMEOUT_EXPIRED;
 }
@@ -51,7 +53,7 @@ void GLFenceARB::ClientWait() {
       glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
   DCHECK_NE(static_cast<GLenum>(GL_TIMEOUT_EXPIRED), result);
   if (result == GL_WAIT_FAILED) {
-    LOG(FATAL) << "Failed to wait for GLFence. error code:" << GetGLErrors();
+    HandleClientWaitFailure();
   }
 }
 
@@ -69,6 +71,25 @@ GLFenceARB::~GLFenceARB() {
 
 void GLFenceARB::Invalidate() {
   sync_ = 0;
+}
+
+void GLFenceARB::HandleClientWaitFailure() {
+  DCHECK(GLContext::GetCurrent());
+  if (GLContext::GetCurrent()->WasAllocatedUsingRobustnessExtension()) {
+    // This function pointer is only set if one of the robustness
+    // extensions was available.
+    DCHECK(g_driver_gl.fn.glGetGraphicsResetStatusARBFn);
+    DCHECK(g_driver_gl.fn.glGetGraphicsResetStatusARBFn() != GL_NO_ERROR);
+    LOG(ERROR) << "Failed to wait for GLFence; context was lost. Error code: "
+               << GetGLErrors();
+  } else {
+    // There's no provision for reporting these failures higher up the
+    // stack and thereby losing the context (or exiting the GPU
+    // process) more cooperatively. Some of this code is called from
+    // deep call stacks. Report the wait failure and crash with a log
+    // message.
+    LOG(FATAL) << "Failed to wait for GLFence. Error code: " << GetGLErrors();
+  }
 }
 
 }  // namespace gl
