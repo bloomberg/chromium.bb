@@ -84,7 +84,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
-static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestExceptionV8Internal::toStringMethod(info);
 }

@@ -42,7 +42,7 @@ static void voidMethodPartial1Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestInterface2Partial::voidMethodPartial1(*impl, value);
 }
 
-static void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface2PartialV8Internal::voidMethodPartial1Method(info);
 }
@@ -64,7 +64,7 @@ static void voidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestInterface2Partial2::voidMethodPartial2(*impl, value);
 }
 
-static void voidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface2PartialV8Internal::voidMethodPartial2Method(info);
 }

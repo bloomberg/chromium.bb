@@ -396,7 +396,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
-static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
 }
@@ -425,7 +425,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
-static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
@@ -454,7 +454,7 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     impl->voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestrictedDoubleArg, unrestrictedFloatArg);
 }
 
-static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(info);
 }
@@ -466,7 +466,7 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     impl->voidMethod();
 }
 
-static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodMethod(info);
 }
@@ -478,7 +478,7 @@ static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Valu
     impl->voidMethod();
 }
 
-static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodMethodForMainWorld(info);
 }
@@ -490,7 +490,7 @@ static void alwaysExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->alwaysExposedMethod();
 }
 
-static void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::alwaysExposedMethodMethod(info);
 }
@@ -502,7 +502,7 @@ static void workerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->workerExposedMethod();
 }
 
-static void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::workerExposedMethodMethod(info);
 }
@@ -514,7 +514,7 @@ static void windowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->windowExposedMethod();
 }
 
-static void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::windowExposedMethodMethod(info);
 }
@@ -524,7 +524,7 @@ static void alwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
     TestInterface5Implementation::alwaysExposedStaticMethod();
 }
 
-static void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::alwaysExposedStaticMethodMethod(info);
 }
@@ -534,7 +534,7 @@ static void workerExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
     TestInterface5Implementation::workerExposedStaticMethod();
 }
 
-static void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::workerExposedStaticMethodMethod(info);
 }
@@ -544,7 +544,7 @@ static void windowExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
     TestInterface5Implementation::windowExposedStaticMethod();
 }
 
-static void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::windowExposedStaticMethodMethod(info);
 }
@@ -556,7 +556,7 @@ static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallback
     impl->windowAndServiceWorkerExposedMethod();
 }
 
-static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethod(info);
 }
@@ -580,7 +580,7 @@ static void voidMethodBooleanOrDOMStringArgMethod(const v8::FunctionCallbackInfo
     impl->voidMethodBooleanOrDOMStringArg(arg);
 }
 
-static void voidMethodBooleanOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodBooleanOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodBooleanOrDOMStringArgMethod(info);
 }
@@ -604,7 +604,7 @@ static void voidMethodDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<
     impl->voidMethodDoubleOrDOMStringArg(arg);
 }
 
-static void voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodDoubleOrDOMStringArgMethod(info);
 }
@@ -629,7 +629,7 @@ static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionC
     impl->voidMethodVoidExperimentalCallbackFunction(arg);
 }
 
-static void voidMethodVoidExperimentalCallbackFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodVoidExperimentalCallbackFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodVoidExperimentalCallbackFunctionMethod(info);
 }
@@ -654,7 +654,7 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
     impl->voidMethodVoidCallbackFunctionModulesArg(arg);
 }
 
-static void voidMethodVoidCallbackFunctionModulesArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodVoidCallbackFunctionModulesArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::voidMethodVoidCallbackFunctionModulesArgMethod(info);
 }
@@ -674,7 +674,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::keysMethod(info);
 }
@@ -694,7 +694,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::valuesMethod(info);
 }
@@ -714,7 +714,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::entriesMethod(info);
 }
@@ -749,7 +749,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 }
 
-static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::forEachMethod(info);
 }
@@ -761,7 +761,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
-static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::toStringMethod(info);
 }
@@ -781,7 +781,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface5ImplementationV8Internal::iteratorMethod(info);
 }

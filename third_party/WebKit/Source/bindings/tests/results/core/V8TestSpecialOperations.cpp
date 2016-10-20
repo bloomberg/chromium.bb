@@ -74,7 +74,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestSpecialOperationsV8Internal::namedItemMethod(info);
 }

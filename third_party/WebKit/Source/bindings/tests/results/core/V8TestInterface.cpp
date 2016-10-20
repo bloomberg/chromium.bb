@@ -1804,7 +1804,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
     impl->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
-static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
 }
@@ -1833,7 +1833,7 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     impl->voidMethodDoubleArgFloatArg(doubleArg, floatArg);
 }
 
-static void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodDoubleArgFloatArgMethod(info);
 }
@@ -1862,7 +1862,7 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     impl->voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestrictedDoubleArg, unrestrictedFloatArg);
 }
 
-static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(info);
 }
@@ -1895,7 +1895,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
     impl->voidMethodTestEnumArg(testEnumArg);
 }
 
-static void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodTestEnumArgMethod(info);
 }
@@ -1907,7 +1907,7 @@ static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     impl->voidMethod();
 }
 
-static void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodMethod(info);
 }
@@ -1919,7 +1919,7 @@ static void voidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Valu
     impl->voidMethod();
 }
 
-static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodMethodForMainWorld(info);
 }
@@ -1931,7 +1931,7 @@ static void alwaysExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->alwaysExposedMethod();
 }
 
-static void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void alwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::alwaysExposedMethodMethod(info);
 }
@@ -1943,7 +1943,7 @@ static void workerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->workerExposedMethod();
 }
 
-static void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void workerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::workerExposedMethodMethod(info);
 }
@@ -1955,7 +1955,7 @@ static void windowExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->windowExposedMethod();
 }
 
-static void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::windowExposedMethodMethod(info);
 }
@@ -1965,7 +1965,7 @@ static void alwaysExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
     TestInterfaceImplementation::alwaysExposedStaticMethod();
 }
 
-static void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void alwaysExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethod(info);
 }
@@ -1975,7 +1975,7 @@ static void workerExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
     TestInterfaceImplementation::workerExposedStaticMethod();
 }
 
-static void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void workerExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethod(info);
 }
@@ -1985,7 +1985,7 @@ static void windowExposedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::V
     TestInterfaceImplementation::windowExposedStaticMethod();
 }
 
-static void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethod(info);
 }
@@ -1995,7 +1995,7 @@ static void staticReturnDOMWrapperMethodMethod(const v8::FunctionCallbackInfo<v8
     v8SetReturnValue(info, TestInterfaceImplementation::staticReturnDOMWrapperMethod(), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
-static void staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticReturnDOMWrapperMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::staticReturnDOMWrapperMethodMethod(info);
 }
@@ -2007,7 +2007,7 @@ static void methodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallb
     impl->methodWithExposedAndRuntimeEnabledFlag();
 }
 
-static void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
@@ -2094,7 +2094,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
 }
 
-static void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
@@ -2106,7 +2106,7 @@ static void methodWithExposedHavingRuntimeEnabldFlagMethod(const v8::FunctionCal
     impl->methodWithExposedHavingRuntimeEnabldFlag();
 }
 
-static void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void methodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethod(info);
 }
@@ -2118,7 +2118,7 @@ static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallback
     impl->windowAndServiceWorkerExposedMethod();
 }
 
-static void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void windowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethod(info);
 }
@@ -2159,8 +2159,7 @@ static void promiseMethodPartialOverload1Method(const v8::FunctionCallbackInfo<v
 static void promiseMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface", "promiseMethodPartialOverload");
-    ScriptState* scriptState = ScriptState::forReceiverObject(info);
-    ExceptionToRejectPromiseScope rejectPromiseScope(info, scriptState, exceptionState);
+    ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
 
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
@@ -2195,7 +2194,7 @@ static void legacyInterfaceTypeCheckingMethodMethod(const v8::FunctionCallbackIn
     impl->legacyInterfaceTypeCheckingMethod(testInterfaceEmptyArg);
 }
 
-static void legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void legacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingMethodMethod(info);
 }
@@ -2207,7 +2206,7 @@ static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->secureContextMethod();
 }
 
-static void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::secureContextMethodMethod(info);
 }
@@ -2219,7 +2218,7 @@ static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackIn
     impl->secureContextRuntimeEnabledMethod();
 }
 
-static void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
@@ -2231,7 +2230,7 @@ static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInf
     impl->secureContextWindowExposedMethod();
 }
 
-static void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::secureContextWindowExposedMethodMethod(info);
 }
@@ -2243,7 +2242,7 @@ static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInf
     impl->secureContextWorkerExposedMethod();
 }
 
-static void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::secureContextWorkerExposedMethodMethod(info);
 }
@@ -2255,7 +2254,7 @@ static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::Funct
     impl->secureContextWindowExposedRuntimeEnabledMethod();
 }
 
-static void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
@@ -2267,7 +2266,7 @@ static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::Funct
     impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
-static void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
@@ -2279,7 +2278,7 @@ static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
     impl->implementsVoidMethod();
 }
 
-static void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::implementsVoidMethodMethod(info);
 }
@@ -2316,12 +2315,12 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValue(info, result);
 }
 
-static void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::implementsComplexMethodMethod(info);
 }
 
-static void implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implementsCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8TestInterface::implementsCustomVoidMethodMethodCustom(info);
 }
@@ -2331,7 +2330,7 @@ static void implementsStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::
     TestInterfaceImplementation::implementsStaticVoidMethod();
 }
 
-static void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implementsStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethod(info);
 }
@@ -2343,7 +2342,7 @@ static void implements2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
     TestImplements2::implements2VoidMethod(*impl);
 }
 
-static void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implements2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::implements2VoidMethodMethod(info);
 }
@@ -2355,7 +2354,7 @@ static void implements3VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value
     TestImplements3Implementation::implements3VoidMethod(*impl);
 }
 
-static void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implements3VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::implements3VoidMethodMethod(info);
 }
@@ -2365,7 +2364,7 @@ static void implements3StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8:
     TestImplements3Implementation::implements3StaticVoidMethod();
 }
 
-static void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void implements3StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethod(info);
 }
@@ -2377,7 +2376,7 @@ static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& i
     TestInterfacePartial::partialVoidMethod(*impl);
 }
 
-static void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialVoidMethodMethod(info);
 }
@@ -2387,7 +2386,7 @@ static void partialStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     TestInterfacePartial::partialStaticVoidMethod();
 }
 
-static void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethod(info);
 }
@@ -2411,7 +2410,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestInterfacePartial::partialVoidMethodLongArg(*impl, longArg);
 }
 
-static void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialVoidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethod(info);
 }
@@ -2429,7 +2428,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
     }
 }
 
-static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(info);
 }
@@ -2454,7 +2453,7 @@ static void partialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
     TestInterfacePartial::partialVoidMethodPartialCallbackTypeArg(*impl, partialCallbackTypeArg);
 }
 
-static void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialVoidMethodPartialCallbackTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethod(info);
 }
@@ -2481,7 +2480,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
     v8SetReturnValueInt(info, result);
 }
 
-static void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(info);
 }
@@ -2505,7 +2504,7 @@ static void partial2SecureContextMethodMethod(const v8::FunctionCallbackInfo<v8:
     TestInterfacePartial2Implementation::partial2SecureContextMethod(*impl);
 }
 
-static void partial2SecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partial2SecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partial2SecureContextMethodMethod(info);
 }
@@ -2517,7 +2516,7 @@ static void partialSecureContextMethodMethod(const v8::FunctionCallbackInfo<v8::
     TestInterfacePartialSecureContext::partialSecureContextMethod(*impl);
 }
 
-static void partialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialSecureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialSecureContextMethodMethod(info);
 }
@@ -2529,7 +2528,7 @@ static void partialSecureContextRuntimeEnabledMethodMethod(const v8::FunctionCal
     TestInterfacePartialSecureContext::partialSecureContextRuntimeEnabledMethod(*impl);
 }
 
-static void partialSecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialSecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledMethodMethod(info);
 }
@@ -2541,7 +2540,7 @@ static void partialSecureContextWindowExposedMethodMethod(const v8::FunctionCall
     TestInterfacePartialSecureContext::partialSecureContextWindowExposedMethod(*impl);
 }
 
-static void partialSecureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialSecureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedMethodMethod(info);
 }
@@ -2553,7 +2552,7 @@ static void partialSecureContextWorkerExposedMethodMethod(const v8::FunctionCall
     TestInterfacePartialSecureContext::partialSecureContextWorkerExposedMethod(*impl);
 }
 
-static void partialSecureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialSecureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedMethodMethod(info);
 }
@@ -2565,7 +2564,7 @@ static void partialSecureContextWindowExposedRuntimeEnabledMethodMethod(const v8
     TestInterfacePartialSecureContext::partialSecureContextWindowExposedRuntimeEnabledMethod(*impl);
 }
 
-static void partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialSecureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
@@ -2577,7 +2576,7 @@ static void partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(const v8
     TestInterfacePartialSecureContext::partialSecureContextWorkerExposedRuntimeEnabledMethod(*impl);
 }
 
-static void partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partialSecureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
@@ -2607,7 +2606,7 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
     (voidMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-static void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::voidMethodPartialOverloadMethod(info);
 }
@@ -2629,7 +2628,7 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
     (staticVoidMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-static void staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticVoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethod(info);
 }
@@ -2655,7 +2654,7 @@ static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
     (promiseMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-static void promiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void promiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::promiseMethodPartialOverloadMethod(info);
 }
@@ -2677,7 +2676,7 @@ static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
     (staticPromiseMethodPartialOverloadMethodForPartialInterface)(info);
 }
 
-static void staticPromiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void staticPromiseMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethod(info);
 }
@@ -2699,7 +2698,7 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     (partial2VoidMethodMethodForPartialInterface)(info);
 }
 
-static void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partial2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partial2VoidMethodMethod(info);
 }
@@ -2721,7 +2720,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
     (partial2StaticVoidMethodMethodForPartialInterface)(info);
 }
 
-static void partial2StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void partial2StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethod(info);
 }
@@ -2741,7 +2740,7 @@ static void toJSONMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result.v8Value());
 }
 
-static void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void toJSONMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::toJSONMethod(info);
 }
@@ -2753,7 +2752,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
-static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::toStringMethod(info);
 }
@@ -2773,7 +2772,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementationV8Internal::iteratorMethod(info);
 }

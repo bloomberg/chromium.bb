@@ -88,7 +88,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     impl->voidMethodDocument(document);
 }
 
-static void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::voidMethodDocumentMethod(info);
 }
@@ -108,7 +108,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::keysMethod(info);
 }
@@ -128,7 +128,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::valuesMethod(info);
 }
@@ -148,7 +148,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::entriesMethod(info);
 }
@@ -183,7 +183,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 }
 
-static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::forEachMethod(info);
 }
@@ -195,7 +195,7 @@ static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 
-static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::toStringMethod(info);
 }
@@ -215,7 +215,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterface3V8Internal::iteratorMethod(info);
 }

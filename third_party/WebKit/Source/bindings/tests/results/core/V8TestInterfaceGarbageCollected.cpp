@@ -113,7 +113,7 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     impl->func(arg);
 }
 
-static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::funcMethod(info);
 }
@@ -133,7 +133,7 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::keysMethod(info);
 }
@@ -153,7 +153,7 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::valuesMethod(info);
 }
@@ -173,7 +173,7 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::entriesMethod(info);
 }
@@ -208,7 +208,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 }
 
-static void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void forEachMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::forEachMethod(info);
 }
@@ -238,7 +238,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueBool(info, result);
 }
 
-static void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void hasMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::hasMethod(info);
 }
@@ -268,7 +268,7 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::addMethod(info);
 }
@@ -287,7 +287,7 @@ static void clearMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
 }
 
-static void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void clearMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::clearMethod(info);
 }
@@ -317,7 +317,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueBool(info, result);
 }
 
-static void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void deleteMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::deleteMethod(info);
 }
@@ -337,7 +337,7 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, result);
 }
 
-static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceGarbageCollectedV8Internal::iteratorMethod(info);
 }

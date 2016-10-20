@@ -296,7 +296,7 @@ static void secureContextMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
     impl->secureContextMethod();
 }
 
-static void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContextV8Internal::secureContextMethodMethod(info);
 }
@@ -308,7 +308,7 @@ static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackIn
     impl->secureContextRuntimeEnabledMethod();
 }
 
-static void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContextV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
@@ -320,7 +320,7 @@ static void secureContextWindowExposedMethodMethod(const v8::FunctionCallbackInf
     impl->secureContextWindowExposedMethod();
 }
 
-static void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWindowExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContextV8Internal::secureContextWindowExposedMethodMethod(info);
 }
@@ -332,7 +332,7 @@ static void secureContextWorkerExposedMethodMethod(const v8::FunctionCallbackInf
     impl->secureContextWorkerExposedMethod();
 }
 
-static void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContextV8Internal::secureContextWorkerExposedMethodMethod(info);
 }
@@ -344,7 +344,7 @@ static void secureContextWindowExposedRuntimeEnabledMethodMethod(const v8::Funct
     impl->secureContextWindowExposedRuntimeEnabledMethod();
 }
 
-static void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWindowExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContextV8Internal::secureContextWindowExposedRuntimeEnabledMethodMethod(info);
 }
@@ -356,7 +356,7 @@ static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::Funct
     impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
-static void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void secureContextWorkerExposedRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceSecureContextV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }

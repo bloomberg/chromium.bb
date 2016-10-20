@@ -106,7 +106,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
     impl->voidMethodDocument(document);
 }
 
-static void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestIntegerIndexedV8Internal::voidMethodDocumentMethod(info);
 }
