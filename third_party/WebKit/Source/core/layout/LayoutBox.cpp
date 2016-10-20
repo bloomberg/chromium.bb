@@ -2886,9 +2886,7 @@ void LayoutBox::updateLogicalHeight() {
   m_intrinsicContentLogicalHeight = contentLogicalHeight();
 
   LogicalExtentComputedValues computedValues;
-  LayoutUnit height = style()->containsSize() ? borderAndPaddingLogicalHeight()
-                                              : logicalHeight();
-  computeLogicalHeight(height, logicalTop(), computedValues);
+  computeLogicalHeight(computedValues);
 
   setLogicalHeight(computedValues.m_extent);
   setLogicalTop(computedValues.m_position);
@@ -2898,6 +2896,13 @@ void LayoutBox::updateLogicalHeight() {
 
 static inline Length heightForDocumentElement(const Document& document) {
   return document.documentElement()->layoutObject()->style()->logicalHeight();
+}
+
+void LayoutBox::computeLogicalHeight(
+    LogicalExtentComputedValues& computedValues) const {
+  LayoutUnit height = style()->containsSize() ? borderAndPaddingLogicalHeight()
+                                              : logicalHeight();
+  computeLogicalHeight(height, logicalTop(), computedValues);
 }
 
 void LayoutBox::computeLogicalHeight(

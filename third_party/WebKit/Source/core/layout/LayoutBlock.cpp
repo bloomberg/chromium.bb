@@ -690,9 +690,13 @@ void LayoutBlock::markFixedPositionObjectForLayoutIfNeeded(
   LayoutObject* o = child->parent();
   while (o && !o->isLayoutView() && o->style()->position() != AbsolutePosition)
     o = o->parent();
-  if (o->style()->position() != AbsolutePosition)
+  // The LayoutView is absolute-positioned, but does not move.
+  if (o->isLayoutView())
     return;
 
+  // We must compute child's width and height, but not update them now.
+  // The child will update its width and height when it gets laid out, and needs
+  // to see them change there.
   LayoutBox* box = toLayoutBox(child);
   if (hasStaticInlinePosition) {
     LogicalExtentComputedValues computedValues;
@@ -701,9 +705,10 @@ void LayoutBlock::markFixedPositionObjectForLayoutIfNeeded(
     if (newLeft != box->logicalLeft())
       layoutScope.setChildNeedsLayout(child);
   } else if (hasStaticBlockPosition) {
-    LayoutUnit oldTop = box->logicalTop();
-    box->updateLogicalHeight();
-    if (box->logicalTop() != oldTop)
+    LogicalExtentComputedValues computedValues;
+    box->computeLogicalHeight(computedValues);
+    LayoutUnit newTop = computedValues.m_position;
+    if (newTop != box->logicalTop())
       layoutScope.setChildNeedsLayout(child);
   }
 }
@@ -762,10 +767,9 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
     positionedObject->setMayNeedPaintInvalidation();
 
     SubtreeLayoutScope layoutScope(*positionedObject);
-    // A fixed position element with an absolute positioned ancestor has no way
-    // of knowing if the latter has changed position. So if this is a fixed
-    // position element, mark it for layout if it has an abspos ancestor and
-    // needs to move with that ancestor, i.e. it has static position.
+    // If positionedObject is fixed-positioned and moves with an absolute-
+    // positioned ancestor (other than the LayoutView, which cannot move),
+    // mark it for layout now.
     markFixedPositionObjectForLayoutIfNeeded(positionedObject, layoutScope);
     if (info == LayoutOnlyFixedPositionedObjects) {
       positionedObject->layoutIfNeeded();

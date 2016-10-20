@@ -887,6 +887,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual void updateLogicalWidth();
   void updateLogicalHeight();
+  void computeLogicalHeight(LogicalExtentComputedValues&) const;
   virtual void computeLogicalHeight(LayoutUnit logicalHeight,
                                     LayoutUnit logicalTop,
                                     LogicalExtentComputedValues&) const;
