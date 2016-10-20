@@ -718,7 +718,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         private final String mMethodName;
 
         TestPayInstrument(String methodName) {
-            super(methodName, "Test Pay", null, NO_ICON);
+            super(methodName, "Test Pay", null, null);
             mMethodName = methodName;
         }
 

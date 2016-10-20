@@ -30,7 +30,7 @@ public class AutofillContact extends PaymentOption {
      */
     public AutofillContact(AutofillProfile profile, @Nullable String phone, @Nullable String email,
             boolean isComplete) {
-        super(profile.getGUID(), null, null, PaymentOption.NO_ICON);
+        super(profile.getGUID(), null, null, null);
         mProfile = profile;
         mIsComplete = isComplete;
         setGuidPhoneEmail(profile.getGUID(), phone, email);

@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.chrome.browser.payments.ui.PaymentOption;
-import org.chromium.payments.mojom.PaymentItem;
+import android.graphics.drawable.Drawable;
 
 import org.json.JSONObject;
+
+import org.chromium.chrome.browser.payments.ui.PaymentOption;
+import org.chromium.payments.mojom.PaymentItem;
 
 import java.util.List;
 
@@ -33,7 +35,7 @@ public abstract class PaymentInstrument extends PaymentOption {
         void onInstrumentDetailsError();
     }
 
-    protected PaymentInstrument(String id, String label, String sublabel, int icon) {
+    protected PaymentInstrument(String id, String label, String sublabel, Drawable icon) {
         super(id, label, sublabel, icon);
     }
 

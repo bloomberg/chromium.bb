@@ -264,7 +264,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // Ensure that |instrument| and |card| are never null.
         final AutofillPaymentInstrument instrument = isNewCard
-                ? new AutofillPaymentInstrument(mWebContents, new CreditCard(), null)
+                ? new AutofillPaymentInstrument(mContext, mWebContents, new CreditCard(), null)
                 : toEdit;
         final CreditCard card = instrument.getCard();
 
