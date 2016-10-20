@@ -60,10 +60,6 @@ public class ValidationTest extends MojoTestCase {
             if (pathname.getName().startsWith("conformance_mthd13_good_2")) {
                 return false;
             }
-            // TODO(crbug/640298): Implement max recursion depth for Java.
-            if (pathname.getName().startsWith("conformance_mthd19_exceed_recursion_limit")) {
-                return false;
-            }
             return pathname.isFile() && pathname.getName().startsWith(mPrefix)
                     && pathname.getName().endsWith(".data");
         }

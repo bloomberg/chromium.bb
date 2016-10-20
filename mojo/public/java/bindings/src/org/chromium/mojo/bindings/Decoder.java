@@ -34,6 +34,10 @@ public class Decoder {
          * Minimal value of the start of the next memory to claim.
          */
         private long mMinNextMemory = 0;
+        /**
+         * The current nesting level when decoding.
+         */
+        private long mStackDepth;
 
         /**
          * The maximal memory accessible.
@@ -46,11 +50,17 @@ public class Decoder {
         private final long mNumberOfHandles;
 
         /**
+         * The maximum nesting level when decoding.
+         */
+        private static final int MAX_RECURSION_DEPTH = 100;
+
+        /**
          * Constructor.
          */
         Validator(long maxMemory, int numberOfHandles) {
             mMaxMemory = maxMemory;
             mNumberOfHandles = numberOfHandles;
+            mStackDepth = 0;
         }
 
         public void claimHandle(int handle) {
@@ -78,6 +88,17 @@ public class Decoder {
                 throw new DeserializationException("Trying to access out of range memory.");
             }
             mMinNextMemory = BindingsHelper.align(end);
+        }
+
+        public void increaseStackDepth() {
+            ++mStackDepth;
+            if (mStackDepth >= MAX_RECURSION_DEPTH) {
+                throw new DeserializationException("Recursion depth limit exceeded.");
+            }
+        }
+
+        public void decreaseStackDepth() {
+            --mStackDepth;
         }
     }
 
@@ -743,5 +764,13 @@ public class Decoder {
         if (mMessage.getData().limit() < offset + size) {
             throw new DeserializationException("Buffer is smaller than expected.");
         }
+    }
+
+    public void increaseStackDepth() {
+        mValidator.increaseStackDepth();
+    }
+
+    public void decreaseStackDepth() {
+        mValidator.decreaseStackDepth();
     }
 }
