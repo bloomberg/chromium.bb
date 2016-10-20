@@ -23,9 +23,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/worker_pool.h"
+#include "components/cronet/histogram_manager.h"
 #include "components/cronet/ios/version.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
+#include "ios/web/public/user_agent.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
@@ -63,6 +65,33 @@ net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 // MessageLoop on the main thread.
 base::MessageLoop* g_main_message_loop = nullptr;
 
+// Request context getter for Cronet.
+class CronetURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  CronetURLRequestContextGetter(
+      cronet::CronetEnvironment* environment,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+      : environment_(environment), task_runner_(task_runner) {}
+
+  net::URLRequestContext* GetURLRequestContext() override {
+    DCHECK(environment_);
+    return environment_->GetURLRequestContext();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
+    return task_runner_;
+  }
+
+ private:
+  // Must be called on the IO thread.
+  ~CronetURLRequestContextGetter() override {}
+
+  cronet::CronetEnvironment* environment_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  DISALLOW_COPY_AND_ASSIGN(CronetURLRequestContextGetter);
+};
+
 }  // namespace
 
 namespace cronet {
@@ -85,6 +114,11 @@ void CronetEnvironment::PostToFileUserBlockingThread(
 
 net::URLRequestContext* CronetEnvironment::GetURLRequestContext() const {
   return main_context_.get();
+}
+
+net::URLRequestContextGetter* CronetEnvironment::GetURLRequestContextGetter()
+    const {
+  return main_context_getter_.get();
 }
 
 // static
@@ -187,10 +221,12 @@ void CronetEnvironment::AddQuicHint(const std::string& host,
   quic_hints_.push_back(net::HostPortPair(host, port));
 }
 
-CronetEnvironment::CronetEnvironment(const std::string& user_agent_product_name)
+CronetEnvironment::CronetEnvironment(const std::string& user_agent,
+                                     bool user_agent_partial)
     : http2_enabled_(false),
       quic_enabled_(false),
-      user_agent_product_name_(user_agent_product_name),
+      user_agent_(user_agent),
+      user_agent_partial_(user_agent_partial),
       net_log_(new net::NetLog) {}
 
 void CronetEnvironment::Start() {
@@ -222,10 +258,8 @@ void CronetEnvironment::Start() {
 
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
       network_io_thread_->task_runner(), nullptr);
-
-#if defined(USE_NSS_CERTS)
-  net::SetURLRequestContextForNSSHttpIO(main_context_.get());
-#endif
+  main_context_getter_ = new CronetURLRequestContextGetter(
+      this, network_io_thread_->task_runner());
   base::subtle::MemoryBarrier();
   PostToNetworkThread(FROM_HERE,
                       base::Bind(&CronetEnvironment::InitializeOnNetworkThread,
@@ -234,9 +268,6 @@ void CronetEnvironment::Start() {
 
 CronetEnvironment::~CronetEnvironment() {
 // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
-#if defined(USE_NSS_CERTS)
-  net::SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
 }
 
 void CronetEnvironment::InitializeOnNetworkThread() {
@@ -245,10 +276,12 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   // TODO(mef): Use net:UrlRequestContextBuilder instead of manual build.
   main_context_.reset(new net::URLRequestContext);
   main_context_->set_net_log(net_log_.get());
-  std::string user_agent(user_agent_product_name_ +
-                         " (iOS); Cronet/" CRONET_VERSION);
+
+  if (user_agent_partial_)
+    user_agent_ = web::BuildUserAgentFromProduct(user_agent_);
+
   main_context_->set_http_user_agent_settings(
-      new net::StaticHttpUserAgentSettings("en", user_agent));
+      new net::StaticHttpUserAgentSettings(accept_language_, user_agent_));
 
   main_context_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
   main_context_->set_transport_security_state(
@@ -357,6 +390,14 @@ std::string CronetEnvironment::user_agent() {
   }
 
   return user_agent_settings->GetUserAgent();
+}
+
+std::vector<uint8_t> CronetEnvironment::GetHistogramDeltas() {
+  base::StatisticsRecorder::Initialize();
+  std::vector<uint8_t> data;
+  if (!HistogramManager::GetInstance()->GetDeltas(&data))
+    return std::vector<uint8_t>();
+  return data;
 }
 
 }  // namespace cronet

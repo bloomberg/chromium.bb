@@ -36,6 +36,8 @@ source_set("cronet_sources") {
     "//components/metrics:metrics",
     "//components/metrics/proto:proto",
     "//components/prefs:prefs",
+    "//ios/net:net",
+    "//ios/web:user_agent",
     "//net",
     "//url",
   ]
@@ -47,6 +49,8 @@ source_set("cronet_sources") {
     "../stale_host_resolver.h",
     "../url_request_context_config.cc",
     "../url_request_context_config.h",
+    "Cronet.h",
+    "Cronet.mm",
     "cronet_bidirectional_stream.cc",
     "cronet_bidirectional_stream.h",
     "cronet_c_for_grpc.cc",
@@ -66,11 +70,77 @@ tweak_info_plist("tweak_cronet_plist") {
   args = [ "--platform=ios" ]
 }
 
+bundle_data("cronet_framework_resources") {
+  # This bundle contains "Accept-Languages" header values for known locales.
+  # TODO(mef): These strings should be auto-generated from chrome's .xtb
+  # files, not hardcoded.
+  sources = [
+    "Resources/Localization/am.lproj",
+    "Resources/Localization/ar.lproj",
+    "Resources/Localization/bg.lproj",
+    "Resources/Localization/bn.lproj",
+    "Resources/Localization/ca.lproj",
+    "Resources/Localization/cs.lproj",
+    "Resources/Localization/da.lproj",
+    "Resources/Localization/de.lproj",
+    "Resources/Localization/el.lproj",
+    "Resources/Localization/en-GB.lproj",
+    "Resources/Localization/en.lproj",
+    "Resources/Localization/es-419.lproj",
+    "Resources/Localization/es.lproj",
+    "Resources/Localization/fa.lproj",
+    "Resources/Localization/fi.lproj",
+    "Resources/Localization/fil.lproj",
+    "Resources/Localization/fr.lproj",
+    "Resources/Localization/gu.lproj",
+    "Resources/Localization/he.lproj",
+    "Resources/Localization/hi.lproj",
+    "Resources/Localization/hr.lproj",
+    "Resources/Localization/hu.lproj",
+    "Resources/Localization/id.lproj",
+    "Resources/Localization/it.lproj",
+    "Resources/Localization/ja.lproj",
+    "Resources/Localization/kn.lproj",
+    "Resources/Localization/ko.lproj",
+    "Resources/Localization/lt.lproj",
+    "Resources/Localization/lv.lproj",
+    "Resources/Localization/ml.lproj",
+    "Resources/Localization/mr.lproj",
+    "Resources/Localization/ms.lproj",
+    "Resources/Localization/nb.lproj",
+    "Resources/Localization/nl.lproj",
+    "Resources/Localization/pl.lproj",
+    "Resources/Localization/pt-BR.lproj",
+    "Resources/Localization/pt-PT.lproj",
+    "Resources/Localization/pt.lproj",
+    "Resources/Localization/ro.lproj",
+    "Resources/Localization/ru.lproj",
+    "Resources/Localization/sk.lproj",
+    "Resources/Localization/sl.lproj",
+    "Resources/Localization/sr.lproj",
+    "Resources/Localization/sv.lproj",
+    "Resources/Localization/sw.lproj",
+    "Resources/Localization/ta.lproj",
+    "Resources/Localization/te.lproj",
+    "Resources/Localization/th.lproj",
+    "Resources/Localization/tr.lproj",
+    "Resources/Localization/uk.lproj",
+    "Resources/Localization/vi.lproj",
+    "Resources/Localization/zh-Hans.lproj",
+    "Resources/Localization/zh-Hant.lproj",
+    "Resources/Localization/zh.lproj",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/cronet_resources.bundle/{{source_file_part}}",
+  ]
+}
+
 ios_framework_bundle("cronet_framework") {
   output_name = "Cronet"
   info_plist_target = ":tweak_cronet_plist"
 
   deps = [
+    ":cronet_framework_resources",
     ":cronet_sources",
     "//base",
     "//net:net",
@@ -85,49 +155,16 @@ ios_framework_bundle("cronet_framework") {
 
   sources = [
     "Cronet.h",
-    "Cronet.mm",
+    "cronet_c_for_grpc.h",
   ]
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += [ "//build/config/compiler:symbols" ]
 }
 
-bundle_data("cronet_test_bundle_data") {
-  testonly = true
-  sources = [
-    "//net/data/ssl/certificates/quic_test.example.com.crt",
-    "//net/data/ssl/certificates/quic_test.example.com.key",
-    "//net/data/ssl/certificates/quic_test.example.com.key.pkcs8",
-    "//net/data/ssl/certificates/quic_test.example.com.key.sct",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
-test("cronet_test") {
-  testonly = true
-  sources = [
-    "test/cronet_bidirectional_stream_test.mm",
-    "test/cronet_test_runner.mm",
-    "test/quic_test_server.cc",
-    "test/quic_test_server.h",
-  ]
-
-  deps = [
-    ":cronet_sources",
-    ":cronet_test_bundle_data",
-    ":cronet_version_header",
-    "//base",
-    "//base:i18n",
-    "//net",
-    "//net:simple_quic_tools",
-    "//net:test_support",
-    "//third_party/icu",
-  ]
-}
-
 test("cronet_unittests") {
+  testonly = true
+
   sources = [
     "//components/cronet/histogram_manager_unittest.cc",
     "//components/cronet/run_all_unittests.cc",
@@ -139,6 +176,7 @@ test("cronet_unittests") {
     ":cronet_sources",
     "//base",
     "//base/test:test_support",
+    "//components/cronet/ios/test:cronet_test",
     "//components/metrics",
     "//net",
     "//testing/gtest",

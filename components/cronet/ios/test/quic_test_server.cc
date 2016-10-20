@@ -50,10 +50,10 @@ void SetupQuicInMemoryCache() {
     return;
   setup_done = true;
   net::SpdyHeaderBlock headers;
-  headers.ReplaceOrAppendHeader(kHelloHeaderName, kHelloHeaderValue);
-  headers.ReplaceOrAppendHeader(kStatusHeader, kHelloStatus);
+  headers.AppendValueOrAddHeader(kHelloHeaderName, kHelloHeaderValue);
+  headers.AppendValueOrAddHeader(kStatusHeader, kHelloStatus);
   net::SpdyHeaderBlock trailers;
-  trailers.ReplaceOrAppendHeader(kHelloTrailerName, kHelloTrailerValue);
+  trailers.AppendValueOrAddHeader(kHelloTrailerName, kHelloTrailerValue);
   net::QuicInMemoryCache::GetInstance()->AddResponse(
       kTestServerHost, kHelloPath, std::move(headers), kHelloBodyValue,
       std::move(trailers));
@@ -108,12 +108,12 @@ bool StartQuicTestServer() {
   base::FilePath test_files_root;
   if (!PathService::Get(base::DIR_EXE, &test_files_root))
     return false;
-
   base::WaitableEvent server_started_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&StartQuicServerOnServerThread, test_files_root,
+      FROM_HERE, base::Bind(&StartQuicServerOnServerThread,
+                            test_files_root.Append("net/data/ssl/certificates"),
                             &server_started_event));
   server_started_event.Wait();
   return true;

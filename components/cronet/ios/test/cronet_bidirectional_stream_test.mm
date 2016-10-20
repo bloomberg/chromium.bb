@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Foundation/Foundation.h>
+#import <Cronet/Cronet.h>
+
 #include <stdint.h>
 #include <list>
 #include <map>
 #include <string>
+#include <Cronet/cronet_c_for_grpc.h>
 
+#include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -15,12 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "components/cronet/ios/cronet_c_for_grpc.h"
-#include "components/cronet/ios/cronet_environment.h"
 #include "components/cronet/ios/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
-#include "net/cert/mock_cert_verifier.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -38,58 +38,50 @@ const cronet_bidirectional_stream_header_array kTestHeadersArray = {
 
 namespace cronet {
 
+base::AtExitManager* g_at_exit_ = nullptr;
+
+void StartCronetIfNecessary() {
+  static bool initialized = false;
+  if (!initialized) {
+    initialized = true;
+    [Cronet setUserAgent:@"CronetTest/1.0.0.0" partial:NO];
+    [Cronet setHttp2Enabled:true];
+    [Cronet setQuicEnabled:true];
+    [Cronet setSslKeyLogFileName:@"SSLKEYLOGFILE"];
+
+    [Cronet addQuicHint:@"test.example.com"
+                   port:cronet::kTestServerPort
+                altPort:cronet::kTestServerPort];
+    [Cronet enableTestCertVerifierForTesting];
+    [Cronet
+        setHostResolverRulesForTesting:@"MAP test.example.com 127.0.0.1,"
+                                        "MAP notfound.example.com ~NOTFOUND"];
+    [Cronet start];
+
+    // This method must be called once from the main thread.
+    if (!g_at_exit_)
+      g_at_exit_ = new base::AtExitManager;
+  }
+}
+
 class CronetBidirectionalStreamTest : public ::testing::TestWithParam<bool> {
  protected:
   CronetBidirectionalStreamTest() {}
   ~CronetBidirectionalStreamTest() override {}
 
   void SetUp() override {
-    static bool initialized = false;
-    if (!initialized) {
-      initialized = true;
-      // Hack to work around issues with SetUp being called multiple times
-      // during the test, and QuicTestServer not shutting down / restarting
-      // gracefully.
-      CronetEnvironment::Initialize();
-      cronet_environment_ = new CronetEnvironment("CronetTest/1.0.0.0");
-      cronet_environment_->set_http2_enabled(true);
-      cronet_environment_->set_quic_enabled(true);
-      cronet_environment_->set_ssl_key_log_file_name("SSLKEYLOGFILE");
-
-      std::unique_ptr<net::MockCertVerifier> mock_cert_verifier(
-          new net::MockCertVerifier());
-      mock_cert_verifier->set_default_result(net::OK);
-
-      cronet_environment_->set_cert_verifier(std::move(mock_cert_verifier));
-      cronet_environment_->set_host_resolver_rules(
-          "MAP test.example.com 127.0.0.1,"
-          "MAP notfound.example.com ~NOTFOUND");
-      cronet_environment_->AddQuicHint(kTestServerDomain, kTestServerPort,
-                                       kTestServerPort);
-
-      cronet_environment_->Start();
-
-      cronet_engine_.obj = cronet_environment_;
-    }
-
+    StartCronetIfNecessary();
     StartQuicTestServer();
-    cronet_environment_->StartNetLog("cronet_netlog.json", true);
+    [Cronet startNetLogToFile:@"cronet_netlog.json" logBytes:YES];
   }
 
   void TearDown() override {
     ShutdownQuicTestServer();
-    cronet_environment_->StopNetLog();
+    [Cronet stopNetLog];
   }
 
-  cronet_engine* engine() { return &cronet_engine_; }
-
- private:
-  static CronetEnvironment* cronet_environment_;
-  static cronet_engine cronet_engine_;
+  cronet_engine* engine() { return [Cronet getGlobalEngine]; }
 };
-
-CronetEnvironment* CronetBidirectionalStreamTest::cronet_environment_ = nullptr;
-cronet_engine CronetBidirectionalStreamTest::cronet_engine_ = {0};
 
 class TestBidirectionalStreamCallback {
  public:

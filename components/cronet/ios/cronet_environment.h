@@ -7,6 +7,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -17,6 +18,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class JsonPrefStore;
 
@@ -41,8 +43,10 @@ class CronetEnvironment {
   // main thread.
   static void Initialize();
 
-  // |user_agent_product_name| will be used to generate the user-agent.
-  CronetEnvironment(const std::string& user_agent_product_name);
+  // |user_agent| will be used to generate the user-agent if
+  // |user_agent_partial|
+  // is true, or will be used as complete user-agent otherwise.
+  CronetEnvironment(const std::string& user_agent, bool user_agent_partial);
   ~CronetEnvironment();
 
   // Starts this instance of Cronet environment.
@@ -50,6 +54,9 @@ class CronetEnvironment {
 
   // The full user-agent.
   std::string user_agent();
+
+  // Get global UMA histogram deltas.
+  std::vector<uint8_t> GetHistogramDeltas();
 
   // Creates a new net log (overwrites existing file with this name). If
   // actively logging, this call is ignored.
@@ -69,6 +76,10 @@ class CronetEnvironment {
   bool http2_enabled() const { return http2_enabled_; }
   bool quic_enabled() const { return quic_enabled_; }
 
+  void set_accept_language(const std::string& accept_language) {
+    accept_language_ = accept_language;
+  }
+
   void set_cert_verifier(std::unique_ptr<net::CertVerifier> cert_verifier) {
     cert_verifier_ = std::move(cert_verifier);
   }
@@ -82,6 +93,8 @@ class CronetEnvironment {
   }
 
   net::URLRequestContext* GetURLRequestContext() const;
+
+  net::URLRequestContextGetter* GetURLRequestContextGetter() const;
 
   bool IsOnNetworkThread();
 
@@ -109,6 +122,7 @@ class CronetEnvironment {
 
   bool http2_enabled_;
   bool quic_enabled_;
+  std::string accept_language_;
   std::string host_resolver_rules_;
   std::string ssl_key_log_file_name_;
 
@@ -124,7 +138,9 @@ class CronetEnvironment {
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::HttpServerProperties> http_server_properties_;
   std::unique_ptr<net::URLRequestContext> main_context_;
-  std::string user_agent_product_name_;
+  scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
+  std::string user_agent_;
+  bool user_agent_partial_;
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
 
