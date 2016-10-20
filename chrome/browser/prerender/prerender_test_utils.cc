@@ -357,11 +357,33 @@ void DestructionWaiter::DestructionMarker::OnPrerenderStop(
 }
 
 TestPrerender::TestPrerender()
-    : contents_(nullptr), number_of_loads_(0), expected_number_of_loads_(0) {}
+    : contents_(nullptr),
+      number_of_loads_(0),
+      expected_number_of_loads_(0),
+      started_(false),
+      stopped_(false) {}
 
 TestPrerender::~TestPrerender() {
   if (contents_)
     contents_->RemoveObserver(this);
+}
+
+void TestPrerender::WaitForCreate() {
+  if (contents_)
+    return;
+  create_loop_.Run();
+}
+
+void TestPrerender::WaitForStart() {
+  if (started_)
+    return;
+  start_loop_.Run();
+}
+
+void TestPrerender::WaitForStop() {
+  if (stopped_)
+    return;
+  stop_loop_.Run();
 }
 
 void TestPrerender::WaitForLoads(int expected_number_of_loads) {
@@ -385,6 +407,7 @@ void TestPrerender::OnPrerenderCreated(TestPrerenderContents* contents) {
 }
 
 void TestPrerender::OnPrerenderStart(PrerenderContents* contents) {
+  started_ = true;
   start_loop_.Quit();
 }
 
@@ -397,6 +420,7 @@ void TestPrerender::OnPrerenderStopLoading(PrerenderContents* contents) {
 void TestPrerender::OnPrerenderStop(PrerenderContents* contents) {
   DCHECK(contents_);
   contents_ = nullptr;
+  stopped_ = true;
   stop_loop_.Quit();
   // If there is a WaitForLoads call and it has yet to see the expected number
   // of loads, stop the loop so the test fails instead of timing out.
