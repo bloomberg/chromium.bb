@@ -42,12 +42,27 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
   java_files = [
     "javatests/src/org/chromium/webview_ui_test/test/LoadDataTest.java",
     "javatests/src/org/chromium/webview_ui_test/test/WebViewTestBase.java",
+    "javatests/src/org/chromium/webview_ui_test/test/WebViewJSTest.java",
+    "javatests/src/org/chromium/webview_ui_test/test/util/UseLayout.java",
+    "javatests/src/org/chromium/webview_ui_test/test/util/WebViewUiTestRule.java",
+    "javatests/src/org/chromium/webview_ui_test/test/util/WebViewSyncWrapper.java",
   ]
   deps = [
     ":webview_ui_test_app_apk_resources",
     ":webview_ui_test_app_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/espresso:espresso_core_java",
+    "//third_party/espresso:espresso_web_java",
+    "//third_party/hamcrest:hamcrest_java",
+    "//third_party/junit",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
+  ]
+  data = [
+    "test/data/",
   ]
   data_deps = [
     ":webview_ui_test_app_apk",
