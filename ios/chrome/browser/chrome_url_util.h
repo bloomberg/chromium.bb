@@ -14,12 +14,6 @@ class GURL;
 // Returns whether |url| is an external file reference.
 bool UrlIsExternalFileReference(const GURL& url);
 
-// Returns a URL that launches Chrome.
-NSURL* UrlToLaunchChrome();
-
-// Returns the URL for the iOS App Icon for Chrome.
-NSURL* UrlOfChromeAppIcon(int width, int height);
-
 // Returns true if the scheme has a chrome scheme.
 bool UrlHasChromeScheme(const GURL& url);
 bool UrlHasChromeScheme(NSURL* url);
@@ -38,15 +32,8 @@ bool IsHandledProtocol(const std::string& scheme);
 // Returns the URL scheme that launches Chrome.
 - (NSString*)getBundleURLScheme;
 
-// Returns the URL string to the Chrome application icon.
-- (NSString*)getChromeAppIconURLOfWidth:(int)width height:(int)height;
-
 // Method to set the scheme to callback Chrome iOS for testing.
 - (void)setCallbackSchemeForTesting:(NSString*)callbackScheme;
-
-// Method to set a different block to provider the App Icon URL.
-typedef NSString* (^AppIconURLProvider)(int, int);
-- (void)setAppIconURLProviderForTesting:(AppIconURLProvider)block;
 
 @end
 
