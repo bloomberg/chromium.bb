@@ -209,6 +209,7 @@ class CORE_EXPORT Node : public EventTarget {
   Node* firstChild() const;
   Node* lastChild() const;
   Node* getRootNode(const GetRootNodeOptions&) const;
+  Text* nextTextSibling() const;
   Node& treeRoot() const;
   Node& shadowIncludingRoot() const;
   // closed-shadow-hidden is defined at
@@ -427,6 +428,23 @@ class CORE_EXPORT Node : public EventTarget {
 
   void setNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
   void clearNeedsStyleRecalc();
+
+  bool needsReattachLayoutTree() { return getFlag(NeedsReattachLayoutTree); }
+  bool childNeedsReattachLayoutTree() {
+    return getFlag(ChildNeedsReattachLayoutTree);
+  }
+
+  void setNeedsReattachLayoutTree();
+  void setChildNeedsReattachLayoutTree() {
+    setFlag(ChildNeedsReattachLayoutTree);
+  }
+
+  void clearNeedsReattachLayoutTree() { clearFlag(NeedsReattachLayoutTree); }
+  void clearChildNeedsReattachLayoutTree() {
+    clearFlag(ChildNeedsReattachLayoutTree);
+  }
+
+  void markAncestorsWithChildNeedsReattachLayoutTree();
 
   bool needsDistributionRecalc() const;
 

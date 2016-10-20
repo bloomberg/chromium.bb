@@ -400,6 +400,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling) {
     reattachLayoutTree();
     if (this->layoutObject())
       reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
+    clearNeedsReattachLayoutTree();
   }
 }
 
