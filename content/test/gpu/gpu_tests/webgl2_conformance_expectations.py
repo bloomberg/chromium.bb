@@ -657,6 +657,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'amd'], bug=634525)
+    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
+        ['linux', 'amd'], bug=644740)
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
