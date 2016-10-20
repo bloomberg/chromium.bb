@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "net/base/network_interfaces.h"
@@ -102,8 +103,26 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   base::TimeTicks GetTicksNow() const override;
 
+  bool WasDataReductionProxyUsed(
+      const net::URLRequest* request,
+      DataReductionProxyTypeInfo* proxy_info) const override;
+
+  // Sets the data reduction proxy as not used. Subsequent calls to
+  // WasDataReductionProxyUsed() would return false.
+  void SetWasDataReductionProxyNotUsed();
+
+  // Sets the proxy index of the data reduction proxy. Subsequent calls to
+  // WasDataReductionProxyUsed are affected.
+  void SetWasDataReductionProxyUsedProxyIndex(int proxy_index);
+
+  // Resets the behavior of WasDataReductionProxyUsed() calls.
+  void ResetWasDataReductionProxyUsed();
+
  private:
   base::TickClock* tick_clock_;
+
+  base::Optional<bool> was_data_reduction_proxy_used_;
+  base::Optional<int> proxy_index_;
 
   std::unique_ptr<net::NetworkInterfaceList> network_interfaces_;
 

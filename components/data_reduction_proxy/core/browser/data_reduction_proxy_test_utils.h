@@ -419,6 +419,10 @@ class DataReductionProxyTestContext {
     return request_context_getter_.get();
   }
 
+  DataReductionProxyBypassStats* bypass_stats() const {
+    return io_data_->bypass_stats();
+  }
+
   DataReductionProxyEventCreator* event_creator() const {
     return io_data_->event_creator();
   }

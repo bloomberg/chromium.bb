@@ -129,6 +129,34 @@ base::TimeTicks TestDataReductionProxyConfig::GetTicksNow() const {
   return DataReductionProxyConfig::GetTicksNow();
 }
 
+bool TestDataReductionProxyConfig::WasDataReductionProxyUsed(
+    const net::URLRequest* request,
+    DataReductionProxyTypeInfo* proxy_info) const {
+  if (was_data_reduction_proxy_used_ &&
+      !was_data_reduction_proxy_used_.value()) {
+    return false;
+  }
+  bool was_data_reduction_proxy_used =
+      DataReductionProxyConfig::WasDataReductionProxyUsed(request, proxy_info);
+  if (proxy_info && was_data_reduction_proxy_used && proxy_index_)
+    proxy_info->proxy_index = proxy_index_.value();
+  return was_data_reduction_proxy_used;
+}
+
+void TestDataReductionProxyConfig::SetWasDataReductionProxyNotUsed() {
+  was_data_reduction_proxy_used_ = false;
+}
+
+void TestDataReductionProxyConfig::SetWasDataReductionProxyUsedProxyIndex(
+    int proxy_index) {
+  proxy_index_ = proxy_index;
+}
+
+void TestDataReductionProxyConfig::ResetWasDataReductionProxyUsed() {
+  was_data_reduction_proxy_used_.reset();
+  proxy_index_.reset();
+}
+
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
