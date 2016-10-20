@@ -249,6 +249,7 @@ def get_fyi_waterfall_config():
 
 def get_waterfall_config():
   waterfall = {'builders':[], 'testers': {}}
+
   # These configurations are taken from chromium_perf.py in
   # build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
   # to generate the correct json for each tester
@@ -308,6 +309,32 @@ def get_waterfall_config():
     'chromium-rel-mac-retina', 'mac', num_host_shards=5)
   waterfall = add_tester(
     waterfall, 'Mac HDD Perf', 'chromium-rel-mac-hdd', 'mac', num_host_shards=5)
+  waterfall = add_tester(
+    waterfall, 'Mac Pro 10.11 Perf',
+    'chromium-rel-mac11-pro', 'mac',
+    swarming=[
+      {
+       'gpu': '1002:6821',
+       'os': 'Mac-10.11',
+       'device_ids': [
+           'build128-b1', 'build129-b1',
+           'build130-b1', 'build131-b1', 'build132-b1'
+          ]
+      }
+    ])
+  waterfall = add_tester(
+    waterfall, 'Mac Air 10.11 Perf',
+    'chromium-rel-mac11-air', 'mac',
+    swarming=[
+      {
+       'gpu': '8086:1626',
+       'os': 'Mac-10.11',
+       'device_ids': [
+           'build123-b1', 'build124-b1',
+           'build125-b1', 'build126-b1', 'build127-b1'
+          ]
+      }
+    ])
 
   waterfall = add_tester(
     waterfall, 'Linux Perf', 'linux-release', 'linux', num_host_shards=5)
@@ -425,7 +452,7 @@ BENCHMARK_NAME_WHITELIST = set([
 ])
 
 
-def current_benchmarks():
+def current_benchmarks(use_whitelist):
   current_dir = os.path.dirname(__file__)
   benchmarks_dir = os.path.join(current_dir, 'benchmarks')
   top_level_dir = os.path.dirname(benchmarks_dir)
@@ -433,16 +460,18 @@ def current_benchmarks():
   all_benchmarks = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
       index_by_class_name=True).values()
-  return sorted((
-      bench for bench in all_benchmarks
-      if bench.Name() in BENCHMARK_NAME_WHITELIST), key=lambda b: b.Name())
+  if use_whitelist:
+    all_benchmarks = (
+        bench for bench in all_benchmarks
+        if bench.Name() in BENCHMARK_NAME_WHITELIST)
+  return sorted(all_benchmarks, key=lambda b: b.Name())
 
 
-def generate_all_tests(waterfall):
+def generate_all_tests(waterfall, use_whitelist):
   tests = {}
   for builder in waterfall['builders']:
     tests[builder] = {}
-  all_benchmarks = current_benchmarks()
+  all_benchmarks = current_benchmarks(use_whitelist)
 
   for name, config in waterfall['testers'].iteritems():
     if config.get('swarming', False):
@@ -482,8 +511,8 @@ def main():
   fyi_waterfall = get_fyi_waterfall_config()
   fyi_waterfall['name'] = 'chromium.perf.fyi'
 
-  generate_all_tests(fyi_waterfall)
-  generate_all_tests(waterfall)
+  generate_all_tests(fyi_waterfall, True)
+  generate_all_tests(waterfall, False)
   return 0
 
 if __name__ == "__main__":
