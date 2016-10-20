@@ -317,9 +317,11 @@ crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
 
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
-crbug.com/647192 fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
-crbug.com/647192 virtual/mojo-loading/webexposed/global-interface-listing.html [ Slow ]
-crbug.com/520619 [ Win Debug ] webexposed/global-interface-listing.html [ Slow ]
+# Slow on Win Debug in part due to incremental linking.
+crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]
+crbug.com/647192 [ Win Debug ] virtual/mojo-loading/webexposed/global-interface-listing.html [ Slow ]
+crbug.com/647192 [ Win Debug ] virtual/stable/webexposed/global-interface-listing.html [ Slow ]
+crbug.com/647192 [ Win Debug ] webexposed/global-interface-listing.html [ Slow ]
 
 # These tests are slow with our MESA backend. They may be less slow when we have
 # bots running tests on real hardware or maybe when using SwiftShader.
