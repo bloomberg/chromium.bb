@@ -119,8 +119,22 @@ ArcNavigationThrottle::HandleRequest() {
                              kAllowFormSubmit))
     return content::NavigationThrottle::PROCEED;
 
-  const GURL previous_url = navigation_handle()->GetReferrer().url;
+  const GURL referrer_url = navigation_handle()->GetReferrer().url;
   const GURL current_url = navigation_handle()->GetURL();
+  const GURL last_committed_url =
+      navigation_handle()->GetWebContents()->GetLastCommittedURL();
+
+  // For navigations from http to https we clean up the Referrer as part of the
+  // sanitization proccess, however we may still have access to the last
+  // committed URL. On the other hand, navigations started within a new tab
+  // (e.g. due to target="_blank") will keep no track of any previous entries
+  // and so GetLastCommittedURL() can be seen empty sometimes, this is why we
+  // use one or the other accordingly. Also we don't use GetVisibleURL() since
+  // it may contain a still non-committed URL (i.e. it can be the same as
+  // GetURL()).
+  const GURL previous_url =
+      referrer_url.is_empty() ? last_committed_url : referrer_url;
+
   if (!ShouldOverrideUrlLoading(previous_url, current_url))
     return content::NavigationThrottle::PROCEED;
 
