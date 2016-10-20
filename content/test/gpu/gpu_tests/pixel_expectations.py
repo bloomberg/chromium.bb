@@ -44,11 +44,3 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
-
-    # TODO(xlai): check / generate reference images.
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D', bug=655311)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker', bug=655311)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=655311)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker', bug=655311)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=655311)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker', bug=655311)
