@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 @JNINamespace("media")
-class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
+class AudioManagerAndroid {
     private static final String TAG = "cr.media";
 
     // Set to true to enable debug logs. Avoid in production builds.
@@ -169,8 +169,6 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
     // Enabled during initialization if BLUETOOTH permission is granted.
     private boolean mHasBluetoothPermission = false;
 
-    private int mSavedAudioMode = AudioManager.MODE_INVALID;
-
     // Stores the audio states related to Bluetooth SCO audio, where some
     // states are needed to keep track of intermediate states while the SCO
     // channel is enabled or disabled (switching state can take a few seconds).
@@ -296,8 +294,8 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
     }
 
     /**
-     * Requests audio focus for voice call and sets audio mode as COMMUNICATION if input parameter
-     * is true. Abandon audio focus and restore saved audio mode if input parameter is false.
+     * Sets audio mode as COMMUNICATION if input parameter is true.
+     * Restores audio mode to NORMAL if input parameter is false.
      * Required permission: android.Manifest.permission.MODIFY_AUDIO_SETTINGS.
      */
     @CalledByNative
@@ -315,10 +313,6 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
         }
 
         if (on) {
-            // Request audio focus for a voice call of unknown duration.
-            mAudioManager.requestAudioFocus(this, AudioManager.STREAM_VOICE_CALL,
-                    AudioManager.AUDIOFOCUS_GAIN);
-
             // Store microphone mute state and speakerphone state so it can
             // be restored when closing.
             mSavedIsSpeakerphoneOn = mAudioManager.isSpeakerphoneOn();
@@ -331,8 +325,6 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
             // mode but we want to be able to mute it completely.
             startObservingVolumeChanges();
         } else {
-            mAudioManager.abandonAudioFocus(this);
-
             stopObservingVolumeChanges();
             stopBluetoothSco();
             synchronized (mLock) {
@@ -349,27 +341,12 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
 
     /**
      * Sets audio mode to MODE_IN_COMMUNICATION if input parameter is true.
-     * Restores saved audio mode if input parameter is false.
+     * Restores audio mode to MODE_NORMAL if input parameter is false.
      */
     private void setCommunicationAudioModeOnInternal(boolean on) {
         if (DEBUG) logd("setCommunicationAudioModeOn(" + on + ")");
 
         if (on) {
-            if (mSavedAudioMode != AudioManager.MODE_INVALID) {
-                Log.w(TAG, "Audio mode has already been set");
-                return;
-            }
-
-            // Store the current audio mode the first time we try to
-            // switch to communication mode.
-            try {
-                mSavedAudioMode = mAudioManager.getMode();
-            } catch (SecurityException e) {
-                logDeviceInfo();
-                throw e;
-
-            }
-
             try {
                 mAudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
             } catch (SecurityException e) {
@@ -378,39 +355,14 @@ class AudioManagerAndroid implements AudioManager.OnAudioFocusChangeListener{
             }
 
         } else {
-            if (mSavedAudioMode == AudioManager.MODE_INVALID) {
-                Log.w(TAG, "Audio mode has not yet been set");
-                return;
-            }
-
             // Restore the mode that was used before we switched to
             // communication mode.
             try {
-                mAudioManager.setMode(mSavedAudioMode);
+                mAudioManager.setMode(AudioManager.MODE_NORMAL);
             } catch (SecurityException e) {
                 logDeviceInfo();
                 throw e;
             }
-            mSavedAudioMode = AudioManager.MODE_INVALID;
-        }
-    }
-
-    /**
-     * Restores saved audio mode when we lose audio focus.
-     * Sets communication audio mode when we gain audio focus again.
-     * See https://crbug.com/525597 for more details.
-     */
-    @Override
-    public void onAudioFocusChange(int focusChange) {
-        if (DEBUG) logd("onAudioFocusChange: " + focusChange);
-
-        switch (focusChange) {
-            case AudioManager.AUDIOFOCUS_GAIN:
-                setCommunicationAudioModeOnInternal(true);
-                break;
-            default:
-                setCommunicationAudioModeOnInternal(false);
-                break;
         }
     }
 
