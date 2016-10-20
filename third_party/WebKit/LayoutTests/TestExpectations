@@ -71,11 +71,6 @@ crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
 crbug.com/619103 [ Win ] paint/invalidation/svg/text-viewbox-rescale.html [ Pass Failure ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 
-# WebKit test is checking for outdated semantics on TypedArray constructors.
-crbug.com/623120 virtual/gpu/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
-crbug.com/623120 fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
-crbug.com/623120 virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-array-invalid-ranges.html [ NeedsManualRebaseline ]
-
 # TODO(fmalita): re-enable
 # crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
