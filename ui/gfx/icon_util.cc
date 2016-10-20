@@ -311,7 +311,11 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon) {
   if (!::GetObject(icon_info.hbmMask, sizeof(bitmap_info), &bitmap_info))
     return NULL;
 
-  gfx::Size icon_size(bitmap_info.bmWidth, bitmap_info.bmHeight);
+  // For non-color cursors, the mask contains both an AND and an XOR mask and
+  // the height includes both. Thus, the mask width is the same as image width,
+  // but we need to divide mask height by 2 to get the image height.
+  const int height = bitmap_info.bmHeight / (icon_info.hbmColor ? 1 : 2);
+  gfx::Size icon_size(bitmap_info.bmWidth, height);
   return new SkBitmap(CreateSkBitmapFromHICONHelper(icon, icon_size));
 }
 
