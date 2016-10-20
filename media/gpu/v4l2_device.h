@@ -25,10 +25,10 @@
 #include "ui/gl/gl_bindings.h"
 
 // TODO(posciak): remove this once V4L2 headers are updated.
-#define V4L2_PIX_FMT_VP9 v4l2_fourcc('V', 'P', '9', '0')
-#define V4L2_PIX_FMT_H264_SLICE v4l2_fourcc('S', '2', '6', '4')
-#define V4L2_PIX_FMT_VP8_FRAME v4l2_fourcc('V', 'P', '8', 'F')
 #define V4L2_PIX_FMT_MT21 v4l2_fourcc('M', 'T', '2', '1')
+#ifndef V4L2_BUF_FLAG_LAST
+#define V4L2_BUF_FLAG_LAST 0x00100000
+#endif
 
 namespace media {
 

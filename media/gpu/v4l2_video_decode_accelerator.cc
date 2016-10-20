@@ -164,6 +164,8 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       decoder_decode_buffer_tasks_scheduled_(0),
       decoder_frames_at_client_(0),
       decoder_flushing_(false),
+      decoder_cmd_supported_(false),
+      flush_awaiting_last_output_buffer_(false),
       reset_pending_(false),
       decoder_partial_frame_pending_(false),
       input_streamon_(false),
@@ -284,6 +286,8 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 
   if (!CreateInputBuffers())
     return false;
+
+  decoder_cmd_supported_ = IsDecoderCmdSupported();
 
   if (!decoder_thread_.Start()) {
     LOGF(ERROR) << "decoder thread failed to start";
@@ -1225,7 +1229,29 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   // Drain the pipe of completed decode buffers.
   const int old_inputs_queued = input_buffer_queued_count_;
   while (!input_ready_queue_.empty()) {
-    if (!EnqueueInputRecord())
+    const int buffer = input_ready_queue_.front();
+    InputRecord& input_record = input_buffer_map_[buffer];
+    if (input_record.input_id == kFlushBufferId && decoder_cmd_supported_) {
+      // Send the flush command after all input buffers are dequeued. This makes
+      // sure all previous resolution changes have been handled because the
+      // driver must hold the input buffer that triggers resolution change. The
+      // driver cannot decode data in it without new output buffers. If we send
+      // the flush now and a queued input buffer triggers resolution change
+      // later, the driver will send an output buffer that has
+      // V4L2_BUF_FLAG_LAST. But some queued input buffer have not been decoded
+      // yet. Also, V4L2VDA calls STREAMOFF and STREAMON after resolution
+      // change. They implicitly send a V4L2_DEC_CMD_STOP and V4L2_DEC_CMD_START
+      // to the decoder.
+      if (input_buffer_queued_count_ == 0) {
+        if (!SendDecoderCmdStop())
+          return;
+        input_ready_queue_.pop();
+        free_input_buffers_.push_back(buffer);
+        input_record.input_id = -1;
+      } else {
+        break;
+      }
+    } else if (!EnqueueInputRecord())
       return;
   }
   if (old_inputs_queued == 0 && input_buffer_queued_count_ != 0) {
@@ -1361,6 +1387,9 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
     if (errno == EAGAIN) {
       // EAGAIN if we're just out of buffers to dequeue.
       return false;
+    } else if (errno == EPIPE) {
+      DVLOGF(3) << "Got EPIPE. Last output buffer was already dequeued.";
+      return false;
     }
     PLOGF(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -1395,6 +1424,17 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
           PictureRecord(output_record.cleared, picture));
       SendPictureReady();
       output_record.cleared = true;
+    }
+  }
+  if (dqbuf.flags & V4L2_BUF_FLAG_LAST) {
+    DVLOGF(3) << "Got last output buffer. Waiting last buffer="
+              << flush_awaiting_last_output_buffer_;
+    if (flush_awaiting_last_output_buffer_) {
+      flush_awaiting_last_output_buffer_ = false;
+      struct v4l2_decoder_cmd cmd;
+      memset(&cmd, 0, sizeof(cmd));
+      cmd.cmd = V4L2_DEC_CMD_START;
+      IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_DECODER_CMD, &cmd);
     }
   }
   return true;
@@ -1571,15 +1611,27 @@ void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
   // * All image processor buffers are returned.
   if (!decoder_input_queue_.empty()) {
     if (decoder_input_queue_.front()->input_id !=
-        decoder_delay_bitstream_buffer_id_)
+        decoder_delay_bitstream_buffer_id_) {
+      DVLOGF(3) << "Some input bitstream buffers are not queued.";
       return;
+    }
   }
-  if (decoder_current_input_buffer_ != -1)
+  if (decoder_current_input_buffer_ != -1) {
+    DVLOGF(3) << "Current input buffer != -1";
     return;
-  if ((input_ready_queue_.size() + input_buffer_queued_count_) != 0)
+  }
+  if ((input_ready_queue_.size() + input_buffer_queued_count_) != 0) {
+    DVLOGF(3) << "Some input buffers are not dequeued.";
     return;
-  if (image_processor_bitstream_buffer_ids_.size() != 0)
+  }
+  if (image_processor_bitstream_buffer_ids_.size() != 0) {
+    DVLOGF(3) << "Waiting for image processor to complete.";
     return;
+  }
+  if (flush_awaiting_last_output_buffer_) {
+    DVLOGF(3) << "Waiting for last output buffer.";
+    return;
+  }
 
   // TODO(posciak): crbug.com/270039. Exynos requires a streamoff-streamon
   // sequence after flush to continue, even if we are not resetting. This would
@@ -1604,6 +1656,35 @@ void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
 
   // While we were flushing, we early-outed DecodeBufferTask()s.
   ScheduleDecodeBufferTaskIfNeeded();
+}
+
+bool V4L2VideoDecodeAccelerator::IsDecoderCmdSupported() {
+  // CMD_STOP should always succeed. If the decoder is started, the command can
+  // flush it. If the decoder is stopped, the command does nothing. We use this
+  // to know if a driver supports V4L2_DEC_CMD_STOP to flush.
+  struct v4l2_decoder_cmd cmd;
+  memset(&cmd, 0, sizeof(cmd));
+  cmd.cmd = V4L2_DEC_CMD_STOP;
+  if (device_->Ioctl(VIDIOC_TRY_DECODER_CMD, &cmd) != 0) {
+    DVLOGF(3) "V4L2_DEC_CMD_STOP is not supported.";
+    return false;
+  }
+
+  return true;
+}
+
+bool V4L2VideoDecodeAccelerator::SendDecoderCmdStop() {
+  DVLOGF(2);
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(!flush_awaiting_last_output_buffer_);
+
+  struct v4l2_decoder_cmd cmd;
+  memset(&cmd, 0, sizeof(cmd));
+  cmd.cmd = V4L2_DEC_CMD_STOP;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_DECODER_CMD, &cmd);
+  flush_awaiting_last_output_buffer_ = true;
+
+  return true;
 }
 
 void V4L2VideoDecodeAccelerator::ResetTask() {
@@ -1787,6 +1868,9 @@ bool V4L2VideoDecodeAccelerator::StopOutputStream() {
   __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
   output_streamon_ = false;
+
+  // Output stream is stopped. No need to wait for the buffer anymore.
+  flush_awaiting_last_output_buffer_ = false;
 
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     // After streamoff, the device drops ownership of all buffers, even if we
