@@ -4307,10 +4307,27 @@ void FrameView::updateViewportIntersectionIfNeeded() {
   m_viewportIntersectionValid = true;
   FrameView* parent = parentFrameView();
   if (!parent) {
+    HTMLFrameOwnerElement* element = frame().deprecatedLocalOwner();
+    if (!element)
+      frame().document()->maybeRecordLoadReason(WouldLoadOutOfProcess);
+    // Having no layout object means the frame is not drawn.
+    else if (!element->layoutObject())
+      frame().document()->maybeRecordLoadReason(WouldLoadDisplayNone);
     m_viewportIntersection = frameRect();
     return;
   }
   ASSERT(!parent->m_needsUpdateViewportIntersection);
+
+  bool parentLoaded = parent->frame().document()->wouldLoadReason() > Created;
+  // If the parent wasn't loaded, the children won't be either.
+  if (parentLoaded) {
+    if (frameRect().isEmpty())
+      frame().document()->maybeRecordLoadReason(WouldLoadZeroByZero);
+    else if (frameRect().maxY() < 0)
+      frame().document()->maybeRecordLoadReason(WouldLoadAbove);
+    else if (frameRect().maxX() < 0)
+      frame().document()->maybeRecordLoadReason(WouldLoadLeft);
+  }
 
   // If our parent is hidden, then we are too.
   if (parent->m_viewportIntersection.isEmpty()) {
@@ -4331,6 +4348,9 @@ void FrameView::updateViewportIntersectionIfNeeded() {
   // content while scrolling.
   IntRect viewport = parent->m_viewportIntersection;
   m_viewportIntersection.intersect(viewport);
+
+  if (parentLoaded && !m_viewportIntersection.isEmpty())
+    frame().document()->maybeRecordLoadReason(WouldLoadVisible);
 }
 
 void FrameView::updateViewportIntersectionsForSubtree(
@@ -4415,8 +4435,6 @@ void FrameView::notifyRenderThrottlingObservers() {
   bool wasThrottled = canThrottleRendering();
 
   updateThrottlingStatus();
-
-  frame().document()->onVisibilityMaybeChanged(!m_hiddenForThrottling);
 
   bool becameThrottled = !wasThrottled && canThrottleRendering();
   bool becameUnthrottled = wasThrottled && !canThrottleRendering();

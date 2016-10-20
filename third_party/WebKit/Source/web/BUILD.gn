@@ -323,6 +323,7 @@ test("webkit_unit_tests") {
     "tests/ActivityLoggerTest.cpp",
     "tests/ChromeClientImplTest.cpp",
     "tests/CompositorWorkerTest.cpp",
+    "tests/DeferredLoadingTest.cpp",
     "tests/DocumentLoaderTest.cpp",
     "tests/DocumentLoadingRenderingTest.cpp",
     "tests/FakeWebPlugin.cpp",
