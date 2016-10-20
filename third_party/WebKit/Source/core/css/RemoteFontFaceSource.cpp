@@ -133,11 +133,12 @@ void RemoteFontFaceSource::notifyFinished(Resource*) {
     m_fontSelector->fontFaceInvalidated();
     m_face->fontLoaded(this);
   }
-  // Should not do anything after this line since the m_face->fontLoaded()
-  // above may trigger deleting this object.
 }
 
 void RemoteFontFaceSource::fontLoadShortLimitExceeded(FontResource*) {
+  if (m_font->isLoaded())
+    return;
+
   if (m_display == FontDisplayFallback)
     switchToSwapPeriod();
   else if (m_display == FontDisplayOptional)
@@ -145,6 +146,9 @@ void RemoteFontFaceSource::fontLoadShortLimitExceeded(FontResource*) {
 }
 
 void RemoteFontFaceSource::fontLoadLongLimitExceeded(FontResource*) {
+  if (m_font->isLoaded())
+    return;
+
   if (m_display == FontDisplayBlock ||
       (!m_isInterventionTriggered && m_display == FontDisplayAuto))
     switchToSwapPeriod();
