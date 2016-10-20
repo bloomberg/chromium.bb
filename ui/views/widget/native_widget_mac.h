@@ -38,8 +38,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   bool IsWindowModalSheet() const;
 
   // Deletes |bridge_| and informs |delegate_| that the native widget is
-  // destroyed. This is usually called from the NSWindowDelegate.
-  void OnWindowWillClose();
+  // destroyed. BridgedNativeWidget::OnWindowWillClose() calls this when the
+  // NSWindowDelegate informs the bridge that the window is being closed.
+  void OnWindowDestroyed();
 
   // Returns the vertical position that sheets should be anchored, in pixels
   // from the bottom of the window.

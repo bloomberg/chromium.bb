@@ -1154,9 +1154,18 @@ class ParentCloseMonitor : public WidgetObserver {
   }
 
   void OnWidgetDestroying(Widget* child) override {
-    // Upon a parent-triggered close, the NSWindow relationship will already be
-    // removed. The parent should still be open (children are always closed
-    // first), but not have a delegate (since it is being torn down).
+    // Upon a parent-triggered close, the NSWindow relationship will still exist
+    // (it's removed just after OnWidgetDestroying() returns). The parent should
+    // still be open (children are always closed first), but not have a delegate
+    // (since it is being torn down).
+    EXPECT_TRUE([child->GetNativeWindow() parentWindow]);
+    EXPECT_TRUE([parent_nswindow_ isVisible]);
+    EXPECT_FALSE([parent_nswindow_ delegate]);
+
+    EXPECT_FALSE(child_closed_);
+  }
+
+  void OnWidgetDestroyed(Widget* child) override {
     EXPECT_FALSE([child->GetNativeWindow() parentWindow]);
     EXPECT_TRUE([parent_nswindow_ isVisible]);
     EXPECT_FALSE([parent_nswindow_ delegate]);

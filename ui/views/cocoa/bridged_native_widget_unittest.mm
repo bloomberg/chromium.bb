@@ -206,7 +206,8 @@ namespace test {
 // Provides the |parent| argument to construct a BridgedNativeWidget.
 class MockNativeWidgetMac : public NativeWidgetMac {
  public:
-  MockNativeWidgetMac(Widget* delegate) : NativeWidgetMac(delegate) {}
+  explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
+      : NativeWidgetMac(delegate) {}
 
   // Expose a reference, so that it can be reset() independently.
   std::unique_ptr<BridgedNativeWidget>& bridge() { return bridge_; }
@@ -234,10 +235,14 @@ class MockNativeWidgetMac : public NativeWidgetMac {
 // Helper test base to construct a BridgedNativeWidget with a valid parent.
 class BridgedNativeWidgetTestBase : public ui::CocoaTest {
  public:
+  struct SkipInitialization {};
+
   BridgedNativeWidgetTestBase()
       : widget_(new Widget),
-        native_widget_mac_(new MockNativeWidgetMac(widget_.get())) {
-  }
+        native_widget_mac_(new MockNativeWidgetMac(widget_.get())) {}
+
+  explicit BridgedNativeWidgetTestBase(SkipInitialization tag)
+      : native_widget_mac_(nullptr) {}
 
   std::unique_ptr<BridgedNativeWidget>& bridge() {
     return native_widget_mac_->bridge();
@@ -246,6 +251,10 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   // Overridden from testing::Test:
   void SetUp() override {
     ui::CocoaTest::SetUp();
+
+    // MaterialDesignController leaks state across tests. See
+    // http://crbug.com/656871.
+    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
     ui::MaterialDesignController::Initialize();
 
     init_params_.native_widget = native_widget_mac_;
@@ -263,7 +272,8 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
 
     init_params_.bounds = gfx::Rect(100, 100, 100, 100);
 
-    native_widget_mac_->GetWidget()->Init(init_params_);
+    if (native_widget_mac_)
+      native_widget_mac_->GetWidget()->Init(init_params_);
   }
 
   void TearDown() override {
@@ -603,9 +613,9 @@ TEST_F(BridgedNativeWidgetTest, BridgedNativeWidgetTest_TestViewAddRemove) {
   // installed.
   EXPECT_EQ(1u, [[view trackingAreas] count]);
 
-  // Destroying the C++ bridge should remove references to any C++ objects in
-  // the ObjectiveC object, and remove it from the hierarchy.
-  bridge().reset();
+  // Closing the window should tear down the C++ bridge, remove references to
+  // any C++ objects in the ObjectiveC object, and remove it from the hierarchy.
+  [test_window() close];
   EXPECT_FALSE([view hostedView]);
   EXPECT_FALSE([view superview]);
   EXPECT_FALSE([view window]);
@@ -645,7 +655,8 @@ TEST_F(BridgedNativeWidgetTest, GetInputMethodShouldNotReturnNull) {
 // A simpler test harness for testing initialization flows.
 class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
  public:
-  BridgedNativeWidgetInitTest() {}
+  BridgedNativeWidgetInitTest()
+      : BridgedNativeWidgetTestBase(SkipInitialization()) {}
 
   // Prepares a new |window_| and |widget_| for a call to PerformInit().
   void CreateNewWidgetToInit(NSUInteger style_mask) {
@@ -674,9 +685,15 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
 
 // Test that BridgedNativeWidget remains sane if Init() is never called.
 TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
+  // Don't use a Widget* as the delegate. ~Widget() checks for Widget::
+  // |native_widget_destroyed_| being set to true. That can only happen with a
+  // non-null WidgetDelegate, which is only set in Widget::Init(). Then, since
+  // neither Widget nor NativeWidget take ownership, use a unique_ptr.
+  std::unique_ptr<MockNativeWidgetMac> native_widget(
+      new MockNativeWidgetMac(nullptr));
+  native_widget_mac_ = native_widget.get();
   EXPECT_FALSE(bridge()->ns_view());
   EXPECT_FALSE(bridge()->ns_window());
-  bridge().reset();
 }
 
 // Tests the shadow type given in InitParams.

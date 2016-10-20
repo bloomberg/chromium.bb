@@ -101,15 +101,9 @@ bool NativeWidgetMac::IsWindowModalSheet() const {
              ui::MODAL_TYPE_WINDOW;
 }
 
-void NativeWidgetMac::OnWindowWillClose() {
-  // Note: If closed via CloseNow(), |bridge_| will already be reset. If closed
-  // by the user, or via Close() and a RunLoop, notify observers while |bridge_|
-  // is still a valid pointer, then reset it.
-  if (bridge_) {
-    delegate_->OnNativeWidgetDestroying();
-    [GetNativeWindow() setDelegate:nil];
-    bridge_.reset();
-  }
+void NativeWidgetMac::OnWindowDestroyed() {
+  DCHECK(bridge_);
+  bridge_.reset();
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete this;
@@ -347,7 +341,10 @@ void NativeWidgetMac::Close() {
   if (!bridge_)
     return;
 
+  // Keep |window| on the stack so that the ObjectiveC block below can capture
+  // it and properly increment the reference count bound to the posted task.
   NSWindow* window = GetNativeWindow();
+
   if (IsWindowModalSheet()) {
     // Sheets can't be closed normally. This starts the sheet closing. Once the
     // sheet has finished animating, it will call sheetDidEnd: on the parent
@@ -385,10 +382,18 @@ void NativeWidgetMac::CloseNow() {
   if (!bridge_)
     return;
 
-  // Notify observers while |bridged_| is still valid.
-  delegate_->OnNativeWidgetDestroying();
-  // Reset |bridge_| to NULL before destroying it.
-  std::unique_ptr<BridgedNativeWidget> bridge(std::move(bridge_));
+  // Cocoa ignores -close calls on open sheets, so they should be closed
+  // asynchronously, using Widget::Close().
+  DCHECK(!IsWindowModalSheet());
+
+  // NSWindows must be retained until -[NSWindow close] returns.
+  base::scoped_nsobject<NSWindow> window(GetNativeWindow(),
+                                         base::scoped_policy::RETAIN);
+
+  // If there's a bridge at this point, it means there must be a window as well.
+  DCHECK(window);
+  [window close];
+  // Note: |this| is deleted here when ownership_ == NATIVE_WIDGET_OWNS_WIDGET.
 }
 
 void NativeWidgetMac::Show() {
