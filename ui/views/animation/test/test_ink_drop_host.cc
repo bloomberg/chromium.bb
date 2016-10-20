@@ -82,7 +82,8 @@ class TestInkDropHighlight : public InkDropHighlight {
 }  // namespace
 
 TestInkDropHost::TestInkDropHost()
-    : num_ink_drop_layers_(0),
+    : num_ink_drop_layers_added_(0),
+      num_ink_drop_layers_removed_(0),
       should_show_highlight_(false),
       ripple_overrides_highlight_(true),
       disable_timers_for_test_(false) {}
@@ -90,11 +91,11 @@ TestInkDropHost::TestInkDropHost()
 TestInkDropHost::~TestInkDropHost() {}
 
 void TestInkDropHost::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  ++num_ink_drop_layers_;
+  ++num_ink_drop_layers_added_;
 }
 
 void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  --num_ink_drop_layers_;
+  ++num_ink_drop_layers_removed_;
 }
 
 std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {

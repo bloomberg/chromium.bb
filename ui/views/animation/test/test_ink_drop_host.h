@@ -17,7 +17,10 @@ class TestInkDropHost : public InkDropHost {
   TestInkDropHost();
   ~TestInkDropHost() override;
 
-  int num_ink_drop_layers() const { return num_ink_drop_layers_; }
+  int num_ink_drop_layers_added() const { return num_ink_drop_layers_added_; }
+  int num_ink_drop_layers() const {
+    return num_ink_drop_layers_added_ - num_ink_drop_layers_removed_;
+  }
 
   void set_should_show_highlight(bool should_show_highlight) {
     should_show_highlight_ = should_show_highlight;
@@ -38,7 +41,8 @@ class TestInkDropHost : public InkDropHost {
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 
  private:
-  int num_ink_drop_layers_;
+  int num_ink_drop_layers_added_;
+  int num_ink_drop_layers_removed_;
 
   bool should_show_highlight_;
 

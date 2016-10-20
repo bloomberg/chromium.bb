@@ -370,4 +370,17 @@ TEST_F(InkDropImplTest, HighlightCanCoexistWithSnapToActivatedRipple) {
   EXPECT_TRUE(test_api_.IsHighlightFadingInOrVisible());
 }
 
+// Test that (re-)hiding or un-hovering a hidden ink drop doesn't add layers.
+TEST_F(InkDropImplTest, AlwaysHiddenInkDropHasNoLayers) {
+  ink_drop_host_.set_should_show_highlight(true);
+
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers_added());
+
+  ink_drop_.AnimateToState(InkDropState::HIDDEN);
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers_added());
+
+  ink_drop_.SetHovered(false);
+  EXPECT_EQ(0, ink_drop_host_.num_ink_drop_layers_added());
+}
+
 }  // namespace views

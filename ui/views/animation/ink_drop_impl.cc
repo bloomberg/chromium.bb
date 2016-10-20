@@ -74,6 +74,12 @@ InkDropState InkDropImpl::GetTargetInkDropState() const {
 }
 
 void InkDropImpl::AnimateToState(InkDropState ink_drop_state) {
+  // Never animate hidden -> hidden, since that will add layers which may never
+  // be needed. Other same-state transitions may restart animations.
+  if (ink_drop_state == InkDropState::HIDDEN &&
+      GetTargetInkDropState() == InkDropState::HIDDEN)
+    return;
+
   DestroyHiddenTargetedAnimations();
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
