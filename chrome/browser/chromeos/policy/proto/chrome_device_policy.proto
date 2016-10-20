@@ -293,6 +293,8 @@ message AndroidKioskAppInfoProto {
   // In the event this is the only field that is specified, runtime may use
   // PackageManager.getLaunchIntentForPackage() to start the app. See
   // https://developer.android.com/reference/android/content/pm/PackageManager.html
+  // Example of the package name: "com.android.camera". Do not include "app:"
+  // prefix in the package name.
   optional string package_name = 1;
 
   // Class name (optional). If present, class name is to be combined with

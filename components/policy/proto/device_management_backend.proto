@@ -483,20 +483,19 @@ message PolicyFetchResponse {
   // drop such PolicyFetchResponse.
   optional bytes new_public_key_verification_data = 8;
 
-  // If new_public_key is specified, this field contains a signature
-  // of a PolicyPublicKeyAndDomain protobuf, signed using a key only
-  // available to DMServer. The public key portion of this well-known key is
-  // embedded into the Chrome binary. The hash of that embedded key is passed
-  // to DMServer as verification_key_hash field in PolicyFetchRequest. DMServer
-  // will pick a private key on the server which matches the hash (matches
-  // public key on the client). If DMServer is unable to find matching key, it
-  // will return an error instead of policy data.
-  // In case hash was not specified, DMServer will leave verification signature
-  // field empty (legacy behavior).
-  // In addition to the checks between new_public_key
-  // and new_public_key_signature described above, Chrome also verifies
-  // new_public_key with the embedded public key and
-  // new_public_key_verification_signature.
+  // If new_public_key is specified, this field contains the signature of a
+  // PublicKeyVerificationData protobuf, signed using a key only available to
+  // DMServer. The public key portion of this well-known key is embedded into
+  // the Chrome binary. The hash of that embedded key is passed to DMServer as
+  // verification_key_hash field in PolicyFetchRequest. DMServer picks a private
+  // key on the server which matches the hash (matches public key on the
+  // client). If DMServer is unable to find matching key, it returns an error
+  // instead of policy data. In case a hash was not specified, DMServer leaves
+  // the verification signature field empty (legacy behavior).
+  // This signature is provided to better protect first key delivery (since the
+  // browser does not possess the previous signing key, DMServer cannot compute
+  // new_public_key_signature).
+  // See http://go/chrome-nac-server-design for more information.
   optional bytes new_public_key_verification_data_signature = 9;
 }
 
@@ -1309,8 +1308,12 @@ message DeviceManagementRequest {
 
 // Response from server to device.
 //
-// The server uses the following numbers as HTTP status codes
-// to report top-level errors.
+// For release clients, DMServer returns errors using HTTP Status Code, so that
+// clients only need to check one place for all error codes.  It is also easier
+// to perform log analysis and customer support since HTTP Status Code is easily
+// visible in the logs.
+//
+// The following list defines the error code returned by this API:
 //
 // 200 OK: valid response is returned to client.
 // 400 Bad Request: invalid argument.
