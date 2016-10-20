@@ -19,37 +19,8 @@
 namespace content {
 namespace {
 
-const uint8_t kGMOn[] = {0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7};
-const uint8_t kGSOn[] = {
-    0xf0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7f, 0x00, 0x41, 0xf7,
-};
 const uint8_t kNoteOn[] = {0x90, 0x3c, 0x7f};
-const uint8_t kNoteOnWithRunningStatus[] = {
-    0x90, 0x3c, 0x7f, 0x3c, 0x7f, 0x3c, 0x7f,
-};
-const uint8_t kChannelPressure[] = {0xd0, 0x01};
-const uint8_t kChannelPressureWithRunningStatus[] = {
-    0xd0, 0x01, 0x01, 0x01,
-};
-const uint8_t kTimingClock[] = {0xf8};
-const uint8_t kBrokenData1[] = {0x90};
-const uint8_t kBrokenData2[] = {0xf7};
-const uint8_t kBrokenData3[] = {0xf2, 0x00};
-const uint8_t kDataByte0[] = {0x00};
-
 const int kRenderProcessId = 0;
-
-template <typename T, size_t N>
-const std::vector<T> AsVector(const T(&data)[N]) {
-  std::vector<T> buffer;
-  buffer.insert(buffer.end(), data, data + N);
-  return buffer;
-}
-
-template <typename T, size_t N>
-void PushToVector(const T(&data)[N], std::vector<T>* buffer) {
-  buffer->insert(buffer->end(), data, data + N);
-}
 
 enum MidiEventType {
   DISPATCH_SEND_MIDI_DATA,
@@ -160,53 +131,6 @@ class MidiHostTest : public testing::Test {
 };
 
 }  // namespace
-
-TEST_F(MidiHostTest, IsValidWebMIDIData) {
-  // Test single event scenario
-  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kGMOn)));
-  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kGSOn)));
-  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kNoteOn)));
-  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kChannelPressure)));
-  EXPECT_TRUE(MidiHost::IsValidWebMIDIData(AsVector(kTimingClock)));
-  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kBrokenData1)));
-  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kBrokenData2)));
-  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kBrokenData3)));
-  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(AsVector(kDataByte0)));
-
-  // MIDI running status should be disallowed
-  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(
-      AsVector(kNoteOnWithRunningStatus)));
-  EXPECT_FALSE(MidiHost::IsValidWebMIDIData(
-      AsVector(kChannelPressureWithRunningStatus)));
-
-  // Multiple messages are allowed as long as each of them is complete.
-  {
-    std::vector<uint8_t> buffer;
-    PushToVector(kGMOn, &buffer);
-    PushToVector(kNoteOn, &buffer);
-    PushToVector(kGSOn, &buffer);
-    PushToVector(kTimingClock, &buffer);
-    PushToVector(kNoteOn, &buffer);
-    EXPECT_TRUE(MidiHost::IsValidWebMIDIData(buffer));
-    PushToVector(kBrokenData1, &buffer);
-    EXPECT_FALSE(MidiHost::IsValidWebMIDIData(buffer));
-  }
-
-  // MIDI realtime message can be placed at any position.
-  {
-    const uint8_t kNoteOnWithRealTimeClock[] = {
-        0x90, 0xf8, 0x3c, 0x7f, 0x90, 0xf8, 0x3c, 0xf8, 0x7f, 0xf8,
-    };
-    EXPECT_TRUE(MidiHost::IsValidWebMIDIData(
-        AsVector(kNoteOnWithRealTimeClock)));
-
-    const uint8_t kGMOnWithRealTimeClock[] = {
-        0xf0, 0xf8, 0x7e, 0x7f, 0x09, 0x01, 0xf8, 0xf7,
-    };
-    EXPECT_TRUE(MidiHost::IsValidWebMIDIData(
-        AsVector(kGMOnWithRealTimeClock)));
-  }
-}
 
 // Test if sending data to out of range port is ignored.
 TEST_F(MidiHostTest, OutputPortCheck) {

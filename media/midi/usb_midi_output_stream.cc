@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "media/midi/midi_message_util.h"
+#include "media/midi/message_util.h"
 #include "media/midi/usb_midi_device.h"
 
 namespace midi {

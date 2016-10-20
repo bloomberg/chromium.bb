@@ -43,9 +43,9 @@
 #include "base/win/message_window.h"
 #include "base/win/windows_version.h"
 #include "device/usb/usb_ids.h"
+#include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
 #include "media/midi/midi_message_queue.h"
-#include "media/midi/midi_message_util.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_switches.h"
 
@@ -705,7 +705,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
     const uint8_t second_data_byte =
         static_cast<uint8_t>((param1 >> 16) & 0xff);
     const DWORD elapsed_ms = param2;
-    const size_t len = GetMidiMessageLength(status_byte);
+    const size_t len = GetMessageLength(status_byte);
     const uint8_t kData[] = {status_byte, first_data_byte, second_data_byte};
     std::vector<uint8_t> data;
     data.assign(kData, kData + len);

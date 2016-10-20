@@ -75,6 +75,8 @@ if (is_android) {
 
 component("midi") {
   sources = [
+    "message_util.cc",
+    "message_util.h",
     "midi_export.h",
     "midi_manager.cc",
     "midi_manager.h",
@@ -82,8 +84,6 @@ component("midi") {
     "midi_manager_mac.h",
     "midi_message_queue.cc",
     "midi_message_queue.h",
-    "midi_message_util.cc",
-    "midi_message_util.h",
     "midi_port_info.cc",
     "midi_port_info.h",
     "midi_scheduler.cc",
@@ -178,10 +178,10 @@ mojom("mojo") {
 
 test("midi_unittests") {
   sources = [
+    "message_util_unittest.cc",
     "midi_manager_unittest.cc",
     "midi_manager_usb_unittest.cc",
     "midi_message_queue_unittest.cc",
-    "midi_message_util_unittest.cc",
     "usb_midi_descriptor_parser_unittest.cc",
     "usb_midi_input_stream_unittest.cc",
     "usb_midi_output_stream_unittest.cc",
