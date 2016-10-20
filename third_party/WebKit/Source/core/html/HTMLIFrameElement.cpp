@@ -48,6 +48,7 @@ DEFINE_TRACE(HTMLIFrameElement) {
   visitor->trace(m_sandbox);
   visitor->trace(m_permissions);
   HTMLFrameElementBase::trace(visitor);
+  Supplementable<HTMLIFrameElement>::trace(visitor);
 }
 
 HTMLIFrameElement::~HTMLIFrameElement() {}

@@ -28,13 +28,17 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLIFrameElementPermissions.h"
 #include "core/html/HTMLIFrameElementSandbox.h"
+#include "platform/Supplementable.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 
 namespace blink {
 
-class CORE_EXPORT HTMLIFrameElement final : public HTMLFrameElementBase {
+class CORE_EXPORT HTMLIFrameElement final
+    : public HTMLFrameElementBase,
+      public Supplementable<HTMLIFrameElement> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
 
  public:
   DECLARE_NODE_FACTORY(HTMLIFrameElement);

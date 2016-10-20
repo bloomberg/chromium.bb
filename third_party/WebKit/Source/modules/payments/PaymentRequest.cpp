@@ -14,7 +14,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/EventQueue.h"
+#include "core/frame/FrameOwner.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "modules/EventTargetModulesNames.h"
+#include "modules/payments/HTMLIFrameElementPayments.h"
 #include "modules/payments/PaymentAddress.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentRequestUpdateEvent.h"
@@ -428,6 +431,34 @@ mojom::blink::PaymentDetailsPtr maybeKeepShippingOptions(
   return details;
 }
 
+bool allowedToUsePaymentRequest(const Frame* frame) {
+  // To determine whether a Document object |document| is allowed to use the
+  // feature indicated by attribute name |allowpaymentrequest|, run these steps:
+
+  // 1. If |document| has no browsing context, then return false.
+  if (!frame)
+    return false;
+
+  // 2. If |document|'s browsing context is a top-level browsing context, then
+  // return true.
+  if (frame->isMainFrame())
+    return true;
+
+  // 3. If |document|'s browsing context has a browsing context container that
+  // is an iframe element with an |allowpaymentrequest| attribute specified, and
+  // whose node document is allowed to use the feature indicated by
+  // |allowpaymentrequest|, then return true.
+  HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(frame->owner());
+  if (ownerElement && isHTMLIFrameElement(ownerElement)) {
+    HTMLIFrameElement* iframe = toHTMLIFrameElement(ownerElement);
+    if (HTMLIFrameElementPayments::from(*iframe).allowPaymentRequest(*iframe))
+      return allowedToUsePaymentRequest(frame->tree().parent());
+  }
+
+  // 4. Return false.
+  return false;
+}
+
 }  // namespace
 
 PaymentRequest* PaymentRequest::create(
@@ -608,10 +639,10 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
     return;
   }
 
-  if (!scriptState->domWindow()->frame() ||
-      !scriptState->domWindow()->frame()->isMainFrame()) {
+  if (!allowedToUsePaymentRequest(scriptState->domWindow()->frame())) {
     exceptionState.throwSecurityError(
-        "Must be in a top-level browsing context");
+        "Must be in a top-level browsing context or an iframe needs to specify "
+        "'allowpaymentrequest' explicitly");
     return;
   }
 

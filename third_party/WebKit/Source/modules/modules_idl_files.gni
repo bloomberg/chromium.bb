@@ -571,6 +571,7 @@ modules_dependency_idl_files =
           "notifications/ServiceWorkerGlobalScopeNotifications.idl",
           "notifications/ServiceWorkerRegistrationNotifications.idl",
           "offscreencanvas/OffscreenCanvasModules.idl",
+          "payments/HTMLIFrameElementPayments.idl",
           "permissions/NavigatorPermissions.idl",
           "permissions/WorkerNavigatorPermissions.idl",
           "plugins/NavigatorPlugins.idl",
