@@ -540,7 +540,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(mbmi, r);
 #endif  // CONFIG_EXT_INTRA
-
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
@@ -806,16 +805,15 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
   }
 
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#if CONFIG_EXT_INTRA
+  read_intra_angle_info(mbmi, r);
+#endif  // CONFIG_EXT_INTRA
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
     read_palette_mode_info(cm, xd, r);
 #endif  // CONFIG_PALETTE
-
-#if CONFIG_EXT_INTRA
-  read_intra_angle_info(mbmi, r);
-#endif  // CONFIG_EXT_INTRA
 }
 
 static INLINE int is_mv_valid(const MV *mv) {
