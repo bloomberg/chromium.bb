@@ -144,9 +144,13 @@ void QuicSimpleServerStream::SendResponse() {
   }
 
   // Find response in cache. If not found, send error response.
-  const QuicInMemoryCache::Response* response =
-      QuicInMemoryCache::GetInstance()->GetResponse(
-          request_headers_[":authority"], request_headers_[":path"]);
+  const QuicInMemoryCache::Response* response = nullptr;
+  auto authority = request_headers_.find(":authority");
+  auto path = request_headers_.find(":path");
+  if (authority != request_headers_.end() && path != request_headers_.end()) {
+    response = QuicInMemoryCache::GetInstance()->GetResponse(authority->second,
+                                                             path->second);
+  }
   if (response == nullptr) {
     DVLOG(1) << "Response not found in cache.";
     SendNotFoundResponse();

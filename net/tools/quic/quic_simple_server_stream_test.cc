@@ -4,6 +4,8 @@
 
 #include "net/tools/quic/quic_simple_server_stream.h"
 
+#include <list>
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -224,8 +226,8 @@ class QuicSimpleServerStreamTest
     return QuicSimpleServerStreamPeer::body(stream_);
   }
 
-  StringPiece StreamHeadersValue(const string& key) {
-    return (*stream_->mutable_headers())[key];
+  string StreamHeadersValue(const string& key) {
+    return (*stream_->mutable_headers())[key].as_string();
   }
 
   SpdyHeaderBlock response_headers_;

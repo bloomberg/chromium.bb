@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -349,7 +350,8 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       headers->GetAllOfHeaderAsString("transfer-encoding", &encoding);
       spdy_headers.insert(std::make_pair("transfer-encoding", encoding));
     }
-    if (static_cast<StringPiece>(spdy_headers[":authority"]).empty()) {
+    auto authority = spdy_headers.find(":authority");
+    if (authority == spdy_headers.end() || authority->second.empty()) {
       // HTTP/2 requests should include the :authority pseudo hader.
       spdy_headers[":authority"] = client_->server_id().host();
     }

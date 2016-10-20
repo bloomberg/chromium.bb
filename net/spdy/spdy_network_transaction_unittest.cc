@@ -3052,15 +3052,14 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeaders) {
     std::string name, value;
     SpdyHeaderBlock header_block;
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-      SpdyHeaderBlock::StringPieceProxy mutable_header_block_value =
-          header_block[name];
-      if (static_cast<base::StringPiece>(mutable_header_block_value).empty()) {
-        mutable_header_block_value = value;
+      auto value_it = header_block.find(name);
+      if (value_it == header_block.end() || value_it->second.empty()) {
+        header_block[name] = value;
       } else {
-        std::string joint_value = mutable_header_block_value.as_string();
+        std::string joint_value = value_it->second.as_string();
         joint_value.append(1, '\0');
         joint_value.append(value);
-        mutable_header_block_value = joint_value;
+        header_block[name] = joint_value;
       }
     }
     EXPECT_EQ(test_cases[i].expected_headers, header_block);

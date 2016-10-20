@@ -20,9 +20,9 @@ using ::testing::ElementsAre;
 namespace net {
 namespace test {
 
-class StringPieceProxyPeer {
+class ValueProxyPeer {
  public:
-  static base::StringPiece key(SpdyHeaderBlock::StringPieceProxy* p) {
+  static base::StringPiece key(SpdyHeaderBlock::ValueProxy* p) {
     return p->key_;
   }
 };
@@ -50,12 +50,12 @@ TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
   base::StringPiece copied_key1;
   {
     auto proxy1 = block["some key name"];
-    copied_key1 = StringPieceProxyPeer::key(&proxy1);
+    copied_key1 = ValueProxyPeer::key(&proxy1);
   }
   base::StringPiece copied_key2;
   {
     auto proxy2 = block["some other key name"];
-    copied_key2 = StringPieceProxyPeer::key(&proxy2);
+    copied_key2 = ValueProxyPeer::key(&proxy2);
   }
   // Because proxy1 was never used to modify the block, the memory used for the
   // key could be reclaimed and used for the second call to operator[].
