@@ -76,12 +76,12 @@ class MockMediaDevicesDispatcherHost
     callback.Run(result);
   }
 
-  mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
+  ::mojom::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
     return binding_.CreateInterfacePtrAndBind();
   }
 
  private:
-  mojo::Binding<mojom::MediaDevicesDispatcherHost> binding_;
+  mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_;
 };
 
 class UserMediaClientImplUnderTest : public UserMediaClientImpl {
