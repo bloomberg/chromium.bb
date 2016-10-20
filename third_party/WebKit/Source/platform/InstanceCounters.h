@@ -31,12 +31,9 @@
 #ifndef InstanceCounters_h
 #define InstanceCounters_h
 
-#include "core/CoreExport.h"
+#include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Atomics.h"
-
-#if ENABLE(ASSERT)
-#endif
 
 namespace blink {
 
@@ -81,11 +78,11 @@ class InstanceCounters {
     s_nodeCounter--;
   }
 
-  CORE_EXPORT static int counterValue(CounterType);
+  PLATFORM_EXPORT static int counterValue(CounterType);
 
  private:
-  CORE_EXPORT static int s_counters[CounterTypeLength];
-  CORE_EXPORT static int s_nodeCounter;
+  PLATFORM_EXPORT static int s_counters[CounterTypeLength];
+  PLATFORM_EXPORT static int s_nodeCounter;
 };
 
 }  // namespace blink

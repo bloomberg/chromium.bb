@@ -27,7 +27,7 @@
 #include "core/dom/ActiveDOMObject.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/InstanceCounters.h"
+#include "platform/InstanceCounters.h"
 
 namespace blink {
 

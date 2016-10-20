@@ -9,6 +9,5 @@ include_rules = [
     "!core/css/StyleSheetContents.h",
     "!core/dom/XMLDocument.h",
     "!core/html/parser/TextResourceDecoder.h",
-    "!core/inspector/InstanceCounters.h",
     "!core/svg/graphics/SVGImage.h",
 ]

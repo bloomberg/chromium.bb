@@ -30,7 +30,7 @@
 
 #include "core/inspector/InspectorMemoryAgent.h"
 
-#include "core/inspector/InstanceCounters.h"
+#include "platform/InstanceCounters.h"
 
 namespace blink {
 

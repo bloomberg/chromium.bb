@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "core/inspector/InstanceCounters.h"
+#include "platform/InstanceCounters.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StringExtras.h"
 #include <memory>

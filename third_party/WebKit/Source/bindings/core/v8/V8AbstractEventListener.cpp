@@ -37,8 +37,8 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
-#include "core/inspector/InstanceCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/InstanceCounters.h"
 
 namespace blink {
 

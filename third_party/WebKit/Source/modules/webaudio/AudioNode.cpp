@@ -26,12 +26,12 @@
 #include "modules/webaudio/AudioNode.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/inspector/InstanceCounters.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOptions.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioParam.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "platform/InstanceCounters.h"
 #include "wtf/Atomics.h"
 
 #if DEBUG_AUDIONODE_REFERENCES

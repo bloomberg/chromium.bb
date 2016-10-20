@@ -4,8 +4,8 @@
 
 #include "modules/webaudio/testing/InternalsWebAudio.h"
 
-#include "core/inspector/InstanceCounters.h"
 #include "modules/webaudio/AudioNode.h"
+#include "platform/InstanceCounters.h"
 
 namespace blink {
 

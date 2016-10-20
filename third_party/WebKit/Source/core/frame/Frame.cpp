@@ -39,7 +39,6 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InstanceCounters.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/loader/EmptyClients.h"
@@ -48,6 +47,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
+#include "platform/InstanceCounters.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {

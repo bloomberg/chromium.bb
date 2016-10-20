@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
-#include "core/inspector/InstanceCounters.h"
+#include "platform/InstanceCounters.h"
 #include <v8.h>
 
 namespace blink {
