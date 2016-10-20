@@ -6,20 +6,16 @@ visibility = [ "//ui/ozone/*" ]
 
 import("//build/config/linux/pkg_config.gni")
 
-declare_args() {
-  use_wayland_egl = true
-}
-
-if (use_wayland_egl) {
-  pkg_config("wayland-egl") {
-    packages = [ "wayland-egl" ]
-  }
+pkg_config("wayland-egl") {
+  packages = [ "wayland-egl" ]
 }
 
 source_set("wayland") {
   sources = [
     "client_native_pixmap_factory_wayland.cc",
     "client_native_pixmap_factory_wayland.h",
+    "gl_surface_wayland.cc",
+    "gl_surface_wayland.h",
     "ozone_platform_wayland.cc",
     "ozone_platform_wayland.h",
     "wayland_connection.cc",
@@ -53,17 +49,10 @@ source_set("wayland") {
 
   defines = [ "OZONE_IMPLEMENTATION" ]
 
-  if (use_wayland_egl) {
-    sources += [
-      "gl_surface_wayland.cc",
-      "gl_surface_wayland.h",
-    ]
-    configs += [
-      ":wayland-egl",
-      "//third_party/khronos:khronos_headers",
-    ]
-    defines += [ "USE_WAYLAND_EGL" ]
-  }
+  configs += [
+    ":wayland-egl",
+    "//third_party/khronos:khronos_headers",
+  ]
 }
 
 source_set("wayland_unittests") {

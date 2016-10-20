@@ -14,14 +14,11 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
+#include "ui/ozone/platform/wayland/gl_surface_wayland.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
-
-#if defined(USE_WAYLAND_EGL)
-#include "ui/ozone/platform/wayland/gl_surface_wayland.h"
-#endif
 
 namespace ui {
 
@@ -152,7 +149,6 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
     gfx::AcceleratedWidget widget) {
-#if defined(USE_WAYLAND_EGL)
   DCHECK(connection_);
   WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
@@ -162,23 +158,16 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
   if (!egl_window)
     return nullptr;
   return gl::InitializeGLSurface(new GLSurfaceWayland(std::move(egl_window)));
-#else
-  return nullptr;
-#endif
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
     const gfx::Size& size) {
-#if defined(USE_WAYLAND_EGL)
   if (gl::GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
       size.width() == 0 && size.height() == 0) {
     return gl::InitializeGLSurface(new gl::SurfacelessEGL(size));
   } else {
     return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
   }
-#else
-  return nullptr;
-#endif
 }
 
 intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
@@ -186,12 +175,8 @@ intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
 }
 
 bool GLOzoneEGLWayland::LoadGLES2Bindings() {
-#if defined(USE_WAYLAND_EGL)
   setenv("EGL_PLATFORM", "wayland", 0);
   return LoadDefaultEGLGLES2Bindings();
-#else
-  return false;
-#endif
 }
 
 }  // namespace
