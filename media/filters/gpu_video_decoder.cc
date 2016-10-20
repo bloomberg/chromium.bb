@@ -50,6 +50,9 @@ static const size_t kSharedMemorySegmentBytes = 100 << 10;
 void ExtractSpsAndPps(const std::vector<uint8_t>& extra_data,
                       std::vector<uint8_t>* sps_out,
                       std::vector<uint8_t>* pps_out) {
+  if (extra_data.empty())
+    return;
+
   mp4::AVCDecoderConfigurationRecord record;
   if (!record.Parse(extra_data.data(), extra_data.size())) {
     DVLOG(1) << "Failed to extract the SPS and PPS from extra_data";
