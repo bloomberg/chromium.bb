@@ -31,7 +31,7 @@ namespace {
 // For simplicity of this example, the ChangeSet will be an integer.
 class FakeIntSyncable : public Syncable {
  public:
-  explicit FakeIntSyncable(VersionVectorGenerator* clock_gen)
+  explicit FakeIntSyncable(RevisionGenerator* clock_gen)
       : clock_gen_(clock_gen), value_(0) {
     last_modified_ = clock_gen_->current();
   }
@@ -72,7 +72,7 @@ class FakeIntSyncable : public Syncable {
 
  private:
   // The last time this object was changed
-  VersionVectorGenerator* clock_gen_;
+  RevisionGenerator* clock_gen_;
   VersionVector last_modified_;
   uint32_t value_;
 
@@ -81,7 +81,7 @@ class FakeIntSyncable : public Syncable {
 
 class ParentObjectSyncable : public TwoPhaseSyncable {
  public:
-  explicit ParentObjectSyncable(VersionVectorGenerator* clock_gen)
+  explicit ParentObjectSyncable(RevisionGenerator* clock_gen)
       : TwoPhaseSyncable(), child1_(clock_gen), child2_(clock_gen) {}
 
   void CreateChangesetToCurrent(
@@ -193,8 +193,8 @@ class SyncableTest : public testing::Test {
     EXPECT_FALSE(input_stream.Skip(1));
   }
 
-  VersionVectorGenerator master_clock_;
-  VersionVectorGenerator replica_clock_;
+  RevisionGenerator master_clock_;
+  RevisionGenerator replica_clock_;
   VersionVector last_sync_master_;
   VersionVector last_sync_replica_;
   ParentObjectSyncable master_;

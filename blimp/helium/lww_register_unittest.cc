@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "blimp/helium/revision_generator.h"
 #include "blimp/helium/version_vector.h"
-#include "blimp/helium/version_vector_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
@@ -23,29 +23,24 @@ class LwwRegisterTest : public testing::Test {
 
  protected:
   void Initialize(Peer bias) {
-    client_ =
-        base::MakeUnique<LwwRegister<int>>(&client_gen_, bias, Peer::CLIENT);
-    engine_ =
-        base::MakeUnique<LwwRegister<int>>(&engine_gen_, bias, Peer::ENGINE);
+    client_ = base::MakeUnique<LwwRegister<int>>(bias, Peer::CLIENT);
+    engine_ = base::MakeUnique<LwwRegister<int>>(bias, Peer::ENGINE);
   }
 
   void SyncFromClient() {
-    Sync(client_.get(), engine_.get(), engine_gen_.current(),
-         client_gen_.current());
+    Sync(client_.get(), engine_.get(), engine_->GetVersionVector(),
+         client_->GetVersionVector());
   }
 
   void SyncFromEngine() {
-    Sync(engine_.get(), client_.get(), client_gen_.current(),
-         engine_gen_.current());
+    Sync(engine_.get(), client_.get(), client_->GetVersionVector(),
+         engine_->GetVersionVector());
   }
 
   void Sync(LwwRegister<int>* from_lww_register,
             LwwRegister<int>* to_lww_register,
             VersionVector from,
             VersionVector to);
-
-  VersionVectorGenerator client_gen_;
-  VersionVectorGenerator engine_gen_;
 
   std::unique_ptr<LwwRegister<int>> client_;
   std::unique_ptr<LwwRegister<int>> engine_;
@@ -77,9 +72,9 @@ void LwwRegisterTest::Sync(LwwRegister<int>* from_lww_register,
 TEST_F(LwwRegisterTest, SetIncrementsLocalVersion) {
   Initialize(Peer::CLIENT);
 
-  VersionVector earlier_version = client_gen_.current();
+  VersionVector earlier_version = client_->GetVersionVector();
   client_->Set(42);
-  VersionVector current_version = client_gen_.current();
+  VersionVector current_version = client_->GetVersionVector();
 
   EXPECT_EQ(42, client_->Get());
   EXPECT_LT(earlier_version.local_revision(), current_version.local_revision());

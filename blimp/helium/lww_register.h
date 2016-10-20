@@ -9,10 +9,10 @@
 #include "blimp/helium/blimp_helium_export.h"
 #include "blimp/helium/coded_value_serializer.h"
 #include "blimp/helium/result.h"
+#include "blimp/helium/revision_generator.h"
 #include "blimp/helium/syncable.h"
 #include "blimp/helium/syncable_common.h"
 #include "blimp/helium/version_vector.h"
-#include "blimp/helium/version_vector_generator.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 
 namespace blimp {
@@ -24,7 +24,7 @@ namespace helium {
 template <class RegisterType>
 class BLIMP_HELIUM_EXPORT LwwRegister : public Syncable {
  public:
-  LwwRegister(VersionVectorGenerator* version_gen, Peer bias, Peer running_as);
+  LwwRegister(Peer bias, Peer running_as);
   ~LwwRegister() = default;
 
   void Set(const RegisterType& value);
@@ -42,7 +42,6 @@ class BLIMP_HELIUM_EXPORT LwwRegister : public Syncable {
   VersionVector GetVersionVector() const override;
 
  private:
-  VersionVectorGenerator* version_gen_;
   VersionVector last_modified_;
   bool locally_owned_;
   RegisterType value_;
@@ -52,21 +51,14 @@ class BLIMP_HELIUM_EXPORT LwwRegister : public Syncable {
 };
 
 template <class RegisterType>
-LwwRegister<RegisterType>::LwwRegister(VersionVectorGenerator* version_gen,
-                                       Peer bias,
-                                       Peer running_as)
-    : version_gen_(version_gen),
-      last_modified_(version_gen->current()),
-      locally_owned_(bias == running_as) {
-  DCHECK(version_gen_);
-}
+LwwRegister<RegisterType>::LwwRegister(Peer bias, Peer running_as)
+    : last_modified_(0, 0), locally_owned_(bias == running_as) {}
 
 template <class RegisterType>
 void LwwRegister<RegisterType>::Set(const RegisterType& value) {
   value_ = value;
   value_set_ = true;
-  version_gen_->Increment();
-  last_modified_ = last_modified_.MergeWith(version_gen_->current());
+  last_modified_.set_local_revision(GetNextRevision());
 }
 
 template <class RegisterType>

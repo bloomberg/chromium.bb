@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/helium/version_vector.h"
-
 #include <tuple>
 
 #include "base/macros.h"
+#include "blimp/helium/version_vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {

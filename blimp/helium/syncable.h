@@ -13,7 +13,6 @@
 #include "blimp/common/mandatory_callback.h"
 #include "blimp/helium/result.h"
 #include "blimp/helium/version_vector.h"
-#include "blimp/helium/version_vector_generator.h"
 
 namespace google {
 namespace protobuf {

@@ -11,6 +11,8 @@ component("helium") {
     "lww_register.h",
     "result.cc",
     "result.h",
+    "revision_generator.cc",
+    "revision_generator.h",
     "stream.h",
     "sync_manager.cc",
     "sync_manager.h",
@@ -19,7 +21,6 @@ component("helium") {
     "transport.h",
     "version_vector.cc",
     "version_vector.h",
-    "version_vector_generator.h",
   ]
 
   defines = [ "HELIUM_IMPLEMENTATION=1" ]
@@ -47,10 +48,11 @@ source_set("unit_tests") {
 
   sources = [
     "coded_value_serializer_unittest.cc",
+    "helium_test.h",
     "lww_register_unittest.cc",
     "result_unittest.cc",
+    "revision_generator_unittest.cc",
     "syncable_unittest.cc",
-    "version_vector_generator_unittest.cc",
     "version_vector_unittest.cc",
   ]
 
