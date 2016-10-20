@@ -419,15 +419,14 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   unsigned m_type : 4;           // Type
   unsigned m_status : 3;         // Status
 
-  unsigned m_needsSynchronousCacheHit : 1;
-  unsigned m_linkPreload : 1;
-  bool m_isRevalidating : 1;
-  bool m_isAlive : 1;
+  bool m_needsSynchronousCacheHit;
+  bool m_linkPreload;
+  bool m_isRevalidating;
+  bool m_isAlive;
+  bool m_isAddRemoveClientProhibited;
 
   ResourceIntegrityDisposition m_integrityDisposition;
   IntegrityMetadataSet m_integrityMetadata;
-
-  bool m_isAddRemoveClientProhibited;
 
   // Ordered list of all redirects followed while fetching this resource.
   Vector<RedirectPair> m_redirectChain;
