@@ -129,6 +129,7 @@ class ArcSettingsServiceImpl
   void SyncUse24HourClock() const;
   void SyncBackupEnabled() const;
   void SyncLocationServiceEnabled() const;
+  void SyncAccessibilityVirtualKeyboardEnabled() const;
 
   void OnBluetoothAdapterInitialized(
       scoped_refptr<device::BluetoothAdapter> adapter);
@@ -195,6 +196,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(proxy_config::prefs::kProxy);
   AddPrefToObserve(prefs::kDeviceOpenNetworkConfiguration);
   AddPrefToObserve(prefs::kOpenNetworkConfiguration);
+  AddPrefToObserve(prefs::kAccessibilityVirtualKeyboardEnabled);
 
   reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       chromeos::kStatsReportingPref,
@@ -234,6 +236,7 @@ void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
   SyncUse24HourClock();
+  SyncAccessibilityVirtualKeyboardEnabled();
 
   const PrefService* const prefs =
       ProfileManager::GetActiveUserProfile()->GetPrefs();
@@ -291,6 +294,8 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
       return;
     }
     SyncProxySettings();
+  } else if (pref_name == prefs::kAccessibilityVirtualKeyboardEnabled) {
+    SyncAccessibilityVirtualKeyboardEnabled();
   } else {
     LOG(ERROR) << "Unknown pref changed.";
   }
@@ -454,6 +459,12 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
   SendBoolPrefSettingsBroadcast(
       prefs::kArcLocationServiceEnabled,
       "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED");
+}
+
+void ArcSettingsServiceImpl::SyncAccessibilityVirtualKeyboardEnabled() const {
+  SendBoolPrefSettingsBroadcast(
+      prefs::kAccessibilityVirtualKeyboardEnabled,
+      "org.chromium.arc.intent_helper.SET_SHOW_IME_WITH_HARD_KEYBOARD");
 }
 
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
