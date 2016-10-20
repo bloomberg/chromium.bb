@@ -5,7 +5,13 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_TEST_UTILS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TEST_UTILS_H_
 
+#include <deque>
 #include <functional>
+#include <memory>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"

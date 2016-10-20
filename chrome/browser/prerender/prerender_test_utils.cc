@@ -4,6 +4,11 @@
 
 #include "chrome/browser/prerender/prerender_test_utils.h"
 
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
