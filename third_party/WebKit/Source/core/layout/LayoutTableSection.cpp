@@ -1965,6 +1965,7 @@ void LayoutTableSection::relayoutCellIfFlexed(LayoutTableCell& cell,
 int LayoutTableSection::logicalHeightForRow(
     const LayoutTableRow& rowObject) const {
   unsigned rowIndex = rowObject.rowIndex();
+  DCHECK(rowIndex < m_grid.size());
   int logicalHeight = 0;
   const Row& row = m_grid[rowIndex].row;
   unsigned cols = row.size();
@@ -1979,6 +1980,12 @@ int LayoutTableSection::logicalHeightForRow(
       logicalHeight =
           std::max(logicalHeight, cell->logicalHeightForRowSizing());
     }
+  }
+
+  if (m_grid[rowIndex].logicalHeight.isSpecified()) {
+    LayoutUnit specifiedLogicalHeight =
+        minimumValueForLength(m_grid[rowIndex].logicalHeight, LayoutUnit());
+    logicalHeight = std::max(logicalHeight, specifiedLogicalHeight.toInt());
   }
   return logicalHeight;
 }
