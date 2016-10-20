@@ -6,7 +6,9 @@
 
 #include "bindings/modules/v8/serialization/WebCryptoSubTags.h"
 #include "modules/crypto/CryptoKey.h"
+#include "modules/filesystem/DOMFileSystem.h"
 #include "modules/peerconnection/RTCCertificate.h"
+#include "platform/FileSystemType.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoKeyAlgorithm.h"
@@ -25,6 +27,17 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::readDOMObject(
   switch (tag) {
     case CryptoKeyTag:
       return readCryptoKey();
+    case DOMFileSystemTag: {
+      uint32_t rawType;
+      String name;
+      String rootURL;
+      if (!readUint32(&rawType) || rawType > FileSystemTypeLast ||
+          !readUTF8String(&name) || !readUTF8String(&rootURL))
+        return nullptr;
+      return DOMFileSystem::create(getScriptState()->getExecutionContext(),
+                                   name, static_cast<FileSystemType>(rawType),
+                                   KURL(ParsedURLString, rootURL));
+    }
     case RTCCertificateTag: {
       String pemPrivateKey;
       String pemCertificate;

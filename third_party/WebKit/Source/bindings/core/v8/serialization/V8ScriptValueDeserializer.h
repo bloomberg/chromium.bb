@@ -46,6 +46,8 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
  protected:
   virtual ScriptWrappable* readDOMObject(SerializationTag);
 
+  ScriptState* getScriptState() const { return m_scriptState.get(); }
+
   uint32_t version() const { return m_version; }
   bool readTag(SerializationTag* tag) {
     const void* tagBytes = nullptr;

@@ -6,8 +6,10 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
+#include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "bindings/modules/v8/serialization/WebCryptoSubTags.h"
+#include "platform/FileSystemType.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoKey.h"
@@ -29,6 +31,20 @@ bool V8ScriptValueSerializerForModules::writeDOMObject(
   if (wrapperTypeInfo == &V8CryptoKey::wrapperTypeInfo) {
     return writeCryptoKey(wrappable->toImpl<CryptoKey>()->key(),
                           exceptionState);
+  }
+  if (wrapperTypeInfo == &V8DOMFileSystem::wrapperTypeInfo) {
+    DOMFileSystem* fs = wrappable->toImpl<DOMFileSystem>();
+    if (!fs->clonable()) {
+      exceptionState.throwDOMException(
+          DataCloneError, "A FileSystem object could not be cloned.");
+      return false;
+    }
+    writeTag(DOMFileSystemTag);
+    // This locks in the values of the FileSystemType enumerators.
+    writeUint32(static_cast<uint32_t>(fs->type()));
+    writeUTF8String(fs->name());
+    writeUTF8String(fs->rootURL().getString());
+    return true;
   }
   if (wrapperTypeInfo == &V8RTCCertificate::wrapperTypeInfo) {
     RTCCertificate* certificate = wrappable->toImpl<RTCCertificate>();

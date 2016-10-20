@@ -10,10 +10,12 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
+#include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/crypto/CryptoResultImpl.h"
+#include "modules/filesystem/DOMFileSystem.h"
 #include "modules/peerconnection/RTCCertificate.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -65,6 +67,23 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value,
     return v8::Local<v8::Value>();
   return V8ScriptValueDeserializerForModules(scriptState, serializedScriptValue)
       .deserialize();
+}
+
+// Checks for a DOM exception, including a rethrown one.
+::testing::AssertionResult hadDOMException(const StringView& name,
+                                           ScriptState* scriptState,
+                                           ExceptionState& exceptionState) {
+  if (!exceptionState.hadException())
+    return ::testing::AssertionFailure() << "no exception thrown";
+  DOMException* domException = V8DOMException::toImplWithTypeCheck(
+      scriptState->isolate(), exceptionState.getException());
+  if (!domException) {
+    return ::testing::AssertionFailure()
+           << "exception thrown was not a DOMException";
+  }
+  if (domException->name() != name)
+    return ::testing::AssertionFailure() << "was " << domException->name();
+  return ::testing::AssertionSuccess();
 }
 
 static const char kEcdsaPrivateKey[] =
@@ -833,6 +852,96 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
       V8ScriptValueDeserializerForModules(
           scriptState, serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4b, 0x04,
                                         0x0d, 0x01, 0x80, 0x08, 0x03, 0x01}))
+          .deserialize()
+          ->IsNull());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+
+  DOMFileSystem* fs = DOMFileSystem::create(
+      scope.getExecutionContext(), "http_example.com_0:Persistent",
+      FileSystemTypePersistent,
+      KURL(ParsedURLString, "filesystem:http://example.com/persistent/"));
+  // At time of writing, this can only happen for filesystems from PPAPI.
+  fs->makeClonable();
+  v8::Local<v8::Value> wrapper = toV8(fs, scope.getScriptState());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_FALSE(result.IsEmpty());
+  ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.isolate()));
+  DOMFileSystem* newFS = V8DOMFileSystem::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("http_example.com_0:Persistent", newFS->name());
+  EXPECT_EQ(FileSystemTypePersistent, newFS->type());
+  EXPECT_EQ("filesystem:http://example.com/persistent/",
+            newFS->rootURL().getString());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  ExceptionState exceptionState(scope.isolate(),
+                                ExceptionState::ExecutionContext, "Window",
+                                "postMessage");
+
+  DOMFileSystem* fs = DOMFileSystem::create(
+      scope.getExecutionContext(), "http_example.com_0:Persistent",
+      FileSystemTypePersistent,
+      KURL(ParsedURLString, "filesystem:http://example.com/persistent/0/"));
+  ASSERT_FALSE(fs->clonable());
+  v8::Local<v8::Value> wrapper = toV8(fs, scope.getScriptState());
+  EXPECT_FALSE(V8ScriptValueSerializer(scope.getScriptState())
+                   .serialize(wrapper, nullptr, exceptionState));
+  EXPECT_TRUE(hadDOMException("DataCloneError", scope.getScriptState(),
+                              exceptionState));
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, DecodeDOMFileSystem) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+
+  // This is encoded data generated from Chromium (around M56).
+  ScriptState* scriptState = scope.getScriptState();
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x09, 0x3f, 0x00, 0x64, 0x01, 0x1d, 0x68, 0x74, 0x74, 0x70, 0x5f,
+       0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x5f,
+       0x30, 0x3a, 0x50, 0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x74,
+       0x29, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x3a,
+       0x68, 0x74, 0x74, 0x70, 0x3a, 0x2f, 0x2f, 0x65, 0x78, 0x61, 0x6d, 0x70,
+       0x6c, 0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x65, 0x72, 0x73, 0x69,
+       0x73, 0x74, 0x65, 0x6e, 0x74, 0x2f});
+
+  // Decode test.
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializerForModules(scriptState, input).deserialize();
+  ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.isolate()));
+  DOMFileSystem* newFS = V8DOMFileSystem::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("http_example.com_0:Persistent", newFS->name());
+  EXPECT_EQ(FileSystemTypePersistent, newFS->type());
+  EXPECT_EQ("filesystem:http://example.com/persistent/",
+            newFS->rootURL().getString());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, DecodeInvalidDOMFileSystem) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  ScriptState* scriptState = scope.getScriptState();
+
+  // Filesystem type out of range.
+  EXPECT_TRUE(
+      V8ScriptValueDeserializerForModules(
+          scriptState,
+          serializedValue({0xff, 0x09, 0x3f, 0x00, 0x64, 0x04, 0x1d, 0x68, 0x74,
+                           0x74, 0x70, 0x5f, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c,
+                           0x65, 0x2e, 0x63, 0x6f, 0x6d, 0x5f, 0x30, 0x3a, 0x50,
+                           0x65, 0x72, 0x73, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x74,
+                           0x29, 0x66, 0x69, 0x6c, 0x65, 0x73, 0x79, 0x73, 0x74,
+                           0x65, 0x6d, 0x3a, 0x68, 0x74, 0x74, 0x70, 0x3a, 0x2f,
+                           0x2f, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x2e,
+                           0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x65, 0x72, 0x73, 0x69,
+                           0x73, 0x74, 0x65, 0x6e, 0x74, 0x2f
+
+          }))
           .deserialize()
           ->IsNull());
 }
