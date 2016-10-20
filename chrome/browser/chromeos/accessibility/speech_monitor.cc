@@ -8,6 +8,8 @@ namespace chromeos {
 
 namespace {
 const char kChromeVoxEnabledMessage[] = "chrome vox spoken feedback is ready";
+const char kChromeVoxUpdateNotificationMessage[] =
+    "n to learn more about chrome vox Next.";
 }  // anonymous namespace
 
 SpeechMonitor::SpeechMonitor() {
@@ -30,6 +32,8 @@ std::string SpeechMonitor::GetNextUtterance() {
 }
 
 bool SpeechMonitor::SkipChromeVoxEnabledMessage() {
+  bool saw_enabled_message = false;
+  bool saw_update_message = false;
   while (true) {
     if (utterance_queue_.empty()) {
       loop_runner_ = new content::MessageLoopRunner();
@@ -38,7 +42,9 @@ bool SpeechMonitor::SkipChromeVoxEnabledMessage() {
     }
     std::string result = utterance_queue_.front();
     utterance_queue_.pop_front();
-    if (result == kChromeVoxEnabledMessage)
+    saw_enabled_message |= result == kChromeVoxEnabledMessage;
+    saw_update_message |= result == kChromeVoxUpdateNotificationMessage;
+    if (saw_enabled_message && saw_update_message)
       return true;
   }
   return false;

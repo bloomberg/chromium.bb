@@ -61,7 +61,6 @@ cvox.OptionsPage.TEXT_TO_KEYCODE = {
 cvox.OptionsPage.init = function() {
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
   cvox.OptionsPage.populateKeyMapSelect();
-  cvox.OptionsPage.addKeys();
   cvox.OptionsPage.populateVoicesSelect();
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
@@ -94,13 +93,6 @@ cvox.OptionsPage.init = function() {
     $('version').textContent =
         chrome.app.getDetails().version;
   }
-
-  $('useNext').addEventListener('change', function(evt) {
-    var checked = evt.target.checked;
-    var background =
-        chrome.extension.getBackgroundPage().ChromeVoxState.instance;
-    background.toggleNext(checked);
-  }, true);
 };
 
 /**
@@ -138,191 +130,6 @@ cvox.OptionsPage.populateKeyMapSelect = function() {
   }
 
   select.addEventListener('change', cvox.OptionsPage.reset, true);
-};
-
-/**
- * Add the input elements for the key bindings to the container element
- * in the page. They're sorted in order of description.
- */
-cvox.OptionsPage.addKeys = function() {
-  var container = $('keysContainer');
-  var keyMap = cvox.OptionsPage.prefs.getKeyMap();
-
-  cvox.OptionsPage.prevTime = new Date().getTime();
-  cvox.OptionsPage.keyCount = 0;
-  container.addEventListener('keypress', goog.bind(function(evt) {
-    if (evt.target.id == 'cvoxKey') {
-      return;
-    }
-    this.keyCount++;
-    var currentTime = new Date().getTime();
-    if (currentTime - this.prevTime > 1000 || this.keyCount > 2) {
-      if (document.activeElement.id == 'toggleKeyPrefix') {
-        this.keySequence = new cvox.KeySequence(evt, false);
-        this.keySequence.keys['ctrlKey'][0] = true;
-      } else {
-        this.keySequence = new cvox.KeySequence(evt, true);
-      }
-
-      this.keyCount = 1;
-    } else {
-      this.keySequence.addKeyEvent(evt);
-    }
-
-    var keySeqStr = cvox.KeyUtil.keySequenceToString(this.keySequence, true);
-    var announce = keySeqStr.replace(/\+/g,
-        ' ' + Msgs.getMsg('then') + ' ');
-    announce = announce.replace(/>/g,
-        ' ' + Msgs.getMsg('followed_by') + ' ');
-    announce = announce.replace('Cvox',
-        ' ' + Msgs.getMsg('modifier_key') + ' ');
-
-    // TODO(dtseng): Only basic conflict detection; it does not speak the
-    // conflicting command. Nor does it detect prefix conflicts like Cvox+L vs
-    // Cvox+L>L.
-    if (cvox.OptionsPage.prefs.setKey(document.activeElement.id,
-        this.keySequence)) {
-      document.activeElement.value = keySeqStr;
-    } else {
-      announce = Msgs.getMsg('key_conflict', [announce]);
-    }
-    cvox.OptionsPage.speak(announce, cvox.QueueMode.QUEUE);
-    this.prevTime = currentTime;
-
-    evt.preventDefault();
-    evt.stopPropagation();
-  }, cvox.OptionsPage), true);
-
-  var categories = cvox.CommandStore.categories();
-  for (var i = 0; i < categories.length; i++) {
-    // Braille bindings can't be customized, so don't include them.
-    if (categories[i] == 'braille') {
-      continue;
-    }
-    var headerElement = document.createElement('h3');
-    headerElement.className = 'i18n';
-    headerElement.setAttribute('msgid', categories[i]);
-    headerElement.id = categories[i];
-    container.appendChild(headerElement);
-    var commands = cvox.CommandStore.commandsForCategory(categories[i]);
-    for (var j = 0; j < commands.length; j++) {
-      var command = commands[j];
-      // TODO: Someday we may want to have more than one key
-      // mapped to a command, so we'll need to figure out how to display
-      // that. For now, just take the first key.
-      var keySeqObj = keyMap.keyForCommand(command)[0];
-
-      // Explicitly skip toggleChromeVox in ChromeOS.
-      if (command == 'toggleChromeVox' &&
-          cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.CHROMEOS)) {
-        continue;
-      }
-
-      var inputElement = document.createElement('input');
-      inputElement.type = 'text';
-      inputElement.className = 'key active-key';
-      inputElement.id = command;
-
-      var displayedCombo;
-      if (keySeqObj != null) {
-        displayedCombo = cvox.KeyUtil.keySequenceToString(keySeqObj, true);
-      } else {
-        displayedCombo = '';
-      }
-      inputElement.value = displayedCombo;
-
-      // Don't allow the user to change the sticky mode or stop speaking key.
-      if (command == 'toggleStickyMode' || command == 'stopSpeech') {
-        inputElement.disabled = true;
-      }
-      var message = cvox.CommandStore.messageForCommand(command);
-      if (!message) {
-        // TODO(dtseng): missing message id's.
-        message = command;
-      }
-
-      var labelElement = document.createElement('label');
-      labelElement.className = 'i18n';
-      labelElement.setAttribute('msgid', message);
-      labelElement.setAttribute('for', inputElement.id);
-
-      var divElement = document.createElement('div');
-      divElement.className = 'key-container';
-      container.appendChild(divElement);
-      divElement.appendChild(inputElement);
-      divElement.appendChild(labelElement);
-    }
-      var brElement = document.createElement('br');
-      container.appendChild(brElement);
-  }
-
-  if ($('cvoxKey') == null) {
-    // Add the cvox key field
-    var inputElement = document.createElement('input');
-    inputElement.type = 'text';
-    inputElement.className = 'key';
-    inputElement.id = 'cvoxKey';
-
-    var labelElement = document.createElement('label');
-    labelElement.className = 'i18n';
-    labelElement.setAttribute('msgid', 'options_cvox_modifier_key');
-    labelElement.setAttribute('for', 'cvoxKey');
-
-    var modifierSectionSibling =
-        $('modifier_keys').nextSibling;
-    var modifierSectionParent = modifierSectionSibling.parentNode;
-    modifierSectionParent.insertBefore(labelElement, modifierSectionSibling);
-    modifierSectionParent.insertBefore(inputElement, labelElement);
-    var cvoxKey = $('cvoxKey');
-    cvoxKey.value = localStorage['cvoxKey'];
-
-    cvoxKey.addEventListener('keydown', function(evt) {
-      if (!this.modifierSeq_) {
-        this.modifierCount_ = 0;
-        this.modifierSeq_ = new cvox.KeySequence(evt, false);
-      } else {
-        this.modifierSeq_.addKeyEvent(evt);
-      }
-
-      //  Never allow non-modified keys.
-      if (!this.modifierSeq_.isAnyModifierActive()) {
-        // Indicate error and instructions excluding tab.
-        if (evt.keyCode != 9) {
-          cvox.OptionsPage.speak(
-              Msgs.getMsg('modifier_entry_error'),
-              cvox.QueueMode.FLUSH, {});
-        }
-        this.modifierSeq_ = null;
-      } else {
-        this.modifierCount_++;
-      }
-
-      // Don't trap tab or shift.
-      if (!evt.shiftKey && evt.keyCode != 9) {
-        evt.preventDefault();
-        evt.stopPropagation();
-      }
-    }, true);
-
-    cvoxKey.addEventListener('keyup', function(evt) {
-      if (this.modifierSeq_) {
-        this.modifierCount_--;
-
-        if (this.modifierCount_ == 0) {
-          var modifierStr =
-              cvox.KeyUtil.keySequenceToString(this.modifierSeq_, true, true);
-          evt.target.value = modifierStr;
-          cvox.OptionsPage.speak(
-              Msgs.getMsg('modifier_entry_set', [modifierStr]),
-              cvox.QueueMode.QUEUE);
-          localStorage['cvoxKey'] = modifierStr;
-          this.modifierSeq_ = null;
-        }
-        evt.preventDefault();
-        evt.stopPropagation();
-      }
-    }, true);
-  }
 };
 
 /**
@@ -530,8 +337,6 @@ cvox.OptionsPage.reset = function() {
   cvox.OptionsPage.updateStatus_(announce);
 
   cvox.OptionsPage.prefs.switchToKeyMap(id);
-  $('keysContainer').innerHTML = '';
-  cvox.OptionsPage.addKeys();
   Msgs.addTranslatedMessagesToDom(document);
 };
 
@@ -558,19 +363,6 @@ cvox.OptionsPage.hidePlatformSpecifics = function() {
   }
 };
 
-
-/**
- * Calls a {@code cvox.TtsInterface.speak} method in the background page to
- * speak an utterance.  See that method for further details.
- * @param {string} textString The string of text to be spoken.
- * @param {cvox.QueueMode} queueMode The queue mode to use.
- * @param {Object=} properties Speech properties to use for this utterance.
- */
-cvox.OptionsPage.speak = function(textString, queueMode, properties) {
-  var speak =
-      /** @type Function} */ (chrome.extension.getBackgroundPage()['speak']);
-  speak.apply(null, arguments);
-};
 
 /**
  * @return {cvox.BrailleTranslatorManager}

@@ -22,7 +22,6 @@ BackgroundTest.prototype = {
 
   /** @override */
   setUp: function() {
-    ChromeVoxState.instance.toggleNext(true);
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
 

@@ -79,7 +79,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'useIBeamCursor': cvox.ChromeVox.isMac,
   'useVerboseMode': true,
   'siteSpecificEnhancements': true,
-  'useNext': false
+  'useNext': true
 };
 
 
