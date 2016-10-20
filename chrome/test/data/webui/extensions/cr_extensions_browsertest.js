@@ -19,7 +19,7 @@ GEN('#include "chrome/browser/ui/webui/extensions/' +
  * extensions.
  * @constructor
  * @extends {PolymerTest}
-*/
+ */
 function CrExtensionsBrowserTest() {}
 
 CrExtensionsBrowserTest.prototype = {

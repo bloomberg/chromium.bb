@@ -20,7 +20,7 @@ var RestoreOnStartupEnum = {
  * Test Polymer On Startup Settings elements.
  * @constructor
  * @extends {SettingsPageBrowserTest}
-*/
+ */
 function OnStartupSettingsBrowserTest() {}
 
 OnStartupSettingsBrowserTest.prototype = {

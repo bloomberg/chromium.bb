@@ -10,7 +10,7 @@ var ROOT_PATH = '../../../../../';
 /**
  * @constructor
  * @extends testing.Test
-*/
+ */
 function SettingsAnimationBrowserTest() {}
 
 SettingsAnimationBrowserTest.prototype = {

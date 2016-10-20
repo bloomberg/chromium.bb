@@ -15,7 +15,7 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
  *
  * @param {string} pageId 'basic' or 'advanced'.
  * @param {!Array<string>} subPages
-*/
+ */
 function SettingsSubPageBrowserTest(pageId, subPages) {
   /** @type {string} */
   this.pageId = pageId;

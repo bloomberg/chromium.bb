@@ -11,7 +11,7 @@ var bluetoothPage = bluetoothPage || {};
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
-*/
+ */
 function SettingsBluetoothPageBrowserTest() {
 }
 

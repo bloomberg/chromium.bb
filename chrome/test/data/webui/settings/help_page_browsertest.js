@@ -10,7 +10,7 @@ GEN('#include "base/command_line.h"');
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
-*/
+ */
 function SettingsHelpPageBrowserTest() {}
 
 SettingsHelpPageBrowserTest.prototype = {

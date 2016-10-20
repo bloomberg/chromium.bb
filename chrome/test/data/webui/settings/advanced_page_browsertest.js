@@ -9,7 +9,7 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
-*/
+ */
 function SettingsAdvancedPageBrowserTest() {}
 
 SettingsAdvancedPageBrowserTest.prototype = {

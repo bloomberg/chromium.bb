@@ -14,7 +14,7 @@ GEN_INCLUDE(
 /**
  * @constructor
  * @extends {PolymerTest}
-*/
+ */
 function UserManagerBrowserTest() {}
 
 UserManagerBrowserTest.prototype = {

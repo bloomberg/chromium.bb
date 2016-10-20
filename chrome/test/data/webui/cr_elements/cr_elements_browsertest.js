@@ -15,7 +15,7 @@ GEN_INCLUDE(
  * Test fixture for shared Polymer elements.
  * @constructor
  * @extends {PolymerTest}
-*/
+ */
 function CrElementsBrowserTest() {}
 
 CrElementsBrowserTest.prototype = {

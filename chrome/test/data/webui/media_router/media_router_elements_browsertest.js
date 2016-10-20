@@ -15,7 +15,7 @@ GEN_INCLUDE(
  * Test fixture for Media Router Polymer elements.
  * @constructor
  * @extends {PolymerTest}
-*/
+ */
 function MediaRouterElementsBrowserTest() {}
 
 MediaRouterElementsBrowserTest.prototype = {
