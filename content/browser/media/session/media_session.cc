@@ -81,6 +81,8 @@ void MediaSession::SetMetadata(const base::Optional<MediaMetadata>& metadata) {
 bool MediaSession::AddPlayer(MediaSessionPlayerObserver* observer,
                              int player_id,
                              media::MediaContentType media_content_type) {
+  if (media_content_type == media::MediaContentType::Uncontrollable)
+    return true;
   if (media_content_type == media::MediaContentType::Pepper)
     return AddPepperPlayer(observer, player_id);
 
