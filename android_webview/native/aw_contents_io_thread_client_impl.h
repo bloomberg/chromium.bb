@@ -60,11 +60,6 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   bool ShouldBlockFileUrls() const override;
   bool ShouldAcceptThirdPartyCookies() const override;
   bool ShouldBlockNetworkLoads() const override;
-  void NewDownload(const GURL& url,
-                   const std::string& user_agent,
-                   const std::string& content_disposition,
-                   const std::string& mime_type,
-                   int64_t content_length) override;
   void NewLoginRequest(const std::string& realm,
                        const std::string& account,
                        const std::string& args) override;

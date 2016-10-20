@@ -34,10 +34,6 @@ public abstract class AwContentsIoThreadClient {
     public abstract boolean shouldAcceptThirdPartyCookies();
 
     @CalledByNative
-    public abstract void onDownloadStart(String url, String userAgent,
-            String contentDisposition, String mimeType, long contentLength);
-
-    @CalledByNative
     public abstract void newLoginRequest(String realm, String account, String args);
 
     @CalledByNative

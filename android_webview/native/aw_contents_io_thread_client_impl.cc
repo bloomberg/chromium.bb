@@ -402,31 +402,6 @@ bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
                                                                java_object_);
 }
 
-void AwContentsIoThreadClientImpl::NewDownload(
-    const GURL& url,
-    const string& user_agent,
-    const string& content_disposition,
-    const string& mime_type,
-    int64_t content_length) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (java_object_.is_null())
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, url.spec());
-  ScopedJavaLocalRef<jstring> jstring_user_agent =
-      ConvertUTF8ToJavaString(env, user_agent);
-  ScopedJavaLocalRef<jstring> jstring_content_disposition =
-      ConvertUTF8ToJavaString(env, content_disposition);
-  ScopedJavaLocalRef<jstring> jstring_mime_type =
-      ConvertUTF8ToJavaString(env, mime_type);
-
-  Java_AwContentsIoThreadClient_onDownloadStart(
-      env, java_object_, jstring_url, jstring_user_agent,
-      jstring_content_disposition, jstring_mime_type, content_length);
-}
-
 void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
                                                    const string& account,
                                                    const string& args) {

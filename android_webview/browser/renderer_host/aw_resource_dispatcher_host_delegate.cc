@@ -8,6 +8,7 @@
 #include <string>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
@@ -30,6 +31,7 @@
 #include "url/url_constants.h"
 
 using android_webview::AwContentsIoThreadClient;
+using android_webview::AwContentsClientBridgeBase;
 using content::BrowserThread;
 using content::ResourceType;
 using navigation_interception::InterceptNavigationDelegate;
@@ -50,6 +52,24 @@ void SetCacheControlFlag(
   load_flags &= ~all_cache_control_flags;
   load_flags |= flag;
   request->SetLoadFlags(load_flags);
+}
+
+// Called when ResourceDispathcerHost detects a download request.
+// The download is already cancelled when this is called, since
+// relevant for DownloadListener is already extracted.
+void DownloadStartingOnUIThread(int render_process_id,
+                                int render_frame_id,
+                                const GURL& url,
+                                const std::string& user_agent,
+                                const std::string& content_disposition,
+                                const std::string& mime_type,
+                                int64_t content_length) {
+  AwContentsClientBridgeBase* client =
+      AwContentsClientBridgeBase::FromID(render_process_id, render_frame_id);
+  if (!client)
+    return;
+  client->NewDownload(url, user_agent, content_disposition, mime_type,
+                      content_length);
 }
 
 }  // namespace
@@ -280,7 +300,6 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
 
-
   net::HttpResponseHeaders* response_headers = request->response_headers();
   if (response_headers) {
     response_headers->GetNormalizedHeader("content-disposition",
@@ -290,24 +309,19 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
 
   request->Cancel();
 
+  // POST request cannot be repeated in general, so prevent client from
+  // retrying the same request, unless it is with a GET.
+  if ("GET" != request->method())
+    return;
+
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
-  // TODO(jam): http://crbug.com/645983 we will need to make this map work with
-  // both RFH IDs and FTN IDs.
-  std::unique_ptr<AwContentsIoThreadClient> io_client =
-      AwContentsIoThreadClient::FromID(request_info->GetChildID(),
-                                       request_info->GetRenderFrameID());
-
-  // POST request cannot be repeated in general, so prevent client from
-  // retrying the same request, even if it is with a GET.
-  if ("GET" == request->method() && io_client) {
-    io_client->NewDownload(url,
-                           user_agent,
-                           content_disposition,
-                           mime_type,
-                           content_length);
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DownloadStartingOnUIThread, request_info->GetChildID(),
+                 request_info->GetRenderFrameID(), url, user_agent,
+                 content_disposition, mime_type, content_length));
 }
 
 content::ResourceDispatcherHostLoginDelegate*

@@ -70,6 +70,12 @@ class AwContentsClientBridgeBase {
                                         bool has_user_gesture,
                                         bool is_redirect,
                                         bool is_main_frame) = 0;
+
+  virtual void NewDownload(const GURL& url,
+                           const std::string& user_agent,
+                           const std::string& content_disposition,
+                           const std::string& mime_type,
+                           int64_t content_length) = 0;
 };
 
 }  // namespace android_webview
