@@ -8,11 +8,11 @@ from __future__ import print_function
 
 import collections
 import datetime
-import itertools
 import operator
 
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import iter_utils
 
 from chromite.lib import metrics
 
@@ -591,37 +591,6 @@ def GetRelevantChangesForBuilds(changes, action_history, build_ids):
 # ##############################################################################
 # Aggregate history over a list of CLActions
 
-def _IntersectIntervals(intervals):
-  """Gets the intersection of a set of intervals.
-
-  Args:
-    intervals: A list of interval groups, where each interval group is itself
-               a list of (start, stop) tuples (ordered by start time and
-               non-overlapping).
-
-  Returns:
-    An interval group, as a list of (start, stop) tuples, corresponding to the
-    intersection (i.e. overlap) of the given |intervals|.
-  """
-  if not intervals:
-    return []
-
-  intersection = []
-  indices = [0] * len(intervals)
-  lengths = [len(i) for i in intervals]
-  while all(i < l for i, l in zip(indices, lengths)):
-    current_intervals = [intervals[i][j] for (i, j) in
-                         zip(itertools.count(), indices)]
-    start = max([s[0] for s in current_intervals])
-    end, end_index = min([(e[1], i) for e, i in
-                          zip(current_intervals, itertools.count())])
-    if start < end:
-      intersection.append((start, end))
-    indices[end_index] += 1
-
-  return intersection
-
-
 def _MeasureTimestampIntervals(intervals):
   """Gets the length of a set of invervals.
 
@@ -705,7 +674,7 @@ def GetPreCQTime(change, action_history):
   stop = (constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED,)
   precq_intervals = _GetIntervals(change, action_history, start, stop)
   return _MeasureTimestampIntervals(
-      _IntersectIntervals([ready_intervals, precq_intervals]))
+      iter_utils.IntersectIntervals([ready_intervals, precq_intervals]))
 
 
 def GetCQWaitTime(change, action_history):
@@ -721,8 +690,8 @@ def GetCQWaitTime(change, action_history):
   waiting_intervals = _GetIntervals(change, relevant_config_actions, start,
                                     stop, True)
   return _MeasureTimestampIntervals(
-      _IntersectIntervals([ready_intervals, waiting_intervals,
-                           precq_passed_interval]))
+      iter_utils.IntersectIntervals(
+          [ready_intervals, waiting_intervals, precq_passed_interval]))
 
 
 def GetCQRunTime(change, action_history):
@@ -737,7 +706,7 @@ def GetCQRunTime(change, action_history):
   testing_intervals = _GetIntervals(change, relevant_config_actions, start,
                                     stop)
   return _MeasureTimestampIntervals(
-      _IntersectIntervals([ready_intervals, testing_intervals]))
+      iter_utils.IntersectIntervals([ready_intervals, testing_intervals]))
 
 
 def _CLsForPatches(patches):

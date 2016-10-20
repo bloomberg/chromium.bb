@@ -11,6 +11,9 @@ import ast
 import json
 
 from chromite.lib import commandline
+from chromite.lib import iter_utils
+
+_BATCH_CHUNK_SIZE = 500
 
 
 def GetParser():
@@ -110,11 +113,12 @@ def main(argv):
   else:
     upper_parent_key = None
 
-  batch = c.batch()
 
   with open(entities_path, 'r') as f:
     entities = GetEntities(project_id, f, upper_parent_key, namespace)
-    for e in entities:
-      batch.put(e)
 
-  batch.commit()
+    for chunk in iter_utils.SplitToChunks(entities, _BATCH_CHUNK_SIZE):
+      batch = c.batch()
+      for e in chunk:
+        batch.put(e)
+      batch.commit()
