@@ -5,13 +5,17 @@
 component("helium") {
   output_name = "helium"
   sources = [
+    "coded_value_serializer.cc",
+    "coded_value_serializer.h",
     "errors.h",
+    "lww_register.h",
     "result.cc",
     "result.h",
     "stream.h",
     "sync_manager.cc",
     "sync_manager.h",
     "syncable.h",
+    "syncable_common.h",
     "transport.h",
     "version_vector.cc",
     "version_vector.h",
@@ -42,6 +46,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "coded_value_serializer_unittest.cc",
+    "lww_register_unittest.cc",
     "result_unittest.cc",
     "syncable_unittest.cc",
     "version_vector_generator_unittest.cc",
