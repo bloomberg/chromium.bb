@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
+import android.os.Build;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.view.ViewCompat;
@@ -24,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
@@ -655,6 +657,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testSuggestionDirectionSwitching() throws InterruptedException {
         final TextView urlBarView = (TextView) getActivity().findViewById(R.id.url_bar);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
