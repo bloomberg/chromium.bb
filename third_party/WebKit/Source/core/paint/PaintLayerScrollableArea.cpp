@@ -1687,15 +1687,16 @@ static bool layerNeedsCompositedScrolling(
         CompositorMutableProperty::kScrollLeft)))
     return true;
 
-  // TODO(schenney): LCD Text also requires integer scroll offsets for the
-  // layer. While we use integer scroll offsets locally when
-  // !layer->compositor()->preferCompositingToLCDTextEnabled(), we do not check
-  // offsets accumulated from the root (including translates).  crbug.com/644833
+  // TODO(flackr): Allow integer transforms as long as all of the ancestor
+  // transforms are also integer.
   bool backgroundSupportsLCDText =
       RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled() &&
       layer->canPaintBackgroundOntoScrollingContentsLayer() &&
       layer->backgroundIsKnownToBeOpaqueInRect(
-          toLayoutBox(layer->layoutObject())->paddingBoxRect());
+          toLayoutBox(layer->layoutObject())->paddingBoxRect()) &&
+      !layer->transformAncestor() && !layer->transform() &&
+      !layer->opacityAncestor() &&
+      !layer->layoutObject()->style()->hasOpacity();
   if (mode == PaintLayerScrollableArea::ConsiderLCDText &&
       !layer->compositor()->preferCompositingToLCDTextEnabled() &&
       !backgroundSupportsLCDText)

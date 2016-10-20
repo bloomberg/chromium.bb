@@ -33,6 +33,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::setCompositeOpaqueFixedPositionEnabled>
     ScopedCompositeFixedPositionForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled,
+    RuntimeEnabledFeatures::setCompositeOpaqueScrollersEnabled>
+    ScopedCompositeOpaqueScrollersForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::compositorWorkerEnabled,
     RuntimeEnabledFeatures::setCompositorWorkerEnabled>
     ScopedCompositorWorkerForTest;
