@@ -1143,7 +1143,6 @@ void LayoutTableSection::layoutRows() {
   // Vertically align and flex the cells in each row.
   for (unsigned r = 0; r < totalRows; r++) {
     LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject;
-    int rowHeightIncreaseForPagination = INT_MIN;
 
     for (unsigned c = 0; c < nEffCols; c++) {
       CellStruct& cs = cellAt(r, c);
@@ -1194,23 +1193,6 @@ void LayoutTableSection::layoutRows() {
 
       cell->layoutIfNeeded();
 
-      // FIXME: Make pagination work with vertical tables.
-      if (view()->layoutState()->pageLogicalHeight() &&
-          cell->logicalHeight() != rHeight) {
-        // FIXME: Pagination might have made us change size. For now just shrink
-        // or grow the cell to fit without doing a relayout.
-        // We'll also do a basic increase of the row height to accommodate the
-        // cell if it's bigger, but this isn't quite right either. It's at least
-        // stable though and won't result in an infinite # of relayouts that may
-        // never stabilize.
-        LayoutUnit oldLogicalHeight = cell->logicalHeight();
-        rowHeightIncreaseForPagination =
-            std::max<int>(rowHeightIncreaseForPagination,
-                          (oldLogicalHeight - rHeight).toInt());
-        cell->setLogicalHeight(LayoutUnit(rHeight));
-        cell->computeOverflow(oldLogicalHeight, false);
-      }
-
       LayoutSize childOffset(cell->location() - oldCellRect.location());
       if (childOffset.width() || childOffset.height()) {
         // If the child moved, we have to issue paint invalidations to it as
@@ -1219,19 +1201,6 @@ void LayoutTableSection::layoutRows() {
         // invalidations ourselves (and the child) anyway.
         if (!table()->selfNeedsLayout())
           cell->setMayNeedPaintInvalidation();
-      }
-    }
-    if (rowHeightIncreaseForPagination > INT_MIN) {
-      for (unsigned rowIndex = r + 1; rowIndex <= totalRows; rowIndex++)
-        m_rowPos[rowIndex] += rowHeightIncreaseForPagination;
-      for (unsigned c = 0; c < nEffCols; ++c) {
-        Vector<LayoutTableCell*, 1>& cells = cellAt(r, c).cells;
-        for (size_t i = 0; i < cells.size(); ++i) {
-          LayoutUnit oldLogicalHeight = cells[i]->logicalHeight();
-          cells[i]->setLogicalHeight(oldLogicalHeight +
-                                     rowHeightIncreaseForPagination);
-          cells[i]->computeOverflow(oldLogicalHeight, false);
-        }
       }
     }
     if (rowLayoutObject)
