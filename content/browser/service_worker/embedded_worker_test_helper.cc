@@ -100,8 +100,6 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
     return;
 
   embedded_worker_id_ = params.embedded_worker_id;
-  local_interfaces_.Bind(std::move(renderer_request));
-  remote_interfaces_.Bind(std::move(browser_interfaces));
 
   EmbeddedWorkerInstance* worker =
       helper_->registry()->GetWorker(params.embedded_worker_id);
@@ -113,6 +111,11 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
       base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker, helper_->AsWeakPtr(),
                  params.embedded_worker_id, params.service_worker_version_id,
                  params.scope, params.script_url, params.pause_after_download));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnSetupMojoStub,
+                            helper_->AsWeakPtr(), worker->thread_id(),
+                            base::Passed(&renderer_request),
+                            base::Passed(&browser_interfaces)));
 }
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker(

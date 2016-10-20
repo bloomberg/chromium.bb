@@ -94,9 +94,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
     mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
 
-    service_manager::InterfaceRegistry local_interfaces_;
-    service_manager::InterfaceProvider remote_interfaces_;
-
     base::Optional<int> embedded_worker_id_;
 
    private:
