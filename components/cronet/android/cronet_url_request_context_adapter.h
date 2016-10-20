@@ -52,6 +52,7 @@ bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env);
 // Adapter between Java CronetUrlRequestContext and net::URLRequestContext.
 class CronetURLRequestContextAdapter
     : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver,
+      public net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver,
       public net::NetworkQualityEstimator::RTTObserver,
       public net::NetworkQualityEstimator::ThroughputObserver {
  public:
@@ -165,6 +166,13 @@ class CronetURLRequestContextAdapter
   // implementation.
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType effective_connection_type) override;
+
+  // net::NetworkQualityEstimator::RTTAndThroughputEstimatesObserver
+  // implementation.
+  void OnRTTOrThroughputEstimatesComputed(
+      base::TimeDelta http_rtt,
+      base::TimeDelta transport_rtt,
+      int32_t downstream_throughput_kbps) override;
 
   // net::NetworkQualityEstimator::RTTObserver implementation.
   void OnRTTObservation(int32_t rtt_ms,
