@@ -2365,9 +2365,9 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
 
   // As per CSS3 http://www.w3.org/TR/2003/CR-css3-text-20030514/ sequence of
   // three Full Stops (002E) can be used.
-  ASSERT(firstLineFont.primaryFont());
-  if (firstLineFont.primaryFont()->glyphForCharacter(
-          horizontalEllipsisCharacter)) {
+  const SimpleFontData* fontData = firstLineFont.primaryFont();
+  DCHECK(fontData);
+  if (fontData && fontData->glyphForCharacter(horizontalEllipsisCharacter)) {
     firstLineEllipsisWidth = firstLineFont.width(
         constructTextRun(firstLineFont, &horizontalEllipsisCharacter, 1,
                          *firstLineStyle(), ellipsisDirection));
