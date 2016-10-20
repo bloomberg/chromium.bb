@@ -9,6 +9,7 @@
 goog.provide('Output');
 goog.provide('Output.EventType');
 
+goog.require('AutomationTreeWalker');
 goog.require('EarconEngine');
 goog.require('Spannable');
 goog.require('Stubs');
@@ -447,7 +448,7 @@ Output.RULES = {
     },
     div: {
       enter: '$nameFromNode',
-      speak: '$name $description $descendants'
+      speak: '$nameOrTextContent $description'
     },
     embeddedObject: {
       speak: '$name'
@@ -537,7 +538,7 @@ Output.RULES = {
       speak: '$if($name, $name, $docUrl)'
     },
     region: {
-      speak: '$descendants'
+      speak: '$nameOrTextContent'
     },
     row: {
       enter: '$node(tableRowHeader)'
@@ -1199,6 +1200,20 @@ Output.prototype = {
             return;
           var related = node[tree.firstChild.value];
           this.node_(related, related, Output.EventType.NAVIGATE, buff);
+        } else if (token == 'nameOrTextContent') {
+          if (node.name) {
+            this.format_(node, '$name', buff);
+          } else {
+            var walker = new AutomationTreeWalker(node,
+                Dir.FORWARD,
+                {visit: AutomationPredicate.leafOrStaticText,
+                 leaf: AutomationPredicate.leafOrStaticText});
+            while (walker.next().node &&
+                walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
+              if (walker.node.name)
+                this.append_(buff, walker.node.name, options);
+            }
+          }
         } else if (node[token] !== undefined) {
           options.annotation.push(token);
           var value = node[token];
