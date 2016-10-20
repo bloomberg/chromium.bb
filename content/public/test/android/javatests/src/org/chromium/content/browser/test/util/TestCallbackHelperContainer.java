@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.test.util;
 
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -134,8 +133,8 @@ public class TestCallbackHelperContainer {
                             notifyCalled(jsonResult);
                         }
                     };
-            webContents.evaluateJavaScriptForTests(code, callback);
             mJsonResult = null;
+            webContents.evaluateJavaScriptForTests(code, callback);
         }
 
         /**
@@ -157,32 +156,21 @@ public class TestCallbackHelperContainer {
             return result;
         }
 
-
-        /**
-         * Returns a criteria that checks that the evaluation has finished.
-         */
-        public Criteria getHasValueCriteria() {
-            return new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return hasValue();
-                }
-            };
-        }
-
         /**
          * Waits till the JavaScript evaluation finishes and returns true if a value was returned,
          * false if it timed-out.
          */
-        public boolean waitUntilHasValue(long timeout, TimeUnit timeoutUnits)
+        public boolean waitUntilHasValue(long timeout, TimeUnit unit)
                 throws InterruptedException, TimeoutException {
-            waitUntilCriteria(getHasValueCriteria(), timeout, timeoutUnits);
+            int count = getCallCount();
+            // Reads and writes are atomic for reference variables in java, this is thread safe
+            if (hasValue()) return true;
+            waitForCallback(count, 1, timeout, unit);
             return hasValue();
         }
 
         public boolean waitUntilHasValue() throws InterruptedException, TimeoutException {
-            waitUntilCriteria(getHasValueCriteria());
-            return hasValue();
+            return waitUntilHasValue(CallbackHelper.WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         }
 
         public void notifyCalled(String jsonResult) {

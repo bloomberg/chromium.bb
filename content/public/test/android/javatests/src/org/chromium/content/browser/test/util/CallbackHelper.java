@@ -6,8 +6,6 @@ package org.chromium.content.browser.test.util;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.os.SystemClock;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -196,32 +194,6 @@ public class CallbackHelper {
     public void waitForCallback(int currentCallCount)
             throws InterruptedException, TimeoutException {
         waitForCallback(currentCallCount, 1);
-    }
-
-    /**
-     * Blocks until the criteria is satisfied or throws an exception
-     * if the specified time frame is exceeded.
-     * @param timeout timeout value.
-     * @param unit timeout unit.
-     */
-    public void waitUntilCriteria(Criteria criteria, long timeout, TimeUnit unit)
-            throws InterruptedException, TimeoutException {
-        synchronized (mLock) {
-            final long startTime = SystemClock.uptimeMillis();
-            boolean isSatisfied = criteria.isSatisfied();
-            while (!isSatisfied
-                    && SystemClock.uptimeMillis() - startTime < unit.toMillis(timeout)) {
-                mLock.wait(unit.toMillis(timeout));
-                isSatisfied = criteria.isSatisfied();
-            }
-
-            if (!isSatisfied) throw new TimeoutException(criteria.getFailureReason());
-        }
-    }
-
-    public void waitUntilCriteria(Criteria criteria)
-            throws InterruptedException, TimeoutException {
-        waitUntilCriteria(criteria, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
