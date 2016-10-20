@@ -211,6 +211,9 @@ var testing = {};
             // TODO(apacible): re-enable when following issue is fixed.
             // github.com/GoogleChrome/accessibility-developer-tools/issues/251
             "tableHasAppropriateHeaders",
+
+            // TODO(crbug.com/657514): This rule is flaky on Linux/ChromeOS.
+            "requiredOwnedAriaRoleMissing",
         ];
       }
       return this.accessibilityAuditConfig_;
