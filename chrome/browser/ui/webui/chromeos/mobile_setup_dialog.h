@@ -13,7 +13,7 @@
 
 class MobileSetupDialog {
  public:
-  static void Show(const std::string& service_path);
+  static void ShowByNetworkId(const std::string& network_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MobileSetupDialog);

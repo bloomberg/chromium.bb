@@ -121,22 +121,37 @@ NetworkConfigView::~NetworkConfigView() {
 // static
 void NetworkConfigView::Show(const std::string& service_path,
                              gfx::NativeWindow parent) {
-  if (GetActiveDialog() != nullptr)
-    return;
-  NetworkConfigView* view = new NetworkConfigView();
   const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path);
+  ShowByNetwork(network, parent);
+}
+
+// static
+void NetworkConfigView::ShowByNetworkId(const std::string& network_id,
+                                        gfx::NativeWindow parent) {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          network_id);
+  ShowByNetwork(network, parent);
+}
+
+// static
+void NetworkConfigView::ShowByNetwork(const NetworkState* network,
+                                      gfx::NativeWindow parent) {
+  if (GetActiveDialog() != nullptr)
+    return;
   if (!network) {
-    LOG(ERROR) << "NetworkConfigView::Show called with invalid service_path";
+    LOG(ERROR) << "NetworkConfigView::Show called with invalid network";
     return;
   }
+  NetworkConfigView* view = new NetworkConfigView();
   if (!view->InitWithNetworkState(network)) {
     LOG(ERROR) << "NetworkConfigView::Show called with invalid network type: "
                << network->type();
     delete view;
     return;
   }
-  NET_LOG(USER) << "NetworkConfigView::Show: " << service_path;
+  NET_LOG(USER) << "NetworkConfigView::Show: " << network->path();
   view->ShowDialog(parent);
 }
 

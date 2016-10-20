@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
@@ -64,9 +66,17 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
 };
 
 // static
-void MobileSetupDialog::Show(const std::string& service_path) {
+void MobileSetupDialog::ShowByNetworkId(const std::string& network_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  MobileSetupDialogDelegate::GetInstance()->ShowDialog(service_path);
+  const chromeos::NetworkState* network =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetNetworkStateFromGuid(network_id);
+  if (!network) {
+    LOG(ERROR) << "MobileSetupDialog: Network ID not found: " << network_id;
+    return;
+  }
+  MobileSetupDialogDelegate::GetInstance()->ShowDialog(network->path());
 }
 
 // static

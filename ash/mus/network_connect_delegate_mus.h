@@ -21,11 +21,11 @@ class NetworkConnectDelegateMus : public ui::NetworkConnect::Delegate {
   ~NetworkConnectDelegateMus() override;
 
   // ui::NetworkConnect::Delegate:
-  void ShowNetworkConfigure(const std::string& service_path) override;
-  void ShowNetworkSettingsForGuid(const std::string& network_id) override;
+  void ShowNetworkConfigure(const std::string& network_id) override;
+  void ShowNetworkSettings(const std::string& network_id) override;
   bool ShowEnrollNetwork(const std::string& network_id) override;
   void ShowMobileSimDialog() override;
-  void ShowMobileSetupDialog(const std::string& service_path) override;
+  void ShowMobileSetupDialog(const std::string& network_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectDelegateMus);

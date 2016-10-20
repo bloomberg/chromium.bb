@@ -144,20 +144,20 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
   if (network->type() == shill::kTypeWifi) {
     // Only show the config view for secure networks, otherwise do nothing.
     if (network->security_class() != shill::kSecurityNone) {
-      delegate_->ShowNetworkConfigure(service_path);
+      delegate_->ShowNetworkConfigure(network->guid());
     }
     return;
   }
 
   if (network->type() == shill::kTypeWimax) {
-    delegate_->ShowNetworkConfigure(service_path);
+    delegate_->ShowNetworkConfigure(network->guid());
     return;
   }
 
   if (network->type() == shill::kTypeVPN) {
     // Third-party VPNs handle configuration UI themselves.
     if (network->vpn_provider_type() != shill::kProviderThirdPartyVpn)
-      delegate_->ShowNetworkConfigure(service_path);
+      delegate_->ShowNetworkConfigure(network->guid());
     return;
   }
 
@@ -624,7 +624,7 @@ base::string16 NetworkConnectImpl::GetShillErrorString(
 void NetworkConnectImpl::ShowNetworkSettingsForPath(
     const std::string& service_path) {
   const NetworkState* network = GetNetworkState(service_path);
-  delegate_->ShowNetworkSettingsForGuid(network ? network->guid() : "");
+  delegate_->ShowNetworkSettings(network ? network->guid() : "");
 }
 
 }  // namespace

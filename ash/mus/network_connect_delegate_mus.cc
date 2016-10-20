@@ -16,11 +16,11 @@ NetworkConnectDelegateMus::NetworkConnectDelegateMus() {}
 NetworkConnectDelegateMus::~NetworkConnectDelegateMus() {}
 
 void NetworkConnectDelegateMus::ShowNetworkConfigure(
-    const std::string& service_path) {
-  WmShell::Get()->system_tray_controller()->ShowNetworkConfigure(service_path);
+    const std::string& network_id) {
+  WmShell::Get()->system_tray_controller()->ShowNetworkConfigure(network_id);
 }
 
-void NetworkConnectDelegateMus::ShowNetworkSettingsForGuid(
+void NetworkConnectDelegateMus::ShowNetworkSettings(
     const std::string& network_id) {
   WmShell::Get()->system_tray_controller()->ShowNetworkSettings(network_id);
 }
@@ -38,7 +38,7 @@ void NetworkConnectDelegateMus::ShowMobileSimDialog() {
 }
 
 void NetworkConnectDelegateMus::ShowMobileSetupDialog(
-    const std::string& service_path) {
+    const std::string& network_id) {
   // TODO(mash): http://crbug.com/644355
   NOTIMPLEMENTED();
 }

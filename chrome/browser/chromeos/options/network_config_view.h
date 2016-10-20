@@ -46,6 +46,11 @@ class NetworkConfigView : public views::DialogDelegateView,
 
   // Shows a network connection dialog if none is currently visible.
   static void Show(const std::string& service_path, gfx::NativeWindow parent);
+
+  // Same as above but takes a network id (GUID) instead.
+  static void ShowByNetworkId(const std::string& network_id,
+                              gfx::NativeWindow parent);
+
   // Shows a dialog to configure a new network. |type| must be a valid Shill
   // 'Type' property value.
   static void ShowForType(const std::string& type, gfx::NativeWindow parent);
@@ -85,6 +90,9 @@ class NetworkConfigView : public views::DialogDelegateView,
  private:
   NetworkConfigView();
   ~NetworkConfigView() override;
+
+  static void ShowByNetwork(const NetworkState* network,
+                            gfx::NativeWindow parent);
 
   // Login dialog for known networks. Returns true if successfully created.
   bool InitWithNetworkState(const NetworkState* network);

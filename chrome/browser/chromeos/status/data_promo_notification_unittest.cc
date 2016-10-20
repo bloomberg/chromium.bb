@@ -36,12 +36,12 @@ class NetworkConnectTestDelegate : public ui::NetworkConnect::Delegate {
   ~NetworkConnectTestDelegate() override {}
 
   void ShowNetworkConfigure(const std::string& network_id) override {}
-  void ShowNetworkSettingsForGuid(const std::string& network_id) override {}
+  void ShowNetworkSettings(const std::string& network_id) override {}
   bool ShowEnrollNetwork(const std::string& network_id) override {
     return false;
   }
   void ShowMobileSimDialog() override {}
-  void ShowMobileSetupDialog(const std::string& service_path) override {}
+  void ShowMobileSetupDialog(const std::string& network_id) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectTestDelegate);

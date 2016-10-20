@@ -197,13 +197,14 @@ void SystemTrayClient::ShowPublicAccountInfo() {
   chrome::ShowPolicy(displayer.browser());
 }
 
-void SystemTrayClient::ShowNetworkConfigure(const std::string& service_path) {
+void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
   // TODO(jamescook): Consolidate this with the classic ash version from
   // NetworkConnectDelegateChromeOS. This will require moving the window
   // container calculation to this class, then plumbing a container ID through
   // the dialog code.
   CHECK(chrome::IsRunningInMash());
-  chromeos::NetworkConfigView::Show(service_path, nullptr /* parent */);
+  chromeos::NetworkConfigView::ShowByNetworkId(network_id,
+                                               nullptr /* parent */);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

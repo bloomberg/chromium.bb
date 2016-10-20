@@ -30,20 +30,18 @@ gfx::NativeWindow GetNativeWindow() {
 
 namespace chromeos {
 
-NetworkConnectDelegateChromeOS::NetworkConnectDelegateChromeOS() {
-}
+NetworkConnectDelegateChromeOS::NetworkConnectDelegateChromeOS() {}
 
-NetworkConnectDelegateChromeOS::~NetworkConnectDelegateChromeOS() {
-}
+NetworkConnectDelegateChromeOS::~NetworkConnectDelegateChromeOS() {}
 
 void NetworkConnectDelegateChromeOS::ShowNetworkConfigure(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  NetworkConfigView::Show(network_id, GetNativeWindow());
+  NetworkConfigView::ShowByNetworkId(network_id, GetNativeWindow());
 }
 
-void NetworkConnectDelegateChromeOS::ShowNetworkSettingsForGuid(
+void NetworkConnectDelegateChromeOS::ShowNetworkSettings(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
@@ -65,10 +63,10 @@ void NetworkConnectDelegateChromeOS::ShowMobileSimDialog() {
 }
 
 void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
-    const std::string& service_path) {
+    const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  MobileSetupDialog::Show(service_path);
+  MobileSetupDialog::ShowByNetworkId(network_id);
 }
 
 }  // namespace chromeos
