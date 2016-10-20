@@ -55,6 +55,13 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The DnsClient's config will be updated in response.
   void OnInitialDNSConfigRead() override;
 
+  // Registers a callback to be invoked when the number of concurrent queries
+  // falls below the limit defined by |max_concurrent_queries| (passed to the
+  // constructor of LogDnsClient). This callback will fire once and then be
+  // unregistered. Should only be used if QueryAuditProof() returns
+  // net::ERR_TEMPORARILY_THROTTLED.
+  void NotifyWhenNotThrottled(const base::Closure& callback);
+
   // Queries a CT log to retrieve an audit proof for the leaf with |leaf_hash|.
   // The log is identified by |domain_for_log|, which is the DNS name used as a
   // suffix for all queries.
@@ -112,6 +119,8 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   std::list<std::unique_ptr<AuditProofQuery>> audit_proof_queries_;
   // The maximum number of queries that can be in flight at one time.
   size_t max_concurrent_queries_;
+  // Callbacks to invoke when the number of concurrent queries is at its limit.
+  std::list<base::Closure> not_throttled_callbacks_;
   // Creates weak_ptrs to this, for callback purposes.
   base::WeakPtrFactory<LogDnsClient> weak_ptr_factory_;
 

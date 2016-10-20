@@ -713,6 +713,62 @@ TEST_P(LogDnsClientTest, CanBeThrottledToOneQueryAtATime) {
   EXPECT_THAT(proof3.nodes, Eq(audit_proof));
 }
 
+TEST_P(LogDnsClientTest, NotifiesWhenNoLongerThrottled) {
+  const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
+
+  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  mock_dns_.ExpectAuditProofRequestAndResponse("0.123456.999999.tree.ct.test.",
+                                               audit_proof.begin(),
+                                               audit_proof.begin() + 7);
+  mock_dns_.ExpectAuditProofRequestAndResponse("7.123456.999999.tree.ct.test.",
+                                               audit_proof.begin() + 7,
+                                               audit_proof.begin() + 14);
+  mock_dns_.ExpectAuditProofRequestAndResponse("14.123456.999999.tree.ct.test.",
+                                               audit_proof.begin() + 14,
+                                               audit_proof.end());
+
+  const size_t kMaxConcurrentQueries = 1;
+  std::unique_ptr<LogDnsClient> log_client =
+      CreateLogDnsClient(kMaxConcurrentQueries);
+
+  // Start a query.
+  net::ct::MerkleAuditProof proof1;
+  net::TestCompletionCallback proof_callback1;
+  ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0], 999999,
+                                          &proof1, proof_callback1.callback()),
+              IsError(net::ERR_IO_PENDING));
+
+  net::TestClosure not_throttled_callback;
+  log_client->NotifyWhenNotThrottled(not_throttled_callback.closure());
+
+  ASSERT_THAT(proof_callback1.WaitForResult(), IsOk());
+  not_throttled_callback.WaitForResult();
+
+  // Start another query to check |not_throttled_callback| doesn't fire again.
+  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[1], 666);
+  mock_dns_.ExpectAuditProofRequestAndResponse("0.666.999999.tree.ct.test.",
+                                               audit_proof.begin(),
+                                               audit_proof.begin() + 7);
+  mock_dns_.ExpectAuditProofRequestAndResponse("7.666.999999.tree.ct.test.",
+                                               audit_proof.begin() + 7,
+                                               audit_proof.begin() + 14);
+  mock_dns_.ExpectAuditProofRequestAndResponse("14.666.999999.tree.ct.test.",
+                                               audit_proof.begin() + 14,
+                                               audit_proof.end());
+
+  net::ct::MerkleAuditProof proof2;
+  net::TestCompletionCallback proof_callback2;
+  ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[1], 999999,
+                                          &proof2, proof_callback2.callback()),
+              IsError(net::ERR_IO_PENDING));
+
+  // Give the query a chance to run.
+  ASSERT_THAT(proof_callback2.WaitForResult(), IsOk());
+  // Give |not_throttled_callback| a chance to run - it shouldn't though.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(not_throttled_callback.have_result());
+}
+
 INSTANTIATE_TEST_CASE_P(ReadMode,
                         LogDnsClientTest,
                         ::testing::Values(net::IoMode::ASYNC,

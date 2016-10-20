@@ -408,6 +408,11 @@ void LogDnsClient::OnInitialDNSConfigRead() {
   UpdateDnsConfig();
 }
 
+void LogDnsClient::NotifyWhenNotThrottled(const base::Closure& callback) {
+  DCHECK(HasMaxConcurrentQueriesInProgress());
+  not_throttled_callbacks_.push_back(callback);
+}
+
 // |leaf_hash| is not a const-ref to allow callers to std::move that string into
 // the method, avoiding LogDnsClient::AuditProofQuery having to make a copy.
 net::Error LogDnsClient::QueryAuditProof(
@@ -454,6 +459,12 @@ void LogDnsClient::QueryAuditProofComplete(
   audit_proof_queries_.erase(query_iterator);
 
   callback.Run(net_error);
+
+  // Notify interested parties that the next query will not be throttled.
+  std::list<base::Closure> callbacks = std::move(not_throttled_callbacks_);
+  for (const base::Closure& callback : callbacks) {
+    callback.Run();
+  }
 }
 
 bool LogDnsClient::HasMaxConcurrentQueriesInProgress() const {
