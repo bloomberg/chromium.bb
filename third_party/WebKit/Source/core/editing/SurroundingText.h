@@ -48,8 +48,6 @@ class CORE_EXPORT SurroundingText {
   SurroundingText(const Range&, unsigned maxLength);
   SurroundingText(const Position&, unsigned maxLength);
 
-  Document* document() const;
-
   String content() const;
   unsigned startOffsetInContent() const;
   unsigned endOffsetInContent() const;

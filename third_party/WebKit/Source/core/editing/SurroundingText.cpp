@@ -104,15 +104,13 @@ void SurroundingText::initialize(const Position& startPosition,
   DCHECK(m_contentRange);
 }
 
-Document* SurroundingText::document() const {
-  if (m_contentRange)
-    return &m_contentRange->ownerDocument();
-  return nullptr;
-}
-
 String SurroundingText::content() const {
-  if (m_contentRange)
+  if (m_contentRange) {
+    // SurroundingText is created with clean layout and must not be stored
+    // through DOM or style changes, so layout must still be clean here.
+    DCHECK(!m_contentRange->ownerDocument().needsLayoutTreeUpdate());
     return m_contentRange->text();
+  }
   return String();
 }
 
