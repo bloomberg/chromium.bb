@@ -256,17 +256,14 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
 
   std::unique_ptr<ImageBufferSurface> createWebGLImageBufferSurface(
       const IntSize& deviceSize,
-      OpacityMode,
-      sk_sp<SkColorSpace>);
+      OpacityMode);
   std::unique_ptr<ImageBufferSurface> createAcceleratedImageBufferSurface(
       const IntSize& deviceSize,
       OpacityMode,
-      sk_sp<SkColorSpace>,
       int* msaaSampleCount);
   std::unique_ptr<ImageBufferSurface> createUnacceleratedImageBufferSurface(
       const IntSize& deviceSize,
-      OpacityMode,
-      sk_sp<SkColorSpace>);
+      OpacityMode);
   void createImageBuffer();
   void createImageBufferInternal(
       std::unique_ptr<ImageBufferSurface> externalSurface);

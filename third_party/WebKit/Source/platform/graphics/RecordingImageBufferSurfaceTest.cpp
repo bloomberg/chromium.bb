@@ -77,10 +77,12 @@ class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
   virtual std::unique_ptr<ImageBufferSurface> createSurface(
       const IntSize& size,
       OpacityMode opacityMode,
-      sk_sp<SkColorSpace> colorSpace) {
+      sk_sp<SkColorSpace> colorSpace,
+      SkColorType colorType) {
     m_createSurfaceCount++;
     return wrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacityMode, InitializeImagePixels, std::move(colorSpace)));
+        size, opacityMode, InitializeImagePixels, std::move(colorSpace),
+        colorType));
   }
 
   virtual ~MockSurfaceFactory() {}

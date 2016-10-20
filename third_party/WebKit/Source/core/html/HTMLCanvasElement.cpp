@@ -838,9 +838,10 @@ class UnacceleratedSurfaceFactory
   virtual std::unique_ptr<ImageBufferSurface> createSurface(
       const IntSize& size,
       OpacityMode opacityMode,
-      sk_sp<SkColorSpace> colorSpace) {
+      sk_sp<SkColorSpace> colorSpace,
+      SkColorType colorType) {
     return wrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacityMode, InitializeImagePixels, colorSpace));
+        size, opacityMode, InitializeImagePixels, colorSpace, colorType));
   }
 
   virtual ~UnacceleratedSurfaceFactory() {}
@@ -857,16 +858,15 @@ bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize) {
 }
 
 std::unique_ptr<ImageBufferSurface>
-HTMLCanvasElement::createWebGLImageBufferSurface(
-    const IntSize& deviceSize,
-    OpacityMode opacityMode,
-    sk_sp<SkColorSpace> colorSpace) {
+HTMLCanvasElement::createWebGLImageBufferSurface(const IntSize& deviceSize,
+                                                 OpacityMode opacityMode) {
   DCHECK(is3D());
   // If 3d, but the use of the canvas will be for non-accelerated content
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = wrapUnique(new AcceleratedImageBufferSurface(
-      deviceSize, opacityMode, std::move(colorSpace)));
+      deviceSize, opacityMode, m_context->skColorSpace(),
+      m_context->colorType()));
   if (surface->isValid())
     return std::move(surface);
   return nullptr;
@@ -876,7 +876,6 @@ std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::createAcceleratedImageBufferSurface(
     const IntSize& deviceSize,
     OpacityMode opacityMode,
-    sk_sp<SkColorSpace> colorSpace,
     int* msaaSampleCount) {
   if (!shouldAccelerate(deviceSize))
     return nullptr;
@@ -901,7 +900,8 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
   std::unique_ptr<ImageBufferSurface> surface =
       wrapUnique(new Canvas2DImageBufferSurface(
           std::move(contextProvider), deviceSize, *msaaSampleCount, opacityMode,
-          Canvas2DLayerBridge::EnableAcceleration, std::move(colorSpace)));
+          Canvas2DLayerBridge::EnableAcceleration, m_context->skColorSpace(),
+          m_context->colorType()));
   if (!surface->isValid()) {
     CanvasMetrics::countCanvasContextUsage(
         CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
@@ -916,12 +916,11 @@ HTMLCanvasElement::createAcceleratedImageBufferSurface(
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::createUnacceleratedImageBufferSurface(
     const IntSize& deviceSize,
-    OpacityMode opacityMode,
-    sk_sp<SkColorSpace> colorSpace) {
+    OpacityMode opacityMode) {
   if (shouldUseDisplayList(deviceSize)) {
     auto surface = wrapUnique(new RecordingImageBufferSurface(
         deviceSize, wrapUnique(new UnacceleratedSurfaceFactory), opacityMode,
-        colorSpace));
+        m_context->skColorSpace(), m_context->colorType()));
     if (surface->isValid()) {
       CanvasMetrics::countCanvasContextUsage(
           CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
@@ -933,7 +932,8 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
 
   auto surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
   auto surface = surfaceFactory->createSurface(deviceSize, opacityMode,
-                                               std::move(colorSpace));
+                                               m_context->skColorSpace(),
+                                               m_context->colorType());
   if (surface->isValid()) {
     CanvasMetrics::countCanvasContextUsage(
         CanvasMetrics::Unaccelerated2DCanvasImageBufferCreated);
@@ -970,14 +970,13 @@ void HTMLCanvasElement::createImageBufferInternal(
     if (externalSurface->isValid())
       surface = std::move(externalSurface);
   } else if (is3D()) {
-    surface = createWebGLImageBufferSurface(size(), opacityMode,
-                                            m_context->skColorSpace());
+    surface = createWebGLImageBufferSurface(size(), opacityMode);
   } else {
-    surface = createAcceleratedImageBufferSurface(
-        size(), opacityMode, m_context->skColorSpace(), &msaaSampleCount);
-    if (!surface)
-      surface = createUnacceleratedImageBufferSurface(
-          size(), opacityMode, m_context->skColorSpace());
+    surface = createAcceleratedImageBufferSurface(size(), opacityMode,
+                                                  &msaaSampleCount);
+    if (!surface) {
+      surface = createUnacceleratedImageBufferSurface(size(), opacityMode);
+    }
   }
   if (!surface)
     return;

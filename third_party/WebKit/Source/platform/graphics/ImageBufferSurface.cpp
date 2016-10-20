@@ -42,8 +42,12 @@ namespace blink {
 
 ImageBufferSurface::ImageBufferSurface(const IntSize& size,
                                        OpacityMode opacityMode,
-                                       sk_sp<SkColorSpace> colorSpace)
-    : m_opacityMode(opacityMode), m_size(size), m_colorSpace(colorSpace) {
+                                       sk_sp<SkColorSpace> colorSpace,
+                                       SkColorType colorType)
+    : m_opacityMode(opacityMode),
+      m_size(size),
+      m_colorSpace(colorSpace),
+      m_colorType(colorType) {
   setIsHidden(false);
 }
 

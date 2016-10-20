@@ -85,14 +85,15 @@ static sk_sp<SkSurface> createSkSurface(GrContext* gr,
                                         int msaaSampleCount,
                                         OpacityMode opacityMode,
                                         sk_sp<SkColorSpace> colorSpace,
+                                        SkColorType colorType,
                                         bool* surfaceIsAccelerated) {
   if (gr)
     gr->resetContext();
 
   SkAlphaType alphaType =
       (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-  SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), alphaType, colorSpace);
+  SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), colorType,
+                                       alphaType, colorSpace);
   SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
   sk_sp<SkSurface> surface;
 
@@ -125,7 +126,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
     int msaaSampleCount,
     OpacityMode opacityMode,
     AccelerationMode accelerationMode,
-    sk_sp<SkColorSpace> colorSpace)
+    sk_sp<SkColorSpace> colorSpace,
+    SkColorType colorType)
     : m_contextProvider(std::move(contextProvider)),
       m_logger(wrapUnique(new Logger)),
       m_weakPtrFactory(this),
@@ -145,7 +147,8 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(
       m_accelerationMode(accelerationMode),
       m_opacityMode(opacityMode),
       m_size(size),
-      m_colorSpace(colorSpace) {
+      m_colorSpace(colorSpace),
+      m_colorType(colorType) {
   DCHECK(m_contextProvider);
   DCHECK(!m_contextProvider->isSoftwareRendering());
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
@@ -551,7 +554,8 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint) {
   bool surfaceIsAccelerated;
   m_surface = createSkSurface(
       wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size,
-      m_msaaSampleCount, m_opacityMode, m_colorSpace, &surfaceIsAccelerated);
+      m_msaaSampleCount, m_opacityMode, m_colorSpace, m_colorType,
+      &surfaceIsAccelerated);
 
   if (m_surface) {
     // Always save an initial frame, to support resetting the top level matrix
@@ -850,9 +854,9 @@ bool Canvas2DLayerBridge::restoreSurface() {
   if (sharedGL && sharedGL->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     GrContext* grCtx = m_contextProvider->grContext();
     bool surfaceIsAccelerated;
-    sk_sp<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount,
-                                             m_opacityMode, m_colorSpace,
-                                             &surfaceIsAccelerated));
+    sk_sp<SkSurface> surface(
+        createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode,
+                        m_colorSpace, m_colorType, &surfaceIsAccelerated));
 
     if (!m_surface)
       reportSurfaceCreationFailure();

@@ -47,21 +47,26 @@ class Canvas2DImageBufferSurface final : public ImageBufferSurface {
       int msaaSampleCount,
       OpacityMode opacityMode,
       Canvas2DLayerBridge::AccelerationMode accelerationMode,
-      sk_sp<SkColorSpace> colorSpace)
-      : ImageBufferSurface(size, opacityMode, colorSpace),
+      sk_sp<SkColorSpace> colorSpace,
+      SkColorType colorType)
+      : ImageBufferSurface(size, opacityMode, colorSpace, colorType),
         m_layerBridge(
             adoptRef(new Canvas2DLayerBridge(std::move(contextProvider),
                                              size,
                                              msaaSampleCount,
                                              opacityMode,
                                              accelerationMode,
-                                             colorSpace))) {
+                                             std::move(colorSpace),
+                                             colorType))) {
     init();
   }
 
   Canvas2DImageBufferSurface(PassRefPtr<Canvas2DLayerBridge> bridge,
                              const IntSize& size)
-      : ImageBufferSurface(size, bridge->opacityMode(), bridge->colorSpace()),
+      : ImageBufferSurface(size,
+                           bridge->opacityMode(),
+                           bridge->colorSpace(),
+                           bridge->colorType()),
         m_layerBridge(std::move(bridge)) {
     init();
   }

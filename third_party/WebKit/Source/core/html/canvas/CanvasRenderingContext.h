@@ -32,6 +32,7 @@
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
@@ -85,6 +86,7 @@ class CORE_EXPORT CanvasRenderingContext
   CanvasColorSpace colorSpace() const { return m_colorSpace; };
   WTF::String colorSpaceAsString() const;
   sk_sp<SkColorSpace> skColorSpace() const;
+  SkColorType colorType() const;
 
   virtual PassRefPtr<Image> getImage(AccelerationHint,
                                      SnapshotReason) const = 0;

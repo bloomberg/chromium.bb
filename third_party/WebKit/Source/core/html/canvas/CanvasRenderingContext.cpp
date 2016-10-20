@@ -88,6 +88,15 @@ sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const {
   return nullptr;
 }
 
+SkColorType CanvasRenderingContext::colorType() const {
+  switch (m_colorSpace) {
+    case kLinearRGBCanvasColorSpace:
+      return kRGBA_F16_SkColorType;
+    default:
+      return kN32_SkColorType;
+  }
+}
+
 void CanvasRenderingContext::dispose() {
   // HTMLCanvasElement and CanvasRenderingContext have a circular reference.
   // When the pair is no longer reachable, their destruction order is non-

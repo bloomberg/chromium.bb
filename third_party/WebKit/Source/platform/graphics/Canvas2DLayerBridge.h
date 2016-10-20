@@ -95,7 +95,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
                       int msaaSampleCount,
                       OpacityMode,
                       AccelerationMode,
-                      sk_sp<SkColorSpace>);
+                      sk_sp<SkColorSpace>,
+                      SkColorType);
 
   ~Canvas2DLayerBridge() override;
 
@@ -142,6 +143,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void hibernate();
   bool isHibernating() const { return m_hibernationImage.get(); }
   sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
+  SkColorType colorType() const { return m_colorType; }
 
   sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
 
@@ -285,6 +287,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   OpacityMode m_opacityMode;
   const IntSize m_size;
   sk_sp<SkColorSpace> m_colorSpace;
+  SkColorType m_colorType;
   int m_recordingPixelCount;
 
 #if USE_IOSURFACE_FOR_2D_CANVAS

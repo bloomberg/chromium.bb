@@ -54,6 +54,7 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/CheckedNumeric.h"
@@ -379,13 +380,44 @@ bool ImageBuffer::getImageData(Multiply multiplied,
   WTF::ArrayBufferContents result(data, allocSizeInBytes,
                                   WTF::ArrayBufferContents::NotShared);
 
-  SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType
-                                                        : kUnpremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(),
-                                       kRGBA_8888_SkColorType, alphaType);
+  // Skia does not support unpremultiplied read with an F16 to 8888 conversion
+  bool useF16Workaround = m_surface->colorType() == kRGBA_F16_SkColorType;
+
+  SkAlphaType alphaType = (multiplied == Premultiplied || useF16Workaround)
+                              ? kPremul_SkAlphaType
+                              : kUnpremul_SkAlphaType;
+  // The workaround path use a canvas draw under the hood, which can only
+  // use N32 at this time.
+  SkColorType colorType =
+      useF16Workaround ? kN32_SkColorType : kRGBA_8888_SkColorType;
+  SkImageInfo info =
+      SkImageInfo::Make(rect.width(), rect.height(), colorType, alphaType,
+                        SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named));
 
   snapshot->readPixels(info, result.data(), 4 * rect.width(), rect.x(),
                        rect.y());
+
+  if (useF16Workaround) {
+    uint32_t* pixel = (uint32_t*)result.data();
+    size_t pixelCount = allocSizeInBytes / sizeof(uint32_t);
+    // TODO(skbug.com/5853): make readPixels support RGBA output so that we no
+    // longer
+    // have to do this.
+    if (kN32_SkColorType == kBGRA_8888_SkColorType) {
+      // Convert BGRA to RGBA if necessary on this platform.
+      SkSwapRB(pixel, pixel, pixelCount);
+    }
+    // TODO(skbug.com/5853): We should really be doing the unpremultiply in
+    // linear space
+    // and skia should provide that service.
+    if (multiplied == Unmultiplied) {
+      for (; pixelCount; --pixelCount) {
+        *pixel = SkUnPreMultiply::UnPreMultiplyPreservingByteOrder(*pixel);
+        ++pixel;
+      }
+    }
+  }
+
   result.transfer(contents);
   return true;
 }
@@ -419,8 +451,10 @@ void ImageBuffer::putByteArray(Multiply multiplied,
   const void* srcAddr = source + originY * srcBytesPerRow + originX * 4;
   SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType
                                                         : kUnpremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(),
-                                       kRGBA_8888_SkColorType, alphaType);
+  SkImageInfo info = SkImageInfo::Make(
+      sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType,
+      alphaType, SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named));
+
   m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
@@ -455,9 +489,11 @@ class UnacceleratedSurfaceFactory
   virtual std::unique_ptr<ImageBufferSurface> createSurface(
       const IntSize& size,
       OpacityMode opacityMode,
-      sk_sp<SkColorSpace> colorSpace) {
+      sk_sp<SkColorSpace> colorSpace,
+      SkColorType colorType) {
     return wrapUnique(new UnacceleratedImageBufferSurface(
-        size, opacityMode, InitializeImagePixels, colorSpace));
+        size, opacityMode, InitializeImagePixels, std::move(colorSpace),
+        colorType));
   }
 
   virtual ~UnacceleratedSurfaceFactory() {}

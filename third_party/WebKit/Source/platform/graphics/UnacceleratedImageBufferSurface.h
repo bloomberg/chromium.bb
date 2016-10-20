@@ -48,7 +48,8 @@ class PLATFORM_EXPORT UnacceleratedImageBufferSurface
       const IntSize&,
       OpacityMode = NonOpaque,
       ImageInitializationMode = InitializeImagePixels,
-      sk_sp<SkColorSpace> = nullptr);
+      sk_sp<SkColorSpace> = nullptr,
+      SkColorType = kN32_SkColorType);
   ~UnacceleratedImageBufferSurface() override;
 
   SkCanvas* canvas() override;
