@@ -157,7 +157,7 @@ public class CustomTabActivity extends ChromeActivity {
         public void didCloseTab(int tabId, boolean incognito) {
             PageLoadMetrics.removeObserver(mMetricsObserver);
             // Finish the activity after we intent out.
-            if (getTabModelSelector().getCurrentModel().getCount() == 0) finish();
+            if (getTabModelSelector().getCurrentModel().getCount() == 0) finishAndClose(false);
         }
     };
 
@@ -363,7 +363,7 @@ public class CustomTabActivity extends ChromeActivity {
                     @Override
                     public void onClick(View v) {
                         RecordUserAction.record("CustomTabs.CloseButtonClicked");
-                        finishAndClose();
+                        finishAndClose(false);
                     }
                 });
 
@@ -644,9 +644,25 @@ public class CustomTabActivity extends ChromeActivity {
 
     /**
      * Finishes the activity and removes the reference from the Android recents.
+     *
+     * @param reparenting true iff the activity finishes due to tab reparenting.
      */
-    public final void finishAndClose() {
+    public final void finishAndClose(boolean reparenting) {
         mIsClosing = true;
+        if (!reparenting) {
+            // Closing the activity destroys the renderer as well. Re-create a spare renderer some
+            // time after, so that we have one ready for the next tab open. This does not increase
+            // memory consumption, as the current renderer goes away. We create a renderer as a lot
+            // of users open several Custom Tabs in a row. The delay is there to avoid jank in the
+            // transition animation when closing the tab.
+            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    WarmupManager.getInstance().createSpareWebContents();
+                }
+            }, 500);
+        }
+
         handleFinishAndClose();
     }
 
@@ -671,7 +687,7 @@ public class CustomTabActivity extends ChromeActivity {
             if (getCurrentTabModel().getCount() > 1) {
                 getCurrentTabModel().closeTab(getActivityTab(), false, false, false);
             } else {
-                finishAndClose();
+                finishAndClose(false);
             }
         }
         return true;
@@ -823,7 +839,7 @@ public class CustomTabActivity extends ChromeActivity {
             Runnable finalizeCallback = new Runnable() {
                 @Override
                 public void run() {
-                    finishAndClose();
+                    finishAndClose(true);
                 }
             };
 
