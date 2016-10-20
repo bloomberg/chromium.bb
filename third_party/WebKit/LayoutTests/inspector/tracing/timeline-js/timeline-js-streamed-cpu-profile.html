@@ -65,7 +65,7 @@ function test()
     },
     {
         "cat": "disabled-by-default-v8.cpu_profile2",
-        "name": "CpuProfile",
+        "name": "Profile",
         "ph": "P",
         "id": "0xa1f",
         "pid": 17851,
@@ -75,29 +75,31 @@ function test()
         "args": {
             "data": {
                 "startTime": 110000,
-                "nodes": [{
-                    "callFrame": {
-                        "functionName": "(root)",
-                        "scriptId": 0
-                    },
-                    "id": 1
-                }, {
-                    "callFrame": {
-                        "columnNumber": 26,
-                        "functionName": "foo",
-                        "lineNumber": 1306,
-                        "scriptId": 260,
-                        "url": "http://example.com/www-embed-player.js"
-                    },
-                    "id": 2,
-                    "parent": 1
-                }]
+                "cpuProfile": {
+                    "nodes": [{
+                        "callFrame": {
+                            "functionName": "(root)",
+                            "scriptId": 0
+                        },
+                        "id": 1
+                    }, {
+                        "callFrame": {
+                            "columnNumber": 26,
+                            "functionName": "foo",
+                            "lineNumber": 1306,
+                            "scriptId": 260,
+                            "url": "http://example.com/www-embed-player.js"
+                        },
+                        "id": 2,
+                        "parent": 1
+                    }]
+                }
             }
         },
     },
     {
         "cat": "disabled-by-default-v8.cpu_profile2",
-        "name": "CpuProfileChunk",
+        "name": "ProfileChunk",
         "ph": "P",
         "id": "0xa1f",
         "pid": 17851,
@@ -106,14 +108,16 @@ function test()
         "tts": 5620000,
         "args": {
             "data": {
-                "samples": [2, 2, 2],
+                "cpuProfile": {
+                    "samples": [2, 2, 2]
+                },
                 "timeDeltas": [1000, 1500, 1000]
             }
         }
     },
     {
         "cat": "disabled-by-default-v8.cpu_profile2",
-        "name": "CpuProfileChunk",
+        "name": "ProfileChunk",
         "ph": "P",
         "id": "0xa1f",
         "pid": 17851,
@@ -122,25 +126,27 @@ function test()
         "tts": 5630000,
         "args": {
             "data": {
-                "nodes": [{
-                    "callFrame": {
-                        "columnNumber": 2,
-                        "functionName": "bar",
-                        "lineNumber": 1400,
-                        "scriptId": 260,
-                        "url": "http://example.com/www-embed-player.js"
-                    },
-                    "id": 3,
-                    "parent": 2
-                }],
-                "samples": [2, 3, 3, 3, 2, 1],
+                "cpuProfile": {
+                    "nodes": [{
+                        "callFrame": {
+                            "columnNumber": 2,
+                            "functionName": "bar",
+                            "lineNumber": 1400,
+                            "scriptId": 260,
+                            "url": "http://example.com/www-embed-player.js"
+                        },
+                        "id": 3,
+                        "parent": 2
+                    }],
+                    "samples": [2, 3, 3, 3, 2, 1]
+                },
                 "timeDeltas": [500, 500, 1000, 500, 1000, 500]
             }
         }
     },
     {
         "cat": "disabled-by-default-v8.cpu_profile2",
-        "name": "CpuProfileChunk",
+        "name": "ProfileChunk",
         "ph": "P",
         "id": "0xa1f",
         "pid": 17851,
