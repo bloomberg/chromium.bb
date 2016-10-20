@@ -114,70 +114,72 @@ static_library("libsrtp") {
   ]
 }
 
-config("srtp_test_config") {
-  include_dirs = [ "test" ]
-  configs = [ ":libsrtp_warnings" ]
-  cflags = []
-  if (is_win && is_clang) {
-    # TODO(mattdr): Bring in https://github.com/cisco/libsrtp/pull/213
-    # and remove this.
-    cflags += [ "-Wno-format" ]
-  }
-}
+if (is_win) {
+  # Don't build tests on Windows. Upstream doesn't, so we can't assume the
+  # tests will compile or run.
 
-template("srtp_test") {
-  test("srtp_test_${target_name}") {
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
-    configs += [ ":srtp_test_config" ]
-    deps = [
-      ":libsrtp",
-    ]
-    sources = [
-      "crypto/replay/ut_sim.c",
-      "include/getopt_s.h",
-      "include/ut_sim.h",
-      "test/getopt_s.c",
-      "test/util.c",
-      "test/util.h",
-      invoker.source,
-    ]
+  group("srtp_tests") {
     testonly = true
   }
-}
+} else {
+  config("srtp_test_config") {
+    include_dirs = [ "test" ]
+    configs = [ ":libsrtp_warnings" ]
+  }
 
-srtp_test("dtls_srtp_driver") {
-  source = "test/dtls_srtp_driver.c"
-}
-srtp_test("rdbx_driver") {
-  source = "test/rdbx_driver.c"
-}
-srtp_test("replay_driver") {
-  source = "test/replay_driver.c"
-}
-srtp_test("roc_driver") {
-  source = "test/roc_driver.c"
-}
-srtp_test("srtp_driver") {
-  source = "test/srtp_driver.c"
-}
-srtp_test("cipher_driver") {
-  source = "crypto/test/cipher_driver.c"
-}
-srtp_test("datatypes_driver") {
-  source = "crypto/test/datatypes_driver.c"
-}
-srtp_test("kernel_driver") {
-  source = "crypto/test/kernel_driver.c"
-}
+  template("srtp_test") {
+    test("${target_name}") {
+      output_name = invoker.target_name
+      output_dir = "${root_out_dir}/srtp_tests"
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
+      configs += [ ":srtp_test_config" ]
+      deps = [
+        ":libsrtp",
+      ]
+      sources = [
+        "crypto/replay/ut_sim.c",
+        "include/getopt_s.h",
+        "include/ut_sim.h",
+        "test/getopt_s.c",
+        "test/util.c",
+        "test/util.h",
+        invoker.source,
+      ]
+      testonly = true
+    }
+  }
 
-if (is_posix) {
-  # This might compile but won't be useful on non-POSIX.
+  srtp_test("dtls_srtp_driver") {
+    source = "test/dtls_srtp_driver.c"
+  }
+  srtp_test("rdbx_driver") {
+    source = "test/rdbx_driver.c"
+  }
+  srtp_test("replay_driver") {
+    source = "test/replay_driver.c"
+  }
+  srtp_test("roc_driver") {
+    source = "test/roc_driver.c"
+  }
+  srtp_test("srtp_driver") {
+    source = "test/srtp_driver.c"
+  }
+  srtp_test("cipher_driver") {
+    source = "crypto/test/cipher_driver.c"
+  }
+  srtp_test("datatypes_driver") {
+    source = "crypto/test/datatypes_driver.c"
+  }
+  srtp_test("kernel_driver") {
+    source = "crypto/test/kernel_driver.c"
+  }
 
   executable("rtpw") {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs += [ ":srtp_test_config" ]
+    output_dir = "${root_out_dir}/srtp_tests"
     deps = [
       ":libsrtp",
     ]
@@ -197,47 +199,31 @@ if (is_posix) {
     testonly = true
   }
 
-  copy("rtpw_test_scripts") {
+  copy("test_scripts") {
     sources = [
+      "run_all_tests.sh",
       "test/rtpw_test.sh",
       "test/rtpw_test_gcm.sh",
     ]
     outputs = [
-      "$root_out_dir/{{source_file_part}}",
+      "${root_out_dir}/srtp_tests/{{source_file_part}}",
     ]
     testonly = true
   }
 
-  group("srtp_test_rtpw") {
+  group("srtp_tests") {
     deps = [
+      ":cipher_driver",
+      ":datatypes_driver",
+      ":dtls_srtp_driver",
+      ":kernel_driver",
+      ":rdbx_driver",
+      ":replay_driver",
+      ":roc_driver",
       ":rtpw",
-      ":rtpw_test_scripts",
+      ":srtp_driver",
+      ":test_scripts",
     ]
     testonly = true
   }
-} else {
-  group("srtp_test_rtpw") {
-    testonly = true
-  }
-}
-
-# Run with, e.g.:
-# for a in out/Default/srtp_test_*; do
-#   echo $a
-#   "${a}" -v > /dev/null || "${a}" > /dev/null || echo $a FAILED
-# done
-
-group("srtp_tests") {
-  deps = [
-    ":srtp_test_cipher_driver",
-    ":srtp_test_datatypes_driver",
-    ":srtp_test_dtls_srtp_driver",
-    ":srtp_test_kernel_driver",
-    ":srtp_test_rdbx_driver",
-    ":srtp_test_replay_driver",
-    ":srtp_test_roc_driver",
-    ":srtp_test_rtpw",
-    ":srtp_test_srtp_driver",
-  ]
-  testonly = true
 }
