@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="/settings_action_menu.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="bluetooth-device-list-item">
@@ -31,21 +31,18 @@
       <span class="flex"></span>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]">
-        <paper-icon-button icon="cr:more-vert" toggles
-            active="{{dropdownOpened}}" tabindex$="[[tabindex]]">
+        <paper-icon-button icon="cr:more-vert" on-tap="onMenuButtonTap_"
+            tabindex$="[[tabindex]]">
         </paper-icon-button>
-        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_"
-            vertical-align="auto" horizontal-align="right">
-          <div class="dropdown-content">
-            <paper-item id="connect" hidden$="[[device.connected]]">
-              $i18n{bluetoothConnect}
-            </paper-item>
-            <paper-item id="disconnect" hidden$="[[!device.connected]]">
-              $i18n{bluetoothDisconnect}
-            </paper-item>
-            <paper-item id="remove">$i18n{bluetoothRemove}</paper-item>
-          </div>
-        </iron-dropdown>
+        <dialog id="dotsMenu" is="settings-action-menu">
+          <button class="dropdown-item" role="option"
+              on-tap="onConnectActionTap_">
+            [[getConnectActionText_(device.connected)]]
+          </button>
+          <button class="dropdown-item" role="option" on-tap="onRemoveTap_">
+            $i18n{bluetoothRemove}
+          </button>
+        </dialog>
       </div>
     </div>
   </template>

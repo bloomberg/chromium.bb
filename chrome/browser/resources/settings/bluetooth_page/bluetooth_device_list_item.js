@@ -9,6 +9,8 @@
 Polymer({
   is: 'bluetooth-device-list-item',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The bluetooth device.
@@ -20,15 +22,42 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!Event} event
    * @private
    */
-  menuSelected_: function(e) {
-    e.currentTarget.opened = false;
+  onMenuButtonTap_: function(event) {
+    let button = /** @type {!HTMLElement} */ (event.target);
+    let menu = /** @type {!SettingsActionMenuElement} */ (this.$.dotsMenu);
+    menu.showAt(button);
+    event.stopPropagation();
+  },
+
+  /** @private */
+  onConnectActionTap_: function() {
+    let action = this.isDisconnected_(this.device) ? 'connect' : 'disconnect';
     this.fire('device-event', {
-      action: e.target.id,
+      action: action,
       device: this.device,
     });
+    /** @type {!SettingsActionMenuElement} */ (this.$.dotsMenu).close();
+  },
+
+  /** @private */
+  onRemoveTap_: function() {
+    this.fire('device-event', {
+      action: 'remove',
+      device: this.device,
+    });
+    /** @type {!SettingsActionMenuElement} */ (this.$.dotsMenu).close();
+  },
+
+  /**
+   * @param {boolean} connected
+   * @return {string} The text to display for the connect/disconnect menu item.
+   * @private
+   */
+  getConnectActionText_: function(connected) {
+    return this.i18n(connected ? 'bluetoothDisconnect' : 'bluetoothConnect');
   },
 
   /**
