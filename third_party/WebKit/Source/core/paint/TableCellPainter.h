@@ -40,6 +40,7 @@ class TableCellPainter {
   void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
 
  private:
+  const DisplayItemClient& displayItemClientForBorders() const;
   LayoutRect paintRectNotIncludingVisualOverflow(
       const LayoutPoint& paintOffset);
   void paintBackground(const PaintInfo&,

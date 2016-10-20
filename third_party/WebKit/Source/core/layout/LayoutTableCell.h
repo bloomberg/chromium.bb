@@ -286,13 +286,38 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   const char* name() const override { return "LayoutTableCell"; }
 
   bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
+  void invalidateDisplayItemClients(PaintInvalidationReason) const override;
 
-  struct CollapsedBorderValues {
-    CollapsedBorderValue startBorder;
-    CollapsedBorderValue endBorder;
-    CollapsedBorderValue beforeBorder;
-    CollapsedBorderValue afterBorder;
+  // TODO(wkorman): Consider renaming to more clearly differentiate from
+  // CollapsedBorderValue.
+  class CollapsedBorderValues : public DisplayItemClient {
+   public:
+    CollapsedBorderValues(const LayoutTable&,
+                          const CollapsedBorderValue& startBorder,
+                          const CollapsedBorderValue& endBorder,
+                          const CollapsedBorderValue& beforeBorder,
+                          const CollapsedBorderValue& afterBorder);
+
+    const CollapsedBorderValue& startBorder() const { return m_startBorder; }
+    const CollapsedBorderValue& endBorder() const { return m_endBorder; }
+    const CollapsedBorderValue& beforeBorder() const { return m_beforeBorder; }
+    const CollapsedBorderValue& afterBorder() const { return m_afterBorder; }
+
+    void setCollapsedBorderValues(const CollapsedBorderValues& other);
+
+    // DisplayItemClient methods.
+    String debugName() const;
+    LayoutRect visualRect() const;
+
+   private:
+    const LayoutTable& m_layoutTable;
+    CollapsedBorderValue m_startBorder;
+    CollapsedBorderValue m_endBorder;
+    CollapsedBorderValue m_beforeBorder;
+    CollapsedBorderValue m_afterBorder;
   };
+
+  bool usesTableAsAdditionalDisplayItemClient() const;
   const CollapsedBorderValues* collapsedBorderValues() const {
     return m_collapsedBorderValues.get();
   }

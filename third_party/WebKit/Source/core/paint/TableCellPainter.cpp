@@ -11,45 +11,48 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
 static const CollapsedBorderValue& collapsedLeftBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
-  if (styleForCellFlow.isHorizontalWritingMode())
-    return styleForCellFlow.isLeftToRightDirection() ? values.startBorder
-                                                     : values.endBorder;
-  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.afterBorder
-                                                       : values.beforeBorder;
+  if (styleForCellFlow.isHorizontalWritingMode()) {
+    return styleForCellFlow.isLeftToRightDirection() ? values.startBorder()
+                                                     : values.endBorder();
+  }
+  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.afterBorder()
+                                                       : values.beforeBorder();
 }
 
 static const CollapsedBorderValue& collapsedRightBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
-  if (styleForCellFlow.isHorizontalWritingMode())
-    return styleForCellFlow.isLeftToRightDirection() ? values.endBorder
-                                                     : values.startBorder;
-  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.beforeBorder
-                                                       : values.afterBorder;
+  if (styleForCellFlow.isHorizontalWritingMode()) {
+    return styleForCellFlow.isLeftToRightDirection() ? values.endBorder()
+                                                     : values.startBorder();
+  }
+  return styleForCellFlow.isFlippedBlocksWritingMode() ? values.beforeBorder()
+                                                       : values.afterBorder();
 }
 
 static const CollapsedBorderValue& collapsedTopBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
   if (styleForCellFlow.isHorizontalWritingMode())
-    return values.beforeBorder;
-  return styleForCellFlow.isLeftToRightDirection() ? values.startBorder
-                                                   : values.endBorder;
+    return values.beforeBorder();
+  return styleForCellFlow.isLeftToRightDirection() ? values.startBorder()
+                                                   : values.endBorder();
 }
 
 static const CollapsedBorderValue& collapsedBottomBorder(
     const ComputedStyle& styleForCellFlow,
     const LayoutTableCell::CollapsedBorderValues& values) {
   if (styleForCellFlow.isHorizontalWritingMode())
-    return values.afterBorder;
-  return styleForCellFlow.isLeftToRightDirection() ? values.endBorder
-                                                   : values.startBorder;
+    return values.afterBorder();
+  return styleForCellFlow.isLeftToRightDirection() ? values.endBorder()
+                                                   : values.startBorder();
 }
 
 void TableCellPainter::paint(const PaintInfo& paintInfo,
@@ -63,6 +66,15 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style) {
   if (style == BorderStyleInset)
     return BorderStyleRidge;
   return style;
+}
+
+const DisplayItemClient& TableCellPainter::displayItemClientForBorders() const {
+  // TODO(wkorman): We may need to handle PaintInvalidationDelayedFull.
+  // http://crbug.com/657186
+  return m_layoutTableCell.usesTableAsAdditionalDisplayItemClient()
+             ? static_cast<const DisplayItemClient&>(
+                   *m_layoutTableCell.collapsedBorderValues())
+             : m_layoutTableCell;
 }
 
 void TableCellPainter::paintCollapsedBorders(
@@ -119,14 +131,15 @@ void TableCellPainter::paintCollapsedBorders(
       paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
 
   GraphicsContext& graphicsContext = paintInfo.context;
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          graphicsContext, m_layoutTableCell,
+  const DisplayItemClient& client = displayItemClientForBorders();
+  if (DrawingRecorder::useCachedDrawingIfPossible(
+          graphicsContext, client,
           static_cast<DisplayItem::Type>(displayItemType)))
     return;
 
-  LayoutObjectDrawingRecorder recorder(
-      graphicsContext, m_layoutTableCell,
-      static_cast<DisplayItem::Type>(displayItemType), borderRect);
+  DrawingRecorder recorder(graphicsContext, client,
+                           static_cast<DisplayItem::Type>(displayItemType),
+                           borderRect);
   Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
 
   // We never paint diagonals at the joins.  We simply let the border with the
