@@ -535,12 +535,18 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
       sizingData.nextState();
       sizingData.sizingOperation = TrackSizing;
     }
-    setLogicalHeight(computeTrackBasedLogicalHeight(sizingData) +
-                     borderAndPaddingLogicalHeight() +
-                     scrollbarLogicalHeight());
+    LayoutUnit trackBasedLogicalHeight =
+        computeTrackBasedLogicalHeight(sizingData) +
+        borderAndPaddingLogicalHeight() + scrollbarLogicalHeight();
+    setLogicalHeight(trackBasedLogicalHeight);
 
     LayoutUnit oldClientAfterEdge = clientLogicalBottom();
     updateLogicalHeight();
+
+    // Once grid's indefinite height is resolved, we can compute the
+    // available free space for Content Alignment.
+    if (!cachedHasDefiniteLogicalHeight())
+      sizingData.freeSpace(ForRows) = logicalHeight() - trackBasedLogicalHeight;
 
     // 3- If the min-content contribution of any grid items have changed based
     // on the row sizes calculated in step 2, steps 1 and 2 are repeated with
@@ -3227,7 +3233,10 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(
   OverflowAlignment overflow =
       isRowAxis ? styleRef().justifyContentOverflowAlignment()
                 : styleRef().alignContentOverflowAlignment();
-  if (availableFreeSpace <= 0 && overflow == OverflowAlignmentSafe)
+  // TODO (lajava): Default value for overflow isn't exaclty as 'unsafe'.
+  // https://drafts.csswg.org/css-align/#overflow-values
+  if (availableFreeSpace == 0 ||
+      (availableFreeSpace < 0 && overflow == OverflowAlignmentSafe))
     return {LayoutUnit(), LayoutUnit()};
 
   switch (position) {
