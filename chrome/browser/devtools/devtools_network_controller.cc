@@ -37,7 +37,6 @@ void DevToolsNetworkController::SetNetworkState(
 
   DevToolsNetworkInterceptor* interceptor = interceptors_.get(client_id);
   if (!interceptor) {
-    DCHECK(conditions);
     if (!conditions)
       return;
     std::unique_ptr<DevToolsNetworkInterceptor> new_interceptor(

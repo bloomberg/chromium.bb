@@ -109,6 +109,9 @@ void TargetHandler::SetClient(std::unique_ptr<Client> client) {
 void TargetHandler::Detached() {
   SetAutoAttach(false, false);
   SetDiscoverTargets(false);
+  for (const auto& id_host : attached_hosts_)
+    id_host.second->DetachClient(this);
+  attached_hosts_.clear();
 }
 
 void TargetHandler::UpdateServiceWorkers() {
@@ -277,6 +280,11 @@ Response TargetHandler::SetAttachToFrames(bool value) {
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
   }
   return Response::OK();
+}
+
+Response TargetHandler::SetRemoteLocations(
+    const std::vector<std::unique_ptr<base::DictionaryValue>>& locations) {
+  return Response::ServerError("Not supported");
 }
 
 Response TargetHandler::AttachToTarget(const std::string& target_id,

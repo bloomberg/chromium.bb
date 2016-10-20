@@ -340,6 +340,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   Browser* browser_;
   bool is_docked_;
   const bool can_dock_;
+  bool close_on_detach_;
   LifeStage life_stage_;
   DevToolsToggleAction action_on_load_;
   DevToolsContentsResizingStrategy contents_resizing_strategy_;

@@ -123,9 +123,6 @@ class DevToolsDeviceDiscovery {
 
   void SetScheduler(base::Callback<void(const base::Closure&)> scheduler);
 
-  static void DiscoverOnce(
-      AndroidDeviceManager* device_manager,
-      const DeviceListCallback& callback);
   static scoped_refptr<content::DevToolsAgentHost> CreateBrowserAgentHost(
       scoped_refptr<AndroidDeviceManager::Device> device,
       scoped_refptr<RemoteBrowser> browser);

@@ -145,11 +145,6 @@ Response BrowserHandler::SendMessage(const std::string& target_id,
   return Response::OK();
 }
 
-Response BrowserHandler::SetRemoteLocations(
-    const std::vector<std::unique_ptr<base::DictionaryValue>>& locations) {
-  return Response::OK();
-}
-
 void BrowserHandler::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host, const std::string& message) {
   client_->DispatchMessage(DispatchMessageParams::Create()->

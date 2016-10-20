@@ -13,7 +13,6 @@
 #include "chrome/browser/devtools/device/devtools_device_discovery.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "net/base/host_port_pair.h"
 
 class DevToolsNetworkProtocolHandler;
 
@@ -31,8 +30,6 @@ class ChromeDevToolsManagerDelegate :
  private:
   // content::DevToolsManagerDelegate implementation.
   void Inspect(content::DevToolsAgentHost* agent_host) override;
-  bool DiscoverTargets(
-      const content::DevToolsAgentHost::DiscoveryCallback& callback) override;
   base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
@@ -50,8 +47,7 @@ class ChromeDevToolsManagerDelegate :
       content::DevToolsAgentHost* agent_host) override;
 
   void DevicesAvailable(
-    const content::DevToolsAgentHost::DiscoveryCallback& callback,
-    const DevToolsDeviceDiscovery::CompleteDevices& devices);
+      const DevToolsDeviceDiscovery::CompleteDevices& devices);
 
   std::unique_ptr<base::DictionaryValue> SetRemoteLocations(
       content::DevToolsAgentHost* agent_host,
@@ -60,7 +56,9 @@ class ChromeDevToolsManagerDelegate :
 
   std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
   std::unique_ptr<AndroidDeviceManager> device_manager_;
-  std::set<net::HostPortPair> tcp_locations_;
+  std::unique_ptr<DevToolsDeviceDiscovery> device_discovery_;
+  content::DevToolsAgentHost::List remote_agent_hosts_;
+  content::DevToolsAgentHost* remote_locations_requester_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
 };

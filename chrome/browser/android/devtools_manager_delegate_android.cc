@@ -160,9 +160,11 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
 
 DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid()
     : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
+  content::DevToolsAgentHost::AddObserver(this);
 }
 
 DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() {
+  content::DevToolsAgentHost::RemoveObserver(this);
 }
 
 base::DictionaryValue* DevToolsManagerDelegateAndroid::HandleCommand(

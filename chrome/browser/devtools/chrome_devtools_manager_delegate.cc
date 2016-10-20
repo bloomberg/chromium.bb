@@ -40,10 +40,13 @@ char kHostParam[] = "host";
 char kPortParam[] = "port";
 
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
-    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
+    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()),
+      remote_locations_requester_(nullptr) {
+  content::DevToolsAgentHost::AddObserver(this);
 }
 
 ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
+  content::DevToolsAgentHost::RemoveObserver(this);
 }
 
 void ChromeDevToolsManagerDelegate::Inspect(
@@ -52,36 +55,15 @@ void ChromeDevToolsManagerDelegate::Inspect(
 }
 
 void ChromeDevToolsManagerDelegate::DevicesAvailable(
-    const DevToolsAgentHost::DiscoveryCallback& callback,
     const DevToolsDeviceDiscovery::CompleteDevices& devices) {
-  DevToolsAgentHost::List result = DevToolsAgentHost::GetOrCreateAll();
+  DevToolsAgentHost::List remote_targets;
   for (const auto& complete : devices) {
     for (const auto& browser : complete.second->browsers()) {
       for (const auto& page : browser->pages())
-        result.push_back(page->CreateTarget());
+        remote_targets.push_back(page->CreateTarget());
     }
   }
-  callback.Run(std::move(result));
-}
-
-bool ChromeDevToolsManagerDelegate::DiscoverTargets(
-    const DevToolsAgentHost::DiscoveryCallback& callback) {
-  if (!tcp_locations_.size())
-    return false;
-
-  if (!device_manager_)
-    device_manager_ = AndroidDeviceManager::Create();
-
-  AndroidDeviceManager::DeviceProviders providers;
-  providers.push_back(new TCPDeviceProvider(tcp_locations_));
-  device_manager_->SetDeviceProviders(providers);
-
-  DevToolsDeviceDiscovery::DiscoverOnce(
-      device_manager_.get(),
-      base::Bind(&ChromeDevToolsManagerDelegate::DevicesAvailable,
-                 base::Unretained(this),
-                 callback));
-  return true;
+  remote_agent_hosts_.swap(remote_targets);
 }
 
 base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
@@ -94,7 +76,7 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
   if (!DevToolsProtocol::ParseCommand(command_dict, &id, &method, &params))
     return nullptr;
 
-  if (method == chrome::devtools::Browser::setRemoteLocations::kName)
+  if (method == chrome::devtools::Target::setRemoteLocations::kName)
     return SetRemoteLocations(agent_host, id, params).release();
 
   return network_protocol_handler_->HandleCommand(agent_host, command_dict);
@@ -191,6 +173,11 @@ void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
+  if (agent_host == remote_locations_requester_) {
+    remote_locations_requester_ = nullptr;
+    device_discovery_.reset();
+    remote_agent_hosts_.clear();
+  }
   network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
 }
 
@@ -199,8 +186,14 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
     content::DevToolsAgentHost* agent_host,
     int command_id,
     base::DictionaryValue* params) {
-  tcp_locations_.clear();
+  if (remote_locations_requester_) {
+      return DevToolsProtocol::CreateInvalidParamsResponse(
+          command_id,
+          "Remote locations are already in use by another client.");
+  }
 
+  remote_locations_requester_ = agent_host;
+  std::set<net::HostPortPair> tcp_locations;
   base::ListValue* locations;
   if (!params->GetList(kLocationsParam, &locations))
     return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
@@ -222,8 +215,25 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
       return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
                                                            kLocationsParam);
     }
-    tcp_locations_.insert(net::HostPortPair(host, port));
+    tcp_locations.insert(net::HostPortPair(host, port));
   }
+
+  if (tcp_locations.empty()) {
+    device_discovery_.reset();
+    remote_agent_hosts_.clear();
+  } else {
+    if (!device_manager_)
+      device_manager_ = AndroidDeviceManager::Create();
+
+    AndroidDeviceManager::DeviceProviders providers;
+    providers.push_back(new TCPDeviceProvider(tcp_locations));
+    device_manager_->SetDeviceProviders(providers);
+
+    device_discovery_.reset(new DevToolsDeviceDiscovery(device_manager_.get(),
+        base::Bind(&ChromeDevToolsManagerDelegate::DevicesAvailable,
+                   base::Unretained(this))));
+  }
+
   std::unique_ptr<base::DictionaryValue> result(
       base::MakeUnique<base::DictionaryValue>());
   return DevToolsProtocol::CreateSuccessResponse(command_id, std::move(result));

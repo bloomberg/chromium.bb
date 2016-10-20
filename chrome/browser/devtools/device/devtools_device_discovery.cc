@@ -270,6 +270,7 @@ void AgentHostDelegate::Attach(content::DevToolsExternalAgentProxy* proxy) {
 
 void AgentHostDelegate::Detach() {
   web_socket_.reset();
+  proxy_->ConnectionClosed();
   proxy_ = nullptr;
 }
 
@@ -616,37 +617,4 @@ void DevToolsDeviceDiscovery::ReceivedDeviceList(
                                  weak_factory_.GetWeakPtr()));
   // |callback_| should be run last as it may destroy |this|.
   callback_.Run(complete_devices);
-}
-
-namespace {
-
-class OnceWrapper {
- public:
-  OnceWrapper(AndroidDeviceManager* device_manager,
-              const DevToolsDeviceDiscovery::DeviceListCallback& callback)
-      : callback_(callback) {
-    discovery_.reset(new DevToolsDeviceDiscovery(device_manager,
-         base::Bind(&OnceWrapper::Callback, base::Unretained(this))));
-    discovery_->SetScheduler(base::Bind(&OnceWrapper::NoOp));
-  }
-
- private:
-  static void NoOp(const base::Closure&) {}
-
-  void Callback(const DevToolsDeviceDiscovery::CompleteDevices& devices) {
-    callback_.Run(devices);
-    delete this;
-  }
-
-  std::unique_ptr<DevToolsDeviceDiscovery> discovery_;
-  const DevToolsDeviceDiscovery::DeviceListCallback callback_;
-};
-
-} // namespace
-
-// static
-void DevToolsDeviceDiscovery::DiscoverOnce(
-    AndroidDeviceManager* device_manager,
-    const DeviceListCallback& callback) {
-  new OnceWrapper(device_manager, callback);
 }

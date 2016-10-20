@@ -40,6 +40,8 @@ class TargetHandler : public DevToolsAgentHostClient,
   Response SetDiscoverTargets(bool discover);
   Response SetAutoAttach(bool auto_attach, bool wait_for_debugger_on_start);
   Response SetAttachToFrames(bool value);
+  Response SetRemoteLocations(
+      const std::vector<std::unique_ptr<base::DictionaryValue>>&);
   Response AttachToTarget(const std::string& target_id, bool* out_success);
   Response DetachFromTarget(const std::string& target_id);
   Response SendMessageToTarget(const std::string& target_id,
