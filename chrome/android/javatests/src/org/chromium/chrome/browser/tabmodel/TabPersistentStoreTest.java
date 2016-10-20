@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 import android.util.SparseArray;
 
 import org.chromium.base.ActivityState;
@@ -255,6 +256,16 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         @Override
         protected boolean handleBackPressed() {
             return false;
+        }
+
+        @Override
+        protected Pair<? extends TabCreator, ? extends TabCreator> createTabCreators() {
+            return null;
+        }
+
+        @Override
+        protected TabModelSelector createTabModelSelector() {
+            return null;
         }
 
         @Override

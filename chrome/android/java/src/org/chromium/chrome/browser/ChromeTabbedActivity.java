@@ -16,6 +16,7 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -89,6 +90,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -953,8 +955,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         // Critical path for startup. Create the minimum objects needed
         // to allow a blank screen draw (without depending on any native code)
         // and then yield ASAP.
-        createTabModelSelectorImpl(getSavedInstanceState());
-
         if (isFinishing()) return;
 
         // Don't show the keyboard until user clicks in.
@@ -977,6 +977,63 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (DeviceFormFactor.isTablet(getApplicationContext())) {
             getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
         }
+    }
+
+    @Override
+    protected TabModelSelector createTabModelSelector() {
+        assert mTabModelSelectorImpl == null;
+
+        Bundle savedInstanceState = getSavedInstanceState();
+
+        // We determine the model as soon as possible so every systems get initialized coherently.
+        boolean startIncognito = savedInstanceState != null
+                && savedInstanceState.getBoolean("is_incognito_selected", false);
+        int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
+
+        mTabModelSelectorImpl = (TabModelSelectorImpl)
+                TabWindowManager.getInstance().requestSelector(this, this, getFullscreenManager(),
+                        index);
+        if (mTabModelSelectorImpl == null) {
+            Toast.makeText(this, getString(R.string.unsupported_number_of_windows),
+                    Toast.LENGTH_LONG).show();
+            finish();
+            return null;
+        }
+
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
+            private boolean mIsFirstPageLoadStart = true;
+
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                // Discard startup navigation measurements when the user interfered and started the
+                // 2nd navigation (in activity lifetime) in parallel.
+                if (!mIsFirstPageLoadStart) {
+                    UmaUtils.setRunningApplicationStart(false);
+                } else {
+                    mIsFirstPageLoadStart = false;
+                }
+            }
+
+            @Override
+            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
+                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
+                    int statusCode) {
+                DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(ChromeTabbedActivity.this,
+                        tab.getWebContents(), url, tab.isShowingErrorPage(), isFragmentNavigation,
+                        statusCode);
+            }
+        };
+
+        if (startIncognito) mTabModelSelectorImpl.selectModel(true);
+
+        return mTabModelSelectorImpl;
+    }
+
+    @Override
+    protected Pair<TabbedModeTabCreator, TabbedModeTabCreator> createTabCreators() {
+        return Pair.create(
+                new TabbedModeTabCreator(this, getWindowAndroid(), false),
+                new TabbedModeTabCreator(this, getWindowAndroid(), true));
     }
 
     /**
@@ -1031,53 +1088,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 AutocompleteController.nativePrefetchZeroSuggestResults();
             }
         });
-    }
-
-    private void createTabModelSelectorImpl(Bundle savedInstanceState) {
-        // We determine the model as soon as possible so every systems get initialized coherently.
-        boolean startIncognito = savedInstanceState != null
-                && savedInstanceState.getBoolean("is_incognito_selected", false);
-        int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
-
-        mTabModelSelectorImpl = (TabModelSelectorImpl)
-                TabWindowManager.getInstance().requestSelector(this, this, getFullscreenManager(),
-                        index);
-        if (mTabModelSelectorImpl == null) {
-            Toast.makeText(this, getString(R.string.unsupported_number_of_windows),
-                    Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        setTabCreators(
-                new TabbedModeTabCreator(this, getWindowAndroid(), false),
-                new TabbedModeTabCreator(this, getWindowAndroid(), true));
-        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
-
-            private boolean mIsFirstPageLoadStart = true;
-
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                // Discard startup navigation measurements when the user interfered and started the
-                // 2nd navigation (in activity lifetime) in parallel.
-                if (!mIsFirstPageLoadStart) {
-                    UmaUtils.setRunningApplicationStart(false);
-                } else {
-                    mIsFirstPageLoadStart = false;
-                }
-            }
-
-            @Override
-            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
-                    int statusCode) {
-                DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(ChromeTabbedActivity.this,
-                        tab.getWebContents(), url, tab.isShowingErrorPage(), isFragmentNavigation,
-                        statusCode);
-            }
-        };
-
-        if (startIncognito) mTabModelSelectorImpl.selectModel(true);
-        setTabModelSelector(mTabModelSelectorImpl);
     }
 
     @Override

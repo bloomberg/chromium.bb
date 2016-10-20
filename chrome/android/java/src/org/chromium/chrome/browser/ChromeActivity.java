@@ -24,6 +24,7 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -180,6 +181,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private static final String TAG = "ChromeActivity";
     private static final Rect EMPTY_RECT = new Rect();
 
+    private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
+        @Override
+        public AppMenuHandler get(
+                Activity activity, AppMenuPropertiesDelegate delegate, int menuResourceId) {
+            return new AppMenuHandler(activity, delegate, menuResourceId);
+        }
+    };
+
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabCreatorManager.TabCreator mRegularTabCreator;
@@ -194,6 +203,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected IntentHandler mIntentHandler;
 
     private boolean mDeferredStartupPosted;
+    private boolean mTabModelsInitialized;
 
     // The class cannot implement TouchExplorationStateChangeListener,
     // because it is only available for Build.VERSION_CODES.KITKAT and later.
@@ -230,14 +240,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     // Callbacks to be called when a context menu is closed.
     private final ObserverList<Callback<Menu>> mContextMenuCloseObservers = new ObserverList<>();
-
-    private static AppMenuHandlerFactory sAppMenuHandlerFactory = new AppMenuHandlerFactory() {
-        @Override
-        public AppMenuHandler get(
-                Activity activity, AppMenuPropertiesDelegate delegate, int menuResourceId) {
-            return new AppMenuHandler(activity, delegate, menuResourceId);
-        }
-    };
 
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
@@ -319,7 +321,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // Inform the WindowAndroid of the keyboard accessory view.
         mWindowAndroid.setKeyboardAccessoryView((ViewGroup) findViewById(R.id.keyboard_accessory));
         initializeToolbar();
-        mFullscreenManager = createFullscreenManager();
+        initializeTabModels();
     }
 
     @Override
@@ -437,6 +439,110 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * Initialize the {@link TabModelSelector}, {@link TabModel}s, and
+     * {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator} needed by
+     * this activity.
+     */
+    protected final void initializeTabModels() {
+        if (mTabModelsInitialized) return;
+
+        // TODO(tedchoc): FullscreenManager is required to create the TabModelSelector, but that
+        //                does not seem like the right ordering.  This should happen after
+        //                initializing the tab models.
+        mFullscreenManager = createFullscreenManager();
+
+        mTabModelSelector = createTabModelSelector();
+        if (mTabModelSelector == null) {
+            assert isFinishing();
+            mTabModelsInitialized = true;
+            return;
+        }
+
+        Pair<? extends TabCreator, ? extends TabCreator> tabCreators = createTabCreators();
+        mRegularTabCreator = tabCreators.first;
+        mIncognitoTabCreator = tabCreators.second;
+
+        if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
+
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
+            @Override
+            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
+                if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)
+                        && DataUseTabUIManager.shouldShowDataUseStartedUI()) {
+                    mDataUseSnackbarController.showDataUseTrackingStartedBar();
+                } else if (DataUseTabUIManager.shouldShowDataUseEndedUI()
+                        && DataUseTabUIManager.shouldShowDataUseEndedSnackbar(
+                                   getApplicationContext())
+                        && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
+                    mDataUseSnackbarController.showDataUseTrackingEndedBar();
+                }
+            }
+
+            @Override
+            public void onShown(Tab tab) {
+                setStatusBarColor(tab, tab.getThemeColor());
+            }
+
+            @Override
+            public void onHidden(Tab tab) {
+                mDataUseSnackbarController.dismissDataUseBar();
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                mDataUseSnackbarController.dismissDataUseBar();
+            }
+
+            @Override
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+                postDeferredStartupIfNeeded();
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab) {
+                postDeferredStartupIfNeeded();
+                OfflinePageUtils.showOfflineSnackbarIfNecessary(ChromeActivity.this, tab);
+            }
+
+            @Override
+            public void onCrash(Tab tab, boolean sadTabShown) {
+                postDeferredStartupIfNeeded();
+            }
+
+            @Override
+            public void onDidChangeThemeColor(Tab tab, int color) {
+                if (getActivityTab() != tab) return;
+                setStatusBarColor(tab, color);
+
+                if (getToolbarManager() == null) return;
+                getToolbarManager().updatePrimaryColor(color, true);
+
+                ControlContainer controlContainer =
+                        (ControlContainer) findViewById(R.id.control_container);
+                controlContainer.getToolbarResourceAdapter().invalidate(null);
+            }
+        };
+
+        if (mAssistStatusHandler != null) {
+            mAssistStatusHandler.setTabModelSelector(mTabModelSelector);
+        }
+
+        mTabModelsInitialized = true;
+    }
+
+    /**
+     * @return The {@link TabModelSelector} owned by this {@link ChromeActivity}.
+     */
+    protected abstract TabModelSelector createTabModelSelector();
+
+    /**
+     * @return The {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator}s owned
+     *         by this {@link ChromeActivity}.  The first item in the Pair is the normal model tab
+     *         creator, and the second is the tab creator for incognito tabs.
+     */
+    protected abstract Pair<? extends TabCreator, ? extends TabCreator> createTabCreators();
+
+    /**
      * @return {@link ToolbarManager} that belongs to this activity.
      */
     @VisibleForTesting
@@ -528,78 +634,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
 
         TraceEvent.end("ChromeActivity:CompositorInitialization");
-    }
-
-    /**
-     * Sets the {@link TabModelSelector} owned by this {@link ChromeActivity}.
-     * @param tabModelSelector A {@link TabModelSelector} instance.
-     */
-    protected void setTabModelSelector(TabModelSelector tabModelSelector) {
-        mTabModelSelector = tabModelSelector;
-
-        if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
-        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
-            @Override
-            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                if (DataUseTabUIManager.checkAndResetDataUseTrackingStarted(tab)
-                        && DataUseTabUIManager.shouldShowDataUseStartedUI()) {
-                    mDataUseSnackbarController.showDataUseTrackingStartedBar();
-                } else if (DataUseTabUIManager.shouldShowDataUseEndedUI()
-                        && DataUseTabUIManager.shouldShowDataUseEndedSnackbar(
-                                   getApplicationContext())
-                        && DataUseTabUIManager.checkAndResetDataUseTrackingEnded(tab)) {
-                    mDataUseSnackbarController.showDataUseTrackingEndedBar();
-                }
-            }
-
-            @Override
-            public void onShown(Tab tab) {
-                setStatusBarColor(tab, tab.getThemeColor());
-            }
-
-            @Override
-            public void onHidden(Tab tab) {
-                mDataUseSnackbarController.dismissDataUseBar();
-            }
-
-            @Override
-            public void onDestroyed(Tab tab) {
-                mDataUseSnackbarController.dismissDataUseBar();
-            }
-
-            @Override
-            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
-                postDeferredStartupIfNeeded();
-            }
-
-            @Override
-            public void onPageLoadFinished(Tab tab) {
-                postDeferredStartupIfNeeded();
-                OfflinePageUtils.showOfflineSnackbarIfNecessary(ChromeActivity.this, tab);
-            }
-
-            @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
-                postDeferredStartupIfNeeded();
-            }
-
-            @Override
-            public void onDidChangeThemeColor(Tab tab, int color) {
-                if (getActivityTab() != tab) return;
-                setStatusBarColor(tab, color);
-
-                if (getToolbarManager() == null) return;
-                getToolbarManager().updatePrimaryColor(color, true);
-
-                ControlContainer controlContainer =
-                        (ControlContainer) findViewById(R.id.control_container);
-                controlContainer.getToolbarResourceAdapter().invalidate(null);
-            }
-        };
-
-        if (mAssistStatusHandler != null) {
-            mAssistStatusHandler.setTabModelSelector(tabModelSelector);
-        }
     }
 
     @Override
@@ -903,8 +937,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mToolbarManager = null;
         }
 
-        TabModelSelector selector = getTabModelSelector();
-        if (selector != null) selector.destroy();
+        if (mTabModelsInitialized) {
+            TabModelSelector selector = getTabModelSelector();
+            if (selector != null) selector.destroy();
+        }
 
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();
@@ -1231,6 +1267,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The {@link TabModelSelector}, possibly null.
      */
     public TabModelSelector getTabModelSelector() {
+        // TODO(tedchoc): Enable once CCT early tab creation is fixed.
+        //if (!mTabModelsInitialized) {
+        //    throw new IllegalStateException(
+        //            "Attempting to access TabModelSelector before initialization");
+        //}
         return mTabModelSelector;
     }
 
@@ -1245,19 +1286,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
+        // TODO(tedchoc): Enable once CCT early tab creation is fixed.
+        //if (!mTabModelsInitialized) {
+        //    throw new IllegalStateException(
+        //            "Attempting to access TabCreator before initialization");
+        //}
         return incognito ? mIncognitoTabCreator : mRegularTabCreator;
-    }
-
-    /**
-     * Sets the {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator}s owned by
-     * this {@link ChromeActivity}.
-     * @param regularTabCreator The creator for normal tabs.
-     * @param incognitoTabCreator The creator for incognito tabs.
-     */
-    protected void setTabCreators(TabCreatorManager.TabCreator regularTabCreator,
-            TabCreatorManager.TabCreator incognitoTabCreator) {
-        mRegularTabCreator = regularTabCreator;
-        mIncognitoTabCreator = incognitoTabCreator;
     }
 
     /**

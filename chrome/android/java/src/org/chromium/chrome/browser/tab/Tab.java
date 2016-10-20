@@ -80,7 +80,6 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
-import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -1770,9 +1769,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         cvc.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv, webContents,
                 getWindowAndroid());
         setContentViewCore(cvc);
-        if (getTabModelSelector() instanceof SingleTabModelSelector) {
-            getContentViewCore().setFullscreenRequiredForOrientationLock(false);
-        }
     }
 
     /**

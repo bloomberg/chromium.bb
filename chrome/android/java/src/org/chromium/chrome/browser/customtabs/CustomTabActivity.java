@@ -17,6 +17,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,6 +57,7 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
@@ -263,6 +265,12 @@ public class CustomTabActivity extends ChromeActivity {
                 CustomTabsConnection.getInstance(getApplication()).getPrerenderedUrl(mSession));
         if (getSavedInstanceState() == null
                 && CustomTabsConnection.hasWarmUpBeenFinished(getApplication())) {
+            // TODO(tedchoc): Tab has dependencies on the tab model, so this should be called
+            //                before creating the tab.  That is not currently possible due to
+            //                an ordering problem with creating the Fullscreen manager.  If this
+            //                CCT were to be displaying a native page, it would likely crash, but
+            //                that doesn't happen in practice.
+            // initializeTabModels();
             mMainTab = createMainTab();
             loadUrlInTab(mMainTab, new LoadUrlParams(getUrlToLoad()),
                     IntentHandler.getTimestampFromIntent(getIntent()));
@@ -279,21 +287,6 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
-        TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
-                getTaskId(), getSavedInstanceState() != null);
-
-        setTabModelSelector(new TabModelSelectorImpl(this, this, getFullscreenManager(),
-                persistencePolicy, false));
-
-        setTabCreators(
-                new CustomTabCreator(
-                        this, getWindowAndroid(), false,
-                        mIntentDataProvider.shouldEnableUrlBarHiding(),
-                        mIntentDataProvider.isOpenedByChrome()),
-                new CustomTabCreator(
-                        this, getWindowAndroid(), true,
-                        mIntentDataProvider.shouldEnableUrlBarHiding(),
-                        mIntentDataProvider.isOpenedByChrome()));
 
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
@@ -318,6 +311,28 @@ public class CustomTabActivity extends ChromeActivity {
         showCustomButtonOnToolbar();
         mBottomBarDelegate = new CustomTabBottomBarDelegate(this, mIntentDataProvider);
         mBottomBarDelegate.showBottomBarIfNecessary();
+    }
+
+    @Override
+    protected TabModelSelector createTabModelSelector() {
+        TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
+                getTaskId(), getSavedInstanceState() != null);
+
+        return new TabModelSelectorImpl(
+                this, this, getFullscreenManager(), persistencePolicy, false);
+    }
+
+    @Override
+    protected Pair<CustomTabCreator, CustomTabCreator> createTabCreators() {
+        return Pair.create(
+                new CustomTabCreator(
+                        this, getWindowAndroid(), false,
+                        mIntentDataProvider.shouldEnableUrlBarHiding(),
+                        mIntentDataProvider.isOpenedByChrome()),
+                new CustomTabCreator(
+                        this, getWindowAndroid(), true,
+                        mIntentDataProvider.shouldEnableUrlBarHiding(),
+                        mIntentDataProvider.isOpenedByChrome()));
     }
 
     @Override
