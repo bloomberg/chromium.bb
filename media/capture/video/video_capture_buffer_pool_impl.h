@@ -34,10 +34,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       std::unique_ptr<VideoCaptureBufferTrackerFactory> buffer_tracker_factory,
       int count);
 
-  // Implementation of VideoCaptureBufferPool interface:
-  bool ShareToProcess(int buffer_id,
-                      base::ProcessHandle process_handle,
-                      base::SharedMemoryHandle* new_handle) override;
+  // VideoCaptureBufferPool implementation.
+  mojo::ScopedSharedBufferHandle GetHandleForTransit(int buffer_id) override;
   std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle(
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,

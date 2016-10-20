@@ -654,7 +654,6 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
 void VideoCaptureManager::StartCaptureForClient(
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params,
-    base::ProcessHandle client_render_process,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
     const DoneCB& done_cb) {
@@ -682,7 +681,7 @@ void VideoCaptureManager::StartCaptureForClient(
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
   done_cb.Run(entry->video_capture_controller()->GetWeakPtrForIOThread());
   entry->video_capture_controller()->AddClient(
-      client_id, client_handler, client_render_process, session_id, params);
+      client_id, client_handler, session_id, params);
 }
 
 void VideoCaptureManager::StopCaptureForClient(

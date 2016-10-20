@@ -30,21 +30,16 @@ VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() {
   base::STLDeleteValues(&trackers_);
 }
 
-bool VideoCaptureBufferPoolImpl::ShareToProcess(
-    int buffer_id,
-    base::ProcessHandle process_handle,
-    base::SharedMemoryHandle* new_handle) {
+mojo::ScopedSharedBufferHandle VideoCaptureBufferPoolImpl::GetHandleForTransit(
+    int buffer_id) {
   base::AutoLock lock(lock_);
 
   VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
   if (!tracker) {
     NOTREACHED() << "Invalid buffer_id.";
-    return false;
+    return mojo::ScopedSharedBufferHandle();
   }
-  if (tracker->ShareToProcess(process_handle, new_handle))
-    return true;
-  DPLOG(ERROR) << "Error mapping memory";
-  return false;
+  return tracker->GetHandleForTransit();
 }
 
 std::unique_ptr<VideoCaptureBufferHandle>

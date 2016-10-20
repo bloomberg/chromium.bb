@@ -19,25 +19,21 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/video_capture_types.h"
+#include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace media {
-class VideoFrame;
-}  // namespace media
-
 namespace content {
 
 // VideoCaptureImpl represents a capture device in renderer process. It provides
 // interfaces for clients to Start/Stop capture. It also communicates to clients
 // when buffer is ready, state of capture device is changed.
-
-// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which relays
-// operation of a capture device to the browser process and receives responses
-// from browser process.
+//
+// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter to receive
+// notification of the browser process being ready to communicate.
 //
 // VideoCaptureImpl is an IO thread only object. See the comments in
 // video_capture_impl_manager.cc for the lifetime of this object.
@@ -89,10 +85,6 @@ class CONTENT_EXPORT VideoCaptureImpl
     video_capture_host_for_testing_ = service;
   }
 
- protected:
-  // Note: Overridden only by unit test subclasses.
-  virtual void Send(IPC::Message* message);
-
  private:
   friend class VideoCaptureImplTest;
   friend class MockVideoCaptureImpl;
@@ -118,13 +110,12 @@ class CONTENT_EXPORT VideoCaptureImpl
                           double consumer_resource_utilization)>;
 
   // VideoCaptureMessageFilter::Delegate interface implementation.
-  void OnBufferCreated(base::SharedMemoryHandle handle,
-                       int length,
-                       int buffer_id) override;
   void OnDelegateAdded(int32_t device_id) override;
 
   // mojom::VideoCaptureObserver implementation.
   void OnStateChanged(mojom::VideoCaptureState state) override;
+  void OnBufferCreated(int32_t buffer_id,
+                       mojo::ScopedSharedBufferHandle handle) override;
   void OnBufferReady(int32_t buffer_id, mojom::VideoFrameInfoPtr info) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
 

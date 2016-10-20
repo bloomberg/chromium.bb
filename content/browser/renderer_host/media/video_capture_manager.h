@@ -76,7 +76,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // the callback on failure.
   void StartCaptureForClient(media::VideoCaptureSessionId session_id,
                              const media::VideoCaptureParams& capture_params,
-                             base::ProcessHandle client_render_process,
                              VideoCaptureControllerID client_id,
                              VideoCaptureControllerEventHandler* client_handler,
                              const DoneCB& done_cb);

@@ -138,7 +138,7 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
   MOCK_METHOD1(OnError, void(VideoCaptureControllerID id));
 
   void OnBufferCreated(VideoCaptureControllerID id,
-                       base::SharedMemoryHandle handle,
+                       mojo::ScopedSharedBufferHandle handle,
                        int length, int buffer_id) override {}
   void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {}
   void OnBufferReady(VideoCaptureControllerID id,
@@ -219,7 +219,6 @@ class VideoCaptureManagerTest : public testing::Test {
     vcm_->StartCaptureForClient(
         session_id,
         params,
-        base::kNullProcessHandle,
         client_id,
         frame_observer_.get(),
         base::Bind(&VideoCaptureManagerTest::OnGotControllerCallback,

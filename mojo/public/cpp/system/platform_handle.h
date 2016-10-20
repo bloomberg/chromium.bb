@@ -62,6 +62,7 @@ MojoResult UnwrapPlatformFile(ScopedHandle handle, base::PlatformFile* file);
 // SharedMemoryHandle. Note that |read_only| is only an indicator of whether
 // |memory_handle| only supports read-only mapping. It does NOT have any
 // influence on the access control of the shared buffer object.
+MOJO_CPP_SYSTEM_EXPORT
 ScopedSharedBufferHandle WrapSharedMemoryHandle(
     const base::SharedMemoryHandle& memory_handle,
     size_t size,

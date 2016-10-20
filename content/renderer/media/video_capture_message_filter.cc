@@ -14,10 +14,10 @@ VideoCaptureMessageFilter::VideoCaptureMessageFilter()
     : last_device_id_(0), channel_(nullptr) {}
 
 void VideoCaptureMessageFilter::AddDelegate(Delegate* delegate) {
-  if (++last_device_id_ <= 0)
-    last_device_id_ = 1;
-  while (delegates_.find(last_device_id_) != delegates_.end())
-    last_device_id_++;
+  DVLOG(1) << __func__;
+  last_device_id_++;
+  DCHECK_GE(last_device_id_, 1);
+  DCHECK(!base::ContainsKey(delegates_, last_device_id_));
 
   if (channel_) {
     delegates_[last_device_id_] = delegate;
@@ -28,8 +28,9 @@ void VideoCaptureMessageFilter::AddDelegate(Delegate* delegate) {
 }
 
 void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
-  for (Delegates::iterator it = delegates_.begin();
-       it != delegates_.end(); it++) {
+  DVLOG(1) << __func__;
+  for (Delegates::iterator it = delegates_.begin(); it != delegates_.end();
+       it++) {
     if (it->second == delegate) {
       delegates_.erase(it);
       break;
@@ -44,28 +45,18 @@ void VideoCaptureMessageFilter::RemoveDelegate(Delegate* delegate) {
   }
 }
 
-bool VideoCaptureMessageFilter::Send(IPC::Message* message) {
-  if (!channel_) {
-    delete message;
-    return false;
-  }
-
-  return channel_->Send(message);
-}
-
 bool VideoCaptureMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(VideoCaptureMessageFilter, message)
-    IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnBufferCreated)
+    IPC_MESSAGE_HANDLER(VideoCaptureMsg_Noop, DoNothing)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
 void VideoCaptureMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  DVLOG(1) << "VideoCaptureMessageFilter::OnFilterAdded()";
+  DVLOG(1) << __func__;
   channel_ = channel;
-
   for (const auto& pending_delegate : pending_delegates_) {
     pending_delegate.second->OnDelegateAdded(pending_delegate.first);
     delegates_[pending_delegate.first] = pending_delegate.second;
@@ -82,30 +73,5 @@ void VideoCaptureMessageFilter::OnChannelClosing() {
 }
 
 VideoCaptureMessageFilter::~VideoCaptureMessageFilter() {}
-
-VideoCaptureMessageFilter::Delegate*
-VideoCaptureMessageFilter::find_delegate(int device_id) const {
-  Delegates::const_iterator i = delegates_.find(device_id);
-  return i != delegates_.end() ? i->second : nullptr;
-}
-
-void VideoCaptureMessageFilter::OnBufferCreated(int device_id,
-                                                base::SharedMemoryHandle handle,
-                                                int length,
-                                                int buffer_id) {
-  Delegate* const delegate = find_delegate(device_id);
-  if (!delegate) {
-    DLOG(WARNING) << "OnBufferCreated: Got video SHM buffer for a "
-                     "non-existent or removed video capture.";
-
-    // Send the buffer back to Host in case it's waiting for all buffers
-    // to be returned.
-    base::SharedMemory::CloseHandle(handle);
-
-    return;
-  }
-
-  delegate->OnBufferCreated(handle, length, buffer_id);
-}
 
 }  // namespace content

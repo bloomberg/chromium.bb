@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/media/shared_memory_buffer_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
 
@@ -16,7 +17,7 @@ bool SharedMemoryBufferTracker::Init(const gfx::Size& dimensions,
                                      media::VideoPixelFormat format,
                                      media::VideoPixelStorage storage_type,
                                      base::Lock* lock) {
-  DVLOG(2) << "allocating ShMem of " << dimensions.ToString();
+  DVLOG(2) << __func__ << "allocating ShMem of " << dimensions.ToString();
   set_dimensions(dimensions);
   // |dimensions| can be 0x0 for trackers that do not require memory backing.
   set_max_pixel_count(dimensions.GetArea());
@@ -35,10 +36,11 @@ SharedMemoryBufferTracker::GetBufferHandle() {
   return base::MakeUnique<SharedMemoryBufferHandle>(this);
 }
 
-bool SharedMemoryBufferTracker::ShareToProcess(
-    base::ProcessHandle process_handle,
-    base::SharedMemoryHandle* new_handle) {
-  return shared_memory_.ShareToProcess(process_handle, new_handle);
+mojo::ScopedSharedBufferHandle
+SharedMemoryBufferTracker::GetHandleForTransit() {
+  return mojo::WrapSharedMemoryHandle(
+      base::SharedMemory::DuplicateHandle(shared_memory_.handle()),
+      mapped_size_, false /* read_only */);
 }
 
 }  // namespace content

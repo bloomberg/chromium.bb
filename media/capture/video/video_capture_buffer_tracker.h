@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace media {
 
@@ -46,12 +47,10 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   int consumer_hold_count() const { return consumer_hold_count_; }
   void set_consumer_hold_count(int value) { consumer_hold_count_ = value; }
 
-  // Returns a handle to the underlying storage, be that a block of Shared
-  // Memory, or a GpuMemoryBuffer.
+  // Returns a scoped handle to the underlying storage.
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle() = 0;
 
-  virtual bool ShareToProcess(base::ProcessHandle process_handle,
-                              base::SharedMemoryHandle* new_handle) = 0;
+  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit() = 0;
 
  private:
   // |dimensions_| may change as a VideoCaptureBufferTracker is re-used, but

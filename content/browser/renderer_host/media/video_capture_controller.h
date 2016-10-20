@@ -81,7 +81,6 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   // to receive frames from the device until RemoveClient() is called.
   void AddClient(VideoCaptureControllerID id,
                  VideoCaptureControllerEventHandler* event_handler,
-                 base::ProcessHandle render_process,
                  media::VideoCaptureSessionId session_id,
                  const media::VideoCaptureParams& params);
 

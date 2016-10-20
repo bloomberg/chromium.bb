@@ -23,6 +23,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
 
@@ -175,32 +176,6 @@ void VideoCaptureImpl::GetDeviceFormatsInUse(
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void VideoCaptureImpl::OnBufferCreated(base::SharedMemoryHandle handle,
-                                       int length,
-                                       int buffer_id) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  // In case client calls StopCapture before the arrival of created buffer,
-  // just close this buffer and return.
-  if (state_ != VIDEO_CAPTURE_STATE_STARTED) {
-    base::SharedMemory::CloseHandle(handle);
-    return;
-  }
-
-  std::unique_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(handle, false));
-  if (!shm->Map(length)) {
-    DLOG(ERROR) << "OnBufferCreated: Map failed.";
-    return;
-  }
-  const bool inserted =
-      client_buffers_.insert(std::make_pair(
-                                 buffer_id,
-                                 new ClientBuffer(std::move(shm), length)))
-          .second;
-  DCHECK(inserted);
-}
-
 void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
   DVLOG(1) << __func__ << " " << device_id;
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -256,10 +231,41 @@ void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
   }
 }
 
+void VideoCaptureImpl::OnBufferCreated(int32_t buffer_id,
+                                       mojo::ScopedSharedBufferHandle handle) {
+  DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(handle.is_valid());
+
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED)
+    return;
+
+  base::SharedMemoryHandle memory_handle;
+  size_t memory_size = 0;
+  bool read_only_flag = false;
+
+  const MojoResult result = mojo::UnwrapSharedMemoryHandle(
+      std::move(handle), &memory_handle, &memory_size, &read_only_flag);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
+  DCHECK_GT(memory_size, 0u);
+
+  std::unique_ptr<base::SharedMemory> shm(
+      new base::SharedMemory(memory_handle, true /* read_only */));
+  if (!shm->Map(memory_size)) {
+    DLOG(ERROR) << "OnBufferCreated: Map failed.";
+    return;
+  }
+  const bool inserted =
+      client_buffers_
+          .insert(std::make_pair(buffer_id,
+                                 new ClientBuffer(std::move(shm), memory_size)))
+          .second;
+  DCHECK(inserted);
+}
+
 void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
                                      mojom::VideoFrameInfoPtr info) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
-
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(media::PIXEL_FORMAT_I420, info->pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, info->storage_type);
@@ -400,11 +406,6 @@ void VideoCaptureImpl::OnDeviceFormatsInUse(
     const media::VideoCaptureFormats& formats_in_use) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   callback.Run(formats_in_use);
-}
-
-void VideoCaptureImpl::Send(IPC::Message* message) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  message_filter_->Send(message);
 }
 
 bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {

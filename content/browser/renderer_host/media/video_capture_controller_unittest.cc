@@ -61,7 +61,7 @@ class MockVideoCaptureControllerEventHandler
     DoError(id);
   }
   void OnBufferCreated(VideoCaptureControllerID id,
-                       base::SharedMemoryHandle handle,
+                       mojo::ScopedSharedBufferHandle handle,
                        int length, int buffer_id) override {
     DoBufferCreated(id);
   }
@@ -161,7 +161,6 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Client count should initially be zero.";
   controller_->AddClient(client_a_route_1,
                          client_a_.get(),
-                         base::kNullProcessHandle,
                          100,
                          session_100);
   // Clients in controller: [A/1]
@@ -169,7 +168,6 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Adding client A/1 should bump client count.";
   controller_->AddClient(client_a_route_2,
                          client_a_.get(),
-                         base::kNullProcessHandle,
                          200,
                          session_200);
   // Clients in controller: [A/1, A/2]
@@ -177,7 +175,6 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Adding client A/2 should bump client count.";
   controller_->AddClient(client_b_route_1,
                          client_b_.get(),
-                         base::kNullProcessHandle,
                          300,
                          session_300);
   // Clients in controller: [A/1, A/2, B/1]
@@ -200,7 +197,6 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
   ASSERT_EQ(1, controller_->GetClientCount());
   controller_->AddClient(client_b_route_2,
                          client_b_.get(),
-                         base::kNullProcessHandle,
                          400,
                          session_400);
   // Clients in controller: [A/1, B/2]
@@ -266,17 +262,14 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // Start with two clients.
   controller_->AddClient(client_a_route_1,
                          client_a_.get(),
-                         base::kNullProcessHandle,
                          100,
                          session_100);
   controller_->AddClient(client_b_route_1,
                          client_b_.get(),
-                         base::kNullProcessHandle,
                          300,
                          session_300);
   controller_->AddClient(client_a_route_2,
                          client_a_.get(),
-                         base::kNullProcessHandle,
                          200,
                          session_200);
   ASSERT_EQ(3, controller_->GetClientCount());
@@ -390,7 +383,6 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // Add a fourth client now that some buffers have come through.
   controller_->AddClient(client_b_route_2,
                          client_b_.get(),
-                         base::kNullProcessHandle,
                          1,
                          session_1);
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -501,8 +493,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   const VideoCaptureControllerID route_id(0x99);
 
   // Start with one client.
-  controller_->AddClient(
-      route_id, client_a_.get(), base::kNullProcessHandle, 100, session_100);
+  controller_->AddClient(route_id, client_a_.get(), 100, session_100);
   device_->OnError(FROM_HERE,  "Test Error");
   EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);
   base::RunLoop().RunUntilIdle();
@@ -511,8 +502,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   // Second client connects after the error state. It also should get told of
   // the error.
   EXPECT_CALL(*client_b_, DoError(route_id)).Times(1);
-  controller_->AddClient(
-      route_id, client_b_.get(), base::kNullProcessHandle, 200, session_200);
+  controller_->AddClient(route_id, client_b_.get(), 200, session_200);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_b_.get());
 
@@ -542,8 +532,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   const VideoCaptureControllerID route_id(0x99);
 
   // Start with one client.
-  controller_->AddClient(
-      route_id, client_a_.get(), base::kNullProcessHandle, 100, session_100);
+  controller_->AddClient(route_id, client_a_.get(), 100, session_100);
   media::VideoCaptureFormat device_format(
       gfx::Size(10, 10), 25, media::PIXEL_FORMAT_ARGB);
 
@@ -574,8 +563,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   // Second client connects after the error state. It also should get told of
   // the error.
   EXPECT_CALL(*client_b_, DoError(route_id)).Times(1);
-  controller_->AddClient(
-      route_id, client_b_.get(), base::kNullProcessHandle, 200, session_200);
+  controller_->AddClient(route_id, client_b_.get(), 200, session_200);
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 

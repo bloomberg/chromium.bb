@@ -9,6 +9,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -30,7 +31,7 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
 
   // A buffer has been newly created.
   virtual void OnBufferCreated(VideoCaptureControllerID id,
-                               base::SharedMemoryHandle handle,
+                               mojo::ScopedSharedBufferHandle handle,
                                int length,
                                int buffer_id) = 0;
 

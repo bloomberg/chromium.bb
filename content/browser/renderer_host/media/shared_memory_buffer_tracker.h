@@ -21,8 +21,7 @@ class SharedMemoryBufferTracker final
             base::Lock* lock) override;
 
   std::unique_ptr<media::VideoCaptureBufferHandle> GetBufferHandle() override;
-  bool ShareToProcess(base::ProcessHandle process_handle,
-                      base::SharedMemoryHandle* new_handle) override;
+  mojo::ScopedSharedBufferHandle GetHandleForTransit() override;
 
  private:
   friend class SharedMemoryBufferHandle;

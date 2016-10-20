@@ -1,52 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// VideoCaptureHost serves video capture related messages from
-// VideoCaptureMessageFilter which lives inside the render process.
-//
-// This class is owned by RenderProcessHostImpl, and instantiated on UI
-// thread, but all other operations and method calls happen on IO thread.
-//
-// Here's an example of a typical IPC dialog for video capture:
-//
-//   Renderer                             VideoCaptureHost
-//      |                                        |
-//      |  --------- StartCapture -------->      |
-//      | <------ VideoCaptureObserver   ------  |
-//      |         ::StateChanged(STARTED)        |
-//      | < VideoCaptureMsg_NewBuffer(1)         |
-//      | < VideoCaptureMsg_NewBuffer(2)         |
-//      | < VideoCaptureMsg_NewBuffer(3)         |
-//      |                                        |
-//      | <-------- OnBufferReady(1) ---------   |
-//      | <-------- OnBufferReady(2) ---------   |
-//      | -------- ReleaseBuffer(1) --------->   |
-//      | <-------- OnBufferReady(3) ---------   |
-//      | -------- ReleaseBuffer(2) --------->   |
-//      | <-------- OnBufferReady(1) ---------   |
-//      | -------- ReleaseBuffer(3) --------->   |
-//      | <-------- OnBufferReady(2) ---------   |
-//      | -------- ReleaseBuffer(1) --------->   |
-//      |             ...                        |
-//      | <-------- OnBufferReady(3) ---------   |
-//      =                                        =
-//      |             ... (resolution change)    |
-//      | <------ OnBufferDestroyed(3) -------   |  Buffers are re-allocated
-//      | < VideoCaptureMsg_NewBuffer(4)         |  with a larger size, as
-//      | <-------- OnBufferReady(4) ---------   |  needed.
-//      | -------- ReleaseBuffer(2) --------->   |
-//      | <------ OnBufferDestroyed(2) -------   |
-//      | < VideoCaptureMsg_NewBuffer(5)         |
-//      | <-------- OnBufferReady(5) ---------   |
-//      =             ...                        =
-//      |                                        |
-//      | < VideoCaptureMsg_BufferReady          |
-//      |  --------- StopCapture --------->      |
-//      | -------- ReleaseBuffer(n) --------->   |
-//      | <------ VideoCaptureObserver   ------  |
-//      |         ::StateChanged(STOPPED)        |
-//      v                                        v
 
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_
@@ -68,6 +22,14 @@
 namespace content {
 class MediaStreamManager;
 
+// VideoCaptureHost is the IO thread browser process communication endpoint
+// between a renderer process (which can initiate and receive a video capture
+// stream) and a VideoCaptureController in the browser process (which provides
+// the stream from a video device). Every remote client is identified via a
+// unique |device_id|, and is paired with a single VideoCaptureController.
+//
+// This class is owned by RenderProcessHostImpl, and instantiated on UI thread,
+// but all other operations and method calls happen on IO thread.
 class CONTENT_EXPORT VideoCaptureHost
     : public BrowserMessageFilter,
       public VideoCaptureControllerEventHandler,
@@ -75,6 +37,13 @@ class CONTENT_EXPORT VideoCaptureHost
       public mojom::VideoCaptureHost {
  public:
   explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
+
+ private:
+  friend class BrowserThread;
+  friend class base::DeleteHelper<VideoCaptureHost>;
+  friend class VideoCaptureHostTest;
+
+  ~VideoCaptureHost() override;
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -84,7 +53,7 @@ class CONTENT_EXPORT VideoCaptureHost
   // VideoCaptureControllerEventHandler implementation.
   void OnError(VideoCaptureControllerID id) override;
   void OnBufferCreated(VideoCaptureControllerID id,
-                       base::SharedMemoryHandle handle,
+                       mojo::ScopedSharedBufferHandle handle,
                        int length,
                        int buffer_id) override;
   void OnBufferDestroyed(VideoCaptureControllerID id,
@@ -93,17 +62,6 @@ class CONTENT_EXPORT VideoCaptureHost
                      int buffer_id,
                      const scoped_refptr<media::VideoFrame>& frame) override;
   void OnEnded(VideoCaptureControllerID id) override;
-
- private:
-  friend class BrowserThread;
-  friend class base::DeleteHelper<VideoCaptureHost>;
-  friend class MockVideoCaptureHost;
-  friend class VideoCaptureHostTest;
-
-  void DoError(VideoCaptureControllerID id);
-  void DoEnded(VideoCaptureControllerID id);
-
-  ~VideoCaptureHost() override;
 
   // mojom::VideoCaptureHost implementation
   void Start(int32_t device_id,
@@ -129,12 +87,17 @@ class CONTENT_EXPORT VideoCaptureHost
       int32_t session_id,
       const GetDeviceFormatsInUseCallback& callback) override;
 
+  void DoError(VideoCaptureControllerID id);
+  void DoEnded(VideoCaptureControllerID id);
+
+  // Bound as callback for VideoCaptureManager::StartCaptureForClient().
   void OnControllerAdded(
       int device_id,
       const base::WeakPtr<VideoCaptureController>& controller);
 
-  // Deletes the controller and notifies the VideoCaptureManager. |on_error| is
-  // true if this is triggered by VideoCaptureControllerEventHandler::OnError.
+  // Helper function that deletes the controller and tells VideoCaptureManager
+  // to StopCaptureForClient(). |on_error| is true if this is triggered by
+  // VideoCaptureControllerEventHandler::OnError.
   void DeleteVideoCaptureController(VideoCaptureControllerID controller_id,
                                     bool on_error);
 

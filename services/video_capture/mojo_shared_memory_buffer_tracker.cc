@@ -42,10 +42,9 @@ MojoSharedMemoryBufferTracker::GetBufferHandle() {
   return base::MakeUnique<MojoSharedMemoryBufferHandle>(this);
 }
 
-bool MojoSharedMemoryBufferTracker::ShareToProcess(
-    base::ProcessHandle process_handle,
-    base::SharedMemoryHandle* new_handle) {
-  return false;
+mojo::ScopedSharedBufferHandle
+MojoSharedMemoryBufferTracker::GetHandleForTransit() {
+  return mojo::ScopedSharedBufferHandle();
 }
 
 }  // namespace video_capture

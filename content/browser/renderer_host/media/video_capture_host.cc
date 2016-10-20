@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
 
@@ -60,14 +61,17 @@ void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
 }
 
 void VideoCaptureHost::OnBufferCreated(VideoCaptureControllerID controller_id,
-                                       base::SharedMemoryHandle handle,
+                                       mojo::ScopedSharedBufferHandle handle,
                                        int length,
                                        int buffer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (controllers_.find(controller_id) == controllers_.end())
     return;
 
-  Send(new VideoCaptureMsg_NewBuffer(controller_id, handle, length, buffer_id));
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[controller_id]->OnBufferCreated(
+        buffer_id, std::move(handle));
+  }
 }
 
 void VideoCaptureHost::OnBufferDestroyed(VideoCaptureControllerID controller_id,
@@ -113,34 +117,6 @@ void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {
       base::Bind(&VideoCaptureHost::DoEnded, this, controller_id));
 }
 
-void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
-  DVLOG(1) << __func__;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (controllers_.find(controller_id) == controllers_.end())
-    return;
-
-  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
-    device_id_to_observer_map_[controller_id]->OnStateChanged(
-        mojom::VideoCaptureState::FAILED);
-  }
-
-  DeleteVideoCaptureController(controller_id, true);
-}
-
-void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
-  DVLOG(1) << __func__;
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (controllers_.find(controller_id) == controllers_.end())
-    return;
-
-  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
-    device_id_to_observer_map_[controller_id]->OnStateChanged(
-        mojom::VideoCaptureState::ENDED);
-  }
-
-  DeleteVideoCaptureController(controller_id, false);
-}
-
 void VideoCaptureHost::Start(int32_t device_id,
                              int32_t session_id,
                              const media::VideoCaptureParams& params,
@@ -164,7 +140,6 @@ void VideoCaptureHost::Start(int32_t device_id,
   media_stream_manager_->video_capture_manager()->StartCaptureForClient(
       session_id,
       params,
-      PeerHandle(),
       controller_id,
       this,
       base::Bind(&VideoCaptureHost::OnControllerAdded, this, device_id));
@@ -280,6 +255,34 @@ void VideoCaptureHost::GetDeviceFormatsInUse(
     DLOG(WARNING) << "Could not retrieve device format(s) in use";
   }
   callback.Run(formats_in_use);
+}
+
+void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
+  DVLOG(1) << __func__;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (controllers_.find(controller_id) == controllers_.end())
+    return;
+
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[controller_id]->OnStateChanged(
+        mojom::VideoCaptureState::FAILED);
+  }
+
+  DeleteVideoCaptureController(controller_id, true);
+}
+
+void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
+  DVLOG(1) << __func__;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (controllers_.find(controller_id) == controllers_.end())
+    return;
+
+  if (base::ContainsKey(device_id_to_observer_map_, controller_id)) {
+    device_id_to_observer_map_[controller_id]->OnStateChanged(
+        mojom::VideoCaptureState::ENDED);
+  }
+
+  DeleteVideoCaptureController(controller_id, false);
 }
 
 void VideoCaptureHost::OnControllerAdded(

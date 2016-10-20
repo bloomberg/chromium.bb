@@ -129,12 +129,10 @@ class VideoFrameReceiverOnIOThread : public media::VideoFrameReceiver {
 struct VideoCaptureController::ControllerClient {
   ControllerClient(VideoCaptureControllerID id,
                    VideoCaptureControllerEventHandler* handler,
-                   base::ProcessHandle render_process,
                    media::VideoCaptureSessionId session_id,
                    const media::VideoCaptureParams& params)
       : controller_id(id),
         event_handler(handler),
-        render_process_handle(render_process),
         session_id(session_id),
         parameters(params),
         session_closed(false),
@@ -146,8 +144,6 @@ struct VideoCaptureController::ControllerClient {
   const VideoCaptureControllerID controller_id;
   VideoCaptureControllerEventHandler* const event_handler;
 
-  // Handle to the render process that will receive the capture buffers.
-  const base::ProcessHandle render_process_handle;
   const media::VideoCaptureSessionId session_id;
   const media::VideoCaptureParams parameters;
 
@@ -206,7 +202,6 @@ VideoCaptureController::NewDeviceClient() {
 void VideoCaptureController::AddClient(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
-    base::ProcessHandle render_process,
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -242,8 +237,8 @@ void VideoCaptureController::AddClient(
   if (FindClient(id, event_handler, controller_clients_))
     return;
 
-  std::unique_ptr<ControllerClient> client = base::MakeUnique<ControllerClient>(
-      id, event_handler, render_process, session_id, params);
+  std::unique_ptr<ControllerClient> client =
+      base::MakeUnique<ControllerClient>(id, event_handler, session_id, params);
   // If we already have gotten frame_info from the device, repeat it to the new
   // client.
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {
@@ -508,14 +503,13 @@ void VideoCaptureController::DoNewBufferOnIOThread(
     media::VideoCaptureDevice::Client::Buffer* buffer,
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const int buffer_id = buffer->id();
-
   DCHECK_EQ(media::VideoFrame::STORAGE_SHMEM, frame->storage_type());
 
-  base::SharedMemoryHandle remote_handle;
-  buffer_pool_->ShareToProcess(buffer_id, client->render_process_handle,
-                               &remote_handle);
-  client->event_handler->OnBufferCreated(client->controller_id, remote_handle,
+  const int buffer_id = buffer->id();
+  mojo::ScopedSharedBufferHandle handle =
+      buffer_pool_->GetHandleForTransit(buffer_id);
+  client->event_handler->OnBufferCreated(client->controller_id,
+                                         std::move(handle),
                                          buffer->mapped_size(), buffer_id);
 }
 
