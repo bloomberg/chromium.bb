@@ -146,6 +146,10 @@ AC_ARG_ENABLE(xkbcommon,
 if test x$enable_xkbcommon = xyes; then
 	AC_DEFINE(ENABLE_XKBCOMMON, [1], [Build Weston with libxkbcommon support])
 	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
+	PKG_CHECK_MODULES(XKBCOMMON_COMPOSE, [xkbcommon >= 0.5.0],
+	                  [AC_DEFINE(HAVE_XKBCOMMON_COMPOSE, 1,
+			             [Define if xkbcommon is 0.5.0 or newer])],
+                          true)
 fi
 
 AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
