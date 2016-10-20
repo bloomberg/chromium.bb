@@ -100,7 +100,10 @@ public class EditorTextField extends CompatibilityTextInputLayout
         }
 
         if (filter != null) mInput.setFilters(new InputFilter[] {filter});
-        if (formatter != null) mInput.addTextChangedListener(formatter);
+        if (formatter != null) {
+            mInput.addTextChangedListener(formatter);
+            formatter.afterTextChanged(mInput.getText());
+        }
 
         switch (fieldModel.getInputTypeHint()) {
             case EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD:
