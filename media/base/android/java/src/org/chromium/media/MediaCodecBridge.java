@@ -17,6 +17,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.media.MediaCodecUtil.BitrateAdjustmentTypes;
 import org.chromium.media.MediaCodecUtil.MimeTypes;
 
 import java.nio.ByteBuffer;
@@ -59,6 +60,9 @@ class MediaCodecBridge {
     private static final String KEY_CROP_BOTTOM = "crop-bottom";
     private static final String KEY_CROP_TOP = "crop-top";
 
+    private static final int BITRATE_ADJUSTMENT_FPS = 30;
+    private static final int MAXIMUM_INITIAL_FPS = 30;
+
     private ByteBuffer[] mInputBuffers;
     private ByteBuffer[] mOutputBuffers;
 
@@ -67,6 +71,8 @@ class MediaCodecBridge {
     private long mLastPresentationTimeUs;
     private String mMime;
     private boolean mAdaptivePlaybackSupported;
+
+    private BitrateAdjustmentTypes mBitrateAdjustmentType = BitrateAdjustmentTypes.NO_ADJUSTMENT;
 
     @MainDex
     private static class DequeueInputResult {
@@ -186,14 +192,15 @@ class MediaCodecBridge {
         }
     }
 
-    private MediaCodecBridge(
-            MediaCodec mediaCodec, String mime, boolean adaptivePlaybackSupported) {
+    private MediaCodecBridge(MediaCodec mediaCodec, String mime, boolean adaptivePlaybackSupported,
+            BitrateAdjustmentTypes bitrateAdjustmentType) {
         assert mediaCodec != null;
         mMediaCodec = mediaCodec;
         mMime = mime;
         mLastPresentationTimeUs = 0;
         mFlushed = true;
         mAdaptivePlaybackSupported = adaptivePlaybackSupported;
+        mBitrateAdjustmentType = bitrateAdjustmentType;
     }
 
     @CalledByNative
@@ -214,7 +221,8 @@ class MediaCodecBridge {
 
         if (info.mediaCodec == null) return null;
 
-        return new MediaCodecBridge(info.mediaCodec, mime, info.supportsAdaptivePlayback);
+        return new MediaCodecBridge(
+                info.mediaCodec, mime, info.supportsAdaptivePlayback, info.bitrateAdjustmentType);
     }
 
     @CalledByNative
@@ -353,11 +361,18 @@ class MediaCodecBridge {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @CalledByNative
-    private void setVideoBitrate(int bps) {
+    private void setVideoBitrate(int bps, int frameRate) {
+        int targetBps = bps;
+        if (mBitrateAdjustmentType == BitrateAdjustmentTypes.FRAMERATE_ADJUSTMENT
+                && frameRate > 0) {
+            targetBps = BITRATE_ADJUSTMENT_FPS * bps / frameRate;
+        }
+
         Bundle b = new Bundle();
-        b.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, bps);
+        b.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, targetBps);
         mMediaCodec.setParameters(b);
-        Log.v(TAG, "setVideoBitrate " + bps);
+        Log.v(TAG,
+                "setVideoBitrate: input " + bps + "bps@" + frameRate + ", targetBps " + targetBps);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -538,8 +553,14 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private static MediaFormat createVideoEncoderFormat(String mime, int width, int height,
-            int bitRate, int frameRate, int iFrameInterval, int colorFormat) {
+    private MediaFormat createVideoEncoderFormat(String mime, int width, int height, int bitRate,
+            int frameRate, int iFrameInterval, int colorFormat) {
+        if (mBitrateAdjustmentType == BitrateAdjustmentTypes.FRAMERATE_ADJUSTMENT) {
+            frameRate = BITRATE_ADJUSTMENT_FPS;
+        } else {
+            frameRate = Math.min(frameRate, MAXIMUM_INITIAL_FPS);
+        }
+
         MediaFormat format = MediaFormat.createVideoFormat(mime, width, height);
         format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate);
         format.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);

@@ -157,7 +157,7 @@ class MEDIA_EXPORT VideoCodecBridge : public SdkMediaCodecBridge {
       int i_frame_interval,     // count
       int color_format);        // MediaCodecInfo.CodecCapabilities.
 
-  void SetVideoBitrate(int bps);
+  void SetVideoBitrate(int bps, int frame_rate);
   void RequestKeyFrameSoon();
 
   // Returns whether adaptive playback is supported for this object given

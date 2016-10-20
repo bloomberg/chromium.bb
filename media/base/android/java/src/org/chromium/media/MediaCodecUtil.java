@@ -37,6 +37,7 @@ class MediaCodecUtil {
     public static class CodecCreationInfo {
         public MediaCodec mediaCodec = null;
         public boolean supportsAdaptivePlayback = false;
+        public BitrateAdjustmentTypes bitrateAdjustmentType = BitrateAdjustmentTypes.NO_ADJUSTMENT;
     }
 
     @MainDex
@@ -47,6 +48,17 @@ class MediaCodecUtil {
         public static final String VIDEO_H265 = "video/hevc";
         public static final String VIDEO_VP8 = "video/x-vnd.on2.vp8";
         public static final String VIDEO_VP9 = "video/x-vnd.on2.vp9";
+    }
+
+    // Type of bitrate adjustment for video encoder.
+    @MainDex
+    public enum BitrateAdjustmentTypes {
+        // No adjustment - video encoder has no known bitrate problem.
+        NO_ADJUSTMENT,
+        // Framerate based bitrate adjustment is required - HW encoder does not use frame
+        // timestamps to calculate frame bitrate budget and instead is relying on initial
+        // fps configuration assuming that all frames are coming at fixed initial frame rate.
+        FRAMERATE_ADJUSTMENT,
     }
 
     /**
@@ -361,19 +373,26 @@ class MediaCodecUtil {
 
     // List of supported HW encoders.
     private static enum HWEncoderProperties {
-        QcomVp8(MimeTypes.VIDEO_VP8, "OMX.qcom.", Build.VERSION_CODES.KITKAT),
-        QcomH264(MimeTypes.VIDEO_H264, "OMX.qcom.", Build.VERSION_CODES.KITKAT),
-        ExynosVp8(MimeTypes.VIDEO_VP8, "OMX.Exynos.", Build.VERSION_CODES.M),
-        ExynosH264(MimeTypes.VIDEO_H264, "OMX.Exynos.", Build.VERSION_CODES.LOLLIPOP);
+        QcomVp8(MimeTypes.VIDEO_VP8, "OMX.qcom.", Build.VERSION_CODES.KITKAT,
+                BitrateAdjustmentTypes.NO_ADJUSTMENT),
+        QcomH264(MimeTypes.VIDEO_H264, "OMX.qcom.", Build.VERSION_CODES.KITKAT,
+                BitrateAdjustmentTypes.NO_ADJUSTMENT),
+        ExynosVp8(MimeTypes.VIDEO_VP8, "OMX.Exynos.", Build.VERSION_CODES.M,
+                BitrateAdjustmentTypes.NO_ADJUSTMENT),
+        ExynosH264(MimeTypes.VIDEO_H264, "OMX.Exynos.", Build.VERSION_CODES.LOLLIPOP,
+                BitrateAdjustmentTypes.FRAMERATE_ADJUSTMENT);
 
         private final String mMime;
         private final String mPrefix;
         private final int mMinSDK;
+        private final BitrateAdjustmentTypes mBitrateAdjustmentType;
 
-        private HWEncoderProperties(String mime, String prefix, int minSDK) {
+        private HWEncoderProperties(String mime, String prefix, int minSDK,
+                BitrateAdjustmentTypes bitrateAdjustmentType) {
             this.mMime = mime;
             this.mPrefix = prefix;
             this.mMinSDK = minSDK;
+            this.mBitrateAdjustmentType = bitrateAdjustmentType;
         }
 
         public String getMime() {
@@ -386,6 +405,10 @@ class MediaCodecUtil {
 
         public int getMinSDK() {
             return mMinSDK;
+        }
+
+        public BitrateAdjustmentTypes getBitrateAdjustmentType() {
+            return mBitrateAdjustmentType;
         }
     }
 
@@ -405,11 +428,15 @@ class MediaCodecUtil {
         // if we cannot create the codec.
         CodecCreationInfo result = new CodecCreationInfo();
 
-        if (!isEncoderSupportedByDevice(mime)) return result;
+        HWEncoderProperties encoderProperties = findHWEncoder(mime);
+        if (encoderProperties == null) {
+            return result;
+        }
 
         try {
             result.mediaCodec = MediaCodec.createEncoderByType(mime);
             result.supportsAdaptivePlayback = false;
+            result.bitrateAdjustmentType = encoderProperties.getBitrateAdjustmentType();
         } catch (Exception e) {
             Log.e(TAG, "Failed to create MediaCodec: %s", mime, e);
         }
@@ -439,6 +466,19 @@ class MediaCodecUtil {
             }
         }
 
+        if (findHWEncoder(mime) == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Find HW encoder with given MIME type.
+     * @param mime MIME type of the media.
+     * @return HWEncoderProperties object.
+     */
+    private static HWEncoderProperties findHWEncoder(String mime) {
         MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
         int codecCount = codecListHelper.getCodecCount();
         for (int i = 0; i < codecCount; ++i) {
@@ -469,12 +509,12 @@ class MediaCodecUtil {
                         continue;
                     }
                     Log.d(TAG, "Found target encoder for mime " + mime + " : " + encoderName);
-                    return true;
+                    return codecProperties;
                 }
             }
         }
 
         Log.w(TAG, "HW encoder for " + mime + " is not available on this device.");
-        return false;
+        return null;
     }
 }

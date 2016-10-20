@@ -273,7 +273,7 @@ void AndroidVideoEncodeAccelerator::RequestEncodingParametersChange(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (bitrate != last_set_bitrate_) {
     last_set_bitrate_ = bitrate;
-    media_codec_->SetVideoBitrate(bitrate);
+    media_codec_->SetVideoBitrate(bitrate, framerate);
   }
   // Note: Android's MediaCodec doesn't allow mid-stream adjustments to
   // framerate, so we ignore that here.  This is OK because Android only uses

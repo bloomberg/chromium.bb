@@ -633,8 +633,8 @@ VideoCodecBridge* VideoCodecBridge::CreateEncoder(const VideoCodec& codec,
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   ScopedJavaLocalRef<jobject> j_format(
       Java_MediaCodecBridge_createVideoEncoderFormat(
-          env, j_mime, size.width(), size.height(), bit_rate, frame_rate,
-          i_frame_interval, color_format));
+          env, bridge->media_codec(), j_mime, size.width(), size.height(),
+          bit_rate, frame_rate, i_frame_interval, color_format));
   DCHECK(!j_format.is_null());
   if (!Java_MediaCodecBridge_configureVideo(env, bridge->media_codec(),
                                             j_format, nullptr, nullptr,
@@ -652,9 +652,9 @@ VideoCodecBridge::VideoCodecBridge(const std::string& mime,
     : SdkMediaCodecBridge(mime, is_secure, direction, require_software_codec),
       adaptive_playback_supported_for_testing_(-1) {}
 
-void VideoCodecBridge::SetVideoBitrate(int bps) {
+void VideoCodecBridge::SetVideoBitrate(int bps, int frame_rate) {
   JNIEnv* env = AttachCurrentThread();
-  Java_MediaCodecBridge_setVideoBitrate(env, media_codec(), bps);
+  Java_MediaCodecBridge_setVideoBitrate(env, media_codec(), bps, frame_rate);
 }
 
 void VideoCodecBridge::RequestKeyFrameSoon() {
