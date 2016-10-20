@@ -103,12 +103,6 @@ VisibleSelection createVisibleSelection(const PositionWithAffinity& pos,
   return createVisibleSelection(pos.position(), pos.affinity(), isDirectional);
 }
 
-VisibleSelection createVisibleSelection(const VisiblePosition& pos,
-                                        bool isDirectional) {
-  return createVisibleSelection(pos.deepEquivalent(), pos.affinity(),
-                                isDirectional);
-}
-
 VisibleSelection createVisibleSelection(const VisiblePosition& base,
                                         const VisiblePosition& extent,
                                         bool isDirectional) {

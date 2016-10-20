@@ -101,12 +101,14 @@ bool InsertTextCommand::performTrivialReplace(const String& text,
     return false;
 
   setEndingSelectionWithoutValidation(start, endPosition);
-  if (!selectInsertedText) {
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        endingSelection().visibleEnd(), endingSelection().isDirectional()));
-  }
-
+  if (selectInsertedText)
+    return true;
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(endingSelection().end())
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
   return true;
 }
 
@@ -130,12 +132,16 @@ bool InsertTextCommand::performOverwrite(const String& text,
   Position endPosition =
       Position(textNode, start.offsetInContainerNode() + text.length());
   setEndingSelectionWithoutValidation(start, endPosition);
-  if (!selectInsertedText) {
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setEndingSelection(createVisibleSelection(
-        endingSelection().visibleEnd(), endingSelection().isDirectional()));
-  }
-
+  if (selectInsertedText)
+    return true;
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+  if (endingSelection().isNone())
+    return true;
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(endingSelection().end())
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
   return true;
 }
 

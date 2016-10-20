@@ -82,7 +82,14 @@ void EditCommand::setEndingSelection(const VisibleSelection& selection) {
 }
 
 void EditCommand::setEndingSelection(const VisiblePosition& position) {
-  setEndingSelection(createVisibleSelection(position));
+  if (position.isNull()) {
+    setEndingSelection(VisibleSelection());
+    return;
+  }
+  setEndingSelection(
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(position.toPositionWithAffinity())
+                                 .build()));
 }
 
 bool EditCommand::isRenderedCharacter(const Position& position) {

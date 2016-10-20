@@ -76,7 +76,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   VisibleSelectionInFlatTree selectionInFlatTree;
 
   // From a position at distributed node
-  selection = createVisibleSelection(createVisiblePosition(Position(one, 1)));
+  selection = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(Position(one, 1)).build());
   selection.expandUsingGranularity(WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
@@ -95,7 +96,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   EXPECT_EQ(PositionInFlatTree(five, 5), selectionInFlatTree.end());
 
   // From a position at distributed node
-  selection = createVisibleSelection(createVisiblePosition(Position(two, 1)));
+  selection = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(Position(two, 1)).build());
   selection.expandUsingGranularity(WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
@@ -114,7 +116,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
   // From a position at node in shadow tree
-  selection = createVisibleSelection(createVisiblePosition(Position(three, 1)));
+  selection = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(Position(three, 1)).build());
   selection.expandUsingGranularity(WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
@@ -133,7 +136,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
   // From a position at node in shadow tree
-  selection = createVisibleSelection(createVisiblePosition(Position(four, 1)));
+  selection = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(Position(four, 1)).build());
   selection.expandUsingGranularity(WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()
@@ -152,7 +156,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
   // From a position at node in shadow tree
-  selection = createVisibleSelection(createVisiblePosition(Position(five, 1)));
+  selection = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(Position(five, 1)).build());
   selection.expandUsingGranularity(WordGranularity);
   selectionInFlatTree =
       createVisibleSelection(SelectionInFlatTree::Builder()

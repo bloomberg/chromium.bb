@@ -127,9 +127,11 @@ void InsertLineBreakCommand::doApply(EditingState* editingState) {
     }
 
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    VisiblePosition endingPosition = VisiblePosition::beforeNode(nodeToInsert);
     setEndingSelection(createVisibleSelection(
-        endingPosition, endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(Position::beforeNode(nodeToInsert))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
   } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
     insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())

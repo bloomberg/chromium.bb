@@ -227,8 +227,6 @@ createVisibleSelection(const EphemeralRange&,
                        TextAffinity = SelDefaultAffinity,
                        bool isDirectional = false);
 CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
-                                                    bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
                                                     const VisiblePosition&,
                                                     bool isDirectional = false);
 CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&,

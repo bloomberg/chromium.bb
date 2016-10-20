@@ -641,8 +641,11 @@ bool SelectionModifier::modify(EAlteration alter,
 
   switch (alter) {
     case FrameSelection::AlterationMove:
-      m_selection =
-          createVisibleSelection(position, m_selection.isDirectional());
+      m_selection = createVisibleSelection(
+          SelectionInDOMTree::Builder()
+              .collapse(position.toPositionWithAffinity())
+              .setIsDirectional(m_selection.isDirectional())
+              .build());
       break;
     case FrameSelection::AlterationExtend:
 
@@ -772,7 +775,11 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter,
 
   switch (alter) {
     case FrameSelection::AlterationMove:
-      m_selection = createVisibleSelection(result, m_selection.isDirectional());
+      m_selection = createVisibleSelection(
+          SelectionInDOMTree::Builder()
+              .collapse(result.toPositionWithAffinity())
+              .setIsDirectional(m_selection.isDirectional())
+              .build());
       break;
     case FrameSelection::AlterationExtend:
       m_selection.setExtent(result);

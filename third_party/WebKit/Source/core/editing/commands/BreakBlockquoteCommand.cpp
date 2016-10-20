@@ -184,8 +184,10 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   if (!startNode->isDescendantOf(topBlockquote)) {
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     setEndingSelection(createVisibleSelection(
-        createVisiblePosition(firstPositionInOrBeforeNode(startNode)),
-        endingSelection().isDirectional()));
+        SelectionInDOMTree::Builder()
+            .collapse(firstPositionInOrBeforeNode(startNode))
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     return;
   }
 
