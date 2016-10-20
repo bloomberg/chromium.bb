@@ -491,5 +491,9 @@ void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(
   }
 }
 
+bool TaskQueueManager::HasImmediateWorkForTesting() const {
+  return !selector_.EnabledWorkQueuesEmpty();
+}
+
 }  // namespace scheduler
 }  // namespace blink

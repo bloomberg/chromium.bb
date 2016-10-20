@@ -140,6 +140,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Return number of pending tasks in task queues.
   size_t GetNumberOfPendingTasks() const;
 
+  // Returns true if there is a task that could be executed immediately.
+  bool HasImmediateWorkForTesting() const;
+
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;

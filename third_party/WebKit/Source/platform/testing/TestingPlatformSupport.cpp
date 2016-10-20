@@ -40,6 +40,8 @@
 #include "cc/test/ordered_simple_task_runner.h"
 #include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
+#include "platform/scheduler/base/real_time_domain.h"
+#include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
@@ -220,7 +222,34 @@ void TestingPlatformSupportWithMockScheduler::runUntilIdle() {
 
 void TestingPlatformSupportWithMockScheduler::runForPeriodSeconds(
     double seconds) {
-  m_mockTaskRunner->RunForPeriod(base::TimeDelta::FromSecondsD(seconds));
+  const base::TimeTicks deadline =
+      m_clock->NowTicks() + base::TimeDelta::FromSecondsD(seconds);
+
+  scheduler::TaskQueueManager* taskQueueManager =
+      m_scheduler->GetSchedulerHelperForTesting()
+          ->GetTaskQueueManagerForTesting();
+
+  for (;;) {
+    // If we've run out of immediate work then fast forward to the next delayed
+    // task, but don't pass |deadline|.
+    if (!taskQueueManager->HasImmediateWorkForTesting()) {
+      base::TimeTicks nextDelayedTask;
+      if (!taskQueueManager->real_time_domain()->NextScheduledRunTime(
+              &nextDelayedTask) ||
+          nextDelayedTask > deadline) {
+        break;
+      }
+
+      m_clock->SetNowTicks(nextDelayedTask);
+    }
+
+    if (m_clock->NowTicks() > deadline)
+      break;
+
+    m_mockTaskRunner->RunPendingTasks();
+  }
+
+  m_clock->SetNowTicks(deadline);
 }
 
 void TestingPlatformSupportWithMockScheduler::advanceClockSeconds(

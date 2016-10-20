@@ -46,10 +46,6 @@ class TimerTest : public testing::Test {
     double period = deadline - monotonicallyIncreasingTime();
     EXPECT_GE(period, 0.0);
     m_platform.runForPeriodSeconds(period);
-
-    // We may have stopped before the clock advanced to |deadline|.
-    double timeToAdvance = deadline - monotonicallyIncreasingTime();
-    m_platform.advanceClockSeconds(timeToAdvance);
   }
 
   // Returns false if there are no pending delayed tasks, otherwise sets |time|
@@ -457,11 +453,14 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
   // Next scheduled task to run at m_startTime + 10.0
   m_platform.runForPeriodSeconds(2.9);
   // Next scheduled task to run at m_startTime + 14.0 (skips a beat)
-  m_platform.runForPeriodSeconds(3.1);
+  m_platform.advanceClockSeconds(3.1);
+  m_platform.runUntilIdle();
   // Next scheduled task to run at m_startTime + 18.0 (skips a beat)
-  m_platform.runForPeriodSeconds(4.0);
+  m_platform.advanceClockSeconds(4.0);
+  m_platform.runUntilIdle();
   // Next scheduled task to run at m_startTime + 28.0 (skips 5 beats)
-  m_platform.runForPeriodSeconds(10.0);
+  m_platform.advanceClockSeconds(10.0);
+  m_platform.runUntilIdle();
 
   EXPECT_THAT(
       m_nextFireTimes,
