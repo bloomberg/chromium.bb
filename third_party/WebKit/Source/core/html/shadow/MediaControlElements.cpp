@@ -174,6 +174,10 @@ void MediaControlPanelElement::didBecomeVisible() {
   mediaElement().mediaControlsDidBecomeVisible();
 }
 
+bool MediaControlPanelElement::isOpaque() const {
+  return m_opaque;
+}
+
 void MediaControlPanelElement::makeOpaque() {
   if (m_opaque)
     return;

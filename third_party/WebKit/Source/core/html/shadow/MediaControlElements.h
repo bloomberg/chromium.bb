@@ -45,6 +45,7 @@ class MediaControlPanelElement final : public MediaControlDivElement {
 
   void setIsDisplayed(bool);
 
+  bool isOpaque() const;
   void makeOpaque();
   void makeTransparent();
 

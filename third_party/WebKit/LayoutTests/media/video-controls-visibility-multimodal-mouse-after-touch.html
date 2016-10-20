@@ -20,12 +20,12 @@ async_test(function(t) {
         assert_false(video.paused);
 
         // And then hover the control with the mouse.
+        eventSender.mouseMoveTo(0, 0);
         eventSender.mouseMoveTo(coords[0], coords[1]);
 
         // And the controls should remain visible.
         runAfterHideMediaControlsTimerFired(t.step_func_done(function() {
-            var controls = mediaControlsButton(video, "panel");
-            assert_equals(getComputedStyle(controls).opacity, "1");
+            assert_true(isControlsPanelVisible(video));
         }), video);
     });
 

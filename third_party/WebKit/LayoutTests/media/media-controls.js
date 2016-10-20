@@ -180,3 +180,8 @@ function hasFullscreenButton(element)
     var size = mediaControlsButtonDimensions(element, "fullscreen-button");
     return size[0] > 0 && size[1] > 0;
 }
+
+function isControlsPanelVisible(element)
+{
+    return getComputedStyle(mediaControlsButton(element, "panel")).opacity == "1";
+}

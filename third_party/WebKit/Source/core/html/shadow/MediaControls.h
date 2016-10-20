@@ -46,6 +46,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
   void show();
   void hide();
+  bool isVisible() const;
 
   void playbackStarted();
   void playbackProgressed();
@@ -122,7 +123,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
     IgnoreNone = 0,
     IgnoreVideoHover = 1 << 0,
     IgnoreFocus = 1 << 1,
-    IgnoreControlsHover = 1 << 2
+    IgnoreControlsHover = 1 << 2,
+    IgnoreWaitForTimer = 1 << 3,
   };
 
   bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;
@@ -180,6 +182,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   int m_panelWidth;
 
   bool m_allowHiddenVolumeControls : 1;
+  bool m_keepShowingUntilTimerFires : 1;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControls, isMediaControls());

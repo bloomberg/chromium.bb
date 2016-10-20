@@ -133,7 +133,8 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
                                &MediaControls::panelWidthChangedTimerFired),
       m_panelWidth(0),
       m_allowHiddenVolumeControls(
-          RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {}
+          RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()),
+      m_keepShowingUntilTimerFires(false) {}
 
 MediaControls* MediaControls::create(HTMLMediaElement& mediaElement) {
   MediaControls* controls = new MediaControls(mediaElement);
@@ -391,6 +392,10 @@ void MediaControls::hide() {
     m_overlayPlayButton->setIsWanted(false);
 }
 
+bool MediaControls::isVisible() const {
+  return m_panel->isOpaque();
+}
+
 void MediaControls::makeOpaque() {
   m_panel->makeOpaque();
 }
@@ -402,26 +407,38 @@ void MediaControls::makeTransparent() {
 bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
   // Never hide for a media element without visual representation.
   if (!mediaElement().isHTMLVideoElement() || !mediaElement().hasVideo() ||
-      mediaElement().isPlayingRemotely())
+      mediaElement().isPlayingRemotely()) {
     return false;
+  }
+
+  // Keep the controls visible as long as the timer is running.
+  const bool ignoreWaitForTimer = behaviorFlags & IgnoreWaitForTimer;
+  if (!ignoreWaitForTimer && m_keepShowingUntilTimerFires)
+    return false;
+
   // Don't hide if the mouse is over the controls.
   const bool ignoreControlsHover = behaviorFlags & IgnoreControlsHover;
   if (!ignoreControlsHover && m_panel->isHovered())
     return false;
+
   // Don't hide if the mouse is over the video area.
   const bool ignoreVideoHover = behaviorFlags & IgnoreVideoHover;
   if (!ignoreVideoHover && m_isMouseOverControls)
     return false;
+
   // Don't hide if focus is on the HTMLMediaElement or within the
   // controls/shadow tree. (Perform the checks separately to avoid going
   // through all the potential ancestor hosts for the focused element.)
   const bool ignoreFocus = behaviorFlags & IgnoreFocus;
   if (!ignoreFocus &&
-      (mediaElement().isFocused() || contains(document().focusedElement())))
+      (mediaElement().isFocused() || contains(document().focusedElement()))) {
     return false;
+  }
+
   // Don't hide the media controls when a panel is showing.
   if (m_textTrackList->isWanted() || m_overflowList->isWanted())
     return false;
+
   return true;
 }
 
@@ -444,7 +461,7 @@ void MediaControls::playbackProgressed() {
   m_timeline->setPosition(mediaElement().currentTime());
   updateCurrentTimeDisplay();
 
-  if (shouldHideMediaControls())
+  if (isVisible() && shouldHideMediaControls())
     makeTransparent();
 }
 
@@ -640,11 +657,35 @@ void MediaControls::defaultEventHandler(Event* event) {
   // event, to allow the hide-timer to do the right thing when it fires.
   // FIXME: Preferably we would only do this when we're actually handling the
   // event here ourselves.
-  bool wasLastEventTouch =
+  bool isTouchEvent =
       event->isTouchEvent() || event->isGestureEvent() ||
       (event->isMouseEvent() && toMouseEvent(event)->fromTouch());
-  m_hideTimerBehaviorFlags |=
-      wasLastEventTouch ? IgnoreControlsHover : IgnoreNone;
+  m_hideTimerBehaviorFlags |= isTouchEvent ? IgnoreControlsHover : IgnoreNone;
+
+  // Touch events are treated differently to avoid fake mouse events to trigger
+  // random behavior. The expect behaviour for touch is that a tap will show the
+  // controls and they will hide when the timer to hide fires.
+  if (isTouchEvent) {
+    if (event->type() != EventTypeNames::gesturetap)
+      return;
+
+    if (!containsRelatedTarget(event)) {
+      if (!mediaElement().paused()) {
+        if (!isVisible()) {
+          makeOpaque();
+          // When the panel switches from invisible to visible, we need to mark
+          // the event handled to avoid buttons below the tap to be activated.
+          event->setDefaultHandled();
+        }
+        if (shouldHideMediaControls(IgnoreWaitForTimer)) {
+          m_keepShowingUntilTimerFires = true;
+          startHideMediaControlsTimer();
+        }
+      }
+    }
+
+    return;
+  }
 
   if (event->type() == EventTypeNames::mouseover) {
     if (!containsRelatedTarget(event)) {
@@ -681,6 +722,7 @@ void MediaControls::hideMediaControlsTimerFired(TimerBase*) {
   unsigned behaviorFlags =
       m_hideTimerBehaviorFlags | IgnoreFocus | IgnoreVideoHover;
   m_hideTimerBehaviorFlags = IgnoreNone;
+  m_keepShowingUntilTimerFires = false;
 
   if (mediaElement().paused())
     return;
@@ -698,6 +740,7 @@ void MediaControls::startHideMediaControlsTimer() {
 }
 
 void MediaControls::stopHideMediaControlsTimer() {
+  m_keepShowingUntilTimerFires = false;
   m_hideMediaControlsTimer.stop();
 }
 
