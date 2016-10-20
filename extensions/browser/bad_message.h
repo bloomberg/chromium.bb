@@ -30,7 +30,7 @@ enum BadMessageReason {
   AVG_BAD_EXT_ID = 5,
   AVG_NULL_AVG = 6,
   // Invalid decrement of an Extensions SW ref count.
-  ESWMF_INVALID_DECREMENT_ACTIVIY = 7,
+  ESWMF_INVALID_DECREMENT_ACTIVITY = 7,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
   // reason. After making changes, you MUST update histograms.xml by running:

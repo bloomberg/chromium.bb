@@ -71,7 +71,7 @@ void ExtensionServiceWorkerMessageFilter::OnDecrementServiceWorkerActivity(
       service_worker_version_id, request_uuid);
   if (!status) {
     bad_message::ReceivedBadMessage(
-        this, bad_message::ESWMF_INVALID_DECREMENT_ACTIVIY);
+        this, bad_message::ESWMF_INVALID_DECREMENT_ACTIVITY);
   }
 }
 
