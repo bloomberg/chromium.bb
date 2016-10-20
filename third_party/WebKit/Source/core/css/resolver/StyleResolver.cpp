@@ -1235,11 +1235,12 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state,
   CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(),
                                  state.parentStyle(), state.animationUpdate(),
                                  this);
-  if (state.animationUpdate().isEmpty())
-    return false;
 
   CSSAnimations::snapshotCompositorKeyframes(
       *element, state.animationUpdate(), *state.style(), state.parentStyle());
+
+  if (state.animationUpdate().isEmpty())
+    return false;
 
   if (state.style()->insideLink() != NotInsideLink) {
     ASSERT(state.applyPropertyToRegularStyle());
