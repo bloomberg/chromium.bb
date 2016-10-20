@@ -73,7 +73,7 @@ class CC_EXPORT TaskGraphRunner {
 
   // Returns a unique token that can be used to pass a task graph to
   // ScheduleTasks(). Valid tokens are always nonzero.
-  virtual NamespaceToken GetNamespaceToken() = 0;
+  virtual NamespaceToken GenerateNamespaceToken() = 0;
 
   // Schedule running of tasks in |graph|. Tasks previously scheduled but no
   // longer needed will be canceled unless already running. Canceled tasks are

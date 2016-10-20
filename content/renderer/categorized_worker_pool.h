@@ -41,7 +41,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   bool RunsTasksOnCurrentThread() const override;
 
   // Overridden from cc::TaskGraphRunner:
-  cc::NamespaceToken GetNamespaceToken() override;
+  cc::NamespaceToken GenerateNamespaceToken() override;
   void ScheduleTasks(cc::NamespaceToken token, cc::TaskGraph* graph) override;
   void WaitForTasksToFinishRunning(cc::NamespaceToken token) override;
   void CollectCompletedTasks(cc::NamespaceToken token,

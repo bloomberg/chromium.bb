@@ -22,7 +22,7 @@ std::unique_ptr<TileTaskManagerImpl> TileTaskManagerImpl::Create(
 
 TileTaskManagerImpl::TileTaskManagerImpl(TaskGraphRunner* task_graph_runner)
     : task_graph_runner_(task_graph_runner),
-      namespace_token_(task_graph_runner->GetNamespaceToken()) {}
+      namespace_token_(task_graph_runner->GenerateNamespaceToken()) {}
 
 TileTaskManagerImpl::~TileTaskManagerImpl() {}
 

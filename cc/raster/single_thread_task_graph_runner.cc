@@ -46,9 +46,9 @@ void SingleThreadTaskGraphRunner::Shutdown() {
   thread_->Join();
 }
 
-NamespaceToken SingleThreadTaskGraphRunner::GetNamespaceToken() {
+NamespaceToken SingleThreadTaskGraphRunner::GenerateNamespaceToken() {
   base::AutoLock lock(lock_);
-  return work_queue_.GetNamespaceToken();
+  return work_queue_.GenerateNamespaceToken();
 }
 
 void SingleThreadTaskGraphRunner::ScheduleTasks(NamespaceToken token,

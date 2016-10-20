@@ -27,7 +27,7 @@ class CC_EXPORT SingleThreadTaskGraphRunner
   ~SingleThreadTaskGraphRunner() override;
 
   // Overridden from TaskGraphRunner:
-  NamespaceToken GetNamespaceToken() override;
+  NamespaceToken GenerateNamespaceToken() override;
   void ScheduleTasks(NamespaceToken token, TaskGraph* graph) override;
   void WaitForTasksToFinishRunning(NamespaceToken token) override;
   void CollectCompletedTasks(NamespaceToken token,

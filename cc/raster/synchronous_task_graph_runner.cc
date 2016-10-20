@@ -21,8 +21,8 @@ SynchronousTaskGraphRunner::~SynchronousTaskGraphRunner() {
   DCHECK(!work_queue_.HasReadyToRunTasks());
 }
 
-NamespaceToken SynchronousTaskGraphRunner::GetNamespaceToken() {
-  return work_queue_.GetNamespaceToken();
+NamespaceToken SynchronousTaskGraphRunner::GenerateNamespaceToken() {
+  return work_queue_.GenerateNamespaceToken();
 }
 
 void SynchronousTaskGraphRunner::ScheduleTasks(NamespaceToken token,

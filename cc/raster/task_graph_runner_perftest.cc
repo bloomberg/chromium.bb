@@ -51,7 +51,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   // Overridden from testing::Test:
   void SetUp() override {
     task_graph_runner_ = base::WrapUnique(new SynchronousTaskGraphRunner);
-    namespace_token_ = task_graph_runner_->GetNamespaceToken();
+    namespace_token_ = task_graph_runner_->GenerateNamespaceToken();
   }
   void TearDown() override { task_graph_runner_ = nullptr; }
 

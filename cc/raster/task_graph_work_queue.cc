@@ -125,7 +125,7 @@ TaskGraphWorkQueue::PrioritizedTask::PrioritizedTask(PrioritizedTask&& other) =
     default;
 TaskGraphWorkQueue::PrioritizedTask::~PrioritizedTask() = default;
 
-NamespaceToken TaskGraphWorkQueue::GetNamespaceToken() {
+NamespaceToken TaskGraphWorkQueue::GenerateNamespaceToken() {
   NamespaceToken token(next_namespace_id_++);
   DCHECK(namespaces_.find(token) == namespaces_.end());
   return token;

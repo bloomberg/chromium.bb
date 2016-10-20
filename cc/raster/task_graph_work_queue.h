@@ -79,9 +79,9 @@ class CC_EXPORT TaskGraphWorkQueue {
   TaskGraphWorkQueue();
   virtual ~TaskGraphWorkQueue();
 
-  // Gets a NamespaceToken which is guaranteed to be unique within this
+  // Generates a NamespaceToken which is guaranteed to be unique within this
   // TaskGraphWorkQueue.
-  NamespaceToken GetNamespaceToken();
+  NamespaceToken GenerateNamespaceToken();
 
   // Updates a TaskNamespace with a new TaskGraph to run. This cancels any
   // previous tasks in the graph being replaced.

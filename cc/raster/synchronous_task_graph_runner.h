@@ -18,7 +18,7 @@ class CC_EXPORT SynchronousTaskGraphRunner : public TaskGraphRunner {
   ~SynchronousTaskGraphRunner() override;
 
   // Overridden from TaskGraphRunner:
-  NamespaceToken GetNamespaceToken() override;
+  NamespaceToken GenerateNamespaceToken() override;
   void ScheduleTasks(NamespaceToken token, TaskGraph* graph) override;
   void WaitForTasksToFinishRunning(NamespaceToken token) override;
   void CollectCompletedTasks(NamespaceToken token,

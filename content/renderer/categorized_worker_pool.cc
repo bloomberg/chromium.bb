@@ -49,7 +49,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
   explicit CategorizedWorkerPoolSequencedTaskRunner(
       cc::TaskGraphRunner* task_graph_runner)
       : task_graph_runner_(task_graph_runner),
-        namespace_token_(task_graph_runner->GetNamespaceToken()) {}
+        namespace_token_(task_graph_runner->GenerateNamespaceToken()) {}
 
   // Overridden from base::TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -119,7 +119,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
 };
 
 CategorizedWorkerPool::CategorizedWorkerPool()
-    : namespace_token_(GetNamespaceToken()),
+    : namespace_token_(GenerateNamespaceToken()),
       has_ready_to_run_foreground_tasks_cv_(&lock_),
       has_ready_to_run_background_tasks_cv_(&lock_),
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
@@ -258,9 +258,9 @@ CategorizedWorkerPool::CreateSequencedTaskRunner() {
 
 CategorizedWorkerPool::~CategorizedWorkerPool() {}
 
-cc::NamespaceToken CategorizedWorkerPool::GetNamespaceToken() {
+cc::NamespaceToken CategorizedWorkerPool::GenerateNamespaceToken() {
   base::AutoLock lock(lock_);
-  return work_queue_.GetNamespaceToken();
+  return work_queue_.GenerateNamespaceToken();
 }
 
 void CategorizedWorkerPool::ScheduleTasks(cc::NamespaceToken token,
