@@ -510,7 +510,7 @@ def map_and_run(
 
 
 def run_tha_test(
-    command, isolated_hash, storage, cache, leak_temp_dir, result_json,
+    command, isolated_hash, storage, isolate_cache, leak_temp_dir, result_json,
     root_dir, hard_timeout, grace_period, bot_file, extra_args,
     install_packages_fn, use_symlinks):
   """Runs an executable and records execution metadata.
@@ -535,9 +535,9 @@ def run_tha_test(
     storage: an isolateserver.Storage object to retrieve remote objects. This
              object has a reference to an isolateserver.StorageApi, which does
              the actual I/O.
-    cache: an isolateserver.LocalCache to keep from retrieving the same objects
-           constantly by caching the objects retrieved. Can be on-disk or
-           in-memory.
+    isolate_cache: an isolateserver.LocalCache to keep from retrieving the
+                   same objects constantly by caching the objects retrieved.
+                   Can be on-disk or in-memory.
     leak_temp_dir: if true, the temporary directory will be deliberately leaked
                    for later examination.
     result_json: file path to dump result metadata into. If set, the process
@@ -575,7 +575,7 @@ def run_tha_test(
 
   # run_isolated exit code. Depends on if result_json is used or not.
   result = map_and_run(
-      command, isolated_hash, storage, cache, leak_temp_dir, root_dir,
+      command, isolated_hash, storage, isolate_cache, leak_temp_dir, root_dir,
       hard_timeout, grace_period, bot_file, extra_args, install_packages_fn,
       use_symlinks)
   logging.info('Result:\n%s', tools.format_json(result, dense=True))
