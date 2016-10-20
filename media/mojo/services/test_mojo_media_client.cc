@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/default_mojo_media_client.h"
+#include "media/mojo/services/test_mojo_media_client.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -22,9 +22,9 @@
 
 namespace media {
 
-DefaultMojoMediaClient::DefaultMojoMediaClient() {}
+TestMojoMediaClient::TestMojoMediaClient() {}
 
-DefaultMojoMediaClient::~DefaultMojoMediaClient() {
+TestMojoMediaClient::~TestMojoMediaClient() {
   DVLOG(1) << __FUNCTION__;
   // AudioManager destructor requires MessageLoop.
   // Destroy it before the message loop goes away.
@@ -33,7 +33,7 @@ DefaultMojoMediaClient::~DefaultMojoMediaClient() {
   base::RunLoop().RunUntilIdle();
 }
 
-void DefaultMojoMediaClient::Initialize() {
+void TestMojoMediaClient::Initialize() {
   InitializeMediaLibrary();
   // TODO(dalecurtis): We should find a single owner per process for the audio
   // manager or make it a lazy instance.  It's not safe to call Get()/Create()
@@ -48,28 +48,26 @@ void DefaultMojoMediaClient::Initialize() {
   }
 }
 
-scoped_refptr<AudioRendererSink>
-DefaultMojoMediaClient::CreateAudioRendererSink(
+scoped_refptr<AudioRendererSink> TestMojoMediaClient::CreateAudioRendererSink(
     const std::string& /* audio_device_id */) {
   return new AudioOutputStreamSink();
 }
 
-std::unique_ptr<VideoRendererSink>
-DefaultMojoMediaClient::CreateVideoRendererSink(
+std::unique_ptr<VideoRendererSink> TestMojoMediaClient::CreateVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   return base::MakeUnique<NullVideoSink>(
       false, base::TimeDelta::FromSecondsD(1.0 / 60),
       NullVideoSink::NewFrameCB(), task_runner);
 }
 
-std::unique_ptr<RendererFactory> DefaultMojoMediaClient::CreateRendererFactory(
+std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
   return base::MakeUnique<DefaultRendererFactory>(
       std::move(media_log), nullptr,
       DefaultRendererFactory::GetGpuFactoriesCB());
 }
 
-std::unique_ptr<CdmFactory> DefaultMojoMediaClient::CreateCdmFactory(
+std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* /* interface_provider */) {
   DVLOG(1) << __FUNCTION__;
   return base::MakeUnique<DefaultCdmFactory>();

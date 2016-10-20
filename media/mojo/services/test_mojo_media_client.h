@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_DEFAULT_MOJO_MEDIA_CLIENT_H_
-#define MEDIA_MOJO_SERVICES_DEFAULT_MOJO_MEDIA_CLIENT_H_
+#ifndef MEDIA_MOJO_SERVICES_TEST_MOJO_MEDIA_CLIENT_H_
+#define MEDIA_MOJO_SERVICES_TEST_MOJO_MEDIA_CLIENT_H_
 
 #include <memory>
 
@@ -24,10 +24,10 @@ class RendererFactory;
 class VideoRendererSink;
 
 // Default MojoMediaClient for MediaService.
-class DefaultMojoMediaClient : public MojoMediaClient {
+class TestMojoMediaClient : public MojoMediaClient {
  public:
-  DefaultMojoMediaClient();
-  ~DefaultMojoMediaClient() final;
+  TestMojoMediaClient();
+  ~TestMojoMediaClient() final;
 
   // MojoMediaClient implementation.
   void Initialize() final;
@@ -44,9 +44,9 @@ class DefaultMojoMediaClient : public MojoMediaClient {
  private:
   ScopedAudioManagerPtr audio_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultMojoMediaClient);
+  DISALLOW_COPY_AND_ASSIGN(TestMojoMediaClient);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_DEFAULT_MOJO_MEDIA_CLIENT_H_
+#endif  // MEDIA_MOJO_SERVICES_TEST_MOJO_MEDIA_CLIENT_H_

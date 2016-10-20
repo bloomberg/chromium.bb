@@ -13,9 +13,15 @@
 
 namespace media {
 
-// Creates a MediaService instance using the default MojoMediaClient.
+// Creates a MediaService instance using the default MojoMediaClient on each
+// platform. Uses the TestMojoMediaClient if |enable_test_mojo_media_client| is
+// true.
 std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
 CreateMediaService(const base::Closure& quit_closure);
+
+// Creates a MediaService instance using the TestMojoMediaClient.
+std::unique_ptr<service_manager::Service> MEDIA_MOJO_EXPORT
+CreateMediaServiceForTesting(const base::Closure& quit_closure);
 
 }  // namespace media
 

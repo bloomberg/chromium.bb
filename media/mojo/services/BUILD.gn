@@ -11,6 +11,7 @@ config("mojo_media_config") {
   if (!enable_mojo_media) {
     assert(mojo_media_services == [], "Mojo media is not enabled")
     assert(mojo_media_host == "none", "Mojo media is not enabled")
+    assert(!enable_test_mojo_media_client, "Mojo media is not enabled")
   } else {
     defines = [ "ENABLE_MOJO_MEDIA" ]
 
@@ -37,6 +38,10 @@ config("mojo_media_config") {
       defines += [ "ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS" ]
     } else {
       assert(false, "Invalid mojo media host: $mojo_media_host")
+    }
+
+    if (enable_test_mojo_media_client) {
+      defines += [ "ENABLE_TEST_MOJO_MEDIA_CLIENT" ]
     }
   }
 }
@@ -74,6 +79,8 @@ component("services") {
     "mojo_video_decoder_service.h",
     "service_factory_impl.cc",
     "service_factory_impl.h",
+    "test_mojo_media_client.cc",
+    "test_mojo_media_client.h",
   ]
 
   defines = [ "MEDIA_MOJO_IMPLEMENTATION" ]
@@ -106,11 +113,6 @@ component("services") {
       "android_mojo_media_client.h",
       "mojo_provision_fetcher.cc",
       "mojo_provision_fetcher.h",
-    ]
-  } else {
-    sources += [
-      "default_mojo_media_client.cc",
-      "default_mojo_media_client.h",
     ]
   }
 }

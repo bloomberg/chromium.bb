@@ -31,7 +31,7 @@ MojoResult ServiceMain(MojoHandle mojo_handle) {
   logging::InitLogging(settings);
 
   std::unique_ptr<service_manager::Service> service =
-      media::CreateMediaService(base::Bind(&QuitApplication));
+      media::CreateMediaServiceForTesting(base::Bind(&QuitApplication));
   service_manager::ServiceRunner runner(service.release());
   g_runner = &runner;
   return runner.Run(mojo_handle, false /* init_base */);
