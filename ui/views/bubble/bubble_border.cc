@@ -60,6 +60,11 @@ BorderImages::~BorderImages() {}
 
 namespace {
 
+// The border is stroked at 1px, but for the purposes of reserving space we have
+// to deal in dip coordinates, so round up to 1dip.
+const int kBorderThicknessDip = 1;
+const int kBorderStrokeThicknessPx = 1;
+
 // Blur and offset values for the two shadows drawn around each dialog. The
 // values are all in dip.
 const int kSmallShadowVerticalOffset = 2;
@@ -211,6 +216,15 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
       (arrow_ == TOP_RIGHT || arrow_ == TOP_LEFT || arrow_ == BOTTOM_CENTER ||
        arrow_ == LEFT_CENTER || arrow_ == RIGHT_CENTER)) {
     gfx::Rect contents_bounds(contents_size);
+    // Apply the border part of the inset before calculating coordinates because
+    // the border should align with the anchor's border. For the purposes of
+    // positioning, the border is rounded up to a dip, which may mean we have
+    // misalignment in scale factors greater than 1.
+    // TODO(estade): when it becomes possible to provide px bounds instead of
+    // dip bounds, fix this.
+    const gfx::Insets border_insets = gfx::Insets(kBorderThicknessDip);
+    const gfx::Insets shadow_insets = GetInsets() - border_insets;
+    contents_bounds.Inset(-border_insets);
     if (arrow_ == TOP_RIGHT) {
       contents_bounds +=
           anchor_rect.bottom_right() - contents_bounds.top_right();
@@ -224,7 +238,7 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     } else if (arrow_ == RIGHT_CENTER) {
       contents_bounds += LeftCenter(anchor_rect) - RightCenter(contents_bounds);
     }
-    contents_bounds.Inset(-GetInsets());
+    contents_bounds.Inset(-shadow_insets);
     // |arrow_offset_| is used to adjust bubbles that would normally be
     // partially offscreen.
     contents_bounds += gfx::Vector2d(-arrow_offset_, 0);
@@ -352,6 +366,7 @@ gfx::Insets BubbleBorder::GetInsets() const {
      gfx::Insets blur(kLargeShadowBlur);
      gfx::Insets offset(-kLargeShadowVerticalOffset, 0,
                         kLargeShadowVerticalOffset, 0);
+     gfx::Insets border(kBorderThicknessDip);
      return blur + offset;
   }
 
@@ -506,19 +521,21 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
   paint.setColor(SkColorSetA(SK_ColorBLACK, 0x26));
   paint.setAntiAlias(true);
 
-  gfx::Rect bounds(view.GetLocalBounds());
+  gfx::RectF bounds(view.GetLocalBounds());
   bounds.Inset(GetInsets());
-  SkRRect r_rect =
-      SkRRect::MakeRectXY(gfx::RectToSkRect(bounds), GetBorderCornerRadius(),
-                          GetBorderCornerRadius());
   // Clip out a round rect so the fill and shadow don't draw over the contents
   // of the bubble.
-  SkRRect clip_r_rect = r_rect;
-  // Stroke width is a single pixel at any scale factor.
-  const SkScalar one_pixel = SkFloatToScalar(1 / canvas->image_scale());
-  clip_r_rect.inset(one_pixel, one_pixel);
+  SkRRect clip_r_rect =
+      SkRRect::MakeRectXY(gfx::RectFToSkRect(bounds), GetBorderCornerRadius(),
+                          GetBorderCornerRadius());
   canvas->sk_canvas()->clipRRect(clip_r_rect, SkRegion::kDifference_Op,
                                  true /*doAntiAlias*/);
+
+  // The border is drawn outside the content area.
+  SkRRect r_rect = clip_r_rect;
+  const SkScalar one_pixel =
+      SkFloatToScalar(kBorderStrokeThicknessPx / canvas->image_scale());
+  r_rect.inset(-one_pixel, -one_pixel);
   canvas->sk_canvas()->drawRRect(r_rect, paint);
 }
 
@@ -538,12 +555,6 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   SkPath path;
   gfx::RectF bounds(view->GetLocalBounds());
   bounds.Inset(gfx::InsetsF(border_->GetInsets()));
-  if (UseMd()) {
-    // The border is 1px at all scale factors. Leave room for it. It's partially
-    // transparent, so we don't want to draw any background underneath it.
-    const SkScalar one_pixel = SkFloatToScalar(1 / canvas->image_scale());
-    bounds.Inset(gfx::InsetsF(one_pixel));
-  }
 
   canvas->DrawRoundRect(bounds, border_->GetBorderCornerRadius(), paint);
 }
