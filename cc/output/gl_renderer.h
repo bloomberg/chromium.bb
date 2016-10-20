@@ -219,9 +219,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void DrawYUVVideoQuad(const DrawingFrame* frame,
                         const YUVVideoDrawQuad* quad,
                         const gfx::QuadF* clip_region);
-  void DrawPictureQuad(const DrawingFrame* frame,
-                       const PictureDrawQuad* quad,
-                       const gfx::QuadF* clip_region);
 
   void SetShaderOpacity(float opacity, int alpha_location);
   void SetShaderQuadF(const gfx::QuadF& quad, int quad_location);
