@@ -48,6 +48,11 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   if (!GetSyncValues(&system_time, &media_stream_counter, &swap_buffer_counter))
     return;
 
+  if (media_stream_counter == last_media_stream_counter_) {
+    // SyncValues haven't updated, there is no reason to invoke the callback.
+    return;
+  }
+
   // Perform platform specific adjustment of |system_time| and
   // |media_stream_counter|.
   if (!AdjustSyncValues(&system_time, &media_stream_counter))
@@ -59,48 +64,63 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   while (last_computed_intervals_.size() > 1)
     last_computed_intervals_.pop();
 
+  base::TimeDelta timebase_diff;
+  int64_t counter_diff = 0;
+
   int32_t numerator, denominator;
   if (GetMscRate(&numerator, &denominator) && numerator) {
-    last_computed_intervals_.push(base::TimeDelta::FromSeconds(denominator) /
-                                  numerator);
+    timebase_diff = base::TimeDelta::FromSeconds(denominator);
+    counter_diff = numerator;
   } else if (!last_timebase_.is_null()) {
-    base::TimeDelta timebase_diff = timebase - last_timebase_;
-    int64_t counter_diff = media_stream_counter - last_media_stream_counter_;
-    if (counter_diff > 0 && timebase > last_timebase_)
-      last_computed_intervals_.push(timebase_diff / counter_diff);
+    timebase_diff = timebase - last_timebase_;
+    counter_diff = media_stream_counter - last_media_stream_counter_;
   }
 
-  if (last_computed_intervals_.size() == 2) {
-    const base::TimeDelta& old_interval = last_computed_intervals_.front();
-    const base::TimeDelta& new_interval = last_computed_intervals_.back();
+  if (counter_diff > 0 && timebase_diff > base::TimeDelta()) {
+    last_computed_intervals_.push(timebase_diff / counter_diff);
 
-    double relative_change =
-        fabs(old_interval.InMillisecondsF() - new_interval.InMillisecondsF()) /
-        new_interval.InMillisecondsF();
-    if (relative_change < kRelativeIntervalDifferenceThreshold) {
-      if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
-          new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
+    if (last_computed_intervals_.size() == 2) {
+      const base::TimeDelta& old_interval = last_computed_intervals_.front();
+      const base::TimeDelta& new_interval = last_computed_intervals_.back();
+
+      double relative_change = fabs(old_interval.InMillisecondsF() -
+                                    new_interval.InMillisecondsF()) /
+                               new_interval.InMillisecondsF();
+      if (relative_change < kRelativeIntervalDifferenceThreshold) {
+        if (new_interval.InMicroseconds() < kMinVsyncIntervalUs ||
+            new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
 #if defined(USE_ASH)
-        // On ash platforms (ChromeOS essentially), the real refresh interval is
-        // queried from XRandR, regardless of the value calculated here, and
-        // this value is overriden by ui::CompositorVSyncManager.  The log
-        // should not be fatal in this case. Reconsider all this when XRandR
-        // support is added to non-ash platforms.
-        // http://crbug.com/340851
-        LOG(ERROR)
+          // On ash platforms (ChromeOS essentially), the real refresh interval
+          // is queried from XRandR, regardless of the value calculated here,
+          // and this value is overriden by ui::CompositorVSyncManager.  The log
+          // should not be fatal in this case. Reconsider all this when XRandR
+          // support is added to non-ash platforms.
+          // http://crbug.com/340851
+          LOG(ERROR)
 #else
-        LOG(FATAL)
+          LOG(FATAL)
 #endif  // USE_ASH
-            << "Calculated bogus refresh interval="
-            << new_interval.InMicroseconds()
-            << " us., last_timebase_=" << last_timebase_.ToInternalValue()
-            << " us., timebase=" << timebase.ToInternalValue()
-            << " us., last_media_stream_counter_=" << last_media_stream_counter_
-            << ", media_stream_counter=" << media_stream_counter;
-      } else {
-        last_good_interval_ = new_interval;
+              << "Calculated bogus refresh interval="
+              << new_interval.InMicroseconds()
+              << " us, old_interval=" << old_interval.InMicroseconds()
+              << " us, last_timebase_=" << last_timebase_.ToInternalValue()
+              << " us, timebase=" << timebase.ToInternalValue()
+              << " us, timebase_diff=" << timebase_diff.ToInternalValue()
+              << " us, last_timebase_diff_="
+              << last_timebase_diff_.ToInternalValue()
+              << " us, last_media_stream_counter_="
+              << last_media_stream_counter_
+              << ", media_stream_counter=" << media_stream_counter
+              << ", counter_diff=" << counter_diff
+              << ", last_counter_diff_=" << last_counter_diff_;
+        } else {
+          last_good_interval_ = new_interval;
+        }
       }
     }
+
+    last_timebase_diff_ = timebase_diff;
+    last_counter_diff_ = counter_diff;
   }
 
   last_timebase_ = timebase;
@@ -112,14 +132,6 @@ void SyncControlVSyncProvider::GetVSyncParameters(
 #if defined(OS_LINUX)
 bool SyncControlVSyncProvider::AdjustSyncValues(int64_t* system_time,
                                                 int64_t* media_stream_counter) {
-  // The actual clock used for the system time returned by glXGetSyncValuesOML
-  // is unspecified. In practice, the clock used is likely to be either
-  // CLOCK_REALTIME or CLOCK_MONOTONIC, so we compare the returned time to the
-  // current time according to both clocks, and assume that the returned time
-  // was produced by the clock whose current time is closest to it, subject
-  // to the restriction that the returned time must not be in the future
-  // (since it is the time of a vblank that has already occurred).
-
   // Both Intel and Mali drivers will return TRUE for GetSyncValues
   // but a value of 0 for MSC if they cannot access the CRTC data structure
   // associated with the surface. crbug.com/231945
@@ -132,6 +144,13 @@ bool SyncControlVSyncProvider::AdjustSyncValues(int64_t* system_time,
     return false;
   }
 
+  // The actual clock used for the system time returned by glXGetSyncValuesOML
+  // is unspecified. In practice, the clock used is likely to be either
+  // CLOCK_REALTIME or CLOCK_MONOTONIC, so we compare the returned time to the
+  // current time according to both clocks, and assume that the returned time
+  // was produced by the clock whose current time is closest to it, subject
+  // to the restriction that the returned time must not be in the future
+  // (since it is the time of a vblank that has already occurred).
   struct timespec real_time;
   struct timespec monotonic_time;
   clock_gettime(CLOCK_REALTIME, &real_time);
@@ -175,9 +194,13 @@ bool SyncControlVSyncProvider::AdjustSyncValues(int64_t* system_time,
 #if defined(OS_WIN)
 bool SyncControlVSyncProvider::AdjustSyncValues(int64_t* system_time,
                                                 int64_t* media_stream_counter) {
+  // Zero MSC is returned once when switching between windowed and full screen
+  // modes.
+  if (*media_stream_counter == 0)
+    return false;
+
   // The actual clock used for the system time returned by glXGetSyncValuesEGL
   // is unspecified. In practice, the clock comes from QueryPerformanceCounter.
-
   LARGE_INTEGER perf_counter_now = {};
   ::QueryPerformanceCounter(&perf_counter_now);
   int64_t qpc_now =

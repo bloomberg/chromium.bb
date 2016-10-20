@@ -36,7 +36,9 @@ class GL_EXPORT SyncControlVSyncProvider : public gfx::VSyncProvider {
   bool AdjustSyncValues(int64_t* system_time, int64_t* media_stream_counter);
 
   base::TimeTicks last_timebase_;
-  uint64_t last_media_stream_counter_ = 0;
+  base::TimeDelta last_timebase_diff_;
+  int64_t last_media_stream_counter_ = 0;
+  int64_t last_counter_diff_ = 0;
   base::TimeDelta last_good_interval_;
 
   // A short history of the last few computed intervals.
