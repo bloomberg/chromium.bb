@@ -255,6 +255,18 @@ void RemotePlayback::promptCancelled() {
   m_promptPromiseResolver = nullptr;
 }
 
+void RemotePlayback::remotePlaybackDisabled() {
+  if (m_promptPromiseResolver) {
+    m_promptPromiseResolver->reject(DOMException::create(
+        InvalidStateError, "disableRemotePlayback attribute is present."));
+    m_promptPromiseResolver = nullptr;
+  }
+
+  m_availabilityCallbacks.clear();
+
+  // TODO(avayvod): stop remote playback too. https://crbug.com/657566.
+}
+
 void RemotePlayback::setV8ReferencesForCallbacks(
     v8::Isolate* isolate,
     const v8::Persistent<v8::Object>& wrapper) {

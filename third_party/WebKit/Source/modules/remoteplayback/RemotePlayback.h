@@ -35,6 +35,10 @@ class MODULES_EXPORT RemotePlayback final
  public:
   static RemotePlayback* create(ScriptState*, HTMLMediaElement&);
 
+  // Notifies this object that disableRemotePlayback attribute was set on the
+  // corresponding media element.
+  void remotePlaybackDisabled();
+
   // EventTarget implementation.
   const WTF::AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;

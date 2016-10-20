@@ -27,6 +27,11 @@ void HTMLMediaElementRemotePlayback::setBooleanAttribute(
     bool value) {
   ASSERT(name == HTMLNames::disableremoteplaybackAttr);
   element.setBooleanAttribute(name, value);
+
+  HTMLMediaElementRemotePlayback& self =
+      HTMLMediaElementRemotePlayback::from(element);
+  if (self.m_remote && value)
+    self.m_remote->remotePlaybackDisabled();
 }
 
 // static
