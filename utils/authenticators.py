@@ -9,6 +9,8 @@ import threading
 
 from utils import oauth
 
+from libs import luci_context
+
 
 class Authenticator(object):
   """Base class for objects that know how to authenticate into http services."""
@@ -77,13 +79,13 @@ class OAuthAuthenticator(Authenticator):
 class LuciContextAuthenticator(Authenticator):
   """Uses local server for providing header to authenticate requests.
 
-  Local server is identified by parameters of file specified in LUCI_CONTEXT.
+  Local server is identified by parameters of file specified in the 'local_auth'
+  section of LUCI_CONTEXT.
   """
 
-  def __init__(self, config):
+  def __init__(self):
     super(LuciContextAuthenticator, self).__init__()
-    assert isinstance(config, oauth.OAuthConfig)
-    self._luci_context = config.luci_context_json
+    self._local_auth = oauth._load_local_auth()
     self._lock = threading.Lock()
     self._access_token = None
 
@@ -93,7 +95,7 @@ class LuciContextAuthenticator(Authenticator):
       access_token = self._access_token
 
       if not oauth._validate_luci_context_access_token(access_token):
-        access_token = oauth._get_luci_context_access_token(self._luci_context)
+        access_token = oauth._get_luci_context_access_token(self._local_auth)
         if access_token:
           self._access_token = access_token
 

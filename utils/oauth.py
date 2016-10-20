@@ -41,6 +41,8 @@ from oauth2client import multistore_file
 from third_party import requests
 from utils import tools
 
+from libs import luci_context
+
 
 # Path to a file with cached OAuth2 credentials used by default. Can be
 # overridden by command line option or env variable.
@@ -63,7 +65,6 @@ OAuthConfig = collections.namedtuple('OAuthConfig', [
   'no_local_webserver',
   'webserver_port',
   'service_account_json',
-  'luci_context_json',
 ])
 
 
@@ -97,8 +98,7 @@ _service_config_cache_lock = threading.Lock()
 
 
 # LUCI context parameters as loaded from JSON file.
-LuciContextParameters = collections.namedtuple('LuciContextParameters',
-[
+LocalAuthParameters = collections.namedtuple('LocalAuthParameters', [
   'rpc_port',
   'secret',
 ])
@@ -117,8 +117,7 @@ def make_oauth_config(
     tokens_cache=None,
     no_local_webserver=None,
     webserver_port=None,
-    service_account_json=None,
-    luci_context_json=None):
+    service_account_json=None):
   """Returns new instance of OAuthConfig.
 
   If some config option is not provided or None, it will be set to a reasonable
@@ -132,7 +131,6 @@ def make_oauth_config(
         handles redirects. Use copy-pasted verification code instead.
     webserver_port: port to run local webserver on.
     service_account_json: path to JSON file with service account credentials.
-    luci_context_json: path to JSON file with local auth proxy details.
   """
   if tokens_cache is None:
     tokens_cache = os.environ.get(
@@ -144,24 +142,22 @@ def make_oauth_config(
     webserver_port = 8090
   if service_account_json is None:
     service_account_json = os.environ.get('SWARMING_AUTH_SERVICE_ACCOUNT_JSON')
-  if luci_context_json is None:
-    luci_context_json = os.environ.get('LUCI_CONTEXT')
-  if service_account_json and luci_context_json:
-    raise ValueError('Cannot use both service account and luci context options')
+
+  has_local = has_local_auth()
+  if service_account_json and has_local:
+    raise ValueError('Cannot use both service account and LUCI_CONTEXT')
   if disabled is None:
     disabled = (tools.is_headless()
-                and not service_account_json and not luci_context_json)
+                and not service_account_json and not has_local)
   if disabled:
     service_account_json = None
-    luci_context_json = None
 
   return OAuthConfig(
       disabled,
       tokens_cache,
       no_local_webserver,
       webserver_port,
-      service_account_json,
-      luci_context_json)
+      service_account_json)
 
 
 def add_oauth_options(parser):
@@ -204,12 +200,6 @@ def add_oauth_options(parser):
           'section of any Cloud Console project. The value can also be set '
           'with SWARMING_AUTH_SERVICE_ACCOUNT_JSON environment variable. '
           '[default: %default]')
-  parser.oauth_group.add_option(
-      '--auth-luci-context-json',
-      default=default_config.luci_context_json,
-      help='Path to a JSON file with LUCI auth parameters to use for querying '
-          'a local server for an access token. The value can also be set with '
-          'the LUCI_CONTEXT environment variable. [default: %default]')
   parser.add_option_group(parser.oauth_group)
 
 
@@ -228,19 +218,18 @@ def extract_oauth_config_from_options(options):
       raise ValueError('Bad service account credentials: %s' % exc)
 
   # Validate LUCI context JSON is correct by trying to load it.
-  if options.auth_luci_context_json:
+  if has_local_auth():
     try:
-      _load_luci_context_json(options.auth_luci_context_json)
+      _load_local_auth()
     except BadLuciContextParameters as exc:
-      raise ValueError('Bad LUCI context auth parameters: %s' % exc)
+      raise ValueError('Bad LUCI_CONTEXT local_auth parameters: %s' % exc)
 
   return make_oauth_config(
       disabled=bool(options.auth_disabled),
       tokens_cache=options.auth_tokens_cache,
       no_local_webserver=options.auth_no_local_webserver,
       webserver_port=options.auth_host_port,
-      service_account_json=options.auth_service_account_json,
-      luci_context_json=options.auth_luci_context_json)
+      service_account_json=options.auth_service_account_json)
 
 
 def load_access_token(urlhost, config):
@@ -606,61 +595,44 @@ def _run_oauth_dance(urlhost, config):
 
 
 # LUCI context auth related code.
+def has_local_auth():
+  """Checks LUCI_CONTEXT to see if local_auth parameters are defined."""
+  return luci_context.read('local_auth') is not None
 
-
-def _load_luci_context_json(path):
-  """Returns a LuciContextParameters tuple from a JSON file.
-
-  Args:
-    path: path to a JSON file containing a `local_auth` JSON entry
+def _load_local_auth():
+  """Returns a LocalAuthParameters tuple from LUCI_CONTEXT.
 
   Returns:
-    LuciContextParameters for connecting to a LUCI context auth server.
+    LocalAuthParameters for connecting to a local auth server.
 
   Raises:
     BadLuciContextParameters if file is missing or not valid.
   """
-  try:
-    with open(path, 'r') as f:
-      data = json.load(f)
-  except IOError as e:
-    raise BadLuciContextParameters('Can\'t open %s: %s' % (path, e))
-  except ValueError as e:
-    raise BadLuciContextParameters('Not a JSON file %s: %s' % (path, e))
+  data = luci_context.read('local_auth')
+  if data is None:
+    raise BadLuciContextParameters('Missing "local_auth" in LUCI_CONTEXT')
 
   try:
-    return LuciContextParameters(
-        rpc_port=int(data['local_auth']['rpc_port']),
-        secret=str(data['local_auth']['secret']))
-  except KeyError as e:
-    raise BadLuciContextParameters('Missing key in %s: %s' % (path, e))
+    return LocalAuthParameters(
+      rpc_port=int(data['rpc_port']), secret=str(data['secret']))
   except ValueError as e:
-    raise BadLuciContextParameters('Invalid values in JSON file %s: %s' %
-                                   (path, e))
+    raise BadLuciContextParameters(
+      'Invalid "local_auth" section in LUCI_CONTEXT: %s' % (e,))
 
 
-def _get_luci_context_access_token(luci_context):
+def _get_luci_context_access_token(local_auth):
   """Returns a valid AccessToken from the local LUCI context auth server.
-
-  Args:
-    luci_context: path to a valid JSON file containing LUCI context details.
 
   Returns:
     AccessToken on success.
     None on failure.
   """
-  try:
-    luci_auth = _load_luci_context_json(luci_context)
-  except BadLuciContextParameters as e:
-    logging.error('Bad Luci context parameters: %s', e)
-    return None
-
   body = json.dumps({
     'scopes': [OAUTH_SCOPES],
-    'secret': luci_auth.secret
+    'secret': local_auth.secret
   })
   http = httplib2.Http()
-  host = 'http://127.0.0.1:%d' % luci_auth.rpc_port
+  host = 'http://127.0.0.1:%d' % local_auth.rpc_port
   resp, content = http.request(
       uri='%s/rpc/LuciLocalAuthService.GetOAuthToken' % host,
       method='POST',

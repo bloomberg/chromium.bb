@@ -45,18 +45,17 @@ class LuciContextAuthTest(auto_stub.TestCase):
         response.status = response_code
         content = json.dumps(token_response)
         return response, content
-    self.mock_load_json(MockLuciContextServer())
+    self.mock_local_auth(MockLuciContextServer())
     yield
 
   def setUp(self):
     super(LuciContextAuthTest, self).setUp()
     self.mock_time(0)
 
-  def mock_load_json(self, server):
-    def load_json(name):
-      self.assertTrue(isinstance(name, basestring))
-      return oauth.LuciContextParameters(rpc_port=0, secret='secret')
-    self.mock(oauth, '_load_luci_context_json', load_json)
+  def mock_local_auth(self, server):
+    def load_local_auth():
+      return oauth.LocalAuthParameters(rpc_port=0, secret='secret')
+    self.mock(oauth, '_load_local_auth', load_local_auth)
     def http_server():
       return server
     self.mock(httplib2, 'Http', http_server)
@@ -70,24 +69,24 @@ class LuciContextAuthTest(auto_stub.TestCase):
   def test_get_access_token(self):
     t_expire = 100
     with self.lucicontext({'access_token': 'notasecret', 'expiry': t_expire}):
-      token = oauth._get_luci_context_access_token('foo.json')
+      token = oauth._get_luci_context_access_token(oauth._load_local_auth())
     self.assertEqual('notasecret', token.token)
     self.assertEqual(self._utc_datetime(t_expire), token.expires_at)
 
   def test_get_missing_token(self):
     t_expire = 100
     with self.lucicontext({'expiry': t_expire}):
-      token = oauth._get_luci_context_access_token('foo.json')
+      token = oauth._get_luci_context_access_token(oauth._load_local_auth())
     self.assertIsNone(token)
 
   def test_get_missing_expiry(self):
     with self.lucicontext({'access_token': 'notasecret'}):
-      token = oauth._get_luci_context_access_token('foo.json')
+      token = oauth._get_luci_context_access_token(oauth._load_local_auth())
     self.assertIsNone(token)
 
   def test_get_access_token_with_errors(self):
     with self.lucicontext({'error_code': 5, 'error_msg': 'fail'}):
-      token = oauth._get_luci_context_access_token('foo.json')
+      token = oauth._get_luci_context_access_token(oauth._load_local_auth())
     self.assertIsNone(token)
 
   def test_validation(self):

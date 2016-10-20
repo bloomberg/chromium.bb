@@ -26,6 +26,9 @@ from utils import authenticators
 from utils import auth_server
 from utils import net
 from utils import oauth
+
+from libs import luci_context
+
 import net_utils
 
 
@@ -34,7 +37,8 @@ def global_test_setup():
   auth_server._HTTPServer.poll_interval = 0.01
 
 
-def call_rpc(ctx, scopes):
+def call_rpc(scopes):
+  ctx = luci_context.read('local_auth')
   r = requests.post(
       url='http://127.0.0.1:%d/rpc/LuciLocalAuthService.GetOAuthToken' %
           ctx['rpc_port'],
@@ -53,7 +57,9 @@ def local_auth_server(token_cb):
       return token_cb(scopes)
   s = auth_server.LocalAuthServer()
   try:
-    yield s.start(MockedProvider())
+    auth = s.start(MockedProvider())
+    with luci_context.write(local_auth=auth):
+      yield
   finally:
     s.stop()
 
@@ -74,9 +80,9 @@ class LocalAuthServerTest(auto_stub.TestCase):
       calls.append(scopes)
       return auth_server.AccessToken('tok', time.time() + 300)
 
-    with local_auth_server(token_gen) as ctx:
+    with local_auth_server(token_gen):
       # Grab initial token.
-      resp = call_rpc(ctx, ['B', 'B', 'A', 'C'])
+      resp = call_rpc(['B', 'B', 'A', 'C'])
       self.assertEqual(
           {u'access_token': u'tok', u'expiry': self.epoch + 300}, resp)
       self.assertEqual([('A', 'B', 'C')], calls)
@@ -84,14 +90,14 @@ class LocalAuthServerTest(auto_stub.TestCase):
 
       # Reuses cached token until it is close to expiration.
       self.mock_time(200)
-      resp = call_rpc(ctx, ['B', 'A', 'C'])
+      resp = call_rpc(['B', 'A', 'C'])
       self.assertEqual(
           {u'access_token': u'tok', u'expiry': self.epoch + 300}, resp)
       self.assertFalse(calls)
 
       # Expired. Generated new one.
       self.mock_time(300)
-      resp = call_rpc(ctx, ['A', 'B', 'C'])
+      resp = call_rpc(['A', 'B', 'C'])
       self.assertEqual(
           {u'access_token': u'tok', u'expiry': self.epoch + 600}, resp)
       self.assertEqual([('A', 'B', 'C')], calls)
@@ -102,36 +108,37 @@ class LocalAuthServerTest(auto_stub.TestCase):
     def token_gen(_scopes):
       raise auth_server.TokenError(code, 'error message', fatal=fatal)
 
-    with local_auth_server(token_gen) as ctx:
+    with local_auth_server(token_gen):
       self.assertEqual(
           {u'error_code': 123, u'error_message': u'error message'},
-          call_rpc(ctx, ['B', 'B', 'A', 'C']))
+          call_rpc(['B', 'B', 'A', 'C']))
 
       # Non-fatal errors aren't cached.
       code = 456
       self.assertEqual(
           {u'error_code': 456, u'error_message': u'error message'},
-          call_rpc(ctx, ['B', 'B', 'A', 'C']))
+          call_rpc(['B', 'B', 'A', 'C']))
 
       # Fatal errors are cached.
       fatal = True
       code = 789
       self.assertEqual(
           {u'error_code': 789, u'error_message': u'error message'},
-          call_rpc(ctx, ['B', 'B', 'A', 'C']))
+          call_rpc(['B', 'B', 'A', 'C']))
 
       # Same cached error.
       code = 111
       self.assertEqual(
           {u'error_code': 789, u'error_message': u'error message'},
-          call_rpc(ctx, ['B', 'B', 'A', 'C']))
+          call_rpc(['B', 'B', 'A', 'C']))
 
   def test_http_level_errors(self):
     def token_gen(_scopes):
       self.fail('must not be called')
 
-    with local_auth_server(token_gen) as ctx:
+    with local_auth_server(token_gen):
       # Wrong URL.
+      ctx = luci_context.read('local_auth')
       r = requests.post(
           url='http://127.0.0.1:%d/blah/LuciLocalAuthService.GetOAuthToken' %
               ctx['rpc_port'],
@@ -176,8 +183,9 @@ class LocalAuthServerTest(auto_stub.TestCase):
     def token_gen(_scopes):
       self.fail('must not be called')
 
-    with local_auth_server(token_gen) as ctx:
+    with local_auth_server(token_gen):
       def must_fail(err, body, code=400):
+        ctx = luci_context.read('local_auth')
         r = requests.post(
             url='http://127.0.0.1:%d/rpc/LuciLocalAuthService.GetOAuthToken' %
                 ctx['rpc_port'],
@@ -201,27 +209,22 @@ class LocalAuthServerTest(auto_stub.TestCase):
 
 
 @contextlib.contextmanager
-def luci_context_server(token_cb, secret=None, rpc_port=None):
+def local_auth_server(token_cb, secret=None, rpc_port=None):
   class MockedProvider(object):
     def generate_token(self, scopes):
       return token_cb(scopes)
+
   s = auth_server.LocalAuthServer()
   try:
-    luci_context = s.start(MockedProvider())
-    local_auth = {'local_auth': {
-        'secret': secret if secret else luci_context['secret'],
-        'rpc_port': rpc_port if rpc_port else luci_context['rpc_port']}}
-    fd, luci_context_path = tempfile.mkstemp(
-        suffix='.json', prefix='luci_context.')
-    with os.fdopen(fd, 'w') as f:
-      json.dump(local_auth, f, indent=2, sort_keys=True)
-    yield luci_context_path
+    local_auth = s.start(MockedProvider())
+    local_auth = {
+      'secret': secret if secret else local_auth['secret'],
+      'rpc_port': rpc_port if rpc_port else local_auth['rpc_port']}
+
+    with luci_context.write(local_auth=local_auth):
+      yield
   finally:
     s.stop()
-    try:
-      os.remove(luci_context_path)
-    except OSError:
-      pass
 
 
 class LocalAuthHttpServiceTest(auto_stub.TestCase):
@@ -238,7 +241,6 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
   @staticmethod
   def mocked_http_service(
       url='http://example.com',
-      config=None,
       perform_request=None):
 
     class MockedRequestEngine(object):
@@ -254,7 +256,7 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
 
     return net.HttpService(
         url,
-        authenticator=authenticators.LuciContextAuthenticator(config),
+        authenticator=authenticators.LuciContextAuthenticator(),
         engine=MockedRequestEngine())
 
   def test_works(self):
@@ -276,10 +278,8 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
                        request.headers['Authorization'])
       return net_utils.make_fake_response(response, request.get_full_url())
 
-    with luci_context_server(token_gen) as luci_context:
-      config = oauth.make_oauth_config(luci_context_json=luci_context)
-      service = self.mocked_http_service(perform_request=handle_request,
-                                         config=config)
+    with local_auth_server(token_gen):
+      service = self.mocked_http_service(perform_request=handle_request)
       self.assertEqual(service.request(request_url, data={}).read(), response)
 
   def test_bad_secret(self):
@@ -298,10 +298,8 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
       self.assertIsNone(request.headers.get('Authorization'))
       return net_utils.make_fake_response(response, request.get_full_url())
 
-    with luci_context_server(token_gen, secret='invalid') as luci_context:
-      config = oauth.make_oauth_config(luci_context_json=luci_context)
-      service = self.mocked_http_service(perform_request=handle_request,
-                                         config=config)
+    with local_auth_server(token_gen, secret='invalid'):
+      service = self.mocked_http_service(perform_request=handle_request)
       self.assertEqual(service.request(request_url, data={}).read(), response)
 
   def test_bad_port(self):
@@ -315,10 +313,8 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
       del request  # Unused argument
       self.fail('must not be called')
 
-    with luci_context_server(token_gen, rpc_port=22) as luci_context:
-      config = oauth.make_oauth_config(luci_context_json=luci_context)
-      service = self.mocked_http_service(perform_request=handle_request,
-                                         config=config)
+    with local_auth_server(token_gen, rpc_port=22):
+      service = self.mocked_http_service(perform_request=handle_request)
       with self.assertRaises(socket.error):
         self.assertRaises(service.request(request_url, data={}).read())
 
@@ -340,10 +336,8 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
       self.assertIsNone(request.headers.get('Authorization'))
       return net_utils.make_fake_response(response, request.get_full_url())
 
-    with luci_context_server(token_gen) as luci_context:
-      config = oauth.make_oauth_config(luci_context_json=luci_context)
-      service = self.mocked_http_service(perform_request=handle_request,
-                                         config=config)
+    with local_auth_server(token_gen):
+      service = self.mocked_http_service(perform_request=handle_request)
       self.assertEqual(service.request(request_url, data={}).read(), response)
 
 

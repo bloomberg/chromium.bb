@@ -242,8 +242,8 @@ def get_http_service(urlhost, allow_cached=True):
     conf = get_oauth_config()
     if not engine_cls.provides_auth and not is_gs and not conf.disabled:
       authenticator = (
-          authenticators.LuciContextAuthenticator(conf)
-          if conf.luci_context_json else
+          authenticators.LuciContextAuthenticator()
+          if oauth.has_local_auth() else
           authenticators.OAuthAuthenticator(urlhost, conf))
     return HttpService(
         urlhost,

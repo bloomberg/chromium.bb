@@ -38,9 +38,9 @@ _WRITE_LOCK = threading.RLock()
 
 
 @contextlib.contextmanager
-def _tf(data, data_raw=False):
-  tf = tempfile.NamedTemporaryFile(prefix='luci_ctx_', suffix='.json',
-                                   delete=False)
+def _tf(data, data_raw=False, workdir=None):
+  tf = tempfile.NamedTemporaryFile(prefix='luci_ctx.', suffix='.json',
+                                   delete=False, dir=workdir)
   _LOGGER.debug('Writing LUCI_CONTEXT file %r', tf.name)
   try:
     if not data_raw:
@@ -160,7 +160,7 @@ def read(section_key):
 
 
 @contextlib.contextmanager
-def write(**section_values):
+def write(_tmpdir=None, **section_values):
   """Write is a contextmanager which will write all of the provided section
   details to a new context, copying over the values from any unmentioned
   sections. The new context file will be set in os.environ. When the
@@ -177,6 +177,8 @@ def write(**section_values):
   done, this function raises an exception.
 
   Args:
+    _tmpdir (str) - an optional directory to use for the newly written
+      LUCI_CONTEXT file.
     section_values (str -> value) - A mapping of section_key to the new value
       for that section. A value of None will remove that section. Non-None
       values must be of the type 'dict', and must be json serializable.
@@ -199,6 +201,11 @@ def write(**section_values):
     with write(swarming=None): ...    # deletes 'swarming'
     with write(something={...}): ...  # sets 'something' section to {...}
   """
+  # If there are no edits, just pass-through
+  if not section_values:
+    yield
+    return
+
   new_val = read_full()
   for section, value in section_values.iteritems():
     if value is None:
@@ -214,7 +221,7 @@ def write(**section_values):
   if not got_lock:
     raise MultipleLUCIContextException()
   try:
-    with _tf(new_val) as name:
+    with _tf(new_val, workdir=_tmpdir) as name:
       try:
         old_value = _CUR_CONTEXT
         old_envvar = os.environ.get(_ENV_KEY, None)
