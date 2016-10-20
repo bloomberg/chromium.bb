@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_CookiesClearedOnExit) {
 #else
 #define MAYBE_CookiesClearedOnExit CookiesClearedOnExit
 #endif
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, CookiesClearedOnExit) {
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, MAYBE_CookiesClearedOnExit) {
   CheckReloadedPageNotRestored();
 }
 

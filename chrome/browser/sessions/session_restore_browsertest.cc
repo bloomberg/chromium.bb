@@ -1259,7 +1259,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
 #else
 #define MAYBE_RestoreWithNavigateSelectedTab RestoreWithNavigateSelectedTab
 #endif
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWithNavigateSelectedTab) {
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       MAYBE_RestoreWithNavigateSelectedTab) {
   // Create 2 tabs.
   ui_test_utils::NavigateToURL(browser(), url1_);
   ui_test_utils::NavigateToURLWithDisposition(
