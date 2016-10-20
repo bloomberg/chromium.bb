@@ -108,6 +108,9 @@ void buildSourceGraphic(FilterEffect* sourceGraphic, sk_sp<SkPicture> picture) {
                                     sourceGraphic->operatingColorSpace());
 }
 
+static float kMaxMaskBufferSize =
+    50.f * 1024.f * 1024.f / 4.f;  // 50MB / 4 bytes per pixel
+
 sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
                                            sk_sp<SkImageFilter> input) {
   sk_sp<SkImageFilter> maskedInput;
@@ -117,23 +120,35 @@ sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
     // serialized.
     SkBitmap bitmap;
     const SkRect cullRect = maskPicture->cullRect();
-    bitmap.allocPixels(
-        SkImageInfo::MakeN32Premul(cullRect.width(), cullRect.height()));
-    SkCanvas canvas(bitmap);
-    canvas.clear(SK_ColorTRANSPARENT);
-    canvas.translate(-cullRect.x(), -cullRect.y());
-    canvas.drawPicture(maskPicture);
-    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+    if (static_cast<float>(cullRect.width()) *
+            static_cast<float>(cullRect.height()) <
+        kMaxMaskBufferSize) {
+      bitmap.allocPixels(
+          SkImageInfo::MakeN32Premul(cullRect.width(), cullRect.height()));
+      SkCanvas canvas(bitmap);
+      canvas.clear(SK_ColorTRANSPARENT);
+      canvas.translate(-cullRect.x(), -cullRect.y());
+      canvas.drawPicture(maskPicture);
+      sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 
-    // SkXfermodeImageFilter can choose an excessively large size if the
-    // mask is smaller than the filtered contents (due to overflow).
-    // http://skbug.com/5210
-    SkImageFilter::CropRect cropRect(maskPicture->cullRect());
-    maskedInput = SkXfermodeImageFilter::Make(
-        SkBlendMode::kSrcIn,
-        SkOffsetImageFilter::Make(cullRect.x(), cullRect.y(),
-                                  SkImageSource::Make(image)),
-        input, &cropRect);
+      // SkXfermodeImageFilter can choose an excessively large size if the
+      // mask is smaller than the filtered contents (due to overflow).
+      // http://skbug.com/5210
+      SkImageFilter::CropRect cropRect(maskPicture->cullRect());
+      maskedInput = SkXfermodeImageFilter::Make(
+          SkBlendMode::kSrcIn,
+          SkOffsetImageFilter::Make(cullRect.x(), cullRect.y(),
+                                    SkImageSource::Make(image)),
+          input, &cropRect);
+    } else {
+      // If the buffer is excessively big, give up and make an
+      // SkPictureImageFilter
+      // anyway, even if it might not render.
+      SkImageFilter::CropRect cropRect(maskPicture->cullRect());
+      maskedInput = SkXfermodeImageFilter::Make(
+          SkBlendMode::kSrcOver,
+          SkPictureImageFilter::Make(sk_ref_sp(maskPicture)), input, &cropRect);
+    }
   } else {
     maskedInput = input;
   }
