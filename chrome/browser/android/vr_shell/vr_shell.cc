@@ -762,8 +762,10 @@ void VrShell::SetWebVrMode(JNIEnv* env,
     int64_t now = gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
     constexpr int64_t seconds_to_nanos = 1000 * 1000 * 1000;
     webvr_warning_end_nanos_ = now + kWebVrWarningSeconds * seconds_to_nanos;
+    html_interface_->SetMode(UiInterface::Mode::WEB_VR);
   } else {
     webvr_warning_end_nanos_ = 0;
+    html_interface_->SetMode(UiInterface::Mode::STANDARD);
   }
 }
 

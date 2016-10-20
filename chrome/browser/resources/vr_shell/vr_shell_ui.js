@@ -6,7 +6,7 @@ var vrShellUi = (function() {
   'use strict';
 
   var scene = new ui.Scene();
-  var uiElements = [];
+  var state;
 
   class DomUiElement {
     constructor(domId) {
@@ -61,58 +61,85 @@ var vrShellUi = (function() {
     }
   };
 
-  function initialize() {
+  class Controls {
+    constructor() {
+      this.buttons = [];
+      var descriptors = [
+          ['#back', function() {
+            api.doAction(api.Action.HISTORY_BACK);
+          }],
+          ['#reload', function() {
+            api.doAction(api.Action.RELOAD);
+          }],
+          ['#forward', function() {
+            api.doAction(api.Action.HISTORY_FORWARD);
+          }],
+      ];
 
-    domLoaded();
+      var spacing = 0.3;
+      var startPosition = -spacing * (descriptors.length / 2.0 - 0.5);
+
+      for (var i = 0; i < descriptors.length; i++) {
+        // Use an invisible parent to simplify Z-axis movement on hover.
+        var position = new api.UiElement(0, 0, 0, 0);
+        position.setParentId(api.getContentElementId());
+        position.setVisible(false);
+        position.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
+        position.setTranslation(
+            startPosition + i * spacing, -0.3, 0.3);
+        var id = scene.addElement(position);
+
+        var domId = descriptors[i][0];
+        var callback = descriptors[i][1];
+        var element = new RoundButton(domId, callback);
+        this.buttons.push(element);
+
+        var update = new api.UiElementUpdate();
+        update.setParentId(id);
+        update.setVisible(false);
+        update.setScale(2.2, 2.2, 1);
+        scene.updateElement(element.uiElementId, update);
+      }
+    }
+
+    show(visible) {
+      for (var i = 0; i < this.buttons.length; i++) {
+        var update = new api.UiElementUpdate();
+        update.setVisible(visible);
+        scene.updateElement(this.buttons[i].uiElementId, update);
+      }
+    }
+  };
+
+  class UiState {
+    constructor() {
+      this.mode = api.Mode.UNKNOWN;
+      this.controls = new Controls();
+      scene.flush();
+    }
+
+    setMode(mode) {
+      this.controls.show(mode == api.Mode.STANDARD);
+      scene.flush();
+    }
+  };
+
+  function initialize() {
 
     // Change the body background so that the transparency applies.
     window.setTimeout(function() {
       document.body.parentNode.style.backgroundColor = 'rgba(255,255,255,0)';
     }, 100);
 
-    addControlButtons();
-  }
+    state = new UiState();
 
-  // Build a row of control buttons.
-  function addControlButtons() {
-    var buttons = [
-        ['#back', function() { api.doAction(api.Action.HISTORY_BACK); }],
-        ['#reload', function() { api.doAction(api.Action.RELOAD); }],
-        ['#forward', function() { api.doAction(api.Action.HISTORY_FORWARD); }],
-    ];
-
-    var buttonSpacing = 0.3;
-    var buttonStartPosition = -buttonSpacing * (buttons.length / 2.0 - 0.5);
-
-    for (var i = 0; i < buttons.length; i++) {
-      // Use an invisible parent to simplify Z-axis movement on hover.
-      var position = new api.UiElement(0, 0, 0, 0);
-      position.setParentId(api.getContentElementId());
-      position.setVisible(false);
-      position.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
-      position.setTranslation(
-          buttonStartPosition + i * buttonSpacing, -0.3, 0.3);
-      var id = scene.addElement(position);
-
-      var domId = buttons[i][0];
-      var callback = buttons[i][1];
-      var element = new RoundButton(domId, callback);
-      uiElements.push(element);
-
-      var update = new api.UiElementUpdate();
-      update.setParentId(id);
-      update.setScale(2.2, 2.2, 1);
-      scene.updateElement(element.uiElementId, update);
-    }
-
-    scene.flush();
-  }
-
-  function domLoaded() {
     api.domLoaded();
   }
 
   function command(dict) {
+    if ('mode' in dict) {
+      state.setMode(dict['mode']);
+    }
   }
 
   return {
