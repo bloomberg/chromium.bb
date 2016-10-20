@@ -165,7 +165,7 @@ void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
-  return CreateDefaultInkDropRipple(image()->bounds().CenterPoint());
+  return CreateDefaultInkDropRipple(image()->GetMirroredBounds().CenterPoint());
 }
 
 std::unique_ptr<InkDropHighlight> Checkbox::CreateInkDropHighlight() const {
