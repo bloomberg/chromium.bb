@@ -102,8 +102,8 @@ std::string GetRegistrationStatusString(
       return "URL_FETCHING_FAILED";
     case gcm::RegistrationRequest::HTTP_NOT_OK:
       return "HTTP_NOT_OK";
-    case gcm::RegistrationRequest::RESPONSE_PARSING_FAILED:
-      return "RESPONSE_PARSING_FAILED";
+    case gcm::RegistrationRequest::NO_RESPONSE_BODY:
+      return "NO_RESPONSE_BODY";
     case gcm::RegistrationRequest::REACHED_MAX_RETRIES:
       return "REACHED_MAX_RETRIES";
     case gcm::RegistrationRequest::STATUS_COUNT:

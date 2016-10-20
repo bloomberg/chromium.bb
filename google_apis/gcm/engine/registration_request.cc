@@ -69,7 +69,7 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
     case RegistrationRequest::UNKNOWN_ERROR:
     case RegistrationRequest::URL_FETCHING_FAILED:
     case RegistrationRequest::HTTP_NOT_OK:
-    case RegistrationRequest::RESPONSE_PARSING_FAILED:
+    case RegistrationRequest::NO_RESPONSE_BODY:
       return true;
     case RegistrationRequest::SUCCESS:
     case RegistrationRequest::INVALID_PARAMETERS:
@@ -206,7 +206,7 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
   std::string response;
   if (!source->GetResponseAsString(&response)) {
     LOG(ERROR) << "Failed to parse registration response as a string.";
-    return RESPONSE_PARSING_FAILED;
+    return NO_RESPONSE_BODY;
   }
 
   if (source->GetResponseCode() == net::HTTP_OK) {

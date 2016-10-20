@@ -49,7 +49,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     UNKNOWN_ERROR,              // Unknown error.
     URL_FETCHING_FAILED,        // URL fetching failed.
     HTTP_NOT_OK,                // HTTP status was not OK.
-    RESPONSE_PARSING_FAILED,    // Registration response parsing failed.
+    NO_RESPONSE_BODY,           // No response body.
     REACHED_MAX_RETRIES,        // Reached maximum number of retries.
     // NOTE: always keep this entry at the end. Add new status types only
     // immediately above this line. Make sure to update the corresponding
