@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -129,7 +130,10 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
   storage::BlobStorageContext blob_storage_context_;
 };
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_Basic) {
+class LinkHeaderServiceWorkerTestP
+    : public MojoServiceWorkerTestP<LinkHeaderServiceWorkerTest> {};
+
+TEST_P(LinkHeaderServiceWorkerTestP, InstallServiceWorker_Basic) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foo/bar/")).get(),
       "<../foo.js>; rel=serviceworker", context_wrapper());
@@ -142,7 +146,7 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_Basic) {
             registrations[0].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeWithFragment) {
+TEST_P(LinkHeaderServiceWorkerTestP, InstallServiceWorker_ScopeWithFragment) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foo/bar/")).get(),
       "<../bar.js>; rel=serviceworker; scope=\"scope#ref\"", context_wrapper());
@@ -156,7 +160,7 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeWithFragment) {
             registrations[0].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeAbsoluteUrl) {
+TEST_P(LinkHeaderServiceWorkerTestP, InstallServiceWorker_ScopeAbsoluteUrl) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foo/bar/")).get(),
       "<bar.js>; rel=serviceworker; "
@@ -172,7 +176,8 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeAbsoluteUrl) {
             registrations[0].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeDifferentOrigin) {
+TEST_P(LinkHeaderServiceWorkerTestP,
+       InstallServiceWorker_ScopeDifferentOrigin) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
       "<bar.js>; rel=serviceworker; scope=\"https://google.com/scope\"",
@@ -183,7 +188,8 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeDifferentOrigin) {
   ASSERT_EQ(0u, registrations.size());
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeUrlEncodedSlash) {
+TEST_P(LinkHeaderServiceWorkerTestP,
+       InstallServiceWorker_ScopeUrlEncodedSlash) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
       "<bar.js>; rel=serviceworker; scope=\"./foo%2Fbar\"", context_wrapper());
@@ -193,7 +199,7 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScopeUrlEncodedSlash) {
   ASSERT_EQ(0u, registrations.size());
 }
 
-TEST_F(LinkHeaderServiceWorkerTest,
+TEST_P(LinkHeaderServiceWorkerTestP,
        InstallServiceWorker_ScriptUrlEncodedSlash) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
@@ -204,7 +210,7 @@ TEST_F(LinkHeaderServiceWorkerTest,
   ASSERT_EQ(0u, registrations.size());
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScriptAbsoluteUrl) {
+TEST_P(LinkHeaderServiceWorkerTestP, InstallServiceWorker_ScriptAbsoluteUrl) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
       "<https://example.com/bar.js>; rel=serviceworker; scope=foo",
@@ -218,7 +224,7 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_ScriptAbsoluteUrl) {
             registrations[0].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest,
+TEST_P(LinkHeaderServiceWorkerTestP,
        InstallServiceWorker_ScriptDifferentOrigin) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
@@ -230,7 +236,7 @@ TEST_F(LinkHeaderServiceWorkerTest,
   ASSERT_EQ(0u, registrations.size());
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_MultipleWorkers) {
+TEST_P(LinkHeaderServiceWorkerTestP, InstallServiceWorker_MultipleWorkers) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
       "<bar.js>; rel=serviceworker; scope=foo, <baz.js>; "
@@ -248,7 +254,7 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_MultipleWorkers) {
             registrations[1].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest,
+TEST_P(LinkHeaderServiceWorkerTestP,
        InstallServiceWorker_ValidAndInvalidValues) {
   ProcessLinkHeaderForRequest(
       CreateSubresourceRequest(GURL("https://example.com/foobar/")).get(),
@@ -264,7 +270,7 @@ TEST_F(LinkHeaderServiceWorkerTest,
             registrations[0].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_InsecureContext) {
+TEST_P(LinkHeaderServiceWorkerTestP, InstallServiceWorker_InsecureContext) {
   std::unique_ptr<net::URLRequest> request =
       CreateSubresourceRequest(GURL("https://example.com/foo/bar/"));
   ResourceRequestInfoImpl::ForRequest(request.get())
@@ -277,7 +283,7 @@ TEST_F(LinkHeaderServiceWorkerTest, InstallServiceWorker_InsecureContext) {
   ASSERT_EQ(0u, registrations.size());
 }
 
-TEST_F(LinkHeaderServiceWorkerTest,
+TEST_P(LinkHeaderServiceWorkerTestP,
        InstallServiceWorker_NavigationFromInsecureContextToSecureContext) {
   std::unique_ptr<net::URLRequest> request = CreateRequest(
       GURL("https://example.com/foo/bar/"), RESOURCE_TYPE_MAIN_FRAME);
@@ -298,7 +304,7 @@ TEST_F(LinkHeaderServiceWorkerTest,
             registrations[0].active_version.script_url);
 }
 
-TEST_F(LinkHeaderServiceWorkerTest,
+TEST_P(LinkHeaderServiceWorkerTestP,
        InstallServiceWorker_NavigationToInsecureContext) {
   provider_host()->SetDocumentUrl(GURL("http://example.com/foo/bar/"));
   provider_host()->set_parent_frame_secure(true);
@@ -313,7 +319,7 @@ TEST_F(LinkHeaderServiceWorkerTest,
   ASSERT_EQ(0u, registrations.size());
 }
 
-TEST_F(LinkHeaderServiceWorkerTest,
+TEST_P(LinkHeaderServiceWorkerTestP,
        InstallServiceWorker_NavigationToInsecureHttpsContext) {
   provider_host()->SetDocumentUrl(GURL("https://example.com/foo/bar/"));
   provider_host()->set_parent_frame_secure(false);
@@ -327,6 +333,10 @@ TEST_F(LinkHeaderServiceWorkerTest,
   std::vector<ServiceWorkerRegistrationInfo> registrations = GetRegistrations();
   ASSERT_EQ(0u, registrations.size());
 }
+
+INSTANTIATE_TEST_CASE_P(LinkHeaderServiceWorkerTest,
+                        LinkHeaderServiceWorkerTestP,
+                        testing::Bool());
 
 }  // namespace
 

@@ -415,9 +415,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerVersionBrowserTest;
   friend class ServiceWorkerVersionTestP;
 
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTestP,
                            ActivateWaitingVersion);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTestP,
                            FallbackWithNoFetchHandler);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, IdleTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, SetDevToolsAttached);

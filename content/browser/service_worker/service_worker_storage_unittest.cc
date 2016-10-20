@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -529,7 +530,10 @@ class ServiceWorkerStorageTest : public testing::Test {
   TestBrowserThreadBundle browser_thread_bundle_;
 };
 
-TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
+class ServiceWorkerStorageTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerStorageTest> {};
+
+TEST_P(ServiceWorkerStorageTestP, DisabledStorage) {
   const GURL kScope("http://www.example.com/scope/");
   const GURL kScript("http://www.example.com/script.js");
   const GURL kDocumentUrl("http://www.example.com/scope/document.html");
@@ -607,7 +611,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   EXPECT_EQ(kInvalidServiceWorkerResourceId, storage()->NewRegistrationId());
 }
 
-TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
+TEST_P(ServiceWorkerStorageTestP, StoreFindUpdateDeleteRegistration) {
   const GURL kScope("http://www.test.not/scope/");
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const GURL kResource1("http://www.test.not/scope/resource1.js");
@@ -809,7 +813,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
             DeleteRegistration(kRegistrationId + 1, kScope.GetOrigin()));
 }
 
-TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
+TEST_P(ServiceWorkerStorageTestP, InstallingRegistrationsAreFindable) {
   const GURL kScope("http://www.test.not/scope/");
   const GURL kScript("http://www.test.not/script.js");
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
@@ -938,7 +942,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_TRUE(registrations_for_origin.empty());
 }
 
-TEST_F(ServiceWorkerStorageTest, StoreUserData) {
+TEST_P(ServiceWorkerStorageTestP, StoreUserData) {
   const GURL kScope("http://www.test.not/scope/");
   const GURL kScript("http://www.test.not/script.js");
   const int64_t kRegistrationId = 0;
@@ -1077,10 +1081,10 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
             GetUserDataForAllRegistrations(std::string(), &data_list_out));
 }
 
-class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
+class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTestP {
  public:
   void SetUp() override {
-    ServiceWorkerStorageTest::SetUp();
+    ServiceWorkerStorageTestP::SetUp();
     LazyInitialize();
 
     scope_ = GURL("http://www.test.not/scope/");
@@ -1159,7 +1163,7 @@ class ServiceWorkerResourceStorageDiskTest
 
 };
 
-TEST_F(ServiceWorkerResourceStorageTest,
+TEST_P(ServiceWorkerResourceStorageTest,
        WriteMetadataWithServiceWorkerResponseMetadataWriter) {
   const char kMetadata1[] = "Test metadata";
   const char kMetadata2[] = "small";
@@ -1185,7 +1189,7 @@ TEST_F(ServiceWorkerResourceStorageTest,
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
 }
 
-TEST_F(ServiceWorkerResourceStorageTest,
+TEST_P(ServiceWorkerResourceStorageTest,
        WriteMetadataWithServiceWorkerScriptCacheMap) {
   const char kMetadata1[] = "Test metadata";
   const char kMetadata2[] = "small";
@@ -1218,7 +1222,7 @@ TEST_F(ServiceWorkerResourceStorageTest,
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
 }
 
-TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
+TEST_P(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
   std::set<int64_t> verify_ids;
@@ -1250,7 +1254,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
-TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
+TEST_P(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   bool was_called = false;
   ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_FAILED;
   std::set<int64_t> verify_ids;
@@ -1292,7 +1296,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
-TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
+TEST_P(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
@@ -1343,7 +1347,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
-TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
+TEST_P(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->SetWaitingVersion(NULL);
@@ -1428,7 +1432,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), kNewResourceId, true));
 }
 
-TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
+TEST_P(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
   EXPECT_FALSE(storage()->IsDisabled());
   ASSERT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
   ASSERT_TRUE(base::DirectoryExists(storage()->GetDatabasePath()));
@@ -1445,7 +1449,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
 }
 
-TEST_F(ServiceWorkerResourceStorageDiskTest,
+TEST_P(ServiceWorkerResourceStorageDiskTest,
        DeleteAndStartOver_UnrelatedFileExists) {
   EXPECT_FALSE(storage()->IsDisabled());
   ASSERT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
@@ -1470,7 +1474,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   EXPECT_FALSE(base::DirectoryExists(storage()->GetDatabasePath()));
 }
 
-TEST_F(ServiceWorkerResourceStorageDiskTest,
+TEST_P(ServiceWorkerResourceStorageDiskTest,
        DeleteAndStartOver_OpenedFileExists) {
   EXPECT_FALSE(storage()->IsDisabled());
   ASSERT_TRUE(base::DirectoryExists(storage()->GetDiskCachePath()));
@@ -1504,7 +1508,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
 #endif
 }
 
-TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
+TEST_P(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
@@ -1569,7 +1573,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
-TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
+TEST_P(ServiceWorkerStorageTestP, FindRegistration_LongestScopeMatch) {
   const GURL kDocumentUrl("http://www.example.com/scope/foo");
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
@@ -1663,15 +1667,15 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   EXPECT_EQ(live_registration2, found_registration);
 }
 
-class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTest {
+class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTestP {
  public:
   void SetUp() override {
     ASSERT_TRUE(InitUserDataDirectory());
-    ServiceWorkerStorageTest::SetUp();
+    ServiceWorkerStorageTestP::SetUp();
   }
 };
 
-TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
+TEST_P(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   LazyInitialize();
 
   // Registration 1 for http://www.example.com
@@ -1782,7 +1786,7 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   EXPECT_FALSE(storage()->OriginHasForeignFetchRegistrations(kOrigin2));
 }
 
-class ServiceWorkerStorageOriginTrialsTest : public ServiceWorkerStorageTest {
+class ServiceWorkerStorageOriginTrialsTest : public ServiceWorkerStorageTestP {
  public:
   ServiceWorkerStorageOriginTrialsTest() {}
   ~ServiceWorkerStorageOriginTrialsTest() override {}
@@ -1800,7 +1804,7 @@ class ServiceWorkerStorageOriginTrialsTest : public ServiceWorkerStorageTest {
   }
 };
 
-TEST_F(ServiceWorkerStorageOriginTrialsTest, AbsentEntryAndEmptyEntry) {
+TEST_P(ServiceWorkerStorageOriginTrialsTest, AbsentEntryAndEmptyEntry) {
   const GURL origin1("http://www1.example.com");
   const GURL scope1("http://www1.example.com/foo/");
   RegistrationData data1;
@@ -1850,7 +1854,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsTest, AbsentEntryAndEmptyEntry) {
 }
 
 class ServiceWorkerStorageOriginTrialsDiskTest
-    : public ServiceWorkerStorageTest {
+    : public ServiceWorkerStorageTestP {
  public:
   ServiceWorkerStorageOriginTrialsDiskTest() {
     SetContentClient(&test_content_client_);
@@ -1860,7 +1864,7 @@ class ServiceWorkerStorageOriginTrialsDiskTest
   }
   void SetUp() override {
     ASSERT_TRUE(InitUserDataDirectory());
-    ServiceWorkerStorageTest::SetUp();
+    ServiceWorkerStorageTestP::SetUp();
   }
 
  private:
@@ -1887,7 +1891,7 @@ class ServiceWorkerStorageOriginTrialsDiskTest
   TestContentClient test_content_client_;
 };
 
-TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
+TEST_P(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   LazyInitialize();
   const GURL kScope("https://valid.example.com/scope");
   const GURL kScript("https://valid.example.com/script.js");
@@ -1981,5 +1985,24 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   EXPECT_EQ(kFeature2Token1, found_tokens.at("Feature2")[0]);
   EXPECT_EQ(kFeature2Token2, found_tokens.at("Feature2")[1]);
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerResourceStorageDiskTest,
+                        ServiceWorkerResourceStorageDiskTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(ServiceWorkerResourceStorageTest,
+                        ServiceWorkerResourceStorageTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageDiskTest,
+                        ServiceWorkerStorageDiskTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageOriginTrialsDiskTest,
+                        ServiceWorkerStorageOriginTrialsDiskTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageOriginTrialsTest,
+                        ServiceWorkerStorageOriginTrialsTest,
+                        testing::Bool());
+INSTANTIATE_TEST_CASE_P(ServiceWorkerStorageTestP,
+                        ServiceWorkerStorageTestP,
+                        testing::Bool());
 
 }  // namespace content

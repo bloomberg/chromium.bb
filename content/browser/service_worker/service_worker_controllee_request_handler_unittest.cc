@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -155,6 +156,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   GURL script_url_;
 };
 
+class ServiceWorkerControlleeRequestHandlerTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerControlleeRequestHandlerTest> {
+};
+
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
@@ -167,7 +172,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   }
 };
 
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
+TEST_P(ServiceWorkerControlleeRequestHandlerTestP, DisallowServiceWorker) {
   ServiceWorkerTestContentBrowserClient test_browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
@@ -201,7 +206,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
+TEST_P(ServiceWorkerControlleeRequestHandlerTestP, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -236,7 +241,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 }
 
 // Test that an installing registration is associated with a provider host.
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
+TEST_P(ServiceWorkerControlleeRequestHandlerTestP, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   version_->set_fetch_handler_existence(
@@ -262,7 +267,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 }
 
 // Test to not regress crbug/414118.
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
+TEST_P(ServiceWorkerControlleeRequestHandlerTestP, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->set_fetch_handler_existence(
@@ -295,7 +300,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
 }
 
-TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
+TEST_P(ServiceWorkerControlleeRequestHandlerTestP, FallbackWithNoFetchHandler) {
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -344,5 +349,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   EXPECT_FALSE(sub_cors_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sub_cors_job->ShouldForwardToServiceWorker());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerControlleeRequestHandlerTest,
+                        ServiceWorkerControlleeRequestHandlerTestP,
+                        testing::Bool());
 
 }  // namespace content

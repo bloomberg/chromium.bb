@@ -439,7 +439,10 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   int64_t next_version_id_ = 1L;
 };
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Normal) {
+class ServiceWorkerWriteToCacheJobTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerWriteToCacheJobTest> {};
+
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Normal) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateNormalURLRequestJob));
   request_->Start();
@@ -449,7 +452,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Normal) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, InvalidMimeType) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, InvalidMimeType) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateInvalidMimeTypeJob));
   request_->Start();
@@ -460,7 +463,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, InvalidMimeType) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, SSLCertificateError) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, SSLCertificateError) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateSSLCertificateErrorJob));
   request_->Start();
@@ -471,7 +474,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, SSLCertificateError) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, CertStatusError) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, CertStatusError) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateCertStatusErrorJob));
   request_->Start();
@@ -482,14 +485,14 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, CertStatusError) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameScript) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_SameScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
   scoped_refptr<ServiceWorkerVersion> version = UpdateScript(response);
   EXPECT_EQ(kInvalidServiceWorkerResourceId, GetResourceId(version.get()));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameSizeScript) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_SameSizeScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
 
@@ -524,7 +527,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_SameSizeScript) {
   registration_->SetWaitingVersion(version);
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Update_TruncatedScript) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_TruncatedScript) {
   std::string response = GenerateLongResponse();
   CreateIncumbent(response);
 
@@ -553,7 +556,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_TruncatedScript) {
   registration_->SetWaitingVersion(version);
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Update_ElongatedScript) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_ElongatedScript) {
   std::string original_response = GenerateLongResponse();
   CreateIncumbent(original_response);
 
@@ -576,7 +579,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_ElongatedScript) {
   registration_->SetWaitingVersion(version);
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Update_EmptyScript) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Update_EmptyScript) {
   // Create empty incumbent.
   CreateIncumbent(std::string());
 
@@ -596,7 +599,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Update_EmptyScript) {
   EXPECT_EQ(kInvalidServiceWorkerResourceId, GetResourceId(version.get()));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, Error) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateFailedURLRequestJob));
   request_->Start();
@@ -607,7 +610,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
             version_->script_cache_map()->LookupResourceId(script_url_));
 }
 
-TEST_F(ServiceWorkerWriteToCacheJobTest, FailedWriteHeadersToCache) {
+TEST_P(ServiceWorkerWriteToCacheJobTestP, FailedWriteHeadersToCache) {
   mock_protocol_handler_->SetCreateJobCallback(
       base::Bind(&CreateNormalURLRequestJob));
   DisableCache();
@@ -616,5 +619,9 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, FailedWriteHeadersToCache) {
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
   EXPECT_EQ(net::ERR_FAILED, request_->status().error());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerWriteToCacheJobTest,
+                        ServiceWorkerWriteToCacheJobTestP,
+                        testing::Bool());
 
 }  // namespace content

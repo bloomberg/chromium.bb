@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_request_info.h"
@@ -82,7 +83,10 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
   GURL script_url_;
 };
 
-TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
+class ServiceWorkerContextRequestHandlerTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerContextRequestHandlerTest> {};
+
+TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateBefore24Hours) {
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
   registration_->set_last_update_check(base::Time::Now());
@@ -108,7 +112,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
   EXPECT_FALSE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
-TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
+TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateAfter24Hours) {
   // Give the registration a old update time and pretend
   // we're installing a new version.
   registration_->set_last_update_check(
@@ -135,7 +139,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
-TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
+TEST_P(ServiceWorkerContextRequestHandlerTestP, UpdateForceBypassCache) {
   // Give the registration a very recent last update time and pretend
   // we're installing a new version.
   registration_->set_last_update_check(base::Time::Now());
@@ -162,7 +166,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateForceBypassCache) {
   EXPECT_TRUE(sw_job->net_request_->load_flags() & net::LOAD_BYPASS_CACHE);
 }
 
-TEST_F(ServiceWorkerContextRequestHandlerTest,
+TEST_P(ServiceWorkerContextRequestHandlerTestP,
        ServiceWorkerDataRequestAnnotation) {
   version_->SetStatus(ServiceWorkerVersion::NEW);
   provider_host_->running_hosted_version_ = version_;
@@ -187,5 +191,9 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
   EXPECT_TRUE(ResourceRequestInfo::OriginatedFromServiceWorker(
       sw_job->net_request_.get()));
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerContextRequestHandlerTest,
+                        ServiceWorkerContextRequestHandlerTestP,
+                        testing::Bool());
 
 }  // namespace content

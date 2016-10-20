@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -116,7 +117,10 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   storage::BlobStorageContext blob_storage_context_;
 };
 
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
+class ServiceWorkerRequestHandlerTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerRequestHandlerTest> {};
+
+TEST_P(ServiceWorkerRequestHandlerTestP, InitializeHandler) {
   // Cannot initialize a handler for non-secure origins.
   EXPECT_FALSE(InitializeHandlerCheck(
       "ftp://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
@@ -162,5 +166,9 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
       "https://host/scope/doc", "GET", true, RESOURCE_TYPE_IMAGE));
   EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerRequestHandlerTest,
+                        ServiceWorkerRequestHandlerTestP,
+                        testing::Bool());
 
 }  // namespace content

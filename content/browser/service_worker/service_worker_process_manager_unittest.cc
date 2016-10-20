@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -69,7 +70,10 @@ class ServiceWorkerProcessManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProcessManagerTest);
 };
 
-TEST_F(ServiceWorkerProcessManagerTest, SortProcess) {
+class ServiceWorkerProcessManagerTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerProcessManagerTest> {};
+
+TEST_P(ServiceWorkerProcessManagerTestP, SortProcess) {
   // Process 1 has 2 refs, 2 has 3 refs and 3 has 1 ref.
   process_manager_->AddProcessReferenceToPattern(pattern_, 1);
   process_manager_->AddProcessReferenceToPattern(pattern_, 1);
@@ -89,7 +93,7 @@ TEST_F(ServiceWorkerProcessManagerTest, SortProcess) {
               testing::ElementsAre(2, 3));
 }
 
-TEST_F(ServiceWorkerProcessManagerTest, FindAvailableProcess) {
+TEST_P(ServiceWorkerProcessManagerTestP, FindAvailableProcess) {
   std::unique_ptr<MockRenderProcessHost> host1(CreateRenderProcessHost());
   std::unique_ptr<MockRenderProcessHost> host2(CreateRenderProcessHost());
   std::unique_ptr<MockRenderProcessHost> host3(CreateRenderProcessHost());
@@ -121,7 +125,7 @@ TEST_F(ServiceWorkerProcessManagerTest, FindAvailableProcess) {
   EXPECT_EQ(host3->GetID(), process_manager_->FindAvailableProcess(pattern_));
 }
 
-TEST_F(ServiceWorkerProcessManagerTest,
+TEST_P(ServiceWorkerProcessManagerTestP,
        AllocateWorkerProcess_FindAvailableProcess) {
   const int kEmbeddedWorkerId1 = 100;
   const int kEmbeddedWorkerId2 = 200;
@@ -232,7 +236,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   EXPECT_TRUE(instance_info.empty());
 }
 
-TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
+TEST_P(ServiceWorkerProcessManagerTestP, AllocateWorkerProcess_InShutdown) {
   process_manager_->Shutdown();
   ASSERT_TRUE(process_manager_->IsShutdown());
 
@@ -252,5 +256,9 @@ TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {
   EXPECT_FALSE(is_new_process);
   EXPECT_TRUE(process_manager_->instance_info_.empty());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerProcessManagerTest,
+                        ServiceWorkerProcessManagerTestP,
+                        testing::Bool());
 
 }  // namespace content

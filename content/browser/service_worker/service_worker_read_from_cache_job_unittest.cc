@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
@@ -188,7 +189,10 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
   MockURLRequestDelegate delegate_;
 };
 
-TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
+class ServiceWorkerReadFromCacheJobTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerReadFromCacheJobTest> {};
+
+TEST_P(ServiceWorkerReadFromCacheJobTestP, ReadMainScript) {
   // Read the main script from the diskcache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(main_script_.url,
@@ -206,7 +210,7 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {
             DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
 }
 
-TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
+TEST_P(ServiceWorkerReadFromCacheJobTestP, ReadImportedScript) {
   // Read the imported script from the diskcache.
   std::unique_ptr<net::URLRequest> request =
       url_request_context_->CreateRequest(imported_script_.url,
@@ -223,7 +227,7 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ReadImportedScript) {
             DeduceStartWorkerFailureReason(SERVICE_WORKER_OK));
 }
 
-TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
+TEST_P(ServiceWorkerReadFromCacheJobTestP, ResourceNotFound) {
   ASSERT_EQ(SERVICE_WORKER_OK, FindRegistration());
 
   // Try to read a nonexistent resource from the diskcache.
@@ -248,5 +252,9 @@ TEST_F(ServiceWorkerReadFromCacheJobTest, ResourceNotFound) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version_->status());
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, FindRegistration());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerReadFromCacheJobTest,
+                        ServiceWorkerReadFromCacheJobTestP,
+                        testing::Bool());
 
 }  // namespace content

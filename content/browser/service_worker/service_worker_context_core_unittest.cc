@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +34,10 @@ class ServiceWorkerContextCoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCoreTest);
 };
 
-TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
+class ServiceWorkerContextCoreTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerContextCoreTest> {};
+
+TEST_P(ServiceWorkerContextCoreTestP, FailureInfo) {
   const int64_t kVersionId = 55;  // dummy value
 
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
@@ -57,5 +61,9 @@ TEST_F(ServiceWorkerContextCoreTest, FailureInfo) {
   EXPECT_EQ(0, context()->GetVersionFailureCount(kVersionId));
   EXPECT_FALSE(base::ContainsKey(context()->failure_counts_, kVersionId));
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerContextCoreTest,
+                        ServiceWorkerContextCoreTestP,
+                        testing::Bool());
 
 }  // namespace content

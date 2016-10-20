@@ -99,7 +99,10 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
+class ServiceWorkerRegistrationTestP
+    : public MojoServiceWorkerTestP<ServiceWorkerRegistrationTest> {};
+
+TEST_P(ServiceWorkerRegistrationTestP, SetAndUnsetVersions) {
   const GURL kScope("http://www.example.not/");
   const GURL kScript("http://www.example.not/service_worker.js");
   int64_t kRegistrationId = 1L;
@@ -167,7 +170,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
             kInvalidServiceWorkerVersionId);
 }
 
-TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
+TEST_P(ServiceWorkerRegistrationTestP, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
   int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -183,9 +186,9 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
 
 // Sets up a registration with a waiting worker, and an active worker
 // with a controllee and an inflight request.
-class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
+class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTestP {
  public:
-  ServiceWorkerActivationTest() : ServiceWorkerRegistrationTest() {}
+  ServiceWorkerActivationTest() : ServiceWorkerRegistrationTestP() {}
 
   void SetUp() override {
     ServiceWorkerRegistrationTest::SetUp();
@@ -261,7 +264,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
 };
 
 // Test activation triggered by finishing all requests.
-TEST_F(ServiceWorkerActivationTest, NoInflightRequest) {
+TEST_P(ServiceWorkerActivationTest, NoInflightRequest) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
@@ -280,7 +283,7 @@ TEST_F(ServiceWorkerActivationTest, NoInflightRequest) {
 }
 
 // Test activation triggered by loss of controllee.
-TEST_F(ServiceWorkerActivationTest, NoControllee) {
+TEST_P(ServiceWorkerActivationTest, NoControllee) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
@@ -299,7 +302,7 @@ TEST_F(ServiceWorkerActivationTest, NoControllee) {
 }
 
 // Test activation triggered by skipWaiting.
-TEST_F(ServiceWorkerActivationTest, SkipWaiting) {
+TEST_P(ServiceWorkerActivationTest, SkipWaiting) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
@@ -318,7 +321,7 @@ TEST_F(ServiceWorkerActivationTest, SkipWaiting) {
 }
 
 // Test activation triggered by skipWaiting and finishing requests.
-TEST_F(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
+TEST_P(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   scoped_refptr<ServiceWorkerRegistration> reg = registration();
   scoped_refptr<ServiceWorkerVersion> version_1 = reg->active_version();
   scoped_refptr<ServiceWorkerVersion> version_2 = reg->waiting_version();
@@ -335,5 +338,13 @@ TEST_F(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_2.get(), reg->active_version());
 }
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerRegistrationTest,
+                        ServiceWorkerRegistrationTestP,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(ServiceWorkerActivationTest,
+                        ServiceWorkerActivationTest,
+                        testing::Bool());
 
 }  // namespace content
