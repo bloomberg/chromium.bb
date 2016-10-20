@@ -115,8 +115,9 @@ static bool shouldTreatAsUniqueOrigin(const KURL& url) {
 }
 
 SecurityOrigin::SecurityOrigin(const KURL& url)
-    : m_protocol(url.protocol().isNull() ? "" : url.protocol().lower()),
-      m_host(url.host().isNull() ? "" : url.host().lower()),
+    : m_protocol(url.protocol().isNull() ? emptyString()
+                                         : url.protocol().lower()),
+      m_host(url.host().isNull() ? emptyString() : url.host().lower()),
       m_port(url.port()),
       m_effectivePort(url.port() ? url.port()
                                  : defaultPortForProtocol(m_protocol)),
@@ -142,9 +143,9 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
 }
 
 SecurityOrigin::SecurityOrigin()
-    : m_protocol(""),
-      m_host(""),
-      m_domain(""),
+    : m_protocol(emptyString()),
+      m_host(emptyString()),
+      m_domain(emptyString()),
       m_port(InvalidPort),
       m_effectivePort(InvalidPort),
       m_isUnique(true),
