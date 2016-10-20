@@ -11,7 +11,6 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
-#include "ash/common/test/test_volume_control_delegate.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"

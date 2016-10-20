@@ -423,7 +423,6 @@ component("ash") {
     "common/system/user/user_observer.h",
     "common/system/user/user_view.cc",
     "common/system/user/user_view.h",
-    "common/system/volume_control_delegate.h",
     "common/system/web_notification/ash_popup_alignment_delegate.cc",
     "common/system/web_notification/ash_popup_alignment_delegate.h",
     "common/system/web_notification/web_notification_tray.cc",

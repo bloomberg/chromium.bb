@@ -28,7 +28,6 @@
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/update_observer.h"
 #include "ash/common/system/user/user_observer.h"
-#include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
@@ -73,7 +72,6 @@
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -172,7 +170,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       session_started_(false),
       cast_config_delegate_(nullptr),
       networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
-      volume_control_delegate_(new VolumeController()),
       vpn_delegate_(new VPNDelegateChromeOS),
       weak_ptr_factory_(this) {
   // Register notifications on construction so that events such as
@@ -601,16 +598,6 @@ ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate() {
 ash::NetworkingConfigDelegate*
 SystemTrayDelegateChromeOS::GetNetworkingConfigDelegate() const {
   return networking_config_delegate_.get();
-}
-
-ash::VolumeControlDelegate*
-SystemTrayDelegateChromeOS::GetVolumeControlDelegate() const {
-  return volume_control_delegate_.get();
-}
-
-void SystemTrayDelegateChromeOS::SetVolumeControlDelegate(
-    std::unique_ptr<ash::VolumeControlDelegate> delegate) {
-  volume_control_delegate_.swap(delegate);
 }
 
 bool SystemTrayDelegateChromeOS::GetSessionStartTime(

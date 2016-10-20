@@ -5,17 +5,13 @@
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
-#include "content/public/browser/user_metrics.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "ui/base/resource/resource_bundle.h"
-
-using chromeos::CrasAudioHandler;
 
 namespace {
 
@@ -38,7 +34,6 @@ void PlayVolumeAdjustSound() {
 }  // namespace
 
 VolumeController::VolumeController() {
-  CrasAudioHandler::Get()->AddAudioObserver(this);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   if (VolumeAdjustSoundEnabled()) {
     media::SoundsManager::Get()->Initialize(
@@ -47,23 +42,19 @@ VolumeController::VolumeController() {
   }
 }
 
-VolumeController::~VolumeController() {
-  if (CrasAudioHandler::IsInitialized())
-    CrasAudioHandler::Get()->RemoveAudioObserver(this);
+VolumeController::~VolumeController() {}
+
+void VolumeController::BindRequest(
+    ash::mojom::VolumeControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
-void VolumeController::HandleVolumeMute(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_VOLUME_MUTE)
-    content::RecordAction(base::UserMetricsAction("Accel_VolumeMute_F8"));
-
-  CrasAudioHandler::Get()->SetOutputMute(true);
+void VolumeController::VolumeMute() {
+  chromeos::CrasAudioHandler::Get()->SetOutputMute(true);
 }
 
-void VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_VOLUME_DOWN)
-    content::RecordAction(base::UserMetricsAction("Accel_VolumeDown_F9"));
-
-  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+void VolumeController::VolumeDown() {
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
   if (audio_handler->IsOutputMuted()) {
     audio_handler->SetOutputVolumePercent(0);
   } else {
@@ -75,11 +66,8 @@ void VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
   }
 }
 
-void VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_VOLUME_UP)
-    content::RecordAction(base::UserMetricsAction("Accel_VolumeUp_F10"));
-
-  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+void VolumeController::VolumeUp() {
+  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
   bool play_sound = false;
   if (audio_handler->IsOutputMuted()) {
     audio_handler->SetOutputMute(false);
@@ -92,19 +80,4 @@ void VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
 
   if (play_sound)
     PlayVolumeAdjustSound();
-}
-
-void VolumeController::OnOutputNodeVolumeChanged(uint64_t node_id, int volume) {
-  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
-  extensions::DispatchVolumeChangedEvent(
-      audio_handler->GetOutputVolumePercent(),
-      audio_handler->IsOutputMuted());
-}
-
-void VolumeController::OnOutputMuteChanged(bool /* mute_on */,
-                                           bool /* system_adjust */) {
-  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
-  extensions::DispatchVolumeChangedEvent(
-      audio_handler->GetOutputVolumePercent(),
-      audio_handler->IsOutputMuted());
 }

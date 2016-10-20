@@ -5,32 +5,26 @@
 #ifndef CHROME_BROWSER_UI_ASH_VOLUME_CONTROLLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_VOLUME_CONTROLLER_CHROMEOS_H_
 
-#include <stdint.h>
-
-#include "ash/common/system/volume_control_delegate.h"
-#include "base/compiler_specific.h"
+#include "ash/public/interfaces/volume.mojom.h"
 #include "base/macros.h"
-#include "chromeos/audio/cras_audio_handler.h"
-#include "ui/base/accelerators/accelerator.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
-// A class which controls volume when F8-10 or a multimedia key for volume is
-// pressed.
-class VolumeController : public ash::VolumeControlDelegate,
-                         public chromeos::CrasAudioHandler::AudioObserver {
+// Controls the volume when F8-10 or a multimedia key for volume is pressed.
+class VolumeController : public ash::mojom::VolumeController {
  public:
   VolumeController();
   ~VolumeController() override;
 
-  // Overridden from ash::VolumeControlDelegate:
-  void HandleVolumeMute(const ui::Accelerator& accelerator) override;
-  void HandleVolumeDown(const ui::Accelerator& accelerator) override;
-  void HandleVolumeUp(const ui::Accelerator& accelerator) override;
+  // Binds the mojom::VolumeController interface request to this object.
+  void BindRequest(ash::mojom::VolumeControllerRequest request);
 
-  // Overridden from chromeos::CrasAudioHandler::AudioObserver.
-  void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
-  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
+  // Overridden from ash::mojom::VolumeController:
+  void VolumeMute() override;
+  void VolumeDown() override;
+  void VolumeUp() override;
 
  private:
+  mojo::BindingSet<ash::mojom::VolumeController> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeController);
 };

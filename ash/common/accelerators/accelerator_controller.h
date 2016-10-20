@@ -14,6 +14,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accelerators/exit_warning_handler.h"
+#include "ash/public/interfaces/volume.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -155,6 +156,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
       int action);
 
+  // Returns the volume controller interface raw pointer, may be null in tests.
+  mojom::VolumeController* GetVolumeController();
+  void OnVolumeControllerConnectionError();
+
   AcceleratorControllerDelegate* delegate_;
 
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
@@ -175,6 +180,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::map<AcceleratorAction, const DeprecatedAcceleratorData*>
       actions_with_deprecations_;
   std::set<ui::Accelerator> deprecated_accelerators_;
+
+  // The cached volume controller interface pointer.
+  mojom::VolumeControllerPtr volume_controller_;
 
   // Actions allowed when the user is not signed in.
   std::set<int> actions_allowed_at_login_screen_;

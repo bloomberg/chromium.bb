@@ -11,7 +11,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
-#include "ash/common/system/volume_control_delegate.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
@@ -101,7 +100,7 @@ using RebootOnShutdownCallback = base::Callback<void(bool)>;
 // (browser) specific tasks. For non application specific tasks, where possible,
 // components/, chromeos/, device/, etc., code should be used directly. If more
 // than one related method is being added, consider adding an additional
-// specific delegate (e.g. VolumeControlDelegate).
+// specific delegate (e.g. VPNDelegate).
 //
 // These methods should all have trivial default implementations for platforms
 // that do not implement the method (e.g. return false or nullptr). This
@@ -222,13 +221,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
-
-  // Returns VolumeControlDelegate. May return nullptr.
-  virtual VolumeControlDelegate* GetVolumeControlDelegate() const;
-
-  // Sets the VolumeControlDelegate.
-  virtual void SetVolumeControlDelegate(
-      std::unique_ptr<VolumeControlDelegate> delegate);
 
   // Retrieves the session start time. Returns |false| if the time is not set.
   virtual bool GetSessionStartTime(base::TimeTicks* session_start_time);

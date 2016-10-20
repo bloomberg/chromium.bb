@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/common/system/networking_config_delegate.h"
-#include "ash/common/system/volume_control_delegate.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 
@@ -62,16 +61,6 @@ bool DefaultSystemTrayDelegate::GetBluetoothEnabled() {
 
 bool DefaultSystemTrayDelegate::GetBluetoothDiscovering() {
   return false;
-}
-
-VolumeControlDelegate* DefaultSystemTrayDelegate::GetVolumeControlDelegate()
-    const {
-  return volume_control_delegate_.get();
-}
-
-void DefaultSystemTrayDelegate::SetVolumeControlDelegate(
-    std::unique_ptr<VolumeControlDelegate> delegate) {
-  volume_control_delegate_ = std::move(delegate);
 }
 
 int DefaultSystemTrayDelegate::GetSystemTrayMenuWidth() {

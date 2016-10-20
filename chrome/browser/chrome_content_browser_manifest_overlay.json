@@ -22,7 +22,8 @@
           "ash::mojom::SystemTray",
           "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperController",
-          "ash::mojom::WallpaperManager"
+          "ash::mojom::WallpaperManager",
+          "ash::mojom::VolumeController"
         ],
         "mash:launchable": [
           "mash::mojom::Launchable"

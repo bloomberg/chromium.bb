@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
+#include "chrome/browser/chromeos/extensions/extension_volume_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -668,23 +669,25 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     SetGuestLocale(profile());
 
-  peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
+  // This observer uses the intialized profile to dispatch extension events.
+  extension_volume_observer_ = base::MakeUnique<ExtensionVolumeObserver>();
 
-  renderer_freezer_.reset(
-      new RendererFreezer(std::unique_ptr<RendererFreezer::Delegate>(
-          new FreezerCgroupProcessManager())));
+  peripheral_battery_observer_ = base::MakeUnique<PeripheralBatteryObserver>();
+
+  renderer_freezer_ = base::MakeUnique<RendererFreezer>(
+      base::MakeUnique<FreezerCgroupProcessManager>());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
   // This observer cannot be created earlier because it requires the shell to be
   // available.
-  idle_action_warning_observer_.reset(new IdleActionWarningObserver());
+  idle_action_warning_observer_ = base::MakeUnique<IdleActionWarningObserver>();
 
   // Start watching for low disk space events to notify the user if it is not a
   // guest profile.
   if (!user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    low_disk_notification_.reset(new LowDiskNotification());
+    low_disk_notification_ = base::MakeUnique<LowDiskNotification>();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
@@ -791,6 +794,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
+  extension_volume_observer_.reset();
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
   renderer_freezer_.reset();

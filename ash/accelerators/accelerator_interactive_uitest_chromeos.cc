@@ -8,7 +8,6 @@
 #include "ash/common/system/chromeos/network/network_observer.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/test/test_volume_control_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
@@ -17,6 +16,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
+#include "base/test/user_action_tester.cc"
 #include "chromeos/network/network_handler.h"
 #include "ui/base/test/ui_controls.h"
 
@@ -165,22 +165,19 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
   // Press ESC to go out of the partial screenshot mode.
   SendKeyPressSync(ui::VKEY_ESCAPE, false, false, false);
 
-  // Test VOLUME_MUTE, VOLUME_DOWN, and VOLUME_UP.
-  TestVolumeControlDelegate* volume_delegate = new TestVolumeControlDelegate;
-  WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
-      std::unique_ptr<VolumeControlDelegate>(volume_delegate));
-  // VOLUME_MUTE.
-  EXPECT_EQ(0, volume_delegate->handle_volume_mute_count());
+  // Test VOLUME_MUTE.
+  base::UserActionTester user_action_tester;
+  EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
   SendKeyPressSync(ui::VKEY_VOLUME_MUTE, false, false, false);
-  EXPECT_EQ(1, volume_delegate->handle_volume_mute_count());
-  // VOLUME_DOWN.
-  EXPECT_EQ(0, volume_delegate->handle_volume_down_count());
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
+  // Test VOLUME_DOWN.
+  EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
   SendKeyPressSync(ui::VKEY_VOLUME_DOWN, false, false, false);
-  EXPECT_EQ(1, volume_delegate->handle_volume_down_count());
-  // VOLUME_UP.
-  EXPECT_EQ(0, volume_delegate->handle_volume_up_count());
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+  // Test VOLUME_UP.
+  EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
   SendKeyPressSync(ui::VKEY_VOLUME_UP, false, false, false);
-  EXPECT_EQ(1, volume_delegate->handle_volume_up_count());
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
 
   // Test TOGGLE_WIFI.
   TestNetworkObserver network_observer;

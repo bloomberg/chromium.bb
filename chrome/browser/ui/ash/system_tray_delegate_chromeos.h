@@ -113,9 +113,6 @@ class SystemTrayDelegateChromeOS
   bool GetBluetoothDiscovering() override;
   ash::CastConfigDelegate* GetCastConfigDelegate() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
-  ash::VolumeControlDelegate* GetVolumeControlDelegate() const override;
-  void SetVolumeControlDelegate(
-      std::unique_ptr<ash::VolumeControlDelegate> delegate) override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   int GetSystemTrayMenuWidth() override;
@@ -274,7 +271,6 @@ class SystemTrayDelegateChromeOS
       bluetooth_discovery_session_;
   std::unique_ptr<ash::CastConfigDelegate> cast_config_delegate_;
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
-  std::unique_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
   std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
   std::unique_ptr<ash::VPNDelegate> vpn_delegate_;

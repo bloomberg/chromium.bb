@@ -23,7 +23,6 @@
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -36,6 +35,7 @@
 #include "ash/common/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -479,25 +479,31 @@ void HandleToggleSpokenFeedback() {
       A11Y_NOTIFICATION_SHOW);
 }
 
-void HandleVolumeDown(const ui::Accelerator& accelerator) {
-  VolumeControlDelegate* volume_delegate =
-      WmShell::Get()->system_tray_delegate()->GetVolumeControlDelegate();
-  if (volume_delegate)
-    volume_delegate->HandleVolumeDown(accelerator);
+void HandleVolumeDown(mojom::VolumeController* volume_controller,
+                      const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_VOLUME_DOWN)
+    base::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
+
+  if (volume_controller)
+    volume_controller->VolumeDown();
 }
 
-void HandleVolumeMute(const ui::Accelerator& accelerator) {
-  VolumeControlDelegate* volume_delegate =
-      WmShell::Get()->system_tray_delegate()->GetVolumeControlDelegate();
-  if (volume_delegate)
-    volume_delegate->HandleVolumeMute(accelerator);
+void HandleVolumeMute(mojom::VolumeController* volume_controller,
+                      const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_VOLUME_MUTE)
+    base::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
+
+  if (volume_controller)
+    volume_controller->VolumeMute();
 }
 
-void HandleVolumeUp(const ui::Accelerator& accelerator) {
-  VolumeControlDelegate* volume_delegate =
-      WmShell::Get()->system_tray_delegate()->GetVolumeControlDelegate();
-  if (volume_delegate)
-    volume_delegate->HandleVolumeUp(accelerator);
+void HandleVolumeUp(mojom::VolumeController* volume_controller,
+                    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_VOLUME_UP)
+    base::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
+
+  if (volume_controller)
+    volume_controller->VolumeUp();
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -1060,13 +1066,13 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       WmShell::Get()->system_tray_notifier()->NotifyRequestToggleWifi();
       break;
     case VOLUME_DOWN:
-      HandleVolumeDown(accelerator);
+      HandleVolumeDown(GetVolumeController(), accelerator);
       break;
     case VOLUME_MUTE:
-      HandleVolumeMute(accelerator);
+      HandleVolumeMute(GetVolumeController(), accelerator);
       break;
     case VOLUME_UP:
-      HandleVolumeUp(accelerator);
+      HandleVolumeUp(GetVolumeController(), accelerator);
       break;
 #else
     case DUMMY_FOR_RESERVED:
@@ -1127,6 +1133,21 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   return RESTRICTION_NONE;
+}
+
+mojom::VolumeController* AcceleratorController::GetVolumeController() {
+  if (!volume_controller_ && WmShell::Get()->delegate()->GetShellConnector()) {
+    WmShell::Get()->delegate()->GetShellConnector()->ConnectToInterface(
+        "service:content_browser", &volume_controller_);
+    volume_controller_.set_connection_error_handler(
+        base::Bind(&AcceleratorController::OnVolumeControllerConnectionError,
+                   base::Unretained(this)));
+  }
+  return volume_controller_.get();
+}
+
+void AcceleratorController::OnVolumeControllerConnectionError() {
+  volume_controller_.reset();
 }
 
 }  // namespace ash

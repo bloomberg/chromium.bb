@@ -8,6 +8,7 @@
 
 #include "ash/common/mojo_interface_factory.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "content/public/common/service_manager_connection.h"
@@ -93,7 +95,7 @@ class FactoryImpl {
  private:
   static FactoryImpl* Get() {
     if (!factory_.Get())
-      factory_.Get().reset(new FactoryImpl);
+      factory_.Get() = base::MakeUnique<FactoryImpl>();
     return factory_.Get().get();
   }
 
@@ -104,14 +106,14 @@ class FactoryImpl {
 
   void BindRequest(keyboard::mojom::KeyboardRequest request) {
     if (!keyboard_ui_service_)
-      keyboard_ui_service_.reset(new KeyboardUIService);
+      keyboard_ui_service_ = base::MakeUnique<KeyboardUIService>();
     keyboard_bindings_.AddBinding(keyboard_ui_service_.get(),
                                   std::move(request));
   }
 
   void BindRequest(mash::mojom::LaunchableRequest request) {
     if (!launchable_)
-      launchable_.reset(new ChromeLaunchable);
+      launchable_ = base::MakeUnique<ChromeLaunchable>();
     launchable_->ProcessRequest(std::move(request));
   }
 
@@ -124,9 +126,15 @@ class FactoryImpl {
     WallpaperManager::Get()->BindRequest(std::move(request));
   }
 
+  void BindRequest(ash::mojom::VolumeControllerRequest request) {
+    if (!volume_controller_)
+      volume_controller_ = base::MakeUnique<VolumeController>();
+    volume_controller_->BindRequest(std::move(request));
+  }
+
   void BindRequest(app_list::mojom::AppListPresenterRequest request) {
     if (!app_list_presenter_service_)
-      app_list_presenter_service_.reset(new AppListPresenterService);
+      app_list_presenter_service_ = base::MakeUnique<AppListPresenterService>();
     app_list_presenter_bindings_.AddBinding(app_list_presenter_service_.get(),
                                             std::move(request));
   }
@@ -137,6 +145,7 @@ class FactoryImpl {
   mojo::BindingSet<keyboard::mojom::Keyboard> keyboard_bindings_;
   std::unique_ptr<ChromeLaunchable> launchable_;
   mojo::BindingSet<ash::mojom::SystemTrayClient> system_tray_client_bindings_;
+  std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
   mojo::BindingSet<app_list::mojom::AppListPresenter>
       app_list_presenter_bindings_;
@@ -163,6 +172,8 @@ bool ChromeInterfaceFactory::OnConnect(
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::SystemTrayClient>(
+      registry, main_thread_task_runner_);
+  FactoryImpl::AddFactory<ash::mojom::VolumeController>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::WallpaperManager>(
       registry, main_thread_task_runner_);

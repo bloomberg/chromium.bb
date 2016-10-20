@@ -12,9 +12,7 @@
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/common/test/test_volume_control_delegate.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -28,6 +26,7 @@
 #include "ash/mus/property_util.h"
 #include "ash/mus/test/wm_test_base.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/test/user_action_tester.cc"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/test/event_generator.h"
@@ -809,21 +808,23 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
-    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
-    WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
-        std::unique_ptr<VolumeControlDelegate>(delegate));
-    EXPECT_EQ(0, delegate->handle_volume_mute_count());
+    base::UserActionTester user_action_tester;
+    ui::AcceleratorHistory* history = GetController()->accelerator_history();
+
+    EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
     EXPECT_TRUE(ProcessInController(volume_mute));
-    EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(volume_mute, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_down_count());
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
+    EXPECT_EQ(volume_mute, history->current_accelerator());
+
+    EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
     EXPECT_TRUE(ProcessInController(volume_down));
-    EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(volume_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_up_count());
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+    EXPECT_EQ(volume_down, history->current_accelerator());
+
+    EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
     EXPECT_TRUE(ProcessInController(volume_up));
-    EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(volume_up, delegate->last_accelerator());
+    EXPECT_EQ(volume_up, history->current_accelerator());
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
   }
   // Brightness
   // ui::VKEY_BRIGHTNESS_DOWN/UP are not defined on Windows.
@@ -1239,24 +1240,23 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator volume_up(ui::VKEY_VOLUME_UP, ui::EF_NONE);
   {
+    base::UserActionTester user_action_tester;
+    ui::AcceleratorHistory* history = GetController()->accelerator_history();
+
+    EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
     EXPECT_TRUE(ProcessInController(volume_mute));
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeMute_F8"));
+    EXPECT_EQ(volume_mute, history->current_accelerator());
+
+    EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
     EXPECT_TRUE(ProcessInController(volume_down));
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeDown_F9"));
+    EXPECT_EQ(volume_down, history->current_accelerator());
+
+    EXPECT_EQ(0, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
     EXPECT_TRUE(ProcessInController(volume_up));
-    TestVolumeControlDelegate* delegate = new TestVolumeControlDelegate;
-    WmShell::Get()->system_tray_delegate()->SetVolumeControlDelegate(
-        std::unique_ptr<VolumeControlDelegate>(delegate));
-    EXPECT_EQ(0, delegate->handle_volume_mute_count());
-    EXPECT_TRUE(ProcessInController(volume_mute));
-    EXPECT_EQ(1, delegate->handle_volume_mute_count());
-    EXPECT_EQ(volume_mute, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_down_count());
-    EXPECT_TRUE(ProcessInController(volume_down));
-    EXPECT_EQ(1, delegate->handle_volume_down_count());
-    EXPECT_EQ(volume_down, delegate->last_accelerator());
-    EXPECT_EQ(0, delegate->handle_volume_up_count());
-    EXPECT_TRUE(ProcessInController(volume_up));
-    EXPECT_EQ(1, delegate->handle_volume_up_count());
-    EXPECT_EQ(volume_up, delegate->last_accelerator());
+    EXPECT_EQ(volume_up, history->current_accelerator());
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Accel_VolumeUp_F10"));
   }
 }
 #endif

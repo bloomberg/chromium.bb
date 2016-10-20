@@ -142,13 +142,6 @@ NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
   return nullptr;
 }
 
-VolumeControlDelegate* SystemTrayDelegate::GetVolumeControlDelegate() const {
-  return nullptr;
-}
-
-void SystemTrayDelegate::SetVolumeControlDelegate(
-    std::unique_ptr<VolumeControlDelegate> delegate) {}
-
 bool SystemTrayDelegate::GetSessionStartTime(
     base::TimeTicks* session_start_time) {
   return false;

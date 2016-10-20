@@ -26,6 +26,7 @@ namespace chromeos {
 class DataPromoNotification;
 class EventRewriter;
 class EventRewriterController;
+class ExtensionVolumeObserver;
 class IdleActionWarningObserver;
 class LoginLockStateNotifier;
 class LowDiskNotification;
@@ -68,6 +69,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
  private:
   std::unique_ptr<default_app_order::ExternalLoader> app_order_loader_;
+  std::unique_ptr<ExtensionVolumeObserver> extension_volume_observer_;
   std::unique_ptr<PeripheralBatteryObserver> peripheral_battery_observer_;
   std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<LoginLockStateNotifier> login_lock_state_notifier_;

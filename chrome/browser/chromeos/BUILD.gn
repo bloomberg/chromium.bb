@@ -361,6 +361,8 @@ source_set("chromeos") {
     "extensions/dictionary_event_router.h",
     "extensions/extension_system_event_observer.cc",
     "extensions/extension_system_event_observer.h",
+    "extensions/extension_volume_observer.cc",
+    "extensions/extension_volume_observer.h",
     "extensions/external_cache.cc",
     "extensions/external_cache.h",
     "extensions/gfx_utils.cc",

@@ -74,23 +74,10 @@ class VolumeControllerTest : public InProcessBrowserTest {
   }
 
  protected:
-  void VolumeMute() {
-    volume_controller_->HandleVolumeMute(ui::Accelerator());
-  }
-
-  void VolumeUp() {
-    volume_controller_->HandleVolumeUp(ui::Accelerator());
-  }
-
-  void VolumeDown() {
-    volume_controller_->HandleVolumeDown(ui::Accelerator());
-  }
-
   chromeos::CrasAudioHandler* audio_handler_;  // Not owned.
-
- private:
   std::unique_ptr<VolumeController> volume_controller_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(VolumeControllerTest);
 };
 
@@ -101,11 +88,11 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeUpAndDown) {
 
   EXPECT_EQ(audio_handler_->GetOutputVolumePercent(), kInitVolume);
 
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_LT(kInitVolume, audio_handler_->GetOutputVolumePercent());
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(kInitVolume, audio_handler_->GetOutputVolumePercent());
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_GT(kInitVolume, audio_handler_->GetOutputVolumePercent());
 }
 
@@ -113,11 +100,11 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeDownToZero) {
   // Setting to very small volume.
   audio_handler_->SetOutputVolumePercent(1);
 
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(0, audio_handler_->GetOutputVolumePercent());
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(0, audio_handler_->GetOutputVolumePercent());
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_LT(0, audio_handler_->GetOutputVolumePercent());
 }
 
@@ -125,11 +112,11 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeUpTo100) {
   // Setting to almost max
   audio_handler_->SetOutputVolumePercent(99);
 
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_EQ(100, audio_handler_->GetOutputVolumePercent());
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_EQ(100, audio_handler_->GetOutputVolumePercent());
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_GT(100, audio_handler_->GetOutputVolumePercent());
 }
 
@@ -137,27 +124,27 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, Mutes) {
   ASSERT_FALSE(audio_handler_->IsOutputMuted());
   const int initial_volume = audio_handler_->GetOutputVolumePercent();
 
-  VolumeMute();
+  volume_controller_->VolumeMute();
   EXPECT_TRUE(audio_handler_->IsOutputMuted());
 
   // Further mute buttons doesn't have effects.
-  VolumeMute();
+  volume_controller_->VolumeMute();
   EXPECT_TRUE(audio_handler_->IsOutputMuted());
 
   // Right after the volume up after set_mute recovers to original volume.
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_FALSE(audio_handler_->IsOutputMuted());
   EXPECT_EQ(initial_volume, audio_handler_->GetOutputVolumePercent());
 
-  VolumeMute();
+  volume_controller_->VolumeMute();
   // After the volume down, the volume goes down to zero explicitly.
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_TRUE(audio_handler_->IsOutputMuted());
   EXPECT_EQ(0, audio_handler_->GetOutputVolumePercent());
 
   // Thus, further VolumeUp doesn't recover the volume, it's just slightly
   // bigger than 0.
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_LT(0, audio_handler_->GetOutputVolumePercent());
   EXPECT_GT(initial_volume, audio_handler_->GetOutputVolumePercent());
 }
@@ -196,13 +183,13 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, Simple) {
   audio_handler_->SetOutputVolumePercent(50);
 
   EnableSpokenFeedback(false /* enabled */);
-  VolumeUp();
-  VolumeDown();
+  volume_controller_->VolumeUp();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(0, num_play_requests());
 
   EnableSpokenFeedback(true /* enabled */);
-  VolumeUp();
-  VolumeDown();
+  volume_controller_->VolumeUp();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(2, num_play_requests());
 }
 
@@ -212,28 +199,28 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, EdgeCases) {
 
   // Check that sound is played on volume up and volume down.
   audio_handler_->SetOutputVolumePercent(50);
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_EQ(1, num_play_requests());
-  VolumeDown();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(2, num_play_requests());
 
   audio_handler_->SetOutputVolumePercent(99);
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_EQ(3, num_play_requests());
 
   audio_handler_->SetOutputVolumePercent(100);
-  VolumeUp();
+  volume_controller_->VolumeUp();
   EXPECT_EQ(3, num_play_requests());
 
   // Check that sound isn't played when audio is muted.
   audio_handler_->SetOutputVolumePercent(50);
-  VolumeMute();
-  VolumeDown();
+  volume_controller_->VolumeMute();
+  volume_controller_->VolumeDown();
   ASSERT_TRUE(audio_handler_->IsOutputMuted());
   EXPECT_EQ(3, num_play_requests());
 
   // Check that audio is unmuted and sound is played.
-  VolumeUp();
+  volume_controller_->VolumeUp();
   ASSERT_FALSE(audio_handler_->IsOutputMuted());
   EXPECT_EQ(4, num_play_requests());
 }
@@ -258,8 +245,8 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsDisabledTest,
 
   // Check that sound isn't played on volume up and volume down.
   audio_handler_->SetOutputVolumePercent(50);
-  VolumeUp();
-  VolumeDown();
+  volume_controller_->VolumeUp();
+  volume_controller_->VolumeDown();
   EXPECT_EQ(0, num_play_requests());
 }
 

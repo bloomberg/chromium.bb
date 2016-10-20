@@ -16,7 +16,6 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
