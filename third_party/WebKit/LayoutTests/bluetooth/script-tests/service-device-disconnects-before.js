@@ -1,0 +1,25 @@
+'use strict';
+promise_test(t => {
+  return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: [request_disconnection_service_uuid]
+    }))
+    .then(device => {
+      return device.gatt.connect()
+        .then(gattServer => gattServer.getPrimaryService(
+          request_disconnection_service_uuid))
+        .then(service => service.getCharacteristic(
+          request_disconnection_characteristic_uuid))
+        .then(requestDisconnection => requestDisconnection.writeValue(
+          new Uint8Array([0])))
+        .then(() => assert_promise_rejects_with_message(
+          device.gatt.CALLS([
+            getPrimaryService('heart_rate')|
+            getPrimaryServices()|
+            getPrimaryServices('heart_rate')[UUID]]),
+          new DOMException(
+            'GATT Server is disconnected. Cannot retrieve services.',
+            'NetworkError')));
+    });
+}, 'Device disconnects before FUNCTION_NAME. Reject with NetworkError.');
