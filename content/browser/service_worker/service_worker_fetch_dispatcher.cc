@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -22,6 +22,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/content_features.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -288,10 +289,8 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   // TODO(horo): Currently NavigationPreload doesn't support request body.
   if (!request_->blob_uuid.empty())
     return;
-  // TODO(horo): Introduce kEnableServiceWorkerNavigationPreload switch, and use
-  // it instead of kEnableExperimentalWebPlatformFeatures.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  if (!base::FeatureList::IsEnabled(
+          features::kServiceWorkerNavigationPreload)) {
     // TODO(horo): Check |version_|'s origin_trial_tokens() here if we use
     // Origin-Trial for NavigationPreload.
     return;
