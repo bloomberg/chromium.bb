@@ -112,17 +112,6 @@ VisibleSelection createVisibleSelection(const VisiblePosition& base,
                                 base.affinity(), isDirectional);
 }
 
-VisibleSelection createVisibleSelection(const EphemeralRange& range,
-                                        TextAffinity affinity,
-                                        bool isDirectional) {
-  DCHECK(!needsLayoutTreeUpdate(range.startPosition()));
-  DCHECK(!needsLayoutTreeUpdate(range.endPosition()));
-  SelectionInDOMTree::Builder builder;
-  builder.setBaseAndExtent(range).setAffinity(affinity).setIsDirectional(
-      isDirectional);
-  return createVisibleSelection(builder.build());
-}
-
 VisibleSelectionInFlatTree createVisibleSelection(
     const SelectionInFlatTree& selection) {
   return VisibleSelectionInFlatTree::create(selection);
@@ -820,7 +809,6 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded() {
     return;
   appendTrailingWhitespace();
 }
-
 
 template <typename Strategy>
 static bool equalSelectionsAlgorithm(

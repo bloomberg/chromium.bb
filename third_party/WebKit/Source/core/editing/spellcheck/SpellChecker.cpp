@@ -333,7 +333,9 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection) {
     const EphemeralRange misspellingRange = calculateCharacterSubrange(
         EphemeralRange(spellingSearchStart, spellingSearchEnd),
         misspellingOffset, misspelledWord.length());
-    frame().selection().setSelection(createVisibleSelection(misspellingRange));
+    frame().selection().setSelection(SelectionInDOMTree::Builder()
+                                         .setBaseAndExtent(misspellingRange)
+                                         .build());
     frame().selection().revealSelection();
     spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);
     frame().document()->markers().addMarker(misspellingRange.startPosition(),
@@ -802,8 +804,8 @@ void SpellChecker::replaceMisspelledRange(const String& text) {
                               markers[0]->endOffset()));
   if (markerRange.isNull())
     return;
-  frame().selection().setSelection(createVisibleSelection(markerRange),
-                                   CharacterGranularity);
+  frame().selection().setSelection(
+      SelectionInDOMTree::Builder().setBaseAndExtent(markerRange).build());
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

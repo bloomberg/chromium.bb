@@ -838,10 +838,13 @@ static void prepareDataTransferForImageDrag(LocalFrame* source,
                                             const String& label) {
   node->document().updateStyleAndLayoutTree();
   if (hasRichlyEditableStyle(*node)) {
+    // TODO(editing-dev): We should use |EphemeralRange| instead of |Range|.
     Range* range = source->document()->createRange();
     range->selectNode(node, ASSERT_NO_EXCEPTION);
     source->selection().setSelection(
-        createVisibleSelection(EphemeralRange(range)));
+        SelectionInDOMTree::Builder()
+            .setBaseAndExtent(EphemeralRange(range))
+            .build());
   }
   dataTransfer->declareAndWriteDragImage(
       node, !linkURL.isEmpty() ? linkURL : imageURL, label);

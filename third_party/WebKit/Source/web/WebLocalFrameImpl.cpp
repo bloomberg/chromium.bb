@@ -1789,7 +1789,9 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection() {
           // Found a focusable parent node. Set the active match as the
           // selection and focus to the focusable node.
           frame()->selection().setSelection(
-              createVisibleSelection(activeMatchRange));
+              SelectionInDOMTree::Builder()
+                  .setBaseAndExtent(activeMatchRange)
+                  .build());
           frame()->document()->setFocusedElement(
               &element, FocusParams(SelectionBehaviorOnFocus::None,
                                     WebFocusTypeNone, nullptr));
@@ -1818,7 +1820,9 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection() {
     // you'll have the last thing you found highlighted) and make sure that
     // we have nothing focused (otherwise you might have text selected but
     // a link focused, which is weird).
-    frame()->selection().setSelection(createVisibleSelection(activeMatchRange));
+    frame()->selection().setSelection(SelectionInDOMTree::Builder()
+                                          .setBaseAndExtent(activeMatchRange)
+                                          .build());
     frame()->document()->clearFocusedElement();
 
     // Finally clear the active match, for two reasons:

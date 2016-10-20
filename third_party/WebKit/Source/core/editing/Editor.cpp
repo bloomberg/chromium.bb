@@ -152,6 +152,8 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
 
 // When an event handler has moved the selection outside of a text control
 // we should use the target control's selection for this editing operation.
+// TODO(yosin): We should make |Editor::selectionForCommand()| to return
+// |SelectionInDOMTree| instead of |VisibleSelection|.
 VisibleSelection Editor::selectionForCommand(Event* event) {
   frame().selection().updateIfNeeded();
   VisibleSelection selection = frame().selection().selection();
@@ -169,9 +171,11 @@ VisibleSelection Editor::selectionForCommand(Event* event) {
       (selection.start().isNull() ||
        textFromControlOfTarget != textFormControlOfSelectionStart)) {
     if (Range* range = textFromControlOfTarget->selection()) {
-      return createVisibleSelection(EphemeralRange(range),
-                                    TextAffinity::Downstream,
-                                    selection.isDirectional());
+      return createVisibleSelection(
+          SelectionInDOMTree::Builder()
+              .setBaseAndExtent(EphemeralRange(range))
+              .setIsDirectional(selection.isDirectional())
+              .build());
     }
   }
   return selection;
@@ -1281,7 +1285,8 @@ void Editor::transpose() {
   const EphemeralRange range = makeRange(previous, next);
   if (range.isNull())
     return;
-  VisibleSelection newSelection = createVisibleSelection(range);
+  VisibleSelection newSelection = createVisibleSelection(
+      SelectionInDOMTree::Builder().setBaseAndExtent(range).build());
 
   // Transpose the two characters.
   String text = plainText(range);
@@ -1419,7 +1424,9 @@ bool Editor::findString(const String& target, FindOptions options) {
     return false;
 
   frame().selection().setSelection(
-      createVisibleSelection(EphemeralRange(resultRange)));
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtent(EphemeralRange(resultRange))
+          .build());
   frame().selection().revealSelection();
   return true;
 }
