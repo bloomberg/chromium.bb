@@ -262,28 +262,6 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
   const std::string lc_filter = base::ToLowerASCII(filter);
   const std::string url_scheme = url_formatter::SegmentURL(filter, &parsed);
 
-  if (url_scheme == url::kFileScheme) {
-    base::FilePath file_path;
-    if (!net::FileURLToFilePath(GURL(filter), &file_path))
-      return false;
-
-    *scheme = url::kFileScheme;
-    host->clear();
-    *match_subdomains = true;
-    *port = 0;
-    // Special path when the |filter| is 'file://*' or 'file:*'.
-    if (lc_filter == "file:*" || lc_filter == "file://*")
-      path->clear();
-    else
-      *path = file_path.AsUTF8Unsafe();
-#if defined(FILE_PATH_USES_WIN_SEPARATORS)
-    // Separators have to be canonicalized on Windows.
-    std::replace(path->begin(), path->end(), '\\', '/');
-    *path = "/" + *path;
-#endif
-    return true;
-  }
-
   // Check if it's a scheme wildcard pattern. We support both versions
   // (scheme:* and scheme://*) the later being consistent with old filter
   // definitions.
@@ -294,6 +272,24 @@ bool URLBlacklist::FilterToComponents(const std::string& filter,
     *port = 0;
     path->clear();
     query->clear();
+    return true;
+  }
+
+  if (url_scheme == url::kFileScheme) {
+    base::FilePath file_path;
+    if (!net::FileURLToFilePath(GURL(filter), &file_path))
+      return false;
+
+    *scheme = url::kFileScheme;
+    host->clear();
+    *match_subdomains = true;
+    *port = 0;
+    *path = file_path.AsUTF8Unsafe();
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+    // Separators have to be canonicalized on Windows.
+    std::replace(path->begin(), path->end(), '\\', '/');
+    *path = "/" + *path;
+#endif
     return true;
   }
 
