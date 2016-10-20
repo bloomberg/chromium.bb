@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/data_use_tracker.h"
@@ -67,6 +68,8 @@ class DataUseMeasurement {
 
  private:
   friend class DataUseMeasurementTest;
+  FRIEND_TEST_ALL_PREFIXES(DataUseMeasurementTest,
+                           TimeOfBackgroundDownstreamBytes);
 
   // Specifies that data is received or sent, respectively.
   enum TrafficDirection { DOWNSTREAM, UPSTREAM };
@@ -103,8 +106,8 @@ class DataUseMeasurement {
   // |dir| is the direction (which is upstream or downstream) and |bytes| is the
   // number of bytes in the direction.
   void ReportDataUseUMA(const net::URLRequest& request,
-                                       TrafficDirection dir,
-                                       int64_t bytes) const;
+                        TrafficDirection dir,
+                        int64_t bytes);
 
   // Updates the data use of the |request|, thus |request| must be non-null.
   void UpdateDataUsePrefs(const net::URLRequest& request) const;
@@ -147,6 +150,13 @@ class DataUseMeasurement {
   // delegate since the operating system was last queried for traffic
   // statistics.
   int64_t bytes_transferred_since_last_traffic_stats_query_;
+
+  // The time at which Chromium app state changed to background. Can be null if
+  // app is not in background.
+  base::TimeTicks last_app_background_time_;
+
+  // True if app is in background and first network read has not yet happened.
+  bool no_reads_since_background_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMeasurement);

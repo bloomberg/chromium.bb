@@ -47,6 +47,20 @@ void IncreaseSparseHistogramByValue(const std::string& name,
   histogram->AddCount(sample, value);
 }
 
+#if defined(OS_ANDROID)
+void IncrementLatencyHistogramByCount(const std::string& name,
+                                      const base::TimeDelta& latency,
+                                      int64_t count) {
+  base::HistogramBase* histogram_pointer = base::Histogram::FactoryTimeGet(
+      name,
+      base::TimeDelta::FromMilliseconds(1),  // Minimum sample
+      base::TimeDelta::FromHours(1),         // Maximum sample
+      50,                                    // Bucket count.
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->AddCount(latency.InMilliseconds(), count);
+}
+#endif
+
 }  // namespace
 
 DataUseMeasurement::DataUseMeasurement(
@@ -60,7 +74,8 @@ DataUseMeasurement::DataUseMeasurement(
                      base::Unretained(this)))),
       rx_bytes_os_(0),
       tx_bytes_os_(0),
-      bytes_transferred_since_last_traffic_stats_query_(0)
+      bytes_transferred_since_last_traffic_stats_query_(0),
+      no_reads_since_background_(false)
 #endif
 {
 }
@@ -112,10 +127,9 @@ void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
 #endif
 }
 
-void DataUseMeasurement::ReportDataUseUMA(
-    const net::URLRequest& request,
-    TrafficDirection dir,
-    int64_t bytes) const {
+void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
+                                          TrafficDirection dir,
+                                          int64_t bytes) {
   bool is_user_traffic = IsUserInitiatedRequest(request);
   bool is_connection_cellular =
       net::NetworkChangeNotifier::IsConnectionCellular(
@@ -147,6 +161,25 @@ void DataUseMeasurement::ReportDataUseUMA(
     ReportDataUsageServices(service_name, dir, new_app_state,
                             is_connection_cellular, bytes);
   }
+#if defined(OS_ANDROID)
+  if (dir == DOWNSTREAM && CurrentAppState() == DataUseUserData::BACKGROUND) {
+    DCHECK(!last_app_background_time_.is_null());
+
+    const base::TimeDelta time_since_background =
+        base::TimeTicks::Now() - last_app_background_time_;
+    IncrementLatencyHistogramByCount(
+        is_user_traffic ? "DataUse.BackgroundToDataRecievedPerByte.User"
+                        : "DataUse.BackgroundToDataRecievedPerByte.System",
+        time_since_background, bytes);
+    if (no_reads_since_background_) {
+      no_reads_since_background_ = false;
+      UMA_HISTOGRAM_LONG_TIMES(
+          is_user_traffic ? "DataUse.BackgroundToFirstDownstream.User"
+                          : "DataUse.BackgroundToFirstDownstream.System",
+          time_since_background);
+    }
+  }
+#endif
 }
 
 void DataUseMeasurement::UpdateDataUsePrefs(
@@ -187,7 +220,7 @@ bool DataUseMeasurement::IsUserInitiatedRequest(
 #if defined(OS_ANDROID)
 void DataUseMeasurement::OnApplicationStateChangeForTesting(
     base::android::ApplicationState application_state) {
-  app_state_ = application_state;
+  OnApplicationStateChange(application_state);
 }
 #endif
 
@@ -218,8 +251,13 @@ std::string DataUseMeasurement::GetHistogramName(
 void DataUseMeasurement::OnApplicationStateChange(
     base::android::ApplicationState application_state) {
   app_state_ = application_state;
-  if (app_state_ != base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES)
+  if (app_state_ != base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+    last_app_background_time_ = base::TimeTicks::Now();
+    no_reads_since_background_ = true;
     MaybeRecordNetworkBytesOS();
+  } else {
+    last_app_background_time_ = base::TimeTicks();
+  }
 }
 
 void DataUseMeasurement::MaybeRecordNetworkBytesOS() {

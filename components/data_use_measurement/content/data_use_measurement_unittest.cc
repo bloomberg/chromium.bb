@@ -211,6 +211,105 @@ TEST_F(DataUseMeasurementTest, AppStateUnknown) {
         "DataUse.TrafficSize.User.Downstream.Background." + kConnectionType, 1);
   }
 }
+
+TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
+  {
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    base::HistogramTester histogram_tester;
+    data_use_measurement()->OnApplicationStateChange(
+        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+    data_use_measurement_.OnNetworkBytesSent(*request, 100);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesSent(*request, 200);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 2000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.User", 0);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.User", 0);
+  }
+
+  {
+    // Create new request when app is in foreground..
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnNetworkBytesSent(*request, 100);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesSent(*request, 200);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 2000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.User", 0);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.User", 0);
+  }
+
+  {
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    base::HistogramTester histogram_tester;
+    data_use_measurement()->OnApplicationStateChange(
+        base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+    data_use_measurement_.OnNetworkBytesSent(*request, 100);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesSent(*request, 200);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 2000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.User", 3000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.User", 1);
+  }
+
+  {
+    // Create new request when app is in background.
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnNetworkBytesSent(*request, 100);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesSent(*request, 200);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 2000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.User", 3000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.User", 0);
+  }
+
+  {
+    // Create new request when app is in background.
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(true);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    data_use_measurement_.OnNetworkBytesSent(*request, 100);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesSent(*request, 200);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 2000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.System", 3000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.User", 0);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.System", 0);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.User", 0);
+  }
+
+  {
+    std::unique_ptr<net::URLRequest> request = CreateTestRequest(false);
+    data_use_measurement_.OnBeforeURLRequest(request.get());
+    base::HistogramTester histogram_tester;
+    data_use_measurement()->OnApplicationStateChange(
+        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+    data_use_measurement_.OnNetworkBytesSent(*request, 100);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+    data_use_measurement_.OnNetworkBytesSent(*request, 200);
+    data_use_measurement_.OnNetworkBytesReceived(*request, 2000);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToDataRecievedPerByte.User", 0);
+    histogram_tester.ExpectTotalCount(
+        "DataUse.BackgroundToFirstDownstream.User", 0);
+  }
+}
 #endif
 
 }  // namespace data_use_measurement
