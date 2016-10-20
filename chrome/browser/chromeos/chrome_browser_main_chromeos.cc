@@ -52,8 +52,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -687,11 +685,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // guest profile.
   if (!user_manager::UserManager::Get()->IsLoggedInAsGuest())
     low_disk_notification_.reset(new LowDiskNotification());
-
-  // Authenticate the user for PIN quick unlock.
-  PinStorage* pin_storage = PinStorageFactory::GetForProfile(profile());
-  if (pin_storage)
-    pin_storage->MarkStrongAuth();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }

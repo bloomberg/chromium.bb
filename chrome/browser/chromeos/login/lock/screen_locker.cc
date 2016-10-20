@@ -105,10 +105,19 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    if (type == chrome::NOTIFICATION_SESSION_STARTED)
+    if (type == chrome::NOTIFICATION_SESSION_STARTED) {
       session_started_ = true;
-    else
+
+      // The user session has just started, so the user has logged in. Mark a
+      // strong authentication to allow them to use PIN to unlock the device.
+      user_manager::User* user =
+          content::Details<user_manager::User>(details).ptr();
+      PinStorage* pin_storage = PinStorageFactory::GetForUser(user);
+      if (pin_storage)
+        pin_storage->MarkStrongAuth();
+    } else {
       NOTREACHED() << "Unexpected notification " << type;
+    }
   }
 
   // UserAddingScreen::Observer overrides:
