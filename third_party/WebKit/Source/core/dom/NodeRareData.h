@@ -76,8 +76,10 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   // initialized m_nodeLists is cleared by NodeRareData::traceAfterDispatch().
   NodeListsNodeData& ensureNodeLists() {
     DCHECK(ThreadState::current()->isGCForbidden());
-    if (!m_nodeLists)
+    if (!m_nodeLists) {
       m_nodeLists = NodeListsNodeData::create();
+      ScriptWrappableVisitor::writeBarrier(this, m_nodeLists);
+    }
     return *m_nodeLists;
   }
 

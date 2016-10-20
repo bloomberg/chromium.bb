@@ -48,6 +48,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       return toChildNodeList(m_childNodeList);
     ChildNodeList* list = ChildNodeList::create(node);
     m_childNodeList = list;
+    ScriptWrappableVisitor::writeBarrier(this, list);
     return list;
   }
 
@@ -57,6 +58,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
       return toEmptyNodeList(m_childNodeList);
     EmptyNodeList* list = EmptyNodeList::create(node);
     m_childNodeList = list;
+    ScriptWrappableVisitor::writeBarrier(this, list);
     return list;
   }
 
