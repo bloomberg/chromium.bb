@@ -527,11 +527,7 @@ void addKeyframesToCurve(
     else
       keyframeTimingFunction = &keyframe->easing();
 
-    // FIXME: This relies on StringKeyframes being eagerly evaluated, which will
-    // not happen eventually. Instead we should extract the CSSValue here
-    // and convert using another set of toAnimatableXXXOperations functions.
     const AnimatableValue* value = keyframe->getAnimatableValue().get();
-
     addKeyframeToCurve(curve, keyframe.get(), value, *keyframeTimingFunction);
   }
 }
