@@ -59,7 +59,6 @@ class MediaQueryEvaluator;
 class ScopedStyleResolver;
 class StylePropertySet;
 class StyleRule;
-class ViewportStyleResolver;
 
 enum StyleSharingBehavior {
   AllowStyleSharing,
@@ -154,10 +153,6 @@ class CORE_EXPORT StyleResolver final
   StyleRuleList* styleRulesForElement(Element*, unsigned rulesToInclude);
 
   void computeFont(ComputedStyle*, const StylePropertySet&);
-
-  ViewportStyleResolver* viewportStyleResolver() {
-    return m_viewportStyleResolver.get();
-  }
 
   void addViewportDependentMediaQueries(const MediaQueryResultList&);
   bool hasViewportDependentMediaQueries() const {
@@ -281,8 +276,6 @@ class CORE_EXPORT StyleResolver final
 
   Member<Document> m_document;
   SelectorFilter m_selectorFilter;
-
-  Member<ViewportStyleResolver> m_viewportStyleResolver;
 
   HeapListHashSet<Member<CSSStyleSheet>, 16> m_pendingStyleSheets;
 

@@ -200,10 +200,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     ASSERT(!m_pendingRules);
     return m_pageRules;
   }
-  const HeapVector<Member<StyleRuleViewport>>& viewportRules() const {
-    ASSERT(!m_pendingRules);
-    return m_viewportRules;
-  }
   const HeapVector<Member<StyleRuleFontFace>>& fontFaceRules() const {
     return m_fontFaceRules;
   }
@@ -308,7 +304,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   HeapVector<RuleData> m_shadowHostRules;
   RuleFeatureSet m_features;
   HeapVector<Member<StyleRulePage>> m_pageRules;
-  HeapVector<Member<StyleRuleViewport>> m_viewportRules;
   HeapVector<Member<StyleRuleFontFace>> m_fontFaceRules;
   HeapVector<Member<StyleRuleKeyframes>> m_keyframesRules;
   HeapVector<MinimalRuleData> m_deepCombinatorOrShadowPseudoRules;

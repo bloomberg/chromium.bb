@@ -38,7 +38,6 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/MatchRequest.h"
-#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
@@ -258,16 +257,6 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector) {
   ASSERT(m_scope->rootNode().isDocumentNode());
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
     collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
-}
-
-void ScopedStyleResolver::collectViewportRulesTo(
-    ViewportStyleResolver* resolver) const {
-  if (!m_scope->rootNode().isDocumentNode())
-    return;
-  for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-    resolver->collectViewportRules(
-        &m_authorStyleSheets[i]->contents()->ruleSet(),
-        ViewportStyleResolver::AuthorOrigin);
 }
 
 DEFINE_TRACE(ScopedStyleResolver) {

@@ -433,6 +433,7 @@ void FrameView::setFrameRect(const IntRect& newRect) {
 
     if (m_frame->isMainFrame())
       m_frame->host()->visualViewport().mainFrameDidChangeSize();
+
     frame().loader().restoreScrollPositionAndViewState();
   }
 }
@@ -4498,11 +4499,8 @@ void FrameView::setInitialViewportSize(const IntSize& viewportSize) {
     return;
 
   m_initialViewportSize = viewportSize;
-  // TODO(rune@opera.com): Notify the viewport style resolver about the changed
-  // initial viewport:
-  //
-  // if (Document* document = m_frame->document())
-  //   document->styleEngine().initialViewportChanged();
+  if (Document* document = m_frame->document())
+    document->styleEngine().initialViewportChanged();
 }
 
 int FrameView::initialViewportWidth() const {

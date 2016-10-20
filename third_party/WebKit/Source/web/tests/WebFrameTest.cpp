@@ -2696,10 +2696,7 @@ TEST_P(ParameterizedWebFrameTest,
   EXPECT_NEAR(5.0f, webViewHelper.webView()->maximumPageScaleFactor(), 0.01f);
 }
 
-// TODO(rune@opera.com): Does not pass until we collect author @viewport rules
-// before constructing the RuleSets. https://crbug.com/332763
-TEST_P(ParameterizedWebFrameTest,
-       DISABLED_AtViewportInsideAtMediaInitialViewport) {
+TEST_P(ParameterizedWebFrameTest, AtViewportInsideAtMediaInitialViewport) {
   registerMockedHttpURLLoad("viewport-inside-media.html");
 
   FixedLayoutTestWebViewClient client;
@@ -2714,6 +2711,54 @@ TEST_P(ParameterizedWebFrameTest,
                       ->frameView()
                       ->layoutSize()
                       .width());
+}
+
+TEST_P(ParameterizedWebFrameTest, AtViewportAffectingAtMediaRecalcCount) {
+  registerMockedHttpURLLoad("viewport-and-media.html");
+
+  FixedLayoutTestWebViewClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initialize(true, nullptr, &client, nullptr,
+                           enableViewportSettings);
+  webViewHelper.resize(WebSize(640, 480));
+  FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(),
+                              m_baseURL + "viewport-and-media.html");
+
+  Document* document =
+      webViewHelper.webView()->mainFrameImpl()->frame()->document();
+  EXPECT_EQ(2000, webViewHelper.webView()
+                      ->mainFrameImpl()
+                      ->frameView()
+                      ->layoutSize()
+                      .width());
+
+  // The styleForElementCount() should match the number of elements for a single
+  // pass of computed styles construction for the document.
+  EXPECT_EQ(10u, document->styleEngine().styleForElementCount());
+  EXPECT_EQ(Color(0, 128, 0),
+            document->body()->computedStyle()->visitedDependentColor(
+                CSSPropertyColor));
+}
+
+TEST_P(ParameterizedWebFrameTest, AtViewportWithViewportLengths) {
+  registerMockedHttpURLLoad("viewport-lengths.html");
+
+  FixedLayoutTestWebViewClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.initialize(true, nullptr, &client, nullptr,
+                           enableViewportSettings);
+  webViewHelper.resize(WebSize(800, 600));
+  FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(),
+                              m_baseURL + "viewport-lengths.html");
+
+  FrameView* view = webViewHelper.webView()->mainFrameImpl()->frameView();
+  EXPECT_EQ(400, view->layoutSize().width());
+  EXPECT_EQ(300, view->layoutSize().height());
+
+  webViewHelper.resize(WebSize(1000, 400));
+
+  EXPECT_EQ(500, view->layoutSize().width());
+  EXPECT_EQ(200, view->layoutSize().height());
 }
 
 class WebFrameResizeTest : public ParameterizedWebFrameTest {

@@ -58,6 +58,7 @@ class ShadowTreeStyleSheetCollection;
 class StyleRuleFontFace;
 class StyleSheet;
 class StyleSheetContents;
+class ViewportStyleResolver;
 
 class CORE_EXPORT StyleEngine final
     : public GarbageCollectedFinalized<StyleEngine>,
@@ -100,6 +101,8 @@ class CORE_EXPORT StyleEngine final
   void removeStyleSheetCandidateNode(Node&, TreeScope&);
   void modifiedStyleSheetCandidateNode(Node&);
   void watchedSelectorsChanged();
+  void initialViewportChanged();
+  void viewportRulesChanged();
 
   void injectAuthorSheet(StyleSheetContents* authorSheet);
   CSSStyleSheet& ensureInspectorStyleSheet();
@@ -161,6 +164,7 @@ class CORE_EXPORT StyleEngine final
     if (!m_resolver) {
       createResolver();
     } else if (m_resolver->hasPendingAuthorStyleSheets()) {
+      viewportRulesChanged();
       m_resolver->appendPendingAuthorStyleSheets();
     }
     return *m_resolver.get();
@@ -313,6 +317,7 @@ class CORE_EXPORT StyleEngine final
   bool m_didCalculateResolver = false;
 
   Member<StyleResolver> m_resolver;
+  Member<ViewportStyleResolver> m_viewportResolver;
   StyleInvalidator m_styleInvalidator;
 
   Member<CSSFontSelector> m_fontSelector;

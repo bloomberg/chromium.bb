@@ -404,10 +404,8 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {
     case SettingsDelegate::ViewportRuleChange: {
       if (!mainFrame() || !mainFrame()->isLocalFrame())
         break;
-      Document* doc = toLocalFrame(mainFrame())->document();
-      if (!doc || !doc->styleResolver())
-        break;
-      doc->styleResolver()->viewportStyleResolver()->collectViewportRules();
+      if (Document* doc = toLocalFrame(mainFrame())->document())
+        doc->styleEngine().viewportRulesChanged();
     } break;
     case SettingsDelegate::TextTrackKindUserPreferenceChange:
       for (Frame* frame = mainFrame(); frame;

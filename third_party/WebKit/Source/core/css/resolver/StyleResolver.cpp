@@ -72,7 +72,6 @@
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
-#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -182,7 +181,6 @@ static void collectScopedResolversForHostedShadowTrees(
 
 StyleResolver::StyleResolver(Document& document)
     : m_document(document),
-      m_viewportStyleResolver(ViewportStyleResolver::create(document)),
       m_needCollectFeatures(false),
       m_printMediaType(false),
       m_styleSharingDepth(0) {
@@ -290,8 +288,6 @@ void StyleResolver::finishAppendAuthorStyleSheets() {
       document().layoutViewItem().style())
     document().layoutViewItem().style()->font().update(
         document().styleEngine().fontSelector());
-
-  m_viewportStyleResolver->collectViewportRules();
 
   document().styleEngine().resetCSSFeatureFlags(m_features);
 }
@@ -1678,7 +1674,6 @@ void StyleResolver::invalidateMatchedPropertiesCache() {
 }
 
 void StyleResolver::notifyResizeForViewportUnits() {
-  m_viewportStyleResolver->collectViewportRules();
   m_matchedPropertiesCache.clearViewportDependent();
 }
 
@@ -1945,7 +1940,6 @@ DEFINE_TRACE(StyleResolver) {
   visitor->trace(m_viewportDependentMediaQueryResults);
   visitor->trace(m_deviceDependentMediaQueryResults);
   visitor->trace(m_selectorFilter);
-  visitor->trace(m_viewportStyleResolver);
   visitor->trace(m_features);
   visitor->trace(m_siblingRuleSet);
   visitor->trace(m_uncommonAttributeRuleSet);

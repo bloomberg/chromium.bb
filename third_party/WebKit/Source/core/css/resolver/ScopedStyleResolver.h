@@ -72,7 +72,6 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
                          HeapHashSet<Member<const StyleSheetContents>>&
                              visitedSharedStyleSheetContents) const;
   void resetAuthorStyle();
-  void collectViewportRulesTo(ViewportStyleResolver*) const;
   bool hasDeepOrShadowSelector() const { return m_hasDeepOrShadowSelector; }
   void setHasUnresolvedKeyframesRule() { m_hasUnresolvedKeyframesRule = true; }
   static void keyframesRulesAdded(const TreeScope&);

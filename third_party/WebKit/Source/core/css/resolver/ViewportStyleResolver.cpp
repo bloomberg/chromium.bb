@@ -39,11 +39,12 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/api/LayoutViewItem.h"
 
@@ -91,15 +92,6 @@ void ViewportStyleResolver::collectViewportRulesFromUASheets() {
         UserAgentOrigin);
   }
   DCHECK(!defaultStyleSheets.defaultStyleSheet()->hasViewportRule());
-}
-
-void ViewportStyleResolver::collectViewportRules() {
-  reset();
-  collectViewportRulesFromUASheets();
-  if (ScopedStyleResolver* scopedResolver = m_document->scopedStyleResolver())
-    scopedResolver->collectViewportRulesTo(this);
-
-  resolve();
 }
 
 void ViewportStyleResolver::collectViewportChildRules(
@@ -157,16 +149,6 @@ void ViewportStyleResolver::collectViewportRulesFromAuthorSheet(
                                      &m_deviceDependentMediaQueryResults))
     return;
   collectViewportRulesFromAuthorSheetContents(contents);
-}
-
-void ViewportStyleResolver::collectViewportRules(RuleSet* rules,
-                                                 Origin origin) {
-  rules->compactRulesIfNeeded();
-
-  const HeapVector<Member<StyleRuleViewport>>& viewportRules =
-      rules->viewportRules();
-  for (size_t i = 0; i < viewportRules.size(); ++i)
-    addViewportRule(*viewportRules[i], origin);
 }
 
 void ViewportStyleResolver::addViewportRule(StyleRuleViewport& viewportRule,
@@ -298,18 +280,17 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) {
   bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();
   documentStyle->setHasViewportUnits(false);
 
+  FrameView* view = m_document->frame()->view();
+  DCHECK(view);
+
   CSSToLengthConversionData::FontSizes fontSizes(documentStyle, documentStyle);
   CSSToLengthConversionData::ViewportSize viewportSize(
-      m_document->layoutViewItem());
+      view->initialViewportWidth(), view->initialViewportHeight());
 
   Length result = primitiveValue->convertToLength(
       CSSToLengthConversionData(documentStyle, fontSizes, viewportSize, 1.0f));
-  if (documentStyle->hasViewportUnits()) {
-    // TODO (rune@opera.com): remove the setHasViewportUnit when
-    // initialViewportChanged() goes live.
-    m_document->setHasViewportUnits();
+  if (documentStyle->hasViewportUnits())
     m_hasViewportUnits = true;
-  }
   documentStyle->setHasViewportUnits(documentStyleHasViewportUnits);
 
   return result;

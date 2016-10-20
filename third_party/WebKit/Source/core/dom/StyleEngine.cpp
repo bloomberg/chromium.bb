@@ -37,6 +37,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
@@ -64,13 +65,15 @@ StyleEngine::StyleEngine(Document& document)
       m_isMaster(!document.importsController() ||
                  document.importsController()->master() == &document),
       m_documentStyleSheetCollection(
-          DocumentStyleSheetCollection::create(document)),
-      // We don't need to create CSSFontSelector for imported document or
-      // HTMLTemplateElement's document, because those documents have no frame.
-      m_fontSelector(document.frame() ? CSSFontSelector::create(&document)
-                                      : nullptr) {
-  if (m_fontSelector)
+          DocumentStyleSheetCollection::create(document)) {
+  if (document.frame()) {
+    // We don't need to create CSSFontSelector for imported document or
+    // HTMLTemplateElement's document, because those documents have no frame.
+    m_fontSelector = CSSFontSelector::create(&document);
     m_fontSelector->registerForInvalidationCallbacks(this);
+  }
+  if (document.isInMainFrame())
+    m_viewportResolver = ViewportStyleResolver::create(document);
 }
 
 StyleEngine::~StyleEngine() {}
@@ -393,6 +396,8 @@ void StyleEngine::shadowRootRemovedFromDocument(ShadowRoot* shadowRoot) {
 void StyleEngine::appendActiveAuthorStyleSheets() {
   DCHECK(isMaster());
 
+  viewportRulesChanged();
+
   m_resolver->appendAuthorStyleSheets(
       documentStyleSheetCollection().activeAuthorStyleSheets());
   for (TreeScope* treeScope : m_activeTreeScopes) {
@@ -442,6 +447,7 @@ void StyleEngine::clearMasterResolver() {
 
 void StyleEngine::didDetach() {
   clearResolver();
+  m_viewportResolver.clear();
 }
 
 bool StyleEngine::shouldClearResolver() const {
@@ -947,6 +953,29 @@ void StyleEngine::ensureFullscreenUAStyle() {
     m_resolver->resetRuleFeatures();
 }
 
+void StyleEngine::initialViewportChanged() {
+  if (!m_viewportResolver)
+    return;
+
+  m_viewportResolver->initialViewportChanged();
+
+  // TODO(rune@opera.com): for async stylesheet update, updateViewport() should
+  // be called as part of the lifecycle update for active style. Synchronous for
+  // now.
+  m_viewportResolver->updateViewport(documentStyleSheetCollection());
+}
+
+void StyleEngine::viewportRulesChanged() {
+  if (!m_viewportResolver)
+    return;
+  m_viewportResolver->setNeedsCollectRules();
+
+  // TODO(rune@opera.com): for async stylesheet update, updateViewport() should
+  // be called as part of the lifecycle update for active style. Synchronous for
+  // now.
+  m_viewportResolver->updateViewport(documentStyleSheetCollection());
+}
+
 DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_document);
   visitor->trace(m_injectedAuthorStyleSheets);
@@ -954,6 +983,7 @@ DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_documentStyleSheetCollection);
   visitor->trace(m_styleSheetCollectionMap);
   visitor->trace(m_resolver);
+  visitor->trace(m_viewportResolver);
   visitor->trace(m_styleInvalidator);
   visitor->trace(m_dirtyTreeScopes);
   visitor->trace(m_activeTreeScopes);

@@ -55,11 +55,6 @@ class CORE_EXPORT ViewportStyleResolver
 
   void collectViewportRulesFromAuthorSheet(const CSSStyleSheet&);
 
-  enum Origin { UserAgentOrigin, AuthorOrigin };
-
-  void collectViewportRules();
-  void collectViewportRules(RuleSet*, Origin);
-
   DECLARE_TRACE();
 
  private:
@@ -68,6 +63,7 @@ class CORE_EXPORT ViewportStyleResolver
   void reset();
   void resolve();
 
+  enum Origin { UserAgentOrigin, AuthorOrigin };
   enum UpdateType { NoUpdate, Resolve, CollectRules };
 
   void collectViewportRulesFromUASheets();
