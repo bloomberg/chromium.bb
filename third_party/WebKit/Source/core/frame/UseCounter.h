@@ -1373,6 +1373,8 @@ class CORE_EXPORT UseCounter {
     RTCPeerConnectionCreateDataChannelMaxRetransmits = 1649,
     AudioContextCreateConstantSource = 1650,
     WebAudioConstantSourceNode = 1651,
+    LoopbackEmbeddedInSecureContext = 1652,
+    LoopbackEmbeddedInNonSecureContext = 1653,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

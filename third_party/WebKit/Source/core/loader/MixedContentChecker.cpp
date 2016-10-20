@@ -430,6 +430,16 @@ void MixedContentChecker::checkMixedPrivatePublic(
       frame->document()->addressSpace() == WebAddressSpacePublic) {
     UseCounter::count(frame->document(),
                       UseCounter::MixedContentPrivateHostnameInPublicHostname);
+    // We can simplify the IP checks here, as we've already verified that
+    // |resourceIPAddress| is a reserved IP address, which means it's also a
+    // valid IP address in a normalized form.
+    if (resourceIPAddress.startsWith("127.0.0.") ||
+        resourceIPAddress == "[::1]") {
+      UseCounter::count(frame->document(),
+                        frame->document()->isSecureContext()
+                            ? UseCounter::LoopbackEmbeddedInSecureContext
+                            : UseCounter::LoopbackEmbeddedInNonSecureContext);
+    }
   }
 }
 
