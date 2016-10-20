@@ -106,6 +106,9 @@ TEST(FakeDisplaySnapshotTest, BadDisplayMode) {
   // Need to provide a refresh rate after '%'.
   EXPECT_EQ(nullptr, CreateSnapshot("1024,768%"));
   EXPECT_EQ(nullptr, CreateSnapshot("1024,768%a"));
+  // Display resolution can't be zero for width or height.
+  EXPECT_EQ(nullptr, CreateSnapshot("000x800"));
+  EXPECT_EQ(nullptr, CreateSnapshot("800x000"));
   // Refresh rate should come before DPI.
   EXPECT_EQ(nullptr, CreateSnapshot("1000x1000^300%120"));
 }

@@ -97,6 +97,11 @@ std::unique_ptr<ui::DisplayMode> ParseDisplayMode(const std::string& str) {
     return nullptr;
   }
 
+  if (width <= 0 || height <= 0) {
+    LOG(ERROR) << "Resolution " << width << "x" << height << " is invalid";
+    return nullptr;
+  }
+
   // Refresh rate is optional and will be be 60 if not specified.
   double refresh_rate = 60.0f;
   if (!refresh_rate_str.empty() &&
