@@ -1264,6 +1264,9 @@ void ContentSecurityPolicy::dispatchViolationEvents(
     const SecurityPolicyViolationEventInit& violationData,
     Element* element,
     Document* document) {
+  if (!document->domWindow())
+    return;
+
   SecurityPolicyViolationEvent* event = SecurityPolicyViolationEvent::create(
       EventTypeNames::securitypolicyviolation, violationData);
   DCHECK(event->bubbles());
