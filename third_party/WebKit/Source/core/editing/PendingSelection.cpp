@@ -82,17 +82,28 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(
       start, selectionType == SelectionType::RangeSelection
                  ? TextAffinity::Downstream
                  : affinity);
+  if (visibleStart.isNull())
+    return VisibleSelectionInFlatTree();
   if (paintBlockCursor) {
-    VisiblePositionInFlatTree visibleExtent =
-        createVisiblePosition(end, affinity);
-    visibleExtent = nextPositionOf(visibleExtent, CanSkipOverEditingBoundary);
-    return createVisibleSelection(visibleStart, visibleExtent);
+    const VisiblePositionInFlatTree visibleExtent = nextPositionOf(
+        createVisiblePosition(end, affinity), CanSkipOverEditingBoundary);
+    if (visibleExtent.isNull())
+      return VisibleSelectionInFlatTree();
+    SelectionInFlatTree::Builder builder;
+    builder.collapse(visibleStart.toPositionWithAffinity());
+    builder.extend(visibleExtent.deepEquivalent());
+    return createVisibleSelection(builder.build());
   }
   const VisiblePositionInFlatTree visibleEnd =
       createVisiblePosition(end, selectionType == SelectionType::RangeSelection
                                      ? TextAffinity::Upstream
                                      : affinity);
-  return createVisibleSelection(visibleStart, visibleEnd);
+  if (visibleEnd.isNull())
+    return VisibleSelectionInFlatTree();
+  SelectionInFlatTree::Builder builder;
+  builder.collapse(visibleStart.toPositionWithAffinity());
+  builder.extend(visibleEnd.deepEquivalent());
+  return createVisibleSelection(builder.build());
 }
 
 void PendingSelection::commit(LayoutView& layoutView) {

@@ -144,18 +144,6 @@ VisibleSelectionInFlatTree createVisibleSelection(
   return createVisibleSelection(builder.build());
 }
 
-VisibleSelectionInFlatTree createVisibleSelection(
-    const VisiblePositionInFlatTree& base,
-    const VisiblePositionInFlatTree& extent,
-    bool isDirectional) {
-  DCHECK(base.isValid());
-  DCHECK(extent.isValid());
-  // TODO(xiaochengh): We should check |base.isNotNull() || extent.isNull()|
-  // after all call sites have ensured that.
-  return createVisibleSelection(base.deepEquivalent(), extent.deepEquivalent(),
-                                base.affinity(), isDirectional);
-}
-
 template <typename Strategy>
 static SelectionType computeSelectionType(
     const PositionTemplate<Strategy>& start,
