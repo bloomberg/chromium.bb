@@ -212,10 +212,10 @@ StyleRule::StyleRule(CSSSelectorList selectorList, StylePropertySet* properties)
   m_selectorList = std::move(selectorList);
 }
 
-StyleRule::StyleRule(const StyleRule& o)
-    : StyleRuleBase(o),
-      m_properties(o.m_properties->mutableCopy()),
-      m_selectorList(o.m_selectorList.copy()) {}
+StyleRule::StyleRule(const StyleRule& rule)
+    : StyleRuleBase(rule),
+      m_properties(rule.m_properties->mutableCopy()),
+      m_selectorList(rule.m_selectorList.copy()) {}
 
 StyleRule::~StyleRule() {}
 
@@ -236,10 +236,10 @@ StyleRulePage::StyleRulePage(CSSSelectorList selectorList,
       m_properties(properties),
       m_selectorList(std::move(selectorList)) {}
 
-StyleRulePage::StyleRulePage(const StyleRulePage& o)
-    : StyleRuleBase(o),
-      m_properties(o.m_properties->mutableCopy()),
-      m_selectorList(o.m_selectorList.copy()) {}
+StyleRulePage::StyleRulePage(const StyleRulePage& pageRule)
+    : StyleRuleBase(pageRule),
+      m_properties(pageRule.m_properties->mutableCopy()),
+      m_selectorList(pageRule.m_selectorList.copy()) {}
 
 StyleRulePage::~StyleRulePage() {}
 
@@ -257,8 +257,9 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRulePage) {
 StyleRuleFontFace::StyleRuleFontFace(StylePropertySet* properties)
     : StyleRuleBase(FontFace), m_properties(properties) {}
 
-StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& o)
-    : StyleRuleBase(o), m_properties(o.m_properties->mutableCopy()) {}
+StyleRuleFontFace::StyleRuleFontFace(const StyleRuleFontFace& fontFaceRule)
+    : StyleRuleBase(fontFaceRule),
+      m_properties(fontFaceRule.m_properties->mutableCopy()) {}
 
 StyleRuleFontFace::~StyleRuleFontFace() {}
 
@@ -279,10 +280,10 @@ StyleRuleGroup::StyleRuleGroup(RuleType type,
   m_childRules.swap(adoptRule);
 }
 
-StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& o)
-    : StyleRuleBase(o), m_childRules(o.m_childRules.size()) {
+StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& groupRule)
+    : StyleRuleBase(groupRule), m_childRules(groupRule.m_childRules.size()) {
   for (unsigned i = 0; i < m_childRules.size(); ++i)
-    m_childRules[i] = o.m_childRules[i]->copy();
+    m_childRules[i] = groupRule.m_childRules[i]->copy();
 }
 
 void StyleRuleGroup::wrapperInsertRule(unsigned index, StyleRuleBase* rule) {
@@ -309,17 +310,18 @@ StyleRuleCondition::StyleRuleCondition(
     HeapVector<Member<StyleRuleBase>>& adoptRules)
     : StyleRuleGroup(type, adoptRules), m_conditionText(conditionText) {}
 
-StyleRuleCondition::StyleRuleCondition(const StyleRuleCondition& condition)
-    : StyleRuleGroup(condition), m_conditionText(condition.m_conditionText) {}
+StyleRuleCondition::StyleRuleCondition(const StyleRuleCondition& conditionRule)
+    : StyleRuleGroup(conditionRule),
+      m_conditionText(conditionRule.m_conditionText) {}
 
 StyleRuleMedia::StyleRuleMedia(MediaQuerySet* media,
                                HeapVector<Member<StyleRuleBase>>& adoptRules)
     : StyleRuleCondition(Media, adoptRules), m_mediaQueries(media) {}
 
-StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& media)
-    : StyleRuleCondition(media) {
-  if (media.m_mediaQueries)
-    m_mediaQueries = media.m_mediaQueries->copy();
+StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& mediaRule)
+    : StyleRuleCondition(mediaRule) {
+  if (mediaRule.m_mediaQueries)
+    m_mediaQueries = mediaRule.m_mediaQueries->copy();
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleMedia) {
@@ -334,15 +336,16 @@ StyleRuleSupports::StyleRuleSupports(
     : StyleRuleCondition(Supports, conditionText, adoptRules),
       m_conditionIsSupported(conditionIsSupported) {}
 
-StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& supports)
-    : StyleRuleCondition(supports),
-      m_conditionIsSupported(supports.m_conditionIsSupported) {}
+StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& supportsRule)
+    : StyleRuleCondition(supportsRule),
+      m_conditionIsSupported(supportsRule.m_conditionIsSupported) {}
 
 StyleRuleViewport::StyleRuleViewport(StylePropertySet* properties)
     : StyleRuleBase(Viewport), m_properties(properties) {}
 
-StyleRuleViewport::StyleRuleViewport(const StyleRuleViewport& o)
-    : StyleRuleBase(o), m_properties(o.m_properties->mutableCopy()) {}
+StyleRuleViewport::StyleRuleViewport(const StyleRuleViewport& viewportRule)
+    : StyleRuleBase(viewportRule),
+      m_properties(viewportRule.m_properties->mutableCopy()) {}
 
 StyleRuleViewport::~StyleRuleViewport() {}
 

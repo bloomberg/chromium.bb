@@ -83,7 +83,7 @@ class CORE_EXPORT StyleRuleBase
 
  protected:
   StyleRuleBase(RuleType type) : m_type(type) {}
-  StyleRuleBase(const StyleRuleBase& o) : m_type(o.m_type) {}
+  StyleRuleBase(const StyleRuleBase& rule) : m_type(rule.m_type) {}
 
  private:
   CSSRule* createCSSOMWrapper(CSSStyleSheet* parentSheet,
