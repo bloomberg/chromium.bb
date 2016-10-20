@@ -140,8 +140,9 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   MediaRouterActionController* action_controller_ = nullptr;
 };
 
+// TODO(crbug.com/658005): Fails on multiple platforms.
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
-                       OpenDialogWithMediaRouterAction) {
+                       DISABLED_OpenDialogWithMediaRouterAction) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and media router is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
