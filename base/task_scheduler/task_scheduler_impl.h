@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/base_export.h"
@@ -28,6 +27,7 @@
 
 namespace base {
 
+class HistogramBase;
 class SchedulerWorkerPoolParams;
 
 namespace internal {
@@ -58,6 +58,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
       const TaskTraits& traits,
       ExecutionMode execution_mode) override;
+  std::vector<const HistogramBase*> GetHistograms() const override;
   void Shutdown() override;
   void FlushForTesting() override;
 

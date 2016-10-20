@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_base.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
@@ -49,6 +50,14 @@ scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(
     ExecutionMode execution_mode) {
   return GetWorkerPoolForTraits(traits)->CreateTaskRunnerWithTraits(
       traits, execution_mode);
+}
+
+std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
+  std::vector<const HistogramBase*> histograms;
+  for (const auto& worker_pool : worker_pools_)
+    worker_pool->GetHistograms(&histograms);
+
+  return histograms;
 }
 
 void TaskSchedulerImpl::Shutdown() {

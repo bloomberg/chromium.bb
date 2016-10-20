@@ -450,6 +450,12 @@ void SchedulerWorkerPoolImpl::PostTaskWithSequenceNow(
   }
 }
 
+void SchedulerWorkerPoolImpl::GetHistograms(
+    std::vector<const HistogramBase*>* histograms) const {
+  histograms->push_back(detach_duration_histogram_);
+  histograms->push_back(num_tasks_between_waits_histogram_);
+}
+
 SchedulerWorkerPoolImpl::SchedulerSingleThreadTaskRunner::
     SchedulerSingleThreadTaskRunner(const TaskTraits& traits,
                                     SchedulerWorkerPool* worker_pool,
