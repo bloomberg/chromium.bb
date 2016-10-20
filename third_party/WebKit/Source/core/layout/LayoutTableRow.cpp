@@ -200,16 +200,6 @@ void LayoutTableRow::layout() {
       markChildForPaginationRelayoutIfNeeded(*cell, layouter);
     if (cell->needsLayout())
       cell->layout();
-    // We're laying out each cell here to establish its raw logical height so it
-    // can be used to figure out the row's height and baseline later on in
-    // layoutRows(). As part of that we will layout the cell again if we're in a
-    // paginated context and come up with the correct strut. Any strut we come
-    // up with here will depend on the old paged layout and will give the cell
-    // an invalid height that is not useful for figuring out the raw height of
-    // the row.
-    if (cell->firstRootBox() && cell->firstRootBox()->paginationStrut())
-      cell->setLogicalHeight(cell->logicalHeight() -
-                             cell->firstRootBox()->paginationStrut());
   }
 
   m_overflow.reset();
