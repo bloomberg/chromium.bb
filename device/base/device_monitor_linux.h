@@ -6,7 +6,6 @@
 #define DEVICE_BASE_DEVICE_MONITOR_LINUX_H_
 
 #include <memory>
-#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -43,7 +42,6 @@ class DEVICE_BASE_EXPORT DeviceMonitorLinux
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  ScopedUdevDevicePtr GetDeviceFromPath(const std::string& path);
   void Enumerate(const EnumerateCallback& callback);
 
   // Implements base::MessageLoop::DestructionObserver

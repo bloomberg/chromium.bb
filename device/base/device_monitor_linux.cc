@@ -5,6 +5,7 @@
 #include "device/base/device_monitor_linux.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -74,14 +75,6 @@ void DeviceMonitorLinux::AddObserver(Observer* observer) {
 void DeviceMonitorLinux::RemoveObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
-}
-
-ScopedUdevDevicePtr DeviceMonitorLinux::GetDeviceFromPath(
-    const std::string& path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScopedUdevDevicePtr device(
-      udev_device_new_from_syspath(udev_.get(), path.c_str()));
-  return device;
 }
 
 void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
