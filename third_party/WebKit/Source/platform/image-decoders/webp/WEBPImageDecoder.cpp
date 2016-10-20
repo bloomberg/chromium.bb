@@ -28,10 +28,6 @@
 
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
-#if USE(QCMSLIB)
-#include "qcms.h"
-#endif
-
 #if CPU(BIG_ENDIAN) || CPU(MIDDLE_ENDIAN)
 #error Blink assumes a little-endian target.
 #endif
@@ -346,8 +342,8 @@ void WEBPImageDecoder::readColorProfile() {
       reinterpret_cast<const char*>(chunkIterator.chunk.bytes);
   size_t profileSize = chunkIterator.chunk.size;
 
-  setColorProfileAndComputeTransform(profileData, profileSize,
-                                     true /* hasAlpha */, false /* useSRGB */);
+  setColorSpaceAndComputeTransform(profileData, profileSize,
+                                   false /* useSRGB */);
 
   WebPDemuxReleaseChunkIterator(&chunkIterator);
 }
@@ -367,12 +363,25 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
   const int left = frameRect.x();
   const int top = frameRect.y();
 
-#if USE(QCMSLIB)
-  if (qcms_transform* transform = colorTransform()) {
+#if USE(SKCOLORXFORM)
+  // TODO (msarett):
+  // Here we apply the color space transformation to the dst space.
+  // It does not really make sense to transform to a gamma-encoded
+  // space and then immediately after, perform a linear premultiply
+  // and linear blending.  Can we find a way to perform the
+  // premultiplication and blending in a linear space?
+  SkColorSpaceXform* xform = colorTransform();
+  if (xform) {
+    const SkColorSpaceXform::ColorFormat srcFormat =
+        SkColorSpaceXform::kBGRA_8888_ColorFormat;
+    const SkColorSpaceXform::ColorFormat dstFormat =
+        SkColorSpaceXform::kRGBA_8888_ColorFormat;
     for (int y = m_decodedHeight; y < decodedHeight; ++y) {
       const int canvasY = top + y;
       uint8_t* row = reinterpret_cast<uint8_t*>(buffer.getAddr(left, canvasY));
-      qcms_transform_data_type(transform, row, row, width, QCMS_OUTPUT_RGBX);
+      xform->apply(dstFormat, row, srcFormat, row, width,
+                   kUnpremul_SkAlphaType);
+
       uint8_t* pixel = row;
       for (int x = 0; x < width; ++x, pixel += 4) {
         const int canvasX = left + x;
@@ -381,7 +390,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
       }
     }
   }
-#endif  // USE(QCMSLIB)
+#endif  // USE(SKCOLORXFORM)
 
   // During the decoding of the current frame, we may have set some pixels to be
   // transparent (i.e. alpha < 255). If the alpha blend source was
@@ -531,9 +540,17 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
     WEBP_CSP_MODE mode = outputMode(m_formatFlags & ALPHA_FLAG);
     if (!m_premultiplyAlpha)
       mode = outputMode(false);
-#if USE(QCMSLIB)
-    if (colorTransform())
-      mode = MODE_RGBA;  // Decode to RGBA for input to libqcms.
+#if USE(SKCOLORXFORM)
+    if (colorTransform()) {
+      // Swizzling between RGBA and BGRA is zero cost in a color transform.
+      // So when we have a color transform, we should decode to whatever is
+      // easiest for libwebp, and then let the color transform swizzle if
+      // necessary.
+      // Lossy webp is encoded as YUV (so RGBA and BGRA are the same cost).
+      // Lossless webp is encoded as BGRA. This means decoding to BGRA is
+      // either faster or the same cost as RGBA.
+      mode = MODE_BGRA;
+    }
 #endif
     WebPInitDecBuffer(&m_decoderBuffer);
     m_decoderBuffer.colorspace = mode;
