@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -37,6 +37,7 @@ struct IntentInfo {
   array<string>? categories;
   string? data;  // URI
   string? type;  // explicit MIME type for data
+  [MinVersion=13] string? clip_data_uri;  // optional URI to provide as ClipData
 };
 
 struct IntentFilter {
