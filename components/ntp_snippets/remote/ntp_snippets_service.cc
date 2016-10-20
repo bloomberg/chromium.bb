@@ -380,7 +380,7 @@ void NTPSnippetsService::ClearCachedSuggestions(Category category) {
   database_->DeleteImages(GetSnippetIDVector(content->snippets));
   content->snippets.clear();
 
-  NotifyNewSuggestions();
+  NotifyNewSuggestions(category);
 }
 
 void NTPSnippetsService::GetDismissedSuggestionsForDebugging(
@@ -581,6 +581,8 @@ void NTPSnippetsService::OnFetchFinished(
   for (const auto& item : categories_) {
     Category category = item.first;
     UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
+    // TODO(sfiera): notify only when a category changed above.
+    NotifyNewSuggestions(category);
   }
 
   // TODO(sfiera): equivalent metrics for non-articles.
@@ -591,9 +593,6 @@ void NTPSnippetsService::OnFetchFinished(
     UMA_HISTOGRAM_COUNTS("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
                          content.dismissed.size());
   }
-
-  // TODO(sfiera): notify only when a category changed above.
-  NotifyNewSuggestions();
 
   // Reschedule after a successful fetch. This resets all currently scheduled
   // fetches, to make sure the fallback interval triggers only if no wifi fetch
@@ -885,7 +884,10 @@ void NTPSnippetsService::FinishInitialization() {
 
   // Always notify here even if we got nothing from the database, because we
   // don't know how long the fetch will take or if it will even complete.
-  NotifyNewSuggestions();
+  for (const auto& item : categories_) {
+    Category category = item.first;
+    NotifyNewSuggestions(category);
+  }
 }
 
 void NTPSnippetsService::OnSnippetsStatusChanged(
@@ -967,35 +969,34 @@ void NTPSnippetsService::EnterState(State state) {
   RescheduleFetching(false);
 }
 
-void NTPSnippetsService::NotifyNewSuggestions() {
-  for (const auto& item : categories_) {
-    Category category = item.first;
-    const CategoryContent& content = item.second;
+void NTPSnippetsService::NotifyNewSuggestions(Category category) {
+  DCHECK(base::ContainsKey(categories_, category));
+  const CategoryContent& content = categories_[category];
+  DCHECK(IsCategoryStatusAvailable(content.status));
 
-    std::vector<ContentSuggestion> result;
-    for (const std::unique_ptr<NTPSnippet>& snippet : content.snippets) {
-      // TODO(sfiera): if a snippet is not going to be displayed, move it
-      // directly to content.dismissed on fetch. Otherwise, we might prune
-      // other snippets to get down to kMaxSnippetCount, only to hide one of the
-      // incomplete ones we kept.
-      if (!snippet->is_complete())
-        continue;
-      ContentSuggestion suggestion(category, snippet->id(),
-                                   snippet->best_source().url);
-      suggestion.set_amp_url(snippet->best_source().amp_url);
-      suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
-      suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
-      suggestion.set_publish_date(snippet->publish_date());
-      suggestion.set_publisher_name(
-          base::UTF8ToUTF16(snippet->best_source().publisher_name));
-      suggestion.set_score(snippet->score());
-      result.emplace_back(std::move(suggestion));
-    }
-
-    DVLOG(1) << "NotifyNewSuggestions(): " << result.size()
-             << " items in category " << category;
-    observer()->OnNewSuggestions(this, category, std::move(result));
+  std::vector<ContentSuggestion> result;
+  for (const std::unique_ptr<NTPSnippet>& snippet : content.snippets) {
+    // TODO(sfiera): if a snippet is not going to be displayed, move it
+    // directly to content.dismissed on fetch. Otherwise, we might prune
+    // other snippets to get down to kMaxSnippetCount, only to hide one of the
+    // incomplete ones we kept.
+    if (!snippet->is_complete())
+      continue;
+    ContentSuggestion suggestion(category, snippet->id(),
+                                 snippet->best_source().url);
+    suggestion.set_amp_url(snippet->best_source().amp_url);
+    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
+    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
+    suggestion.set_publish_date(snippet->publish_date());
+    suggestion.set_publisher_name(
+        base::UTF8ToUTF16(snippet->best_source().publisher_name));
+    suggestion.set_score(snippet->score());
+    result.emplace_back(std::move(suggestion));
   }
+
+  DVLOG(1) << "NotifyNewSuggestions(" << category << "): " << result.size()
+           << " items.";
+  observer()->OnNewSuggestions(this, category, std::move(result));
 }
 
 void NTPSnippetsService::UpdateCategoryStatus(Category category,

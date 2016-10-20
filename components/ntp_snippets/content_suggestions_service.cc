@@ -202,6 +202,10 @@ void ContentSuggestionsService::OnNewSuggestions(
     ContentSuggestionsProvider* provider,
     Category category,
     std::vector<ContentSuggestion> suggestions) {
+  // Providers shouldn't call this when they're in a non-available state.
+  DCHECK(
+      IsCategoryStatusInitOrAvailable(provider->GetCategoryStatus(category)));
+
   if (TryRegisterProviderForCategory(provider, category)) {
     NotifyCategoryStatusChanged(category);
   } else if (IsCategoryDismissed(category)) {

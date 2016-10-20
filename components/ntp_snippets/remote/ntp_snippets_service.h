@@ -271,9 +271,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // Do not call directly, use |EnterState| instead.
   void EnterStateError();
 
-  // Converts the cached snippets to article content suggestions and notifies
-  // the observers.
-  void NotifyNewSuggestions();
+  // Converts the cached snippets in the given |category| to content suggestions
+  // and notifies the observer.
+  void NotifyNewSuggestions(Category category);
 
   // Updates the internal status for |category| to |category_status_| and
   // notifies the content suggestions observer if it changed.
