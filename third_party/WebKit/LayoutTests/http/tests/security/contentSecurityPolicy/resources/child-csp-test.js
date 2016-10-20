@@ -21,7 +21,11 @@ function injectIframeWithCSP(url, shouldBlock, csp, t, urlId) {
     });
 
     if (shouldBlock) {
-        window.onmessage = t.unreached_func('No message should be sent from the frame.');
+        window.onmessage = function (e) {
+            if (e.source != i.contentWindow)
+                return;
+            t.unreached_func('No message should be sent from the frame.');
+        }
         i.onload = t.step_func(function () {
             // Delay the check until after the postMessage has a chance to execute.
             setTimeout(t.step_func_done(function () {
