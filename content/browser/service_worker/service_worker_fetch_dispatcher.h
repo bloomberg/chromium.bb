@@ -27,11 +27,11 @@ class ServiceWorkerVersion;
 // A helper class to dispatch fetch event to a service worker.
 class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
  public:
-  typedef base::Callback<void(ServiceWorkerStatusCode,
-                              ServiceWorkerFetchEventResult,
-                              const ServiceWorkerResponse&,
-                              const scoped_refptr<ServiceWorkerVersion>&)>
-      FetchCallback;
+  using FetchCallback =
+      base::Callback<void(ServiceWorkerStatusCode,
+                          ServiceWorkerFetchEventResult,
+                          const ServiceWorkerResponse&,
+                          const scoped_refptr<ServiceWorkerVersion>&)>;
 
   ServiceWorkerFetchDispatcher(
       std::unique_ptr<ServiceWorkerFetchRequest> request,
@@ -44,7 +44,9 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   // If appropriate, starts the navigation preload request and creates
   // |preload_handle_|.
-  void MaybeStartNavigationPreload(net::URLRequest* original_request);
+  void MaybeStartNavigationPreload(
+      net::URLRequest* original_request,
+      const MojoURLLoaderFactoryGetter& url_loader_factory_getter);
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
   // |fetch_callback| (also given in ctor) when finishes. It runs

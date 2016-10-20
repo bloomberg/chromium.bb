@@ -1795,17 +1795,12 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
     bool download,
     ResourceContext* context) {
   return new ResourceRequestInfoImpl(
-      PROCESS_TYPE_RENDERER,
-      child_id,
-      render_view_route_id,
+      PROCESS_TYPE_RENDERER, child_id, render_view_route_id,
       -1,  // frame_tree_node_id
-      0,
-      request_id_,
-      render_frame_route_id,
-      false,             // is_main_frame
-      false,             // parent_is_main_frame
-      RESOURCE_TYPE_SUB_RESOURCE,
-      ui::PAGE_TRANSITION_LINK,
+      0, MakeRequestID(), render_frame_route_id,
+      false,  // is_main_frame
+      false,  // parent_is_main_frame
+      RESOURCE_TYPE_SUB_RESOURCE, ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
       download,  // is_download
       false,     // is_stream
@@ -1814,8 +1809,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,     // enable_load_timing
       false,     // enable_upload_progress
       false,     // do_not_prompt_for_login
-      blink::WebReferrerPolicyDefault,
-      blink::WebPageVisibilityStateVisible,
+      blink::WebReferrerPolicyDefault, blink::WebPageVisibilityStateVisible,
       context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       false,                                   // report_raw_headers
@@ -2158,8 +2152,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
   }
 
-  request_id_--;
-
   // Make extra info and read footer (contains request ID).
   //
   // TODO(davidben): Associate the request with the FrameTreeNode and/or tab so
@@ -2170,7 +2162,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // route_id
       info.frame_tree_node_id,
       -1,  // request_data.origin_pid,
-      request_id_,
+      MakeRequestID(),
       -1,  // request_data.render_frame_id,
       info.is_main_frame, info.parent_is_main_frame, resource_type,
       info.common_params.transition,
@@ -2360,8 +2352,6 @@ void ResourceDispatcherHostImpl::InitializeURLRequest(
 
   SetReferrerForRequest(request, referrer);
 
-  request_id_--;
-
   ResourceRequestInfoImpl* info =
       CreateRequestInfo(render_process_host_id, render_view_routing_id,
                         render_frame_routing_id, is_download, context);
@@ -2405,6 +2395,11 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
         true /* force_download */, true /* is_new_request */);
   }
   BeginRequestInternal(std::move(request), std::move(handler));
+}
+
+int ResourceDispatcherHostImpl::MakeRequestID() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return --request_id_;
 }
 
 void ResourceDispatcherHostImpl::StartLoading(

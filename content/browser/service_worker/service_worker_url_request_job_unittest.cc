@@ -34,6 +34,7 @@
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -102,7 +103,7 @@ class MockHttpProtocolHandler
         resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
-        delegate_);
+        MojoURLLoaderFactoryGetter(), delegate_);
     job_->ForwardToServiceWorker();
     return job_;
   }

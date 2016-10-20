@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
@@ -60,7 +61,10 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
       ServiceWorkerContextWrapper* context_wrapper,
       ResourceContext* resource_context,
       EmbeddedWorkerTestHelper* helper)
-      : ServiceWorkerDispatcherHost(process_id, NULL, resource_context),
+      : ServiceWorkerDispatcherHost(process_id,
+                                    nullptr,
+                                    resource_context,
+                                    MojoURLLoaderFactoryGetter()),
         bad_messages_received_count_(0),
         helper_(helper) {
     Init(context_wrapper);

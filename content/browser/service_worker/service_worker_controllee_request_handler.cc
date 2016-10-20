@@ -57,7 +57,8 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBodyImpl> body)
+    scoped_refptr<ResourceRequestBodyImpl> body,
+    const MojoURLLoaderFactoryGetter& url_loader_factory_getter)
     : ServiceWorkerRequestHandler(context,
                                   provider_host,
                                   blob_storage_context,
@@ -73,6 +74,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       body_(body),
       force_update_started_(false),
       use_network_(false),
+      url_loader_factory_getter_(url_loader_factory_getter),
       weak_factory_(this) {}
 
 ServiceWorkerControlleeRequestHandler::
@@ -126,7 +128,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
           blob_storage_context_, resource_context, request_mode_,
           credentials_mode_, redirect_mode_, resource_type_,
           request_context_type_, frame_type_, body_,
-          ServiceWorkerFetchType::FETCH, this));
+          ServiceWorkerFetchType::FETCH, url_loader_factory_getter_, this));
   job_ = job->GetWeakPtr();
 
   resource_context_ = resource_context;

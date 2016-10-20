@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/resource_request_body_impl.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_request_info.h"
@@ -159,7 +160,8 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
       request, network_delegate, std::string(), blob_storage_context_,
       resource_context, request_mode_, credentials_mode_, redirect_mode_,
       resource_type_, request_context_type_, frame_type_, body_,
-      ServiceWorkerFetchType::FOREIGN_FETCH, this);
+      ServiceWorkerFetchType::FOREIGN_FETCH, MojoURLLoaderFactoryGetter(),
+      this);
   job_ = job->GetWeakPtr();
   resource_context_ = resource_context;
 

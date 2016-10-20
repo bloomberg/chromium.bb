@@ -11,16 +11,21 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/fetch_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/url_loader.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
-
 #include "net/log/net_log_event_type.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
@@ -272,16 +277,61 @@ void ServiceWorkerFetchDispatcher::Complete(
 }
 
 void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
-    net::URLRequest* original_request) {
+    net::URLRequest* original_request,
+    const MojoURLLoaderFactoryGetter& url_loader_factory_getter) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
     return;
   }
   if (!version_->navigation_preload_enabled())
     return;
-  // TODO(horo): Implement this to start the preload request for the navigation
-  // request and set |preload_handle_|.
-  NOTIMPLEMENTED();
+  // TODO(horo): Currently NavigationPreload doesn't support request body.
+  if (!request_->blob_uuid.empty())
+    return;
+  // TODO(horo): Introduce kEnableServiceWorkerNavigationPreload switch, and use
+  // it instead of kEnableExperimentalWebPlatformFeatures.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    // TODO(horo): Check |version_|'s origin_trial_tokens() here if we use
+    // Origin-Trial for NavigationPreload.
+    return;
+  }
+  DCHECK(!url_loader_factory_getter.is_null());
+  mojom::URLLoaderFactoryPtr factory;
+  url_loader_factory_getter.Run(mojo::GetProxy(&factory));
+  if (url_loader_factory_getter.IsCancelled())
+    return;
+
+  preload_handle_ = mojom::FetchEventPreloadHandle::New();
+  const ResourceRequestInfoImpl* original_info =
+      ResourceRequestInfoImpl::ForRequest(original_request);
+
+  mojom::URLLoaderClientPtr url_loader_client;
+  preload_handle_->url_loader_client_request = GetProxy(&url_loader_client);
+
+  ResourceRequest request;
+  request.method = original_request->method();
+  request.url = original_request->url();
+  request.referrer = GURL(original_request->referrer());
+  request.referrer_policy = original_info->GetReferrerPolicy();
+  request.visibility_state = original_info->GetVisibilityState();
+  request.load_flags = original_request->load_flags();
+  // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
+  // for the service worker navigation preload request.
+  request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  request.priority = original_request->priority();
+  request.skip_service_worker = SkipServiceWorker::ALL;
+  request.do_not_prompt_for_login = true;
+  request.render_frame_id = original_info->GetRenderFrameID();
+  request.is_main_frame = original_info->IsMainFrame();
+  request.parent_is_main_frame = original_info->ParentIsMainFrame();
+  const int request_id = ResourceDispatcherHostImpl::Get()->MakeRequestID();
+  DCHECK_LT(request_id, -1);
+  // TODO(horo): Add "Service-Worker-Navigation-Preload" header.
+  // See: https://github.com/w3c/ServiceWorker/issues/920#issuecomment-251150270
+  factory->CreateLoaderAndStart(GetProxy(&preload_handle_->url_loader),
+                                original_info->GetRouteID(), request_id,
+                                request, std::move(url_loader_client));
 }
 
 ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()

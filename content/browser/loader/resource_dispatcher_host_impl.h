@@ -337,6 +337,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   bool is_shutdown() const { return is_shutdown_; }
 
+  // Creates a new request ID for browser initiated requests. See the comments
+  // of |request_id_| for the details. Must be called on the IO thread.
+  int MakeRequestID();
+
  private:
   friend class ResourceDispatcherHostTest;
 
