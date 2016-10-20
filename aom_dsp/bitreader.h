@@ -232,6 +232,7 @@ static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
   return ret;
 }
 
+#if CONFIG_EC_MULTISYMBOL
 static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
                                    int nsymbs ACCT_STR_PARAM) {
   int ret;
@@ -241,12 +242,11 @@ static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
 #elif CONFIG_DAALA_EC
   ret = daala_read_symbol(r, cdf, nsymbs);
 #else
-  (void)r;
-  (void)cdf;
-  (void)nsymbs;
-  assert(0 && "Unsupported bitreader operation");
-  ret = -1;
+#error \
+    "CONFIG_EC_MULTISYMBOL is selected without a valid backing entropy " \
+  "coder. Enable daala_ec or ans for a valid configuration."
 #endif
+
 #if CONFIG_EC_ADAPT
   update_cdf(cdf, ret, nsymbs);
 #endif
@@ -256,6 +256,7 @@ static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
 #endif
   return ret;
 }
+#endif  // CONFIG_EC_MULTISYMBOL
 
 #ifdef __cplusplus
 }  // extern "C"
