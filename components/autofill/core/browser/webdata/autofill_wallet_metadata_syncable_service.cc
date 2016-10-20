@@ -408,8 +408,8 @@ bool AutofillWalletMetadataSyncableService::GetLocalData(
       AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
           ->GetServerProfiles(&profile_list);
   while (!profile_list.empty()) {
-    profiles->add(GetServerId(*profile_list.front()),
-                  std::move(profile_list.front()));
+    auto server_id = GetServerId(*profile_list.front());
+    profiles->add(server_id, std::move(profile_list.front()));
     profile_list.erase(profile_list.begin());
   }
 
