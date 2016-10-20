@@ -707,6 +707,10 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'nyan_kitty-paladin',
+        'nyan_big-paladin',
+        'kip-paladin',
+        'winky-paladin',
         'reef-paladin',
         'gale-paladin',
         'lakitu_next-paladin',
@@ -2351,13 +2355,17 @@ def _GetConfig(site_config, board_configs, hw_test_list):
   _paladin_hwtest_boards = frozenset([
       'daisy_skate',
       'elm',
+      'kip',
       'link',
       'lumpy',
+      'nyan_big',
+      'nyan_kitty',
       'peach_pit',
       'peppy',
       'stumpy',
       'veyron_mighty',
       'veyron_speedy',
+      'winky',
       'wolf',
       'x86-alex',
       'x86-zgb',
@@ -2536,6 +2544,8 @@ def _GetConfig(site_config, board_configs, hw_test_list):
   ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
   ShardHWTestsBetweenBuilders('veyron_mighty-paladin', 'veyron_speedy-paladin')
   ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
+  ShardHWTestsBetweenBuilders('nyan_big-paladin', 'nyan_kitty-paladin')
+  ShardHWTestsBetweenBuilders('winky-paladin', 'kip-paladin')
   ShardHWTestsBetweenBuilders('elm-paladin', None)
 
   site_config.Add(
