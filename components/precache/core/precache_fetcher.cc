@@ -156,7 +156,7 @@ class URLFetcherNullWriter : public net::URLFetcherResponseWriter {
     return num_bytes;
   }
 
-  int Finish(const net::CompletionCallback& callback) override {
+  int Finish(int net_error, const net::CompletionCallback& callback) override {
     return net::OK;
   }
 };

@@ -40,7 +40,8 @@ class UnownedStringWriter : public net::URLFetcherResponseWriter {
     return num_bytes;
   }
 
-  virtual int Finish(const net::CompletionCallback& callback) override {
+  virtual int Finish(int net_error,
+                     const net::CompletionCallback& callback) override {
     return net::OK;
   }
 

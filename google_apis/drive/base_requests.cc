@@ -312,9 +312,10 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
   return num_bytes;
 }
 
-int ResponseWriter::Finish(const net::CompletionCallback& callback) {
+int ResponseWriter::Finish(int net_error,
+                           const net::CompletionCallback& callback) {
   if (file_writer_)
-    return file_writer_->Finish(callback);
+    return file_writer_->Finish(net_error, callback);
 
   return net::OK;
 }
