@@ -122,7 +122,6 @@ if (window.testRunner) {
             document.body.appendChild(pre);
         }
         document.getElementById("log").innerHTML += text + "\n";
-        window.scrollTo(0, document.body.height);
     }
 
     PerfTestRunner.log = function (text) {
@@ -156,7 +155,7 @@ if (window.testRunner) {
         iterationCount = test.dromaeoIterationCount || (window.testRunner ? 5 : 20);
         if (test.warmUpCount && test.warmUpCount > 0)
             completedIterations = -test.warmUpCount;
-        logLines = window.testRunner ? [] : null;
+        logLines = PerfTestRunner.bufferedLog || window.testRunner ? [] : null;
         PerfTestRunner.log("Running " + iterationCount + " times");
         if (test.doNotIgnoreInitialRun)
             completedIterations++;
@@ -216,6 +215,7 @@ if (window.testRunner) {
             }
             if (logLines)
                 logLines.forEach(logInDocument);
+            window.scrollTo(0, document.body.offsetHeight);
             if (currentTest.done)
                 currentTest.done();
         } catch (exception) {
@@ -247,6 +247,7 @@ if (window.testRunner) {
 
     PerfTestRunner.measureFrameTime = function (test) {
         PerfTestRunner.unit = "ms";
+        PerfTestRunner.bufferedLog = true;
         start(test, requestAnimationFrame, measureFrameTimeOnce);
     }
 
@@ -268,6 +269,7 @@ if (window.testRunner) {
 
     PerfTestRunner.measureTime = function (test) {
         PerfTestRunner.unit = "ms";
+        PerfTestRunner.bufferedLog = true;
         start(test, zeroTimeoutScheduler, measureTimeOnce);
     }
 

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
+<body>
 <script src="../resources/runner.js"></script>
-<pre id="log"></pre>
 <style>td { border: 1px solid blue }</style>
 <script>
 function createTable(rows, columns) {
@@ -21,7 +21,7 @@ function createTable(rows, columns) {
 
 var table = createTable(300, 320);
 table.style.border = '2px solid green';
-document.body.insertBefore(table, log);
+document.body.appendChild(table);
 
 PerfTestRunner.measureFrameTime({
     run: function() {
@@ -31,3 +31,4 @@ PerfTestRunner.measureFrameTime({
     warmUpCount: 5,
 });
 </script>
+</body>
