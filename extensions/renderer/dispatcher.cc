@@ -181,7 +181,7 @@ void CallModuleMethod(const std::string& module_name,
     arguments.push_back(converter->ToV8Value(arg.get(), context->v8_context()));
   }
 
-  context->module_system()->CallModuleMethod(
+  context->module_system()->CallModuleMethodSafe(
       module_name, method_name, &arguments);
 }
 

@@ -96,10 +96,6 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   v8::Local<v8::Value> CallModuleMethod(
       const std::string& module_name,
       const std::string& method_name);
-  v8::Local<v8::Value> CallModuleMethod(
-      const std::string& module_name,
-      const std::string& method_name,
-      std::vector<v8::Local<v8::Value>>* args);
   v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
                                         const std::string& method_name,
                                         int argc,

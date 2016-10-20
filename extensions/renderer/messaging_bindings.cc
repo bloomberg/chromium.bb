@@ -213,7 +213,7 @@ void DeliverMessageToScriptContext(const Message& message,
     }
   }
 
-  script_context->module_system()->CallModuleMethod(
+  script_context->module_system()->CallModuleMethodSafe(
       "messaging", "dispatchOnMessage", &arguments);
 }
 
@@ -240,7 +240,7 @@ void DispatchOnDisconnectToScriptContext(int global_port_id,
     arguments.push_back(v8::Null(isolate));
   }
 
-  script_context->module_system()->CallModuleMethod(
+  script_context->module_system()->CallModuleMethodSafe(
       "messaging", "dispatchOnDisconnect", &arguments);
 }
 
