@@ -24,6 +24,7 @@ import org.chromium.net.EffectiveConnectionType;
 import org.chromium.net.NetworkQualityRttListener;
 import org.chromium.net.NetworkQualityThroughputListener;
 import org.chromium.net.RequestFinishedInfo;
+import org.chromium.net.RttThroughputValues;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
@@ -93,6 +94,27 @@ public class CronetUrlRequestContext extends CronetEngine {
      */
     @GuardedBy("mNetworkQualityLock")
     private int mEffectiveConnectionType = EffectiveConnectionType.TYPE_UNKNOWN;
+
+    /**
+     * Current estimate of the HTTP RTT (in milliseconds) computed by the
+     * network quality estimator.
+     */
+    @GuardedBy("mNetworkQualityLock")
+    private int mHttpRttMs = RttThroughputValues.INVALID_RTT_THROUGHPUT;
+
+    /**
+     * Current estimate of the transport RTT (in milliseconds) computed by the
+     * network quality estimator.
+     */
+    @GuardedBy("mNetworkQualityLock")
+    private int mTransportRttMs = RttThroughputValues.INVALID_RTT_THROUGHPUT;
+
+    /**
+     * Current estimate of the downstream throughput (in kilobits per second)
+     * computed by the network quality estimator.
+     */
+    @GuardedBy("mNetworkQualityLock")
+    private int mDownstreamThroughputKbps = RttThroughputValues.INVALID_RTT_THROUGHPUT;
 
     @GuardedBy("mNetworkQualityLock")
     private final ObserverList<NetworkQualityRttListener> mRttListenerList =
@@ -327,10 +349,37 @@ public class CronetUrlRequestContext extends CronetEngine {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            synchronized (mLock) {
-                checkHaveAdapter();
-            }
             return mEffectiveConnectionType;
+        }
+    }
+
+    @Override
+    public int getHttpRttMs() {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        synchronized (mNetworkQualityLock) {
+            return mHttpRttMs;
+        }
+    }
+
+    @Override
+    public int getTransportRttMs() {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        synchronized (mNetworkQualityLock) {
+            return mTransportRttMs;
+        }
+    }
+
+    @Override
+    public int getDownstreamThroughputKbps() {
+        if (!mNetworkQualityEstimatorEnabled) {
+            throw new IllegalStateException("Network quality estimator must be enabled");
+        }
+        synchronized (mNetworkQualityLock) {
+            return mDownstreamThroughputKbps;
         }
     }
 
@@ -522,6 +571,17 @@ public class CronetUrlRequestContext extends CronetEngine {
             // Convert the enum returned by the network quality estimator to an enum of type
             // EffectiveConnectionType.
             mEffectiveConnectionType = effectiveConnectionType;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onRTTOrThroughputEstimatesComputed(
+            final int httpRttMs, final int transportRttMs, final int downstreamThroughputKbps) {
+        synchronized (mNetworkQualityLock) {
+            mHttpRttMs = httpRttMs;
+            mTransportRttMs = transportRttMs;
+            mDownstreamThroughputKbps = downstreamThroughputKbps;
         }
     }
 

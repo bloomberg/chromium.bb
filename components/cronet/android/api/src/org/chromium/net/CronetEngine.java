@@ -993,6 +993,42 @@ public abstract class CronetEngine {
     public abstract int getEffectiveConnectionType();
 
     /**
+     * Returns the HTTP RTT estimate (in milliseconds) computed by the network
+     * quality estimator. Set to
+     * {@link RttThroughputValues.INVALID_RTT_THROUGHPUT} if a valid value
+     * is unavailable. This must be called after
+     * {@link #enableNetworkQualityEstimator}, and will throw an
+     * exception otherwise.
+     * @hide as it's a prototype.
+     * @return Estimate of the HTTP RTT in milliseconds.
+     */
+    public abstract int getHttpRttMs();
+
+    /**
+     * Returns the transport RTT estimate (in milliseconds) computed by the
+     * network quality estimator. Set to
+     * {@link RttThroughputValues.INVALID_RTT_THROUGHPUT} if a valid value is
+     * unavailable.  This must be called after
+     * {@link #enableNetworkQualityEstimator}, and will throw an
+     * exception otherwise.
+     * @hide as it's a prototype.
+     * @return Estimate of the transport RTT in milliseconds.
+     */
+    public abstract int getTransportRttMs();
+
+    /**
+     * Returns the downstream throughput estimate (in kilobits per second)
+     * computed by the network quality estimator. Set to
+     * {@link RttThroughputValues.INVALID_RTT_THROUGHPUT} if a valid value is
+     * unavailable.  This must be called after
+     * {@link #enableNetworkQualityEstimator}, and will
+     * throw an exception otherwise.
+     * @hide as it's a prototype.
+     * @return Estimate of the downstream throughput in kilobits per second.
+     */
+    public abstract int getDownstreamThroughputKbps();
+
+    /**
      * Configures the network quality estimator for testing. This must be called
      * before round trip time and throughput listeners are added, and after the
      * network quality estimator has been enabled.

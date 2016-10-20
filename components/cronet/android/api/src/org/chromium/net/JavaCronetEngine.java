@@ -113,6 +113,21 @@ final class JavaCronetEngine extends CronetEngine {
     }
 
     @Override
+    public int getHttpRttMs() {
+        return RttThroughputValues.INVALID_RTT_THROUGHPUT;
+    }
+
+    @Override
+    public int getTransportRttMs() {
+        return RttThroughputValues.INVALID_RTT_THROUGHPUT;
+    }
+
+    @Override
+    public int getDownstreamThroughputKbps() {
+        return RttThroughputValues.INVALID_RTT_THROUGHPUT;
+    }
+
+    @Override
     public void configureNetworkQualityEstimatorForTesting(
             boolean useLocalHostRequests, boolean useSmallerResponses) {}
 
