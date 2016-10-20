@@ -173,23 +173,6 @@
     "cmd": [
       "python",
       "-u",
-      "\nimport sys\nsys.path.append(sys.argv[1])\nfrom devil import devil_env\ndevil_env.config.Initialize()\n",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil"
-    ],
-    "name": "initialize devil",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@python.inline@@@@",
-      "@@@STEP_LOG_LINE@python.inline@import sys@@@",
-      "@@@STEP_LOG_LINE@python.inline@sys.path.append(sys.argv[1])@@@",
-      "@@@STEP_LOG_LINE@python.inline@from devil import devil_env@@@",
-      "@@@STEP_LOG_LINE@python.inline@devil_env.config.Initialize()@@@",
-      "@@@STEP_LOG_END@python.inline@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python",
-      "-u",
       "RECIPE_MODULE[build::gsutil]/resources/gsutil_wrapper.py",
       "--",
       "RECIPE_PACKAGE_REPO[depot_tools]/gsutil.py",
@@ -217,7 +200,7 @@
       "-u",
       "[SLAVE_BUILD]/src/build/symlink.py",
       "-f",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "~/adb"
     ],
     "name": "create adb symlink"
@@ -228,7 +211,7 @@
       "--",
       "[SLAVE_BUILD]/src/build/android/adb_logcat_monitor.py",
       "[SLAVE_BUILD]/src/out/logcat",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb"
     ],
     "env": {
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json",
@@ -248,7 +231,7 @@
       "--",
       "[SLAVE_BUILD]/src/third_party/catapult/devil/devil/android/tools/device_monitor.py",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json"
     ],
@@ -261,7 +244,7 @@
       "RECIPE_PACKAGE_REPO[build]/scripts/slave/android/authorize_adb_devices.py",
       "--verbose",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb"
     ],
     "env": {
       "GOMA_SERVICE_ACCOUNT_JSON_FILE": "/creds/service_accounts/service-account-goma-client.json",
@@ -277,7 +260,7 @@
       "--known-devices-file",
       "[HOME]/.android/known_devices.json",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "-v",
       "--enable-usb-reset"
     ],
@@ -293,7 +276,7 @@
       "-u",
       "[SLAVE_BUILD]/src/build/android/provision_devices.py",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
       "--output-device-blacklist",
@@ -325,7 +308,7 @@
       "--buildbot-path",
       "/home/chrome-bot/.adb_device_info",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "-v",
       "--overwrite-known-devices-files"
     ],
@@ -447,7 +430,7 @@
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "--release"
     ],
     "env": {
@@ -637,7 +620,7 @@
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb"
     ],
     "env": {
       "CHROMIUM_OUTPUT_DIR": "[SLAVE_BUILD]/src/out/Release",
@@ -694,7 +677,7 @@
       "page_cycler.foo",
       "--verbose",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
       "--enable-platform-mode"
@@ -746,7 +729,7 @@
       "perf_test.foo",
       "--verbose",
       "--adb-path",
-      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb",
+      "[SLAVE_BUILD]/src/third_party/android_tools/sdk/platform-tools/adb",
       "--blacklist-file",
       "[SLAVE_BUILD]/src/out/bad_devices.json",
       "--enable-platform-mode"
