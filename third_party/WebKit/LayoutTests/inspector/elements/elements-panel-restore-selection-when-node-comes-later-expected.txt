@@ -1,0 +1,13 @@
+Verify that last selected element is restored properly later, even if it failed to do so once.
+
+
+Running: selectNode
+Selected node: 'span'
+
+Running: firstReloadWithoutNodeInDOM
+Selected node: 'body'
+
+Running: secondReloadWithNodeInDOM
+Page reloaded.
+Selected node: 'span'
+
