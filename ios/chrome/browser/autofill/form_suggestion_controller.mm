@@ -279,9 +279,9 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 - (UIView*)suggestionViewWithSuggestions:(NSArray*)suggestions {
   CGRect frame = [_webViewProxy keyboardAccessory].frame;
-  // Force the desired height on iPads running iOS 9 or later where the height
-  // of the inputAccessoryView is 0.
-  if (base::ios::IsRunningOnIOS9OrLater() && IsIPadIdiom()) {
+  // Force the desired height on iPad where the height of the
+  // inputAccessoryView is 0.
+  if (IsIPadIdiom()) {
     frame.size.height = autofill::kInputAccessoryHeight;
   }
   base::scoped_nsobject<FormSuggestionView> view([[FormSuggestionView alloc]
