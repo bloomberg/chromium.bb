@@ -170,6 +170,11 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
                 getParams().topMargin = 0;
             }
         }
+
+        @Override
+        public boolean isDismissable() {
+            return true;
+        }
     }
 
     private void checkIndex(int position) {

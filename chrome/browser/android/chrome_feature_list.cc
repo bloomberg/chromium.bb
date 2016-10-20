@@ -42,6 +42,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kImportantSitesInCBD,
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kSaveToOfflineFeature,
+    &ntp_snippets::kSectionDismissalFeature,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
     &kPhysicalWebFeature,

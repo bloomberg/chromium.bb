@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
 /**
  * ViewHolder for Status and Promo cards.
@@ -84,6 +85,6 @@ public class StatusCardViewHolder extends CardViewHolder {
 
     @Override
     public boolean isDismissable() {
-        return true;
+        return SnippetsConfig.isSectionDismissalEnabled();
     }
 }

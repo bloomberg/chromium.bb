@@ -17,11 +17,14 @@ extern const base::Feature kBookmarkSuggestionsFeature;
 extern const base::Feature kRecentOfflineTabSuggestionsFeature;
 extern const base::Feature kDownloadSuggestionsFeature;
 extern const base::Feature kPhysicalWebPageSuggestionsFeature;
-extern const base::Feature kForeignSessionsSuggestionsFeature;
+extern const base::Feature kForeignSessionsSuggestionsFeature;;
 
 // Feature to allow the 'save to offline' option to appear in the snippets
 // context menu.
 extern const base::Feature kSaveToOfflineFeature;
+
+// Feature to allow dismissing sections.
+extern const base::Feature kSectionDismissalFeature;
 
 // Global toggle for the whole content suggestions feature. If this is set to
 // false, all the per-provider features are ignored.

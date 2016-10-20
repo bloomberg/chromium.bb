@@ -9,6 +9,7 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
 /**
  * Item that allows the user to perform an action on the NTP.
@@ -75,7 +76,7 @@ class ActionItem extends Leaf {
 
         @Override
         public boolean isDismissable() {
-            return mActionListItem.mDismissable;
+            return SnippetsConfig.isSectionDismissalEnabled() && mActionListItem.mDismissable;
         }
 
         public void onBindViewHolder(ActionItem item) {

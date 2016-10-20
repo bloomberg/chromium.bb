@@ -21,4 +21,8 @@ public final class SnippetsConfig {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_SAVE_TO_OFFLINE)
                 && OfflinePageBridge.isBackgroundLoadingEnabled();
     }
+
+    public static boolean isSectionDismissalEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL);
+    }
 }
