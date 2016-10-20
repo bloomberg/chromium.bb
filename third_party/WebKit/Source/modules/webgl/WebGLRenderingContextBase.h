@@ -593,7 +593,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
     TraceWrapperMember<WebGLTexture> m_texture2DArrayBinding;
 
     DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+    // Wrappers are traced by parent since TextureUnitState is not a heap
+    // object.
   };
 
   PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const override;

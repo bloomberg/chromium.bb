@@ -7461,13 +7461,6 @@ DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState) {
   visitor->trace(m_texture2DArrayBinding);
 }
 
-DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase::TextureUnitState) {
-  visitor->traceWrappers(m_texture2DBinding);
-  visitor->traceWrappers(m_textureCubeMapBinding);
-  visitor->traceWrappers(m_texture3DBinding);
-  visitor->traceWrappers(m_texture2DArrayBinding);
-}
-
 DEFINE_TRACE(WebGLRenderingContextBase) {
   visitor->trace(m_contextObjects);
   visitor->trace(m_boundArrayBuffer);
@@ -7490,8 +7483,13 @@ DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase) {
   visitor->traceWrappers(m_framebufferBinding);
   visitor->traceWrappers(m_currentProgram);
   visitor->traceWrappers(m_boundVertexArrayObject);
+  // Trace wrappers explicitly here since TextureUnitState is not a heap
+  // object, i.e., we cannot set its mark bits.
   for (auto& unit : m_textureUnits) {
-    visitor->traceWrappers(&unit);
+    visitor->traceWrappers(unit.m_texture2DBinding);
+    visitor->traceWrappers(unit.m_textureCubeMapBinding);
+    visitor->traceWrappers(unit.m_texture3DBinding);
+    visitor->traceWrappers(unit.m_texture2DArrayBinding);
   }
   for (ExtensionTracker* tracker : m_extensions) {
     WebGLExtension* extension = tracker->getExtensionObjectIfAlreadyEnabled();
