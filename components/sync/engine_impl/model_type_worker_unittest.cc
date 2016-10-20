@@ -195,7 +195,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   }
 
   // Introduce a new key that the local cryptographer can't decrypt.
-  void NewForeignEncryptionKey() {
+  void AddPendingKey() {
     if (!cryptographer_) {
       cryptographer_ = base::MakeUnique<Cryptographer>(&fake_encryptor_);
     }
@@ -242,7 +242,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   }
 
   // Update the local cryptographer with all relevant keys.
-  void UpdateLocalCryptographer() {
+  void DecryptPendingKey() {
     if (!cryptographer_) {
       cryptographer_ = base::MakeUnique<Cryptographer>(&fake_encryptor_);
     }
@@ -281,11 +281,10 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   void TriggerTypeRootUpdateFromServer() {
     sync_pb::SyncEntity entity = mock_server_.TypeRootUpdate();
-    StatusController dummy_status;
     worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
                                        mock_server_.GetContext(), {&entity},
-                                       &dummy_status);
-    worker_->PassiveApplyUpdates(&dummy_status);
+                                       nullptr);
+    worker_->PassiveApplyUpdates(nullptr);
   }
 
   void TriggerPartialUpdateFromServer(int64_t version_offset,
@@ -299,18 +298,16 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    StatusController dummy_status;
     worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
                                        mock_server_.GetContext(), {&entity},
-                                       &dummy_status);
+                                       nullptr);
   }
 
   void TriggerUpdateFromServer(int64_t version_offset,
                                const std::string& tag,
                                const std::string& value) {
     TriggerPartialUpdateFromServer(version_offset, tag, value);
-    StatusController dummy_status;
-    worker_->ApplyUpdates(&dummy_status);
+    worker_->ApplyUpdates(nullptr);
   }
 
   void TriggerTombstoneFromServer(int64_t version_offset,
@@ -323,12 +320,15 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    StatusController dummy_status;
     worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
                                        mock_server_.GetContext(), {&entity},
-                                       &dummy_status);
-    worker_->ApplyUpdates(&dummy_status);
+                                       nullptr);
+    worker_->ApplyUpdates(nullptr);
   }
+
+  // Simulates the end of a GU sync cycle and tells the worker to flush changes
+  // to the processor.
+  void ApplyUpdates() { worker_->ApplyUpdates(nullptr); }
 
   // Delivers specified protos as updates.
   //
@@ -336,11 +336,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // writing test cases that require entities that don't fit the normal sync
   // protocol. Try to use the other, higher level methods if possible.
   void DeliverRawUpdates(const SyncEntityList& list) {
-    StatusController dummy_status;
-    worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), list,
-                                       &dummy_status);
-    worker_->ApplyUpdates(&dummy_status);
+    worker_->ProcessGetUpdatesResponse(
+        mock_server_.GetProgress(), mock_server_.GetContext(), list, nullptr);
+    worker_->ApplyUpdates(nullptr);
   }
 
   // By default, this harness behaves as if all tasks posted to the model
@@ -385,8 +383,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     sync_pb::ClientToServerResponse response =
         mock_server_.DoSuccessfulCommit(message);
 
-    StatusController dummy_status;
-    contribution->ProcessCommitResponse(response, &dummy_status);
+    contribution->ProcessCommitResponse(response, nullptr);
     contribution->CleanUp();
   }
 
@@ -412,7 +409,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   // Returns the name of the encryption key in the cryptographer last passed to
   // the CommitQueue. Returns an empty string if no crypgorapher is
-  // in use. See also: UpdateLocalCryptographer().
+  // in use. See also: DecryptPendingKey().
   std::string GetLocalCryptographerKeyName() const {
     if (!cryptographer_) {
       return std::string();
@@ -695,15 +692,31 @@ TEST_F(ModelTypeWorkerTest, ReceiveMultiPartUpdates) {
   EXPECT_EQ(GenerateTagHash(kTag3), updates[0].entity->client_tag_hash);
 }
 
+// Test that updates with no entities behave correctly.
+TEST_F(ModelTypeWorkerTest, EmptyUpdates) {
+  NormalInitialize();
+
+  server()->SetProgressMarkerToken("token2");
+  DeliverRawUpdates(SyncEntityList());
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  ASSERT_EQ(
+      server()->GetProgress().SerializeAsString(),
+      processor()->GetNthUpdateState(0).progress_marker().SerializeAsString());
+}
+
 // Test commit of encrypted updates.
 TEST_F(ModelTypeWorkerTest, EncryptedCommit) {
   NormalInitialize();
 
   ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
 
-  NewForeignEncryptionKey();
-  UpdateLocalCryptographer();
+  // Tell the worker about the new encryption key but no ApplyUpdates yet.
+  AddPendingKey();
+  DecryptPendingKey();
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
 
+  // Now the information is allowed to reach the processor.
+  ApplyUpdates();
   ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
   EXPECT_EQ(GetLocalCryptographerKeyName(),
             processor()->GetNthUpdateState(0).encryption_key_name());
@@ -728,6 +741,30 @@ TEST_F(ModelTypeWorkerTest, EncryptedCommit) {
   EXPECT_FALSE(tag1_entity.specifics().preference().has_value());
 }
 
+// Test that updates are not delivered to the processor when encryption is
+// required but unavailable.
+TEST_F(ModelTypeWorkerTest, EncryptionBlocksUpdates) {
+  NormalInitialize();
+
+  // Update encryption key name, should be blocked.
+  AddPendingKey();
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Update progress marker, should be blocked.
+  server()->SetProgressMarkerToken("token2");
+  DeliverRawUpdates(SyncEntityList());
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Update local cryptographer, verify everything is pushed to processor.
+  DecryptPendingKey();
+  ApplyUpdates();
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList updates_list = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(
+      server()->GetProgress().SerializeAsString(),
+      processor()->GetNthUpdateState(0).progress_marker().SerializeAsString());
+}
+
 // Test items are not committed when encryption is required but unavailable.
 TEST_F(ModelTypeWorkerTest, EncryptionBlocksCommits) {
   NormalInitialize();
@@ -737,12 +774,12 @@ TEST_F(ModelTypeWorkerTest, EncryptionBlocksCommits) {
 
   // We know encryption is in use on this account, but don't have the necessary
   // encryption keys. The worker should refuse to commit.
-  NewForeignEncryptionKey();
+  AddPendingKey();
   EXPECT_FALSE(WillCommit());
 
   // Once the cryptographer is returned to a normal state, we should be able to
   // commit again.
-  UpdateLocalCryptographer();
+  DecryptPendingKey();
   EXPECT_TRUE(WillCommit());
 
   // Verify the committed entity was properly encrypted.
@@ -764,8 +801,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveDecryptableEntities) {
   NormalInitialize();
 
   // Create a new Nigori and allow the cryptographer to decrypt it.
-  NewForeignEncryptionKey();
-  UpdateLocalCryptographer();
+  AddPendingKey();
+  DecryptPendingKey();
 
   // First, receive an unencrypted entry.
   TriggerUpdateFromServer(10, kTag1, kValue1);
@@ -794,8 +831,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveDecryptableEntities) {
 // Test initializing a CommitQueue with a cryptographer at startup.
 TEST_F(ModelTypeWorkerTest, InitializeWithCryptographer) {
   // Set up some encryption state.
-  NewForeignEncryptionKey();
-  UpdateLocalCryptographer();
+  AddPendingKey();
+  DecryptPendingKey();
 
   // Then initialize.
   NormalInitialize();
@@ -808,45 +845,94 @@ TEST_F(ModelTypeWorkerTest, InitializeWithCryptographer) {
             processor()->GetNthUpdateState(0).encryption_key_name());
 }
 
+// Test initialzing with a cryptographer that is not ready.
+TEST_F(ModelTypeWorkerTest, InitializeWithPendingCryptographer) {
+  // Only add a pending key, cryptographer will not be ready.
+  AddPendingKey();
+
+  // Then initialize.
+  NormalInitialize();
+
+  // Shouldn't be informed of the EKN, since there's a pending key.
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Although the cryptographer is ready, it should wait until being told to
+  // update the processor.
+  DecryptPendingKey();
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  ApplyUpdates();
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  EXPECT_EQ(GetLocalCryptographerKeyName(),
+            processor()->GetNthUpdateState(0).encryption_key_name());
+}
+
+// Test initializing with a cryptographer on first startup.
+TEST_F(ModelTypeWorkerTest, FirstInitializeWithCryptographer) {
+  // Set up a Cryptographer that's good to go.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Initialize with initial sync done to false.
+  FirstInitialize();
+
+  // Shouldn't be informed of the EKN, since normal activation will drive this.
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Now perform first sync and make sure the EKN makes it.
+  TriggerTypeRootUpdateFromServer();
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  EXPECT_EQ(GetLocalCryptographerKeyName(),
+            processor()->GetNthUpdateState(0).encryption_key_name());
+}
+
 // Receive updates that are initially undecryptable, then ensure they get
-// delivered to the model thread when decryption becomes possible.
+// delivered to the model thread upon ApplyUpdates() after decryption becomes
+// possible.
 TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   NormalInitialize();
 
   // Receive a new foreign encryption key that we can't decrypt.
-  NewForeignEncryptionKey();
+  AddPendingKey();
 
   // Receive an encrypted with that new key, which we can't access.
   SetUpdateEncryptionFilter(1);
   TriggerUpdateFromServer(10, kTag1, kValue1);
 
   // At this point, the cryptographer does not have access to the key, so the
-  // updates will be undecryptable. They'll be transfered to the model thread
-  // for safe-keeping as pending updates.
-  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
-  UpdateResponseDataList updates_list = processor()->GetNthUpdateResponse(0);
-  EXPECT_EQ(0U, updates_list.size());
+  // updates will be undecryptable. This will block all updates.
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
 
-  // The update will be delivered as soon as decryption becomes possible.
-  UpdateLocalCryptographer();
+  // The update can be delivered once the cryptographer is ready, but it'll
+  // still wait for the apply call.
+  DecryptPendingKey();
+  ASSERT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // ApplyUpdates() will cause everything to finally be delivered.
+  ApplyUpdates();
   ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
   UpdateResponseData update = processor()->GetUpdateResponse(kHash1);
   EXPECT_EQ(kTag1, update.entity->specifics.preference().name());
   EXPECT_EQ(kValue1, update.entity->specifics.preference().value());
-  EXPECT_FALSE(update.encryption_key_name.empty());
+  EXPECT_EQ(GetLocalCryptographerKeyName(), update.encryption_key_name);
 }
 
 // Ensure that even encrypted updates can cause conflicts.
 TEST_F(ModelTypeWorkerTest, EncryptedUpdateOverridesPendingCommit) {
   NormalInitialize();
 
-  // Prepeare to commit an item.
+  // Prepare to commit an item.
   CommitRequest(kTag1, kValue1);
   EXPECT_TRUE(WillCommit());
 
-  // Receive an encrypted update for that item.
+  // Receive an encrypted update for that item and the new key. The pending key
+  // needs to arrive during (or before) the sync cycle that contains the
+  // encrypted entity. This means before ApplyUpdates is called.
   SetUpdateEncryptionFilter(1);
-  TriggerUpdateFromServer(10, kTag1, kValue1);
+  TriggerPartialUpdateFromServer(10, kTag1, kValue1);
+  AddPendingKey();
+  DecryptPendingKey();
+  ApplyUpdates();
 
   // The pending commit state should be cleared.
   EXPECT_FALSE(WillCommit());
@@ -854,7 +940,7 @@ TEST_F(ModelTypeWorkerTest, EncryptedUpdateOverridesPendingCommit) {
   // The encrypted update will be delivered to the model thread.
   ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
   UpdateResponseDataList updates_list = processor()->GetNthUpdateResponse(0);
-  EXPECT_EQ(0U, updates_list.size());
+  EXPECT_EQ(1U, updates_list.size());
 }
 
 // Commit twice, both times with the kUncommittedVersion base version. Then
@@ -907,8 +993,8 @@ TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   ASSERT_FALSE(processor()->HasUpdateResponse(kHash1));
 
   // Update the cryptographer so it can decrypt that update.
-  NewForeignEncryptionKey();
-  UpdateLocalCryptographer();
+  AddPendingKey();
+  DecryptPendingKey();
 
   // Verify the item gets decrypted and sent back to the model thread.
   // TODO(maxbogue): crbug.com/529498: Uncomment when pending updates are
@@ -921,8 +1007,8 @@ TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
 // immediately after the CommitQueue is constructed.
 TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
   // Update the cryptographer so it can decrypt that update.
-  NewForeignEncryptionKey();
-  UpdateLocalCryptographer();
+  AddPendingKey();
+  DecryptPendingKey();
 
   // Create a fake pending update.
   EntityData entity;
@@ -958,19 +1044,23 @@ TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
 TEST_F(ModelTypeWorkerTest, CommitBlockedByPending) {
   NormalInitialize();
 
-  // Prepeare to commit an item.
+  // Prepare to commit an item.
   CommitRequest(kTag1, kValue1);
   EXPECT_TRUE(WillCommit());
 
-  // Receive an encrypted update for that item.
+  // Receive an encrypted update for that item and the new key. The pending key
+  // needs to arrive during (or before) the sync cycle that contains the
+  // encrypted entity. This means before ApplyUpdates is called.
   SetUpdateEncryptionFilter(1);
-  TriggerUpdateFromServer(10, kTag1, kValue1);
+  TriggerPartialUpdateFromServer(10, kTag1, kValue1);
+  AddPendingKey();
+  ApplyUpdates();
+
+  // Update should not have made it to the processor.
+  ASSERT_FALSE(processor()->HasUpdateResponse(kHash1));
 
   // The pending commit state should be cleared.
   EXPECT_FALSE(WillCommit());
-
-  // The pending update will be delivered to the model thread.
-  processor()->HasUpdateResponse(kHash1);
 
   // Pretend the update arrived too late to prevent another commit request.
   CommitRequest(kTag1, kValue2);
@@ -982,8 +1072,8 @@ TEST_F(ModelTypeWorkerTest, CommitBlockedByPending) {
 TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
   // Initialize the worker with basic encryption state.
   NormalInitialize();
-  NewForeignEncryptionKey();
-  UpdateLocalCryptographer();
+  AddPendingKey();
+  DecryptPendingKey();
 
   // Manually create an update.
   sync_pb::SyncEntity entity;

@@ -1135,7 +1135,6 @@ void ProfileSyncService::OnPassphraseRequired(
            << syncer::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
-  // TODO(stanisc): http://crbug.com/351005: Does this support USS types?
   const syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (data_type_manager_) {
     // Reconfigure without the encrypted types (excluded implicitly via the
@@ -1163,7 +1162,6 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
-  // TODO(stanisc): http://crbug.com/351005: Does this support USS types?
   const syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (data_type_manager_) {
     // Re-enable any encrypted types if necessary.
@@ -2224,7 +2222,6 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
 
 void ProfileSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
-  // TODO(stanisc): crbug.com/328606: Make this work for USS datatypes.
   ModelTypeSet all_types = GetActiveDataTypes();
   all_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =

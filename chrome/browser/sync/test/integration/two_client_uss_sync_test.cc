@@ -25,11 +25,16 @@ using syncer::FakeModelTypeService;
 using syncer::ModelTypeChangeProcessor;
 using syncer::ModelTypeService;
 
+namespace {
+
 const char kKey1[] = "key1";
 const char kKey2[] = "key2";
+const char kKey3[] = "key3";
+const char kKey4[] = "key4";
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
+const char* kPassphrase = "12345";
 
 // A ChromeSyncClient that provides a ModelTypeService for PREFERENCES.
 class TestSyncClient : public ChromeSyncClient {
@@ -233,34 +238,34 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync());
   ASSERT_EQ(2U, clients_.size());
   ASSERT_EQ(2U, services_.size());
-  TestModelTypeService* model1 = GetModelTypeService(0);
-  TestModelTypeService* model2 = GetModelTypeService(1);
+  TestModelTypeService* model0 = GetModelTypeService(0);
+  TestModelTypeService* model1 = GetModelTypeService(1);
 
   // Add an entity.
-  model1->WriteItem(kKey1, kValue1);
-  ASSERT_TRUE(DataChecker(model2, kKey1, kValue1).Wait());
+  model0->WriteItem(kKey1, kValue1);
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
   // Update an entity.
-  model1->WriteItem(kKey1, kValue2);
-  ASSERT_TRUE(DataChecker(model2, kKey1, kValue2).Wait());
+  model0->WriteItem(kKey1, kValue2);
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue2).Wait());
 
   // Delete an entity.
-  model1->DeleteItem(kKey1);
-  ASSERT_TRUE(DataAbsentChecker(model2, kKey1).Wait());
+  model0->DeleteItem(kKey1);
+  ASSERT_TRUE(DataAbsentChecker(model1, kKey1).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model1 = GetModelTypeService(0);
-  TestModelTypeService* model2 = GetModelTypeService(1);
+  TestModelTypeService* model0 = GetModelTypeService(0);
+  TestModelTypeService* model1 = GetModelTypeService(1);
 
   // Add an entity to test with.
-  model1->WriteItem(kKey1, kValue1);
-  ASSERT_TRUE(DataChecker(model2, kKey1, kValue1).Wait());
+  model0->WriteItem(kKey1, kValue1);
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
+  ASSERT_EQ(1U, model0->db().data_count());
+  ASSERT_EQ(1U, model0->db().metadata_count());
   ASSERT_EQ(1U, model1->db().data_count());
   ASSERT_EQ(1U, model1->db().metadata_count());
-  ASSERT_EQ(1U, model2->db().data_count());
-  ASSERT_EQ(1U, model2->db().metadata_count());
 
   // Disable PREFERENCES.
   syncer::ModelTypeSet types = syncer::UserSelectableTypes();
@@ -268,60 +273,94 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   GetSyncService(0)->OnUserChoseDatatypes(false, types);
 
   // Wait for it to take effect and remove the metadata.
-  ASSERT_TRUE(MetadataAbsentChecker(model1, kKey1).Wait());
+  ASSERT_TRUE(MetadataAbsentChecker(model0, kKey1).Wait());
+  ASSERT_EQ(1U, model0->db().data_count());
+  ASSERT_EQ(0U, model0->db().metadata_count());
+  // Model 1 should not be affected.
   ASSERT_EQ(1U, model1->db().data_count());
-  ASSERT_EQ(0U, model1->db().metadata_count());
-  // Model 2 should not be affected.
-  ASSERT_EQ(1U, model2->db().data_count());
-  ASSERT_EQ(1U, model2->db().metadata_count());
+  ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Re-enable PREFERENCES.
   GetSyncService(0)->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
 
   // Wait for metadata to be re-added.
-  ASSERT_TRUE(MetadataPresentChecker(model1, kKey1).Wait());
+  ASSERT_TRUE(MetadataPresentChecker(model0, kKey1).Wait());
+  ASSERT_EQ(1U, model0->db().data_count());
+  ASSERT_EQ(1U, model0->db().metadata_count());
   ASSERT_EQ(1U, model1->db().data_count());
   ASSERT_EQ(1U, model1->db().metadata_count());
-  ASSERT_EQ(1U, model2->db().data_count());
-  ASSERT_EQ(1U, model2->db().metadata_count());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model1 = GetModelTypeService(0);
-  TestModelTypeService* model2 = GetModelTypeService(1);
-  model1->SetConflictResolution(ConflictResolution::UseNew(
+  TestModelTypeService* model0 = GetModelTypeService(0);
+  TestModelTypeService* model1 = GetModelTypeService(1);
+  model0->SetConflictResolution(ConflictResolution::UseNew(
       FakeModelTypeService::GenerateEntityData(kKey1, kValue3)));
-  model2->SetConflictResolution(ConflictResolution::UseNew(
+  model1->SetConflictResolution(ConflictResolution::UseNew(
       FakeModelTypeService::GenerateEntityData(kKey1, kValue3)));
 
   // Write conflicting entities.
-  model1->WriteItem(kKey1, kValue1);
-  model2->WriteItem(kKey1, kValue2);
+  model0->WriteItem(kKey1, kValue1);
+  model1->WriteItem(kKey1, kValue2);
 
   // Wait for them to be resolved to kResolutionValue by the custom conflict
   // resolution logic in TestModelTypeService.
+  ASSERT_TRUE(DataChecker(model0, kKey1, kValue3).Wait());
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue3).Wait());
-  ASSERT_TRUE(DataChecker(model2, kKey1, kValue3).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Error) {
   ASSERT_TRUE(SetupSync());
-  TestModelTypeService* model1 = GetModelTypeService(0);
-  TestModelTypeService* model2 = GetModelTypeService(1);
+  TestModelTypeService* model0 = GetModelTypeService(0);
+  TestModelTypeService* model1 = GetModelTypeService(1);
 
   // Add an entity.
-  model1->WriteItem(kKey1, kValue1);
-  ASSERT_TRUE(DataChecker(model2, kKey1, kValue1).Wait());
+  model0->WriteItem(kKey1, kValue1);
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
-  // Set an error in model 2 to trigger in the next GetUpdates.
-  model2->SetServiceError(syncer::SyncError::DATATYPE_ERROR);
-  // Write an item on model 1 to trigger a GetUpdates in model 2.
-  model1->WriteItem(kKey1, kValue2);
+  // Set an error in model 1 to trigger in the next GetUpdates.
+  model1->SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  // Write an item on model 0 to trigger a GetUpdates in model 1.
+  model0->WriteItem(kKey1, kValue2);
 
   // The type should stop syncing but keep tracking metadata.
   ASSERT_TRUE(PrefsNotRunningChecker(GetSyncService(1)).Wait());
-  ASSERT_EQ(1U, model2->db().metadata_count());
-  model2->WriteItem(kKey2, kValue2);
-  ASSERT_EQ(2U, model2->db().metadata_count());
+  ASSERT_EQ(1U, model1->db().metadata_count());
+  model1->WriteItem(kKey2, kValue2);
+  ASSERT_EQ(2U, model1->db().metadata_count());
 }
+
+IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Encryption) {
+  ASSERT_TRUE(SetupSync());
+  TestModelTypeService* model0 = GetModelTypeService(0);
+  TestModelTypeService* model1 = GetModelTypeService(1);
+
+  model0->WriteItem(kKey1, kValue1);
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
+
+  GetSyncService(0)->SetEncryptionPassphrase(kPassphrase,
+                                             syncer::SyncService::EXPLICIT);
+  ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
+  // Wait for client 1 to know that a passphrase is happening to avoid potential
+  // race conditions and make the functionality this case tests more consistent.
+  ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
+
+  model0->WriteItem(kKey1, kValue2);
+  model0->WriteItem(kKey2, kValue1);
+  model1->WriteItem(kKey3, kValue1);
+
+  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kPassphrase));
+  ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
+
+  model0->WriteItem(kKey4, kValue1);
+
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue2).Wait());
+  ASSERT_TRUE(DataChecker(model1, kKey2, kValue1).Wait());
+  ASSERT_TRUE(DataChecker(model1, kKey4, kValue1).Wait());
+
+  ASSERT_TRUE(DataChecker(model0, kKey1, kValue2).Wait());
+  ASSERT_TRUE(DataChecker(model0, kKey3, kValue1).Wait());
+}
+
+}  // namespace

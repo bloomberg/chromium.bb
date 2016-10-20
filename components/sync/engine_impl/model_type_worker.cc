@@ -14,6 +14,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/model_type_processor.h"
@@ -43,10 +44,26 @@ ModelTypeWorker::ModelTypeWorker(
     nudge_handler_->NudgeForInitialDownload(type_);
   }
 
-  if (cryptographer_) {
-    DVLOG(1) << ModelTypeToString(type_) << ": Starting with encryption key "
-             << cryptographer_->GetDefaultNigoriKeyName();
-    OnCryptographerUpdated();
+  // This case handles the scenario where the processor has a serialized model
+  // type state that has already done its initial sync, and is going to be
+  // tracking metadata changes, however it does not have the most recent
+  // encryption key name. The cryptographer was updated while the worker was not
+  // around, and we're not going to recieve the normal UpdateCryptographer() or
+  // EncryptionAcceptedApplyUpdates() calls to drive this process.
+  //
+  // If |cryptographer_->is_ready()| is false, all the rest of this logic can be
+  // safely skipped, since |UpdateCryptographer(...)| must be called first and
+  // things should be driven normally after that.
+  //
+  // If |model_type_state_.initial_sync_done()| is false, |model_type_state_|
+  // may still need to be updated, since UpdateCryptographer() is never going to
+  // happen, but we can assume PassiveApplyUpdates(...) will push the state to
+  // the processor, and we should not push it now. In fact, doing so now would
+  // violate the processor's assumption that the first OnUpdateReceived is will
+  // be changing initial sync done to true.
+  if (cryptographer_ && cryptographer_->is_ready() &&
+      UpdateEncryptionKeyName() && model_type_state_.initial_sync_done()) {
+    ApplyPendingUpdates();
   }
 }
 
@@ -149,6 +166,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
       entity->ReceiveEncryptedUpdate(response_data);
+      has_encrypted_updates_ = true;
     }
   }
 
@@ -174,12 +192,32 @@ void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
   ApplyPendingUpdates();
 }
 
+void ModelTypeWorker::EncryptionAcceptedApplyUpdates() {
+  DCHECK(cryptographer_);
+  DCHECK(cryptographer_->is_ready());
+  // Reuse ApplyUpdates(...) to get its DCHECKs as well.
+  ApplyUpdates(nullptr);
+}
+
 void ModelTypeWorker::ApplyPendingUpdates() {
-  DVLOG(1) << ModelTypeToString(type_) << ": "
-           << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
-                                 pending_updates_.size());
-  model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
-  pending_updates_.clear();
+  if (!BlockForEncryption()) {
+    DVLOG(1) << ModelTypeToString(type_) << ": "
+             << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
+                                   pending_updates_.size());
+
+    // If there are still encrypted updates left at this point, they're about to
+    // to be potentially lost if the progress marker is saved to disk. Typically
+    // the nigori update should arrive simultaneously with the first of the
+    // encrypted data. It is possible that non-immediately consistent updates do
+    // not follow this pattern.
+    UMA_HISTOGRAM_BOOLEAN("Sync.WorkerApplyHasEncryptedUpdates",
+                          has_encrypted_updates_);
+    DCHECK(!has_encrypted_updates_);
+
+    model_type_processor_->OnUpdateReceived(model_type_state_,
+                                            pending_updates_);
+    pending_updates_.clear();
+  }
 }
 
 void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
@@ -204,8 +242,6 @@ void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
 std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // There shouldn't be a GetUpdates in progress when a commit is triggered.
-  DCHECK(pending_updates_.empty());
 
   size_t space_remaining = max_entries;
   google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
@@ -264,17 +300,14 @@ bool ModelTypeWorker::IsTypeInitialized() const {
 }
 
 bool ModelTypeWorker::CanCommitItems() const {
-  // We can't commit anything until we know the type's parent node.
-  // We'll get it in the first update response.
-  if (!IsTypeInitialized())
-    return false;
+  // We can only commit if we've received the initial update response and aren't
+  // blocked by missing encryption keys.
+  return IsTypeInitialized() && !BlockForEncryption();
+}
 
-  // Don't commit if we should be encrypting but don't have the required keys.
-  if (cryptographer_ && !cryptographer_->is_ready()) {
-    return false;
-  }
-
-  return true;
+bool ModelTypeWorker::BlockForEncryption() const {
+  // Should be using encryption, but we do not have the keys.
+  return cryptographer_ && !cryptographer_->is_ready();
 }
 
 void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
@@ -317,21 +350,25 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
 
 void ModelTypeWorker::OnCryptographerUpdated() {
   DCHECK(cryptographer_);
+  UpdateEncryptionKeyName();
+  DecryptedStoredEntities();
+}
 
-  bool new_encryption_key = false;
-  UpdateResponseDataList response_datas;
-
+bool ModelTypeWorker::UpdateEncryptionKeyName() {
   const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
-
-  // Handle a change in encryption key.
-  if (model_type_state_.encryption_key_name() != new_key_name) {
-    DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
-             << model_type_state_.encryption_key_name() << " -> "
-             << new_key_name;
-    model_type_state_.set_encryption_key_name(new_key_name);
-    new_encryption_key = true;
+  const std::string& old_key_name = model_type_state_.encryption_key_name();
+  if (old_key_name == new_key_name) {
+    return false;
   }
 
+  DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
+           << old_key_name << " -> " << new_key_name;
+  model_type_state_.set_encryption_key_name(new_key_name);
+  return true;
+}
+
+void ModelTypeWorker::DecryptedStoredEntities() {
+  has_encrypted_updates_ = false;
   for (const auto& kv : entities_) {
     WorkerEntityTracker* entity = kv.second.get();
     if (entity->HasEncryptedUpdate()) {
@@ -355,20 +392,14 @@ void ModelTypeWorker::OnCryptographerUpdated() {
           decrypted_update.response_version = encrypted_update.response_version;
           decrypted_update.encryption_key_name =
               data.specifics.encrypted().key_name();
-          response_datas.push_back(decrypted_update);
+          pending_updates_.push_back(decrypted_update);
 
           entity->ClearEncryptedUpdate();
         }
+      } else {
+        has_encrypted_updates_ = true;
       }
     }
-  }
-
-  if (new_encryption_key || response_datas.size() > 0) {
-    DVLOG(1) << ModelTypeToString(type_) << ": "
-             << base::StringPrintf("Delivering encryption key and %" PRIuS
-                                   " decrypted updates.",
-                                   response_datas.size());
-    model_type_processor_->OnUpdateReceived(model_type_state_, response_datas);
   }
 }
 

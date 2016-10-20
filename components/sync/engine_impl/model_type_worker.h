@@ -88,6 +88,10 @@ class ModelTypeWorker : public UpdateHandler,
   std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) override;
 
+  // An alternative way to drive sending data to the processor, that should be
+  // called when a new encryption mechanism is ready.
+  void EncryptionAcceptedApplyUpdates();
+
   // Callback for when our contribution gets a response.
   void OnCommitResponse(CommitResponseDataList* response_list);
 
@@ -109,6 +113,10 @@ class ModelTypeWorker : public UpdateHandler,
   // settings in a good state.
   bool CanCommitItems() const;
 
+  // Returns true if this type should stop communicating because of outstanding
+  // encryption issues and must wait for keys to be updated.
+  bool BlockForEncryption() const;
+
   // Takes |commit_entity| populated from fields of WorkerEntityTracker and
   // adjusts some fields before committing to server. Adjustments include
   // generating client-assigned ID, encrypting data, etc.
@@ -119,6 +127,17 @@ class ModelTypeWorker : public UpdateHandler,
   // it to the processor for application. Will forward any new encryption
   // keys to the processor to trigger re-encryption if necessary.
   void OnCryptographerUpdated();
+
+  // Updates the encryption key name stored in |model_type_state_| if it differs
+  // from the default encryption key name in |cryptographer_|. Returns whether
+  // an update occured.
+  bool UpdateEncryptionKeyName();
+
+  // Iterates through all elements in |entities_| and tries to decrypt anything
+  // that has encrypted data. Also updates |has_encrypted_updates_| to reflect
+  // whether anything in |entities_| was not decryptable by |cryptographer_|.
+  // Should only be called during a GetUpdates cycle.
+  void DecryptedStoredEntities();
 
   // Attempts to decrypt the given specifics and return them in the |out|
   // parameter. Assumes cryptographer_->CanDecrypt(specifics) returned true.
@@ -172,6 +191,9 @@ class ModelTypeWorker : public UpdateHandler,
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.
   UpdateResponseDataList pending_updates_;
+
+  // Whether there are outstanding encrypted updates in |entities_|.
+  bool has_encrypted_updates_ = false;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;

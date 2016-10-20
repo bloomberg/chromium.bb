@@ -260,7 +260,14 @@ void ModelTypeRegistry::OnPassphraseRequired(
     PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {}
 
-void ModelTypeRegistry::OnPassphraseAccepted() {}
+void ModelTypeRegistry::OnPassphraseAccepted() {
+  for (ScopedVector<ModelTypeWorker>::iterator it = model_type_workers_.begin();
+       it != model_type_workers_.end(); ++it) {
+    if (encrypted_types_.Has((*it)->GetModelType())) {
+      (*it)->EncryptionAcceptedApplyUpdates();
+    }
+  }
+}
 
 void ModelTypeRegistry::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
@@ -268,6 +275,11 @@ void ModelTypeRegistry::OnBootstrapTokenUpdated(
 
 void ModelTypeRegistry::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                                 bool encrypt_everything) {
+  // TODO(skym): This does not handle reducing the number of encrypted types
+  // correctly. They're removed from |encrypted_types_| but corresponding
+  // workers never have their Cryptographers removed. This probably is not a use
+  // case that currently needs to be supported, but it should be guarded against
+  // here.
   encrypted_types_ = encrypted_types;
   OnEncryptionStateChanged();
 }
