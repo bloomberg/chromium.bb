@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 
@@ -26,7 +27,8 @@ std::string GetCanonicalizedEmailForIdentity(ChromeIdentity* identity) {
 }
 
 bool ShouldHandleSigninError(NSError* error) {
-  ios::SigninErrorProvider* provider = ios::GetSigninErrorProvider();
+  ios::SigninErrorProvider* provider =
+      ios::GetChromeBrowserProvider()->GetSigninErrorProvider();
   return ![provider->GetSigninErrorDomain() isEqualToString:error.domain] ||
          (error.code != provider->GetCode(ios::SigninError::CANCELED) &&
           error.code !=

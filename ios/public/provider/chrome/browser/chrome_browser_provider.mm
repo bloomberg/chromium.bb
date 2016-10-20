@@ -46,6 +46,10 @@ InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
   return nullptr;
 }
 
+SigninErrorProvider* ChromeBrowserProvider::GetSigninErrorProvider() {
+  return nullptr;
+}
+
 SigninResourcesProvider* ChromeBrowserProvider::GetSigninResourcesProvider() {
   return nullptr;
 }
