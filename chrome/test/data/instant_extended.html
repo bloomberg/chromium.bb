@@ -4,19 +4,11 @@
 
 var apiHandle;
 var newTabPageHandle;
-var savedUserText = null;
-var suggestionIndex = -1;
-var suggestions = ["result 1", "result 2", "http://www.google.com"];
 var suggestion;
-var suggestionType = 0;  // INSTANT_SUGGESTION_SEARCH
-var behavior = 2;  // INSTANT_COMPLETE_NEVER
 var onMostVisitedChangedCalls = 0;
 var mostVisitedItemsCount = 0;
 var firstMostVisitedItemId = 0;
-var onNativeSuggestionsCalls = 0;
-var onChangeCalls = 0;
 var submitCount = 0;
-var onEscKeyPressedCalls = 0;
 var onFocusChangedCalls = 0;
 var prefetchQuery = '';
 var isFocused = false;
@@ -41,59 +33,9 @@ function getNewTabPageHandle() {
   return null;
 }
 
-function handleNativeSuggestions() {
-  onNativeSuggestionsCalls++;
-  // Showing the loader at 100% height.
-  apiHandle.hideBars();
-  apiHandle.showOverlay();
-}
-
 function handleSubmit() {
   location.hash = 'q=' + encodeURIComponent(apiHandle.value);
   submitCount++;
-}
-
-function handleOnChange() {
-  onChangeCalls++;
-  savedUserText = apiHandle.value;
-  suggestionIndex = -1;
-  apiHandle.setAutocompleteText(suggestion, behavior);
-}
-
-function nextSuggestion() {
-  if (suggestionIndex < suggestions.length - 1) {
-    suggestionIndex++;
-    apiHandle.setValue(suggestions[suggestionIndex], suggestionType);
-  }
-}
-
-function previousSuggestion() {
-  if (suggestionIndex != -1) {
-    suggestionIndex--;
-    if (suggestionIndex == -1) {
-      apiHandle.setValue(savedUserText, suggestionType);
-    } else {
-      apiHandle.setValue(suggestions[suggestionIndex], suggestionType);
-    }
-  }
-}
-
-function handleKeyPress(event) {
-  var VKEY_ESCAPE = 0x1B;
-  var VKEY_UP = 0x26;
-  var VKEY_DOWN = 0x28;
-
-  if (event.keyCode == VKEY_ESCAPE) {
-    onEscKeyPressedCalls++;
-    if (suggestionIndex != -1) {
-      suggestionIndex = -1;
-      apiHandle.setAutocompleteText(suggestion, behavior);
-    }
-  } else if (event.keyCode == VKEY_DOWN) {
-    nextSuggestion();
-  } else if (event.keyCode == VKEY_UP) {
-    previousSuggestion();
-  }
 }
 
 function handleMostVisitedChange() {
@@ -127,19 +69,13 @@ function setUp() {
   if (!apiHandle)
     return;
 
-  newTabPageHandle = getNewTabPageHandle();
-  apiHandle.onnativesuggestions = handleNativeSuggestions;
   apiHandle.onsubmit = handleSubmit;
-  apiHandle.onchange = handleOnChange;
-  apiHandle.onkeypress = handleKeyPress;
   apiHandle.onfocuschange = handleFocusChange;
   apiHandle.onsuggestionchange = handleSuggestionChange;
+
+  newTabPageHandle = getNewTabPageHandle();
   newTabPageHandle.onmostvisitedchange = handleMostVisitedChange;
   newTabPageHandle.onthemechange = handleThemeChange;
-  if (apiHandle.value) {
-    handleNativeSuggestions();
-    handleOnChange();
-  }
   if (newTabPageHandle.mostVisited && newTabPageHandle.mostVisited.length) {
     handleMostVisitedChange();
   }
