@@ -4,6 +4,12 @@
 
 import("//testing/test.gni")
 
+declare_args() {
+  # Tests may not be appropriate for some build environments, e.g. Windows.
+  # Rather than enumerate valid options, we just let clients ask for them.
+  build_libsrtp_tests = false
+}
+
 config("libsrtp_config") {
   defines = [
     # Package identity
@@ -114,14 +120,7 @@ static_library("libsrtp") {
   ]
 }
 
-if (is_win) {
-  # Don't build tests on Windows. Upstream doesn't, so we can't assume the
-  # tests will compile or run.
-
-  group("srtp_tests") {
-    testonly = true
-  }
-} else {
+if (build_libsrtp_tests) {
   config("srtp_test_config") {
     include_dirs = [ "test" ]
     configs = [ ":libsrtp_warnings" ]
