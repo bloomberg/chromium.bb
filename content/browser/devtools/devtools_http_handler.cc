@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -653,8 +652,9 @@ void DevToolsHttpHandler::OnWebSocketRequest(
             thread_->task_runner(),
             base::Bind(&DevToolsSocketFactory::CreateForTethering,
                        base::Unretained(socket_factory_)));
-    connection_to_client_[connection_id] = new DevToolsAgentHostClientImpl(
-        thread_->message_loop(), server_wrapper_, connection_id, browser_agent);
+    connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
+        thread_->message_loop(), server_wrapper_, connection_id,
+        browser_agent));
     AcceptWebSocket(connection_id, request);
     return;
   }
@@ -678,9 +678,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     return;
   }
 
-  DevToolsAgentHostClientImpl* client_host = new DevToolsAgentHostClientImpl(
-      thread_->message_loop(), server_wrapper_, connection_id, agent);
-  connection_to_client_[connection_id] = client_host;
+  connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
+      thread_->message_loop(), server_wrapper_, connection_id, agent));
 
   AcceptWebSocket(connection_id, request);
 }
@@ -695,12 +694,7 @@ void DevToolsHttpHandler::OnWebSocketMessage(
 }
 
 void DevToolsHttpHandler::OnClose(int connection_id) {
-  ConnectionToClientMap::iterator it =
-      connection_to_client_.find(connection_id);
-  if (it != connection_to_client_.end()) {
-    delete it->second;
-    connection_to_client_.erase(connection_id);
-  }
+  connection_to_client_.erase(connection_id);
 }
 
 DevToolsHttpHandler::DevToolsHttpHandler(

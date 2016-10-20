@@ -120,7 +120,8 @@ class DevToolsHttpHandler {
   std::string user_agent_;
   ServerWrapper* server_wrapper_;
   std::unique_ptr<net::IPEndPoint> server_ip_address_;
-  typedef std::map<int, DevToolsAgentHostClientImpl*> ConnectionToClientMap;
+  using ConnectionToClientMap =
+      std::map<int, std::unique_ptr<DevToolsAgentHostClientImpl>>;
   ConnectionToClientMap connection_to_client_;
   DevToolsManagerDelegate* delegate_;
   DevToolsSocketFactory* socket_factory_;
