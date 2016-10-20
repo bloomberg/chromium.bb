@@ -78,6 +78,8 @@ public class ContextualSearchFieldTrial {
     @VisibleForTesting
     static final String ONLINE_DETECTION_DISABLED = "disable_online_detection";
 
+    private static final String ENABLE_AMP_AS_SEPARATE_TAB = "enable_amp_as_separate_tab";
+
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -101,6 +103,7 @@ public class ContextualSearchFieldTrial {
     private static Integer sSuppressionTaps;
     private static Boolean sIsContextualCardsBarIntegrationEnabled;
     private static Boolean sIsOnlineDetectionDisabled;
+    private static Boolean sIsAmpAsSeparateTabEnabled;
 
     /**
      * Don't instantiate.
@@ -370,6 +373,16 @@ public class ContextualSearchFieldTrial {
             sSuppressionTaps = getIntParamValueOrDefault(SUPPRESSION_TAPS, 0);
         }
         return sSuppressionTaps.intValue();
+    }
+
+    /**
+     * @return Whether to auto-promote clicks in the AMP carousel into a separate Tab.
+     */
+    static boolean isAmpAsSeparateTabEnabled() {
+        if (sIsAmpAsSeparateTabEnabled == null) {
+            sIsAmpAsSeparateTabEnabled = getBooleanParam(ENABLE_AMP_AS_SEPARATE_TAB);
+        }
+        return sIsAmpAsSeparateTabEnabled;
     }
 
     // TODO(donnd): Remove once bar-integration is fully landed if still unused (native only).

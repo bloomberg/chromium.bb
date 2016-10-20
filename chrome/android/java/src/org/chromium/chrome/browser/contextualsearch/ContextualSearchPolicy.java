@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
@@ -27,6 +28,8 @@ import javax.annotation.Nullable;
  */
 class ContextualSearchPolicy {
     private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
+    private static final String DOMAIN_GOOGLE = "google";
+    private static final String PATH_AMP = "/amp/";
     private static final int REMAINING_NOT_APPLICABLE = -1;
     private static final int ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
     private static final int TAP_TRIGGERED_PROMO_LIMIT = 50;
@@ -399,6 +402,14 @@ class ContextualSearchPolicy {
     boolean isContextualSearchJsApiEnabled() {
         // Quick answers requires the JS API.
         return ContextualSearchFieldTrial.isQuickAnswersEnabled();
+    }
+
+    /**
+     * @return Whether the given URL is used for Accelerated Mobile Pages by Google.
+     */
+    boolean isAmpUrl(String url) {
+        Uri uri = Uri.parse(url);
+        return uri.getHost().contains(DOMAIN_GOOGLE) && uri.getPath().startsWith(PATH_AMP);
     }
 
     // --------------------------------------------------------------------------------------------
