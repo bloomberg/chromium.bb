@@ -693,12 +693,12 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
   if (exploded_expiry.day_of_month > exploded_start.day_of_month)
     ++month_diff;
 
-  static const base::Time time_2012_07_01 =
-      base::Time::FromUTCExploded({2012, 7, 0, 1, 0, 0, 0, 0});
-  static const base::Time time_2015_04_01 =
-      base::Time::FromUTCExploded({2015, 4, 0, 1, 0, 0, 0, 0});
-  static const base::Time time_2019_07_01 =
-      base::Time::FromUTCExploded({2019, 7, 0, 1, 0, 0, 0, 0});
+  const base::Time time_2012_07_01 =
+      base::Time::FromInternalValue(12985574400000000);
+  const base::Time time_2015_04_01 =
+      base::Time::FromInternalValue(13072320000000000);
+  const base::Time time_2019_07_01 =
+      base::Time::FromInternalValue(13206412800000000);
 
   // For certificates issued before the BRs took effect.
   if (start < time_2012_07_01 && (month_diff > 120 || expiry > time_2019_07_01))
