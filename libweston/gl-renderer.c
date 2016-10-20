@@ -163,7 +163,8 @@ struct gl_surface_state {
 
 	/* Extension needed for SHM YUV texture */
 	int offset[3]; /* offset per plane */
-	int hvsub[3];  /* horizontal vertical subsampling per plane */
+	int hsub[3];  /* horizontal subsampling per plane */
+	int vsub[3];  /* vertical subsampling per plane */
 
 	struct weston_surface *surface;
 
@@ -1272,8 +1273,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
 			glTexImage2D(GL_TEXTURE_2D, 0,
 				     gs->gl_format[j],
-				     gs->pitch / gs->hvsub[j],
-				     buffer->height / gs->hvsub[j],
+				     gs->pitch / gs->hsub[j],
+				     buffer->height / gs->vsub[j],
 				     0,
 				     gs->gl_format[j],
 				     gs->gl_pixel_type,
@@ -1294,8 +1295,8 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
 			glTexImage2D(GL_TEXTURE_2D, 0,
 				     gs->gl_format[j],
-				     gs->pitch / gs->hvsub[j],
-				     buffer->height / gs->hvsub[j],
+				     gs->pitch / gs->hsub[j],
+				     buffer->height / gs->vsub[j],
 				     0,
 				     gs->gl_format[j],
 				     gs->gl_pixel_type,
@@ -1317,10 +1318,10 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		for (j = 0; j < gs->num_textures; j++) {
 			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
 			glTexSubImage2D(GL_TEXTURE_2D, 0,
-					r.x1 / gs->hvsub[j],
-					r.y1 / gs->hvsub[j],
-					(r.x2 - r.x1) / gs->hvsub[j],
-					(r.y2 - r.y1) / gs->hvsub[j],
+					r.x1 / gs->hsub[j],
+					r.y1 / gs->vsub[j],
+					(r.x2 - r.x1) / gs->hsub[j],
+					(r.y2 - r.y1) / gs->vsub[j],
 					gs->gl_format[j],
 					gs->gl_pixel_type,
 					data + gs->offset[j]);
@@ -1374,7 +1375,8 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 
 	num_planes = 1;
 	gs->offset[0] = 0;
-	gs->hvsub[0] = 1;
+	gs->hsub[0] = 1;
+	gs->vsub[0] = 1;
 
 	switch (wl_shm_buffer_get_format(shm_buffer)) {
 	case WL_SHM_FORMAT_XRGB8888:
@@ -1400,12 +1402,14 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		pitch = wl_shm_buffer_get_stride(shm_buffer);
 		gl_pixel_type = GL_UNSIGNED_BYTE;
 		num_planes = 3;
-		gs->offset[1] = gs->offset[0] + (pitch / gs->hvsub[0]) *
-					    (buffer->height / gs->hvsub[0]);
-		gs->hvsub[1] = 2;
-		gs->offset[2] = gs->offset[1] + (pitch / gs->hvsub[1]) *
-					    (buffer->height / gs->hvsub[1]);
-		gs->hvsub[2] = 2;
+		gs->offset[1] = gs->offset[0] + (pitch / gs->hsub[0]) *
+				(buffer->height / gs->vsub[0]);
+		gs->hsub[1] = 2;
+		gs->vsub[1] = 2;
+		gs->offset[2] = gs->offset[1] + (pitch / gs->hsub[1]) *
+				(buffer->height / gs->vsub[1]);
+		gs->hsub[2] = 2;
+		gs->vsub[2] = 2;
 		if (gr->has_gl_texture_rg) {
 			gl_format[0] = GL_R8_EXT;
 			gl_format[1] = GL_R8_EXT;
@@ -1421,8 +1425,10 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		pitch = wl_shm_buffer_get_stride(shm_buffer);
 		gl_pixel_type = GL_UNSIGNED_BYTE;
 		num_planes = 2;
-		gs->offset[1] = gs->offset[0] + (pitch / gs->hvsub[0]) * (buffer->height / gs->hvsub[0]);
-		gs->hvsub[1] = 2;
+		gs->offset[1] = gs->offset[0] + (pitch / gs->hsub[0]) *
+				(buffer->height / gs->vsub[0]);
+		gs->hsub[1] = 2;
+		gs->vsub[1] = 2;
 		if (gr->has_gl_texture_rg) {
 			gl_format[0] = GL_R8_EXT;
 			gl_format[1] = GL_RG8_EXT;
@@ -1430,6 +1436,19 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 			gl_format[0] = GL_LUMINANCE;
 			gl_format[1] = GL_LUMINANCE_ALPHA;
 		}
+		break;
+	case WL_SHM_FORMAT_YUYV:
+		gs->shader = &gr->texture_shader_y_xuxv;
+		pitch = wl_shm_buffer_get_stride(shm_buffer) / 2;
+		gl_pixel_type = GL_UNSIGNED_BYTE;
+		num_planes = 2;
+		gs->hsub[1] = 2;
+		gs->vsub[1] = 1;
+		if (gr->has_gl_texture_rg)
+			gl_format[0] = GL_RG8_EXT;
+		else
+			gl_format[0] = GL_LUMINANCE_ALPHA;
+		gl_format[1] = GL_BGRA_EXT;
 		break;
 	default:
 		weston_log("warning: unknown shm buffer format: %08x\n",
@@ -3139,6 +3158,7 @@ gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_YUV420);
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_NV12);
+	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_YUYV);
 
 	wl_signal_init(&gr->destroy_signal);
 
