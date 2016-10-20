@@ -398,11 +398,22 @@ static void runAutofocusTask(ExecutionContext* context) {
   }
 }
 
-static void recordLoadReasonToHistogram(WouldLoadReason reason) {
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, unseenFrameHistogram,
-      ("Navigation.DeferredDocumentLoading.StatesV2", WouldLoadReasonEnd));
-  unseenFrameHistogram.count(reason);
+// These are logged to UMA, so don't re-arrange them without creating a new
+// histogram.
+enum DocumentVisibilityForDeferredLoading {
+  Created,
+  WouldLoadBecauseVisible,
+  // TODO(dgrogan): Add WouldLoadBecauseTopOrLeft, WouldLoadBecauseDisplayNone,
+  // etc
+
+  DocumentVisibilityForDeferredLoadingEnd
+};
+
+static void RecordStateToHistogram(DocumentVisibilityForDeferredLoading state) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, unseenFrameHistogram,
+                      ("Navigation.DeferredDocumentLoading.StatesV1",
+                       DocumentVisibilityForDeferredLoadingEnd));
+  unseenFrameHistogram.count(state);
 }
 
 Document::Document(const DocumentInit& initializer,
@@ -487,7 +498,7 @@ Document::Document(const DocumentInit& initializer,
       m_hasViewportUnits(false),
       m_parserSyncPolicy(AllowAsynchronousParsing),
       m_nodeCount(0),
-      m_wouldLoadReason(Created) {
+      m_visibilityWasLogged(false) {
   if (m_frame) {
     DCHECK(m_frame->page());
     provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
@@ -518,6 +529,11 @@ Document::Document(const DocumentInit& initializer,
     setURL(initializer.url());
 
   initSecurityContext(initializer);
+  DCHECK(getSecurityOrigin());
+  if (frame() && frame()->tree().top()->securityContext() &&
+      !getSecurityOrigin()->canAccess(
+          frame()->tree().top()->securityContext()->getSecurityOrigin()))
+    RecordStateToHistogram(Created);
 
   initDNSPrefetch();
 
@@ -6355,14 +6371,12 @@ DEFINE_TRACE(Document) {
   SecurityContext::trace(visitor);
 }
 
-void Document::maybeRecordLoadReason(WouldLoadReason reason) {
-  DCHECK(m_wouldLoadReason == Created || reason != Created);
+void Document::onVisibilityMaybeChanged(bool visible) {
   DCHECK(frame());
-  if (m_wouldLoadReason == Created && frame()->isCrossOriginSubframe() &&
-      frame()->loader().stateMachine()->committedFirstRealDocumentLoad()) {
-    recordLoadReasonToHistogram(reason);
+  if (visible && !m_visibilityWasLogged && frame()->isCrossOriginSubframe()) {
+    m_visibilityWasLogged = true;
+    RecordStateToHistogram(WouldLoadBecauseVisible);
   }
-  m_wouldLoadReason = reason;
 }
 
 DEFINE_TRACE_WRAPPERS(Document) {
