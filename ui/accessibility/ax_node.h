@@ -77,7 +77,7 @@ class AX_EXPORT AXNode {
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.
   void ComputeLineStartOffsets(std::vector<int>* line_offsets,
-                               int* end_offset) const;
+                               int* start_offset) const;
 
   int index_in_parent_;
   AXNode* parent_;

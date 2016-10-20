@@ -40,6 +40,9 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
+  auto lines = node.GetLineStartOffsets();
+  for (auto& l : lines)
+    DLOG(ERROR) << "Nektar: ui::ToString(node.GetData().role)" << l;
 
   dict->SetString("internalRole", ui::ToString(node.GetData().role));
 
