@@ -491,8 +491,10 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections,
     // elements to trace.
     size_t length = header->payloadSize() / sizeof(T);
     if (std::is_polymorphic<T>::value) {
-      for (size_t i = 0; i < length; ++i) {
-        if (blink::vTableInitialized(&array[i]))
+      char* pointer = reinterpret_cast<char*>(array);
+      for (unsigned i = 0; i < length; ++i) {
+        char* element = pointer + i * sizeof(T);
+        if (blink::vTableInitialized(element))
           blink::TraceIfEnabled<
               T, IsTraceableInCollectionTrait<Traits>::value>::trace(visitor,
                                                                      array[i]);

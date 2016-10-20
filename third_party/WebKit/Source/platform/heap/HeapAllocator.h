@@ -306,9 +306,11 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer) {
   ANNOTATE_CHANGE_SIZE(buffer, length, 0, length);
 #endif
   if (std::is_polymorphic<T>::value) {
+    char* pointer = reinterpret_cast<char*>(buffer);
     for (unsigned i = 0; i < length; ++i) {
-      if (blink::vTableInitialized(&buffer[i]))
-        buffer[i].~T();
+      char* element = pointer + i * sizeof(T);
+      if (blink::vTableInitialized(element))
+        reinterpret_cast<T*>(element)->~T();
     }
   } else {
     for (unsigned i = 0; i < length; ++i) {
