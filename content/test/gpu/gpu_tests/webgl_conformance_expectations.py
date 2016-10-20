@@ -189,7 +189,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Win / OpenGL / AMD failures
     self.Skip('conformance/attribs/gl-bindAttribLocation-aliasing.html',
-        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
+        ['win', 'amd', 'opengl'], bug=649824)
     self.Flaky('conformance/attribs/gl-bindAttribLocation-matrix.html',
         ['win', ('amd', 0x6779), 'opengl'], bug=649824)
     self.Flaky('conformance/attribs/gl-bindAttribLocation-repeated.html',
