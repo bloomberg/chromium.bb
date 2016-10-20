@@ -431,6 +431,13 @@ message CommitMessage {
 
   // Set of optional per-client datatype contexts.
   repeated DataTypeContext client_contexts = 5;
+
+  // This field need to be 256 bytes if set. This attempts to mitigate CRIME
+  // attacks when sync communicate from client to server with compression. So if
+  // compression is used, this need to set a 256 random ASCII bytes. If no
+  // compression, this field should not be set. The server can ignore the
+  // padding.
+  optional string padding = 6;
 };
 
 // This message communicates additional per-type information related to

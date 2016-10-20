@@ -28,6 +28,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace syncer {
 
@@ -61,6 +62,10 @@ void RecordSyncResponseContentLengthHistograms(
 }
 
 }  // namespace
+
+// Enables compression of messages from client to server.
+const base::Feature kSyncClientToServerCompression{
+    "EnableSyncClientToServerCompression", base::FEATURE_DISABLED_BY_DEFAULT};
 
 HttpBridgeFactory::HttpBridgeFactory(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
@@ -240,8 +245,15 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_poster->SetRequestContext(request_context_getter_.get());
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
 
-  fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
-  RecordSyncRequestContentLengthHistograms(request_content_.size(),
+  std::string request_to_send;
+  if (base::FeatureList::IsEnabled(kSyncClientToServerCompression)) {
+    compression::GzipCompress(request_content_, &request_to_send);
+    fetch_state_.url_poster->AddExtraRequestHeader("Content-Encoding: gzip");
+  } else {
+    request_to_send = request_content_;
+  }
+  fetch_state_.url_poster->SetUploadData(content_type_, request_to_send);
+  RecordSyncRequestContentLengthHistograms(request_to_send.size(),
                                            request_content_.size());
 
   fetch_state_.url_poster->AddExtraRequestHeader(base::StringPrintf(

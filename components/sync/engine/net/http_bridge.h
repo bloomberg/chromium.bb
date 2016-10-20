@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -38,6 +39,7 @@ class URLRequestJobFactory;
 namespace syncer {
 
 class CancelationSignal;
+extern const base::Feature kSyncClientToServerCompression;
 
 // A bridge between the syncer and Chromium HTTP layers.
 // Provides a way for the sync backend to use Chromium directly for HTTP

@@ -561,6 +561,7 @@ static_library("sync") {
     "//third_party/cacheinvalidation",
     "//third_party/leveldatabase",
     "//third_party/zlib",
+    "//third_party/zlib:compression_utils",
     "//url",
   ]
 
