@@ -177,7 +177,7 @@ void AppBindings::OnAppInstallStateResponse(
     v8::String::NewFromUtf8(isolate, state.c_str()),
     v8::Integer::New(isolate, callback_id)
   };
-  context()->module_system()->CallModuleMethod(
+  context()->module_system()->CallModuleMethodSafe(
       "app", "onInstallStateResponse", arraysize(argv), argv);
 }
 

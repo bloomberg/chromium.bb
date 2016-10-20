@@ -214,7 +214,7 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
     v8::String::NewFromUtf8(
         isolate, api::webstore::kInstallResultCodes[static_cast<int>(result)])
   };
-  context()->module_system()->CallModuleMethod(
+  context()->module_system()->CallModuleMethodSafe(
       "webstore", "onInstallResponse", arraysize(argv), argv);
 }
 
@@ -235,7 +235,7 @@ void WebstoreBindings::OnInlineInstallStageChanged(int stage) {
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Local<v8::Value> argv[] = {
       v8::String::NewFromUtf8(isolate, stage_string)};
-  context()->module_system()->CallModuleMethod(
+  context()->module_system()->CallModuleMethodSafe(
       "webstore", "onInstallStageChanged", arraysize(argv), argv);
 }
 
@@ -245,7 +245,7 @@ void WebstoreBindings::OnInlineInstallDownloadProgress(int percent_downloaded) {
   v8::Context::Scope context_scope(context()->v8_context());
   v8::Local<v8::Value> argv[] = {
       v8::Number::New(isolate, percent_downloaded / 100.0)};
-  context()->module_system()->CallModuleMethod(
+  context()->module_system()->CallModuleMethodSafe(
       "webstore", "onDownloadProgress", arraysize(argv), argv);
 }
 

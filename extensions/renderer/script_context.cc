@@ -257,8 +257,8 @@ void ScriptContext::DispatchEvent(const char* event_name,
 
   v8::Local<v8::Value> argv[] = {v8::String::NewFromUtf8(isolate(), event_name),
                                  args};
-  module_system_->CallModuleMethod(
-      kEventBindings, "dispatchEvent", arraysize(argv), argv);
+  module_system_->CallModuleMethodSafe(kEventBindings, "dispatchEvent",
+                                       arraysize(argv), argv);
 }
 
 std::string ScriptContext::GetContextTypeDescription() const {

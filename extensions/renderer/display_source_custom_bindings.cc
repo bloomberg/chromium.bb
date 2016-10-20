@@ -232,8 +232,8 @@ void DisplaySourceCustomBindings::OnCallCompleted(
   else
     callback_args[1] = v8::String::NewFromUtf8(isolate, error_message.c_str());
 
-  module_system->CallModuleMethod("displaySource", "callCompletionCallback", 2,
-                                  callback_args);
+  module_system->CallModuleMethodSafe("displaySource", "callCompletionCallback",
+                                      2, callback_args);
 }
 
 void DisplaySourceCustomBindings::OnSessionStarted(
