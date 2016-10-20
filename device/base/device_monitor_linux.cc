@@ -22,8 +22,8 @@ const char kUdevActionAdd[] = "add";
 const char kUdevActionRemove[] = "remove";
 
 // The instance will be reset when message loop destroys.
-base::LazyInstance<std::unique_ptr<DeviceMonitorLinux>>::Leaky
-    g_device_monitor_linux_ptr = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<DeviceMonitorLinux>::Leaky g_device_monitor_linux =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -62,9 +62,7 @@ DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
 
 // static
 DeviceMonitorLinux* DeviceMonitorLinux::GetInstance() {
-  if (!g_device_monitor_linux_ptr.Get().get())
-    g_device_monitor_linux_ptr.Get().reset(new DeviceMonitorLinux());
-  return g_device_monitor_linux_ptr.Get().get();
+  return g_device_monitor_linux.Pointer();
 }
 
 void DeviceMonitorLinux::AddObserver(Observer* observer) {
@@ -106,13 +104,11 @@ void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : observers_)
     observer.WillDestroyMonitorMessageLoop();
-  g_device_monitor_linux_ptr.Get().reset(nullptr);
 }
 
 DeviceMonitorLinux::~DeviceMonitorLinux() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-  close(monitor_fd_);
+  // A leaky LazyInstance is never destroyed.
+  NOTREACHED();
 }
 
 void DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking() {
