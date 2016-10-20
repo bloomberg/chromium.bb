@@ -537,8 +537,14 @@ void MenuController::Cancel(ExitType type) {
   // teardown of the platform specific drag-and-drop Widget. Do not shutdown
   // while dragging, leave the Widget hidden until drag-and-drop has completed,
   // at which point all menus will be destroyed.
+  //
+  // If |type| is EXIT_ALL we update the state of the menu to not showing. So
+  // that during the completion of a drag we are not incorrectly reporting the
+  // visual state.
   if (!drag_in_progress_)
     ExitAsyncRun();
+  else if (type == EXIT_ALL)
+    showing_ = false;
 }
 
 void MenuController::AddNestedDelegate(
@@ -1021,11 +1027,23 @@ void MenuController::OnDragComplete(bool should_close) {
   // the event target.
   current_mouse_pressed_state_ = 0;
   current_mouse_event_target_ = nullptr;
-  if (showing_ && should_close && GetActiveInstance() == this) {
-    CloseAllNestedMenus();
-    Cancel(EXIT_ALL);
-  } else if (async_run_) {
-    ExitAsyncRun();
+
+  // Only attempt to close if the MenuHost said to.
+  if (should_close) {
+    if (showing_) {
+      // Close showing widgets.
+      if (GetActiveInstance() == this) {
+        CloseAllNestedMenus();
+        Cancel(EXIT_ALL);
+      }
+      // The above may have deleted us. If not perform a full shutdown.
+      if (GetActiveInstance() == this)
+        ExitAsyncRun();
+    } else if (exit_type_ == EXIT_ALL) {
+      // We may have been canceled during the drag. If so we still need to fully
+      // shutdown.
+      ExitAsyncRun();
+    }
   }
 }
 

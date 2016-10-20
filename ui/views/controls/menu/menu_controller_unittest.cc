@@ -318,6 +318,21 @@ class MenuControllerTest : public ViewsTestBase {
   }
 #endif  // defined(USE_AURA)
 
+  // Verifies the state of the |menu_controller_| before destroying it.
+  void VerifyDragCompleteThenDestroy() {
+    EXPECT_FALSE(menu_controller()->drag_in_progress());
+    EXPECT_EQ(MenuController::EXIT_ALL, menu_controller()->exit_type());
+    DestroyMenuController();
+  }
+
+  // Setups |menu_controller_delegate_| to be destroyed when OnMenuClosed is
+  // called.
+  void TestDragCompleteThenDestroyOnMenuClosed() {
+    menu_controller_delegate_->set_on_menu_closed_callback(
+        base::Bind(&MenuControllerTest::VerifyDragCompleteThenDestroy,
+                   base::Unretained(this)));
+  }
+
   void TestAsynchronousNestedExitAll() {
     ASSERT_TRUE(test_message_loop_->is_running());
 
@@ -1096,17 +1111,34 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
 TEST_F(MenuControllerTest, AsynchronousDragComplete) {
   MenuController* controller = menu_controller();
   controller->SetAsyncRun(true);
+  TestDragCompleteThenDestroyOnMenuClosed();
 
   controller->OnDragWillStart();
   controller->OnDragComplete(true);
 
-  EXPECT_FALSE(controller->drag_in_progress());
   TestMenuControllerDelegate* controller_delegate = menu_controller_delegate();
   EXPECT_EQ(1, controller_delegate->on_menu_closed_called());
   EXPECT_EQ(nullptr, controller_delegate->on_menu_closed_menu());
   EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
             controller_delegate->on_menu_closed_notify_type());
-  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+}
+
+// Tests that if Cancel is called during a drag, that OnMenuClosed is still
+// notified when the drag completes.
+TEST_F(MenuControllerTest, AsynchronousCancelDuringDrag) {
+  MenuController* controller = menu_controller();
+  controller->SetAsyncRun(true);
+  TestDragCompleteThenDestroyOnMenuClosed();
+
+  controller->OnDragWillStart();
+  controller->CancelAll();
+  controller->OnDragComplete(true);
+
+  TestMenuControllerDelegate* controller_delegate = menu_controller_delegate();
+  EXPECT_EQ(1, controller_delegate->on_menu_closed_called());
+  EXPECT_EQ(nullptr, controller_delegate->on_menu_closed_menu());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            controller_delegate->on_menu_closed_notify_type());
 }
 
 // Tests that if a menu is destroyed while drag operations are occuring, that
