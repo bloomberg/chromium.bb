@@ -17,6 +17,7 @@
 #include "cc/blimp/client_picture_cache.h"
 #include "cc/blimp/engine_picture_cache.h"
 #include "cc/blimp/picture_data.h"
+#include "third_party/skia/include/core/SkImageDeserializer.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -30,8 +31,7 @@ namespace client {
 // MarkPictureForRegistration and MarkPictureForUnregistration respectively.
 class BlimpClientPictureCache : public cc::ClientPictureCache {
  public:
-  explicit BlimpClientPictureCache(
-      SkPicture::InstallPixelRefProc pixel_deserializer);
+  explicit BlimpClientPictureCache(std::unique_ptr<SkImageDeserializer>);
   ~BlimpClientPictureCache() override;
 
   // cc::ClientPictureCache implementation.
@@ -64,9 +64,9 @@ class BlimpClientPictureCache : public cc::ClientPictureCache {
   std::unordered_set<uint32_t> last_added_;
 #endif  // DCHECK_IS_ON()
 
-  // A function pointer valid to use for deserializing images when
-  // using SkPicture::CreateFromStream to create an SkPicture from a stream.
-  SkPicture::InstallPixelRefProc pixel_deserializer_;
+  // A deserializer used for images when using SkPicture::MakeFromStream
+  // to create an SkPicture from a stream.
+  std::unique_ptr<SkImageDeserializer> image_deserializer_;
 
   // The current cache of SkPictures. The key is the unique ID used by the
   // engine, and the value is the SkPicture itself.

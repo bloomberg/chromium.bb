@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "blimp/client/core/compositor/blimp_client_picture_cache.h"
 
 #include <stdint.h>
@@ -11,6 +12,7 @@
 #include "blimp/test/support/compositor/picture_cache_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -18,13 +20,23 @@ namespace blimp {
 namespace client {
 namespace {
 
-bool FakeImageDecoder(const void* input, size_t input_size, SkBitmap* bitmap) {
-  return true;
-}
+class FakeImageDeserializer final : public SkImageDeserializer {
+ public:
+  sk_sp<SkImage> makeFromData(SkData* data, const SkIRect* subset) override {
+    return nullptr;
+  }
+
+  sk_sp<SkImage> makeFromMemory(const void* data,
+                                size_t size,
+                                const SkIRect* subset) override {
+    return nullptr;
+  }
+};
 
 class BlimpClientPictureCacheTest : public testing::Test {
  public:
-  BlimpClientPictureCacheTest() : cache_(&FakeImageDecoder) {}
+  BlimpClientPictureCacheTest()
+      : cache_(base::MakeUnique<FakeImageDeserializer>()) {}
   ~BlimpClientPictureCacheTest() override = default;
 
  protected:

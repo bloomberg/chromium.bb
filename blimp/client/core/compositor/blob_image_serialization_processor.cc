@@ -19,10 +19,35 @@
 #include "blimp/common/blob_cache/id_util.h"
 #include "blimp/common/proto/blob_cache.pb.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blimp {
 namespace client {
+namespace {
+class BlobImageDeserializer final : public SkImageDeserializer {
+ public:
+  sk_sp<SkImage> makeFromData(SkData* data, const SkIRect* subset) override {
+    return makeFromMemory(data->data(), data->size(), subset);
+  }
+
+  sk_sp<SkImage> makeFromMemory(const void* data,
+                                size_t size,
+                                const SkIRect* subset) override {
+    sk_sp<SkImage> img;
+    SkBitmap bitmap;
+    const auto& processor = BlobImageSerializationProcessor::current();
+    if (processor->GetAndDecodeBlob(data, size, &bitmap)) {
+      img = SkImage::MakeFromBitmap(bitmap);
+      if (img && subset) {
+        img = img->makeSubset(*subset);
+      }
+    }
+    return img;
+  }
+};
+}  // namespace
 
 BlobImageSerializationProcessor*
     BlobImageSerializationProcessor::current_instance_ = nullptr;
@@ -39,13 +64,6 @@ BlobImageSerializationProcessor::BlobImageSerializationProcessor() {
 
 BlobImageSerializationProcessor::~BlobImageSerializationProcessor() {
   current_instance_ = nullptr;
-}
-
-// static
-bool BlobImageSerializationProcessor::InstallPixelRefProc(const void* input,
-                                                          size_t input_size,
-                                                          SkBitmap* bitmap) {
-  return current()->GetAndDecodeBlob(input, input_size, bitmap);
 }
 
 bool BlobImageSerializationProcessor::GetAndDecodeBlob(const void* input,
@@ -93,7 +111,7 @@ BlobImageSerializationProcessor::CreateEnginePictureCache() {
 std::unique_ptr<cc::ClientPictureCache>
 BlobImageSerializationProcessor::CreateClientPictureCache() {
   return base::MakeUnique<BlimpClientPictureCache>(
-      &BlobImageSerializationProcessor::InstallPixelRefProc);
+      base::MakeUnique<BlobImageDeserializer>());
 }
 
 }  // namespace client

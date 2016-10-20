@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "cc/blimp/image_serialization_processor.h"
+#include "third_party/skia/include/core/SkImageDeserializer.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 class SkBitmap;
 
@@ -54,12 +56,6 @@ class BlobImageSerializationProcessor : public cc::ImageSerializationProcessor {
 
  private:
   friend struct base::DefaultSingletonTraits<BlobImageSerializationProcessor>;
-
-  // Adapts a bare function pointer call to a singleton call to
-  // GetAndDecodeBlob() call on the current() processor.
-  static bool InstallPixelRefProc(const void* input,
-                                  size_t input_size,
-                                  SkBitmap* bitmap);
 
   // cc:ImageSerializationProcessor implementation.
   std::unique_ptr<cc::EnginePictureCache> CreateEnginePictureCache() override;

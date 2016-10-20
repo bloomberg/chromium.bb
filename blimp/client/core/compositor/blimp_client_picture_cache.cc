@@ -16,17 +16,17 @@ namespace {
 // Helper function to deserialize the content of |picture_data| into an
 // SkPicture.
 sk_sp<const SkPicture> DeserializePicture(
-    SkPicture::InstallPixelRefProc pixel_deserializer,
+    SkImageDeserializer* image_deserializer,
     const cc::PictureData& picture_data) {
   SkMemoryStream stream(picture_data.data);
-  return SkPicture::MakeFromStream(&stream, pixel_deserializer);
+  return SkPicture::MakeFromStream(&stream, image_deserializer);
 }
 
 }  // namespace
 
 BlimpClientPictureCache::BlimpClientPictureCache(
-    SkPicture::InstallPixelRefProc pixel_deserializer)
-    : pixel_deserializer_(pixel_deserializer) {}
+    std::unique_ptr<SkImageDeserializer> image_deserializer)
+    : image_deserializer_(std::move(image_deserializer)) {}
 
 BlimpClientPictureCache::~BlimpClientPictureCache() = default;
 
@@ -41,7 +41,7 @@ void BlimpClientPictureCache::ApplyCacheUpdate(
   for (const cc::PictureData& picture_data : cache_update) {
     DCHECK(pictures_.find(picture_data.unique_id) == pictures_.end());
     sk_sp<const SkPicture> deserialized_picture =
-        DeserializePicture(pixel_deserializer_, picture_data);
+        DeserializePicture(image_deserializer_.get(), picture_data);
 
     pictures_[picture_data.unique_id] = std::move(deserialized_picture);
 
