@@ -48,6 +48,62 @@ The explicit list of files being kept, everything else not on this list is
 deleted when running "./checkout.sh reduce". Use this file to control what gets
 checked in and try to keep the list as small as possible (use what you need).
 
+certs/
+======
+This directory contains a private key and a certificate of WPTServe, and files
+for self-signed CA. WPTServe generates them on the fly with "openssl" command in
+the default setting, but we check in pre-generated files to avoid "openssl"
+dependency.
+
+These certificates will expire in January 2025. Here is an instruction to
+re-generate them:
+
+1. Add "openssl" command to PATH.
+2. Apply the following change locally:
+
+diff --git a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json
+index 6243954..84fd3f4 100644
+--- a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json
++++ b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt.config.json
+@@ -9,13 +9,5 @@
+     "https": [8444],
+     "ws": [9001],
+     "wss": [9444]
+-  },
+-  "ssl": {
+-    "type": "pregenerated",
+-    "encrypt_after_connect": false,
+-    "pregenerated": {
+-      "host_key_path": "../certs/127.0.0.1.key",
+-      "host_cert_path": "../certs/127.0.0.1.pem"
+-    }
+   }
+ }
+diff --git a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
+index 5b571c0..223a18b 100644
+--- a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
++++ b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/sslutils/openssl.py
+@@ -207,7 +207,7 @@ class OpenSSLEnvironment(object):
+ 
+     def __init__(self, logger, openssl_binary="openssl", base_path=None,
+                  password="web-platform-tests", force_regenerate=False,
+-                 duration=30, base_conf_path=None):
++                 duration=3000, base_conf_path=None):
+         """SSL environment that creates a local CA and host certificate using OpenSSL.
+ 
+         By default this will look in base_path for existing certificates that are still
+
+3. Run third_party/WebKit/Tools/Scripts/run-blink-wptserve
+4. Type Enter key to terminate it.
+5. Revert the local change.  e.g. git reset --hard HEAD
+6. Replace certs/ with wpt/_certs/
+   % rm -fr certs
+   % mv wpt/_certs certs
+7. Look at *.pem, and update "January 2025" in this document to new expiration
+   date.
+8. git commit -a
+9. git cl upload, etc.
+
 **
 
 Rolling in WPT
