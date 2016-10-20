@@ -272,7 +272,8 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       connection_status(0),
       key_exchange_group(0),
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
-      pkp_bypassed(false) {}
+      pkp_bypassed(false),
+      displayed_private_user_data_input_on_http(false) {}
 
 SecurityStateModel::SecurityInfo::~SecurityInfo() {}
 
