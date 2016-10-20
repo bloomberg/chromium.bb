@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_COMMON_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
-#define MEDIA_MOJO_COMMON_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
+#ifndef MEDIA_MOJO_INTERFACES_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
+#define MEDIA_MOJO_INTERFACES_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
 
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
@@ -46,4 +46,4 @@ struct StructTraits<media::mojom::PipelineStatisticsDataView,
 
 }  // namespace mojo
 
-#endif  // MEDIA_MOJO_COMMON_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
+#endif  // MEDIA_MOJO_INTERFACES_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
