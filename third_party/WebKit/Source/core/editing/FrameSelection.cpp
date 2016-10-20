@@ -1393,7 +1393,9 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position) {
     String text =
         plainText(EphemeralRange(start.deepEquivalent(), end.deepEquivalent()));
     if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
-      setSelection(createVisibleSelection(start, end), WordGranularity);
+      setSelection(createVisibleSelection(start, end),
+                   CloseTyping | ClearTypingStyle,
+                   CursorAlignOnScroll::IfNeeded, WordGranularity);
       return true;
     }
   }
@@ -1442,7 +1444,8 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
   if (newSelection.isNone())
     return;
 
-  setSelection(newSelection, granularity);
+  setSelection(newSelection, CloseTyping | ClearTypingStyle,
+               CursorAlignOnScroll::IfNeeded, granularity);
 }
 
 void FrameSelection::updateIfNeeded() {

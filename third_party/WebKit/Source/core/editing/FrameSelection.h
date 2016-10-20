@@ -141,13 +141,6 @@ class CORE_EXPORT FrameSelection final
                     SetSelectionOptions = CloseTyping | ClearTypingStyle,
                     CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded,
                     TextGranularity = CharacterGranularity);
-  // TODO(yosin) We should get rid of two parameters version of
-  // |setSelection()| to avoid conflict of four parameters version.
-  void setSelection(const VisibleSelection& selection,
-                    TextGranularity granularity) {
-    setSelection(selection, CloseTyping | ClearTypingStyle,
-                 CursorAlignOnScroll::IfNeeded, granularity);
-  }
   bool setSelectedRange(
       const EphemeralRange&,
       TextAffinity,
