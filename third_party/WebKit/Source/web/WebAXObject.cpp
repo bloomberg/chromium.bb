@@ -852,6 +852,13 @@ void WebAXObject::setSelectedTextRange(int selectionStart,
   m_private->setSelection(AXObject::AXRange(selectionStart, selectionEnd));
 }
 
+void WebAXObject::setSequentialFocusNavigationStartingPoint() const {
+  if (isDetached())
+    return;
+
+  m_private->setSequentialFocusNavigationStartingPoint();
+}
+
 void WebAXObject::setValue(WebString value) const {
   if (isDetached())
     return;

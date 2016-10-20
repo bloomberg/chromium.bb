@@ -261,6 +261,7 @@ class WebAXObject {
   BLINK_EXPORT void setFocused(bool) const;
   BLINK_EXPORT void setSelectedTextRange(int selectionStart,
                                          int selectionEnd) const;
+  BLINK_EXPORT void setSequentialFocusNavigationStartingPoint() const;
   BLINK_EXPORT void setValue(WebString) const;
   BLINK_EXPORT void showContextMenu() const;
 

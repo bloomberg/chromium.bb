@@ -208,6 +208,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void setFocused(bool) final;
   void increment() final;
   void decrement() final;
+  void setSequentialFocusNavigationStartingPoint() final;
 
   // Notifications that this object may have changed.
   void childrenChanged() override;

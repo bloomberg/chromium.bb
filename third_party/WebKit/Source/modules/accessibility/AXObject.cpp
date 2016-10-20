@@ -1566,6 +1566,13 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
   }
 }
 
+void AXObject::setSequentialFocusNavigationStartingPoint() {
+  // Call it on the nearest ancestor that overrides this with a specific
+  // implementation.
+  if (parentObject())
+    parentObject()->setSequentialFocusNavigationStartingPoint();
+}
+
 void AXObject::notifyIfIgnoredValueChanged() {
   bool isIgnored = accessibilityIsIgnored();
   if (lastKnownIsIgnoredValue() != isIgnored) {

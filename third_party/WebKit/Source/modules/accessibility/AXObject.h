@@ -963,6 +963,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   void scrollToGlobalPoint(const IntPoint&) const;
   virtual void setFocused(bool) {}
   virtual void setSelected(bool) {}
+  virtual void setSequentialFocusNavigationStartingPoint();
   virtual void setValue(const String&) {}
   virtual void setValue(float) {}
 

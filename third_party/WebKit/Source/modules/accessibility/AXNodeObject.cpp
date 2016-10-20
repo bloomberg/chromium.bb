@@ -2165,6 +2165,13 @@ void AXNodeObject::decrement() {
   alterSliderValue(false);
 }
 
+void AXNodeObject::setSequentialFocusNavigationStartingPoint() {
+  if (!getNode())
+    return;
+
+  getNode()->document().setSequentialFocusNavigationStartingPoint(getNode());
+}
+
 void AXNodeObject::childrenChanged() {
   // This method is meant as a quick way of marking a portion of the
   // accessibility tree dirty.
