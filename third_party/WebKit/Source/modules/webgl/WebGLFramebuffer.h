@@ -26,6 +26,7 @@
 #ifndef WebGLFramebuffer_h
 #define WebGLFramebuffer_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "modules/webgl/WebGLContextObject.h"
 #include "modules/webgl/WebGLSharedObject.h"
 
@@ -144,7 +145,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   GLuint m_object;
 
-  typedef HeapHashMap<GLenum, Member<WebGLAttachment>> AttachmentMap;
+  typedef HeapHashMap<GLenum, TraceWrapperMember<WebGLAttachment>>
+      AttachmentMap;
 
   AttachmentMap m_attachments;
   bool m_destructionInProgress;

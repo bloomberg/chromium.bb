@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/modules/v8/HTMLCanvasElementOrOffscreenCanvas.h"
 #include "bindings/modules/v8/WebGLAny.h"
@@ -979,6 +980,11 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
           &WebGLRenderingContextBase::dispatchContextLostEvent),
       m_restoreAllowed(false),
       m_restoreTimer(this, &WebGLRenderingContextBase::maybeRestoreContext),
+      m_boundArrayBuffer(this, nullptr),
+      m_boundVertexArrayObject(this, nullptr),
+      m_currentProgram(this, nullptr),
+      m_framebufferBinding(this, nullptr),
+      m_renderbufferBinding(this, nullptr),
       m_generatedImageCache(4),
       m_synthesizedErrorsToConsole(true),
       m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole),
@@ -1755,16 +1761,20 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
   }
 
   if (target == GL_TEXTURE_2D) {
-    m_textureUnits[m_activeTextureUnit].m_texture2DBinding = texture;
+    m_textureUnits[m_activeTextureUnit].m_texture2DBinding =
+        TraceWrapperMember<WebGLTexture>(this, texture);
 
     if (!m_activeTextureUnit)
       drawingBuffer()->setTexture2DBinding(objectOrZero(texture));
   } else if (target == GL_TEXTURE_CUBE_MAP) {
-    m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding = texture;
+    m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding =
+        TraceWrapperMember<WebGLTexture>(this, texture);
   } else if (isWebGL2OrHigher() && target == GL_TEXTURE_2D_ARRAY) {
-    m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding = texture;
+    m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding =
+        TraceWrapperMember<WebGLTexture>(this, texture);
   } else if (isWebGL2OrHigher() && target == GL_TEXTURE_3D) {
-    m_textureUnits[m_activeTextureUnit].m_texture3DBinding = texture;
+    m_textureUnits[m_activeTextureUnit].m_texture3DBinding =
+        TraceWrapperMember<WebGLTexture>(this, texture);
   } else {
     synthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");
     return;
@@ -7451,6 +7461,13 @@ DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState) {
   visitor->trace(m_texture2DArrayBinding);
 }
 
+DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase::TextureUnitState) {
+  visitor->traceWrappers(m_texture2DBinding);
+  visitor->traceWrappers(m_textureCubeMapBinding);
+  visitor->traceWrappers(m_texture3DBinding);
+  visitor->traceWrappers(m_texture2DArrayBinding);
+}
+
 DEFINE_TRACE(WebGLRenderingContextBase) {
   visitor->trace(m_contextObjects);
   visitor->trace(m_boundArrayBuffer);
@@ -7474,10 +7491,7 @@ DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase) {
   visitor->traceWrappers(m_currentProgram);
   visitor->traceWrappers(m_boundVertexArrayObject);
   for (auto& unit : m_textureUnits) {
-    visitor->traceWrappers(unit.m_texture2DBinding);
-    visitor->traceWrappers(unit.m_textureCubeMapBinding);
-    visitor->traceWrappers(unit.m_texture3DBinding);
-    visitor->traceWrappers(unit.m_texture2DArrayBinding);
+    visitor->traceWrappers(&unit);
   }
   for (ExtensionTracker* tracker : m_extensions) {
     WebGLExtension* extension = tracker->getExtensionObjectIfAlreadyEnabled();

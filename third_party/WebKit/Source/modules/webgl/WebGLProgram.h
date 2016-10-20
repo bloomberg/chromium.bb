@@ -26,6 +26,7 @@
 #ifndef WebGLProgram_h
 #define WebGLProgram_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLShader.h"
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
@@ -87,8 +88,8 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   // feedback objects.
   unsigned m_activeTransformFeedbackCount;
 
-  Member<WebGLShader> m_vertexShader;
-  Member<WebGLShader> m_fragmentShader;
+  TraceWrapperMember<WebGLShader> m_vertexShader;
+  TraceWrapperMember<WebGLShader> m_fragmentShader;
 
   bool m_infoValid;
 };

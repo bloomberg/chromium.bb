@@ -859,27 +859,29 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                                  GLsizei height,
                                  const char* functionName);
 
-  Member<WebGLFramebuffer> m_readFramebufferBinding;
-  Member<WebGLTransformFeedback> m_transformFeedbackBinding;
+  TraceWrapperMember<WebGLFramebuffer> m_readFramebufferBinding;
+  TraceWrapperMember<WebGLTransformFeedback> m_transformFeedbackBinding;
 
   std::set<GLenum> m_supportedInternalFormatsStorage;
   std::set<GLenum> m_compressedTextureFormatsETC2EAC;
 
-  Member<WebGLBuffer> m_boundCopyReadBuffer;
-  Member<WebGLBuffer> m_boundCopyWriteBuffer;
-  Member<WebGLBuffer> m_boundPixelPackBuffer;
-  Member<WebGLBuffer> m_boundPixelUnpackBuffer;
-  Member<WebGLBuffer> m_boundTransformFeedbackBuffer;
-  Member<WebGLBuffer> m_boundUniformBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundCopyReadBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundCopyWriteBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundPixelPackBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundPixelUnpackBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundUniformBuffer;
 
-  HeapVector<Member<WebGLBuffer>> m_boundIndexedTransformFeedbackBuffers;
-  HeapVector<Member<WebGLBuffer>> m_boundIndexedUniformBuffers;
+  HeapVector<TraceWrapperMember<WebGLBuffer>>
+      m_boundIndexedTransformFeedbackBuffers;
+  HeapVector<TraceWrapperMember<WebGLBuffer>> m_boundIndexedUniformBuffers;
   GLint m_maxTransformFeedbackSeparateAttribs;
   size_t m_maxBoundUniformBufferIndex;
 
-  Member<WebGLQuery> m_currentBooleanOcclusionQuery;
-  Member<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
-  HeapVector<Member<WebGLSampler>> m_samplerUnits;
+  TraceWrapperMember<WebGLQuery> m_currentBooleanOcclusionQuery;
+  TraceWrapperMember<WebGLQuery>
+      m_currentTransformFeedbackPrimitivesWrittenQuery;
+  HeapVector<TraceWrapperMember<WebGLSampler>> m_samplerUnits;
 
   GLint m_packRowLength;
   GLint m_packSkipPixels;

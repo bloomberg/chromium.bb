@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/TypedFlexibleArrayBufferView.h"
@@ -586,12 +587,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
    public:
-    Member<WebGLTexture> m_texture2DBinding;
-    Member<WebGLTexture> m_textureCubeMapBinding;
-    Member<WebGLTexture> m_texture3DBinding;
-    Member<WebGLTexture> m_texture2DArrayBinding;
+    TraceWrapperMember<WebGLTexture> m_texture2DBinding;
+    TraceWrapperMember<WebGLTexture> m_textureCubeMapBinding;
+    TraceWrapperMember<WebGLTexture> m_texture3DBinding;
+    TraceWrapperMember<WebGLTexture> m_texture2DArrayBinding;
 
     DECLARE_TRACE();
+    DECLARE_TRACE_WRAPPERS();
   };
 
   PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const override;
@@ -711,10 +713,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
-  Member<WebGLBuffer> m_boundArrayBuffer;
+  TraceWrapperMember<WebGLBuffer> m_boundArrayBuffer;
 
   Member<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
-  Member<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
+  TraceWrapperMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
   void setBoundVertexArrayObject(WebGLVertexArrayObjectBase*);
 
   enum VertexAttribValueType {
@@ -727,9 +729,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   unsigned m_maxVertexAttribs;
   void setVertexAttribType(GLuint index, VertexAttribValueType);
 
-  Member<WebGLProgram> m_currentProgram;
-  Member<WebGLFramebuffer> m_framebufferBinding;
-  Member<WebGLRenderbuffer> m_renderbufferBinding;
+  TraceWrapperMember<WebGLProgram> m_currentProgram;
+  TraceWrapperMember<WebGLFramebuffer> m_framebufferBinding;
+  TraceWrapperMember<WebGLRenderbuffer> m_renderbufferBinding;
 
   HeapVector<TextureUnitState> m_textureUnits;
   unsigned long m_activeTextureUnit;
@@ -884,14 +886,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   };
 
   bool m_extensionEnabled[WebGLExtensionNameCount];
-  HeapVector<Member<ExtensionTracker>> m_extensions;
+  HeapVector<TraceWrapperMember<ExtensionTracker>> m_extensions;
 
   template <typename T>
   void registerExtension(Member<T>& extensionPtr,
                          ExtensionFlags flags = ApprovedExtension,
                          const char* const* prefixes = nullptr) {
-    m_extensions.append(
-        TypedExtensionTracker<T>::create(extensionPtr, flags, prefixes));
+    m_extensions.append(TraceWrapperMember<ExtensionTracker>(
+        this, TypedExtensionTracker<T>::create(extensionPtr, flags, prefixes)));
   }
 
   bool extensionSupportedAndAllowed(const ExtensionTracker*);

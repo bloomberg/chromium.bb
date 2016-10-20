@@ -29,6 +29,7 @@
 #define HTMLCanvasElement_h
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMTypedArray.h"
@@ -285,7 +286,7 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
 
   IntSize m_size;
 
-  Member<CanvasRenderingContext> m_context;
+  TraceWrapperMember<CanvasRenderingContext> m_context;
 
   bool m_ignoreReset;
   FloatRect m_dirtyRect;

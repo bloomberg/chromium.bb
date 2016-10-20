@@ -439,8 +439,10 @@ void WebGLFramebuffer::setAttachmentInternal(GLenum target,
   DCHECK(m_object);
   removeAttachmentInternal(target, attachment);
   if (texture && texture->object()) {
-    m_attachments.add(attachment, WebGLTextureAttachment::create(
-                                      texture, texTarget, level, layer));
+    m_attachments.add(
+        attachment, TraceWrapperMember<WebGLAttachment>(
+                        this, WebGLTextureAttachment::create(texture, texTarget,
+                                                             level, layer)));
     drawBuffersIfNecessary(false);
     texture->onAttached();
   }
@@ -453,8 +455,10 @@ void WebGLFramebuffer::setAttachmentInternal(GLenum target,
   DCHECK(m_object);
   removeAttachmentInternal(target, attachment);
   if (renderbuffer && renderbuffer->object()) {
-    m_attachments.add(attachment,
-                      WebGLRenderbufferAttachment::create(renderbuffer));
+    m_attachments.add(
+        attachment,
+        TraceWrapperMember<WebGLAttachment>(
+            this, WebGLRenderbufferAttachment::create(renderbuffer)));
     drawBuffersIfNecessary(false);
     renderbuffer->onAttached();
   }
