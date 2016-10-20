@@ -131,8 +131,8 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
 };
 
 TEST_P(LogDnsClientTest, QueryAuditProofReportsThatLogDomainDoesNotExist) {
-  mock_dns_.ExpectRequestAndErrorResponse(kLeafIndexQnames[0],
-                                          net::dns_protocol::kRcodeNXDOMAIN);
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndErrorResponse(
+      kLeafIndexQnames[0], net::dns_protocol::kRcodeNXDOMAIN));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -141,8 +141,8 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsThatLogDomainDoesNotExist) {
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsServerFailuresDuringLeafIndexRequests) {
-  mock_dns_.ExpectRequestAndErrorResponse(kLeafIndexQnames[0],
-                                          net::dns_protocol::kRcodeSERVFAIL);
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndErrorResponse(
+      kLeafIndexQnames[0], net::dns_protocol::kRcodeSERVFAIL));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -151,8 +151,8 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsServerRefusalsDuringLeafIndexRequests) {
-  mock_dns_.ExpectRequestAndErrorResponse(kLeafIndexQnames[0],
-                                          net::dns_protocol::kRcodeREFUSED);
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndErrorResponse(
+      kLeafIndexQnames[0], net::dns_protocol::kRcodeREFUSED));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -162,8 +162,8 @@ TEST_P(LogDnsClientTest,
 TEST_P(
     LogDnsClientTest,
     QueryAuditProofReportsMalformedResponseIfLeafIndexResponseContainsNoStrings) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0],
-                                     std::vector<base::StringPiece>());
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndResponse(
+      kLeafIndexQnames[0], std::vector<base::StringPiece>()));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -173,7 +173,8 @@ TEST_P(
 TEST_P(
     LogDnsClientTest,
     QueryAuditProofReportsMalformedResponseIfLeafIndexResponseContainsMoreThanOneString) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"123456", "7"});
+  ASSERT_TRUE(
+      mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"123456", "7"}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -182,7 +183,7 @@ TEST_P(
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsMalformedResponseIfLeafIndexIsNotNumeric) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"foo"});
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"foo"}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -191,7 +192,8 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsMalformedResponseIfLeafIndexIsFloatingPoint) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"123456.0"});
+  ASSERT_TRUE(
+      mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"123456.0"}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -200,7 +202,7 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsMalformedResponseIfLeafIndexIsEmpty) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {""});
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {""}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -209,7 +211,8 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsMalformedResponseIfLeafIndexHasNonNumericPrefix) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"foo123456"});
+  ASSERT_TRUE(
+      mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"foo123456"}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -218,7 +221,8 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsMalformedResponseIfLeafIndexHasNonNumericSuffix) {
-  mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"123456foo"});
+  ASSERT_TRUE(
+      mock_dns_.ExpectRequestAndResponse(kLeafIndexQnames[0], {"123456foo"}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -245,8 +249,8 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsInvalidArgIfLeafHashIsEmpty) {
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsSocketErrorsDuringLeafIndexRequests) {
-  mock_dns_.ExpectRequestAndSocketError(kLeafIndexQnames[0],
-                                        net::ERR_CONNECTION_REFUSED);
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndSocketError(
+      kLeafIndexQnames[0], net::ERR_CONNECTION_REFUSED));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -255,7 +259,7 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsTimeoutsDuringLeafIndexRequests) {
-  mock_dns_.ExpectRequestAndTimeout(kLeafIndexQnames[0]);
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndTimeout(kLeafIndexQnames[0]));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], kTreeSizes[0], &proof),
@@ -266,7 +270,8 @@ TEST_P(LogDnsClientTest, QueryAuditProof) {
   const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
 
   // Expect a leaf index query first, to map the leaf hash to a leaf index.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
   // It takes a number of DNS requests to retrieve the entire |audit_proof|
   // (see |kMaxProofNodesPerDnsResponse|).
@@ -275,9 +280,9 @@ TEST_P(LogDnsClientTest, QueryAuditProof) {
     const size_t nodes_end = std::min(
         nodes_begin + kMaxProofNodesPerDnsResponse, audit_proof.size());
 
-    mock_dns_.ExpectAuditProofRequestAndResponse(
+    ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
         base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
-        audit_proof.begin() + nodes_begin, audit_proof.begin() + nodes_end);
+        audit_proof.begin() + nodes_begin, audit_proof.begin() + nodes_end));
   }
 
   net::ct::MerkleAuditProof proof;
@@ -293,27 +298,28 @@ TEST_P(LogDnsClientTest, QueryAuditProofHandlesResponsesWithShortAuditPaths) {
   const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
 
   // Expect a leaf index query first, to map the leaf hash to a leaf index.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
   // Make some of the responses contain fewer proof nodes than they can hold.
-  mock_dns_.ExpectAuditProofRequestAndResponse("0.123456.999999.tree.ct.test.",
-                                               audit_proof.begin(),
-                                               audit_proof.begin() + 1);
-  mock_dns_.ExpectAuditProofRequestAndResponse("1.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 1,
-                                               audit_proof.begin() + 3);
-  mock_dns_.ExpectAuditProofRequestAndResponse("3.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 3,
-                                               audit_proof.begin() + 6);
-  mock_dns_.ExpectAuditProofRequestAndResponse("6.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 6,
-                                               audit_proof.begin() + 10);
-  mock_dns_.ExpectAuditProofRequestAndResponse("10.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 10,
-                                               audit_proof.begin() + 13);
-  mock_dns_.ExpectAuditProofRequestAndResponse("13.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 13,
-                                               audit_proof.end());
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", audit_proof.begin(),
+      audit_proof.begin() + 1));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "1.123456.999999.tree.ct.test.", audit_proof.begin() + 1,
+      audit_proof.begin() + 3));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "3.123456.999999.tree.ct.test.", audit_proof.begin() + 3,
+      audit_proof.begin() + 6));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "6.123456.999999.tree.ct.test.", audit_proof.begin() + 6,
+      audit_proof.begin() + 10));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "10.123456.999999.tree.ct.test.", audit_proof.begin() + 10,
+      audit_proof.begin() + 13));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "13.123456.999999.tree.ct.test.", audit_proof.begin() + 13,
+      audit_proof.end()));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -326,9 +332,10 @@ TEST_P(LogDnsClientTest, QueryAuditProofHandlesResponsesWithShortAuditPaths) {
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsThatAuditProofQnameDoesNotExist) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectRequestAndErrorResponse("0.123456.999999.tree.ct.test.",
-                                          net::dns_protocol::kRcodeNXDOMAIN);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndErrorResponse(
+      "0.123456.999999.tree.ct.test.", net::dns_protocol::kRcodeNXDOMAIN));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -337,9 +344,10 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsServerFailuresDuringAuditProofRequests) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectRequestAndErrorResponse("0.123456.999999.tree.ct.test.",
-                                          net::dns_protocol::kRcodeSERVFAIL);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndErrorResponse(
+      "0.123456.999999.tree.ct.test.", net::dns_protocol::kRcodeSERVFAIL));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -348,9 +356,10 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsServerRefusalsDuringAuditProofRequests) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectRequestAndErrorResponse("0.123456.999999.tree.ct.test.",
-                                          net::dns_protocol::kRcodeREFUSED);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndErrorResponse(
+      "0.123456.999999.tree.ct.test.", net::dns_protocol::kRcodeREFUSED));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -361,10 +370,11 @@ TEST_P(
     LogDnsClientTest,
     QueryAuditProofReportsResponseMalformedIfProofNodesResponseContainsNoStrings) {
   // Expect a leaf index query first, to map the leaf hash to a leaf index.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
-  mock_dns_.ExpectRequestAndResponse("0.123456.999999.tree.ct.test.",
-                                     std::vector<base::StringPiece>());
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", std::vector<base::StringPiece>()));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -384,11 +394,12 @@ TEST_P(
       audit_proof.begin() + 7, audit_proof.end(), std::string());
 
   // Expect a leaf index query first, to map the leaf hash to a leaf index.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
-  mock_dns_.ExpectRequestAndResponse(
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndResponse(
       "0.123456.999999.tree.ct.test.",
-      {first_chunk_of_proof, second_chunk_of_proof});
+      {first_chunk_of_proof, second_chunk_of_proof}));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -400,9 +411,10 @@ TEST_P(LogDnsClientTest,
   // node is shorter than a SHA-256 hash (31 vs 32 bytes)
   const std::vector<std::string> audit_proof(1, std::string(31, 'a'));
 
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectAuditProofRequestAndResponse(
-      "0.123456.999999.tree.ct.test.", audit_proof.begin(), audit_proof.end());
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", audit_proof.begin(), audit_proof.end()));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -413,9 +425,10 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsResponseMalformedIfNodeTooLong) {
   // node is longer than a SHA-256 hash (33 vs 32 bytes)
   const std::vector<std::string> audit_proof(1, std::string(33, 'a'));
 
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectAuditProofRequestAndResponse(
-      "0.123456.999999.tree.ct.test.", audit_proof.begin(), audit_proof.end());
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", audit_proof.begin(), audit_proof.end()));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -425,9 +438,10 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsResponseMalformedIfNodeTooLong) {
 TEST_P(LogDnsClientTest, QueryAuditProofReportsResponseMalformedIfEmpty) {
   const std::vector<std::string> audit_proof;
 
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectAuditProofRequestAndResponse(
-      "0.123456.999999.tree.ct.test.", audit_proof.begin(), audit_proof.end());
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", audit_proof.begin(), audit_proof.end()));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -436,7 +450,8 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsResponseMalformedIfEmpty) {
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsInvalidArgIfLeafIndexEqualToTreeSize) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 123456, &proof),
@@ -445,7 +460,8 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsInvalidArgIfLeafIndexGreaterThanTreeSize) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 999999);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 999999));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 123456, &proof),
@@ -454,9 +470,10 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsSocketErrorsDuringAuditProofRequests) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectRequestAndSocketError("0.123456.999999.tree.ct.test.",
-                                        net::ERR_CONNECTION_REFUSED);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectRequestAndSocketError(
+      "0.123456.999999.tree.ct.test.", net::ERR_CONNECTION_REFUSED));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -465,8 +482,10 @@ TEST_P(LogDnsClientTest,
 
 TEST_P(LogDnsClientTest,
        QueryAuditProofReportsTimeoutsDuringAuditProofRequests) {
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectRequestAndTimeout("0.123456.999999.tree.ct.test.");
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(
+      mock_dns_.ExpectRequestAndTimeout("0.123456.999999.tree.ct.test."));
 
   net::ct::MerkleAuditProof proof;
   ASSERT_THAT(QueryAuditProof("ct.test", kLeafHashes[0], 999999, &proof),
@@ -511,7 +530,8 @@ TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigMidQuery) {
   const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
 
   // Expect a leaf index query first, to map the leaf hash to a leaf index.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
   // It takes a number of DNS requests to retrieve the entire |audit_proof|
   // (see |kMaxProofNodesPerDnsResponse|).
@@ -520,9 +540,9 @@ TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigMidQuery) {
     const size_t nodes_end = std::min(
         nodes_begin + kMaxProofNodesPerDnsResponse, audit_proof.size());
 
-    mock_dns_.ExpectAuditProofRequestAndResponse(
+    ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
         base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
-        audit_proof.begin() + nodes_begin, audit_proof.begin() + nodes_end);
+        audit_proof.begin() + nodes_begin, audit_proof.begin() + nodes_end));
   }
 
   std::unique_ptr<net::DnsClient> tmp = mock_dns_.CreateDnsClient();
@@ -572,8 +592,8 @@ TEST_P(LogDnsClientTest, CanPerformQueriesInParallel) {
 
   // Expect multiple leaf index requests.
   for (size_t i = 0; i < kNumOfParallelQueries; ++i) {
-    mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[i],
-                                                kLeafIndices[i]);
+    ASSERT_TRUE(mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[i],
+                                                            kLeafIndices[i]));
   }
 
   // Make each query require one more audit proof request than the last, by
@@ -607,11 +627,11 @@ TEST_P(LogDnsClientTest, CanPerformQueriesInParallel) {
 
       // If there are any nodes left, expect another request and response.
       if (start_node < end_node) {
-        mock_dns_.ExpectAuditProofRequestAndResponse(
+        ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
             base::StringPrintf("%zu.%" PRIu64 ".%" PRIu64 ".tree.ct.test.",
                                start_node, kLeafIndices[query_i],
                                kTreeSizes[query_i]),
-            proof.begin() + start_node, proof.begin() + end_node);
+            proof.begin() + start_node, proof.begin() + end_node));
       }
     }
   }
@@ -647,21 +667,22 @@ TEST_P(LogDnsClientTest, CanBeThrottledToOneQueryAtATime) {
 
   // Expect the first query to send leaf index and audit proof requests, but the
   // second should not due to throttling.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
 
   // It should require 3 requests to collect the entire audit proof, as there is
   // only space for 7 nodes per TXT record. One node is 32 bytes long and the
   // TXT RDATA can have a maximum length of 255 bytes (255 / 32).
   // Rate limiting should not interfere with these requests.
-  mock_dns_.ExpectAuditProofRequestAndResponse("0.123456.999999.tree.ct.test.",
-                                               audit_proof.begin(),
-                                               audit_proof.begin() + 7);
-  mock_dns_.ExpectAuditProofRequestAndResponse("7.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 7,
-                                               audit_proof.begin() + 14);
-  mock_dns_.ExpectAuditProofRequestAndResponse("14.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 14,
-                                               audit_proof.end());
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", audit_proof.begin(),
+      audit_proof.begin() + 7));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "7.123456.999999.tree.ct.test.", audit_proof.begin() + 7,
+      audit_proof.begin() + 14));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "14.123456.999999.tree.ct.test.", audit_proof.begin() + 14,
+      audit_proof.end()));
 
   const size_t kMaxConcurrentQueries = 1;
   std::unique_ptr<LogDnsClient> log_client =
@@ -688,16 +709,17 @@ TEST_P(LogDnsClientTest, CanBeThrottledToOneQueryAtATime) {
   EXPECT_THAT(proof1.nodes, Eq(audit_proof));
 
   // Try a third query, which should succeed now that the first is finished.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[2], 666);
-  mock_dns_.ExpectAuditProofRequestAndResponse("0.666.999999.tree.ct.test.",
-                                               audit_proof.begin(),
-                                               audit_proof.begin() + 7);
-  mock_dns_.ExpectAuditProofRequestAndResponse("7.666.999999.tree.ct.test.",
-                                               audit_proof.begin() + 7,
-                                               audit_proof.begin() + 14);
-  mock_dns_.ExpectAuditProofRequestAndResponse("14.666.999999.tree.ct.test.",
-                                               audit_proof.begin() + 14,
-                                               audit_proof.end());
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[2], 666));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.666.999999.tree.ct.test.", audit_proof.begin(),
+      audit_proof.begin() + 7));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "7.666.999999.tree.ct.test.", audit_proof.begin() + 7,
+      audit_proof.begin() + 14));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "14.666.999999.tree.ct.test.", audit_proof.begin() + 14,
+      audit_proof.end()));
 
   net::ct::MerkleAuditProof proof3;
   net::TestCompletionCallback callback3;
@@ -716,16 +738,17 @@ TEST_P(LogDnsClientTest, CanBeThrottledToOneQueryAtATime) {
 TEST_P(LogDnsClientTest, NotifiesWhenNoLongerThrottled) {
   const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
 
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456);
-  mock_dns_.ExpectAuditProofRequestAndResponse("0.123456.999999.tree.ct.test.",
-                                               audit_proof.begin(),
-                                               audit_proof.begin() + 7);
-  mock_dns_.ExpectAuditProofRequestAndResponse("7.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 7,
-                                               audit_proof.begin() + 14);
-  mock_dns_.ExpectAuditProofRequestAndResponse("14.123456.999999.tree.ct.test.",
-                                               audit_proof.begin() + 14,
-                                               audit_proof.end());
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[0], 123456));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.123456.999999.tree.ct.test.", audit_proof.begin(),
+      audit_proof.begin() + 7));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "7.123456.999999.tree.ct.test.", audit_proof.begin() + 7,
+      audit_proof.begin() + 14));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "14.123456.999999.tree.ct.test.", audit_proof.begin() + 14,
+      audit_proof.end()));
 
   const size_t kMaxConcurrentQueries = 1;
   std::unique_ptr<LogDnsClient> log_client =
@@ -745,16 +768,17 @@ TEST_P(LogDnsClientTest, NotifiesWhenNoLongerThrottled) {
   not_throttled_callback.WaitForResult();
 
   // Start another query to check |not_throttled_callback| doesn't fire again.
-  mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[1], 666);
-  mock_dns_.ExpectAuditProofRequestAndResponse("0.666.999999.tree.ct.test.",
-                                               audit_proof.begin(),
-                                               audit_proof.begin() + 7);
-  mock_dns_.ExpectAuditProofRequestAndResponse("7.666.999999.tree.ct.test.",
-                                               audit_proof.begin() + 7,
-                                               audit_proof.begin() + 14);
-  mock_dns_.ExpectAuditProofRequestAndResponse("14.666.999999.tree.ct.test.",
-                                               audit_proof.begin() + 14,
-                                               audit_proof.end());
+  ASSERT_TRUE(
+      mock_dns_.ExpectLeafIndexRequestAndResponse(kLeafIndexQnames[1], 666));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "0.666.999999.tree.ct.test.", audit_proof.begin(),
+      audit_proof.begin() + 7));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "7.666.999999.tree.ct.test.", audit_proof.begin() + 7,
+      audit_proof.begin() + 14));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      "14.666.999999.tree.ct.test.", audit_proof.begin() + 14,
+      audit_proof.end()));
 
   net::ct::MerkleAuditProof proof2;
   net::TestCompletionCallback proof_callback2;

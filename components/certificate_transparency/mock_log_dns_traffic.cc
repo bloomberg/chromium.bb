@@ -45,9 +45,12 @@ int FakeRandInt(int min, int max) {
   return min;
 }
 
-std::vector<char> CreateDnsTxtRequest(base::StringPiece qname) {
+bool CreateDnsTxtRequest(base::StringPiece qname, std::vector<char>* request) {
   std::string encoded_qname;
-  CHECK(net::DNSDomainFromDot(qname, &encoded_qname));
+  if (!net::DNSDomainFromDot(qname, &encoded_qname)) {
+    // |qname| is an invalid domain name.
+    return false;
+  }
 
   // DNS query section:
   // N bytes - qname
@@ -56,26 +59,32 @@ std::vector<char> CreateDnsTxtRequest(base::StringPiece qname) {
   // Total = N + 4 bytes
   const size_t query_section_size = encoded_qname.size() + 4;
 
-  std::vector<char> request(sizeof(net::dns_protocol::Header) +
-                            query_section_size);
-  base::BigEndianWriter writer(request.data(), request.size());
+  request->resize(sizeof(net::dns_protocol::Header) + query_section_size);
+  base::BigEndianWriter writer(request->data(), request->size());
 
   // Header
   net::dns_protocol::Header header = {};
   header.flags = base::HostToNet16(net::dns_protocol::kFlagRD);
   header.qdcount = base::HostToNet16(1);
-  CHECK(writer.WriteBytes(&header, sizeof(header)));
-  // Query section
-  CHECK(writer.WriteBytes(encoded_qname.data(), encoded_qname.size()));
-  CHECK(writer.WriteU16(net::dns_protocol::kTypeTXT));
-  CHECK(writer.WriteU16(net::dns_protocol::kClassIN));
-  CHECK_EQ(0, writer.remaining());
 
-  return request;
+  if (!writer.WriteBytes(&header, sizeof(header)) ||
+      !writer.WriteBytes(encoded_qname.data(), encoded_qname.size()) ||
+      !writer.WriteU16(net::dns_protocol::kTypeTXT) ||
+      !writer.WriteU16(net::dns_protocol::kClassIN)) {
+    return false;
+  }
+
+  if (writer.remaining() != 0) {
+    // Less than the expected amount of data was written.
+    return false;
+  }
+
+  return true;
 }
 
-std::vector<char> CreateDnsTxtResponse(const std::vector<char>& request,
-                                       base::StringPiece answer) {
+bool CreateDnsTxtResponse(const std::vector<char>& request,
+                          base::StringPiece answer,
+                          std::vector<char>* response) {
   // DNS answers section:
   // 2 bytes - qname pointer
   // 2 bytes - record type
@@ -87,40 +96,48 @@ std::vector<char> CreateDnsTxtResponse(const std::vector<char>& request,
   const size_t answers_section_size = 12 + answer.size();
   constexpr uint32_t ttl = 86400;  // seconds
 
-  std::vector<char> response(request.size() + answers_section_size);
-  std::copy(request.begin(), request.end(), response.begin());
+  response->resize(request.size() + answers_section_size);
+  std::copy(request.begin(), request.end(), response->begin());
+
   // Modify the header
   net::dns_protocol::Header* header =
-      reinterpret_cast<net::dns_protocol::Header*>(response.data());
+      reinterpret_cast<net::dns_protocol::Header*>(response->data());
   header->ancount = base::HostToNet16(1);
   header->flags |= base::HostToNet16(net::dns_protocol::kFlagResponse);
 
-  // Write the answer section
-  base::BigEndianWriter writer(response.data() + request.size(),
-                               response.size() - request.size());
-  CHECK(writer.WriteU8(0xc0));  // qname is a pointer
-  CHECK(writer.WriteU8(
-      sizeof(*header)));  // address of qname (start of query section)
-  CHECK(writer.WriteU16(net::dns_protocol::kTypeTXT));
-  CHECK(writer.WriteU16(net::dns_protocol::kClassIN));
-  CHECK(writer.WriteU32(ttl));
-  CHECK(writer.WriteU16(answer.size()));
-  CHECK(writer.WriteBytes(answer.data(), answer.size()));
-  CHECK_EQ(0, writer.remaining());
+  // The qname is at the start of the query section (just after the header).
+  const uint8_t qname_ptr = sizeof(*header);
 
-  return response;
+  // Write the answer section
+  base::BigEndianWriter writer(response->data() + request.size(),
+                               response->size() - request.size());
+  if (!writer.WriteU8(net::dns_protocol::kLabelPointer) ||
+      !writer.WriteU8(qname_ptr) ||
+      !writer.WriteU16(net::dns_protocol::kTypeTXT) ||
+      !writer.WriteU16(net::dns_protocol::kClassIN) || !writer.WriteU32(ttl) ||
+      !writer.WriteU16(answer.size()) ||
+      !writer.WriteBytes(answer.data(), answer.size())) {
+    return false;
+  }
+
+  if (writer.remaining() != 0) {
+    // Less than the expected amount of data was written.
+    return false;
+  }
+
+  return true;
 }
 
-std::vector<char> CreateDnsErrorResponse(const std::vector<char>& request,
-                                         uint8_t rcode) {
-  std::vector<char> response(request);
+bool CreateDnsErrorResponse(const std::vector<char>& request,
+                            uint8_t rcode,
+                            std::vector<char>* response) {
+  *response = request;
   // Modify the header
   net::dns_protocol::Header* header =
-      reinterpret_cast<net::dns_protocol::Header*>(response.data());
+      reinterpret_cast<net::dns_protocol::Header*>(response->data());
   header->ancount = base::HostToNet16(1);
   header->flags |= base::HostToNet16(net::dns_protocol::kFlagResponse | rcode);
-
-  return response;
+  return true;
 }
 
 }  // namespace
@@ -187,11 +204,7 @@ class MockLogDnsTraffic::MockSocketData {
   net::MockWrite expected_write_;
 
   // Encapsulates the data/error that should be returned when reading from a
-  // socket. The second "expected" read is a sentinel that causes socket reads
-  // beyond the first to hang until they timeout. This results in better
-  // test failure messages (rather than a CHECK-fail due to a socket read
-  // overrunning the MockRead array) and behaviour more like a real socket when
-  // an unexpected second socket read occurs.
+  // socket. The second "expected" read is a sentinel (see |kNoMoreData|).
   net::MockRead expected_reads_[2];
 
   // Holds pointers to |expected_write_| and |expected_reads_|. This is what is
@@ -205,26 +218,48 @@ MockLogDnsTraffic::MockLogDnsTraffic() : socket_read_mode_(net::ASYNC) {}
 
 MockLogDnsTraffic::~MockLogDnsTraffic() {}
 
-void MockLogDnsTraffic::ExpectRequestAndErrorResponse(base::StringPiece qname,
+bool MockLogDnsTraffic::ExpectRequestAndErrorResponse(base::StringPiece qname,
                                                       uint8_t rcode) {
-  std::vector<char> request = CreateDnsTxtRequest(qname);
-  EmplaceMockSocketData(CreateDnsTxtRequest(qname),
-                        CreateDnsErrorResponse(request, rcode));
+  std::vector<char> request;
+  if (!CreateDnsTxtRequest(qname, &request)) {
+    return false;
+  }
+
+  std::vector<char> response;
+  if (!CreateDnsErrorResponse(request, rcode, &response)) {
+    return false;
+  }
+
+  EmplaceMockSocketData(request, response);
+  return true;
 }
 
-void MockLogDnsTraffic::ExpectRequestAndSocketError(base::StringPiece qname,
+bool MockLogDnsTraffic::ExpectRequestAndSocketError(base::StringPiece qname,
                                                     net::Error error) {
-  EmplaceMockSocketData(CreateDnsTxtRequest(qname), error);
+  std::vector<char> request;
+  if (!CreateDnsTxtRequest(qname, &request)) {
+    return false;
+  }
+
+  EmplaceMockSocketData(request, error);
+  return true;
 }
 
-void MockLogDnsTraffic::ExpectRequestAndTimeout(base::StringPiece qname) {
-  EmplaceMockSocketData(CreateDnsTxtRequest(qname));
+bool MockLogDnsTraffic::ExpectRequestAndTimeout(base::StringPiece qname) {
+  std::vector<char> request;
+  if (!CreateDnsTxtRequest(qname, &request)) {
+    return false;
+  }
+
+  EmplaceMockSocketData(request);
 
   // Speed up timeout tests.
   SetDnsTimeout(TestTimeouts::tiny_timeout());
+
+  return true;
 }
 
-void MockLogDnsTraffic::ExpectRequestAndResponse(
+bool MockLogDnsTraffic::ExpectRequestAndResponse(
     base::StringPiece qname,
     const std::vector<base::StringPiece>& txt_strings) {
   std::string answer;
@@ -234,17 +269,27 @@ void MockLogDnsTraffic::ExpectRequestAndResponse(
     str.AppendToString(&answer);
   }
 
-  std::vector<char> request = CreateDnsTxtRequest(qname);
-  EmplaceMockSocketData(request, CreateDnsTxtResponse(request, answer));
+  std::vector<char> request;
+  if (!CreateDnsTxtRequest(qname, &request)) {
+    return false;
+  }
+
+  std::vector<char> response;
+  if (!CreateDnsTxtResponse(request, answer, &response)) {
+    return false;
+  }
+
+  EmplaceMockSocketData(request, response);
+  return true;
 }
 
-void MockLogDnsTraffic::ExpectLeafIndexRequestAndResponse(
+bool MockLogDnsTraffic::ExpectLeafIndexRequestAndResponse(
     base::StringPiece qname,
     uint64_t leaf_index) {
-  ExpectRequestAndResponse(qname, { base::Uint64ToString(leaf_index) });
+  return ExpectRequestAndResponse(qname, {base::Uint64ToString(leaf_index)});
 }
 
-void MockLogDnsTraffic::ExpectAuditProofRequestAndResponse(
+bool MockLogDnsTraffic::ExpectAuditProofRequestAndResponse(
     base::StringPiece qname,
     std::vector<std::string>::const_iterator audit_path_start,
     std::vector<std::string>::const_iterator audit_path_end) {
@@ -252,7 +297,7 @@ void MockLogDnsTraffic::ExpectAuditProofRequestAndResponse(
   std::string proof =
       std::accumulate(audit_path_start, audit_path_end, std::string());
 
-  ExpectRequestAndResponse(qname, { proof });
+  return ExpectRequestAndResponse(qname, {proof});
 }
 
 void MockLogDnsTraffic::InitializeDnsConfig() {

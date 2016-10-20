@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/dns/dns_client.h"
@@ -50,34 +51,48 @@ class MockLogDnsTraffic {
   // Such a request will receive a DNS response indicating that the error
   // specified by |rcode| occurred. See RFC1035, Section 4.1.1 for |rcode|
   // values.
-  void ExpectRequestAndErrorResponse(base::StringPiece qname, uint8_t rcode);
+  // Returns false if any of the arguments are invalid.
+  WARN_UNUSED_RESULT
+  bool ExpectRequestAndErrorResponse(base::StringPiece qname, uint8_t rcode);
 
   // Expect a CT DNS request for the domain |qname|.
   // Such a request will trigger a socket error of type |error|.
-  void ExpectRequestAndSocketError(base::StringPiece qname, net::Error error);
+  // Returns false if any of the arguments are invalid.
+  WARN_UNUSED_RESULT
+  bool ExpectRequestAndSocketError(base::StringPiece qname, net::Error error);
 
   // Expect a CT DNS request for the domain |qname|.
   // Such a request will timeout.
   // This will reduce the DNS timeout to minimize test duration.
-  void ExpectRequestAndTimeout(base::StringPiece qname);
+  // Returns false if |qname| is invalid.
+  WARN_UNUSED_RESULT
+  bool ExpectRequestAndTimeout(base::StringPiece qname);
 
   // Expect a CT DNS request for the domain |qname|.
   // Such a request will receive a DNS TXT response containing |txt_strings|.
-  void ExpectRequestAndResponse(
-    base::StringPiece qname,
-    const std::vector<base::StringPiece>& txt_strings);
+  // Returns false if any of the arguments are invalid.
+  WARN_UNUSED_RESULT
+  bool ExpectRequestAndResponse(
+      base::StringPiece qname,
+      const std::vector<base::StringPiece>& txt_strings);
+
   // Expect a CT DNS request for the domain |qname|.
   // Such a request will receive a DNS response containing |leaf_index|.
   // A description of such a request and response can be seen here:
   // https://github.com/google/certificate-transparency-rfcs/blob/c8844de6bd0b5d3d16bac79865e6edef533d760b/dns/draft-ct-over-dns.md#hash-query-hashquery
-  void ExpectLeafIndexRequestAndResponse(base::StringPiece qname,
+  // Returns false if any of the arguments are invalid.
+  WARN_UNUSED_RESULT
+  bool ExpectLeafIndexRequestAndResponse(base::StringPiece qname,
                                          uint64_t leaf_index);
+
   // Expect a CT DNS request for the domain |qname|.
   // Such a request will receive a DNS response containing the inclusion proof
   // nodes between |audit_path_start| and |audit_path_end|.
   // A description of such a request and response can be seen here:
   // https://github.com/google/certificate-transparency-rfcs/blob/c8844de6bd0b5d3d16bac79865e6edef533d760b/dns/draft-ct-over-dns.md#tree-query-treequery
-  void ExpectAuditProofRequestAndResponse(
+  // Returns false if any of the arguments are invalid.
+  WARN_UNUSED_RESULT
+  bool ExpectAuditProofRequestAndResponse(
       base::StringPiece qname,
       std::vector<std::string>::const_iterator audit_path_start,
       std::vector<std::string>::const_iterator audit_path_end);
