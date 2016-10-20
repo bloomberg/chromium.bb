@@ -7,6 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/direct_renderer.h"
+#include "ui/events/latency_info.h"
 
 namespace cc {
 
@@ -22,8 +23,7 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
   ~VulkanRenderer() override;
 
   // Implementation of public DirectRenderer functions.
-  void SwapBuffers(const CompositorFrameMetadata& metadata) override;
-  void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
 
  protected:
   // Implementations of protected Renderer functions.
@@ -46,11 +46,10 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
   bool FlippedFramebuffer(const DrawingFrame* frame) const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
-  void DiscardBackbuffer() override;
-  void EnsureBackbuffer() override;
   void CopyCurrentRenderPassToBitmap(
       DrawingFrame* frame,
       std::unique_ptr<CopyOutputRequest> request) override;
+  bool CanPartialSwap() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VulkanRenderer);

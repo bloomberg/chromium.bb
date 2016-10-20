@@ -3,18 +3,16 @@
 // found in the LICENSE file.
 
 #include "cc/output/vulkan_renderer.h"
+#include "cc/output/output_surface_frame.h"
 
 namespace cc {
 
 VulkanRenderer::~VulkanRenderer() {}
 
-void VulkanRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
-  CompositorFrame* compositor_frame = nullptr;
-  output_surface_->SwapBuffers(compositor_frame);
-}
-
-void VulkanRenderer::ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {
-  NOTIMPLEMENTED();
+void VulkanRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
+  OutputSurfaceFrame output_frame;
+  output_frame.latency_info = std::move(latency_info);
+  output_surface_->SwapBuffers(std::move(output_frame));
 }
 
 VulkanRenderer::VulkanRenderer(const RendererSettings* settings,
@@ -80,18 +78,15 @@ void VulkanRenderer::EnsureScissorTestDisabled() {
   NOTIMPLEMENTED();
 }
 
-void VulkanRenderer::DiscardBackbuffer() {
-  NOTIMPLEMENTED();
-}
-
-void VulkanRenderer::EnsureBackbuffer() {
-  NOTIMPLEMENTED();
-}
-
 void VulkanRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
     std::unique_ptr<CopyOutputRequest> request) {
   NOTIMPLEMENTED();
+}
+
+bool VulkanRenderer::CanPartialSwap() {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace cc
