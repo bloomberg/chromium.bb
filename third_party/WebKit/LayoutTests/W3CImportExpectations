@@ -252,6 +252,7 @@ imported/wpt/js [ Skip ]
 imported/wpt/lint [ Skip ]
 imported/wpt/lint.whitelist [ Skip ]
 imported/wpt/manifest [ Skip ]
+imported/wpt/mathml [ Skip ]
 ## Owners: none; No tests in the directory.
 # imported/wpt/media [ Skip ]
 imported/wpt/media-source [ Skip ]
