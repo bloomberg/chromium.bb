@@ -21,6 +21,9 @@
 <p>This tests the invalidation behaviour of the paint callback.</p>
 <p>See the devtools console for additional test output.</p>
 <script>
+CSS.registerProperty({name: '--length-inherited', syntax: '<length>', inherits: true, initialValue: '0px'});
+CSS.registerProperty({name: '--length-non-inherited', syntax: '<length>', inherits: false, initialValue: '0px'});
+
 // TODO(ikilpatrick): Should test shorthands.
 testRunnerInvalidationLogging('border-image-source', [
     { property: 'max-height', value: '160px' },
@@ -39,5 +42,7 @@ testRunnerInvalidationLogging('border-image-source', [
     { property: '--foo', prevValue: 'foo', value: 'var(--str)', noInvalidation: true},
     { property: '--str', value: 'bar'},
     { property: '--str', value: 'foo', noInvalidation: true },
+    { property: '--length-inherited', value: '10px'},
+    { property: '--length-non-inherited', value: '20px'},
 ]);
 </script>

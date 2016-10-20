@@ -1018,18 +1018,11 @@ bool ComputedStyle::diffNeedsPaintInvalidationObjectForPaintImage(
       return true;
   }
 
-  if (inheritedVariables() || other.inheritedVariables()) {
+  if (inheritedVariables() || nonInheritedVariables() ||
+      other.inheritedVariables() || other.nonInheritedVariables()) {
     for (const AtomicString& property :
          *value->customInvalidationProperties()) {
-      CSSVariableData* thisVar =
-          inheritedVariables() ? inheritedVariables()->getVariable(property)
-                               : nullptr;
-      CSSVariableData* otherVar =
-          other.inheritedVariables()
-              ? other.inheritedVariables()->getVariable(property)
-              : nullptr;
-
-      if (!dataEquivalent(thisVar, otherVar))
+      if (!dataEquivalent(getVariable(property), other.getVariable(property)))
         return true;
     }
   }
@@ -1778,6 +1771,18 @@ void ComputedStyle::removeInheritedVariable(const AtomicString& name) {
 
 void ComputedStyle::removeNonInheritedVariable(const AtomicString& name) {
   mutableNonInheritedVariables().removeVariable(name);
+}
+
+CSSVariableData* ComputedStyle::getVariable(const AtomicString& name) const {
+  if (inheritedVariables()) {
+    if (CSSVariableData* variable = inheritedVariables()->getVariable(name))
+      return variable;
+  }
+  if (nonInheritedVariables()) {
+    if (CSSVariableData* variable = nonInheritedVariables()->getVariable(name))
+      return variable;
+  }
+  return nullptr;
 }
 
 float ComputedStyle::wordSpacing() const {

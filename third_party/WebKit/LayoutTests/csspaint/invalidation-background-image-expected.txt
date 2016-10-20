@@ -89,6 +89,18 @@ The worklet console should log nothing
 CONSOLE MESSAGE: line 56: 
 
 Test case:
+--length-inherited: [inline not set] => --length-inherited: 10px
+The worklet console should log: 'Successful invalidation for: --length-inherited'
+CONSOLE MESSAGE: line 11: Successful invalidation for: --length-inherited
+CONSOLE MESSAGE: line 56: 
+
+Test case:
+--length-non-inherited: [inline not set] => --length-non-inherited: 20px
+The worklet console should log: 'Successful invalidation for: --length-non-inherited'
+CONSOLE MESSAGE: line 11: Successful invalidation for: --length-non-inherited
+CONSOLE MESSAGE: line 56: 
+
+Test case:
 -webkit-border-radius: [inline not set] => -webkit-border-radius: 25px
 The worklet console should log: 'Successful invalidation for: -webkit-border-radius'
 CONSOLE MESSAGE: line 11: Successful invalidation for: -webkit-border-radius
@@ -131,6 +143,8 @@ PASS --foo: [inline not set] => --foo: foo
 PASS --foo: foo => --foo: var(--str) 
 PASS --str: [inline not set] => --str: bar 
 PASS --str: [inline not set] => --str: foo 
+PASS --length-inherited: [inline not set] => --length-inherited: 10px 
+PASS --length-non-inherited: [inline not set] => --length-non-inherited: 20px 
 PASS -webkit-border-radius: [inline not set] => -webkit-border-radius: 25px 
 PASS -webkit-border-radius: [inline not set] => border-radius: 25px 
 PASS border-radius: 25px => -webkit-border-radius: [inline not set] 
