@@ -293,7 +293,7 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread, this,
-                 callbacks, origin));
+                 base::Passed(&callbacks), origin));
 }
 
 void IndexedDBDispatcherHost::Open(
@@ -319,8 +319,9 @@ void IndexedDBDispatcherHost::Open(
                                      std::move(database_callbacks_info)));
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedDBDispatcherHost::OpenOnIDBThread, this, callbacks,
-                 database_callbacks, origin, name, version, transaction_id));
+      base::Bind(&IndexedDBDispatcherHost::OpenOnIDBThread, this,
+                 base::Passed(&callbacks), base::Passed(&database_callbacks),
+                 origin, name, version, transaction_id));
 }
 
 void IndexedDBDispatcherHost::DeleteDatabase(
@@ -338,7 +339,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
       new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread,
-                            this, callbacks, origin, name));
+                            this, base::Passed(&callbacks), origin, name));
 }
 
 void IndexedDBDispatcherHost::GetDatabaseNamesOnIDBThread(

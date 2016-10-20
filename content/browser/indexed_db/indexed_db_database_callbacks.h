@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +48,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int32_t ipc_thread_id_;
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseCallbacks);
 };

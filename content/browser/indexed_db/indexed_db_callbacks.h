@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_checker.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
@@ -148,6 +149,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   base::TimeTicks connection_open_start_time_;
 
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacks);
 };

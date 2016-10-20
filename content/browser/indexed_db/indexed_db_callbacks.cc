@@ -100,12 +100,18 @@ IndexedDBCallbacks::IndexedDBCallbacks(
       ipc_database_id_(kNoDatabase),
       data_loss_(blink::WebIDBDataLossNone),
       sent_blocked_(false),
-      io_helper_(new IOThreadHelper(std::move(callbacks_info))) {}
+      io_helper_(new IOThreadHelper(std::move(callbacks_info))) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  thread_checker_.DetachFromThread();
+}
 
-IndexedDBCallbacks::~IndexedDBCallbacks() {}
+IndexedDBCallbacks::~IndexedDBCallbacks() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
-  DCHECK(dispatcher_host_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
 
   if (io_helper_) {
     BrowserThread::PostTask(
@@ -127,7 +133,8 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
 }
 
 void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
-  DCHECK(dispatcher_host_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
@@ -141,7 +148,8 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
 }
 
 void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
-  DCHECK(dispatcher_host_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
 
@@ -168,7 +176,8 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata,
     const IndexedDBDataLossInfo& data_loss_info) {
-  DCHECK(dispatcher_host_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
   DCHECK_NE(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -201,7 +210,8 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
 void IndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
-  DCHECK(dispatcher_host_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(io_helper_);
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_NE(kNoTransaction, host_transaction_id_);
@@ -348,8 +358,9 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                                    const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    IndexedDBValue* value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
-  DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
@@ -387,8 +398,9 @@ void IndexedDBCallbacks::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    IndexedDBValue* value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
-  DCHECK(dispatcher_host_.get());
 
   DCHECK_NE(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
@@ -435,11 +447,11 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
     std::vector<IndexedDBValue>* values) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
   DCHECK_EQ(keys.size(), primary_keys.size());
   DCHECK_EQ(keys.size(), values->size());
-
-  DCHECK(dispatcher_host_.get());
 
   DCHECK_NE(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
@@ -492,8 +504,9 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
 }
 
 void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
-  DCHECK(dispatcher_host_.get());
 
   if (value && value->primary_key.IsValid()) {
     DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -533,8 +546,9 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
 void IndexedDBCallbacks::OnSuccessArray(
     std::vector<IndexedDBReturnValue>* values,
     const IndexedDBKeyPath& key_path) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
-  DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
@@ -576,8 +590,9 @@ void IndexedDBCallbacks::OnSuccessArray(
 }
 
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
-  DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);
@@ -590,7 +605,8 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
 }
 
 void IndexedDBCallbacks::OnSuccess(int64_t value) {
-  DCHECK(dispatcher_host_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   if (io_helper_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -609,8 +625,9 @@ void IndexedDBCallbacks::OnSuccess(int64_t value) {
 }
 
 void IndexedDBCallbacks::OnSuccess() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(dispatcher_host_);
   DCHECK(!io_helper_);
-  DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
   DCHECK_EQ(kNoTransaction, host_transaction_id_);

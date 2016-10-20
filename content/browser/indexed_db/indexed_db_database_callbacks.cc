@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 
+#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_observer_changes.h"
@@ -35,12 +36,18 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     DatabaseCallbacksAssociatedPtrInfo callbacks_info)
     : dispatcher_host_(std::move(dispatcher_host)),
       ipc_thread_id_(ipc_thread_id),
-      io_helper_(new IOThreadHelper(std::move(callbacks_info))) {}
+      io_helper_(new IOThreadHelper(std::move(callbacks_info))) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  thread_checker_.DetachFromThread();
+}
 
-IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {}
+IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void IndexedDBDatabaseCallbacks::OnForcedClose() {
-  if (!dispatcher_host_.get())
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!dispatcher_host_)
     return;
 
   DCHECK(io_helper_);
@@ -52,7 +59,8 @@ void IndexedDBDatabaseCallbacks::OnForcedClose() {
 
 void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
                                                  int64_t new_version) {
-  if (!dispatcher_host_.get())
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!dispatcher_host_)
     return;
 
   DCHECK(io_helper_);
@@ -64,7 +72,8 @@ void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
 
 void IndexedDBDatabaseCallbacks::OnAbort(int64_t host_transaction_id,
                                          const IndexedDBDatabaseError& error) {
-  if (!dispatcher_host_.get())
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!dispatcher_host_)
     return;
 
   dispatcher_host_->FinishTransaction(host_transaction_id, false);
@@ -77,7 +86,8 @@ void IndexedDBDatabaseCallbacks::OnAbort(int64_t host_transaction_id,
 }
 
 void IndexedDBDatabaseCallbacks::OnComplete(int64_t host_transaction_id) {
-  if (!dispatcher_host_.get())
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!dispatcher_host_)
     return;
 
   dispatcher_host_->FinishTransaction(host_transaction_id, true);
@@ -92,6 +102,7 @@ void IndexedDBDatabaseCallbacks::OnComplete(int64_t host_transaction_id) {
 void IndexedDBDatabaseCallbacks::OnDatabaseChange(
     int32_t ipc_database_id,
     std::unique_ptr<IndexedDBObserverChanges> changes) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(io_helper_);
   dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksChanges(
       ipc_thread_id_, ipc_database_id,
