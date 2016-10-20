@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // Called by the stream subclass after it has consumed the final incoming
   // data.
-  void OnFinRead();
+  virtual void OnFinRead();
 
   // Called when new data is available from the sequencer.  Subclasses must
   // actively retrieve the data using the sequencer's Readv() or

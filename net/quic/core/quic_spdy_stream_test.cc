@@ -111,6 +111,7 @@ class QuicSpdyStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
  protected:
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   MockQuicConnection* connection_;
@@ -156,6 +157,19 @@ TEST_P(QuicSpdyStreamTest, ProcessHeaderList) {
   EXPECT_EQ("", stream_->data());
   EXPECT_FALSE(stream_->header_list().empty());
   EXPECT_FALSE(stream_->IsDoneReading());
+}
+
+TEST_P(QuicSpdyStreamTest, ProcessEmptyHeaderList) {
+  FLAGS_quic_limit_uncompressed_headers = true;
+  Initialize(kShouldProcessData);
+
+  QuicHeaderList headers;
+  stream_->OnStreamHeadersPriority(kV3HighestPriority);
+
+  EXPECT_CALL(*session_,
+              SendRstStream(stream_->id(), QUIC_HEADERS_TOO_LARGE, 0));
+  stream_->OnStreamHeaderList(false, 1 << 20, headers);
+  EXPECT_EQ(QUIC_HEADERS_TOO_LARGE, stream_->stream_error());
 }
 
 TEST_P(QuicSpdyStreamTest, ProcessHeadersWithFin) {

@@ -40,6 +40,7 @@ class QuicSessionPeer {
   static std::map<QuicStreamId, QuicStreamOffset>&
   GetLocallyClosedStreamsHighestOffset(QuicSession* session);
   static QuicSession::StaticStreamMap& static_streams(QuicSession* session);
+  static QuicSession::DynamicStreamMap& dynamic_streams(QuicSession* session);
   static std::unordered_set<QuicStreamId>* GetDrainingStreams(
       QuicSession* session);
   static void ActivateStream(QuicSession* session,

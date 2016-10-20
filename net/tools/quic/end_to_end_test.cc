@@ -1181,6 +1181,32 @@ TEST_P(EndToEndTest, InvalidStream) {
   EXPECT_EQ(QUIC_INVALID_STREAM_ID, client_->connection_error());
 }
 
+// Test that if the the server will close the connection if the client attempts
+// to send a request with overly large headers.
+TEST_P(EndToEndTest, LargeHeaders) {
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  string body;
+  test::GenerateBody(&body, kMaxPacketSize);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
+  request.AddHeader("key1", string(15 * 1024, 'a'));
+  request.AddHeader("key2", string(15 * 1024, 'a'));
+  request.AddHeader("key3", string(15 * 1024, 'a'));
+  request.AddBody(body, true);
+
+  client_->SendCustomSynchronousRequest(request);
+  if (FLAGS_quic_limit_uncompressed_headers) {
+    EXPECT_EQ(QUIC_HEADERS_TOO_LARGE, client_->stream_error());
+  } else {
+    EXPECT_EQ(QUIC_STREAM_NO_ERROR, client_->stream_error());
+    EXPECT_EQ(kFooResponseBody, client_->response_body());
+    EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
+  }
+  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+}
+
 TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();

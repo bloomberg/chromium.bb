@@ -101,6 +101,9 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
     spdy_framer_.set_max_decode_buffer_size_bytes(max_decode_buffer_size_bytes);
   }
 
+  void set_max_uncompressed_header_bytes(
+      size_t set_max_uncompressed_header_bytes);
+
  private:
   friend class test::QuicHeadersStreamPeer;
 
@@ -136,15 +139,10 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   void OnCompressedFrameSize(size_t frame_len);
 
   // For force HOL blocking, where stream frames from all streams are
-  // plumbed through headers stream as HTTP/2 data frames.
-  // The following two return false if force_hol_blocking_ is false.
+  // plumbed through headers stream as HTTP/2 data frames.  Return false
+  // if force_hol_blocking_ is false;
   bool OnDataFrameHeader(QuicStreamId stream_id, size_t length, bool fin);
   bool OnStreamFrameData(QuicStreamId stream_id, const char* data, size_t len);
-  // Helper for |WritevStreamData()|.
-  void WriteDataFrame(QuicStreamId stream_id,
-                      base::StringPiece data,
-                      bool fin,
-                      QuicAckListenerInterface* ack_notifier_delegate);
 
   // Returns true if the session is still connected.
   bool IsConnected();

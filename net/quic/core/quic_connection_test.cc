@@ -1165,7 +1165,6 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtServer) {
 }
 
 TEST_P(QuicConnectionTest, AllowSelfAddressChangeToMappedIpv4AddressAtServer) {
-  FLAGS_quic_allow_server_address_change_for_mapped_ipv4 = true;
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   set_perspective(Perspective::IS_SERVER);

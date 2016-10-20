@@ -390,9 +390,8 @@ class QuicStreamFactoryTestBase {
 
   std::unique_ptr<QuicEncryptedPacket> ConstructClientRstPacket() {
     QuicStreamId stream_id = kClientDataStreamId1;
-    return client_maker_.MakeRstPacket(
-        1, true, stream_id,
-        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, version_));
+    return client_maker_.MakeRstPacket(1, true, stream_id,
+                                       QUIC_RST_ACKNOWLEDGEMENT);
   }
 
   static ProofVerifyDetailsChromium DefaultProofVerifyDetails() {

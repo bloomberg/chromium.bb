@@ -1187,11 +1187,7 @@ TEST_P(QuicFramerTest, ReceivedPacketOnClosedPath) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
-  if (FLAGS_quic_packet_numbers_largest_received) {
-    QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
-  } else {
-    QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
-  }
+  QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
 
   // clang-format off
   unsigned char packet[] = {
@@ -1261,11 +1257,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
-  if (FLAGS_quic_packet_numbers_largest_received) {
-    QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
-  } else {
-    QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
-  }
+  QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
 
   // clang-format off
   unsigned char packet[] = {
@@ -1337,11 +1329,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
 }
 
 TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
-  if (FLAGS_quic_packet_numbers_largest_received) {
-    QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
-  } else {
-    QuicFramerPeer::SetLastPacketNumber(&framer_, kPacketNumber - 2);
-  }
+  QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
 
   // clang-format off
   unsigned char packet[] = {
@@ -1413,7 +1401,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
 }
 
 TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
-  FLAGS_quic_packet_numbers_largest_received = true;
   // Test the case when a packet is received from the past and future packet
   // numbers are still calculated relative to the largest received packet.
   QuicPacketHeader header;

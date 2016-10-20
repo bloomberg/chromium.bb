@@ -235,9 +235,8 @@ TEST_P(QuicClientSessionTest, MaxNumStreamsWithRst) {
 
   // Close the stream and receive an RST frame to remove the unfinished stream
   session_->CloseStream(stream->id());
-  session_->OnRstStream(QuicRstStreamFrame(
-      stream->id(), AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()),
-      0));
+  session_->OnRstStream(
+      QuicRstStreamFrame(stream->id(), QUIC_RST_ACKNOWLEDGEMENT, 0));
   // Check that a new one can be created.
   EXPECT_EQ(0u, session_->GetNumOpenOutgoingStreams());
   stream = session_->CreateOutgoingDynamicStream(kDefaultPriority);
