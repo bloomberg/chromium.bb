@@ -5,6 +5,7 @@
 #include "components/certificate_transparency/log_dns_client.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -16,7 +17,6 @@
 #include "base/time/time.h"
 #include "components/base32/base32.h"
 #include "crypto/sha2.h"
-#include "net/base/net_errors.h"
 #include "net/cert/merkle_audit_proof.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
@@ -42,11 +42,11 @@ bool ParseTxtResponse(const net::DnsResponse& response, std::string* txt) {
   // |parsed_record| away as soon as we've extracted the payload, so provide
   // the "null" time.
   auto parsed_record = net::RecordParsed::CreateFrom(&parser, base::Time());
-  if (parsed_record == nullptr)
+  if (!parsed_record)
     return false;
 
   auto* txt_record = parsed_record->rdata<net::TxtRecordRdata>();
-  if (txt_record == nullptr)
+  if (!txt_record)
     return false;
 
   // The draft CT-over-DNS RFC says that there MUST be exactly one string in the
@@ -103,9 +103,6 @@ bool ParseAuditPath(const net::DnsResponse& response,
 // series of DNS requests to get the nodes of the proof.
 class LogDnsClient::AuditProofQuery {
  public:
-  using CompletionCallback =
-      base::Callback<void(int net_error, AuditProofQuery* query)>;
-
   // The LogDnsClient is guaranteed to outlive the AuditProofQuery, so it's safe
   // to leave ownership of |dns_client| with LogDnsClient.
   AuditProofQuery(net::DnsClient* dns_client,
@@ -113,46 +110,91 @@ class LogDnsClient::AuditProofQuery {
                   uint64_t tree_size,
                   const net::NetLogWithSource& net_log);
 
-  // Begins the process of getting an audit proof for the CT log entry with a
-  // leaf hash of |leaf_hash|. The |callback| will be invoked when finished.
-  void Start(base::StringPiece leaf_hash, CompletionCallback callback);
-
-  // Transfers the audit proof to the caller.
-  // Only call this once the query has completed, otherwise the proof will be
-  // incomplete.
-  std::unique_ptr<net::ct::MerkleAuditProof> TakeProof();
+  // Begins the process of getting an audit |proof| for the CT log entry with a
+  // leaf hash of |leaf_hash|. If it cannot be obtained synchronously,
+  // net::ERR_IO_PENDING will be returned and |callback| will be invoked when
+  // the operation has completed asynchronously.
+  // Ownership of |proof| remains with the caller, and it must not be deleted
+  // until the operation is complete.
+  net::Error Start(std::string leaf_hash,
+                   const net::CompletionCallback& callback,
+                   net::ct::MerkleAuditProof* proof);
 
  private:
-  // Requests the leaf index of the CT log entry with |leaf_hash|.
-  void QueryLeafIndex(base::StringPiece leaf_hash);
+  enum class State {
+    NONE,
+    REQUEST_LEAF_INDEX,
+    REQUEST_LEAF_INDEX_COMPLETE,
+    REQUEST_AUDIT_PROOF_NODES,
+    REQUEST_AUDIT_PROOF_NODES_COMPLETE,
+  };
 
-  // Processes the response to a leaf index request.
-  // The received leaf index will be added to the proof.
-  void QueryLeafIndexComplete(net::DnsTransaction* transaction,
-                              int net_error,
-                              const net::DnsResponse* response);
+  net::Error DoLoop(net::Error result);
 
-  // Queries a CT log to retrieve part of an audit proof. The |node_index|
-  // indicates which node of the audit proof/ should be requested. The CT log
-  // may return up to 7 nodes, starting from |node_index| (this is the maximum
-  // that will fit in a DNS UDP packet). The nodes will be appended to the
-  // proof.
-  void QueryAuditProofNodes(uint64_t node_index);
+  // When a DnsTransaction completes, store the response and resume the state
+  // machine. It is safe to store a pointer to |response| because |transaction|
+  // is kept alive in |current_dns_transaction_|.
+  void OnDnsTransactionComplete(net::DnsTransaction* transaction,
+                                int net_error,
+                                const net::DnsResponse* response);
 
-  // Processes the response to an audit proof request.
-  // This will contain some, but not necessarily all, of the audit proof nodes.
-  void QueryAuditProofNodesComplete(net::DnsTransaction* transaction,
-                                    int net_error,
-                                    const net::DnsResponse* response);
+  // Requests the leaf index for the CT log entry with |leaf_hash_|.
+  net::Error RequestLeafIndex();
 
+  // Stores the received leaf index in |proof_->leaf_index|.
+  // If successful, the audit proof nodes will be requested next.
+  net::Error RequestLeafIndexComplete(net::Error result);
+
+  // Requests the next batch of audit proof nodes from a CT log.
+  // The index of the first node required is determined by looking at how many
+  // nodes are already in |proof_->nodes|.
+  // The CT log may return up to 7 nodes - this is the maximum allowed by the
+  // CT-over-DNS draft RFC, as a TXT RDATA string can have a maximum length of
+  // 255 bytes and each node is 32 bytes long (a SHA-256 hash).
+  //
+  // The performance of this could be improved by sending all of the expected
+  // requests up front. Each response can contain a maximum of 7 audit path
+  // nodes, so for an audit proof of size 20, it could send 3 queries (for nodes
+  // 0-6, 7-13 and 14-19) immediately. Currently, it sends only the first and
+  // then, based on the number of nodes received, sends the next query.
+  // The complexity of the code would increase though, as it would need to
+  // detect gaps in the audit proof caused by the server not responding with the
+  // anticipated number of nodes. It would also undermine LogDnsClient's ability
+  // to rate-limit DNS requests.
+  net::Error RequestAuditProofNodes();
+
+  // Appends the received audit proof nodes to |proof_->nodes|.
+  // If any nodes are missing, another request will follow this one.
+  net::Error RequestAuditProofNodesComplete(net::Error result);
+
+  // Sends a TXT record request for the domain |qname|.
+  // Returns true if the request could be started.
+  // OnDnsTransactionComplete() will be invoked with the result of the request.
+  bool StartDnsTransaction(const std::string& qname);
+
+  // The next state that this query will enter.
+  State next_state_;
+  // The DNS domain of the CT log that is being queried.
   std::string domain_for_log_;
+  // The Merkle leaf hash of the CT log entry an audit proof is required for.
+  std::string leaf_hash_;
+  // The size of the CT log's tree, from which the proof is requested.
   // TODO(robpercival): Remove |tree_size| once |proof_| has a tree_size member.
   uint64_t tree_size_;
-  std::unique_ptr<net::ct::MerkleAuditProof> proof_;
-  CompletionCallback callback_;
+  // The audit proof to populate.
+  net::ct::MerkleAuditProof* proof_;
+  // The callback to invoke when the query is complete.
+  net::CompletionCallback callback_;
+  // The DnsClient to use for sending DNS requests to the CT log.
   net::DnsClient* dns_client_;
+  // The most recent DNS request. Null if no DNS requests have been made.
   std::unique_ptr<net::DnsTransaction> current_dns_transaction_;
+  // The most recent DNS response. Only valid so long as the corresponding DNS
+  // request is stored in |current_dns_transaction_|.
+  const net::DnsResponse* last_dns_response_;
+  // The NetLog that DNS transactions will log to.
   net::NetLogWithSource net_log_;
+  // Produces WeakPtrs to |this| for binding callbacks.
   base::WeakPtrFactory<AuditProofQuery> weak_ptr_factory_;
 };
 
@@ -161,7 +203,8 @@ LogDnsClient::AuditProofQuery::AuditProofQuery(
     const std::string& domain_for_log,
     uint64_t tree_size,
     const net::NetLogWithSource& net_log)
-    : domain_for_log_(domain_for_log),
+    : next_state_(State::NONE),
+      domain_for_log_(domain_for_log),
       tree_size_(tree_size),
       dns_client_(dns_client),
       net_log_(net_log),
@@ -170,68 +213,97 @@ LogDnsClient::AuditProofQuery::AuditProofQuery(
   DCHECK(!domain_for_log_.empty());
 }
 
-void LogDnsClient::AuditProofQuery::Start(base::StringPiece leaf_hash,
-                                          CompletionCallback callback) {
-  current_dns_transaction_.reset();
-  proof_ = base::MakeUnique<net::ct::MerkleAuditProof>();
+// |leaf_hash| is not a const-ref to allow callers to std::move that string into
+// the method, avoiding the need to make a copy.
+net::Error LogDnsClient::AuditProofQuery::Start(
+    std::string leaf_hash,
+    const net::CompletionCallback& callback,
+    net::ct::MerkleAuditProof* proof) {
+  // It should not already be in progress.
+  DCHECK_EQ(State::NONE, next_state_);
+  proof_ = proof;
+  leaf_hash_ = std::move(leaf_hash);
   callback_ = callback;
-  QueryLeafIndex(leaf_hash);
+  // The first step in the query is to request the leaf index corresponding to
+  // |leaf_hash| from the CT log.
+  next_state_ = State::REQUEST_LEAF_INDEX;
+  // Begin the state machine.
+  return DoLoop(net::OK);
 }
 
-std::unique_ptr<net::ct::MerkleAuditProof>
-LogDnsClient::AuditProofQuery::TakeProof() {
-  return std::move(proof_);
+net::Error LogDnsClient::AuditProofQuery::DoLoop(net::Error result) {
+  CHECK_NE(State::NONE, next_state_);
+  do {
+    State state = next_state_;
+    next_state_ = State::NONE;
+    switch (state) {
+      case State::REQUEST_LEAF_INDEX:
+        result = RequestLeafIndex();
+        break;
+      case State::REQUEST_LEAF_INDEX_COMPLETE:
+        result = RequestLeafIndexComplete(result);
+        break;
+      case State::REQUEST_AUDIT_PROOF_NODES:
+        result = RequestAuditProofNodes();
+        break;
+      case State::REQUEST_AUDIT_PROOF_NODES_COMPLETE:
+        result = RequestAuditProofNodesComplete(result);
+        break;
+      case State::NONE:
+        NOTREACHED();
+        break;
+    }
+  } while (result != net::ERR_IO_PENDING && next_state_ != State::NONE);
+
+  return result;
 }
 
-void LogDnsClient::AuditProofQuery::QueryLeafIndex(
-    base::StringPiece leaf_hash) {
-  std::string encoded_leaf_hash =
-      base32::Base32Encode(leaf_hash, base32::Base32EncodePolicy::OMIT_PADDING);
-  DCHECK_EQ(encoded_leaf_hash.size(), 52u);
-
-  std::string qname = base::StringPrintf(
-      "%s.hash.%s.", encoded_leaf_hash.c_str(), domain_for_log_.data());
-
-  net::DnsTransactionFactory* factory = dns_client_->GetTransactionFactory();
-  if (factory == nullptr) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net::Error::ERR_NAME_RESOLUTION_FAILED,
-                              base::Unretained(this)));
-    return;
-  }
-
-  net::DnsTransactionFactory::CallbackType transaction_callback =
-      base::Bind(&LogDnsClient::AuditProofQuery::QueryLeafIndexComplete,
-                 weak_ptr_factory_.GetWeakPtr());
-
-  current_dns_transaction_ = factory->CreateTransaction(
-      qname, net::dns_protocol::kTypeTXT, transaction_callback, net_log_);
-
-  current_dns_transaction_->Start();
-}
-
-void LogDnsClient::AuditProofQuery::QueryLeafIndexComplete(
+void LogDnsClient::AuditProofQuery::OnDnsTransactionComplete(
     net::DnsTransaction* transaction,
     int net_error,
     const net::DnsResponse* response) {
-  // If we've received no response but no net::error either (shouldn't
-  // happen),
-  // report the response as invalid.
-  if (response == nullptr && net_error == net::OK) {
-    net_error = net::ERR_INVALID_RESPONSE;
+  DCHECK_EQ(current_dns_transaction_.get(), transaction);
+  last_dns_response_ = response;
+  net::Error result = DoLoop(static_cast<net::Error>(net_error));
+
+  // If DoLoop() indicates that I/O is pending, don't invoke the completion
+  // callback. OnDnsTransactionComplete() will be invoked again once the I/O
+  // is complete, and can invoke the completion callback then if appropriate.
+  if (result != net::ERR_IO_PENDING) {
+    // The callback will delete this query (now that it has finished), so copy
+    // |callback_| before running it so that it is not deleted along with the
+    // query, mid-callback-execution (which would result in a crash).
+    base::ResetAndReturn(&callback_).Run(result);
+  }
+}
+
+net::Error LogDnsClient::AuditProofQuery::RequestLeafIndex() {
+  std::string encoded_leaf_hash = base32::Base32Encode(
+      leaf_hash_, base32::Base32EncodePolicy::OMIT_PADDING);
+  DCHECK_EQ(encoded_leaf_hash.size(), 52u);
+
+  std::string qname = base::StringPrintf(
+      "%s.hash.%s.", encoded_leaf_hash.c_str(), domain_for_log_.c_str());
+
+  if (!StartDnsTransaction(qname)) {
+    return net::ERR_NAME_RESOLUTION_FAILED;
   }
 
-  if (net_error != net::OK) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net_error, base::Unretained(this)));
-    return;
+  next_state_ = State::REQUEST_LEAF_INDEX_COMPLETE;
+  return net::ERR_IO_PENDING;
+}
+
+// Stores the received leaf index in |proof_->leaf_index|.
+// If successful, the audit proof nodes will be requested next.
+net::Error LogDnsClient::AuditProofQuery::RequestLeafIndexComplete(
+    net::Error result) {
+  if (result != net::OK) {
+    return result;
   }
 
-  if (!ParseLeafIndex(*response, &proof_->leaf_index)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net::ERR_DNS_MALFORMED_RESPONSE,
-                              base::Unretained(this)));
-    return;
+  DCHECK(last_dns_response_);
+  if (!ParseLeafIndex(*last_dns_response_, &proof_->leaf_index)) {
+    return net::ERR_DNS_MALFORMED_RESPONSE;
   }
 
   // Reject leaf index if it is out-of-range.
@@ -241,81 +313,75 @@ void LogDnsClient::AuditProofQuery::QueryLeafIndexComplete(
   // c) there is a bug server-side.
   // The first two are more likely, so return ERR_INVALID_ARGUMENT.
   if (proof_->leaf_index >= tree_size_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net::ERR_INVALID_ARGUMENT,
-                              base::Unretained(this)));
-    return;
+    return net::ERR_INVALID_ARGUMENT;
   }
 
-  // QueryAuditProof for the first batch of audit proof_ nodes (i.e. starting
-  // from 0).
-  QueryAuditProofNodes(0 /* start node index */);
+  next_state_ = State::REQUEST_AUDIT_PROOF_NODES;
+  return net::OK;
 }
 
-void LogDnsClient::AuditProofQuery::QueryAuditProofNodes(uint64_t node_index) {
-  DCHECK_LT(proof_->leaf_index, tree_size_);
-  DCHECK_LT(node_index,
-            net::ct::CalculateAuditPathLength(proof_->leaf_index, tree_size_));
+net::Error LogDnsClient::AuditProofQuery::RequestAuditProofNodes() {
+  // Test pre-conditions (should be guaranteed by DNS response validation).
+  if (proof_->leaf_index >= tree_size_ ||
+      proof_->nodes.size() >=
+          net::ct::CalculateAuditPathLength(proof_->leaf_index, tree_size_)) {
+    return net::ERR_UNEXPECTED;
+  }
 
   std::string qname = base::StringPrintf(
-      "%" PRIu64 ".%" PRIu64 ".%" PRIu64 ".tree.%s.", node_index,
-      proof_->leaf_index, tree_size_, domain_for_log_.data());
+      "%zu.%" PRIu64 ".%" PRIu64 ".tree.%s.", proof_->nodes.size(),
+      proof_->leaf_index, tree_size_, domain_for_log_.c_str());
 
-  net::DnsTransactionFactory* factory = dns_client_->GetTransactionFactory();
-  if (factory == nullptr) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net::Error::ERR_NAME_RESOLUTION_FAILED,
-                              base::Unretained(this)));
-    return;
+  if (!StartDnsTransaction(qname)) {
+    return net::ERR_NAME_RESOLUTION_FAILED;
   }
 
-  net::DnsTransactionFactory::CallbackType transaction_callback =
-      base::Bind(&LogDnsClient::AuditProofQuery::QueryAuditProofNodesComplete,
-                 weak_ptr_factory_.GetWeakPtr());
-
-  current_dns_transaction_ = factory->CreateTransaction(
-      qname, net::dns_protocol::kTypeTXT, transaction_callback, net_log_);
-  current_dns_transaction_->Start();
+  next_state_ = State::REQUEST_AUDIT_PROOF_NODES_COMPLETE;
+  return net::ERR_IO_PENDING;
 }
 
-void LogDnsClient::AuditProofQuery::QueryAuditProofNodesComplete(
-    net::DnsTransaction* transaction,
-    int net_error,
-    const net::DnsResponse* response) {
-  // If we receive no response but no net::error either (shouldn't happen),
-  // report the response as invalid.
-  if (response == nullptr && net_error == net::OK) {
-    net_error = net::ERR_INVALID_RESPONSE;
-  }
-
-  if (net_error != net::OK) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net_error, base::Unretained(this)));
-    return;
+net::Error LogDnsClient::AuditProofQuery::RequestAuditProofNodesComplete(
+    net::Error result) {
+  if (result != net::OK) {
+    return result;
   }
 
   const uint64_t audit_path_length =
       net::ct::CalculateAuditPathLength(proof_->leaf_index, tree_size_);
+
   // The calculated |audit_path_length| can't ever be greater than 64, so
   // deriving the amount of memory to reserve from the untrusted |leaf_index|
   // is safe.
   proof_->nodes.reserve(audit_path_length);
 
-  if (!ParseAuditPath(*response, proof_.get())) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback_, net::ERR_DNS_MALFORMED_RESPONSE,
-                              base::Unretained(this)));
-    return;
+  DCHECK(last_dns_response_);
+  if (!ParseAuditPath(*last_dns_response_, proof_)) {
+    return net::ERR_DNS_MALFORMED_RESPONSE;
   }
 
-  const uint64_t audit_path_nodes_received = proof_->nodes.size();
-  if (audit_path_nodes_received < audit_path_length) {
-    QueryAuditProofNodes(audit_path_nodes_received);
-    return;
+  // Keep requesting more proof nodes until all of them are received.
+  if (proof_->nodes.size() < audit_path_length) {
+    next_state_ = State::REQUEST_AUDIT_PROOF_NODES;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback_, net::OK, base::Unretained(this)));
+  return net::OK;
+}
+
+bool LogDnsClient::AuditProofQuery::StartDnsTransaction(
+    const std::string& qname) {
+  net::DnsTransactionFactory* factory = dns_client_->GetTransactionFactory();
+  if (!factory) {
+    return false;
+  }
+
+  current_dns_transaction_ = factory->CreateTransaction(
+      qname, net::dns_protocol::kTypeTXT,
+      base::Bind(&LogDnsClient::AuditProofQuery::OnDnsTransactionComplete,
+                 weak_ptr_factory_.GetWeakPtr()),
+      net_log_);
+
+  current_dns_transaction_->Start();
+  return true;
 }
 
 LogDnsClient::LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
@@ -342,53 +408,41 @@ void LogDnsClient::OnInitialDNSConfigRead() {
   UpdateDnsConfig();
 }
 
-// The performance of this could be improved by sending all of the expected
-// queries up front. Each response can contain a maximum of 7 audit path nodes,
-// so for an audit proof of size 20, it could send 3 queries (for nodes 0-6,
-// 7-13 and 14-19) immediately. Currently, it sends only the first and then,
-// based on the number of nodes received, sends the next query. The complexity
-// of the code would increase though, as it would need to detect gaps in the
-// audit proof caused by the server not responding with the anticipated number
-// of nodes. Ownership of the proof would need to change, as it would be shared
-// between simultaneous DNS transactions. Throttling of queries would also need
-// to take into account this increase in parallelism.
-void LogDnsClient::QueryAuditProof(const std::string& domain_for_log,
-                                   base::StringPiece leaf_hash,
-                                   uint64_t tree_size,
-                                   const AuditProofCallback& callback) {
+// |leaf_hash| is not a const-ref to allow callers to std::move that string into
+// the method, avoiding LogDnsClient::AuditProofQuery having to make a copy.
+net::Error LogDnsClient::QueryAuditProof(
+    base::StringPiece domain_for_log,
+    std::string leaf_hash,
+    uint64_t tree_size,
+    net::ct::MerkleAuditProof* proof,
+    const net::CompletionCallback& callback) {
+  DCHECK(proof);
+
   if (domain_for_log.empty() || leaf_hash.size() != crypto::kSHA256Length) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, net::Error::ERR_INVALID_ARGUMENT, nullptr));
-    return;
+    return net::ERR_INVALID_ARGUMENT;
   }
 
   if (HasMaxConcurrentQueriesInProgress()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, net::Error::ERR_TEMPORARILY_THROTTLED, nullptr));
-    return;
+    return net::ERR_TEMPORARILY_THROTTLED;
   }
 
-  audit_proof_queries_.emplace_back(new AuditProofQuery(
-      dns_client_.get(), domain_for_log, tree_size, net_log_));
+  AuditProofQuery* query = new AuditProofQuery(
+      dns_client_.get(), domain_for_log.as_string(), tree_size, net_log_);
+  // Transfers ownership of |query| to |audit_proof_queries_|.
+  audit_proof_queries_.emplace_back(query);
 
-  AuditProofQuery::CompletionCallback internal_callback =
-      base::Bind(&LogDnsClient::QueryAuditProofComplete,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
-
-  audit_proof_queries_.back()->Start(leaf_hash, internal_callback);
+  return query->Start(std::move(leaf_hash),
+                      base::Bind(&LogDnsClient::QueryAuditProofComplete,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 base::Unretained(query), callback),
+                      proof);
 }
 
-void LogDnsClient::QueryAuditProofComplete(const AuditProofCallback& callback,
-                                           int result,
-                                           AuditProofQuery* query) {
+void LogDnsClient::QueryAuditProofComplete(
+    AuditProofQuery* query,
+    const net::CompletionCallback& callback,
+    int net_error) {
   DCHECK(query);
-
-  std::unique_ptr<net::ct::MerkleAuditProof> proof;
-  if (result == net::OK) {
-    proof = query->TakeProof();
-  }
 
   // Finished with the query - destroy it.
   auto query_iterator =
@@ -399,8 +453,7 @@ void LogDnsClient::QueryAuditProofComplete(const AuditProofCallback& callback,
   DCHECK(query_iterator != audit_proof_queries_.end());
   audit_proof_queries_.erase(query_iterator);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, result, base::Passed(&proof)));
+  callback.Run(net_error);
 }
 
 bool LogDnsClient::HasMaxConcurrentQueriesInProgress() const {

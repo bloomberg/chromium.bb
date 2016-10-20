@@ -8,18 +8,17 @@
 #include <stdint.h>
 
 #include <list>
-#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "net/base/completion_callback.h"
+#include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
 class DnsClient;
-class DnsResponse;
-class DnsTransaction;
 namespace ct {
 struct MerkleAuditProof;
 }  // namespace ct
@@ -34,15 +33,6 @@ namespace certificate_transparency {
 // It must be created and deleted on the same thread. It is not thread-safe.
 class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
  public:
-  // Invoked when an audit proof query completes.
-  // If an error occurred, |net_error| will be a net::Error code, otherwise it
-  // will be net::OK and |proof| will be the audit proof that was received.
-  // The log ID of |proof| will not be set, as that is not known by this class,
-  // but the leaf index will be set.
-  using AuditProofCallback =
-      base::Callback<void(int net_error,
-                          std::unique_ptr<net::ct::MerkleAuditProof> proof)>;
-
   // Creates a log client that will take ownership of |dns_client| and use it
   // to perform DNS queries. Queries will be logged to |net_log|.
   // The |dns_client| does not need to be configured first - this will be done
@@ -66,28 +56,43 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   void OnInitialDNSConfigRead() override;
 
   // Queries a CT log to retrieve an audit proof for the leaf with |leaf_hash|.
-  // The |leaf_hash| is the SHA-256 Merkle leaf hash (see RFC6962, section 2.1).
-  // The size of the CT log tree must be provided in |tree_size|.
   // The log is identified by |domain_for_log|, which is the DNS name used as a
   // suffix for all queries.
-  // The |callback| is invoked when the query is complete, or an error occurs.
-  void QueryAuditProof(const std::string& domain_for_log,
-                       base::StringPiece leaf_hash,
-                       uint64_t tree_size,
-                       const AuditProofCallback& callback);
+  // The |leaf_hash| is the SHA-256 Merkle leaf hash (see RFC6962, section 2.1).
+  // The size of the CT log tree, for which the proof is requested, must be
+  // provided in |tree_size|.
+  // The leaf index and audit proof obtained from the CT log will be placed in
+  // |proof|.
+  // If the proof cannot be obtained synchronously, this method will return
+  // net::ERR_IO_PENDING and invoke |callback| once the query is complete.
+  // Returns:
+  // - net::OK if the query was successful.
+  // - net::ERR_IO_PENDING if the query was successfully started and is
+  //   continuing asynchronously.
+  // - net::ERR_TEMPORARILY_THROTTLED if the maximum number of concurrent
+  //   queries are already in progress. Try again later.
+  //   TODO(robpercival): Provide a mechanism to notify the caller when no
+  //   longer throttled.
+  // - net::ERR_NAME_RESOLUTION_FAILED if DNS queries are not possible.
+  //   Check that the DnsConfig returned by NetworkChangeNotifier is valid.
+  // - net::ERR_INVALID_ARGUMENT if an argument is invalid, e.g. |leaf_hash| is
+  //   not a SHA-256 hash.
+  net::Error QueryAuditProof(base::StringPiece domain_for_log,
+                             std::string leaf_hash,
+                             uint64_t tree_size,
+                             net::ct::MerkleAuditProof* proof,
+                             const net::CompletionCallback& callback);
 
  private:
-  // An audit proof query that is in progress.
   class AuditProofQuery;
 
   // Invoked when an audit proof query completes.
-  // |callback| is the user-provided callback that should be notified.
-  // |result| is a net::Error indicating success or failure.
   // |query| is the query that has completed.
-  // The query is removed from |audit_proof_queries_| by this method.
-  void QueryAuditProofComplete(const AuditProofCallback& callback,
-                               int result,
-                               AuditProofQuery* query);
+  // |callback| is the user-provided callback that should be notified.
+  // |net_error| is a net::Error indicating success or failure.
+  void QueryAuditProofComplete(AuditProofQuery* query,
+                               const net::CompletionCallback& callback,
+                               int net_error);
 
   // Returns true if the maximum number of queries are currently in flight.
   // If the maximum number of concurrency queries is set to 0, this will always
@@ -101,7 +106,9 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   std::unique_ptr<net::DnsClient> dns_client_;
   // Passed to the DNS client for logging.
   net::NetLogWithSource net_log_;
-  // Audit proof queries that haven't completed yet.
+  // A FIFO queue of ongoing queries. Since entries will always be appended to
+  // the end and lookups will typically yield entries at the beginning,
+  // std::list is an efficient choice.
   std::list<std::unique_ptr<AuditProofQuery>> audit_proof_queries_;
   // The maximum number of queries that can be in flight at one time.
   size_t max_concurrent_queries_;
