@@ -287,7 +287,10 @@ class LayerTreeHostTestReadyToActivateNonEmpty
 
 // No single thread test because the commit goes directly to the active tree in
 // single thread mode, so notify ready to activate is skipped.
-REMOTE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
+// No remote test because we currently don't deserialize FakePictureLayer,
+// so on the impl side, PictureLayerImpl is created instead of
+// FakePictureLayerImpl, see crbug/657871.
+MULTI_THREAD_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
 
 // Test if the LTHI receives ReadyToDraw notifications from the TileManager when
 // no raster tasks get scheduled.
