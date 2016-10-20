@@ -10,8 +10,8 @@ import json
 import mock
 
 from chromite.cbuildbot import buildbucket_lib
-from chromite.cbuildbot import constants
 from chromite.lib import auth
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 
 class BuildbucketClientTest(cros_test_lib.MockTestCase):
@@ -159,7 +159,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         False,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
-        status=buildbucket_lib.COMPLETED_STATUS,
+        status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
         start_cursor='start_cursor',
         max_builds=10)
 
@@ -215,7 +215,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         limit=limit,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
-        status=buildbucket_lib.COMPLETED_STATUS)
+        status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
 
   def testSearchAllBuildsWithCursor(self):
     """Test SearchAllBuilds with next_cursor."""

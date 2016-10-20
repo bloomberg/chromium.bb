@@ -110,12 +110,11 @@ class CleanUpStage(generic_stages.BuilderStage):
       buildbucket_client = buildbucket_lib.BuildbucketClient(
           service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
 
-      statuses = [buildbucket_lib.SCHEDULED_STATUS,
-                  buildbucket_lib.STARTED_STATUS]
       buildbucket_ids = []
       # Search for scheduled/started slave builds in chromiumos waterfall
       # and chromeos waterfall.
-      for status in statuses:
+      for status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
+                     constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
         builds = buildbucket_client.SearchAllBuilds(
             self._run.options.test_tryjob,
             self._run.options.debug,

@@ -19,9 +19,9 @@ import json
 import os
 import urllib
 
-from chromite.lib import constants
 from chromite.cbuildbot import topology
 from chromite.lib import auth
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
@@ -29,13 +29,6 @@ from chromite.lib import retry_util
 PUT_METHOD = 'PUT'
 POST_METHOD = 'POST'
 GET_METHOD = 'GET'
-
-# Statuses
-STARTED_STATUS = 'STARTED'
-SCHEDULED_STATUS = 'SCHEDULED'
-COMPLETED_STATUS = 'COMPLETED'
-
-STATUS_LIST = (STARTED_STATUS, SCHEDULED_STATUS, COMPLETED_STATUS)
 
 # Default limit for SearchAllBuilds.
 SEARCH_LIMIT_DEFAULT = 100
@@ -228,8 +221,9 @@ class BuildbucketClient(object):
       for tag in tags:
         params.append(('tag', tag))
     if status:
-      if status not in STATUS_LIST:
-        raise ValueError('status must be one of %s' % str(STATUS_LIST))
+      if status not in constants.BUILDBUCKET_BUILDER_STATUSES:
+        raise ValueError('status must be one of %s' %
+                         str(constants.BUILDBUCKET_BUILDER_STATUSES))
       params.append(('status', status))
     if start_cursor:
       params.append(('start_cursor', start_cursor))

@@ -1648,8 +1648,8 @@ class PreCQLauncherStage(SyncStage):
         buildbucket_id, testjob, dryrun=self._run.options.debug)
 
     status = buildbucket_lib.GetBuildStatus(get_content)
-    if status in [buildbucket_lib.STARTED_STATUS,
-                  buildbucket_lib.SCHEDULED_STATUS]:
+    if status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
+                  constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
       logging.info('Cancelling old build %s %s', buildbucket_id, status)
       cancel_content = self.buildbucket_client.CancelBuildRequest(
           buildbucket_id, testjob, dryrun=self._run.options.debug)
