@@ -182,10 +182,11 @@ bool SelectionController::handleMousePressEventSingleClick(
         const PositionInFlatTree end = newSelection.end();
         int distanceToStart = textDistance(start, pos);
         int distanceToEnd = textDistance(pos, end);
-        if (distanceToStart <= distanceToEnd)
-          newSelection = createVisibleSelection(end, pos);
-        else
-          newSelection = createVisibleSelection(start, pos);
+        newSelection = createVisibleSelection(
+            SelectionInFlatTree::Builder()
+                .collapse(distanceToStart <= distanceToEnd ? end : start)
+                .extend(pos)
+                .build());
       }
     } else {
       newSelection.setExtent(pos);
@@ -443,7 +444,8 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(
       Node* containerNode = markerPosition.computeContainerNode();
       const PositionInFlatTree start(containerNode, markers[0]->startOffset());
       const PositionInFlatTree end(containerNode, markers[0]->endOffset());
-      newSelection = createVisibleSelection(start, end);
+      newSelection = createVisibleSelection(
+          SelectionInFlatTree::Builder().collapse(start).extend(end).build());
     }
   }
 

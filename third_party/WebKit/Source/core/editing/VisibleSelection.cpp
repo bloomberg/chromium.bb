@@ -117,22 +117,6 @@ VisibleSelectionInFlatTree createVisibleSelection(
   return VisibleSelectionInFlatTree::create(selection);
 }
 
-VisibleSelectionInFlatTree createVisibleSelection(
-    const PositionInFlatTree& base,
-    const PositionInFlatTree& extent,
-    TextAffinity affinity,
-    bool isDirectional) {
-  DCHECK(!needsLayoutTreeUpdate(base));
-  DCHECK(!needsLayoutTreeUpdate(extent));
-  // TODO(yosin): We should use |Builder::setBaseAndExtent()| once we get rid
-  // of callers passing |base.istNull()| but |extent.isNotNull()|.
-  SelectionInFlatTree::Builder builder;
-  builder.setBaseAndExtentDeprecated(base, extent)
-      .setAffinity(affinity)
-      .setIsDirectional(isDirectional);
-  return createVisibleSelection(builder.build());
-}
-
 template <typename Strategy>
 static SelectionType computeSelectionType(
     const PositionTemplate<Strategy>& start,

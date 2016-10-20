@@ -290,8 +290,10 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded) {
 
   // top to bottom
   selection().setNonDirectionalSelectionIfNeeded(
-      createVisibleSelection(PositionInFlatTree(top, 1),
-                             PositionInFlatTree(bottom, 3)),
+      createVisibleSelection(SelectionInFlatTree::Builder()
+                                 .collapse(PositionInFlatTree(top, 1))
+                                 .extend(PositionInFlatTree(bottom, 3))
+                                 .build()),
       CharacterGranularity);
   EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().base());
   EXPECT_EQ(Position::beforeNode(host), visibleSelectionInDOMTree().extent());
@@ -306,8 +308,10 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded) {
 
   // bottom to top
   selection().setNonDirectionalSelectionIfNeeded(
-      createVisibleSelection(PositionInFlatTree(bottom, 3),
-                             PositionInFlatTree(top, 1)),
+      createVisibleSelection(SelectionInFlatTree::Builder()
+                                 .collapse(PositionInFlatTree(bottom, 3))
+                                 .extend(PositionInFlatTree(top, 1))
+                                 .build()),
       CharacterGranularity);
   EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().base());
   EXPECT_EQ(Position::beforeNode(bottom->parentNode()),

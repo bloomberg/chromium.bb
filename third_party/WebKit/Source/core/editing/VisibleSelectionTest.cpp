@@ -215,9 +215,11 @@ TEST_F(VisibleSelectionTest, ShadowCrossing) {
   VisibleSelection selection =
       createVisibleSelection(Position::firstPositionInNode(one),
                              Position::lastPositionInNode(shadowRoot));
-  VisibleSelectionInFlatTree selectionInFlatTree =
-      createVisibleSelection(PositionInFlatTree::firstPositionInNode(one),
-                             PositionInFlatTree::lastPositionInNode(host));
+  VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
+      SelectionInFlatTree::Builder()
+          .collapse(PositionInFlatTree::firstPositionInNode(one))
+          .extend(PositionInFlatTree::lastPositionInNode(host))
+          .build());
 
   EXPECT_EQ(Position(host, PositionAnchorType::BeforeAnchor),
             selection.start());
@@ -245,9 +247,11 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes) {
 
   VisibleSelection selection = createVisibleSelection(
       Position::firstPositionInNode(one), Position::lastPositionInNode(two));
-  VisibleSelectionInFlatTree selectionInFlatTree =
-      createVisibleSelection(PositionInFlatTree::firstPositionInNode(one),
-                             PositionInFlatTree::lastPositionInNode(two));
+  VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
+      SelectionInFlatTree::Builder()
+          .collapse(PositionInFlatTree::firstPositionInNode(one))
+          .extend(PositionInFlatTree::lastPositionInNode(two))
+          .build());
 
   EXPECT_EQ(Position(one->firstChild(), 0), selection.start());
   EXPECT_EQ(Position(two->firstChild(), 2), selection.end());
@@ -287,9 +291,11 @@ TEST_F(VisibleSelectionTest, ShadowNested) {
   VisibleSelection selection =
       createVisibleSelection(Position::firstPositionInNode(one),
                              Position::lastPositionInNode(shadowRoot2));
-  VisibleSelectionInFlatTree selectionInFlatTree =
-      createVisibleSelection(PositionInFlatTree::firstPositionInNode(one),
-                             PositionInFlatTree::afterNode(eight));
+  VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
+      SelectionInFlatTree::Builder()
+          .collapse(PositionInFlatTree::firstPositionInNode(one))
+          .extend(PositionInFlatTree::afterNode(eight))
+          .build());
 
   EXPECT_EQ(Position(host, PositionAnchorType::BeforeAnchor),
             selection.start());

@@ -230,11 +230,6 @@ CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&,
 
 CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const SelectionInFlatTree&);
-CORE_EXPORT VisibleSelectionInFlatTree
-createVisibleSelection(const PositionInFlatTree& base,
-                       const PositionInFlatTree& extent,
-                       TextAffinity = SelDefaultAffinity,
-                       bool isDirectional = false);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
