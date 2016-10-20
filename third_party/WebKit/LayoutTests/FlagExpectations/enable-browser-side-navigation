@@ -128,11 +128,20 @@ crbug.com/648600 virtual/spv2/fast/overflow/overflow-height-float-not-removed-cr
 crbug.com/648608 http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
 crbug.com/648608 http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 
+# https://crbug.com/657834: <object> must failback to its alternative content.
+Bug(657834) fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
+Bug(657834) imported/wpt/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
+Bug(657834) http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
+Bug(657834) fast/table/giantCellspacing.html [ Failure ]
+Bug(657834) fast/css/acid2-pixel.html [ Crash Timeout Failure ]
+Bug(657834) fast/css/acid2.html [ Crash Timeout Failure ]
+Bug(657834) virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
+Bug(657834) plugins/object-onfocus-mutation-crash.html [ Timeout ]
+
 # Untriaged navigation
 Bug(none) fast/dom/Document/open-with-pending-load.html [ Failure ]
 Bug(none) fast/dom/HTMLAnchorElement/anchor-no-multiple-windows.html [ Failure ]
 Bug(none) http/tests/loading/pdf-commit-load-callbacks.html [ Crash Failure ]
-Bug(none) http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
 Bug(none) http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
 Bug(none) http/tests/navigation/response204.html [ Timeout ]
 Bug(none) http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
@@ -141,12 +150,5 @@ Bug(none) virtual/stable/http/tests/navigation/forward-to-fragment-fires-onload.
 Bug(none) virtual/stable/http/tests/navigation/response204.html [ Timeout ]
 
 # Untriaged other
-Bug(none) fast/css/acid2-pixel.html [ Crash Timeout Failure ]
-Bug(none) fast/css/acid2.html [ Crash Timeout Failure ]
-Bug(none) fast/table/giantCellspacing.html [ Failure ]
-Bug(none) fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
 Bug(none) http/tests/misc/policy-delegate-called-twice.html [ Failure ]
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
-Bug(none) imported/wpt/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
-Bug(none) plugins/object-onfocus-mutation-crash.html [ Timeout ]
-Bug(none) virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
