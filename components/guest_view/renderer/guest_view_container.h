@@ -41,6 +41,8 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   void RegisterDestructionCallback(v8::Local<v8::Function> callback,
                                    v8::Isolate* isolate);
+  void RegisterElementResizeCallback(v8::Local<v8::Function> callback,
+                                     v8::Isolate* isolate);
 
   // Called when the embedding RenderFrame is destroyed.
   virtual void OnRenderFrameDestroyed() {}
@@ -59,6 +61,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   // BrowserPluginGuestDelegate public implementation.
   void SetElementInstanceID(int element_instance_id) final;
+  void DidResizeElement(const gfx::Size& new_size) override;
 
  protected:
   ~GuestViewContainer() override;
@@ -77,6 +80,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   void PerformPendingRequest();
   void HandlePendingResponseCallback(const IPC::Message& message);
   void RunDestructionCallback(bool embedder_frame_destroyed);
+  void CallElementResizeCallback(const gfx::Size& new_size);
 
   // BrowserPluginDelegate implementation.
   void Ready() final;
@@ -94,6 +98,9 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   v8::Global<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;
+
+  v8::Global<v8::Function> element_resize_callback_;
+  v8::Isolate* element_resize_isolate_;
 
   base::WeakPtrFactory<GuestViewContainer> weak_ptr_factory_;
 

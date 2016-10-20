@@ -249,8 +249,7 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
   // An element instance ID uniquely identifies an IframeGuestViewContainer
   // within a RenderView.
   auto* guest_view_container =
-      static_cast<guest_view::IframeGuestViewContainer*>(
-          guest_view::GuestViewContainer::FromID(element_instance_id));
+      guest_view::GuestViewContainer::FromID(element_instance_id);
   // This is the first time we hear about the |element_instance_id|.
   DCHECK(!guest_view_container);
   // The <webview> element's GC takes ownership of |guest_view_container|.
@@ -382,8 +381,8 @@ void GuestViewInternalCustomBindings::RegisterElementResizeCallback(
   int element_instance_id = args[0]->Int32Value();
   // An element instance ID uniquely identifies a ExtensionsGuestViewContainer
   // within a RenderView.
-  auto* guest_view_container = static_cast<ExtensionsGuestViewContainer*>(
-      guest_view::GuestViewContainer::FromID(element_instance_id));
+  auto* guest_view_container =
+      guest_view::GuestViewContainer::FromID(element_instance_id);
   if (!guest_view_container)
     return;
 
