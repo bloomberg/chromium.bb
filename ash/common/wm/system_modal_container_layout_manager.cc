@@ -74,9 +74,13 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   DCHECK(child->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
          child->GetType() == ui::wm::WINDOW_TYPE_POPUP);
-  DCHECK(container_->GetShellWindowId() !=
-             kShellWindowId_LockSystemModalContainer ||
-         WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked());
+  // TODO(mash): IsUserSessionBlocked() depends on knowing the login state. We
+  // need a non-stub version of SessionStateDelegate. crbug.com/648964
+  if (!WmShell::Get()->IsRunningInMash()) {
+    DCHECK(container_->GetShellWindowId() !=
+               kShellWindowId_LockSystemModalContainer ||
+           WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked());
+  }
   // Since this is for SystemModal, there is no good reason to add windows
   // other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM. DCHECK to avoid simple
   // mistake.

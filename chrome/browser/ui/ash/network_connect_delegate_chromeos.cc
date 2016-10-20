@@ -8,7 +8,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
@@ -38,7 +37,7 @@ void NetworkConnectDelegateChromeOS::ShowNetworkConfigure(
     const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  NetworkConfigView::ShowByNetworkId(network_id, GetNativeWindow());
+  SystemTrayClient::Get()->ShowNetworkConfigure(network_id);
 }
 
 void NetworkConnectDelegateChromeOS::ShowNetworkSettings(

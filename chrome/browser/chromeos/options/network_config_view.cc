@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "chrome/browser/chromeos/options/wimax_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -25,6 +27,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -119,27 +123,29 @@ NetworkConfigView::~NetworkConfigView() {
 }
 
 // static
-void NetworkConfigView::Show(const std::string& service_path,
-                             gfx::NativeWindow parent) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  ShowByNetwork(network, parent);
+void NetworkConfigView::ShowInParent(const std::string& network_id,
+                                     gfx::NativeWindow parent) {
+  DCHECK(parent);
+  ShowImpl(network_id, parent, ash::kShellWindowId_Invalid);
 }
 
 // static
-void NetworkConfigView::ShowByNetworkId(const std::string& network_id,
-                                        gfx::NativeWindow parent) {
+void NetworkConfigView::ShowInContainer(const std::string& network_id,
+                                        int container_id) {
+  DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
+  ShowImpl(network_id, nullptr, container_id);
+}
+
+// static
+void NetworkConfigView::ShowImpl(const std::string& network_id,
+                                 gfx::NativeWindow parent,
+                                 int container_id) {
+  DCHECK(parent || container_id != ash::kShellWindowId_Invalid);
+  if (GetActiveDialog() != nullptr)
+    return;
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           network_id);
-  ShowByNetwork(network, parent);
-}
-
-// static
-void NetworkConfigView::ShowByNetwork(const NetworkState* network,
-                                      gfx::NativeWindow parent) {
-  if (GetActiveDialog() != nullptr)
-    return;
   if (!network) {
     LOG(ERROR) << "NetworkConfigView::Show called with invalid network";
     return;
@@ -152,7 +158,10 @@ void NetworkConfigView::ShowByNetwork(const NetworkState* network,
     return;
   }
   NET_LOG(USER) << "NetworkConfigView::Show: " << network->path();
-  view->ShowDialog(parent);
+  if (parent)
+    view->ShowDialog(parent);
+  else
+    view->ShowDialogInContainer(container_id);
 }
 
 // static
@@ -298,6 +307,24 @@ void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
   gfx::NativeWindow context =
       parent ? nullptr : ash::Shell::GetPrimaryRootWindow();
   Widget* window = DialogDelegate::CreateDialogWidget(this, context, parent);
+  window->SetAlwaysOnTop(true);
+  window->Show();
+}
+
+void NetworkConfigView::ShowDialogInContainer(int container_id) {
+  DCHECK_NE(container_id, ash::kShellWindowId_Invalid);
+  Widget::InitParams params = DialogDelegate::GetDialogWidgetInitParams(
+      this, nullptr, nullptr, gfx::Rect());
+  Widget* window = new Widget;
+  if (chrome::IsRunningInMash()) {
+    using ui::mojom::WindowManager;
+    params.mus_properties[WindowManager::kInitialContainerId_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  } else {
+    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                             container_id);
+  }
+  window->Init(params);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

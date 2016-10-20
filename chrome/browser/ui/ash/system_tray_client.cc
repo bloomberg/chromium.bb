@@ -104,6 +104,12 @@ ash::LoginStatus SystemTrayClient::GetUserLoginStatus() {
 
 // static
 int SystemTrayClient::GetDialogParentContainerId() {
+  const ash::LoginStatus login_status = GetUserLoginStatus();
+  if (login_status == ash::LoginStatus::NOT_LOGGED_IN ||
+      login_status == ash::LoginStatus::LOCKED) {
+    return ash::kShellWindowId_LockSystemModalContainer;
+  }
+
   // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
   if (chrome::IsRunningInMash())
     return ash::kShellWindowId_SystemModalContainer;
@@ -111,12 +117,10 @@ int SystemTrayClient::GetDialogParentContainerId() {
   ash::WmShell* wm_shell = ash::WmShell::Get();
   const bool session_started =
       wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted();
-  const ash::LoginStatus login_status = GetUserLoginStatus();
   const bool is_in_secondary_login_screen =
       wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 
-  if (!session_started || login_status == ash::LoginStatus::NOT_LOGGED_IN ||
-      login_status == ash::LoginStatus::LOCKED || is_in_secondary_login_screen)
+  if (!session_started || is_in_secondary_login_screen)
     return ash::kShellWindowId_LockSystemModalContainer;
 
   return ash::kShellWindowId_SystemModalContainer;
@@ -198,13 +202,16 @@ void SystemTrayClient::ShowPublicAccountInfo() {
 }
 
 void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
-  // TODO(jamescook): Consolidate this with the classic ash version from
-  // NetworkConnectDelegateChromeOS. This will require moving the window
-  // container calculation to this class, then plumbing a container ID through
-  // the dialog code.
-  CHECK(chrome::IsRunningInMash());
-  chromeos::NetworkConfigView::ShowByNetworkId(network_id,
-                                               nullptr /* parent */);
+  // UI is not available at the lock screen.
+  // TODO(mash): Need replacement for SessionStateDelegate. crbug.com/648964
+  if (!chrome::IsRunningInMash() &&
+      ash::WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked()) {
+    return;
+  }
+
+  // Dialog will default to the primary display.
+  chromeos::NetworkConfigView::ShowInContainer(network_id,
+                                               GetDialogParentContainerId());
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {

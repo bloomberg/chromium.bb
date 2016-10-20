@@ -121,7 +121,7 @@ void InternetHandler::ConfigureNetwork(const base::ListValue* args) {
     return;
   }
 
-  NetworkConfigView::Show(service_path, GetNativeWindow());
+  NetworkConfigView::ShowInParent(network->guid(), GetNativeWindow());
 }
 
 gfx::NativeWindow InternetHandler::GetNativeWindow() const {
