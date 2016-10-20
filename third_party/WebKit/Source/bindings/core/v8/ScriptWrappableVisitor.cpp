@@ -186,7 +186,6 @@ bool ScriptWrappableVisitor::AdvanceTracing(
     if (m_markingDeque.isEmpty()) {
       return false;
     }
-
     m_markingDeque.takeFirst().traceWrappers(this);
   }
   return true;
@@ -235,6 +234,11 @@ void ScriptWrappableVisitor::markWrapper(
 void ScriptWrappableVisitor::dispatchTraceWrappers(
     const ScriptWrappable* wrappable) const {
   wrappable->traceWrappers(this);
+}
+
+void ScriptWrappableVisitor::dispatchTraceWrappers(
+    const TraceWrapperBase* wrapperBase) const {
+  wrapperBase->traceWrappers(this);
 }
 
 #define DEFINE_DISPATCH_TRACE_WRAPPERS(className)     \

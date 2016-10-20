@@ -23,6 +23,9 @@ class ScriptWrappableVisitorVerifier : public WrapperVisitor {
   void dispatchTraceWrappers(const ScriptWrappable* t) const override {
     t->traceWrappers(this);
   }
+  void dispatchTraceWrappers(const TraceWrapperBase* t) const override {
+    t->traceWrappers(this);
+  }
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                \
   void dispatchTraceWrappers(const className* t) const override { \
     t->traceWrappers(this);                                       \

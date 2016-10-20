@@ -16,7 +16,8 @@ class ScriptState;
 class {{forward_declaration}};
 {% endfor %}
 
-class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}> {
+class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}>,
+                                        public TraceWrapperBase {
 
 public:
     static {{cpp_class}}* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
@@ -27,6 +28,7 @@ public:
     ~{{cpp_class}}() = default;
 
     DECLARE_TRACE();
+    DECLARE_TRACE_WRAPPERS();
 
     bool call({{argument_declarations | join(', ')}});
 

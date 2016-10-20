@@ -22,6 +22,11 @@ DEFINE_TRACE({{cpp_class}})
 {
 }
 
+DEFINE_TRACE_WRAPPERS({{cpp_class}})
+{
+    visitor->traceWrappers(&m_callback.cast<v8::Object>());
+}
+
 bool {{cpp_class}}::call({{argument_declarations | join(', ')}})
 {
     if (!scriptState->contextIsValid())

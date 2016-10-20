@@ -102,6 +102,12 @@ class ScopedPersistent {
 
   ALWAYS_INLINE v8::Persistent<T>& get() { return m_handle; }
 
+  template <typename S>
+  const ScopedPersistent<S>& cast() const {
+    return reinterpret_cast<const ScopedPersistent<v8::Object>&>(
+        const_cast<const ScopedPersistent<T>&>(*this));
+  }
+
  private:
   v8::Persistent<T> m_handle;
 };

@@ -29,6 +29,11 @@ DEFINE_TRACE(AnyCallbackFunctionOptionalAnyArg)
 {
 }
 
+DEFINE_TRACE_WRAPPERS(AnyCallbackFunctionOptionalAnyArg)
+{
+    visitor->traceWrappers(&m_callback.cast<v8::Object>());
+}
+
 bool AnyCallbackFunctionOptionalAnyArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue)
 {
     if (!scriptState->contextIsValid())

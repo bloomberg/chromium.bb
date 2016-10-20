@@ -269,4 +269,11 @@ DEFINE_TRACE(RemotePlayback) {
   EventTargetWithInlineData::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(RemotePlayback) {
+  for (auto callback : m_availabilityCallbacks.values()) {
+    visitor->traceWrappers(callback);
+  }
+  EventTargetWithInlineData::traceWrappers(visitor);
+}
+
 }  // namespace blink

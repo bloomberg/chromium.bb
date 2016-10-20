@@ -29,6 +29,11 @@ DEFINE_TRACE(VoidCallbackFunctionInterfaceArg)
 {
 }
 
+DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionInterfaceArg)
+{
+    visitor->traceWrappers(&m_callback.cast<v8::Object>());
+}
+
 bool VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, HTMLDivElement* divElement)
 {
     if (!scriptState->contextIsValid())

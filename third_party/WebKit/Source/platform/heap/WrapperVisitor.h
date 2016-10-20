@@ -24,6 +24,7 @@ class Member;
 class ScriptWrappable;
 template <typename T>
 class ScopedPersistent;
+class TraceWrapperBase;
 
 // TODO(hlopko): Find a way to remove special-casing using templates
 #define WRAPPER_VISITOR_SPECIAL_CLASSES(V) \
@@ -129,6 +130,7 @@ class PLATFORM_EXPORT WrapperVisitor {
       const v8::PersistentBase<v8::Object>* persistent) const = 0;
 
   virtual void dispatchTraceWrappers(const ScriptWrappable*) const = 0;
+  virtual void dispatchTraceWrappers(const TraceWrapperBase*) const = 0;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className) \
   virtual void dispatchTraceWrappers(const className*) const = 0;
 

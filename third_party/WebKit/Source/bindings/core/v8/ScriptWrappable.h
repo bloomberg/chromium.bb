@@ -40,6 +40,15 @@
 
 namespace blink {
 
+class CORE_EXPORT TraceWrapperBase {
+  WTF_MAKE_NONCOPYABLE(TraceWrapperBase);
+
+ public:
+  TraceWrapperBase() = default;
+
+  DECLARE_VIRTUAL_TRACE_WRAPPERS(){};
+};
+
 // ScriptWrappable provides a way to map from/to C++ DOM implementation to/from
 // JavaScript object (platform object).  toV8() converts a ScriptWrappable to
 // a v8::Object and toScriptWrappable() converts a v8::Object back to

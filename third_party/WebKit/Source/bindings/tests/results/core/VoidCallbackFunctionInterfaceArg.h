@@ -10,6 +10,7 @@
 #define VoidCallbackFunctionInterfaceArg_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -19,7 +20,8 @@ namespace blink {
 class ScriptState;
 class HTMLDivElement;
 
-class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg> {
+class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>,
+                                        public TraceWrapperBase {
 public:
     static VoidCallbackFunctionInterfaceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
@@ -29,6 +31,7 @@ public:
     ~VoidCallbackFunctionInterfaceArg() = default;
 
     DECLARE_TRACE();
+    DECLARE_TRACE_WRAPPERS();
 
     bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);
 

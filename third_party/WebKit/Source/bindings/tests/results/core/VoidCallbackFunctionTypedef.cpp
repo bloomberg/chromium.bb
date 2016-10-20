@@ -28,6 +28,11 @@ DEFINE_TRACE(VoidCallbackFunctionTypedef)
 {
 }
 
+DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionTypedef)
+{
+    visitor->traceWrappers(&m_callback.cast<v8::Object>());
+}
+
 bool VoidCallbackFunctionTypedef::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, const String& arg)
 {
     if (!scriptState->contextIsValid())

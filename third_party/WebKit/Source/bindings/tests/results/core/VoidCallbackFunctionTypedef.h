@@ -10,6 +10,7 @@
 #define VoidCallbackFunctionTypedef_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -18,7 +19,8 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFinalized<VoidCallbackFunctionTypedef> {
+class CORE_EXPORT VoidCallbackFunctionTypedef final : public GarbageCollectedFinalized<VoidCallbackFunctionTypedef>,
+                                        public TraceWrapperBase {
 public:
     static VoidCallbackFunctionTypedef* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
@@ -28,6 +30,7 @@ public:
     ~VoidCallbackFunctionTypedef() = default;
 
     DECLARE_TRACE();
+    DECLARE_TRACE_WRAPPERS();
 
     bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, const String& arg);
 

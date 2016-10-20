@@ -28,6 +28,11 @@ DEFINE_TRACE(StringSequenceCallbackFunctionLongSequenceArg)
 {
 }
 
+DEFINE_TRACE_WRAPPERS(StringSequenceCallbackFunctionLongSequenceArg)
+{
+    visitor->traceWrappers(&m_callback.cast<v8::Object>());
+}
+
 bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, const Vector<int>& arg, Vector<String>& returnValue)
 {
     if (!scriptState->contextIsValid())

@@ -28,6 +28,11 @@ DEFINE_TRACE(LongCallbackFunction)
 {
 }
 
+DEFINE_TRACE_WRAPPERS(LongCallbackFunction)
+{
+    visitor->traceWrappers(&m_callback.cast<v8::Object>());
+}
+
 bool LongCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue)
 {
     if (!scriptState->contextIsValid())

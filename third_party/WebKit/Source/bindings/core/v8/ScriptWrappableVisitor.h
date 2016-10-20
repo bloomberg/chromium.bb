@@ -137,6 +137,7 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
   size_t NumberOfWrappersToTrace() override;
 
   void dispatchTraceWrappers(const ScriptWrappable*) const override;
+  void dispatchTraceWrappers(const TraceWrapperBase*) const override;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className) \
   void dispatchTraceWrappers(const className*) const override;
 
