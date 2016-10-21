@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.scene_layer;
 
 import android.content.Context;
+import android.graphics.Rect;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
@@ -44,6 +45,9 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     /** A LayoutRenderHost for accessing drawing information about the toolbar. */
     private LayoutRenderHost mRenderHost;
 
+    /** The size of the viewport (full-screen minus status bar). */
+    private Rect mViewport;
+
     /**
      * @param context An Android context to use.
      * @param provider A LayoutProvider for accessing the current layout.
@@ -54,6 +58,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         mContext = context;
         mLayoutProvider = provider;
         mRenderHost = renderHost;
+        mViewport = new Rect();
     }
 
     /**
@@ -81,6 +86,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             assert mProgressBarDrawingInfo == null;
         }
 
+        mLayoutProvider.getViewportPixel(mViewport);
+
         float offset = fullscreenManager.getControlOffset();
         boolean useTexture = fullscreenManager.drawControlsAsTexture() || offset == 0
                 || forceHideAndroidTopControls;
@@ -95,7 +102,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
                 topControlsBackgroundColor, R.drawable.textbox, topControlsUrlBarAlpha, offset,
-                useTexture, forceHideAndroidTopControls);
+                mViewport.height(), useTexture, forceHideAndroidTopControls);
 
         if (mProgressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativePtr,
@@ -237,6 +244,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             int urlBarResourceId,
             float urlBarAlpha,
             float topOffset,
+            float viewHeight,
             boolean visible,
             boolean showShadow);
     private native void nativeUpdateProgressBar(

@@ -35,6 +35,7 @@ class ToolbarLayer : public Layer {
                     int  toolbar_textbox_background_color,
                     int url_bar_background_resource_id,
                     float url_bar_alpha,
+                    float view_height,
                     bool show_debug,
                     bool clip_shadow);
 
@@ -54,9 +55,12 @@ class ToolbarLayer : public Layer {
   ~ToolbarLayer() override;
 
  private:
+  bool is_chrome_home_enabled_;
+
   ui::ResourceManager* resource_manager_;
 
   scoped_refptr<cc::Layer> layer_;
+  scoped_refptr<cc::Layer> toolbar_root_;
   scoped_refptr<cc::SolidColorLayer> toolbar_background_layer_;
   scoped_refptr<cc::NinePatchLayer> url_bar_background_layer_;
   scoped_refptr<cc::UIResourceLayer> bitmap_layer_;

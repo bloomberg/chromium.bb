@@ -39,6 +39,7 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     jint url_bar_resource_id,
     jfloat url_bar_alpha,
     jfloat top_offset,
+    jfloat view_height,
     bool visible,
     bool show_shadow) {
   // If the toolbar layer has not been created yet, create it.
@@ -57,7 +58,8 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     bool clip_shadow = top_offset >= 0.f && !show_shadow;
     toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
                                  false, SK_ColorWHITE, url_bar_resource_id,
-                                 url_bar_alpha, false, clip_shadow);
+                                 url_bar_alpha, view_height, false,
+                                 clip_shadow);
   }
 }
 

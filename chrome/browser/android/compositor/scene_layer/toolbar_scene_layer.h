@@ -39,6 +39,7 @@ class ToolbarSceneLayer : public SceneLayer {
       jint url_bar_resource_id,
       jfloat url_bar_alpha,
       jfloat top_offset,
+      jfloat view_height,
       bool visible,
       bool show_shadow);
 

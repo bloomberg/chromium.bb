@@ -234,6 +234,7 @@ void TabLayer::SetProperties(int id,
                                toolbar_textbox_background_color,
                                toolbar_textbox_resource_id,
                                toolbar_textbox_alpha,
+                               view_height,
                                false,
                                false);
   toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

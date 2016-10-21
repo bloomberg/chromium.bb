@@ -4,10 +4,12 @@
 
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 
+#include "base/feature_list.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
@@ -31,6 +33,7 @@ void ToolbarLayer::PushResource(
     int toolbar_textbox_background_color,
     int url_bar_background_resource_id,
     float url_bar_alpha,
+    float view_height,
     bool show_debug,
     bool clip_shadow) {
   ui::ResourceManager::Resource* resource =
@@ -51,9 +54,22 @@ void ToolbarLayer::PushResource(
       resource->padding.height() + resource->padding.y());
   layer_->SetBounds(size);
 
+  // The toolbar_root_ contains all of the layers that make up the toolbar. The
+  // toolbar_root_ is moved around inside of layer_ to allow appropriate
+  // clipping of the shadow.
+  toolbar_root_->SetBounds(resource->padding.size());
+
+  gfx::PointF background_position(resource->padding.origin());
+  if (is_chrome_home_enabled_) {
+    float layer_offset =
+        resource->size.height() - resource->padding.size().height();
+    layer_->SetPosition(gfx::PointF(0, view_height));
+    toolbar_root_->SetPosition(gfx::PointF(0, -layer_offset));
+    background_position.set_y(layer_offset);
+  }
+
   toolbar_background_layer_->SetBounds(resource->padding.size());
-  toolbar_background_layer_->SetPosition(
-      gfx::PointF(resource->padding.origin()));
+  toolbar_background_layer_->SetPosition(background_position);
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
   bool url_bar_visible = (resource->aperture.width() != 0);
@@ -138,8 +154,11 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
 }
 
 ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
-    : resource_manager_(resource_manager),
+    : is_chrome_home_enabled_(
+          base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature)),
+      resource_manager_(resource_manager),
       layer_(cc::Layer::Create()),
+      toolbar_root_(cc::Layer::Create()),
       toolbar_background_layer_(cc::SolidColorLayer::Create()),
       url_bar_background_layer_(cc::NinePatchLayer::Create()),
       bitmap_layer_(cc::UIResourceLayer::Create()),
@@ -147,27 +166,29 @@ ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
       progress_bar_background_layer_(cc::SolidColorLayer::Create()),
       anonymize_layer_(cc::SolidColorLayer::Create()),
       debug_layer_(cc::SolidColorLayer::Create()) {
+  layer_->AddChild(toolbar_root_);
+
   toolbar_background_layer_->SetIsDrawable(true);
-  layer_->AddChild(toolbar_background_layer_);
+  toolbar_root_->AddChild(toolbar_background_layer_);
 
   url_bar_background_layer_->SetIsDrawable(true);
   url_bar_background_layer_->SetFillCenter(true);
-  layer_->AddChild(url_bar_background_layer_);
+  toolbar_root_->AddChild(url_bar_background_layer_);
 
   bitmap_layer_->SetIsDrawable(true);
-  layer_->AddChild(bitmap_layer_);
+  toolbar_root_->AddChild(bitmap_layer_);
 
   progress_bar_background_layer_->SetIsDrawable(true);
   progress_bar_background_layer_->SetHideLayerAndSubtree(true);
-  layer_->AddChild(progress_bar_background_layer_);
+  toolbar_root_->AddChild(progress_bar_background_layer_);
 
   progress_bar_layer_->SetIsDrawable(true);
   progress_bar_layer_->SetHideLayerAndSubtree(true);
-  layer_->AddChild(progress_bar_layer_);
+  toolbar_root_->AddChild(progress_bar_layer_);
 
   anonymize_layer_->SetIsDrawable(true);
   anonymize_layer_->SetBackgroundColor(SK_ColorWHITE);
-  layer_->AddChild(anonymize_layer_);
+  toolbar_root_->AddChild(anonymize_layer_);
 
   debug_layer_->SetIsDrawable(true);
   debug_layer_->SetBackgroundColor(SK_ColorGREEN);
