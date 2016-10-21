@@ -129,7 +129,6 @@ class ProxyResolverMojo : public ProxyResolver {
 
  private:
   class Job;
-  class RequestImpl;
 
   base::ThreadChecker thread_checker_;
 
@@ -150,22 +149,9 @@ class ProxyResolverMojo : public ProxyResolver {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverMojo);
 };
 
-class ProxyResolverMojo::RequestImpl : public ProxyResolver::Request {
- public:
-  explicit RequestImpl(std::unique_ptr<Job> job);
-
-  ~RequestImpl() override {}
-
-  LoadState GetLoadState() override;
-
- private:
-  std::unique_ptr<Job> job_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestImpl);
-};
-
 class ProxyResolverMojo::Job
-    : public ClientMixin<interfaces::ProxyResolverRequestClient> {
+    : public ProxyResolver::Request,
+      public ClientMixin<interfaces::ProxyResolverRequestClient> {
  public:
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
@@ -175,7 +161,7 @@ class ProxyResolverMojo::Job
   ~Job() override;
 
   // Returns the LoadState of this job.
-  LoadState GetLoadState();
+  LoadState GetLoadState() override;
 
  private:
   // Mojo error handler.
@@ -196,13 +182,6 @@ class ProxyResolverMojo::Job
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
-
-ProxyResolverMojo::RequestImpl::RequestImpl(std::unique_ptr<Job> job)
-    : job_(std::move(job)) {}
-
-LoadState ProxyResolverMojo::RequestImpl::GetLoadState() {
-  return job_->GetLoadState();
-}
 
 ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
                             const GURL& url,
@@ -294,8 +273,7 @@ int ProxyResolverMojo::GetProxyForURL(const GURL& url,
   if (!mojo_proxy_resolver_ptr_)
     return ERR_PAC_SCRIPT_TERMINATED;
 
-  std::unique_ptr<Job> job(new Job(this, url, results, callback, net_log));
-  request->reset(new RequestImpl(std::move(job)));
+  *request = base::MakeUnique<Job>(this, url, results, callback, net_log);
 
   return ERR_IO_PENDING;
 }
