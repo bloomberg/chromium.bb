@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
@@ -217,7 +218,7 @@ void BrowserPluginGuest::SetTooltipText(const base::string16& tooltip_text) {
     return;
   current_tooltip_text_ = tooltip_text;
 
-  SendMessageToEmbedder(new BrowserPluginMsg_SetTooltipText(
+  SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetTooltipText>(
       browser_plugin_instance_id_, tooltip_text));
 }
 
@@ -393,8 +394,8 @@ void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
 }
 
 void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_SetMouseLock(browser_plugin_instance_id(), allow));
+  SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetMouseLock>(
+      browser_plugin_instance_id(), allow));
 }
 
 void BrowserPluginGuest::SetChildFrameSurface(
@@ -403,7 +404,7 @@ void BrowserPluginGuest::SetChildFrameSurface(
     float scale_factor,
     const cc::SurfaceSequence& sequence) {
   has_attached_since_surface_set_ = false;
-  SendMessageToEmbedder(new BrowserPluginMsg_SetChildFrameSurface(
+  SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetChildFrameSurface>(
       browser_plugin_instance_id(), surface_id, frame_size, scale_factor,
       sequence));
 }
@@ -492,7 +493,8 @@ gfx::Point BrowserPluginGuest::GetScreenCoordinates(
   return screen_pos;
 }
 
-void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
+void BrowserPluginGuest::SendMessageToEmbedder(
+    std::unique_ptr<IPC::Message> msg) {
   // During tests, attache() may be true when there is no owner_web_contents_;
   // in this case just queue any messages we receive.
   if (!attached() || !owner_web_contents_) {
@@ -501,10 +503,10 @@ void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
     // As a result, we must save all these IPCs until attachment and then
     // forward them so that the embedder gets a chance to see and process
     // the load events.
-    pending_messages_.push_back(linked_ptr<IPC::Message>(msg));
+    pending_messages_.push_back(std::move(msg));
     return;
   }
-  owner_web_contents_->Send(msg);
+  owner_web_contents_->Send(msg.release());
 }
 
 void BrowserPluginGuest::DragSourceEndedAt(int client_x, int client_y,
@@ -555,12 +557,12 @@ void BrowserPluginGuest::EmbedderSystemDragEnded() {
 // TODO(wjmaclean): Replace this approach with ones based on std::function
 // as in https://codereview.chromium.org/1404353004/ once all Chrome platforms
 // support this. https://crbug.com/544212
-IPC::Message* BrowserPluginGuest::UpdateInstanceIdIfNecessary(
-    IPC::Message* msg) const {
-  DCHECK(msg);
+std::unique_ptr<IPC::Message> BrowserPluginGuest::UpdateInstanceIdIfNecessary(
+    std::unique_ptr<IPC::Message> msg) const {
+  DCHECK(msg.get());
 
   int msg_browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
-  base::PickleIterator iter(*msg);
+  base::PickleIterator iter(*msg.get());
   if (!iter.ReadInt(&msg_browser_plugin_instance_id) ||
       msg_browser_plugin_instance_id != browser_plugin::kInstanceIDNone) {
     return msg;
@@ -588,8 +590,7 @@ IPC::Message* BrowserPluginGuest::UpdateInstanceIdIfNecessary(
   CHECK(write_success)
       << "Unexpected failure writing remaining IPC::Message payload.";
 
-  delete msg;
-  return new_msg.release();
+  return new_msg;
 }
 
 void BrowserPluginGuest::SendQueuedMessages() {
@@ -597,10 +598,10 @@ void BrowserPluginGuest::SendQueuedMessages() {
     return;
 
   while (!pending_messages_.empty()) {
-    linked_ptr<IPC::Message> message_ptr = pending_messages_.front();
+    std::unique_ptr<IPC::Message> message_ptr =
+        std::move(pending_messages_.front());
     pending_messages_.pop_front();
-    SendMessageToEmbedder(
-        UpdateInstanceIdIfNecessary(message_ptr.release()));
+    SendMessageToEmbedder(UpdateInstanceIdIfNecessary(std::move(message_ptr)));
   }
 }
 
@@ -643,8 +644,8 @@ void BrowserPluginGuest::RenderViewReady() {
   // associated BrowserPlugin know. We only need to send this if we're attached,
   // as guest_crashed_ is cleared automatically on attach anyways.
   if (attached()) {
-    SendMessageToEmbedder(
-        new BrowserPluginMsg_GuestReady(browser_plugin_instance_id()));
+    SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_GuestReady>(
+        browser_plugin_instance_id()));
   }
 
   RenderWidgetHostImpl::From(rvh->GetWidget())
@@ -653,8 +654,8 @@ void BrowserPluginGuest::RenderViewReady() {
 }
 
 void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestGone(browser_plugin_instance_id()));
+  SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_GuestGone>(
+      browser_plugin_instance_id()));
   switch (status) {
 #if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
@@ -955,8 +956,8 @@ void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_SetMouseLock(browser_plugin_instance_id(), false));
+  SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetMouseLock>(
+      browser_plugin_instance_id(), false));
 }
 
 void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
@@ -978,7 +979,7 @@ void BrowserPluginGuest::OnUpdateGeometry(int browser_plugin_instance_id,
 
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {
   SendMessageToEmbedder(
-      new BrowserPluginMsg_ShouldAcceptTouchEvents(
+      base::MakeUnique<BrowserPluginMsg_ShouldAcceptTouchEvents>(
           browser_plugin_instance_id(), accept));
 }
 
@@ -1007,8 +1008,8 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 }
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_AdvanceFocus(browser_plugin_instance_id(), reverse));
+  SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_AdvanceFocus>(
+      browser_plugin_instance_id(), reverse));
 }
 
 void BrowserPluginGuest::OnTextInputStateChanged(const TextInputState& params) {

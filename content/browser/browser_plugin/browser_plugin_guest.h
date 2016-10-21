@@ -21,11 +21,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -202,7 +202,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Helper to send messages to embedder. If this guest is not yet attached,
   // then IPCs will be queued until attachment.
-  void SendMessageToEmbedder(IPC::Message* msg);
+  void SendMessageToEmbedder(std::unique_ptr<IPC::Message> msg);
 
   // Returns whether the guest is attached to an embedder.
   bool attached() const { return attached_; }
@@ -381,7 +381,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // the input was created with browser_plugin::kInstanceIdNone, else it returns
   // the input message unmodified. If no current browser_plugin_instance_id()
   // is set, or anything goes wrong, the input message is returned.
-  IPC::Message* UpdateInstanceIdIfNecessary(IPC::Message* msg) const;
+  std::unique_ptr<IPC::Message> UpdateInstanceIdIfNecessary(
+      std::unique_ptr<IPC::Message> msg) const;
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
@@ -447,7 +448,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.
-  std::deque<linked_ptr<IPC::Message> > pending_messages_;
+  std::deque<std::unique_ptr<IPC::Message>> pending_messages_;
 
   BrowserPluginGuestDelegate* const delegate_;
 

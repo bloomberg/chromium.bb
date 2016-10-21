@@ -16,7 +16,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"

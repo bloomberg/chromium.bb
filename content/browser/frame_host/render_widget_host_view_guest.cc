@@ -406,7 +406,7 @@ void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
     if (rwhvb)
       rwhvb->UpdateCursor(cursor);
   } else {
-    guest_->SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(
+    guest_->SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetCursor>(
         guest_->browser_plugin_instance_id(), cursor));
   }
 }
