@@ -141,8 +141,7 @@ static const int kMaxRestartDelaySeconds = 10;
 // ChromeVox tutorial URL (used in place of "getting started" url when
 // accessibility is enabled).
 const char kChromeVoxTutorialURLPattern[] =
-    "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/"
-    "cvox2/background/panel.html?tutorial";
+    "http://www.chromevox.com/tutorial/index.html?lang=%s";
 
 void InitLocaleAndInputMethodsForNewUser(
     UserSessionManager* session_manager,
@@ -1229,7 +1228,11 @@ void UserSessionManager::InitializeStartUrls() const {
   if (!user_manager->IsLoggedInAsPublicAccount()) {
     if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
       const char* url = kChromeVoxTutorialURLPattern;
-      start_urls.push_back(url);
+      PrefService* prefs = g_browser_process->local_state();
+      const std::string current_locale =
+          base::ToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
+      std::string vox_url = base::StringPrintf(url, current_locale.c_str());
+      start_urls.push_back(vox_url);
       can_show_getstarted_guide = false;
     }
   }
