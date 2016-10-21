@@ -579,7 +579,9 @@
       "--max-battery-temp",
       "350",
       "--known-devices-file",
-      "[HOME]/.android/known_devices.json"
+      "[HOME]/.android/known_devices.json",
+      "--adb-path",
+      "[SLAVE_BUILD]/src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
     ],
     "cwd": "[SLAVE_BUILD]/src",
     "env": {
