@@ -1287,6 +1287,17 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
 
     StreamParser::TrackId track_id = stream->id;
+
+    if ((codec_type == AVMEDIA_TYPE_AUDIO &&
+         media_tracks->getAudioConfig(track_id).IsValidConfig()) ||
+        (codec_type == AVMEDIA_TYPE_VIDEO &&
+         media_tracks->getVideoConfig(track_id).IsValidConfig())) {
+      MEDIA_LOG(INFO, media_log_)
+          << GetDisplayName()
+          << ": skipping duplicate media stream id=" << track_id;
+      continue;
+    }
+
     std::string track_label = streams_[i]->GetMetadata("handler_name");
     std::string track_language = streams_[i]->GetMetadata("language");
 

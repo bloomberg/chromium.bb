@@ -1346,6 +1346,11 @@ TEST_F(FFmpegDemuxerTest, Read_Mp4_Multiple_Tracks) {
   EXPECT_EQ(audio_track2.language(), "und");
 }
 
+TEST_F(FFmpegDemuxerTest, Read_Mp4_Crbug657437) {
+  CreateDemuxer("crbug657437.mp4");
+  InitializeDemuxer();
+}
+
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 TEST_F(FFmpegDemuxerTest, Read_Webm_Multiple_Tracks) {
