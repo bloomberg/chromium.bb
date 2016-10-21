@@ -56,18 +56,62 @@ class DrawingBufferTest : public Test {
     std::unique_ptr<GLES2InterfaceForTests> gl =
         wrapUnique(new GLES2InterfaceForTests);
     m_gl = gl.get();
+    SetAndSaveRestoreState(false);
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
         wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
     m_drawingBuffer = DrawingBufferForTests::create(
-        std::move(provider), initialSize, DrawingBuffer::Preserve);
+        std::move(provider), m_gl, initialSize, DrawingBuffer::Preserve);
     CHECK(m_drawingBuffer);
   }
+
+  // Initialize GL state with unusual values, to verify that they are restored.
+  // The |invert| parameter will reverse all boolean parameters, so that all
+  // values are tested.
+  void SetAndSaveRestoreState(bool invert) {
+    GLboolean scissorEnabled = !invert;
+    GLfloat clearColor[4] = {0.1, 0.2, 0.3, 0.4};
+    GLfloat clearDepth = 0.8;
+    GLint clearStencil = 37;
+    GLboolean colorMask[4] = {invert, !invert, !invert, invert};
+    GLboolean depthMask = invert;
+    GLboolean stencilMask = invert;
+    GLint packAlignment = 7;
+    GLuint activeTexture2DBinding = 0xbeef1;
+    GLuint renderbufferBinding = 0xbeef2;
+    GLuint drawFramebufferBinding = 0xbeef3;
+    GLuint readFramebufferBinding = 0xbeef4;
+    GLuint pixelUnpackBufferBinding = 0xbeef5;
+
+    if (scissorEnabled)
+      m_gl->Enable(GL_SCISSOR_TEST);
+    else
+      m_gl->Disable(GL_SCISSOR_TEST);
+
+    m_gl->ClearColor(clearColor[0], clearColor[1], clearColor[2],
+                     clearColor[3]);
+    m_gl->ClearDepthf(clearDepth);
+    m_gl->ClearStencil(clearStencil);
+    m_gl->ColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
+    m_gl->DepthMask(depthMask);
+    m_gl->StencilMask(stencilMask);
+    m_gl->PixelStorei(GL_PACK_ALIGNMENT, packAlignment);
+    m_gl->BindTexture(GL_TEXTURE_2D, activeTexture2DBinding);
+    m_gl->BindRenderbuffer(GL_RENDERBUFFER, renderbufferBinding);
+    m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebufferBinding);
+    m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER, readFramebufferBinding);
+    m_gl->BindBuffer(GL_PIXEL_UNPACK_BUFFER, pixelUnpackBufferBinding);
+
+    m_gl->SaveState();
+  }
+
+  void VerifyStateWasRestored() { m_gl->VerifyStateHasNotChangedSinceSave(); }
 
   GLES2InterfaceForTests* m_gl;
   RefPtr<DrawingBufferForTests> m_drawingBuffer;
 };
 
 TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
+  VerifyStateWasRestored();
   cc::TextureMailbox textureMailbox;
   std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
 
@@ -78,33 +122,42 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
                                                      &releaseCallback));
+  VerifyStateWasRestored();
   EXPECT_EQ(initialSize, m_gl->mostRecentlyProducedSize());
 
   // Resize to 100x50.
-  m_drawingBuffer->reset(alternateSize);
+  m_drawingBuffer->resize(alternateSize);
+  VerifyStateWasRestored();
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
+  VerifyStateWasRestored();
 
   // Produce a mailbox at this size.
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
                                                      &releaseCallback));
   EXPECT_EQ(alternateSize, m_gl->mostRecentlyProducedSize());
+  VerifyStateWasRestored();
 
   // Reset to initial size.
-  m_drawingBuffer->reset(initialSize);
+  m_drawingBuffer->resize(initialSize);
+  VerifyStateWasRestored();
+  SetAndSaveRestoreState(true);
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
+  VerifyStateWasRestored();
 
   // Prepare another mailbox and verify that it's the correct size.
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
                                                      &releaseCallback));
   EXPECT_EQ(initialSize, m_gl->mostRecentlyProducedSize());
+  VerifyStateWasRestored();
 
   // Prepare one final mailbox and verify that it's the correct size.
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
                                                      &releaseCallback));
+  VerifyStateWasRestored();
   EXPECT_EQ(initialSize, m_gl->mostRecentlyProducedSize());
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
   m_drawingBuffer->beginDestruction();
@@ -125,12 +178,18 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased) {
 
   // Produce mailboxes.
   m_drawingBuffer->markContentsChanged();
+  m_drawingBuffer->clearFramebuffers(GL_STENCIL_BUFFER_BIT);
+  VerifyStateWasRestored();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox1,
                                                      &releaseCallback1));
   m_drawingBuffer->markContentsChanged();
+  m_drawingBuffer->clearFramebuffers(GL_DEPTH_BUFFER_BIT);
+  VerifyStateWasRestored();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox2,
                                                      &releaseCallback2));
   m_drawingBuffer->markContentsChanged();
+  m_drawingBuffer->clearFramebuffers(GL_COLOR_BUFFER_BIT);
+  VerifyStateWasRestored();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox3,
                                                      &releaseCallback3));
 
@@ -167,12 +226,15 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox1,
                                                      &releaseCallback1));
+  VerifyStateWasRestored();
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox2,
                                                      &releaseCallback2));
+  VerifyStateWasRestored();
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox3,
                                                      &releaseCallback3));
+  VerifyStateWasRestored();
 
   m_drawingBuffer->markContentsChanged();
   releaseCallback1->Run(gpu::SyncToken(), true /* lostResource */);
@@ -287,13 +349,14 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
     std::unique_ptr<GLES2InterfaceForTests> gl =
         wrapUnique(new GLES2InterfaceForTests);
     m_gl = gl.get();
+    SetAndSaveRestoreState(true);
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
         wrapUnique(new WebGraphicsContext3DProviderForTests(std::move(gl)));
     RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
     m_imageId0 = m_gl->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
     m_drawingBuffer = DrawingBufferForTests::create(
-        std::move(provider), initialSize, DrawingBuffer::Preserve);
+        std::move(provider), m_gl, initialSize, DrawingBuffer::Preserve);
     CHECK(m_drawingBuffer);
     testing::Mock::VerifyAndClearExpectations(m_gl);
   }
@@ -321,6 +384,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   EXPECT_EQ(initialSize, m_gl->mostRecentlyProducedSize());
   EXPECT_TRUE(textureMailbox.is_overlay_candidate());
   testing::Mock::VerifyAndClearExpectations(m_gl);
+  VerifyStateWasRestored();
 
   GLuint m_imageId2 = m_gl->nextImageIdToBeCreated();
   EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId2)).Times(1);
@@ -329,8 +393,10 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId1)).Times(1);
   EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId1)).Times(1);
   // Resize to 100x50.
-  m_drawingBuffer->reset(alternateSize);
+  m_drawingBuffer->resize(alternateSize);
+  VerifyStateWasRestored();
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
+  VerifyStateWasRestored();
   testing::Mock::VerifyAndClearExpectations(m_gl);
 
   GLuint m_imageId3 = m_gl->nextImageIdToBeCreated();
@@ -350,8 +416,10 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId3)).Times(1);
   EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId3)).Times(1);
   // Reset to initial size.
-  m_drawingBuffer->reset(initialSize);
+  m_drawingBuffer->resize(initialSize);
+  VerifyStateWasRestored();
   releaseCallback->Run(gpu::SyncToken(), false /* lostResource */);
+  VerifyStateWasRestored();
   testing::Mock::VerifyAndClearExpectations(m_gl);
 
   GLuint m_imageId5 = m_gl->nextImageIdToBeCreated();
@@ -398,6 +466,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
                                                      &releaseCallback1));
   EXPECT_TRUE(textureMailbox1.is_overlay_candidate());
   testing::Mock::VerifyAndClearExpectations(m_gl);
+  VerifyStateWasRestored();
 
   // Force image CHROMIUM creation failure. Request another mailbox. It should
   // still be provided, but this time with allowOverlay = false.
@@ -406,6 +475,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox2,
                                                      &releaseCallback2));
   EXPECT_FALSE(textureMailbox2.is_overlay_candidate());
+  VerifyStateWasRestored();
 
   // Check that if image CHROMIUM starts working again, mailboxes are
   // correctly created with allowOverlay = true.
@@ -416,6 +486,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
                                                      &releaseCallback3));
   EXPECT_TRUE(textureMailbox3.is_overlay_candidate());
   testing::Mock::VerifyAndClearExpectations(m_gl);
+  VerifyStateWasRestored();
 
   releaseCallback1->Run(gpu::SyncToken(), false /* lostResource */);
   releaseCallback2->Run(gpu::SyncToken(), false /* lostResource */);
@@ -532,7 +603,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
     bool wantStencilBuffer = cases[i].requestStencil;
     bool wantAntialiasing = false;
     RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(
-        std::move(provider), IntSize(10, 10), premultipliedAlpha,
+        std::move(provider), nullptr, IntSize(10, 10), premultipliedAlpha,
         wantAlphaChannel, wantDepthBuffer, wantStencilBuffer, wantAntialiasing,
         preserve, DrawingBuffer::WebGL1, DrawingBuffer::AllowChromiumImage);
 
@@ -553,7 +624,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
       EXPECT_EQ(0u, trackingGL->stencilAttachment());
     }
 
-    drawingBuffer->reset(IntSize(10, 20));
+    drawingBuffer->resize(IntSize(10, 20));
     EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil,
               drawingBuffer->hasDepthBuffer());
     EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil,

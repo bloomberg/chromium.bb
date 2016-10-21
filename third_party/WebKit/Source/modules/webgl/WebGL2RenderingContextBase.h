@@ -743,6 +743,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
       std::unique_ptr<WebGraphicsContext3DProvider>,
       const CanvasContextCreationAttributes& requestedAttributes);
 
+  // DrawingBuffer::Client implementation.
+  void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
+
   // Helper function to validate target and the attachment combination for
   // getFramebufferAttachmentParameters.  Generate GL error and return false if
   // parameters are illegal.

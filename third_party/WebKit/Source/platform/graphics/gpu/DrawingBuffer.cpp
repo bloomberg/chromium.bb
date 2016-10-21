@@ -59,36 +59,13 @@ namespace {
 
 const float s_resourceAdjustedRatio = 0.5;
 
-class ScopedTextureUnit0BindingRestorer {
-  STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(ScopedTextureUnit0BindingRestorer);
-
- public:
-  ScopedTextureUnit0BindingRestorer(gpu::gles2::GLES2Interface* gl,
-                                    GLenum activeTextureUnit,
-                                    GLuint textureUnitZeroId)
-      : m_gl(gl),
-        m_oldActiveTextureUnit(activeTextureUnit),
-        m_oldTextureUnitZeroId(textureUnitZeroId) {
-    m_gl->ActiveTexture(GL_TEXTURE0);
-  }
-  ~ScopedTextureUnit0BindingRestorer() {
-    m_gl->BindTexture(GL_TEXTURE_2D, m_oldTextureUnitZeroId);
-    m_gl->ActiveTexture(m_oldActiveTextureUnit);
-  }
-
- private:
-  gpu::gles2::GLES2Interface* m_gl;
-  GLenum m_oldActiveTextureUnit;
-  GLuint m_oldTextureUnitZeroId;
-};
-
 static bool shouldFailDrawingBufferCreationForTesting = false;
 
 }  // namespace
 
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    Client* client,
     const IntSize& size,
     bool premultipliedAlpha,
     bool wantAlphaChannel,
@@ -135,7 +112,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(
     extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
   RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(
-      std::move(contextProvider), std::move(extensionsUtil),
+      std::move(contextProvider), std::move(extensionsUtil), client,
       discardFramebufferSupported, wantAlphaChannel, premultipliedAlpha,
       preserve, webGLVersion, wantDepthBuffer, wantStencilBuffer,
       chromiumImageUsage));
@@ -153,6 +130,7 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail() {
 DrawingBuffer::DrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
     std::unique_ptr<Extensions3DUtil> extensionsUtil,
+    Client* client,
     bool discardFramebufferSupported,
     bool wantAlphaChannel,
     bool premultipliedAlpha,
@@ -161,7 +139,8 @@ DrawingBuffer::DrawingBuffer(
     bool wantDepth,
     bool wantStencil,
     ChromiumImageUsage chromiumImageUsage)
-    : m_preserveDrawingBuffer(preserve),
+    : m_client(client),
+      m_preserveDrawingBuffer(preserve),
       m_webGLVersion(webGLVersion),
       m_contextProvider(std::move(contextProvider)),
       m_gl(m_contextProvider->contextGL()),
@@ -173,8 +152,6 @@ DrawingBuffer::DrawingBuffer(
       m_wantDepth(wantDepth),
       m_wantStencil(wantStencil),
       m_chromiumImageUsage(chromiumImageUsage) {
-  memset(m_colorMask, 0, 4 * sizeof(GLboolean));
-  memset(m_clearColor, 0, 4 * sizeof(GLfloat));
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
@@ -228,7 +205,7 @@ void DrawingBuffer::setFilterQuality(SkFilterQuality filterQuality) {
 }
 
 bool DrawingBuffer::requiresAlphaChannelToBePreserved() {
-  return !m_drawFramebufferBinding &&
+  return m_client->DrawingBufferClientIsBoundForDraw() &&
          defaultBufferRequiresAlphaChannelToBePreserved();
 }
 
@@ -264,6 +241,7 @@ std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap() {
 bool DrawingBuffer::PrepareTextureMailbox(
     cc::TextureMailbox* outMailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) {
+  ScopedStateRestorer scopedStateRestorer(this);
   bool forceGpuResult = false;
   return prepareTextureMailboxInternal(outMailbox, outReleaseCallback,
                                        forceGpuResult);
@@ -298,7 +276,7 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
 
   // Resolve the multisampled buffer into m_backColorBuffer texture.
   if (m_antiAliasingMode != None)
-    commit();
+    resolveMultisampleFramebufferInternal();
 
   if (m_softwareRendering && !forceGpuResult) {
     return finishPrepareTextureMailboxSoftware(outMailbox, outReleaseCallback);
@@ -343,13 +321,9 @@ bool DrawingBuffer::finishPrepareTextureMailboxGpu(
     cc::TextureMailbox* outMailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) {
   if (m_webGLVersion > WebGL1) {
+    m_stateRestorer->setPixelUnpackBufferBindingDirty();
     m_gl->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   }
-
-  // We must restore the texture binding since creating new textures,
-  // consuming and producing mailboxes changes it.
-  ScopedTextureUnit0BindingRestorer restorer(m_gl, m_activeTextureUnit,
-                                             m_texture2DBinding);
 
   // Specify the buffer that we will put in the mailbox.
   RefPtr<ColorBuffer> colorBufferForMailbox;
@@ -366,6 +340,7 @@ bool DrawingBuffer::finishPrepareTextureMailboxGpu(
     if (m_discardFramebufferSupported) {
       const GLenum attachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
                                      GL_STENCIL_ATTACHMENT};
+      m_stateRestorer->setFramebufferBindingDirty();
       m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
       m_gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
     }
@@ -413,9 +388,6 @@ bool DrawingBuffer::finishPrepareTextureMailboxGpu(
   // Point |m_frontColorBuffer| to the buffer that we are now presenting.
   m_frontColorBuffer = colorBufferForMailbox;
 
-  // Restore any state that we may have dirtied, and update dirty bits.
-  restoreFramebufferBindings();
-  restorePixelUnpackBufferBindings();
   m_contentsChanged = false;
   setBufferClearNeeded(true);
   return true;
@@ -464,6 +436,8 @@ void DrawingBuffer::mailboxReleasedSoftware(
 }
 
 PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
+  ScopedStateRestorer scopedStateRestorer(this);
+
   // This can be null if the context is lost before the first call to
   // grContext().
   GrContext* grContext = m_contextProvider->grContext();
@@ -617,18 +591,35 @@ DrawingBuffer::ColorBuffer::ColorBuffer(DrawingBuffer* drawingBuffer,
 }
 
 DrawingBuffer::ColorBuffer::~ColorBuffer() {
-  gpu::gles2::GLES2Interface* gl = drawingBuffer->contextGL();
+  gpu::gles2::GLES2Interface* gl = drawingBuffer->m_gl;
   if (receiveSyncToken.HasData())
     gl->WaitSyncTokenCHROMIUM(receiveSyncToken.GetConstData());
   if (imageId) {
     gl->BindTexture(parameters.target, textureId);
     gl->ReleaseTexImage2DCHROMIUM(parameters.target, imageId);
     gl->DestroyImageCHROMIUM(imageId);
+    switch (parameters.target) {
+      case GL_TEXTURE_2D:
+        // Restore the texture binding for GL_TEXTURE_2D, since the client will
+        // expect the previous state.
+        if (drawingBuffer->m_client)
+          drawingBuffer->m_client->DrawingBufferClientRestoreTexture2DBinding();
+        break;
+      case GC3D_TEXTURE_RECTANGLE_ARB:
+        // Rectangle textures aren't exposed to WebGL, so don't bother
+        // restoring this state (there is no meaningful way to restore it).
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   gl->DeleteTextures(1, &textureId);
 }
 
 bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling) {
+  ScopedStateRestorer scopedStateRestorer(this);
+
   if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     // Need to try to restore the context again later.
     return false;
@@ -660,6 +651,7 @@ bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling) {
       m_antiAliasingMode == ScreenSpaceAntialiasing;
   m_sampleCount = std::min(4, maxSampleCount);
 
+  m_stateRestorer->setFramebufferBindingDirty();
   m_gl->GenFramebuffers(1, &m_fbo);
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   if (wantExplicitResolve()) {
@@ -667,7 +659,7 @@ bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling) {
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
     m_gl->GenRenderbuffers(1, &m_multisampleRenderbuffer);
   }
-  if (!reset(size))
+  if (!resizeFramebufferInternal(size))
     return false;
 
   if (m_depthStencilBuffer) {
@@ -692,11 +684,11 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                           bool premultiplyAlpha,
                                           bool flipY,
                                           SourceDrawingBuffer sourceBuffer) {
+  ScopedStateRestorer scopedStateRestorer(this);
+
   if (m_contentsChanged) {
-    if (m_antiAliasingMode != None) {
-      commit();
-      restoreFramebufferBindings();
-    }
+    if (m_antiAliasingMode != None)
+      resolveMultisampleFramebufferInternal();
     m_gl->Flush();
   }
 
@@ -752,10 +744,6 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   return true;
 }
 
-GLuint DrawingBuffer::framebuffer() const {
-  return m_fbo;
-}
-
 WebLayer* DrawingBuffer::platformLayer() {
   if (!m_layer) {
     m_layer =
@@ -809,6 +797,8 @@ void DrawingBuffer::beginDestruction() {
 
   if (m_layer)
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
+
+  m_client = nullptr;
 }
 
 bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
@@ -818,6 +808,8 @@ bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
   attachColorBufferToReadFramebuffer();
 
   if (wantExplicitResolve()) {
+    m_stateRestorer->setFramebufferBindingDirty();
+    m_stateRestorer->setRenderbufferBindingDirty();
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderbuffer);
     m_gl->RenderbufferStorageMultisampleCHROMIUM(
@@ -832,6 +824,8 @@ bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
   }
 
   if (wantDepthOrStencil()) {
+    m_stateRestorer->setFramebufferBindingDirty();
+    m_stateRestorer->setRenderbufferBindingDirty();
     m_gl->BindFramebuffer(GL_FRAMEBUFFER,
                           m_multisampleFBO ? m_multisampleFBO : m_fbo);
     if (!m_depthStencilBuffer)
@@ -858,17 +852,25 @@ bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
   }
 
   if (wantExplicitResolve()) {
+    m_stateRestorer->setFramebufferBindingDirty();
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
     if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
       return false;
   }
 
+  m_stateRestorer->setFramebufferBindingDirty();
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   return m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
          GL_FRAMEBUFFER_COMPLETE;
 }
 
 void DrawingBuffer::clearFramebuffers(GLbitfield clearMask) {
+  ScopedStateRestorer scopedStateRestorer(this);
+  clearFramebuffersInternal(clearMask);
+}
+
+void DrawingBuffer::clearFramebuffersInternal(GLbitfield clearMask) {
+  m_stateRestorer->setFramebufferBindingDirty();
   // We will clear the multisample FBO, but we also need to clear the
   // non-multisampled buffer.
   if (m_multisampleFBO) {
@@ -897,7 +899,12 @@ IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize,
   return adjustedSize;
 }
 
-bool DrawingBuffer::reset(const IntSize& newSize) {
+bool DrawingBuffer::resize(const IntSize& newSize) {
+  ScopedStateRestorer scopedStateRestorer(this);
+  return resizeFramebufferInternal(newSize);
+}
+
+bool DrawingBuffer::resizeFramebufferInternal(const IntSize& newSize) {
   CHECK(!newSize.isEmpty());
   IntSize adjustedSize = adjustSize(newSize, m_size, m_maxTextureSize);
   if (adjustedSize.isEmpty())
@@ -922,6 +929,7 @@ bool DrawingBuffer::reset(const IntSize& newSize) {
       return false;
   }
 
+  m_stateRestorer->setClearStateDirty();
   m_gl->Disable(GL_SCISSOR_TEST);
   m_gl->ClearColor(0, 0, 0,
                    defaultBufferRequiresAlphaChannelToBePreserved() ? 1 : 0);
@@ -939,17 +947,25 @@ bool DrawingBuffer::reset(const IntSize& newSize) {
     m_gl->StencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
   }
 
-  clearFramebuffers(clearMask);
+  clearFramebuffersInternal(clearMask);
   return true;
 }
 
-void DrawingBuffer::commit() {
+void DrawingBuffer::resolveAndBindForReadAndDraw() {
+  {
+    ScopedStateRestorer scopedStateRestorer(this);
+    resolveMultisampleFramebufferInternal();
+  }
+  m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+}
+
+void DrawingBuffer::resolveMultisampleFramebufferInternal() {
+  m_stateRestorer->setFramebufferBindingDirty();
   if (wantExplicitResolve() && !m_contentsChangeCommitted) {
+    m_stateRestorer->setClearStateDirty();
     m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_multisampleFBO);
     m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_fbo);
-
-    if (m_scissorEnabled)
-      m_gl->Disable(GL_SCISSOR_TEST);
+    m_gl->Disable(GL_SCISSOR_TEST);
 
     int width = m_size.width();
     int height = m_size.height();
@@ -968,52 +984,27 @@ void DrawingBuffer::commit() {
             .disable_multisampling_color_mask_usage) {
       m_gl->ClearColor(0, 0, 0, 1);
       m_gl->ColorMask(false, false, false, true);
-      m_gl->Clear(GL_COLOR_BUFFER_BIT);
-
-      m_gl->ClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2],
-                       m_clearColor[3]);
-      m_gl->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
-                      m_colorMask[3]);
     }
-
-    if (m_scissorEnabled)
-      m_gl->Enable(GL_SCISSOR_TEST);
   }
 
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-  if (m_antiAliasingMode == ScreenSpaceAntialiasing) {
+  if (m_antiAliasingMode == ScreenSpaceAntialiasing)
     m_gl->ApplyScreenSpaceAntialiasingCHROMIUM();
-  }
   m_contentsChangeCommitted = true;
 }
 
-void DrawingBuffer::restorePixelUnpackBufferBindings() {
-  if (m_webGLVersion > WebGL1) {
-    m_gl->BindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pixelUnpackBufferBinding);
-  }
+void DrawingBuffer::restoreFramebufferBindings() {
+  m_client->DrawingBufferClientRestoreFramebufferBinding();
 }
 
-void DrawingBuffer::restoreFramebufferBindings() {
-  if (m_drawFramebufferBinding && m_readFramebufferBinding) {
-    if (m_drawFramebufferBinding == m_readFramebufferBinding) {
-      m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_readFramebufferBinding);
-    } else {
-      m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding);
-      m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER, m_drawFramebufferBinding);
-    }
-    return;
-  }
-  if (!m_drawFramebufferBinding && !m_readFramebufferBinding) {
-    bind(GL_FRAMEBUFFER);
-    return;
-  }
-  if (!m_drawFramebufferBinding) {
-    bind(GL_DRAW_FRAMEBUFFER);
-    m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER, m_readFramebufferBinding);
-  } else {
-    bind(GL_READ_FRAMEBUFFER);
-    m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER, m_drawFramebufferBinding);
-  }
+void DrawingBuffer::restoreAllState() {
+  m_client->DrawingBufferClientRestoreScissorTest();
+  m_client->DrawingBufferClientRestoreMaskAndClearValues();
+  m_client->DrawingBufferClientRestorePixelPackAlignment();
+  m_client->DrawingBufferClientRestoreTexture2DBinding();
+  m_client->DrawingBufferClientRestoreRenderbufferBinding();
+  m_client->DrawingBufferClientRestoreFramebufferBinding();
+  m_client->DrawingBufferClientRestorePixelUnpackBufferBinding();
 }
 
 bool DrawingBuffer::multisample() const {
@@ -1025,15 +1016,13 @@ void DrawingBuffer::bind(GLenum target) {
                         wantExplicitResolve() ? m_multisampleFBO : m_fbo);
 }
 
-void DrawingBuffer::setPackAlignment(GLint param) {
-  m_packAlignment = param;
-}
-
 bool DrawingBuffer::paintRenderingResultsToImageData(
     int& width,
     int& height,
     SourceDrawingBuffer sourceBuffer,
     WTF::ArrayBufferContents& contents) {
+  ScopedStateRestorer scopedStateRestorer(this);
+
   ASSERT(!m_premultipliedAlpha);
   width = size().width();
   height = size().height();
@@ -1049,6 +1038,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(
                                   WTF::ArrayBufferContents::DontInitialize);
 
   GLuint fbo = 0;
+  m_stateRestorer->setFramebufferBindingDirty();
   if (sourceBuffer == FrontBuffer && m_frontColorBuffer) {
     m_gl->GenFramebuffers(1, &fbo);
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -1056,7 +1046,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(
                                m_frontColorBuffer->parameters.target,
                                m_frontColorBuffer->textureId, 0);
   } else {
-    m_gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer());
+    m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   }
 
   readBackFramebuffer(static_cast<unsigned char*>(pixels.data()), width, height,
@@ -1069,8 +1059,6 @@ bool DrawingBuffer::paintRenderingResultsToImageData(
     m_gl->DeleteFramebuffers(1, &fbo);
   }
 
-  restoreFramebufferBindings();
-
   pixels.transfer(contents);
   return true;
 }
@@ -1080,11 +1068,9 @@ void DrawingBuffer::readBackFramebuffer(unsigned char* pixels,
                                         int height,
                                         ReadbackOrder readbackOrder,
                                         WebGLImageConversion::AlphaOp op) {
-  if (m_packAlignment > 4)
-    m_gl->PixelStorei(GL_PACK_ALIGNMENT, 1);
+  m_stateRestorer->setPixelPackAlignmentDirty();
+  m_gl->PixelStorei(GL_PACK_ALIGNMENT, 1);
   m_gl->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  if (m_packAlignment > 4)
-    m_gl->PixelStorei(GL_PACK_ALIGNMENT, m_packAlignment);
 
   size_t bufferSize = 4 * width * height;
 
@@ -1126,6 +1112,9 @@ void DrawingBuffer::flipVertically(uint8_t* framebuffer,
 
 RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
     const IntSize& size) {
+  m_stateRestorer->setFramebufferBindingDirty();
+  m_stateRestorer->setTextureBindingDirty();
+
   // Select the Parameters for the texture object. Allocate the backing
   // GpuMemoryBuffer and GLImage, if one is going to be used.
   ColorBufferParameters parameters;
@@ -1178,6 +1167,8 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
   if (imageId && !m_wantAlphaChannel &&
       contextProvider()->getCapabilities().chromium_image_rgb_emulation) {
     GLuint fbo = 0;
+
+    m_stateRestorer->setClearStateDirty();
     m_gl->GenFramebuffers(1, &fbo);
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
     m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -1188,17 +1179,15 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::createColorBuffer(
     m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                parameters.target, 0, 0);
     m_gl->DeleteFramebuffers(1, &fbo);
-    restoreFramebufferBindings();
-    m_gl->ClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2],
-                     m_clearColor[3]);
-    m_gl->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
-                    m_colorMask[3]);
   }
 
   return adoptRef(new ColorBuffer(this, parameters, size, textureId, imageId));
 }
 
 void DrawingBuffer::attachColorBufferToReadFramebuffer() {
+  m_stateRestorer->setFramebufferBindingDirty();
+  m_stateRestorer->setTextureBindingDirty();
+
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
   GLenum target = m_backColorBuffer->parameters.target;
@@ -1212,9 +1201,6 @@ void DrawingBuffer::attachColorBufferToReadFramebuffer() {
   else
     m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, id,
                                0);
-
-  restoreTextureBindings();
-  restoreFramebufferBindings();
 }
 
 bool DrawingBuffer::wantExplicitResolve() {
@@ -1239,11 +1225,33 @@ GLenum DrawingBuffer::getMultisampledRenderbufferFormat() {
   return GL_RGB8_OES;
 }
 
-void DrawingBuffer::restoreTextureBindings() {
-  // This class potentially modifies the bindings for GL_TEXTURE_2D and
-  // GL_TEXTURE_RECTANGLE. Only GL_TEXTURE_2D needs to be restored since
-  // the public interface for WebGL does not support GL_TEXTURE_RECTANGLE.
-  m_gl->BindTexture(GL_TEXTURE_2D, m_texture2DBinding);
+DrawingBuffer::ScopedStateRestorer::ScopedStateRestorer(
+    DrawingBuffer* drawingBuffer)
+    : m_drawingBuffer(drawingBuffer) {
+  DCHECK(!m_drawingBuffer->m_stateRestorer);
+  m_drawingBuffer->m_stateRestorer = this;
+}
+
+DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
+  m_drawingBuffer->m_stateRestorer = nullptr;
+  Client* client = m_drawingBuffer->m_client;
+  if (!client)
+    return;
+
+  if (m_clearStateDirty) {
+    client->DrawingBufferClientRestoreScissorTest();
+    client->DrawingBufferClientRestoreMaskAndClearValues();
+  }
+  if (m_pixelPackAlignmentDirty)
+    client->DrawingBufferClientRestorePixelPackAlignment();
+  if (m_textureBindingDirty)
+    client->DrawingBufferClientRestoreTexture2DBinding();
+  if (m_renderbufferBindingDirty)
+    client->DrawingBufferClientRestoreRenderbufferBinding();
+  if (m_framebufferBindingDirty)
+    client->DrawingBufferClientRestoreFramebufferBinding();
+  if (m_pixelUnpackBufferBindingDirty)
+    client->DrawingBufferClientRestorePixelUnpackBufferBinding();
 }
 
 bool DrawingBuffer::shouldUseChromiumImage() {

@@ -77,6 +77,21 @@ class PLATFORM_EXPORT DrawingBuffer
   WTF_MAKE_NONCOPYABLE(DrawingBuffer);
 
  public:
+  class Client {
+   public:
+    // Returns true if the DrawingBuffer is currently bound for draw.
+    virtual bool DrawingBufferClientIsBoundForDraw() = 0;
+    virtual void DrawingBufferClientRestoreScissorTest() = 0;
+    // Restores the mask and clear value for color, depth, and stencil buffers.
+    virtual void DrawingBufferClientRestoreMaskAndClearValues() = 0;
+    virtual void DrawingBufferClientRestorePixelPackAlignment() = 0;
+    // Restores the GL_TEXTURE_2D binding for the active texture unit only.
+    virtual void DrawingBufferClientRestoreTexture2DBinding() = 0;
+    virtual void DrawingBufferClientRestoreRenderbufferBinding() = 0;
+    virtual void DrawingBufferClientRestoreFramebufferBinding() = 0;
+    virtual void DrawingBufferClientRestorePixelUnpackBufferBinding() = 0;
+  };
+
   enum PreserveDrawingBuffer {
     Preserve,
     Discard,
@@ -93,6 +108,7 @@ class PLATFORM_EXPORT DrawingBuffer
 
   static PassRefPtr<DrawingBuffer> create(
       std::unique_ptr<WebGraphicsContext3DProvider>,
+      Client*,
       const IntSize&,
       bool premultipliedAlpha,
       bool wantAlphaChannel,
@@ -110,8 +126,6 @@ class PLATFORM_EXPORT DrawingBuffer
   void beginDestruction();
 
   // Issues a glClear() on all framebuffers associated with this DrawingBuffer.
-  // The caller is responsible for making the context current and setting the
-  // clear values and masks. Modifies the framebuffer binding.
   void clearFramebuffers(GLbitfield clearMask);
 
   // Indicates whether the DrawingBuffer internally allocated a packed
@@ -130,85 +144,20 @@ class PLATFORM_EXPORT DrawingBuffer
                             int maxTextureSize);
 
   // Resizes (or allocates if necessary) all buffers attached to the default
-  // framebuffer. Returns whether the operation was successful. Leaves GL
-  // bindings dirtied.
-  bool reset(const IntSize&);
+  // framebuffer. Returns whether the operation was successful.
+  bool resize(const IntSize&);
 
   // Bind the default framebuffer to |target|. |target| must be
   // GL_FRAMEBUFFER, GL_READ_FRAMEBUFFER, or GL_DRAW_FRAMEBUFFER.
   void bind(GLenum target);
   IntSize size() const { return m_size; }
 
-  // Copies the multisample color buffer to the normal color buffer and leaves
-  // m_fbo bound.
-  void commit();
-
-  // commit should copy the full multisample buffer, and not respect the
-  // current scissor bounds. Track the state of the scissor test so that it
-  // can be disabled during calls to commit.
-  void setScissorEnabled(bool scissorEnabled) {
-    m_scissorEnabled = scissorEnabled;
-  }
-
-  // The DrawingBuffer needs to track the texture bound to texture unit 0.
-  // The bound texture is tracked to avoid costly queries during rendering.
-  void setTexture2DBinding(GLuint texture) { m_texture2DBinding = texture; }
-
-  void setPixelUnpackBufferBinding(GLuint buffer) {
-    DCHECK(m_webGLVersion > WebGL1);
-    m_pixelUnpackBufferBinding = buffer;
-  }
-
-  void notifyBufferDeleted(GLuint buffer) {
-    if (m_webGLVersion > WebGL1 && buffer == m_pixelUnpackBufferBinding) {
-      setPixelUnpackBufferBinding(0);
-    }
-  }
-
-  // The DrawingBuffer needs to track the currently bound framebuffer so it
-  // restore the binding when needed.
-  void setFramebufferBinding(GLenum target, GLuint fbo) {
-    switch (target) {
-      case GL_FRAMEBUFFER:
-        m_drawFramebufferBinding = fbo;
-        m_readFramebufferBinding = fbo;
-        break;
-      case GL_DRAW_FRAMEBUFFER:
-        m_drawFramebufferBinding = fbo;
-        break;
-      case GL_READ_FRAMEBUFFER:
-        m_readFramebufferBinding = fbo;
-        break;
-      default:
-        ASSERT(0);
-    }
-  }
-
-  // The DrawingBuffer needs to track the color mask and clear color so that
-  // it can restore it when needed.
-  void setClearColor(GLfloat* clearColor) {
-    memcpy(m_clearColor, clearColor, 4 * sizeof(GLfloat));
-  }
-
-  void setColorMask(GLboolean* colorMask) {
-    memcpy(m_colorMask, colorMask, 4 * sizeof(GLboolean));
-  }
-
-  // The DrawingBuffer needs to track the currently bound renderbuffer so it
-  // restore the binding when needed.
-  void setRenderbufferBinding(GLuint renderbuffer) {
-    m_renderbufferBinding = renderbuffer;
-  }
-
-  // Track the currently active texture unit. Texture unit 0 is used as host for
-  // a scratch texture.
-  void setActiveTextureUnit(GLint textureUnit) {
-    m_activeTextureUnit = textureUnit;
-  }
+  // Resolves the multisample color buffer to the normal color buffer and leaves
+  // the resolved color buffer bound to GL_READ_FRAMEBUFFER and
+  // GL_DRAW_FRAMEBUFFER.
+  void resolveAndBindForReadAndDraw();
 
   bool multisample() const;
-
-  GLuint framebuffer() const;
 
   bool discardFramebufferSupported() const {
     return m_discardFramebufferSupported;
@@ -246,7 +195,6 @@ class PLATFORM_EXPORT DrawingBuffer
   // DrawingBuffer.
   PassRefPtr<StaticBitmapImage> transferToStaticBitmapImage();
 
-  // Destroys the TEXTURE_2D binding for the owned context
   bool copyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLuint texture,
                              GLenum internalFormat,
@@ -255,8 +203,6 @@ class PLATFORM_EXPORT DrawingBuffer
                              bool premultiplyAlpha,
                              bool flipY,
                              SourceDrawingBuffer);
-
-  void setPackAlignment(GLint param);
 
   bool paintRenderingResultsToImageData(int&,
                                         int&,
@@ -268,13 +214,11 @@ class PLATFORM_EXPORT DrawingBuffer
     return m_antiAliasingMode == MSAAExplicitResolve;
   }
 
-  void restorePixelUnpackBufferBindings();
-
-  // Bind to m_drawFramebufferBinding or m_readFramebufferBinding if it's not 0.
-  // Otherwise, bind to the default FBO.
+  // Rebind the read and draw framebuffers that WebGL is expecting.
   void restoreFramebufferBindings();
 
-  void restoreTextureBindings();
+  // Restore all state that may have been dirtied by any call.
+  void restoreAllState();
 
   void addNewMailboxCallback(std::unique_ptr<WTF::Closure> closure) {
     m_newMailboxCallback = std::move(closure);
@@ -283,6 +227,7 @@ class PLATFORM_EXPORT DrawingBuffer
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,
                 std::unique_ptr<Extensions3DUtil>,
+                Client*,
                 bool discardFramebufferSupported,
                 bool wantAlphaChannel,
                 bool premultipliedAlpha,
@@ -303,6 +248,36 @@ class PLATFORM_EXPORT DrawingBuffer
   Vector<RecycledBitmap> m_recycledBitmaps;
 
  private:
+  friend class ScopedStateRestorer;
+  friend class ColorBuffer;
+
+  // This structure should wrap all public entrypoints that may modify GL state.
+  // It will restore all state when it drops out of scope.
+  class ScopedStateRestorer {
+   public:
+    ScopedStateRestorer(DrawingBuffer*);
+    ~ScopedStateRestorer();
+
+    // Mark parts of the state that are dirty and need to be restored.
+    void setClearStateDirty() { m_clearStateDirty = true; }
+    void setPixelPackAlignmentDirty() { m_pixelPackAlignmentDirty = true; }
+    void setTextureBindingDirty() { m_textureBindingDirty = true; }
+    void setRenderbufferBindingDirty() { m_renderbufferBindingDirty = true; }
+    void setFramebufferBindingDirty() { m_framebufferBindingDirty = true; }
+    void setPixelUnpackBufferBindingDirty() {
+      m_pixelUnpackBufferBindingDirty = true;
+    }
+
+   private:
+    RefPtr<DrawingBuffer> m_drawingBuffer;
+    bool m_clearStateDirty = false;
+    bool m_pixelPackAlignmentDirty = false;
+    bool m_textureBindingDirty = false;
+    bool m_renderbufferBindingDirty = false;
+    bool m_framebufferBindingDirty = false;
+    bool m_pixelUnpackBufferBindingDirty = false;
+  };
+
   // All parameters necessary to generate the texture for the ColorBuffer.
   struct ColorBufferParameters {
     DISALLOW_NEW();
@@ -348,6 +323,15 @@ class PLATFORM_EXPORT DrawingBuffer
    private:
     WTF_MAKE_NONCOPYABLE(ColorBuffer);
   };
+
+  // The same as clearFramebuffers(), but leaves GL state dirty.
+  void clearFramebuffersInternal(GLbitfield clearMask);
+
+  // The same as reset(), but leaves GL state dirty.
+  bool resizeFramebufferInternal(const IntSize&);
+
+  // The same as commit(), but leaves GL state dirty.
+  void resolveMultisampleFramebufferInternal();
 
   bool prepareTextureMailboxInternal(
       cc::TextureMailbox* outMailbox,
@@ -434,17 +418,11 @@ class PLATFORM_EXPORT DrawingBuffer
   // The format to use when creating a multisampled renderbuffer.
   GLenum getMultisampledRenderbufferFormat();
 
+  // Weak, reset by beginDestruction.
+  Client* m_client = nullptr;
+
   const PreserveDrawingBuffer m_preserveDrawingBuffer;
   const WebGLVersion m_webGLVersion;
-  bool m_scissorEnabled = false;
-  GLuint m_texture2DBinding = 0;
-  GLuint m_pixelUnpackBufferBinding = 0;
-  GLuint m_drawFramebufferBinding = 0;
-  GLuint m_readFramebufferBinding = 0;
-  GLuint m_renderbufferBinding = 0;
-  GLenum m_activeTextureUnit = GL_TEXTURE0;
-  GLfloat m_clearColor[4];
-  GLboolean m_colorMask[4];
 
   std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
   // Lifetime is tied to the m_contextProvider.
@@ -459,6 +437,11 @@ class PLATFORM_EXPORT DrawingBuffer
   bool m_storageTextureSupported = false;
 
   std::unique_ptr<WTF::Closure> m_newMailboxCallback;
+
+  // The current state restorer, which is used to track state dirtying. It is in
+  // error to dirty state shared with WebGL while there is no existing state
+  // restorer. It is also in error to instantiate two state restorers at once.
+  ScopedStateRestorer* m_stateRestorer = nullptr;
 
   // This is used when the user requests either a depth or stencil buffer.
   GLuint m_depthStencilBuffer = 0;
@@ -506,7 +489,6 @@ class PLATFORM_EXPORT DrawingBuffer
 
   int m_maxTextureSize = 0;
   int m_sampleCount = 0;
-  int m_packAlignment = 4;
   bool m_destructionInProgress = false;
   bool m_isHidden = false;
   SkFilterQuality m_filterQuality = kLow_SkFilterQuality;

@@ -717,7 +717,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   if (!drawingBuffer())
     return nullptr;
 
-  drawingBuffer()->commit();
+  drawingBuffer()->resolveAndBindForReadAndDraw();
   IntSize size = clampedCanvasSize();
   OpacityMode opacityMode =
       creationAttributes().hasAlpha() ? NonOpaque : Opaque;
@@ -1061,7 +1061,7 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(
     NOTREACHED();
   }
   return DrawingBuffer::create(
-      std::move(contextProvider), clampedCanvasSize(), premultipliedAlpha,
+      std::move(contextProvider), this, clampedCanvasSize(), premultipliedAlpha,
       wantAlphaChannel, wantDepthBuffer, wantStencilBuffer, wantAntialiasing,
       preserve, webGLVersion, chromiumImageUsage);
 }
@@ -1092,12 +1092,10 @@ void WebGLRenderingContextBase::initializeNewContext() {
   m_numGLErrorsToConsoleAllowed = maxGLErrorsAllowedToConsole;
 
   m_clearColor[0] = m_clearColor[1] = m_clearColor[2] = m_clearColor[3] = 0;
-  drawingBuffer()->setClearColor(m_clearColor);
   m_scissorEnabled = false;
   m_clearDepth = 1;
   m_clearStencil = 0;
   m_colorMask[0] = m_colorMask[1] = m_colorMask[2] = m_colorMask[3] = true;
-  drawingBuffer()->setColorMask(m_colorMask);
 
   GLint numCombinedTextureImageUnits = 0;
   contextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
@@ -1202,6 +1200,9 @@ void WebGLRenderingContextBase::initializeNewContext() {
   m_supportedTexImageSourceTypes.clear();
   ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes, kSupportedTypesES2);
 
+  // The DrawingBuffer was unable to store the state that dirtied when it was
+  // initialized. Restore it now.
+  drawingBuffer()->restoreAllState();
   activateContext(this);
 }
 
@@ -1384,8 +1385,11 @@ WebGLRenderingContextBase::clearIfComposited(GLbitfield mask) {
       !drawingBuffer()->defaultBufferRequiresAlphaChannelToBePreserved());
   drawingBuffer()->clearFramebuffers(clearMask);
 
-  restoreStateAfterClear();
-  drawingBuffer()->restoreFramebufferBindings();
+  // Call the DrawingBufferClient method to restore scissor test, mask, and
+  // clear values, because we dirtied them above.
+  DrawingBufferClientRestoreScissorTest();
+  DrawingBufferClientRestoreMaskAndClearValues();
+
   drawingBuffer()->setBufferClearNeeded(false);
 
   return combinedClear ? CombinedClear : JustClear;
@@ -1418,51 +1422,12 @@ void WebGLRenderingContextBase::restoreClearColor() {
                           m_clearColor[3]);
 }
 
-void WebGLRenderingContextBase::restoreClearDepthf() {
-  if (isContextLost())
-    return;
-
-  contextGL()->ClearDepthf(m_clearDepth);
-}
-
-void WebGLRenderingContextBase::restoreClearStencil() {
-  if (isContextLost())
-    return;
-
-  contextGL()->ClearStencil(m_clearStencil);
-}
-
-void WebGLRenderingContextBase::restoreStencilMaskSeparate() {
-  if (isContextLost())
-    return;
-
-  contextGL()->StencilMaskSeparate(GL_FRONT, m_stencilMask);
-}
-
 void WebGLRenderingContextBase::restoreColorMask() {
   if (isContextLost())
     return;
 
   contextGL()->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
                          m_colorMask[3]);
-}
-
-void WebGLRenderingContextBase::restoreDepthMask() {
-  if (isContextLost())
-    return;
-
-  contextGL()->DepthMask(m_depthMask);
-}
-
-void WebGLRenderingContextBase::restoreStateAfterClear() {
-  // Restore clear-related state items back to what the context had set.
-  restoreScissorEnabled();
-  restoreClearColor();
-  restoreColorMask();
-  restoreClearDepthf();
-  restoreClearStencil();
-  restoreStencilMaskSeparate();
-  restoreDepthMask();
 }
 
 void WebGLRenderingContextBase::markLayerComposited() {
@@ -1500,7 +1465,7 @@ bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fboRestorer(this);
 
-  drawingBuffer()->commit();
+  drawingBuffer()->resolveAndBindForReadAndDraw();
   if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(
           drawingBuffer(), sourceBuffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
@@ -1522,7 +1487,7 @@ ImageData* WebGLRenderingContextBase::paintRenderingResultsToImageData(
     return nullptr;
 
   clearIfComposited();
-  drawingBuffer()->commit();
+  drawingBuffer()->resolveAndBindForReadAndDraw();
   ScopedFramebufferRestorer restorer(this);
   int width, height;
   WTF::ArrayBufferContents contents;
@@ -1570,17 +1535,7 @@ void WebGLRenderingContextBase::reshape(int width, int height) {
 
   // We don't have to mark the canvas as dirty, since the newly created image
   // buffer will also start off clear (and this matches what reshape will do).
-  drawingBuffer()->reset(IntSize(width, height));
-  restoreStateAfterClear();
-
-  contextGL()->BindTexture(
-      GL_TEXTURE_2D,
-      objectOrZero(
-          m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
-  contextGL()->BindRenderbuffer(GL_RENDERBUFFER,
-                                objectOrZero(m_renderbufferBinding.get()));
-  drawingBuffer()->restoreFramebufferBindings();
-  drawingBuffer()->restorePixelUnpackBufferBindings();
+  drawingBuffer()->resize(IntSize(width, height));
 }
 
 int WebGLRenderingContextBase::drawingBufferWidth() const {
@@ -1601,8 +1556,6 @@ void WebGLRenderingContextBase::activeTexture(GLenum texture) {
   }
   m_activeTextureUnit = texture - GL_TEXTURE0;
   contextGL()->ActiveTexture(texture);
-
-  drawingBuffer()->setActiveTextureUnit(texture);
 }
 
 void WebGLRenderingContextBase::attachShader(WebGLProgram* program,
@@ -1694,10 +1647,6 @@ void WebGLRenderingContextBase::bindBuffer(GLenum target, WebGLBuffer* buffer) {
   }
   if (!validateAndUpdateBufferBindTarget("bindBuffer", target, buffer))
     return;
-
-  if (target == GL_PIXEL_UNPACK_BUFFER) {
-    drawingBuffer()->setPixelUnpackBufferBinding(objectOrZero(buffer));
-  }
   contextGL()->BindBuffer(target, objectOrZero(buffer));
 }
 
@@ -1737,9 +1686,6 @@ void WebGLRenderingContextBase::bindRenderbuffer(
   }
   m_renderbufferBinding = renderBuffer;
   contextGL()->BindRenderbuffer(target, objectOrZero(renderBuffer));
-
-  drawingBuffer()->setRenderbufferBinding(objectOrZero(renderBuffer));
-
   if (renderBuffer)
     renderBuffer->setHasEverBeenBound();
 }
@@ -1763,9 +1709,6 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
   if (target == GL_TEXTURE_2D) {
     m_textureUnits[m_activeTextureUnit].m_texture2DBinding =
         TraceWrapperMember<WebGLTexture>(this, texture);
-
-    if (!m_activeTextureUnit)
-      drawingBuffer()->setTexture2DBinding(objectOrZero(texture));
   } else if (target == GL_TEXTURE_CUBE_MAP) {
     m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding =
         TraceWrapperMember<WebGLTexture>(this, texture);
@@ -2030,7 +1973,6 @@ void WebGLRenderingContextBase::clearColor(GLfloat r,
   m_clearColor[1] = g;
   m_clearColor[2] = b;
   m_clearColor[3] = a;
-  drawingBuffer()->setClearColor(m_clearColor);
   contextGL()->ClearColor(r, g, b, a);
 }
 
@@ -2058,7 +2000,6 @@ void WebGLRenderingContextBase::colorMask(GLboolean red,
   m_colorMask[1] = green;
   m_colorMask[2] = blue;
   m_colorMask[3] = alpha;
-  drawingBuffer()->setColorMask(m_colorMask);
   contextGL()->ColorMask(red, green, blue, alpha);
 }
 
@@ -2269,10 +2210,8 @@ bool WebGLRenderingContextBase::deleteObject(WebGLObject* object) {
 }
 
 void WebGLRenderingContextBase::deleteBuffer(WebGLBuffer* buffer) {
-  GLuint bufferName = objectOrZero(buffer);
   if (!deleteObject(buffer))
     return;
-  drawingBuffer()->notifyBufferDeleted(bufferName);
   removeBoundBuffer(buffer);
 }
 
@@ -2282,7 +2221,6 @@ void WebGLRenderingContextBase::deleteFramebuffer(
     return;
   if (framebuffer == m_framebufferBinding) {
     m_framebufferBinding = nullptr;
-    drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);
     // Have to call drawingBuffer()->bind() here to bind back to internal fbo.
     drawingBuffer()->bind(GL_FRAMEBUFFER);
   }
@@ -2300,7 +2238,6 @@ void WebGLRenderingContextBase::deleteRenderbuffer(
     return;
   if (renderbuffer == m_renderbufferBinding) {
     m_renderbufferBinding = nullptr;
-    drawingBuffer()->setRenderbufferBinding(0);
   }
   if (m_framebufferBinding)
     m_framebufferBinding->removeAttachmentFromBoundFramebuffer(GL_FRAMEBUFFER,
@@ -2324,8 +2261,6 @@ void WebGLRenderingContextBase::deleteTexture(WebGLTexture* texture) {
     if (texture == m_textureUnits[i].m_texture2DBinding) {
       m_textureUnits[i].m_texture2DBinding = nullptr;
       maxBoundTextureIndex = i;
-      if (!i)
-        drawingBuffer()->setTexture2DBinding(0);
     }
     if (texture == m_textureUnits[i].m_textureCubeMapBinding) {
       m_textureUnits[i].m_textureCubeMapBinding = nullptr;
@@ -2403,10 +2338,8 @@ void WebGLRenderingContextBase::disable(GLenum cap) {
     applyStencilTest();
     return;
   }
-  if (cap == GL_SCISSOR_TEST) {
+  if (cap == GL_SCISSOR_TEST)
     m_scissorEnabled = false;
-    drawingBuffer()->setScissorEnabled(m_scissorEnabled);
-  }
   contextGL()->Disable(cap);
 }
 
@@ -2542,10 +2475,8 @@ void WebGLRenderingContextBase::enable(GLenum cap) {
     applyStencilTest();
     return;
   }
-  if (cap == GL_SCISSOR_TEST) {
+  if (cap == GL_SCISSOR_TEST)
     m_scissorEnabled = true;
-    drawingBuffer()->setScissorEnabled(m_scissorEnabled);
-  }
   contextGL()->Enable(cap);
 }
 
@@ -3946,7 +3877,6 @@ void WebGLRenderingContextBase::pixelStorei(GLenum pname, GLint param) {
       if (param == 1 || param == 2 || param == 4 || param == 8) {
         if (pname == GL_PACK_ALIGNMENT) {
           m_packAlignment = param;
-          drawingBuffer()->setPackAlignment(param);
         } else {  // GL_UNPACK_ALIGNMENT:
           m_unpackAlignment = param;
         }
@@ -5965,12 +5895,6 @@ void WebGLRenderingContextBase::loseContextImpl(
   ASSERT(m_contextLostMode != NotLostContext);
   m_autoRecoveryMethod = autoRecoveryMethod;
 
-  // Make absolutely sure we do not refer to an already-deleted texture or
-  // framebuffer.
-  drawingBuffer()->setTexture2DBinding(0);
-  drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);
-  drawingBuffer()->setRenderbufferBinding(0);
-
   detachAndRemoveAllObjects();
 
   // Lose all the extensions.
@@ -6126,6 +6050,62 @@ void WebGLRenderingContextBase::stop() {
     forceLostContext(SyntheticLostContext, Manual);
   }
 }
+
+bool WebGLRenderingContextBase::DrawingBufferClientIsBoundForDraw() {
+  return !m_framebufferBinding;
+}
+
+void WebGLRenderingContextBase::DrawingBufferClientRestoreScissorTest() {
+  if (!contextGL())
+    return;
+  if (m_scissorEnabled)
+    contextGL()->Enable(GL_SCISSOR_TEST);
+  else
+    contextGL()->Disable(GL_SCISSOR_TEST);
+}
+
+void WebGLRenderingContextBase::DrawingBufferClientRestoreMaskAndClearValues() {
+  if (!contextGL())
+    return;
+  contextGL()->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
+                         m_colorMask[3]);
+  contextGL()->DepthMask(m_depthMask);
+  contextGL()->StencilMaskSeparate(GL_FRONT, m_stencilMask);
+
+  contextGL()->ClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2],
+                          m_clearColor[3]);
+  contextGL()->ClearDepthf(m_clearDepth);
+  contextGL()->ClearStencil(m_clearStencil);
+}
+
+void WebGLRenderingContextBase::DrawingBufferClientRestorePixelPackAlignment() {
+  if (!contextGL())
+    return;
+  contextGL()->PixelStorei(GL_PACK_ALIGNMENT, m_packAlignment);
+}
+
+void WebGLRenderingContextBase::DrawingBufferClientRestoreTexture2DBinding() {
+  if (!contextGL())
+    return;
+  restoreCurrentTexture2D();
+}
+
+void WebGLRenderingContextBase::
+    DrawingBufferClientRestoreRenderbufferBinding() {
+  if (!contextGL())
+    return;
+  contextGL()->BindRenderbuffer(GL_RENDERBUFFER,
+                                objectOrZero(m_renderbufferBinding.get()));
+}
+
+void WebGLRenderingContextBase::DrawingBufferClientRestoreFramebufferBinding() {
+  if (!contextGL())
+    return;
+  restoreCurrentFramebuffer();
+}
+
+void WebGLRenderingContextBase::
+    DrawingBufferClientRestorePixelUnpackBufferBinding() {}
 
 ScriptValue WebGLRenderingContextBase::getBooleanParameter(
     ScriptState* scriptState,
@@ -7420,9 +7400,6 @@ void WebGLRenderingContextBase::setFramebuffer(GLenum target,
     m_framebufferBinding = buffer;
     applyStencilTest();
   }
-  drawingBuffer()->setFramebufferBinding(
-      target, objectOrZero(getFramebufferBinding(target)));
-
   if (!buffer) {
     // Instead of binding fb 0, bind the drawing buffer.
     drawingBuffer()->bind(target);

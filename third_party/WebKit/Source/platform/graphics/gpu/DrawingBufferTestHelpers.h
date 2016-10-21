@@ -8,6 +8,7 @@
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
@@ -21,13 +22,14 @@ class DrawingBufferForTests : public DrawingBuffer {
  public:
   static PassRefPtr<DrawingBufferForTests> create(
       std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+      DrawingBuffer::Client* client,
       const IntSize& size,
       PreserveDrawingBuffer preserve) {
     std::unique_ptr<Extensions3DUtil> extensionsUtil =
         Extensions3DUtil::create(contextProvider->contextGL());
-    RefPtr<DrawingBufferForTests> drawingBuffer =
-        adoptRef(new DrawingBufferForTests(
-            std::move(contextProvider), std::move(extensionsUtil), preserve));
+    RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(
+        new DrawingBufferForTests(std::move(contextProvider),
+                                  std::move(extensionsUtil), client, preserve));
     bool multisampleExtensionSupported = false;
     if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
       drawingBuffer->beginDestruction();
@@ -39,10 +41,12 @@ class DrawingBufferForTests : public DrawingBuffer {
   DrawingBufferForTests(
       std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
       std::unique_ptr<Extensions3DUtil> extensionsUtil,
+      DrawingBuffer::Client* client,
       PreserveDrawingBuffer preserve)
       : DrawingBuffer(
             std::move(contextProvider),
             std::move(extensionsUtil),
+            client,
             false /* discardFramebufferSupported */,
             true /* wantAlphaChannel */,
             false /* premultipliedAlpha */,
@@ -102,16 +106,88 @@ GLenum drawingBufferTextureTarget() {
   return GL_TEXTURE_2D;
 }
 
-class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub {
+class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
+                               public DrawingBuffer::Client {
  public:
+  // GLES2InterfaceStub implementation:
   void BindTexture(GLenum target, GLuint texture) override {
-    if (target != m_boundTextureTarget && texture == 0)
-      return;
+    if (target == GL_TEXTURE_2D)
+      m_state.activeTexture2DBinding = texture;
+    m_boundTextures[target] = texture;
+  }
 
-    // For simplicity, only allow one target to ever be bound.
-    ASSERT_TRUE(m_boundTextureTarget == 0 || target == m_boundTextureTarget);
-    m_boundTextureTarget = target;
-    m_boundTexture = texture;
+  void BindFramebuffer(GLenum target, GLuint framebuffer) override {
+    switch (target) {
+      case GL_FRAMEBUFFER:
+        m_state.drawFramebufferBinding = framebuffer;
+        m_state.readFramebufferBinding = framebuffer;
+        break;
+      case GL_DRAW_FRAMEBUFFER:
+        m_state.drawFramebufferBinding = framebuffer;
+        break;
+      case GL_READ_FRAMEBUFFER:
+        m_state.readFramebufferBinding = framebuffer;
+        break;
+      default:
+        break;
+    }
+  }
+
+  void BindRenderbuffer(GLenum target, GLuint renderbuffer) override {
+    m_state.renderbufferBinding = renderbuffer;
+  }
+
+  void Enable(GLenum cap) {
+    if (cap == GL_SCISSOR_TEST)
+      m_state.scissorEnabled = true;
+  }
+
+  void Disable(GLenum cap) {
+    if (cap == GL_SCISSOR_TEST)
+      m_state.scissorEnabled = false;
+  }
+
+  void ClearColor(GLfloat red,
+                  GLfloat green,
+                  GLfloat blue,
+                  GLfloat alpha) override {
+    m_state.clearColor[0] = red;
+    m_state.clearColor[1] = green;
+    m_state.clearColor[2] = blue;
+    m_state.clearColor[3] = alpha;
+  }
+
+  void ClearDepthf(GLfloat depth) override { m_state.clearDepth = depth; }
+
+  void ClearStencil(GLint s) override { m_state.clearStencil = s; }
+
+  void ColorMask(GLboolean red,
+                 GLboolean green,
+                 GLboolean blue,
+                 GLboolean alpha) override {
+    m_state.colorMask[0] = red;
+    m_state.colorMask[1] = green;
+    m_state.colorMask[2] = blue;
+    m_state.colorMask[3] = alpha;
+  }
+
+  void DepthMask(GLboolean flag) override { m_state.depthMask = flag; }
+
+  void StencilMask(GLuint mask) override { m_state.stencilMask = mask; }
+
+  void StencilMaskSeparate(GLenum face, GLuint mask) override {
+    if (face == GL_FRONT)
+      m_state.stencilMask = mask;
+  }
+
+  void PixelStorei(GLenum pname, GLint param) override {
+    if (pname == GL_PACK_ALIGNMENT)
+      m_state.packAlignment = param;
+  }
+
+  void BindBuffer(GLenum target, GLuint buffer) override {
+    if (target == GL_PIXEL_UNPACK_BUFFER)
+      m_state.pixelUnpackBufferBinding = buffer;
   }
 
   GLuint64 InsertFenceSyncCHROMIUM() override {
@@ -159,7 +235,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub {
                   GLenum type,
                   const void* pixels) override {
     if (target == GL_TEXTURE_2D && !level) {
-      m_textureSizes.set(m_boundTexture, IntSize(width, height));
+      m_textureSizes.set(m_boundTextures[target], IntSize(width, height));
     }
   }
 
@@ -185,8 +261,9 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub {
   MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
   void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
     if (target == imageCHROMIUMTextureTarget()) {
-      m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
-      m_imageToTextureMap.set(imageId, m_boundTexture);
+      m_textureSizes.set(m_boundTextures[target],
+                         m_imageSizes.find(imageId)->value);
+      m_imageToTextureMap.set(imageId, m_boundTextures[target]);
       BindTexImage2DMock(imageId);
     }
   }
@@ -213,8 +290,42 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub {
       textures[i] = id++;
   }
 
-  GLuint boundTexture() const { return m_boundTexture; }
-  GLuint boundTextureTarget() const { return m_boundTextureTarget; }
+  // DrawingBuffer::Client implementation.
+  bool DrawingBufferClientIsBoundForDraw() override {
+    return !m_state.drawFramebufferBinding;
+  }
+  void DrawingBufferClientRestoreScissorTest() override {
+    m_state.scissorEnabled = m_savedState.scissorEnabled;
+  }
+  void DrawingBufferClientRestoreMaskAndClearValues() override {
+    memcpy(m_state.colorMask, m_savedState.colorMask,
+           sizeof(m_state.colorMask));
+    m_state.clearDepth = m_savedState.clearDepth;
+    m_state.clearStencil = m_savedState.clearStencil;
+
+    memcpy(m_state.clearColor, m_savedState.clearColor,
+           sizeof(m_state.clearColor));
+    m_state.depthMask = m_savedState.depthMask;
+    m_state.stencilMask = m_savedState.stencilMask;
+  }
+  void DrawingBufferClientRestorePixelPackAlignment() override {
+    m_state.packAlignment = m_savedState.packAlignment;
+  }
+  void DrawingBufferClientRestoreTexture2DBinding() override {
+    m_state.activeTexture2DBinding = m_savedState.activeTexture2DBinding;
+  }
+  void DrawingBufferClientRestoreRenderbufferBinding() override {
+    m_state.renderbufferBinding = m_savedState.renderbufferBinding;
+  }
+  void DrawingBufferClientRestoreFramebufferBinding() override {
+    m_state.drawFramebufferBinding = m_savedState.drawFramebufferBinding;
+    m_state.readFramebufferBinding = m_savedState.readFramebufferBinding;
+  }
+  void DrawingBufferClientRestorePixelUnpackBufferBinding() override {
+    m_state.pixelUnpackBufferBinding = m_savedState.pixelUnpackBufferBinding;
+  }
+
+  // Testing methods.
   gpu::SyncToken mostRecentlyWaitedSyncToken() const {
     return m_mostRecentlyWaitedSyncToken;
   }
@@ -227,9 +338,56 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub {
     m_createImageChromiumFail = fail;
   }
 
+  // Saves current GL state for later verification.
+  void SaveState() { m_savedState = m_state; }
+  void VerifyStateHasNotChangedSinceSave() const {
+    for (size_t i = 0; i < 4; ++i) {
+      EXPECT_EQ(m_state.clearColor[0], m_savedState.clearColor[0]);
+      EXPECT_EQ(m_state.colorMask[0], m_savedState.colorMask[0]);
+    }
+    EXPECT_EQ(m_state.clearDepth, m_savedState.clearDepth);
+    EXPECT_EQ(m_state.clearStencil, m_savedState.clearStencil);
+    EXPECT_EQ(m_state.depthMask, m_savedState.depthMask);
+    EXPECT_EQ(m_state.stencilMask, m_savedState.stencilMask);
+    EXPECT_EQ(m_state.packAlignment, m_savedState.packAlignment);
+    EXPECT_EQ(m_state.activeTexture2DBinding,
+              m_savedState.activeTexture2DBinding);
+    EXPECT_EQ(m_state.renderbufferBinding, m_savedState.renderbufferBinding);
+    EXPECT_EQ(m_state.drawFramebufferBinding,
+              m_savedState.drawFramebufferBinding);
+    EXPECT_EQ(m_state.readFramebufferBinding,
+              m_savedState.readFramebufferBinding);
+    EXPECT_EQ(m_state.pixelUnpackBufferBinding,
+              m_savedState.pixelUnpackBufferBinding);
+  }
+
  private:
-  GLuint m_boundTexture = 0;
-  GLuint m_boundTextureTarget = 0;
+  std::map<GLenum, GLuint> m_boundTextures;
+
+  // State tracked to verify that it is restored correctly.
+  struct State {
+    bool scissorEnabled = false;
+
+    GLfloat clearColor[4] = {0, 0, 0, 0};
+    GLfloat clearDepth = 0;
+    GLint clearStencil = 0;
+
+    GLboolean colorMask[4] = {0, 0, 0, 0};
+    GLboolean depthMask = 0;
+    GLuint stencilMask = 0;
+
+    GLint packAlignment = 4;
+
+    // The bound 2D texture for the active texture unit.
+    GLuint activeTexture2DBinding = 0;
+    GLuint renderbufferBinding = 0;
+    GLuint drawFramebufferBinding = 0;
+    GLuint readFramebufferBinding = 0;
+    GLuint pixelUnpackBufferBinding = 0;
+  };
+  State m_state;
+  State m_savedState;
+
   gpu::SyncToken m_mostRecentlyWaitedSyncToken;
   GLbyte m_currentMailboxByte = 0;
   IntSize m_mostRecentlyProducedSize;

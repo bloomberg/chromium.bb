@@ -133,7 +133,8 @@ class ScopedRGBEmulationColorMask {
   const bool m_requiresEmulation;
 };
 
-class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
+class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
+                                                 public DrawingBuffer::Client {
   WTF_MAKE_NONCOPYABLE(WebGLRenderingContextBase);
 
  public:
@@ -546,11 +547,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   void restoreScissorEnabled();
   void restoreScissorBox();
   void restoreClearColor();
-  void restoreClearDepthf();
-  void restoreClearStencil();
-  void restoreStencilMaskSeparate();
   void restoreColorMask();
-  void restoreDepthMask();
 
   gpu::gles2::GLES2Interface* contextGL() const {
     DrawingBuffer* d = drawingBuffer();
@@ -622,6 +619,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   friend class WebGLCompressedTextureS3TCsRGB;
   friend class WebGLRenderingContextErrorMessageCallback;
   friend class WebGLVertexArrayObjectBase;
+  friend class ScopedDrawingBufferBinder;
   friend class ScopedTexture2DRestorer;
   friend class ScopedFramebufferRestorer;
   // To allow V8WebGL[2]RenderingContext to call visitChildDOMWrappers.
@@ -647,6 +645,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
   WebLayer* platformLayer() const override;
   void stop() override;
+
+  // DrawingBuffer::Client implementation.
+  bool DrawingBufferClientIsBoundForDraw() override;
+  void DrawingBufferClientRestoreScissorTest() override;
+  void DrawingBufferClientRestoreMaskAndClearValues() override;
+  void DrawingBufferClientRestorePixelPackAlignment() override;
+  void DrawingBufferClientRestoreTexture2DBinding() override;
+  void DrawingBufferClientRestoreRenderbufferBinding() override;
+  void DrawingBufferClientRestoreFramebufferBinding() override;
+  void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
 
   void addSharedObject(WebGLSharedObject*);
   void addContextObject(WebGLContextObject*);
@@ -918,7 +926,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
           m_readFramebufferBinding(framebufferBinding) {
       // Commit DrawingBuffer if needed (e.g., for multisampling)
       if (!m_readFramebufferBinding && m_drawingBuffer)
-        m_drawingBuffer->commit();
+        m_drawingBuffer->resolveAndBindForReadAndDraw();
     }
 
     ~ScopedDrawingBufferBinder() {
@@ -977,9 +985,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
     CombinedClear
   };
   HowToClear clearIfComposited(GLbitfield clearMask = 0);
-
-  // Helper to restore state that clearing the framebuffer may destroy.
-  void restoreStateAfterClear();
 
   // Convert texture internal format.
   GLenum convertTexInternalFormat(GLenum internalformat, GLenum type);

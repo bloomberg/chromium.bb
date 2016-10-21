@@ -3690,7 +3690,6 @@ void WebGL2RenderingContextBase::deleteFramebuffer(
     m_readFramebufferBinding = nullptr;
   }
   if (target) {
-    drawingBuffer()->setFramebufferBinding(target, 0);
     // Have to call drawingBuffer()->bind() here to bind back to internal fbo.
     drawingBuffer()->bind(target);
   }
@@ -4721,6 +4720,14 @@ WebGL2RenderingContextBase::getUnpackPixelStoreParams(
     params.skipImages = m_unpackSkipImages;
   }
   return params;
+}
+
+void WebGL2RenderingContextBase::
+    DrawingBufferClientRestorePixelUnpackBufferBinding() {
+  if (!contextGL())
+    return;
+  contextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER,
+                          objectOrZero(m_boundPixelUnpackBuffer.get()));
 }
 
 }  // namespace blink
