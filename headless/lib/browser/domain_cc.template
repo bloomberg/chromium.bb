@@ -102,7 +102,9 @@ void Domain::Dispatch{{event.name | to_title_case}}Event(const base::Value& para
   ErrorReporter errors;
   std::unique_ptr<{{event.name | to_title_case}}Params> parsed_params({{event.name | to_title_case}}Params::Parse(params, &errors));
   DCHECK(!errors.HasErrors());
-  FOR_EACH_OBSERVER(ExperimentalObserver, observers_, On{{event.name | to_title_case}}(*parsed_params));
+  for (ExperimentalObserver& observer : observers_) {
+    observer.On{{event.name | to_title_case}}(*parsed_params);
+  }
 }
   {% endfor %}
 {% endif %}
