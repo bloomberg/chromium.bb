@@ -73,6 +73,10 @@ std::string GetUserAgent() {
   return nil;
 }
 
+- (NSURL*)requestURL {
+  return [device_ requestURL];
+}
+
 - (void)cancel {
   [urlSessionTask_ cancel];
   block_.reset();
@@ -96,7 +100,7 @@ std::string GetUserAgent() {
 
   // body of the POST request.
   NSDictionary* jsonBody =
-      @{ kUrlsKey : @[ @{kUrlKey : [[device_ url] absoluteString]} ] };
+      @{ kUrlsKey : @[ @{kUrlKey : [[device_ requestURL] absoluteString]} ] };
   [request_ setHTTPBody:[NSJSONSerialization dataWithJSONObject:jsonBody
                                                         options:0
                                                           error:NULL]];
@@ -232,20 +236,19 @@ std::string GetUserAgent() {
     NSString* description =
         base::mac::ObjCCast<NSString>(pageInfo[kDescriptionKey]);
     NSString* title = base::mac::ObjCCast<NSString>(pageInfo[kTitleKey]);
-    NSURL* scannedUrl =
-        scannedUrlString ? [NSURL URLWithString:scannedUrlString] : nil;
     NSURL* resolvedUrl =
         resolvedUrlString ? [NSURL URLWithString:resolvedUrlString] : nil;
     NSURL* icon = iconString ? [NSURL URLWithString:iconString] : nil;
     base::scoped_nsobject<PhysicalWebDevice> device([[PhysicalWebDevice alloc]
           initWithURL:resolvedUrl
-           requestURL:scannedUrl
+           requestURL:[device_ requestURL]
                  icon:icon
                 title:title
           description:description
         transmitPower:[device_ transmitPower]
                  rssi:[device_ rssi]
-                 rank:physical_web::kMaxRank]);
+                 rank:physical_web::kMaxRank
+        scanTimestamp:[device_ scanTimestamp]]);
     if (block_.get() != nil) {
       block_.get()(device, nil);
     }

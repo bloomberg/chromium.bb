@@ -26,6 +26,9 @@ void IOSChromePhysicalWebDataSource::StartDiscovery(
 
   [scanner_ stop];
   scanner_.reset([[PhysicalWebScanner alloc] initWithDelegate:nil]);
+
+  // Configure the scanner to notify us when a URL is no longer nearby.
+  [scanner_ setOnLostDetectionEnabled:YES];
   [scanner_ setNetworkRequestEnabled:network_request_enabled];
   [scanner_ start];
 }

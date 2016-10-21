@@ -17,6 +17,7 @@
   int rssi_;
   int transmitPower_;
   double rank_;
+  base::scoped_nsobject<NSDate> scanTimestamp_;
 }
 
 @synthesize rssi = rssi_;
@@ -30,7 +31,8 @@
                 description:(NSString*)description
               transmitPower:(int)transmitPower
                        rssi:(int)rssi
-                       rank:(double)rank {
+                       rank:(double)rank
+              scanTimestamp:(NSDate*)scanTimestamp {
   self = [super init];
   if (self) {
     url_.reset([url retain]);
@@ -41,6 +43,7 @@
     transmitPower_ = transmitPower;
     rssi_ = rssi;
     rank_ = rank > physical_web::kMaxRank ? physical_web::kMaxRank : rank;
+    scanTimestamp_.reset([scanTimestamp retain]);
   }
   return self;
 }
@@ -68,6 +71,14 @@
 
 - (NSString*)description {
   return description_;
+}
+
+- (NSDate*)scanTimestamp {
+  return scanTimestamp_;
+}
+
+- (void)setScanTimestamp:(NSDate*)value {
+  scanTimestamp_.reset([value retain]);
 }
 
 @end

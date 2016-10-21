@@ -19,6 +19,11 @@ class ListValue;
 
 @interface PhysicalWebScanner : NSObject
 
+// When onLostDetectionEnabled is YES, the delegate will be notified if a URL
+// that was previously nearby is no longer detected. Changing this value while
+// scanning is active will reset the list of nearby URLs.
+@property(nonatomic, assign) BOOL onLostDetectionEnabled;
+
 // When networkRequest is NO, no network request will be sent.
 @property(nonatomic, assign) BOOL networkRequestEnabled;
 

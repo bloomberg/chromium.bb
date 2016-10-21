@@ -21,6 +21,9 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// Returns the URL sent in the query to the Physical Web service.
+- (NSURL*)requestURL;
+
 // Starts the request and call the given |block| when finished.
 // |block| should not be nil.
 // If an error occurred, the block will be called with a non-nil error.

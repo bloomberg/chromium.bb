@@ -18,7 +18,8 @@
                 description:(NSString*)description
               transmitPower:(int)transmitPower
                        rssi:(int)rssi
-                       rank:(double)rank NS_DESIGNATED_INITIALIZER;
+                       rank:(double)rank
+              scanTimestamp:(NSDate*)scanTimestamp NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -46,6 +47,9 @@
 
 // |rank| of the physical web device returned by the server.
 @property(nonatomic, readonly) double rank;
+
+// |scanTimestamp| is the time the URL was most recently seen.
+@property(nonatomic, retain) NSDate* scanTimestamp;
 
 @end
 
