@@ -268,7 +268,7 @@ void CronetBidirectionalStreamAdapter::OnHeadersReceived(
     case net::kProtoHTTP2:
       protocol = "h2";
       break;
-    case net::kProtoQUIC1SPDY3:
+    case net::kProtoQUIC:
       protocol = "quic/1+spdy/3";
       break;
     default:

@@ -425,8 +425,8 @@ HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
   switch (next_proto) {
     case kProtoHTTP2:
       return CONNECTION_INFO_HTTP2;
-    case kProtoQUIC1SPDY3:
-      return CONNECTION_INFO_QUIC1_SPDY3;
+    case kProtoQUIC:
+      return CONNECTION_INFO_QUIC;
 
     case kProtoUnknown:
     case kProtoHTTP11:
@@ -458,7 +458,7 @@ std::string HttpResponseInfo::ConnectionInfoToString(
     case CONNECTION_INFO_DEPRECATED_HTTP2_15:
     case CONNECTION_INFO_HTTP2:
       return "h2";
-    case CONNECTION_INFO_QUIC1_SPDY3:
+    case CONNECTION_INFO_QUIC:
       return "quic/1+spdy/3";
     case CONNECTION_INFO_HTTP0_9:
       return "http/0.9";

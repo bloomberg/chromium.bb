@@ -118,7 +118,7 @@ std::string GetDomainReliabilityProtocol(
     case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15:
     case net::HttpResponseInfo::CONNECTION_INFO_HTTP2:
       return "SPDY";
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC:
       return "QUIC";
     case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:
       NOTREACHED();

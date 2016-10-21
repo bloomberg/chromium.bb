@@ -490,7 +490,7 @@ class QuicNetworkTransactionTest
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_alpn_negotiated);
-    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3,
+    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC,
               response->connection_info);
   }
 
@@ -2104,8 +2104,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
   EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
   EXPECT_TRUE(response->was_fetched_via_spdy);
   EXPECT_TRUE(response->was_alpn_negotiated);
-  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3,
-            response->connection_info);
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC, response->connection_info);
 
   std::string response_data;
   ASSERT_EQ(ERR_QUIC_PROTOCOL_ERROR, ReadTransaction(&trans, &response_data));
@@ -3053,7 +3052,7 @@ class QuicNetworkTransactionWithDestinationTest
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_TRUE(response->was_fetched_via_spdy);
     EXPECT_TRUE(response->was_alpn_negotiated);
-    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3,
+    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_QUIC,
               response->connection_info);
     EXPECT_EQ(443, response->socket_address.port());
   }
