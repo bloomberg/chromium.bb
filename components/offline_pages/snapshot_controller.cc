@@ -10,10 +10,14 @@
 #include "base/time/time.h"
 
 namespace {
-// Delay, in milliseconds, between the main document parsed event and snapshot.
-// Note if the "load" event fires before this delay is up, then the snapshot
-// is taken immediately.
-const size_t kDelayAfterDocumentAvailable = 7000;
+// Default delay, in milliseconds, between the main document parsed event and
+// snapshot. Note: this snapshot might not occur if the OnLoad event and
+// OnLoad delay elapses first to trigger a final snapshot.
+const size_t kDefaultDelayAfterDocumentAvailableMs = 7000;
+
+// Default delay, in milliseconds, between the main document OnLoad event and
+// snapshot.
+const size_t kDelayAfterDocumentOnLoadCompletedMs = 1000;
 
 }  // namespace
 
@@ -25,8 +29,25 @@ SnapshotController::SnapshotController(
     : task_runner_(task_runner),
       client_(client),
       state_(State::READY),
-      weak_ptr_factory_(this) {
-}
+      delay_after_document_available_ms_(
+          kDefaultDelayAfterDocumentAvailableMs),
+      delay_after_document_on_load_completed_ms_(
+          kDelayAfterDocumentOnLoadCompletedMs),
+      weak_ptr_factory_(this) {}
+
+SnapshotController::SnapshotController(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    SnapshotController::Client* client,
+    size_t delay_after_document_available_ms,
+    size_t delay_after_document_on_load_completed_ms)
+    : task_runner_(task_runner),
+      client_(client),
+      state_(State::READY),
+      delay_after_document_available_ms_(
+          delay_after_document_available_ms),
+      delay_after_document_on_load_completed_ms_(
+          delay_after_document_on_load_completed_ms),
+      weak_ptr_factory_(this) {}
 
 SnapshotController::~SnapshotController() {}
 
@@ -49,20 +70,21 @@ void SnapshotController::PendingSnapshotCompleted() {
 }
 
 void SnapshotController::DocumentAvailableInMainFrame() {
-  // Post a delayed task. The snapshot will happen either when the delay
-  // is up, or if the "load" event is dispatched in the main frame.
+  // Post a delayed task to snapshot.
   task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&SnapshotController::MaybeStartSnapshot,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kDelayAfterDocumentAvailable));
+      FROM_HERE, base::Bind(&SnapshotController::MaybeStartSnapshot,
+                            weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(
+          delay_after_document_available_ms_));
 }
 
 void SnapshotController::DocumentOnLoadCompletedInMainFrame() {
-  MaybeStartSnapshot();
-  // No more snapshots after onLoad (there still can be other events
-  // or delayed tasks that can try to start another snapshot)
-  Stop();
+  // Post a delayed task to snapshot and then stop this controller.
+  task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&SnapshotController::MaybeStartSnapshotThenStop,
+                            weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(
+          delay_after_document_on_load_completed_ms_));
 }
 
 void SnapshotController::MaybeStartSnapshot() {
@@ -72,8 +94,17 @@ void SnapshotController::MaybeStartSnapshot() {
   client_->StartSnapshot();
 }
 
+void SnapshotController::MaybeStartSnapshotThenStop() {
+  MaybeStartSnapshot();
+  Stop();
+}
+
 size_t SnapshotController::GetDelayAfterDocumentAvailableForTest() {
-  return kDelayAfterDocumentAvailable;
+  return delay_after_document_available_ms_;
+}
+
+size_t SnapshotController::GetDelayAfterDocumentOnLoadCompletedForTest() {
+  return delay_after_document_on_load_completed_ms_;
 }
 
 

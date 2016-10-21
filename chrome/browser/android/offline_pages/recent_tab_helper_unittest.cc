@@ -212,6 +212,7 @@ TEST_F(RecentTabHelperTest, Basic) {
 TEST_F(RecentTabHelperTest, SimpleCapture) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
@@ -226,6 +227,7 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
 
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
@@ -250,8 +252,10 @@ TEST_F(RecentTabHelperTest, TwoCapturesSameUrl) {
   EXPECT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 
-  // Triggers snapshot immediately;
+  // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_EQ(2U, model_changed_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -279,8 +283,10 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentUrls) {
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 
   NavigateAndCommit(kTestPageUrlOther);
-  // Triggers snapshot immediately;
+  // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_EQ(2U, model_changed_count());
   EXPECT_EQ(1U, model_removed_count());
@@ -293,6 +299,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentUrls) {
 TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   FailLoad(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
@@ -304,6 +311,7 @@ TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
   scoped_feature_list.Init();
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();

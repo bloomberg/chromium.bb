@@ -223,6 +223,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
   EXPECT_FALSE(loader()->IsLoaded());
 
   test_adapter()->GetObserver()->OnPrerenderStopLoading();
+  // Skip SnapshotController's wait time and emulate StartSnapshot call.
+  loader()->StartSnapshot();
   PumpLoop();
   EXPECT_FALSE(loader()->IsIdle());
   EXPECT_TRUE(loader()->IsLoaded());

@@ -48,6 +48,11 @@ class SnapshotController {
   SnapshotController(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       SnapshotController::Client* client);
+  SnapshotController(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      SnapshotController::Client* client,
+      size_t delay_after_document_available_ms,
+      size_t delay_after_document_on_load_completed_ms);
   virtual ~SnapshotController();
 
   // Resets the 'session', returning controller to initial state.
@@ -69,14 +74,18 @@ class SnapshotController {
   void DocumentOnLoadCompletedInMainFrame();
 
   size_t GetDelayAfterDocumentAvailableForTest();
+  size_t GetDelayAfterDocumentOnLoadCompletedForTest();
 
  private:
   void MaybeStartSnapshot();
+  void MaybeStartSnapshotThenStop();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   // Client owns this class.
   SnapshotController::Client* client_;
   SnapshotController::State state_;
+  size_t delay_after_document_available_ms_;
+  size_t delay_after_document_on_load_completed_ms_;
 
   base::WeakPtrFactory<SnapshotController> weak_ptr_factory_;
 
