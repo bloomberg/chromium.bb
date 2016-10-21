@@ -5,12 +5,6 @@
 #include "net/socket/ssl_client_socket_impl.h"
 
 #include <errno.h>
-#include <openssl/bio.h>
-#include <openssl/bytestring.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/mem.h>
-#include <openssl/ssl.h>
 #include <string.h>
 
 #include <utility>
@@ -52,6 +46,12 @@
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/token_binding.h"
+#include "third_party/boringssl/src/include/openssl/bio.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/err.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 #if !defined(OS_NACL)
 #include "net/ssl/ssl_key_logger.h"

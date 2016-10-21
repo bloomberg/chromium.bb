@@ -4,8 +4,6 @@
 
 #include "net/quic/chromium/quic_chromium_client_session.h"
 
-#include <openssl/ssl.h>
-
 #include <utility>
 
 #include "base/callback_helpers.h"
@@ -39,6 +37,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/token_binding.h"
 #include "net/udp/datagram_client_socket.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 

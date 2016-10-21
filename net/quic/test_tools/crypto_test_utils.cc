@@ -4,13 +4,6 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
-#include <openssl/bn.h>
-#include <openssl/ec.h>
-#include <openssl/ecdsa.h>
-#include <openssl/evp.h>
-#include <openssl/obj_mac.h>
-#include <openssl/sha.h>
-
 #include <memory>
 
 #include "base/strings/string_util.h"
@@ -34,6 +27,12 @@
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/ecdsa.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/obj_mac.h"
+#include "third_party/boringssl/src/include/openssl/sha.h"
 
 using base::StringPiece;
 using std::make_pair;

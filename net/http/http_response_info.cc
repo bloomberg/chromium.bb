@@ -4,8 +4,6 @@
 
 #include "net/http/http_response_info.h"
 
-#include <openssl/ssl.h>
-
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/time/time.h"
@@ -18,6 +16,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using base::Time;
 

@@ -4,8 +4,6 @@
 
 #include "net/quic/chromium/quic_stream_factory.h"
 
-#include <openssl/aead.h>
-
 #include <algorithm>
 #include <tuple>
 #include <utility>
@@ -56,6 +54,7 @@
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/ssl/token_binding.h"
 #include "net/udp/udp_client_socket.h"
+#include "third_party/boringssl/src/include/openssl/aead.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
