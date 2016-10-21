@@ -10,6 +10,7 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Performance.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/PerformanceObserver.h"
 
@@ -48,12 +49,18 @@ void V8PerformanceObserver::constructorCustom(
             "The callback provided as parameter 1 is not a function."));
     return;
   }
-  PerformanceObserverCallback* callback = PerformanceObserverCallback::create(
-      info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+  v8::Local<v8::Function> v8Callback = v8::Local<v8::Function>::Cast(info[0]);
+  PerformanceObserverCallback* callback =
+      PerformanceObserverCallback::create(info.GetIsolate(), v8Callback);
 
   PerformanceObserver* observer = PerformanceObserver::create(
       ScriptState::forReceiverObject(info), performance, callback);
 
+  // TODO(bashi): Don't set private property (and remove this custom
+  // constructor) when we can call setWrapperReference() correctly.
+  // crbug.com/468240.
+  V8PrivateProperty::getPerformanceObserverCallback(info.GetIsolate())
+      .set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Callback);
   v8SetReturnValue(info,
                    V8DOMWrapper::associateObjectWithWrapper(
                        info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
