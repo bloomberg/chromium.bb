@@ -268,16 +268,8 @@ CertificateManagerSettingsWebUITest.prototype = {
   browsePreload: CERTIFICATE_MANAGER_SETTINGS_PAGE_URL,
 };
 
-
-// TODO(crbug.com/657514) Flakes on linux and chromeos.
-GEN('#if defined(OS_LINUX) || defined(OS_CHROMEOS)');
-GEN('#define MAYBE_testViewAndDeleteCert ' +
-    'DISABLED_testViewAndDeleteCert');
-GEN('#else');
-GEN('#define MAYBE_testViewAndDeleteCert testViewAndDeleteCert');
-GEN('#endif');
 TEST_F('CertificateManagerSettingsWebUITest',
-       'MAYBE_testViewAndDeleteCert', function() {
+       'testViewAndDeleteCert', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   this.mockHandler.expects(once()).viewCertificate(['c1']);

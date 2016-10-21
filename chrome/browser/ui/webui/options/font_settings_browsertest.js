@@ -41,14 +41,8 @@ FontSettingsWebUITest.prototype = {
   },
 };
 
-// TODO(crbug.com/657514) Flakes on linux and chromeos.
-GEN('#if defined(OS_LINUX) || defined(OS_CHROMEOS)');
-GEN('#define MAYBE_testOpenFontSettings DISABLED_testOpenFontSettings');
-GEN('#else');
-GEN('#define MAYBE_testOpenFontSettings testOpenFontSettings');
-GEN('#endif  // defined(OS_WIN)');
 // Test opening font settings has correct location.
-TEST_F('FontSettingsWebUITest', 'MAYBE_testOpenFontSettings', function() {
+TEST_F('FontSettingsWebUITest', 'testOpenFontSettings', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
 

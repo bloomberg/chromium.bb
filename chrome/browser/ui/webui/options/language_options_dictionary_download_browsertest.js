@@ -111,8 +111,7 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
 
 // Verify that clicking the retry button calls the handler.
 // This test is flaky on Windows. https://crbug.com/616791
-// TODO(crbug.com/657514) Flakes on linux and chromeos too.
-GEN('#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)');
+GEN('#if defined(OS_WIN)');
 GEN('#define MAYBE_testdictionaryDownloadRetry ' +
     'DISABLED_testdictionaryDownloadRetry');
 GEN('#else');

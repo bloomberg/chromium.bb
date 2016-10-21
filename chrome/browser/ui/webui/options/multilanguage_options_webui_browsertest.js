@@ -191,13 +191,7 @@ MultilanguagePreferenceWebUIBrowserTest.prototype = {
 };
 
 // Make sure the case where no languages are selected is handled properly.
-// TODO(crbug.com/657514) Flakes on linux and chromeos.
-GEN('#if defined(OS_LINUX) || defined(OS_CHROMEOS)');
-GEN('#define MAYBE_SelectFromBlank DISABLED_SelectFromBlank');
-GEN('#else');
-GEN('#define MAYBE_SelectFromBlank SelectFromBlank');
-GEN('#endif  // defined(OS_WIN)');
-TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'MAYBE_SelectFromBlank',
+TEST_F('MultilanguagePreferenceWebUIBrowserTest', 'SelectFromBlank',
        function() {
   expectTrue($('language-options-list').selectLanguageByCode('fr'));
   expectFalse($('spellcheck-language-checkbox').checked, 'fr');
