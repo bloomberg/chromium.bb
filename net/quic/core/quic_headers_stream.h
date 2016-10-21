@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_HEADERS_STREAM_H_
-#define NET_QUIC_QUIC_HEADERS_STREAM_H_
+#ifndef NET_QUIC_CORE_QUIC_HEADERS_STREAM_H_
+#define NET_QUIC_CORE_QUIC_HEADERS_STREAM_H_
 
 #include <stddef.h>
 
@@ -122,16 +122,6 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
                      SpdyStreamId promised_stream_id,
                      bool end);
 
-  // Called when a chunk of header data is available. This is called
-  // after OnHeaders.
-  // |stream_id| The stream receiving the header data.
-  // |header_data| A buffer containing the header data chunk received.
-  // |len| The length of the header data buffer. A length of zero indicates
-  //       that the header data block has been completely sent.
-  void OnControlFrameHeaderData(SpdyStreamId stream_id,
-                                const char* header_data,
-                                size_t len);
-
   // Called when the complete list of headers is available.
   void OnHeaderList(const QuicHeaderList& header_list);
 
@@ -175,4 +165,4 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_HEADERS_STREAM_H_
+#endif  // NET_QUIC_CORE_QUIC_HEADERS_STREAM_H_

@@ -165,13 +165,6 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
 
-    bool OnControlFrameHeaderData(SpdyStreamId stream_id,
-                                  const char* header_data,
-                                  size_t len) override {
-      LOG(FATAL);
-      return true;
-    }
-
     void OnRstStream(SpdyStreamId stream_id,
                      SpdyRstStreamStatus status) override {
       LOG(FATAL);
@@ -389,31 +382,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     if (end_headers) {
       headers_handler_.reset();
     }
-  }
-
-  bool OnControlFrameHeaderData(SpdyStreamId stream_id,
-                                const char* header_data,
-                                size_t len) override {
-    VLOG(1) << "OnControlFrameHeaderData(" << stream_id << ", data, " << len
-            << ")";
-    ++control_frame_header_data_count_;
-    CHECK_EQ(header_stream_id_, stream_id);
-    if (len == 0) {
-      ++zero_length_control_frame_header_data_count_;
-      // Indicates end-of-header-block.
-      headers_.clear();
-      CHECK(header_buffer_valid_);
-      return framer_.ParseHeaderBlockInBuffer(header_buffer_.get(),
-                                              header_buffer_length_, &headers_);
-    }
-    const size_t available = header_buffer_size_ - header_buffer_length_;
-    if (len > available) {
-      header_buffer_valid_ = false;
-      return false;
-    }
-    memcpy(header_buffer_.get() + header_buffer_length_, header_data, len);
-    header_buffer_length_ += len;
-    return true;
   }
 
   void OnSynStream(SpdyStreamId stream_id,
