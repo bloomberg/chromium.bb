@@ -22,8 +22,8 @@ import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -69,6 +69,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
     private final ImageView mThumbnailView;
+    private final View mPublisherBar;
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
@@ -146,6 +147,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
+        mPublisherBar = itemView.findViewById(R.id.publisher_bar);
 
         new ImpressionTracker(itemView, this);
 
@@ -246,10 +248,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mHeadlineTextView.setMinLines((narrow && !hideThumbnail) ? 3 : 1);
 
         // If we aren't showing the article snippet, reduce the top margin for publisher text.
-        RelativeLayout.LayoutParams params =
-                (RelativeLayout.LayoutParams) mPublisherTextView.getLayoutParams();
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
 
-        int topMargin = mPublisherTextView.getResources().getDimensionPixelSize(
+        int topMargin = mPublisherBar.getResources().getDimensionPixelSize(
                 hideSnippet ? R.dimen.snippets_publisher_margin_top_without_article_snippet
                             : R.dimen.snippets_publisher_margin_top_with_article_snippet);
 
@@ -258,7 +260,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                           params.rightMargin,
                           params.bottomMargin);
 
-        mPublisherTextView.setLayoutParams(params);
+        mPublisherBar.setLayoutParams(params);
     }
 
     public void onBindViewHolder(SnippetArticle article) {
@@ -291,7 +293,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        // The favicon of the publisher should match the textview height.
+        // The favicon of the publisher should match the TextView height.
         int widthSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         int heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         mPublisherTextView.measure(widthSpec, heightSpec);
