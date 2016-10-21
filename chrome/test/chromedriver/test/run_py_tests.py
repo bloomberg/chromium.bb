@@ -72,6 +72,13 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
     'ChromeDriverTest.testShadowDomHover',
     'ChromeDriverTest.testMouseMoveTo',
+    'ChromeDriverTest.testHoverOverElement',
+]
+_VERSION_SPECIFIC_FILTER['55'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
+    'ChromeDriverTest.testShadowDomHover',
+    'ChromeDriverTest.testMouseMoveTo',
+    'ChromeDriverTest.testHoverOverElement',
 ]
 
 _OS_SPECIFIC_FILTER = {}
@@ -149,6 +156,12 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         'ChromeDriverTest.testSwitchToWindow',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
+        'ChromeDriverTest.testShadowDomHover',
+        'ChromeDriverTest.testMouseMoveTo',
+        'ChromeDriverTest.testHoverOverElement',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1478
+        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (

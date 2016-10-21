@@ -96,6 +96,14 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'DragAndDropTest.testDragAndDrop',
     'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
     'DragAndDropTest.testElementInDiv',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
+    'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
+    'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
+]
+_REVISION_NEGATIVE_FILTER['55'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
+    'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
+    'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
 ]
 
 _OS_NEGATIVE_FILTER = {}
@@ -135,8 +143,7 @@ _SPECIFIC_OS_REVISION_NEGATIVE_FILTER['linux_53'] = [
     # Flaky on Linux32 against v53:
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1418
     'ClickTest.testShouldOnlyFollowHrefOnce',
-    'JavascriptEnabledDriverTest.testShouldFireOnChangeEventWhenSettingAnElementsValue',
-    'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
+    'JavascriptEnabledDriverTest.*',
     'WindowSwitchingTest.testCanCloseWindowWhenMultipleWindowsAreOpen',
     'WindowSwitchingTest.testCanCallGetWindowHandlesAfterClosingAWindow',
     'WindowSwitchingTest.testCanCloseWindowAndSwitchBackToMainWindow',
@@ -214,6 +221,9 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1005
     'WindowTest.*',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1478
+    'WindowSwitchingTest.*',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
