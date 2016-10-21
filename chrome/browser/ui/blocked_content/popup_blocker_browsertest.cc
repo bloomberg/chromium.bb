@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -102,38 +101,6 @@ class CloseObserver : public content::WebContentsObserver {
   base::RunLoop close_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CloseObserver);
-};
-
-class BrowserActivationObserver : public chrome::BrowserListObserver {
- public:
-  BrowserActivationObserver()
-      : browser_(chrome::FindLastActive()), observed_(false) {
-    BrowserList::AddObserver(this);
-  }
-  ~BrowserActivationObserver() override { BrowserList::RemoveObserver(this); }
-
-  void WaitForActivation() {
-    if (observed_)
-      return;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-  }
-
- private:
-  // chrome::BrowserListObserver:
-  void OnBrowserSetLastActive(Browser* browser) override {
-    if (browser == browser_)
-      return;
-    observed_ = true;
-    if (message_loop_runner_.get() && message_loop_runner_->loop_running())
-      message_loop_runner_->Quit();
-  }
-
-  Browser* browser_;
-  bool observed_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserActivationObserver);
 };
 
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
@@ -550,11 +517,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   app_modal::JavaScriptAppModalDialog* js_dialog =
       static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
 
-  BrowserActivationObserver activation_observer;
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
   js_dialog->native_dialog()->AcceptAppModalDialog();
-
-  if (popup_browser != chrome::FindLastActive())
-    activation_observer.WaitForActivation();
+  waiter.WaitForActivation();
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 

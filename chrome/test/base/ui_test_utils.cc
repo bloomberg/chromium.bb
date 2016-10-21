@@ -540,4 +540,32 @@ void WaitForHistoryToLoad(history::HistoryService* history_service) {
   }
 }
 
+BrowserActivationWaiter::BrowserActivationWaiter(Browser* browser)
+    : browser_(browser), observed_(false) {
+  if (chrome::FindLastActive() == browser_) {
+    observed_ = true;
+    return;
+  }
+  BrowserList::AddObserver(this);
+}
+
+BrowserActivationWaiter::~BrowserActivationWaiter() {}
+
+void BrowserActivationWaiter::WaitForActivation() {
+  if (observed_)
+    return;
+  message_loop_runner_ = new content::MessageLoopRunner;
+  message_loop_runner_->Run();
+}
+
+void BrowserActivationWaiter::OnBrowserSetLastActive(Browser* browser) {
+  if (browser != browser_)
+    return;
+
+  observed_ = true;
+  BrowserList::RemoveObserver(this);
+  if (message_loop_runner_.get() && message_loop_runner_->loop_running())
+    message_loop_runner_->Quit();
+}
+
 }  // namespace ui_test_utils
