@@ -151,7 +151,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       texture_id_(0),
-      stream_id_(0),
       is_player_initialized_(false),
       is_playing_(false),
       is_play_pending_(false),
@@ -200,14 +199,13 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 
   player_manager_->UnregisterMediaPlayer(player_id_);
 
-  if (stream_id_) {
+  if (texture_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
     gl->DeleteTextures(1, &texture_id_);
     // Flush to ensure that the stream texture gets deleted in a timely fashion.
     gl->ShallowFlushCHROMIUM();
     texture_id_ = 0;
     texture_mailbox_ = gpu::Mailbox();
-    stream_id_ = 0;
   }
 
   {
@@ -805,8 +803,8 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   // For hidden video element (with style "display:none"), ensure the texture
   // size is set.
   if (!is_remote_ && cached_stream_texture_size_ != natural_size_) {
-    stream_texture_factory_->SetStreamTextureSize(
-        stream_id_, gfx::Size(natural_size_.width, natural_size_.height));
+    stream_texture_proxy_->SetStreamTextureSize(
+        gfx::Size(natural_size_.width, natural_size_.height));
     cached_stream_texture_size_ = natural_size_;
   }
 
@@ -1108,14 +1106,13 @@ void WebMediaPlayerAndroid::PutCurrentFrame() {
 void WebMediaPlayerAndroid::RemoveSurfaceTextureAndProxy() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  if (stream_id_) {
+  if (texture_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
     gl->DeleteTextures(1, &texture_id_);
     // Flush to ensure that the stream texture gets deleted in a timely fashion.
     gl->ShallowFlushCHROMIUM();
     texture_id_ = 0;
     texture_mailbox_ = gpu::Mailbox();
-    stream_id_ = 0;
   }
   stream_texture_proxy_.reset();
   needs_establish_peer_ =
@@ -1137,7 +1134,7 @@ void WebMediaPlayerAndroid::UpdateStreamTextureProxyCallback(
                    base::Unretained(client));
   }
 
-  stream_texture_proxy_->BindToTaskRunner(stream_id_, frame_received_cb,
+  stream_texture_proxy_->BindToTaskRunner(frame_received_cb,
                                           compositor_task_runner_);
 }
 
@@ -1155,13 +1152,14 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
   if (!needs_establish_peer_)
     return;
 
-  stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
-  if (stream_texture_proxy_) {
-    DoCreateStreamTexture();
-    ReallocateVideoFrame();
-    if (video_frame_provider_client_)
-      UpdateStreamTextureProxyCallback(video_frame_provider_client_);
-  }
+  DCHECK(!texture_id_);
+  stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy(
+      kGLTextureExternalOES, &texture_id_, &texture_mailbox_));
+  if (!stream_texture_proxy_)
+    return;
+  ReallocateVideoFrame();
+  if (video_frame_provider_client_)
+    UpdateStreamTextureProxyCallback(video_frame_provider_client_);
 }
 
 void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
@@ -1169,25 +1167,16 @@ void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
   if (!stream_texture_proxy_)
     return;
 
-  if (stream_texture_factory_.get() && stream_id_)
-    stream_texture_factory_->EstablishPeer(stream_id_, player_id_, frame_id_);
+  stream_texture_proxy_->EstablishPeer(player_id_, frame_id_);
 
   // Set the deferred size because the size was changed in remote mode.
   if (!is_remote_ && cached_stream_texture_size_ != natural_size_) {
-    stream_texture_factory_->SetStreamTextureSize(
-        stream_id_, gfx::Size(natural_size_.width, natural_size_.height));
+    stream_texture_proxy_->SetStreamTextureSize(
+        gfx::Size(natural_size_.width, natural_size_.height));
     cached_stream_texture_size_ = natural_size_;
   }
 
   needs_establish_peer_ = false;
-}
-
-void WebMediaPlayerAndroid::DoCreateStreamTexture() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(!stream_id_);
-  DCHECK(!texture_id_);
-  stream_id_ = stream_texture_factory_->CreateStreamTexture(
-      kGLTextureExternalOES, &texture_id_, &texture_mailbox_);
 }
 
 void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {

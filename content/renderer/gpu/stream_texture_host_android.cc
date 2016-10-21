@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/stream_texture_host_android.h"
 
+#include "base/unguessable_token.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -11,8 +12,9 @@
 
 namespace content {
 
-StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel)
-    : stream_id_(0),
+StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel,
+                                     int32_t route_id)
+    : route_id_(route_id),
       listener_(NULL),
       channel_(std::move(channel)),
       weak_ptr_factory_(this) {
@@ -20,17 +22,15 @@ StreamTextureHost::StreamTextureHost(scoped_refptr<gpu::GpuChannelHost> channel)
 }
 
 StreamTextureHost::~StreamTextureHost() {
-  if (channel_.get() && stream_id_)
-    channel_->RemoveRoute(stream_id_);
+  if (channel_.get() && route_id_)
+    channel_->RemoveRoute(route_id_);
 }
 
-bool StreamTextureHost::BindToCurrentThread(int32_t stream_id,
-                                            Listener* listener) {
+bool StreamTextureHost::BindToCurrentThread(Listener* listener) {
   listener_ = listener;
-  if (channel_.get() && stream_id && !stream_id_) {
-    stream_id_ = stream_id;
-    channel_->AddRoute(stream_id, weak_ptr_factory_.GetWeakPtr());
-    channel_->Send(new GpuStreamTextureMsg_StartListening(stream_id));
+  if (channel_.get() && route_id_) {
+    channel_->AddRoute(route_id_, weak_ptr_factory_.GetWeakPtr());
+    channel_->Send(new GpuStreamTextureMsg_StartListening(route_id_));
     return true;
   }
 
@@ -54,6 +54,26 @@ void StreamTextureHost::OnChannelError() {
 void StreamTextureHost::OnFrameAvailable() {
   if (listener_)
     listener_->OnFrameAvailable();
+}
+
+void StreamTextureHost::EstablishPeer(int player_id, int frame_id) {
+  if (route_id_) {
+    channel_->Send(
+        new GpuStreamTextureMsg_EstablishPeer(route_id_, frame_id, player_id));
+  }
+}
+
+void StreamTextureHost::SetStreamTextureSize(const gfx::Size& size) {
+  if (route_id_)
+    channel_->Send(new GpuStreamTextureMsg_SetSize(route_id_, size));
+}
+
+void StreamTextureHost::ForwardStreamTextureForSurfaceRequest(
+    const base::UnguessableToken& request_token) {
+  if (route_id_) {
+    channel_->Send(new GpuStreamTextureMsg_ForwardForSurfaceRequest(
+        route_id_, request_token));
+  }
 }
 
 }  // namespace content

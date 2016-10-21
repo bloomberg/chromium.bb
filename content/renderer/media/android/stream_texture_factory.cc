@@ -35,7 +35,6 @@ void StreamTextureProxy::Release() {
 }
 
 void StreamTextureProxy::BindToTaskRunner(
-    int32_t stream_id,
     const base::Closure& received_frame_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(task_runner.get());
@@ -48,24 +47,36 @@ void StreamTextureProxy::BindToTaskRunner(
   }
 
   if (task_runner->BelongsToCurrentThread()) {
-    BindOnThread(stream_id);
+    BindOnThread();
     return;
   }
   // Unretained is safe here only because the object is deleted on |loop_|
   // thread.
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&StreamTextureProxy::BindOnThread,
-                                   base::Unretained(this), stream_id));
+  task_runner->PostTask(FROM_HERE, base::Bind(&StreamTextureProxy::BindOnThread,
+                                              base::Unretained(this)));
 }
 
-void StreamTextureProxy::BindOnThread(int32_t stream_id) {
-  host_->BindToCurrentThread(stream_id, this);
+void StreamTextureProxy::BindOnThread() {
+  host_->BindToCurrentThread(this);
 }
 
 void StreamTextureProxy::OnFrameAvailable() {
   base::AutoLock lock(lock_);
   if (!received_frame_cb_.is_null())
     received_frame_cb_.Run();
+}
+
+void StreamTextureProxy::EstablishPeer(int player_id, int frame_id) {
+  host_->EstablishPeer(player_id, frame_id);
+}
+
+void StreamTextureProxy::SetStreamTextureSize(const gfx::Size& size) {
+  host_->SetStreamTextureSize(size);
+}
+
+void StreamTextureProxy::ForwardStreamTextureForSurfaceRequest(
+    const base::UnguessableToken& request_token) {
+  host_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
 // static
@@ -83,44 +94,40 @@ StreamTextureFactory::StreamTextureFactory(
 
 StreamTextureFactory::~StreamTextureFactory() {}
 
-StreamTextureProxy* StreamTextureFactory::CreateProxy() {
-  StreamTextureHost* host = new StreamTextureHost(channel_);
+StreamTextureProxy* StreamTextureFactory::CreateProxy(
+    unsigned texture_target,
+    unsigned* texture_id,
+    gpu::Mailbox* texture_mailbox) {
+  int32_t route_id =
+      CreateStreamTexture(texture_target, texture_id, texture_mailbox);
+  if (!route_id)
+    return nullptr;
+  StreamTextureHost* host = new StreamTextureHost(channel_, route_id);
   return new StreamTextureProxy(host);
-}
-
-void StreamTextureFactory::EstablishPeer(int32_t stream_id,
-                                             int player_id,
-                                             int frame_id) {
-  channel_->Send(
-      new GpuStreamTextureMsg_EstablishPeer(stream_id, frame_id, player_id));
-}
-
-void StreamTextureFactory::ForwardStreamTextureForSurfaceRequest(
-    int32_t stream_id,
-    const base::UnguessableToken& request_token) {
-  channel_->Send(new GpuStreamTextureMsg_ForwardForSurfaceRequest(
-      stream_id, request_token));
 }
 
 unsigned StreamTextureFactory::CreateStreamTexture(
     unsigned texture_target,
     unsigned* texture_id,
     gpu::Mailbox* texture_mailbox) {
-  GLuint stream_id = 0;
+  GLuint route_id = 0;
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   gl->GenTextures(1, texture_id);
   gl->ShallowFlushCHROMIUM();
-  stream_id = context_provider_->GetCommandBufferProxy()->CreateStreamTexture(
+  route_id = context_provider_->GetCommandBufferProxy()->CreateStreamTexture(
       *texture_id);
-  gl->GenMailboxCHROMIUM(texture_mailbox->name);
-  gl->ProduceTextureDirectCHROMIUM(
-      *texture_id, texture_target, texture_mailbox->name);
-  return stream_id;
-}
-
-void StreamTextureFactory::SetStreamTextureSize(int32_t stream_id,
-                                                    const gfx::Size& size) {
-  channel_->Send(new GpuStreamTextureMsg_SetSize(stream_id, size));
+  if (!route_id) {
+    gl->DeleteTextures(1, texture_id);
+    // Flush to ensure that the stream texture gets deleted in a timely fashion.
+    gl->ShallowFlushCHROMIUM();
+    *texture_id = 0;
+    *texture_mailbox = gpu::Mailbox();
+  } else {
+    gl->GenMailboxCHROMIUM(texture_mailbox->name);
+    gl->ProduceTextureDirectCHROMIUM(*texture_id, texture_target,
+                                     texture_mailbox->name);
+  }
+  return route_id;
 }
 
 gpu::gles2::GLES2Interface* StreamTextureFactory::ContextGL() {

@@ -33,7 +33,6 @@ StreamTextureWrapperImpl::StreamTextureWrapperImpl(
     scoped_refptr<StreamTextureFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : texture_id_(0),
-      stream_id_(0),
       factory_(factory),
       main_task_runner_(main_task_runner),
       weak_factory_(this) {}
@@ -41,7 +40,7 @@ StreamTextureWrapperImpl::StreamTextureWrapperImpl(
 StreamTextureWrapperImpl::~StreamTextureWrapperImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (stream_id_) {
+  if (texture_id_) {
     GLES2Interface* gl = factory_->ContextGL();
     gl->DeleteTextures(1, &texture_id_);
     // Flush to ensure that the stream texture gets deleted in a timely fashion.
@@ -106,8 +105,7 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame(
 
 void StreamTextureWrapperImpl::ForwardStreamTextureForSurfaceRequest(
     const base::UnguessableToken& request_token) {
-  return factory_->ForwardStreamTextureForSurfaceRequest(stream_id_,
-                                                         request_token);
+  stream_texture_proxy_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
 void StreamTextureWrapperImpl::SetCurrentFrameInternal(
@@ -132,7 +130,7 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
   natural_size_ = new_size;
 
   ReallocateVideoFrame(new_size);
-  factory_->SetStreamTextureSize(stream_id_, new_size);
+  stream_texture_proxy_->SetStreamTextureSize(new_size);
 }
 
 void StreamTextureWrapperImpl::Initialize(
@@ -157,13 +155,14 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
-  stream_texture_proxy_.reset(factory_->CreateProxy());
+  stream_texture_proxy_.reset(factory_->CreateProxy(
+      kGLTextureExternalOES, &texture_id_, &texture_mailbox_));
+  if (!stream_texture_proxy_)
+    return;
 
-  stream_id_ = factory_->CreateStreamTexture(kGLTextureExternalOES,
-                                             &texture_id_, &texture_mailbox_);
   ReallocateVideoFrame(natural_size_);
 
-  stream_texture_proxy_->BindToTaskRunner(stream_id_, received_frame_cb,
+  stream_texture_proxy_->BindToTaskRunner(received_frame_cb,
                                           compositor_task_runner_);
 
   // TODO(tguilbert): Register the surface properly. See crbug.com/627658.

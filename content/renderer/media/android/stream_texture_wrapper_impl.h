@@ -101,9 +101,6 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   // GL texture mailbox for |texture_id_|.
   gpu::Mailbox texture_mailbox_;
 
-  // Stream texture ID.
-  unsigned stream_id_;
-
   // Object for calling back the compositor thread to repaint the video when a
   // frame is available. It should be bound to |compositor_task_runner_|.
   ScopedStreamTextureProxy stream_texture_proxy_;
