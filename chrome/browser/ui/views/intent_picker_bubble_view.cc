@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/border.h"
@@ -99,13 +98,7 @@ void IntentPickerBubbleView::ShowBubble(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   IntentPickerBubbleView* delegate =
       new IntentPickerBubbleView(app_info, intent_picker_cb, web_contents);
-  // TODO(djacobo): Remove the left and right insets when
-  // http://crbug.com/656662 gets fixed.
-  // Add a 1-pixel extra boundary left and right when using secondary UI.
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    delegate->set_margins(gfx::Insets(16, 1, 0, 1));
-  else
-    delegate->set_margins(gfx::Insets(16, 0, 0, 0));
+  delegate->set_margins(gfx::Insets(16, 0, 0, 0));
   delegate->set_parent_window(browser_view->GetNativeWindow());
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(delegate);
