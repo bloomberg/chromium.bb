@@ -7,9 +7,7 @@ package org.chromium.chrome.browser.metrics;
 import android.util.Pair;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -23,147 +21,13 @@ import java.util.concurrent.TimeUnit;
  */
 @JNINamespace("metrics")
 public class LaunchMetrics {
-
     /**
-     * Creating an instance of a subclass of this class automatically adds it to a list of objects
-     * that are committed when the native library is available.
+     * Caches a set of times histogram samples.
+     * TODO(asvitkine): Remove after internal code is migrated to CachedMetrics.
      */
-    private abstract static class CachedHistogram {
-        private static final List<CachedHistogram> sEvents = new ArrayList<CachedHistogram>();
-
-        protected final String mHistogramName;
-
-        /**
-         * @param histogramName Name of the histogram to record.
-         */
-        protected CachedHistogram(String histogramName) {
-            mHistogramName = histogramName;
-            sEvents.add(this);
-        }
-
-        /** Commits the histogram. Expects the native library to be loaded. */
-        protected abstract void commitAndClear();
-    }
-
-    /**
-     * Caches an action that will be recorded after native side is loaded.
-     */
-    public static class ActionEvent extends CachedHistogram {
-        private int mCount;
-
-        public ActionEvent(String actionName) {
-            super(actionName);
-        }
-
-        public void record() {
-            if (LibraryLoader.isInitialized()) {
-                recordWithNative();
-            } else {
-                mCount++;
-            }
-        }
-
-        private void recordWithNative() {
-            RecordUserAction.record(mHistogramName);
-        }
-
-        @Override
-        protected void commitAndClear() {
-            while (mCount > 0) {
-                recordWithNative();
-                mCount--;
-            }
-        }
-    }
-
-    /** Caches a set of integer histogram samples. */
-    public static class SparseHistogramSample extends CachedHistogram {
-        private final List<Integer> mSamples = new ArrayList<Integer>();
-
-        public SparseHistogramSample(String histogramName) {
-            super(histogramName);
-        }
-
-        public void record(int sample) {
-            if (LibraryLoader.isInitialized()) {
-                recordWithNative(sample);
-            } else {
-                mSamples.add(sample);
-            }
-        }
-
-        private void recordWithNative(int sample) {
-            RecordHistogram.recordSparseSlowlyHistogram(mHistogramName, sample);
-        }
-
-        @Override
-        protected void commitAndClear() {
-            for (Integer sample : mSamples) {
-                recordWithNative(sample);
-            }
-            mSamples.clear();
-        }
-    }
-
-    /** Caches a set of enumerated histogram samples. */
-    public static class EnumeratedHistogramSample extends CachedHistogram {
-        private final List<Integer> mSamples = new ArrayList<Integer>();
-        private final int mMaxValue;
-
-        public EnumeratedHistogramSample(String histogramName, int maxValue) {
-            super(histogramName);
-            mMaxValue = maxValue;
-        }
-
-        public void record(int sample) {
-            if (LibraryLoader.isInitialized()) {
-                recordWithNative(sample);
-            } else {
-                mSamples.add(sample);
-            }
-        }
-
-        private void recordWithNative(int sample) {
-            RecordHistogram.recordEnumeratedHistogram(mHistogramName, sample, mMaxValue);
-        }
-
-        @Override
-        protected void commitAndClear() {
-            for (Integer sample : mSamples) {
-                recordWithNative(sample);
-            }
-            mSamples.clear();
-        }
-    }
-
-    /** Caches a set of times histogram samples. */
-    public static class TimesHistogramSample extends CachedHistogram {
-        private final List<Long> mSamples = new ArrayList<Long>();
-        private final TimeUnit mTimeUnit;
-
+    public static class TimesHistogramSample extends CachedMetrics.TimesHistogramSample {
         public TimesHistogramSample(String histogramName, TimeUnit timeUnit) {
-            super(histogramName);
-            mTimeUnit = timeUnit;
-        }
-
-        public void record(long sample) {
-            if (LibraryLoader.isInitialized()) {
-                recordWithNative(sample);
-            } else {
-                mSamples.add(sample);
-            }
-        }
-
-        private void recordWithNative(long sample) {
-            RecordHistogram.recordTimesHistogram(mHistogramName, sample, mTimeUnit);
-        }
-
-        @Override
-        protected void commitAndClear() {
-            for (Long sample : mSamples) {
-                recordWithNative(sample);
-            }
-            mSamples.clear();
+            super(histogramName, timeUnit);
         }
     }
 
@@ -222,7 +86,7 @@ public class LaunchMetrics {
         sTabUrls.clear();
 
         // Record generic cached events.
-        for (CachedHistogram event : CachedHistogram.sEvents) event.commitAndClear();
+        CachedMetrics.commitCachedMetrics();
     }
 
     /**
