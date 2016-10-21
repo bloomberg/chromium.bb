@@ -15,7 +15,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -852,11 +851,7 @@ QuicStreamFactory::~QuicStreamFactory() {
     delete all_sessions_.begin()->first;
     all_sessions_.erase(all_sessions_.begin());
   }
-  while (!active_jobs_.empty()) {
-    const QuicServerId server_id = active_jobs_.begin()->first;
-    base::STLDeleteElements(&(active_jobs_[server_id]));
-    active_jobs_.erase(server_id);
-  }
+  active_jobs_.clear();
   while (!active_cert_verifier_jobs_.empty())
     active_cert_verifier_jobs_.erase(active_cert_verifier_jobs_.begin());
   if (ssl_config_service_.get())
@@ -997,15 +992,16 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   ignore_result(StartCertVerifyJob(server_id, cert_verify_flags, net_log));
 
   QuicSessionKey key(destination, server_id);
-  std::unique_ptr<Job> job(
-      new Job(this, host_resolver_, key, WasQuicRecentlyBroken(server_id),
-              cert_verify_flags, quic_server_info, net_log));
+  std::unique_ptr<Job> job = base::MakeUnique<Job>(
+      this, host_resolver_, key, WasQuicRecentlyBroken(server_id),
+      cert_verify_flags, quic_server_info, net_log);
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
     active_requests_[request] = server_id;
     job_requests_map_[server_id].insert(request);
-    active_jobs_[server_id].insert(job.release());
+    Job* job_ptr = job.get();
+    active_jobs_[server_id][job_ptr] = std::move(job);
     return rv;
   }
   if (rv == OK) {
@@ -1046,7 +1042,7 @@ void QuicStreamFactory::CreateAuxilaryJob(const QuicSessionKey& key,
   Job* aux_job =
       new Job(this, host_resolver_, key, WasQuicRecentlyBroken(key.server_id()),
               cert_verify_flags, nullptr, net_log);
-  active_jobs_[key.server_id()].insert(aux_job);
+  active_jobs_[key.server_id()][aux_job] = base::WrapUnique(aux_job);
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&QuicStreamFactory::Job::RunAuxilaryJob,
                                     aux_job->GetWeakPtr()));
@@ -1085,7 +1081,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
       // the other job handle the request.
       job->Cancel();
       jobs->erase(job);
-      delete job;
       return;
     }
   }
@@ -1117,12 +1112,12 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     request->OnRequestComplete(rv);
   }
 
-  for (Job* other_job : active_jobs_[server_id]) {
-    if (other_job != job)
-      other_job->Cancel();
+  for (auto& other_job : active_jobs_[server_id]) {
+    if (other_job.first != job)
+      other_job.first->Cancel();
   }
 
-  base::STLDeleteElements(&(active_jobs_[server_id]));
+  active_jobs_[server_id].clear();
   active_jobs_.erase(server_id);
   job_requests_map_.erase(server_id);
 }

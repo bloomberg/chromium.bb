@@ -4,11 +4,13 @@
 
 #include "net/quic/chromium/quic_stream_factory.h"
 
+#include <memory>
 #include <ostream>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1218,7 +1220,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HttpRequestInfo request_info;
-  vector<QuicHttpStream*> streams;
+  vector<std::unique_ptr<QuicHttpStream>> streams;
   // The MockCryptoClientStream sets max_open_streams to be
   // kDefaultMaxStreamsPerConnection / 2.
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection / 2; i++) {
@@ -1236,7 +1238,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
     EXPECT_TRUE(stream);
     EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                            net_log_, CompletionCallback()));
-    streams.push_back(stream.release());
+    streams.push_back(std::move(stream));
   }
 
   QuicStreamRequest request(factory_.get());
@@ -1264,8 +1266,6 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
   session->connection()->CloseConnection(QUIC_PUBLIC_RESET, "test",
                                          ConnectionCloseBehavior::SILENT_CLOSE);
-
-  base::STLDeleteElements(&streams);
 }
 
 TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
