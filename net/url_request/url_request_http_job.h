@@ -48,6 +48,10 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
                                 NetworkDelegate* network_delegate,
                                 const std::string& scheme);
 
+  // Record Sdch specific packet stats. Public so that SdchPolicyDelegate can
+  // access it.
+  void RecordPacketStats(FilterContext::StatisticSelector statistic) const;
+
  protected:
   URLRequestHttpJob(URLRequest* request,
                     NetworkDelegate* network_delegate,
@@ -145,7 +149,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void ResetTimer();
 
   void UpdatePacketReadTimes() override;
-  void RecordPacketStats(FilterContext::StatisticSelector statistic) const;
 
   // Starts the transaction if extensions using the webrequest API do not
   // object.
