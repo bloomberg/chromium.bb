@@ -3181,6 +3181,8 @@ int drmGetDevice(int fd, drmDevicePtr *device)
 
     closedir(sysdir);
     free(local_devices);
+    if (*device == NULL)
+	return -ENODEV;
     return 0;
 
 free_devices:
