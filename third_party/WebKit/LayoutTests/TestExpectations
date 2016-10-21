@@ -1231,6 +1231,8 @@ crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseli
 
 crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 
+crbug.com/658414 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Failure Pass ]
+
 crbug.com/655458 imported/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/baseurl/alpha/worker.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
