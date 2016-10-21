@@ -247,7 +247,6 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
 }
 
 void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
-  request->MarkAttemptAborted();
   if (request->started_attempt_count() >= policy_->GetMaxStartedTries()) {
     const BackgroundSavePageResult result(
         BackgroundSavePageResult::START_COUNT_EXCEEDED);
@@ -255,10 +254,11 @@ void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
                                                result, request->request_id());
     RemoveAttemptedRequest(*request, result);
   } else {
-    queue_->UpdateRequest(
-        *request,
-        base::Bind(&RequestCoordinator::UpdateRequestCallback,
-                   weak_ptr_factory_.GetWeakPtr(), request->client_id()));
+    queue_->MarkAttemptAborted(
+        request->request_id(),
+        base::Bind(&RequestCoordinator::MarkAttemptAbortedDone,
+                   weak_ptr_factory_.GetWeakPtr(), request->request_id(),
+                   request->client_id()));
   }
 }
 
@@ -271,6 +271,25 @@ void RequestCoordinator::RemoveAttemptedRequest(
                          base::Bind(&RequestCoordinator::HandleRemovedRequests,
                                     weak_ptr_factory_.GetWeakPtr(), result));
   RecordAttemptCount(request, result);
+}
+
+void RequestCoordinator::MarkAttemptAbortedDone(
+    int64_t request_id,
+    const ClientId& client_id,
+    std::unique_ptr<UpdateRequestsResult> result) {
+  // If the request succeeded, nothing to do.  If it failed, we can't really do
+  // much, so just log it.
+  if (result->store_state != StoreState::LOADED ||
+      result->item_statuses.size() != 1 ||
+      result->item_statuses.at(0).first != request_id ||
+      result->item_statuses.at(0).second != ItemActionStatus::SUCCESS) {
+    DVLOG(1) << "Failed to mark request aborted: " << request_id;
+    event_logger_.RecordUpdateRequestFailed(
+        client_id.name_space,
+        result->store_state != StoreState::LOADED
+            ? RequestQueue::UpdateRequestResult::STORE_FAILURE
+            : RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST);
+  }
 }
 
 void RequestCoordinator::RemoveRequests(

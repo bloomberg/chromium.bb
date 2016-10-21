@@ -11,6 +11,8 @@ static_library("background_offliner") {
     "change_requests_state_task.cc",
     "change_requests_state_task.h",
     "device_conditions.h",
+    "mark_attempt_aborted_task.cc",
+    "mark_attempt_aborted_task.h",
     "mark_attempt_started_task.cc",
     "mark_attempt_started_task.h",
     "offliner.h",
@@ -35,6 +37,8 @@ static_library("background_offliner") {
     "save_page_request.cc",
     "save_page_request.h",
     "scheduler.h",
+    "update_request_task.cc",
+    "update_request_task.h",
   ]
 
   deps = [
@@ -52,6 +56,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "change_requests_state_task_unittest.cc",
+    "mark_attempt_aborted_task_unittest.cc",
     "mark_attempt_started_task_unittest.cc",
     "remove_requests_task_unittest.cc",
     "request_coordinator_event_logger_unittest.cc",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OFFLINE_PAGES_BACKGROUND_MARK_ATTEMPT_STARTED_TASK_H_
-#define COMPONENTS_OFFLINE_PAGES_BACKGROUND_MARK_ATTEMPT_STARTED_TASK_H_
+#ifndef COMPONENTS_OFFLINE_PAGES_BACKGROUND_MARK_ATTEMPT_ABORTED_TASK_H_
+#define COMPONENTS_OFFLINE_PAGES_BACKGROUND_MARK_ATTEMPT_ABORTED_TASK_H_
 
 #include <stdint.h>
 
@@ -13,12 +13,12 @@
 
 namespace offline_pages {
 
-class MarkAttemptStartedTask : public UpdateRequestTask {
+class MarkAttemptAbortedTask : public UpdateRequestTask {
  public:
-  MarkAttemptStartedTask(RequestQueueStore* store,
+  MarkAttemptAbortedTask(RequestQueueStore* store,
                          int64_t request_id,
                          const RequestQueueStore::UpdateCallback& callback);
-  ~MarkAttemptStartedTask() override;
+  ~MarkAttemptAbortedTask() override;
 
  protected:
   // UpdateRequestTask implementation:
@@ -27,4 +27,4 @@ class MarkAttemptStartedTask : public UpdateRequestTask {
 
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_BACKGROUND_MARK_ATTEMPT_STARTED_TASK_H_
+#endif  // COMPONENTS_OFFLINE_PAGES_BACKGROUND_MARK_ATTEMPT_ABORTED_TASK_H_

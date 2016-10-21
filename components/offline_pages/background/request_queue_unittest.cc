@@ -53,6 +53,8 @@ class RequestQueueTest : public testing::Test {
   void UpdateRequestDone(UpdateRequestResult result);
   void UpdateRequestsDone(std::unique_ptr<UpdateRequestsResult> result);
 
+  void ClearResults();
+
   RequestQueue* queue() { return queue_.get(); }
 
   AddRequestResult last_add_result() const { return last_add_result_; }
@@ -127,6 +129,15 @@ void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
 void RequestQueueTest::UpdateRequestsDone(
     std::unique_ptr<UpdateRequestsResult> result) {
   update_requests_result_ = std::move(result);
+}
+
+void RequestQueueTest::ClearResults() {
+  last_add_result_ = AddRequestResult::STORE_FAILURE;
+  last_update_result_ = UpdateRequestResult::STORE_FAILURE;
+  last_get_requests_result_ = GetRequestsResult::STORE_FAILURE;
+  last_added_request_.reset(nullptr);
+  update_requests_result_.reset(nullptr);
+  last_requests_.clear();
 }
 
 TEST_F(RequestQueueTest, GetRequestsEmpty) {
@@ -430,6 +441,54 @@ TEST_F(RequestQueueTest, MarkAttempStartedRequestNotPresent) {
                            kUserRequested);
 
   queue()->MarkAttemptStarted(kRequestId,
+                              base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                         base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(1ul, update_requests_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::NOT_FOUND,
+            update_requests_result()->item_statuses.at(0).second);
+  EXPECT_EQ(0ul, update_requests_result()->updated_items.size());
+}
+
+TEST_F(RequestQueueTest, MarkAttemptAborted) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
+                          kUserRequested);
+  queue()->AddRequest(request, base::Bind(&RequestQueueTest::AddRequestDone,
+                                          base::Unretained(this)));
+  PumpLoop();
+
+  // Start request.
+  queue()->MarkAttemptStarted(kRequestId,
+                              base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                         base::Unretained(this)));
+  PumpLoop();
+  ClearResults();
+
+  queue()->MarkAttemptAborted(kRequestId,
+                              base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                         base::Unretained(this)));
+  PumpLoop();
+
+  ASSERT_TRUE(update_requests_result());
+  EXPECT_EQ(1UL, update_requests_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  EXPECT_EQ(1UL, update_requests_result()->updated_items.size());
+  EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE,
+            update_requests_result()->updated_items.at(0).request_state());
+}
+
+TEST_F(RequestQueueTest, MarkAttemptAbortedRequestNotPresent) {
+  // First add a request.  Retry count will be set to 0.
+  base::Time creation_time = base::Time::Now();
+  // This request is never put into the queue.
+  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
+                           kUserRequested);
+
+  queue()->MarkAttemptAborted(kRequestId,
                               base::Bind(&RequestQueueTest::UpdateRequestsDone,
                                          base::Unretained(this)));
   PumpLoop();

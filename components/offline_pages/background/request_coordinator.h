@@ -311,6 +311,11 @@ class RequestCoordinator : public KeyedService,
   void RemoveAttemptedRequest(const SavePageRequest& request,
                               BackgroundSavePageResult status);
 
+  // Completes aborting the request, reports an error if it fails.
+  void MarkAttemptAbortedDone(int64_t request_id,
+                              const ClientId& client_id,
+                              std::unique_ptr<UpdateRequestsResult> result);
+
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.
   void GetOffliner();

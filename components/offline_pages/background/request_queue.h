@@ -99,6 +99,10 @@ class RequestQueue {
   // |callback|.
   void MarkAttemptStarted(int64_t request_id, const UpdateCallback& callback);
 
+  // Marks attempt with |request_id| as aborted. Results are returned through
+  // |callback|.
+  void MarkAttemptAborted(int64_t request_id, const UpdateCallback& callback);
+
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,
       const SavePageRequest& update_request,
