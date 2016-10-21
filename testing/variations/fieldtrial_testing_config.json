@@ -931,6 +931,25 @@
             ]
         }
     ],
+    "NetDelayableH2AndQuicRequests": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrioritySupportedRequestsDelayable"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "platforms": [
@@ -1381,25 +1400,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreferHtmlOverPlugins"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PrioritySupportedRequestsDelayableStudy": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PrioritySupportedRequestsDelayable"
                     ]
                 }
             ]
