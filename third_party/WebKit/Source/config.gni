@@ -61,7 +61,7 @@ if (use_low_quality_image_interpolation) {
 if (!is_android) {
   feature_defines_list += [
     "WTF_USE_ICCJPEG=1",
-    "WTF_USE_QCMSLIB=1",
+    "WTF_USE_SKCOLORXFORM=1",
   ]
 }
 

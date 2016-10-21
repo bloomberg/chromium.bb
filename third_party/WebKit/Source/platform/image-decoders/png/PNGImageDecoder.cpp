@@ -45,9 +45,6 @@
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.
 #endif
-#if USE(QCMSLIB)
-#include "qcms.h"
-#endif
 
 #if PNG_LIBPNG_VER_MAJOR > 1 || \
     (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 4)
@@ -96,10 +93,6 @@ class PNGImageReader final {
         m_currentBufferSize(0),
         m_decodingSizeOnly(false),
         m_hasAlpha(false)
-#if USE(QCMSLIB)
-        ,
-        m_rowBuffer()
-#endif
   {
     m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, pngFailed, 0);
     m_info = png_create_info_struct(m_png);
@@ -150,12 +143,6 @@ class PNGImageReader final {
   void createInterlaceBuffer(int size) {
     m_interlaceBuffer = wrapArrayUnique(new png_byte[size]);
   }
-#if USE(QCMSLIB)
-  png_bytep rowBuffer() const { return m_rowBuffer.get(); }
-  void createRowBuffer(int size) {
-    m_rowBuffer = wrapArrayUnique(new png_byte[size]);
-  }
-#endif
 
  private:
   png_structp m_png;
@@ -166,9 +153,6 @@ class PNGImageReader final {
   bool m_decodingSizeOnly;
   bool m_hasAlpha;
   std::unique_ptr<png_byte[]> m_interlaceBuffer;
-#if USE(QCMSLIB)
-  std::unique_ptr<png_byte[]> m_rowBuffer;
-#endif
 };
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
@@ -231,11 +215,9 @@ void PNGImageDecoder::headerAvailable() {
     // images to RGB but we do not similarly transform the color profile. We'd
     // either need to transform the color profile or we'd need to decode into a
     // gray-scale image buffer and hand that to CoreGraphics.
-    bool imageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
 #ifdef PNG_iCCP_SUPPORTED
     if (png_get_valid(png, info, PNG_INFO_sRGB)) {
-      setColorProfileAndComputeTransform(nullptr, 0, imageHasAlpha,
-                                         true /* useSRGB */);
+      setColorSpaceAndComputeTransform(nullptr, 0, true /* useSRGB */);
     } else {
       char* profileName = nullptr;
       int compressionType = 0;
@@ -247,16 +229,23 @@ void PNGImageDecoder::headerAvailable() {
       png_uint_32 profileLength = 0;
       if (png_get_iCCP(png, info, &profileName, &compressionType, &profile,
                        &profileLength)) {
-        setColorProfileAndComputeTransform(reinterpret_cast<char*>(profile),
-                                           profileLength, imageHasAlpha,
-                                           false /* useSRGB */);
+        setColorSpaceAndComputeTransform(reinterpret_cast<char*>(profile),
+                                         profileLength, false /* useSRGB */);
       }
     }
 #endif  // PNG_iCCP_SUPPORTED
   }
 
   if (!hasColorProfile()) {
-    // Deal with gamma and keep it under our control.
+    // TODO (msarett):
+    // Applying the transfer function (gamma) should be handled by
+    // SkColorSpaceXform.  Here we always convert to a transfer function that
+    // is a 2.2 exponential.  This is a little strange given that the dst
+    // transfer function is not necessarily a 2.2 exponential.
+    // TODO (msarett):
+    // Often, PNGs that specify their transfer function with the gAMA tag will
+    // also specify their gamut with the cHRM tag.  We should read this tag
+    // and do a full color space transformation if it is present.
     const double inverseGamma = 0.45455;
     const double defaultGamma = 2.2;
     double gamma;
@@ -324,15 +313,6 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
       }
     }
 
-#if USE(QCMSLIB)
-    if (colorTransform()) {
-      m_reader->createRowBuffer(colorChannels * size().width());
-      if (!m_reader->rowBuffer()) {
-        longjmp(JMPBUF(png), 1);
-        return;
-      }
-    }
-#endif
     buffer.setStatus(ImageFrame::FramePartial);
     buffer.setHasAlpha(false);
 
@@ -389,37 +369,63 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
     png_progressive_combine_row(m_reader->pngPtr(), row, rowBuffer);
   }
 
-#if USE(QCMSLIB)
-  if (qcms_transform* transform = colorTransform()) {
-    qcms_transform_data(transform, row, m_reader->rowBuffer(), size().width());
-    row = m_reader->rowBuffer();
-  }
-#endif
-
   // Write the decoded row pixels to the frame buffer. The repetitive
   // form of the row write loops is for speed.
-  ImageFrame::PixelData* address = buffer.getAddr(0, y);
+  ImageFrame::PixelData* const dstRow = buffer.getAddr(0, y);
   unsigned alphaMask = 255;
   int width = size().width();
 
-  png_bytep pixel = row;
+  png_bytep srcPtr = row;
   if (hasAlpha) {
+#if USE(SKCOLORXFORM)
+    // Here we apply the color space transformation to the dst space.
+    // It does not really make sense to transform to a gamma-encoded
+    // space and then immediately after, perform a linear premultiply.
+    // Ideally we would pass kPremul_SkAlphaType to xform->apply(),
+    // instructing SkColorSpaceXform to perform the linear premultiply
+    // while the pixels are a linear space.
+    // We cannot do this because when we apply the gamma encoding after
+    // the premultiply, we will very likely end up with valid pixels
+    // where R, G, and/or B are greater than A.  The legacy drawing
+    // pipeline does not know how to handle this.
+    if (SkColorSpaceXform* xform = colorTransform()) {
+      SkColorSpaceXform::ColorFormat colorFormat =
+          SkColorSpaceXform::kRGBA_8888_ColorFormat;
+      xform->apply(colorFormat, dstRow, colorFormat, srcPtr, size().width(),
+                   kUnpremul_SkAlphaType);
+      srcPtr = (png_bytep)dstRow;
+    }
+#endif
+
     if (buffer.premultiplyAlpha()) {
-      for (int x = 0; x < width; ++x, pixel += 4) {
-        buffer.setRGBAPremultiply(address++, pixel[0], pixel[1], pixel[2],
-                                  pixel[3]);
-        alphaMask &= pixel[3];
+      for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+           dstPixel++, srcPtr += 4) {
+        buffer.setRGBAPremultiply(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2],
+                                  srcPtr[3]);
+        alphaMask &= srcPtr[3];
       }
     } else {
-      for (int x = 0; x < width; ++x, pixel += 4) {
-        buffer.setRGBARaw(address++, pixel[0], pixel[1], pixel[2], pixel[3]);
-        alphaMask &= pixel[3];
+      for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+           dstPixel++, srcPtr += 4) {
+        buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2], srcPtr[3]);
+        alphaMask &= srcPtr[3];
       }
     }
   } else {
-    for (int x = 0; x < width; ++x, pixel += 3) {
-      buffer.setRGBARaw(address++, pixel[0], pixel[1], pixel[2], 255);
+    for (auto *dstPixel = dstRow; dstPixel < dstRow + width;
+         dstPixel++, srcPtr += 3) {
+      buffer.setRGBARaw(dstPixel, srcPtr[0], srcPtr[1], srcPtr[2], 255);
     }
+
+#if USE(SKCOLORXFORM)
+    // We'll apply the color space xform to opaque pixels after they have been
+    // written to the ImageFrame, purely because SkColorSpaceXform supports
+    // RGBA (and not RGB).
+    if (SkColorSpaceXform* xform = colorTransform()) {
+      xform->apply(xformColorFormat(), dstRow, xformColorFormat(), dstRow,
+                   size().width(), kOpaque_SkAlphaType);
+    }
+#endif
   }
 
   if (alphaMask != 255 && !buffer.hasAlpha())
