@@ -4,6 +4,7 @@ include_rules = [
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/mediasession",
+    "+mojo/public/cpp/bindings/binding.h",
     "+platform",
     "+url/url_constants.h",
 ]

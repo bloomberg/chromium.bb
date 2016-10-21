@@ -27,6 +27,11 @@ void MediaSessionServiceImpl::Create(
   impl->Bind(std::move(request));
 }
 
+void MediaSessionServiceImpl::SetClient(
+    blink::mojom::MediaSessionClientPtr client) {
+  client_ = std::move(client);
+}
+
 void MediaSessionServiceImpl::SetMetadata(
     const base::Optional<content::MediaMetadata>& metadata) {
   // When receiving a MediaMetadata, the browser process can't trust that it is
@@ -42,6 +47,18 @@ void MediaSessionServiceImpl::SetMetadata(
       WebContentsImpl::FromRenderFrameHost(render_frame_host_));
   if (contents)
     MediaSession::Get(contents)->SetMetadata(metadata);
+}
+
+void MediaSessionServiceImpl::EnableAction(
+    blink::mojom::MediaSessionAction action) {
+  // TODO(zqzhang): Plumb this signal to Java. See https://crbug.com/656563
+  NOTIMPLEMENTED();
+}
+
+void MediaSessionServiceImpl::DisableAction(
+    blink::mojom::MediaSessionAction action) {
+  // TODO(zqzhang): Plumb this signal to Java. See https://crbug.com/656563
+  NOTIMPLEMENTED();
 }
 
 void MediaSessionServiceImpl::Bind(

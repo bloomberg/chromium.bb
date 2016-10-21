@@ -25,8 +25,14 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
  private:
   explicit MediaSessionServiceImpl(RenderFrameHost* render_frame_host);
 
+  // blink::mojom::MediaSessionService implementation.
+  void SetClient(blink::mojom::MediaSessionClientPtr client) override;
+
   void SetMetadata(
       const base::Optional<content::MediaMetadata>& metadata) override;
+
+  void EnableAction(blink::mojom::MediaSessionAction action) override;
+  void DisableAction(blink::mojom::MediaSessionAction action) override;
 
   void Bind(blink::mojom::MediaSessionServiceRequest request);
 
@@ -35,6 +41,7 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
   // RAII binding of |this| to an MediaSessionService interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
+  blink::mojom::MediaSessionClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionServiceImpl);
 };

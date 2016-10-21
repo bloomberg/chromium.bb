@@ -66,6 +66,34 @@ let mediaSessionServiceMock = loadMojoModules(
         setMetadataCallback(callback) {
           this.metadataCallback_ = callback;
         }
+
+        enableAction(action) {
+          if (!!this.enableDisableActionCallback_)
+            this.enableDisableActionCallback_(action, true);
+        }
+
+        disableAction(action) {
+          if (!!this.enableDisableActionCallback_)
+            this.enableDisableActionCallback_(action, false);
+        }
+
+        setEnableDisableActionCallback(callback) {
+          this.enableDisableActionCallback_ = callback;
+        }
+
+        setClient(client) {
+          this.client_ = client;
+          if (!!this.clientCallback_)
+            this.clientCallback_();
+        }
+
+        setClientCallback(callback) {
+          this.clientCallback_ = callback;
+        }
+
+        getClient() {
+          return this.client_;
+        }
       }
 
       return new MediaSessionServiceMock(mojo.frameInterfaces);
