@@ -1,9 +1,8 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="/printing_page/cups_printers_browser_proxy.html">
+<link rel="import" href="/settings_action_menu.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-cups-printers-list">
@@ -23,33 +22,25 @@
       .list-item {
         min-height: 20px;
       }
-      
-      iron-dropdown {
-        width: 120px;
-      }
     </style>
 
-    <template is="dom-repeat" items="{{printers}}"
+    <dialog is="settings-action-menu">
+      <button class="dropdown-item" role="option" on-tap="onDetailsTap_">
+        $i18n{cupsPrinterDetails}
+      </button>
+      <button class="dropdown-item" role="option" on-tap="onRemoveTap_">
+        $i18n{removePrinter}
+      </button>
+    </dialog>
+    <template is="dom-repeat" items="[[printers]]"
         filter="[[filterPrinter_(searchTerm)]]">
       <div id="container" class="list-item">
         <div class="name-column">
           <span class="name" id="printer-name">[[item.printerName]]</span>
           <!--TODO(xdai): Add icon for enterprise CUPS printer. -->
         </div>
-        <paper-icon-button icon="cr:more-vert" toggles
-            active="{{item.menuOpened}}">
+        <paper-icon-button icon="cr:more-vert" on-tap="onOpenActionMenuTap_">
         </paper-icon-button>
-        <iron-dropdown opened="{{item.menuOpened}}" horizontal-align="right"
-            vertical-align="top" horizontal-offset="15" vertical-offset="5">
-          <div class="dropdown-content">
-            <paper-item on-tap="onDetailsTap_">
-                $i18n{cupsPrinterDetails}
-            </paper-item>
-            <paper-item on-tap="onRemoveTap_">
-                $i18n{removePrinter}
-            </paper-item>
-          <div>
-        </iron-dropdown>
       </div>
     </template>
   </template>

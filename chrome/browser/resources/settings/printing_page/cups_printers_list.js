@@ -19,6 +19,12 @@ Polymer({
     searchTerm: {
       type: String,
     },
+
+    /**
+     * The model for the printer action menu.
+     * @private {?CupsPrinterInfo}
+     */
+    activePrinter_: Object,
   },
 
   /** @private {settings.CupsPrintersBrowserProxy} */
@@ -30,14 +36,25 @@ Polymer({
   },
 
   /**
+   * @param {!{model: !{item: !CupsPrinterInfo}}} e
+   * @private
+   */
+  onOpenActionMenuTap_: function(e) {
+    this.activePrinter_ = e.model.item;
+    var menu = /** @type {!SettingsActionMenuElement} */ (
+        this.$$('dialog[is=settings-action-menu]'));
+    menu.showAt(/** @type {!Element} */ (
+        Polymer.dom(/** @type {!Event} */ (e)).localTarget));
+  },
+
+  /**
    * @param {{model:Object}} event
    * @private
    */
   onDetailsTap_: function(event) {
-    this.closeDropdownMenu_();
-
     // Event is caught by 'settings-printing-page'.
-    this.fire('show-cups-printer-details', event.model.item);
+    this.fire('show-cups-printer-details', this.activePrinter_);
+    this.closeDropdownMenu_();
   },
 
   /**
@@ -45,17 +62,19 @@ Polymer({
    * @private
    */
   onRemoveTap_: function(event) {
-    this.closeDropdownMenu_();
-
-    var index = this.printers.indexOf(event.model.item);
+    var index = this.printers.indexOf(assert(this.activePrinter_));
     this.splice('printers', index, 1);
-    this.browserProxy_.removeCupsPrinter(event.model.item.printerId,
-                                         event.model.item.printerName);
+    this.browserProxy_.removeCupsPrinter(this.activePrinter_.printerId,
+                                         this.activePrinter_.printerName);
+    this.closeDropdownMenu_();
   },
 
   /** @private */
   closeDropdownMenu_: function() {
-    this.$$('iron-dropdown').close();
+    this.activePrinter_ = null;
+    var menu = /** @type {!SettingsActionMenuElement} */ (
+        this.$$('dialog[is=settings-action-menu]'));
+    menu.close();
   },
 
   /**
