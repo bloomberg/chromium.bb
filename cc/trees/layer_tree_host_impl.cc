@@ -73,7 +73,6 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/software_image_decode_controller.h"
-#include "cc/tiles/tile_task_manager.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
@@ -278,7 +277,6 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
 
   DCHECK(!resource_provider_);
   DCHECK(!resource_pool_);
-  DCHECK(!tile_task_manager_);
   DCHECK(!single_thread_synchronous_task_graph_runner_);
   DCHECK(!image_decode_controller_);
 
@@ -2124,12 +2122,10 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
   }
 
-  tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner);
-
   // TODO(vmpstr): Initialize tile task limit at ctor time.
   tile_manager_.SetResources(
-      resource_pool_.get(), image_decode_controller_.get(),
-      tile_task_manager_.get(), raster_buffer_provider_.get(),
+      resource_pool_.get(), image_decode_controller_.get(), task_graph_runner,
+      raster_buffer_provider_.get(),
       is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
                                       : settings_.scheduled_raster_task_limit,
       use_gpu_rasterization_);
@@ -2229,7 +2225,6 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   ClearUIResources();
   tile_manager_.FinishTasksAndCleanUp();
   resource_pool_ = nullptr;
-  tile_task_manager_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
   image_decode_controller_ = nullptr;
 

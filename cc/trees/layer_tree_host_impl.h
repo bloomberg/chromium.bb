@@ -727,7 +727,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
-  std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<ImageDecodeController> image_decode_controller_;
 

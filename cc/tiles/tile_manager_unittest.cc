@@ -1742,8 +1742,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   // Create a FakeTileTaskManagerImpl and set it on the tile manager so that all
   // scheduled work is immediately cancelled.
 
-  FakeTileTaskManagerImpl tile_task_manager;
-  host_impl()->tile_manager()->SetTileTaskManagerForTesting(&tile_task_manager);
+  host_impl()->tile_manager()->SetTileTaskManagerForTesting(
+      base::MakeUnique<FakeTileTaskManagerImpl>());
 
   // Pick arbitrary IDs - they don't really matter as long as they're constant.
   const int kLayerId = 7;
@@ -1831,8 +1831,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   // Create a VerifyResourceContentIdTileTaskManager to ensure that the
   // raster task we see is created with |kExpectedId|.
-  FakeTileTaskManagerImpl tile_task_manager;
-  host_impl->tile_manager()->SetTileTaskManagerForTesting(&tile_task_manager);
+  host_impl->tile_manager()->SetTileTaskManagerForTesting(
+      base::MakeUnique<FakeTileTaskManagerImpl>());
 
   VerifyResourceContentIdRasterBufferProvider raster_buffer_provider(
       kExpectedId);

@@ -122,7 +122,7 @@ class CC_EXPORT TileManager {
   // SetResources.
   void SetResources(ResourcePool* resource_pool,
                     ImageDecodeController* image_decode_controller,
-                    TileTaskManager* tile_task_manager,
+                    TaskGraphRunner* task_graph_runner,
                     RasterBufferProvider* raster_buffer_provider,
                     size_t scheduled_raster_task_limit,
                     bool use_gpu_rasterization);
@@ -169,10 +169,15 @@ class CC_EXPORT TileManager {
     global_state_ = state;
   }
 
-  void SetTileTaskManagerForTesting(TileTaskManager* tile_task_manager);
+  void SetTileTaskManagerForTesting(
+      std::unique_ptr<TileTaskManager> tile_task_manager) {
+    tile_task_manager_ = std::move(tile_task_manager);
+  }
 
   void SetRasterBufferProviderForTesting(
-      RasterBufferProvider* raster_buffer_provider);
+      RasterBufferProvider* raster_buffer_provider) {
+    raster_buffer_provider_ = raster_buffer_provider;
+  }
 
   void FreeResourcesAndCleanUpReleasedTilesForTesting() {
     FreeResourcesForReleasedTiles();
@@ -303,7 +308,7 @@ class CC_EXPORT TileManager {
   TileManagerClient* client_;
   base::SequencedTaskRunner* task_runner_;
   ResourcePool* resource_pool_;
-  TileTaskManager* tile_task_manager_;
+  std::unique_ptr<TileTaskManager> tile_task_manager_;
   RasterBufferProvider* raster_buffer_provider_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;

@@ -404,18 +404,18 @@ void TileManager::FinishTasksAndCleanUp() {
 
 void TileManager::SetResources(ResourcePool* resource_pool,
                                ImageDecodeController* image_decode_controller,
-                               TileTaskManager* tile_task_manager,
+                               TaskGraphRunner* task_graph_runner,
                                RasterBufferProvider* raster_buffer_provider,
                                size_t scheduled_raster_task_limit,
                                bool use_gpu_rasterization) {
   DCHECK(!tile_task_manager_);
-  DCHECK(tile_task_manager);
+  DCHECK(task_graph_runner);
 
   use_gpu_rasterization_ = use_gpu_rasterization;
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
   image_manager_.SetImageDecodeController(image_decode_controller);
-  tile_task_manager_ = tile_task_manager;
+  tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner);
   raster_buffer_provider_ = raster_buffer_provider;
 }
 
@@ -1072,16 +1072,6 @@ ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
 
   tiles_[tile->id()] = tile.get();
   return tile;
-}
-
-void TileManager::SetTileTaskManagerForTesting(
-    TileTaskManager* tile_task_manager) {
-  tile_task_manager_ = tile_task_manager;
-}
-
-void TileManager::SetRasterBufferProviderForTesting(
-    RasterBufferProvider* raster_buffer_provider) {
-  raster_buffer_provider_ = raster_buffer_provider;
 }
 
 bool TileManager::AreRequiredTilesReadyToDraw(

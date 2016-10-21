@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/test/fake_tile_task_manager.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -20,7 +21,7 @@ namespace cc {
 
 namespace {
 
-base::LazyInstance<FakeTileTaskManagerImpl> g_fake_tile_task_manager =
+base::LazyInstance<SynchronousTaskGraphRunner> g_synchronous_task_graph_runner =
     LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<FakeRasterBufferProviderImpl> g_fake_raster_buffer_provider =
@@ -36,10 +37,12 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
       image_decode_controller_(
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
-  SetResources(
-      nullptr, &image_decode_controller_, g_fake_tile_task_manager.Pointer(),
-      g_fake_raster_buffer_provider.Pointer(),
-      std::numeric_limits<size_t>::max(), false /* use_gpu_rasterization */);
+  SetResources(nullptr, &image_decode_controller_,
+               g_synchronous_task_graph_runner.Pointer(),
+               g_fake_raster_buffer_provider.Pointer(),
+               std::numeric_limits<size_t>::max(),
+               false /* use_gpu_rasterization */);
+  SetTileTaskManagerForTesting(base::MakeUnique<FakeTileTaskManagerImpl>());
 }
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
@@ -52,10 +55,11 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
   SetResources(resource_pool, &image_decode_controller_,
-               g_fake_tile_task_manager.Pointer(),
+               g_synchronous_task_graph_runner.Pointer(),
                g_fake_raster_buffer_provider.Pointer(),
                std::numeric_limits<size_t>::max(),
                false /* use_gpu_rasterization */);
+  SetTileTaskManagerForTesting(base::MakeUnique<FakeTileTaskManagerImpl>());
 }
 
 FakeTileManager::~FakeTileManager() {}
