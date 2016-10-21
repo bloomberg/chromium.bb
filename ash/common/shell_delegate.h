@@ -64,11 +64,6 @@ class ASH_EXPORT ShellDelegate {
   // Returns the connector for the mojo service manager. Returns null in tests.
   virtual service_manager::Connector* GetShellConnector() const = 0;
 
-  // Returns true if this is the first time that the shell has been run after
-  // the system has booted.  false is returned after the shell has been
-  // restarted, typically due to logging in as a guest or logging out.
-  virtual bool IsFirstRunAfterBoot() const = 0;
-
   // Returns true if multi-profiles feature is enabled.
   virtual bool IsMultiProfilesEnabled() const = 0;
 

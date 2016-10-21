@@ -82,6 +82,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/wm/boot_splash_screen_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/chromeos/touch_exploration_controller.h"
 #endif
 
@@ -147,13 +148,12 @@ bool IsWindowAboveContainer(aura::Window* window,
 
 void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host);
-  controller->Init(RootWindowController::PRIMARY,
-                   WmShell::Get()->delegate()->IsFirstRunAfterBoot());
+  controller->Init(RootWindowController::PRIMARY);
 }
 
 void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host);
-  controller->Init(RootWindowController::SECONDARY, false /* first run */);
+  controller->Init(RootWindowController::SECONDARY);
 }
 
 // static
@@ -423,15 +423,14 @@ RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window));
 }
 
-void RootWindowController::Init(RootWindowType root_window_type,
-                                bool first_run_after_boot) {
+void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
   Shell* shell = Shell::GetInstance();
   shell->InitRootWindow(root_window);
 
   wm_root_window_controller_->CreateContainers();
 
-  CreateSystemWallpaper(first_run_after_boot);
+  CreateSystemWallpaper(root_window_type);
 
   InitLayoutManagers();
   InitTouchHuds();
@@ -510,10 +509,18 @@ void RootWindowController::InitTouchHuds() {
     EnableTouchHudProjection();
 }
 
-void RootWindowController::CreateSystemWallpaper(bool is_first_run_after_boot) {
+void RootWindowController::CreateSystemWallpaper(
+    RootWindowType root_window_type) {
   SkColor color = SK_ColorBLACK;
 #if defined(OS_CHROMEOS)
-  if (is_first_run_after_boot)
+  // The splash screen appears on the primary display at boot. If this is a
+  // secondary monitor (either connected at boot or connected later) or if the
+  // browser restarted for a second login then don't use the boot color.
+  const bool is_boot_splash_screen =
+      root_window_type == PRIMARY &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kFirstExecAfterBoot);
+  if (is_boot_splash_screen)
     color = kChromeOsBootColor;
 #endif
   system_wallpaper_.reset(
@@ -522,7 +529,7 @@ void RootWindowController::CreateSystemWallpaper(bool is_first_run_after_boot) {
 #if defined(OS_CHROMEOS)
   // Make a copy of the system's boot splash screen so we can composite it
   // onscreen until the wallpaper is ready.
-  if (is_first_run_after_boot &&
+  if (is_boot_splash_screen &&
       (base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshCopyHostBackgroundAtBoot) ||
        base::CommandLine::ForCurrentProcess()->HasSwitch(

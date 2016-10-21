@@ -201,10 +201,6 @@ ShellDelegateImpl::~ShellDelegateImpl() {}
   return nullptr;
 }
 
-bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
-  return false;
-}
-
 bool ShellDelegateImpl::IsIncognitoAllowed() const {
   return true;
 }

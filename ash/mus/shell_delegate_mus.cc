@@ -121,11 +121,6 @@ service_manager::Connector* ShellDelegateMus::GetShellConnector() const {
   return connector_;
 }
 
-bool ShellDelegateMus::IsFirstRunAfterBoot() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool ShellDelegateMus::IsIncognitoAllowed() const {
   NOTIMPLEMENTED();
   return false;

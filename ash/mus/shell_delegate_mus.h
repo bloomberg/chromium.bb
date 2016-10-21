@@ -24,7 +24,6 @@ class ShellDelegateMus : public ShellDelegate {
 
   // ShellDelegate:
   service_manager::Connector* GetShellConnector() const override;
-  bool IsFirstRunAfterBoot() const override;
   bool IsIncognitoAllowed() const override;
   bool IsMultiProfilesEnabled() const override;
   bool IsRunningInForcedAppMode() const override;

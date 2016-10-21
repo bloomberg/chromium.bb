@@ -77,6 +77,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
@@ -131,6 +132,7 @@
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
 #include "chromeos/audio/audio_a11y_controller.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -629,7 +631,10 @@ void Shell::Init(const ShellInitParams& init_params) {
     display_configurator_->set_state_controller(display_change_observer_.get());
     display_configurator_->set_mirroring_controller(display_manager_.get());
     display_configurator_->ForceInitialConfigure(
-        wm_shell_->delegate()->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kFirstExecAfterBoot)
+            ? kChromeOsBootColor
+            : 0);
     display_initialized = true;
   }
   display_color_manager_.reset(new DisplayColorManager(

@@ -193,16 +193,15 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   explicit RootWindowController(AshWindowTreeHost* host);
   enum RootWindowType { PRIMARY, SECONDARY };
 
-  // Initializes the RootWindowController.  |is_primary| is true if
-  // the controller is for primary display.  |first_run_after_boot| is
-  // set to true only for primary root window after boot.
-  void Init(RootWindowType root_window_type, bool first_run_after_boot);
+  // Initializes the RootWindowController based on |root_window_type|.
+  void Init(RootWindowType root_window_type);
 
   void InitLayoutManagers();
 
   // Initializes |system_wallpaper_| and possibly also |boot_splash_screen_|.
-  // |is_first_run_after_boot| determines the wallpaper's initial color.
-  void CreateSystemWallpaper(bool is_first_run_after_boot);
+  // The initial color is determined by the |root_window_type| and whether or
+  // not this is the first boot.
+  void CreateSystemWallpaper(RootWindowType root_window_type);
 
   // Enables projection touch HUD.
   void EnableTouchHudProjection();

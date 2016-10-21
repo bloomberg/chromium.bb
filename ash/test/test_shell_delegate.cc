@@ -116,10 +116,6 @@ TestShellDelegate::~TestShellDelegate() {}
   return nullptr;
 }
 
-bool TestShellDelegate::IsFirstRunAfterBoot() const {
-  return false;
-}
-
 bool TestShellDelegate::IsIncognitoAllowed() const {
   return true;
 }
