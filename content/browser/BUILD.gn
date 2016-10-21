@@ -1791,6 +1791,8 @@ source_set("browser") {
     sources += [
       "compositor/mus_browser_compositor_output_surface.cc",
       "compositor/mus_browser_compositor_output_surface.h",
+      "renderer_host/render_widget_host_view_event_handler.cc",
+      "renderer_host/render_widget_host_view_event_handler.h",
       "renderer_host/render_widget_host_view_mus.cc",
       "renderer_host/render_widget_host_view_mus.h",
       "web_contents/web_contents_view_mus.cc",

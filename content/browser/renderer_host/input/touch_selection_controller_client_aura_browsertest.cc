@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -168,6 +169,7 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
         new TestTouchSelectionControllerClientAura(rwhva);
     rwhva->SetSelectionControllerClientForTest(
         base::WrapUnique(selection_controller_client_));
+    rwhva->event_handler()->disable_input_event_router_for_testing();
   }
 
  private:

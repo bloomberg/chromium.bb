@@ -39,6 +39,9 @@ specific_include_rules = {
   "render_widget_host_view_aura\.cc": [
     "+content/browser/frame_host",
   ],
+  "render_widget_host_view_event_handler\.cc": [
+    "+content/browser/frame_host",
+  ],
   # TODO(kenrb): RenderWidgetHostViewChildFrame should eventually be moved
   # to content/renderer_host, at which time this can be removed.
   "render_widget_host_input_event_router.cc": [

@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/resize_lock.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
@@ -84,6 +85,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/gestures/motion_event_aura.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/event_generator.h"
@@ -395,7 +397,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   };
 
   const ui::MotionEventAura& pointer_state_for_test() {
-    return pointer_state();
+    return event_handler()->pointer_state();
   }
 
   bool can_create_resize_lock_;
@@ -4496,8 +4498,8 @@ TEST_F(InputMethodResultAuraTest, CommitText) {
 // is in response to a mouse click during an ongoing composition.
 TEST_F(InputMethodResultAuraTest, FinishImeCompositionSession) {
   base::Closure ime_finish_session_call =
-      base::Bind(&RenderWidgetHostViewAura::FinishImeCompositionSession,
-                 base::Unretained(tab_view()));
+      base::Bind(&RenderWidgetHostViewEventHandler::FinishImeCompositionSession,
+                 base::Unretained(tab_view()->event_handler()));
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     SetHasCompositionTextToTrue();

@@ -416,16 +416,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void AddObserver(RenderWidgetHostViewBaseObserver* observer);
   void RemoveObserver(RenderWidgetHostViewBaseObserver* observer);
 
-  // Exposed for testing.
-  virtual bool IsChildFrameForTesting() const;
-  virtual cc::SurfaceId SurfaceIdForTesting() const;
-
- protected:
-  // Interface class only, do not construct.
-  RenderWidgetHostViewBase();
-
-  void NotifyObserversAboutShutdown();
-
   // Returns a reference to the current instance of TextInputManager. The
   // reference is obtained from RenderWidgetHostDelegate. The first time a non-
   // null reference is obtained, its value is cached in |text_input_manager_|
@@ -437,6 +427,21 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // It is safer to use this method rather than directly dereferencing
   // |text_input_manager_|.
   TextInputManager* GetTextInputManager();
+
+  bool is_fullscreen() { return is_fullscreen_; }
+
+  // Exposed for testing.
+  virtual bool IsChildFrameForTesting() const;
+  virtual cc::SurfaceId SurfaceIdForTesting() const;
+
+ protected:
+  // Interface class only, do not construct.
+  RenderWidgetHostViewBase();
+
+  void NotifyObserversAboutShutdown();
+
+  // Is this a fullscreen view?
+  bool is_fullscreen_;
 
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
@@ -476,10 +481,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // The orientation of the display the renderer is currently on.
   display::Display::Rotation current_display_rotation_;
-
-  // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
-  // renderer.
-  bool pinch_zoom_enabled_;
 
   // A reference to current TextInputManager instance this RWHV is registered
   // with. This is initially nullptr until the first time the view calls

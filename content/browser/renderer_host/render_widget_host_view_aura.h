@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -26,6 +27,7 @@
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
@@ -34,11 +36,9 @@
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
-#include "ui/events/gestures/motion_event_aura.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
@@ -94,6 +94,7 @@ struct TextInputState;
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewAura
     : public RenderWidgetHostViewBase,
+      NON_EXPORTED_BASE(public RenderWidgetHostViewEventHandler::Delegate),
       public DelegatedFrameHostClient,
       public TextInputManager::Observer,
       public ui::TextInputClient,
@@ -128,6 +129,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsShowing() override;
   gfx::Rect GetViewBounds() const override;
   void SetBackgroundColor(SkColor color) override;
+  bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
@@ -306,18 +308,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void SnapToPhysicalPixelBoundary();
 
-  ui::TouchSelectionController* selection_controller() const {
-    return selection_controller_.get();
-  }
-
-  TouchSelectionControllerClientAura* selection_controller_client() const {
-    return selection_controller_client_.get();
-  }
-
-  OverscrollController* overscroll_controller() const {
-    return overscroll_controller_.get();
-  }
-
   // Called when the context menu is about to be displayed.
   // Returns true if the context menu should be displayed. We only return false
   // on Windows if the context menu is being displayed in response to a long
@@ -333,6 +323,19 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Exposed for tests.
   cc::SurfaceId SurfaceIdForTesting() const override;
 
+  // RenderWidgetHostViewEventHandler::Delegate:
+  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const override;
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event) override;
+  RenderFrameHostImpl* GetFocusedFrame();
+  bool NeedsMouseCapture() override;
+  void SetTooltipsEnabled(bool enable) override;
+  void ShowContextMenu(const ContextMenuParams& params) override;
+  void Shutdown() override;
+
+  RenderWidgetHostViewEventHandler* event_handler() {
+    return event_handler_.get();
+  }
+
  protected:
   ~RenderWidgetHostViewAura() override;
 
@@ -342,8 +345,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   DelegatedFrameHost* GetDelegatedFrameHost() const {
     return delegated_frame_host_.get();
   }
-
-  const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
 
  private:
   friend class InputMethodAuraTestBase;
@@ -410,25 +411,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   ui::InputMethod* GetInputMethod() const;
 
-  // Sends shutdown request.
-  void Shutdown();
-
   // Returns whether the widget needs an input grab to work properly.
   bool NeedsInputGrab();
-
-  // Returns whether the widget needs to grab mouse capture to work properly.
-  bool NeedsMouseCapture();
-
-  // Confirm existing composition text in the webpage and ask the input method
-  // to cancel its ongoing composition session.
-  void FinishImeCompositionSession();
-
-  // This method computes movementX/Y and keeps track of mouse location for
-  // mouse lock on all mouse move events.
-  // |ui_mouse_event| contains the mouse event received.
-  // |event| contains the WebMouseEvent being modified.
-  void ModifyEventMovementAndCoords(const ui::MouseEvent& ui_mouse_event,
-                                    blink::WebMouseEvent* event);
 
   // Sends an IPC to the renderer process to communicate whether or not
   // the mouse cursor is visible anywhere on the screen.
@@ -437,10 +421,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // If |clip| is non-empty and and doesn't contain |rect| or |clip| is empty
   // SchedulePaint() is invoked for |rect|.
   void SchedulePaintIfNotInClip(const gfx::Rect& rect, const gfx::Rect& clip);
-
-  // Helper method to determine if, in mouse locked mode, the cursor should be
-  // moved to center.
-  bool ShouldMoveToCenter();
 
   // Called after |window_| is parented to a WindowEventDispatcher.
   void AddedToRootWindow();
@@ -484,33 +464,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
 
-  // Before calling RenderWidgetHost::ForwardKeyboardEvent(), this method
-  // calls our keybindings handler against the event and send matched
-  // edit commands to renderer instead.
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
-
   // Dismisses a Web Popup on a mouse or touch press outside the popup and its
   // parent.
   void ApplyEventFilterForPopupExit(ui::LocatedEvent* event);
 
-  // Converts |rect| from window coordinate to screen coordinate.
-  gfx::Rect ConvertRectToScreen(const gfx::Rect& rect) const;
-
   // Converts |rect| from screen coordinate to window coordinate.
   gfx::Rect ConvertRectFromScreen(const gfx::Rect& rect) const;
-
-  // Helper function to set keyboard focus to the main window.
-  void SetKeyboardFocus();
-
-  RenderFrameHostImpl* GetFocusedFrame();
-
-  // Returns true if the |event| passed in can be forwarded to the renderer.
-  bool CanRendererHandleEvent(const ui::MouseEvent* event,
-                              bool mouse_locked,
-                              bool selection_popup) const;
-
-  // Returns true when we can do SurfaceHitTesting for the event type.
-  bool ShouldRouteEvent(const ui::Event* event) const;
 
   // Called when the parent window bounds change.
   void HandleParentBoundsChanged();
@@ -528,19 +487,15 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Helper function to create a selection controller.
   void CreateSelectionController();
 
-  // Performs gesture handling needed for touch text selection. Sets event as
-  // handled if it should not be further processed.
-  void HandleGestureForTouchSelection(ui::GestureEvent* event);
+  // Used to set the |popup_child_host_view_| on the |popup_parent_host_view_|
+  // and to notify the |event_handler_|.
+  void SetPopupChild(RenderWidgetHostViewAura* popup_child_host_view);
 
   // Forwards a mouse event to this view's parent window delegate.
   void ForwardMouseEventToParent(ui::MouseEvent* event);
 
   // Adds/Removes frame observer based on state.
   void UpdateNeedsBeginFramesInternal();
-
-  // Returns the RenderViewHostDelegateView instance for this view. Returns
-  // NULL on failure.
-  RenderViewHostDelegateView* GetRenderViewHostDelegateView();
 
   // The model object.
   RenderWidgetHostImpl* const host_;
@@ -562,9 +517,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // True if in the process of handling a window bounds changed notification.
   bool in_bounds_changed_;
 
-  // Is this a fullscreen view?
-  bool is_fullscreen_;
-
   // Our parent host view, if this is a popup.  NULL otherwise.
   RenderWidgetHostViewAura* popup_parent_host_view_;
 
@@ -581,16 +533,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
 
-  // Stores the current state of the active pointers targeting this
-  // object.
-  ui::MotionEventAura pointer_state_;
-
-
   // Indicates if there is onging composition text.
   bool has_composition_text_;
-
-  // Whether return characters should be passed on to the RenderWidgetHostImpl.
-  bool accept_return_character_;
 
   // Current tooltip text.
   base::string16 tooltip_;
@@ -607,25 +551,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Whether or not a frame observer has been added.
   bool added_frame_observer_;
-
-  // Used to record the last position of the mouse.
-  // While the mouse is locked, they store the last known position just as mouse
-  // lock was entered.
-  // Relative to the upper-left corner of the view.
-  gfx::Point unlocked_mouse_position_;
-  // Relative to the upper-left corner of the screen.
-  gfx::Point unlocked_global_mouse_position_;
-  // Last cursor position relative to screen. Used to compute movementX/Y.
-  gfx::Point global_mouse_position_;
-  // In mouse locked mode, we synthetically move the mouse cursor to the center
-  // of the window when it reaches the window borders to avoid it going outside.
-  // This flag is used to differentiate between these synthetic mouse move
-  // events vs. normal mouse move events.
-  bool synthetic_move_sent_;
-
-  // Used to track the state of the window we're created from. Only used when
-  // created fullscreen.
-  std::unique_ptr<aura::WindowTracker> host_tracker_;
 
   // Used to track the last cursor visibility update that was sent to the
   // renderer via NotifyRendererOfCursorVisibilityState().
@@ -665,12 +590,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   bool has_snapped_to_boundary_;
 
-  std::unique_ptr<TouchSelectionControllerClientAura>
-      selection_controller_client_;
-  std::unique_ptr<ui::TouchSelectionController> selection_controller_;
-
-  std::unique_ptr<OverscrollController> overscroll_controller_;
-
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
 
@@ -684,21 +603,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
 
-  // This flag when set ensures that we send over a notification to blink that
-  // the current view has focus. Defaults to false.
-  bool set_focus_on_mouse_down_or_key_event_;
-
   float device_scale_factor_;
-
-  // Allows tests to send gesture events for testing without first sending a
-  // corresponding touch sequence, as would be required by
-  // RenderWidgetHostInputEventRouter.
-  bool disable_input_event_router_for_testing_;
 
   // The routing and process IDs for the last RenderWidgetHost which had a
   // TextInputState of non-NONE.
   int32_t last_active_widget_process_id_;
   int32_t last_active_widget_routing_id_;
+
+  // While this is a ui::EventHandler for targetting, |event_handler_| actually
+  // provides an implementation, and directs events to |host_|.
+  std::unique_ptr<RenderWidgetHostViewEventHandler> event_handler_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
