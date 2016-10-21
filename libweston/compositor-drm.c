@@ -499,6 +499,13 @@ drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
 	}
 }
 
+static int
+drm_view_transform_supported(struct weston_view *ev)
+{
+	return !ev->transform.enabled ||
+		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
+}
+
 static uint32_t
 drm_output_check_scanout_format(struct drm_output *output,
 				struct weston_surface *es, struct gbm_bo *bo)
@@ -539,26 +546,39 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 	struct gbm_bo *bo;
 	uint32_t format;
 
+	/* Don't import buffers which span multiple outputs. */
+	if (ev->output_mask != (1u << output->base.id))
+		return NULL;
+
 	/* We use GBM to import buffers. */
 	if (b->gbm == NULL)
 		return NULL;
 
 	if (buffer == NULL)
 		return NULL;
+	if (wl_shm_buffer_get(buffer->resource))
+		return NULL;
 
 	/* Make sure our view is exactly compatible with the output. */
 	if (ev->geometry.x != output->base.x ||
 	    ev->geometry.y != output->base.y)
 		return NULL;
+	if (buffer->width != output->base.current_mode->width ||
+	    buffer->height != output->base.current_mode->height)
+		return NULL;
+
 	if (ev->transform.enabled)
 		return NULL;
 	if (ev->geometry.scissor_enabled)
 		return NULL;
-
-	if (buffer->width != output->base.current_mode->width ||
-	    buffer->height != output->base.current_mode->height)
-		return NULL;
 	if (viewport->buffer.transform != output->base.transform)
+		return NULL;
+	if (viewport->buffer.scale != output->base.current_scale)
+		return NULL;
+	if (!drm_view_transform_supported(ev))
+		return NULL;
+
+	if (ev->alpha != 1.0f)
 		return NULL;
 
 	bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
@@ -971,13 +991,6 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 			return format;
 
 	return 0;
-}
-
-static int
-drm_view_transform_supported(struct weston_view *ev)
-{
-	return !ev->transform.enabled ||
-		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
 }
 
 static struct weston_plane *
