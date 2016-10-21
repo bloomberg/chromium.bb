@@ -1110,6 +1110,12 @@ bool DevToolsWindow::PreHandleGestureEvent(
       event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
+void DevToolsWindow::ShowCertificateViewerInDevTools(
+    content::WebContents* web_contents,
+    scoped_refptr<net::X509Certificate> certificate) {
+  ShowCertificateViewer(certificate);
+}
+
 void DevToolsWindow::ActivateWindow() {
   if (life_stage_ != kLoadCompleted)
     return;

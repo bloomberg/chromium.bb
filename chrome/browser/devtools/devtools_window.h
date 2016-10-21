@@ -306,6 +306,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                       const content::FileChooserParams& params) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
+  void ShowCertificateViewerInDevTools(
+      content::WebContents* web_contents,
+      scoped_refptr<net::X509Certificate> certificate) override;
 
   // content::DevToolsUIBindings::Delegate overrides
   void ActivateWindow() override;
