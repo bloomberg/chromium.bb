@@ -10,16 +10,17 @@
 
 namespace views {
 
-StaticSizedView::StaticSizedView(const gfx::Size& preferred_size)
+StaticSizedView::StaticSizedView(const gfx::Size& size)
     // Default GetMinimumSize() is GetPreferredSize(). Default GetMaximumSize()
     // is 0x0.
-    : preferred_size_(preferred_size),
-      minimum_size_(preferred_size) {}
+    : size_(size),
+      minimum_size_(size) {
+}
 
 StaticSizedView::~StaticSizedView() {}
 
 gfx::Size StaticSizedView::GetPreferredSize() const {
-  return preferred_size_;
+  return size_;
 }
 
 gfx::Size StaticSizedView::GetMinimumSize() const {

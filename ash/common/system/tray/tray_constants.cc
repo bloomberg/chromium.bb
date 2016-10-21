@@ -97,14 +97,6 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTraySpacing[] = {4, 4, 0};
   const int kTrayPaddingFromEdgeOfShelf[] = {3, 3, 4};
   const int kTrayPopupItemHeight[] = {46, 46, 48};
-  // TODO(bruthig): Use the correct values for non-material design.
-  const int kTrayPopupItemLeftInset[] = {0, 0, 4};
-  // TODO(bruthig): Use the correct values for non-material design.
-  const int kTrayPopupItemRightInset[] = {0, 0, 4};
-  // TODO(bruthig): Use the correct values for non-material design.
-  const int kTrayPopupItemMinStartWidth[] = {48, 48, 48};
-  // TODO(bruthig): Use the correct values for non-material design.
-  const int kTrayPopupItemMinEndWidth[] = {48, 48, 48};
   const int kVirtualKeyboardButtonSize[] = {39, 39, kTrayItemSize};
   const int kTrayImeMenuIcon[] = {40, 40, kTrayItemSize};
   const int kTrayImageItemPadding[] = {1, 1, 3};
@@ -122,14 +114,6 @@ int GetTrayConstant(TrayConstant constant) {
       return kTrayPaddingFromEdgeOfShelf[mode];
     case TRAY_POPUP_ITEM_HEIGHT:
       return kTrayPopupItemHeight[mode];
-    case TRAY_POPUP_ITEM_LEFT_INSET:
-      return kTrayPopupItemLeftInset[mode];
-    case TRAY_POPUP_ITEM_RIGHT_INSET:
-      return kTrayPopupItemRightInset[mode];
-    case TRAY_POPUP_ITEM_MIN_START_WIDTH:
-      return kTrayPopupItemMinStartWidth[mode];
-    case TRAY_POPUP_ITEM_MIN_END_WIDTH:
-      return kTrayPopupItemMinEndWidth[mode];
     case VIRTUAL_KEYBOARD_BUTTON_SIZE:
       return kVirtualKeyboardButtonSize[mode];
     case TRAY_IME_MENU_ICON:

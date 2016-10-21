@@ -128,10 +128,6 @@ View::~View() {
 
   ViewStorage::GetInstance()->ViewRemoved(this);
 
-  // Some layout managers hold a reference to the host that they are installed
-  // to and may need to access this during destruction.
-  layout_manager_.reset();
-
   for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
     (*i)->parent_ = NULL;
     if (!(*i)->owned_by_client_)

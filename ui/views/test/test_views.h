@@ -16,7 +16,7 @@ namespace views {
 // A view that requests a set amount of space.
 class StaticSizedView : public View {
  public:
-  explicit StaticSizedView(const gfx::Size& preferred_size = gfx::Size());
+  explicit StaticSizedView(const gfx::Size& size);
   ~StaticSizedView() override;
 
   void set_minimum_size(const gfx::Size& minimum_size) {
@@ -33,7 +33,7 @@ class StaticSizedView : public View {
   gfx::Size GetMaximumSize() const override;
 
  private:
-  gfx::Size preferred_size_;
+  gfx::Size size_;
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
 
