@@ -100,11 +100,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
     'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
 ]
-_REVISION_NEGATIVE_FILTER['55'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
-    'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
-    'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
-]
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
