@@ -379,8 +379,7 @@ public class WebappActivity extends FullScreenActivity {
 
             @Override
             public void onDidStartProvisionalLoadForFrame(
-                    Tab tab, long frameId, long parentFrameId, boolean isMainFrame,
-                    String validatedUrl, boolean isErrorPage, boolean isIframeSrcdoc) {
+                    Tab tab, boolean isMainFrame, String validatedUrl) {
                 if (isMainFrame) updateUrlBar();
             }
 

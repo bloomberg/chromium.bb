@@ -458,9 +458,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onDidStartProvisionalLoadForFrame(Tab tab, long frameId, long parentFrameId,
-                    boolean isMainFrame, String validatedUrl, boolean isErrorPage,
-                    boolean isIframeSrcdoc) {
+            public void onDidStartProvisionalLoadForFrame(
+                    Tab tab, boolean isMainFrame, String validatedUrl) {
                 // This event is used as the primary trigger for the progress bar because it
                 // is the earliest indication that a load has started for a particular frame. In
                 // the case of the progress bar, it should only traverse the screen a single time

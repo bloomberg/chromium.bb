@@ -89,9 +89,8 @@ public class EmptyTabObserver implements TabObserver {
             int errorCode, String description, String failingUrl) { }
 
     @Override
-    public void onDidStartProvisionalLoadForFrame(Tab tab, long frameId, long parentFrameId,
-            boolean isMainFrame, String validatedUrl, boolean isErrorPage,
-            boolean isIframeSrcdoc) { }
+    public void onDidStartProvisionalLoadForFrame(
+            Tab tab, boolean isMainFrame, String validatedUrl) {}
 
     @Override
     public void onDidCommitProvisionalLoadForFrame(Tab tab, long frameId, boolean isMainFrame,
