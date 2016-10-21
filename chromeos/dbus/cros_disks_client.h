@@ -108,6 +108,18 @@ enum MountAccessMode {
   MOUNT_ACCESS_MODE_READ_ONLY,
 };
 
+// Whether to mount to a new path or remount a device already mounted.
+enum RemountOption {
+  // Mount a new device. If the device is already mounted, the mount status is
+  // unchanged and the callback for MountCompleted will receive
+  // MOUNT_ERROR_PATH_ALREADY_MOUNTED error code.
+  REMOUNT_OPTION_MOUNT_NEW_DEVICE,
+  // Remount a device that is already mounted. If the device is not mounted
+  // yet, it will do nothing and the callback for MountCompleted will receive
+  // MOUNT_ERROR_PATH_NOT_MOUNTED error code.
+  REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE,
+};
+
 // A class to represent information about a disk sent from cros-disks.
 class CHROMEOS_EXPORT DiskInfo {
  public:
@@ -278,6 +290,7 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
                      const std::string& source_format,
                      const std::string& mount_label,
                      MountAccessMode access_mode,
+                     RemountOption remount,
                      const base::Closure& callback,
                      const base::Closure& error_callback) = 0;
 
@@ -341,7 +354,8 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   // Composes a list of mount options.
   static std::vector<std::string> ComposeMountOptions(
       const std::string& mount_label,
-      MountAccessMode access_mode);
+      MountAccessMode access_mode,
+      RemountOption remount);
 
  protected:
   // Create() should be used instead.

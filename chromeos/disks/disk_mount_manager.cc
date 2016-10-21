@@ -80,6 +80,7 @@ class DiskMountManagerImpl : public DiskMountManager {
     }
     cros_disks_client_->Mount(
         source_path, source_format, mount_label, access_mode,
+        REMOUNT_OPTION_MOUNT_NEW_DEVICE,
         // When succeeds, OnMountCompleted will be called by
         // "MountCompleted" signal instead.
         base::Bind(&base::DoNothing),

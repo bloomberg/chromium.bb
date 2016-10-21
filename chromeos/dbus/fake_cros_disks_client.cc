@@ -80,6 +80,7 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 const std::string& source_format,
                                 const std::string& mount_label,
                                 MountAccessMode access_mode,
+                                RemountOption remount,
                                 const base::Closure& callback,
                                 const base::Closure& error_callback) {
   // This fake implementation assumes mounted path is device when source_format

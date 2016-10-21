@@ -37,6 +37,7 @@ const char* kDefaultMountOptions[] = {
 };
 const char kReadOnlyOption[] = "ro";
 const char kReadWriteOption[] = "rw";
+const char kRemountOption[] = "remount";
 const char kMountLabelOption[] = "mountlabel";
 
 const char* kDefaultUnmountOptions[] = {
@@ -104,6 +105,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
              const std::string& source_format,
              const std::string& mount_label,
              MountAccessMode access_mode,
+             RemountOption remount,
              const base::Closure& callback,
              const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
@@ -112,7 +114,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
     writer.AppendString(source_path);
     writer.AppendString(source_format);
     std::vector<std::string> mount_options =
-        ComposeMountOptions(mount_label, access_mode);
+        ComposeMountOptions(mount_label, access_mode, remount);
     writer.AppendArrayOfStrings(mount_options);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CrosDisksClientImpl::OnMount,
@@ -655,7 +657,8 @@ base::FilePath CrosDisksClient::GetRemovableDiskMountPoint() {
 // static
 std::vector<std::string> CrosDisksClient::ComposeMountOptions(
     const std::string& mount_label,
-    MountAccessMode access_mode) {
+    MountAccessMode access_mode,
+    RemountOption remount) {
   std::vector<std::string> mount_options(
       kDefaultMountOptions,
       kDefaultMountOptions + arraysize(kDefaultMountOptions));
@@ -666,6 +669,9 @@ std::vector<std::string> CrosDisksClient::ComposeMountOptions(
     case MOUNT_ACCESS_MODE_READ_WRITE:
       mount_options.push_back(kReadWriteOption);
       break;
+  }
+  if (remount == REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE) {
+    mount_options.push_back(kRemountOption);
   }
 
   if (!mount_label.empty()) {

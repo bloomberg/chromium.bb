@@ -31,8 +31,10 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
              const std::string& source_format,
              const std::string& mount_label,
              MountAccessMode access_mode,
+             RemountOption remount,
              const base::Closure& callback,
              const base::Closure& error_callback) override;
+
   // Deletes the directory created in Mount().
   void Unmount(const std::string& device_path,
                UnmountOptions options,

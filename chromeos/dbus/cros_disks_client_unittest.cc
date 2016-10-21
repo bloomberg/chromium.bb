@@ -160,7 +160,8 @@ TEST(CrosDisksClientTest, ComposeMountOptions) {
       std::string("mountlabel=") + kMountLabel;
   std::vector<std::string> rw_mount_options =
       CrosDisksClient::ComposeMountOptions(kMountLabel,
-                                           MOUNT_ACCESS_MODE_READ_WRITE);
+                                           MOUNT_ACCESS_MODE_READ_WRITE,
+                                           REMOUNT_OPTION_MOUNT_NEW_DEVICE);
   ASSERT_EQ(5U, rw_mount_options.size());
   EXPECT_EQ("nodev", rw_mount_options[0]);
   EXPECT_EQ("noexec", rw_mount_options[1]);
@@ -170,13 +171,26 @@ TEST(CrosDisksClientTest, ComposeMountOptions) {
 
   std::vector<std::string> ro_mount_options =
       CrosDisksClient::ComposeMountOptions(kMountLabel,
-                                           MOUNT_ACCESS_MODE_READ_ONLY);
+                                           MOUNT_ACCESS_MODE_READ_ONLY,
+                                           REMOUNT_OPTION_MOUNT_NEW_DEVICE);
   ASSERT_EQ(5U, ro_mount_options.size());
   EXPECT_EQ("nodev", ro_mount_options[0]);
   EXPECT_EQ("noexec", ro_mount_options[1]);
   EXPECT_EQ("nosuid", ro_mount_options[2]);
   EXPECT_EQ("ro", ro_mount_options[3]);
   EXPECT_EQ(kExpectedMountLabelOption, ro_mount_options[4]);
+
+  std::vector<std::string> remount_mount_options =
+      CrosDisksClient::ComposeMountOptions(
+          kMountLabel, MOUNT_ACCESS_MODE_READ_WRITE,
+          REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE);
+  ASSERT_EQ(6U, remount_mount_options.size());
+  EXPECT_EQ("nodev", remount_mount_options[0]);
+  EXPECT_EQ("noexec", remount_mount_options[1]);
+  EXPECT_EQ("nosuid", remount_mount_options[2]);
+  EXPECT_EQ("rw", remount_mount_options[3]);
+  EXPECT_EQ("remount", remount_mount_options[4]);
+  EXPECT_EQ(kExpectedMountLabelOption, remount_mount_options[5]);
 }
 
 }  // namespace chromeos
