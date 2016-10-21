@@ -72,7 +72,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
-  virtual void DelegatedFrameHostOnLostCompositorResources() = 0;
 
   virtual void SetBeginFrameSource(cc::BeginFrameSource* source) = 0;
   virtual bool IsAutoResizeEnabled() const = 0;

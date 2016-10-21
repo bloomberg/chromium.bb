@@ -30,7 +30,6 @@ class BrowserCompositorMacClient {
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
-  virtual void BrowserCompositorMacOnLostCompositorResources() = 0;
   virtual void BrowserCompositorMacSendBeginFrame(
       const cc::BeginFrameArgs& args) = 0;
 };
@@ -110,7 +109,6 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
-  void DelegatedFrameHostOnLostCompositorResources() override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
   bool IsAutoResizeEnabled() const override;
 

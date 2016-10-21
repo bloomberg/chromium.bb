@@ -445,10 +445,6 @@ void BrowserCompositorMac::DelegatedFrameHostSendReclaimCompositorResources(
       compositor_frame_sink_id, is_swap_ack, resources);
 }
 
-void BrowserCompositorMac::DelegatedFrameHostOnLostCompositorResources() {
-  client_->BrowserCompositorMacOnLostCompositorResources();
-}
-
 void BrowserCompositorMac::SetBeginFrameSource(cc::BeginFrameSource* source) {
   if (begin_frame_source_ && needs_begin_frames_)
     begin_frame_source_->RemoveObserver(this);

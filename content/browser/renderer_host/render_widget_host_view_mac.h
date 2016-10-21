@@ -458,7 +458,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
-  void BrowserCompositorMacOnLostCompositorResources() override;
   void BrowserCompositorMacSendBeginFrame(
       const cc::BeginFrameArgs& args) override;
 

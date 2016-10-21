@@ -461,7 +461,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
-  void DelegatedFrameHostOnLostCompositorResources() override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
   bool IsAutoResizeEnabled() const override;
 

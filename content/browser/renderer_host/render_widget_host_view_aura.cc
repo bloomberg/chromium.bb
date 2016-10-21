@@ -2956,10 +2956,6 @@ void RenderWidgetHostViewAura::DelegatedFrameHostSendReclaimCompositorResources(
       host_->GetRoutingID(), compositor_frame_sink_id, is_swap_ack, resources));
 }
 
-void RenderWidgetHostViewAura::DelegatedFrameHostOnLostCompositorResources() {
-  host_->ScheduleComposite();
-}
-
 void RenderWidgetHostViewAura::SetBeginFrameSource(
     cc::BeginFrameSource* source) {
   if (begin_frame_source_ && added_frame_observer_) {

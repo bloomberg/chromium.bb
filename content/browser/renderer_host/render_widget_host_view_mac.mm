@@ -410,10 +410,6 @@ void RenderWidgetHostViewMac::
       is_swap_ack, resources));
 }
 
-void RenderWidgetHostViewMac::BrowserCompositorMacOnLostCompositorResources() {
-  render_widget_host_->ScheduleComposite();
-}
-
 void RenderWidgetHostViewMac::BrowserCompositorMacSendBeginFrame(
     const cc::BeginFrameArgs& args) {
   needs_flush_input_ = false;
