@@ -83,12 +83,15 @@ static constexpr int kBrowserUiElementId = 0;
 // into geometry (they ignore the Z buffer), leading to odd effects
 // if they are far away.
 static constexpr vr_shell::Recti kWebVrWarningTransientRect = {
-  0, 128, 512, 256};
+  0, 128, 512, 250};
 static constexpr vr_shell::Recti kWebVrWarningPermanentRect = {0, 0, 512, 128};
 static constexpr float kWebVrWarningDistance = 0.7f;  // meters
 static constexpr float kWebVrWarningPermanentAngle = 16.3f;  // degrees up
 // How long the transient warning needs to be displayed.
 static constexpr int64_t kWebVrWarningSeconds = 30;
+
+static constexpr int kFramePrimaryBuffer = 0;
+static constexpr int kFrameHeadlockedBuffer = 1;
 
 vr_shell::VrShell* g_instance;
 
@@ -247,13 +250,33 @@ void VrShell::InitializeGl(JNIEnv* env,
   std::vector<gvr::BufferSpec> specs;
   specs.push_back(gvr_api_->CreateBufferSpec());
   render_size_ = specs[0].GetSize();
+
+  // For WebVR content
+  specs.push_back(gvr_api_->CreateBufferSpec());
+
   swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapChain(specs)));
 
   vr_shell_renderer_.reset(new VrShellRenderer());
   buffer_viewport_list_.reset(
       new gvr::BufferViewportList(gvr_api_->CreateEmptyBufferViewportList()));
+  buffer_viewport_list_->SetToRecommendedBufferViewports();
+
   buffer_viewport_.reset(
       new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
+
+  headlocked_left_viewport_.reset(
+      new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
+  buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
+                                           headlocked_left_viewport_.get());
+  headlocked_left_viewport_->SetSourceBufferIndex(kFrameHeadlockedBuffer);
+  headlocked_left_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+
+  headlocked_right_viewport_.reset(
+      new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
+  buffer_viewport_list_->GetBufferViewport(GVR_RIGHT_EYE,
+                                           headlocked_right_viewport_.get());
+  headlocked_right_viewport_->SetSourceBufferIndex(kFrameHeadlockedBuffer);
+  headlocked_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
 }
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
@@ -418,12 +441,22 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     gvr_api_->ApplyNeckModel(head_pose, 1.0f);
   }
 
-  // Bind back to the default framebuffer.
-  frame.BindBuffer(0);
+  // Bind the primary framebuffer.
+  frame.BindBuffer(kFramePrimaryBuffer);
 
   if (webvr_mode_) {
     DrawWebVr();
-    if (!webvr_secure_origin_) {
+    // Wait for the DOM contents to be loaded before rendering to avoid drawing
+    // white rectangles with no content.
+    if (!webvr_secure_origin_ && IsUiTextureReady()) {
+      size_t last_viewport = buffer_viewport_list_->GetSize();
+      buffer_viewport_list_->SetBufferViewport(last_viewport++,
+          *headlocked_left_viewport_);
+      buffer_viewport_list_->SetBufferViewport(last_viewport++,
+          *headlocked_right_viewport_);
+
+      // Bind the headlocked framebuffer.
+      frame.BindBuffer(kFrameHeadlockedBuffer);
       DrawWebVrOverlay(target_time.monotonic_system_time_nanos);
     }
 
@@ -503,7 +536,7 @@ void VrShell::DrawEye(gvr::Eye eye,
 }
 
 bool VrShell::IsUiTextureReady() {
-  return ui_tex_width_ > 0 && ui_tex_height_ > 0;
+  return ui_tex_width_ > 0 && ui_tex_height_ > 0 && dom_contents_loaded_;
 }
 
 Rectf VrShell::MakeUiGlCopyRect(Recti pixel_rect) {
@@ -645,6 +678,8 @@ void VrShell::DrawWebVrOverlay(int64_t present_time_nanos) {
   gvr::Mat4f right_eye_view_matrix =
       gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
 
+  glClear(GL_COLOR_BUFFER_BIT);
+
   buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
                                            buffer_viewport_.get());
   DrawWebVrEye(left_eye_view_matrix, *buffer_viewport_, present_time_nanos);
@@ -756,6 +791,7 @@ void VrShell::OnDomContentsLoaded() {
   ui_contents_->GetRenderWidgetHostView()->SetBackgroundColor(
       SK_ColorTRANSPARENT);
   html_interface_->OnDomContentsLoaded();
+  dom_contents_loaded_ = true;
 }
 
 void VrShell::SetWebVrMode(JNIEnv* env,

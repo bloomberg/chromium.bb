@@ -150,6 +150,8 @@ class VrShell : public device::GvrDelegate {
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;
   std::unique_ptr<gvr::BufferViewport> buffer_viewport_;
+  std::unique_ptr<gvr::BufferViewport> headlocked_left_viewport_;
+  std::unique_ptr<gvr::BufferViewport> headlocked_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
 
   gvr::Sizei render_size_;
@@ -174,6 +176,7 @@ class VrShell : public device::GvrDelegate {
   VrInputManager* current_input_target_ = nullptr;
   int ui_tex_width_ = 0;
   int ui_tex_height_ = 0;
+  bool dom_contents_loaded_ = false;
 
   bool webvr_mode_ = false;
   bool webvr_secure_origin_ = false;
