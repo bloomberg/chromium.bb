@@ -28,7 +28,6 @@ namespace blink {
 
 class FrameSelectionTest : public EditingTestBase {
  protected:
-  FrameSelection& selection() const;
   const VisibleSelection& visibleSelectionInDOMTree() const {
     return selection().selection();
   }
@@ -55,10 +54,6 @@ class FrameSelectionTest : public EditingTestBase {
  private:
   Persistent<Text> m_textNode;
 };
-
-FrameSelection& FrameSelectionTest::selection() const {
-  return dummyPageHolder().frame().selection();
-}
 
 Text* FrameSelectionTest::appendTextNode(const String& data) {
   Text* text = document().createTextNode(data);

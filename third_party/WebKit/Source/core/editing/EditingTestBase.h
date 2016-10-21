@@ -14,6 +14,8 @@
 namespace blink {
 
 class DummyPageHolder;
+class FrameSelection;
+class LocalFrame;
 
 class EditingTestBase : public ::testing::Test {
   USING_FAST_MALLOC(EditingTestBase);
@@ -26,6 +28,8 @@ class EditingTestBase : public ::testing::Test {
 
   Document& document() const;
   DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
+  LocalFrame& frame() const;
+  FrameSelection& selection() const;
 
   static ShadowRoot* createShadowRootForElementWithIDAndSetInnerHTML(
       TreeScope&,

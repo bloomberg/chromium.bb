@@ -21,6 +21,14 @@ Document& EditingTestBase::document() const {
   return m_dummyPageHolder->document();
 }
 
+LocalFrame& EditingTestBase::frame() const {
+  return dummyPageHolder().frame();
+}
+
+FrameSelection& EditingTestBase::selection() const {
+  return frame().selection();
+}
+
 void EditingTestBase::SetUp() {
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
 }
