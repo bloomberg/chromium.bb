@@ -45,22 +45,12 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
 // TODO(hcarmona): Investigate converting these tests to unittests.
 
 // TODO(crbug.com/643097) Disabled for flakiness.
-#if defined(OS_WIN)
-#define MAYBE_SaveAddress DISABLED_SaveAddress
-#else
-#define MAYBE_SaveAddress SaveAddress
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_SaveAddress) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_SaveAddress) {
   EXPECT_TRUE(RunAutofillSubtest("saveAddress")) << message_;
 }
 
 // TODO(crbug.com/643097) Disabled for flakiness.
-#if defined(OS_WIN)
-#define MAYBE_GetCountryList DISABLED_GetCountryList
-#else
-#define MAYBE_GetCountryList GetCountryList
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_GetCountryList) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_GetCountryList) {
   EXPECT_TRUE(RunAutofillSubtest("getCountryList")) << message_;
 }
 
@@ -69,22 +59,12 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, GetAddressComponents) {
 }
 
 // TODO(crbug.com/643097) Disabled for flakiness.
-#if defined(OS_WIN)
-#define MAYBE_SaveCreditCard DISABLED_SaveCreditCard
-#else
-#define MAYBE_SaveCreditCard SaveCreditCard
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_SaveCreditCard) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_SaveCreditCard) {
   EXPECT_TRUE(RunAutofillSubtest("saveCreditCard")) << message_;
 }
 
 // TODO(crbug.com/643097) Disabled for flakiness.
-#if defined(OS_WIN)
-#define MAYBE_RemoveEntry DISABLED_RemoveEntry
-#else
-#define MAYBE_RemoveEntry RemoveEntry
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, MAYBE_RemoveEntry) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, DISABLED_RemoveEntry) {
   EXPECT_TRUE(RunAutofillSubtest("removeEntry")) << message_;
 }
 
