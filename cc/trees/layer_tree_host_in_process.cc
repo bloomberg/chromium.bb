@@ -462,10 +462,6 @@ void LayerTreeHostInProcess::FinishCommitOnImplThread(
   RecordGpuRasterizationHistogram();
 
   host_impl->SetViewportSize(layer_tree_->device_viewport_size());
-  // TODO(senorblanco): Move this to LayerTree::PushPropertiesTo so that it
-  // happens before GPU rasterization properties are set, since those trigger an
-  // update of GPU rasterization status, which depends on the device scale
-  // factor. (crbug.com/535700)
   sync_tree->SetDeviceScaleFactor(layer_tree_->device_scale_factor());
   host_impl->SetDebugState(debug_state_);
 

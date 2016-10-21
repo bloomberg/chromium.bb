@@ -858,6 +858,7 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
   set_needs_update_draw_properties();
   if (IsActiveTree())
     layer_tree_host_impl_->SetFullViewportDamage();
+  layer_tree_host_impl_->SetNeedUpdateGpuRasterizationStatus();
 }
 
 void LayerTreeImpl::SetDeviceColorSpace(

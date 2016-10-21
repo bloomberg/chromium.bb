@@ -11110,15 +11110,9 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
   EXPECT_FALSE(controller.did_draw_frame());
 }
 
-TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-
-  host_impl_->SetHasGpuRasterizationTrigger(true);
-  host_impl_->SetContentIsSuitableForGpuRasterization(true);
-  host_impl_->CommitComplete();
-  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-
+// Tests that SetHasGpuRasterizationTrigger behaves as expected.
+TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusTrigger) {
+  // Set initial state, before varying GPU rasterization trigger.
   host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->SetContentIsSuitableForGpuRasterization(true);
   host_impl_->CommitComplete();
@@ -11126,22 +11120,94 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 
+  // Toggle the trigger on.
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+
+  // And off.
+  host_impl_->SetHasGpuRasterizationTrigger(false);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+}
+
+// Tests that SetContentIsSuitableForGpuRasterization behaves as expected.
+TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSuitability) {
+  // Set initial state, before varying GPU rasterization suitability.
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+
+  // Toggle suitability on.
+  host_impl_->SetContentIsSuitableForGpuRasterization(true);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_FALSE(host_impl_->use_msaa());
 
+  // And off.
+  host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->use_msaa());
+}
+
+// Tests that SetDeviceScaleFactor correctly impacts GPU rasterization.
+TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
+  // Create a host impl with MSAA support.
   std::unique_ptr<TestWebGraphicsContext3D> context_with_msaa =
       TestWebGraphicsContext3D::Create();
-  context_with_msaa->SetMaxSamples(8);
+  context_with_msaa->SetMaxSamples(4);
+  LayerTreeSettings msaaSettings = GpuRasterizationEnabledSettings();
+  msaaSettings.gpu_rasterization_msaa_sample_count = -1;
+  EXPECT_TRUE(CreateHostImpl(msaaSettings, FakeCompositorFrameSink::Create3d(
+                                               std::move(context_with_msaa))));
 
+  // Set initial state, before varying scale factor.
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentIsSuitableForGpuRasterization(false);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+
+  // Set device scale factor to 2, which lowers the required MSAA samples from
+  // 8 to 4.
+  host_impl_->active_tree()->SetDeviceScaleFactor(2.0f);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_TRUE(host_impl_->use_msaa());
+
+  // Set device scale factor back to 1.
+  host_impl_->active_tree()->SetDeviceScaleFactor(1.0f);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
+            host_impl_->gpu_rasterization_status());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->use_msaa());
+}
+
+// Tests that explicit MSAA sample count correctly impacts GPU rasterization.
+TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusExplicitMSAACount) {
+  // Create a host impl with MSAA support and a forced sample count of 4.
+  std::unique_ptr<TestWebGraphicsContext3D> context_with_msaa =
+      TestWebGraphicsContext3D::Create();
+  context_with_msaa->SetMaxSamples(4);
   LayerTreeSettings msaaSettings = GpuRasterizationEnabledSettings();
   msaaSettings.gpu_rasterization_msaa_sample_count = 4;
   EXPECT_TRUE(CreateHostImpl(msaaSettings, FakeCompositorFrameSink::Create3d(
                                                std::move(context_with_msaa))));
+
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentIsSuitableForGpuRasterization(false);
   host_impl_->CommitComplete();
@@ -11149,7 +11215,11 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_TRUE(host_impl_->use_msaa());
+}
 
+// Tests that GPU rasterization overrides work as expected.
+TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusOverrides) {
+  // GPU rasterization explicitly disabled.
   LayerTreeSettings settings = DefaultSettings();
   settings.gpu_rasterization_enabled = false;
   EXPECT_TRUE(CreateHostImpl(settings, FakeCompositorFrameSink::Create3d()));
@@ -11160,6 +11230,7 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
             host_impl_->gpu_rasterization_status());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 
+  // GPU rasterization explicitly forced.
   settings.gpu_rasterization_forced = true;
   EXPECT_TRUE(CreateHostImpl(settings, FakeCompositorFrameSink::Create3d()));
 

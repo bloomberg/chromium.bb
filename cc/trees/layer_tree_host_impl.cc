@@ -3966,6 +3966,10 @@ bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
   return animation_host_->AnimationsPreserveAxisAlignment(layer->element_id());
 }
 
+void LayerTreeHostImpl::SetNeedUpdateGpuRasterizationStatus() {
+  need_update_gpu_rasterization_status_ = true;
+}
+
 void LayerTreeHostImpl::SetElementFilterMutated(
     ElementId element_id,
     ElementListType list_type,
