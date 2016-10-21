@@ -82,6 +82,11 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
       ruleset_(ruleset),
       ruleset_matcher_(ruleset_->data(), ruleset_->length()),
       first_disallowed_load_callback_(first_disallowed_load_callback) {
+  TRACE_EVENT1("loader", "DocumentSubresourceFilter::DocumentSubresourceFilter",
+               "document_url", ancestor_document_urls.empty()
+                                   ? std::string()
+                                   : ancestor_document_urls[0].spec());
+
   DCHECK_NE(activation_state_, ActivationState::DISABLED);
   DCHECK(ruleset);
 
