@@ -5,7 +5,7 @@
 var allTests = [
   // Basic query from root node.
   function testQuerySelector() {
-    var cancelButton = rootNode.children[3];
+    var cancelButton = rootNode.lastChild.lastChild;
     function assertCorrectResult(queryResult) {
       assertEq(queryResult, cancelButton);
       chrome.test.succeed();
@@ -39,12 +39,24 @@ var allTests = [
   // Demonstrates that a query for an element which is ignored for accessibility
   // returns its nearest ancestor.
   function testQuerySelectorForSpanInsideButtonReturnsButton() {
-    var okButton = rootNode.children[2];
+    var okButton = rootNode.lastChild.firstChild;
     function assertCorrectResult(queryResult) {
       assertEq(queryResult, okButton);
       chrome.test.succeed();
     }
     rootNode.domQuerySelector('#span-in-button', assertCorrectResult);
+  },
+
+  // Demonstrates that querying from an anonymous node may have unexpected
+  // results.
+  function testQuerySelectorFromAnonymousGroup() {
+    var h1 = rootNode.firstChild.firstChild;
+    var group = rootNode.lastChild;
+    function assertCorrectResult(queryResult) {
+      assertEq(h1, queryResult);
+      chrome.test.succeed();
+    }
+    group.domQuerySelector('h1', assertCorrectResult);
   },
 
   function testQuerySelectorFromRemovedNode() {

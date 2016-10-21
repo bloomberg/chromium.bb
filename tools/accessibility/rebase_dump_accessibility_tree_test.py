@@ -16,7 +16,6 @@ expectation files locally. From there you can run 'git diff' to make sure all
 of the changes look reasonable, then upload the change for code review.
 """
 
-import json
 import os
 import re
 import sys
@@ -43,84 +42,65 @@ def GitClIssue():
 
 def ParseFailure(name, url):
   '''Parse given the name of a failing trybot and the url of its build log.'''
-  print
-  print "Checking trybot: %s" % name
-  url = url.replace('/builders/', '/json/builders/')
-  response = urllib.urlopen(url)
-  if response.getcode() == 200:
-    jsondata = response.read()
 
-  if not jsondata:
-    print "Failed to fetch from: " + url
+  # Figure out the platform.
+  if name.find('android') >= 0:
+    platform_suffix = '-expected-android.txt'
+  elif name.find('mac') >= 0:
+    platform_suffix = '-expected-mac.txt'
+  elif name.find('win') >= 0:
+    platform_suffix = '-expected-win.txt'
+  else:
     return
 
-  try:
-    data = json.loads(jsondata)
-  except:
-    print "Failed to parse JSON from: " + url
+  # Read the content_browsertests log file.
+  data = None
+  lines = None
+  urls = []
+  for url_suffix in [
+      '/steps/content_browsertests%20(with%20patch)/logs/stdio/text',
+      '/steps/content_browsertests/logs/stdio/text']:
+    urls.append(url + url_suffix)
+  for url in urls:
+    response = urllib.urlopen(url)
+    if response.getcode() == 200:
+      data = response.read()
+      lines = data.splitlines()
+      break
+
+  if not data:
     return
 
-  for step in data["steps"]:
-    name = step["name"]
-    if name[:len("content_browsertests")] == "content_browsertests":
-      if name.find("without") >= 0:
-        continue
-      if name.find("retry") >= 0:
-        continue
-      print "Found content_browsertests logs"
-      for log in step["logs"]:
-        (log_name, log_url) = log
-        if log_name == "stdio":
-          continue
-        log_url += '/text'
-        log_response = urllib.urlopen(log_url)
-        if log_response.getcode() == 200:
-          logdata = log_response.read()
-          ParseLog(logdata)
-        else:
-          print "Failed to fetch test log data from: " + url
-
-def Fix(line):
-  if line[:3] == '@@@':
-    try:
-      line = re.search('[^@]@([^@]*)@@@', line).group(1)
-    except:
-      pass
-  return line
-
-def ParseLog(logdata):
-  '''Parse the log file for failing tests and overwrite the expected
-     result file locally with the actual results from the log.'''
-  lines = logdata.splitlines()
-  test_file = None
-  expected_file = None
+  # Parse the log file for failing tests and overwrite the expected
+  # result file locally with the actual results from the log.
+  test_name = None
   start = None
+  filename = None
   for i in range(len(lines)):
-    line = Fix(lines[i])
-    if line.find('Testing:') >= 0:
-      test_file = re.search(
-          'content.test.*accessibility.([^@]*)', line).group(1)
-      expected_file = None
-      start = None
-    if line.find('Expected output:') >= 0:
-      expected_file = re.search(
-          'content.test.*accessibility.([^@]*)', line).group(1)
-    if line == 'Actual':
+    line = lines[i]
+    if line[:12] == '[ RUN      ]':
+      test_name = line[13:]
+    if test_name and line[:8] == 'Testing:':
+      filename = re.search('content.test.*accessibility.(.*)', line).group(1)
+    if test_name and line == 'Actual':
       start = i + 2
-    if start and test_file and expected_file and line.find('End-of-file') >= 0:
-      dst_fullpath = os.path.join(TEST_DATA_PATH, expected_file)
+    if start and test_name and filename and line[:12] == '[  FAILED  ]':
+      # Get the path to the html file.
+      dst_fullpath = os.path.join(TEST_DATA_PATH, filename)
+      # Strip off .html and replace it with the platform expected suffix.
+      dst_fullpath = dst_fullpath[:-5] + platform_suffix
       if dst_fullpath in completed_files:
         continue
 
-      actual = [Fix(line) for line in lines[start : i] if line]
+      actual = [line for line in lines[start : i - 1] if line]
       fp = open(dst_fullpath, 'w')
       fp.write('\n'.join(actual))
       fp.close()
-      print "* %s" % os.path.relpath(dst_fullpath)
+      print dst_fullpath
       completed_files.add(dst_fullpath)
       start = None
-      test_file = None
-      expected_file = None
+      test_name = None
+      filename = None
 
 def ParseTrybots(data):
   '''Parse the code review page to find links to try bots.'''
@@ -146,20 +126,8 @@ def Run():
   response = urllib.urlopen(url)
   if response.getcode() != 200:
     print 'Error code %d accessing url: %s' % (response.getcode(), url)
-    return
   data = response.read()
   ParseTrybots(data)
-
-  print
-  if len(completed_files) == 0:
-    print "No output from DumpAccessibilityTree test results found."
-    return
-  else:
-    print "Summary: modified the following files:"
-    all_files = list(completed_files)
-    all_files.sort()
-    for f in all_files:
-      print "* %s" % os.path.relpath(f)
 
 if __name__ == '__main__':
   sys.exit(Run())

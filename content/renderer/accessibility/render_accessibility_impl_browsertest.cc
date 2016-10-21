@@ -268,4 +268,75 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 }
 
+TEST_F(RenderAccessibilityImplTest, DetachAccessibilityObject) {
+  // Test RenderAccessibilityImpl and make sure it sends the
+  // proper event to the browser when an object in the tree
+  // is detached, but its children are not. This can happen when
+  // a layout occurs and an anonymous render block is no longer needed.
+  std::string html =
+      "<body aria-label='Body'>"
+      "<span>1</span><span style='display:block'>2</span>"
+      "</body>";
+  LoadHTML(html.c_str());
+
+  std::unique_ptr<TestRenderAccessibilityImpl> accessibility(
+      new TestRenderAccessibilityImpl(frame()));
+  accessibility->SendPendingAccessibilityEvents();
+  EXPECT_EQ(7, CountAccessibilityNodesSentToBrowser());
+
+  // Initially, the accessibility tree looks like this:
+  //
+  //   Document
+  //   +--Body
+  //      +--Anonymous Block
+  //         +--Static Text "1"
+  //            +--Inline Text Box "1"
+  //      +--Static Text "2"
+  //         +--Inline Text Box "2"
+  WebDocument document = view()->GetWebView()->mainFrame()->document();
+  WebAXObject root_obj = document.accessibilityObject();
+  WebAXObject body = root_obj.childAt(0);
+  WebAXObject anonymous_block = body.childAt(0);
+  WebAXObject text_1 = anonymous_block.childAt(0);
+  WebAXObject text_2 = body.childAt(1);
+
+  // Change the display of the second 'span' back to inline, which causes the
+  // anonymous block to be destroyed.
+  ExecuteJavaScriptForTests(
+      "document.querySelectorAll('span')[1].style.display = 'inline';");
+  // Force layout now.
+  ExecuteJavaScriptForTests("document.body.offsetLeft;");
+
+  // Send a childrenChanged on the body.
+  sink_->ClearMessages();
+  accessibility->HandleAXEvent(
+      body,
+      ui::AX_EVENT_CHILDREN_CHANGED);
+
+  accessibility->SendPendingAccessibilityEvents();
+
+  // Afterwards, the accessibility tree looks like this:
+  //
+  //   Document
+  //   +--Body
+  //      +--Static Text "1"
+  //         +--Inline Text Box "1"
+  //      +--Static Text "2"
+  //         +--Inline Text Box "2"
+  //
+  // We just assert that there are now four nodes in the
+  // accessibility tree and that only three nodes needed
+  // to be updated (the body, the static text 1, and
+  // the static text 2).
+
+  AccessibilityHostMsg_EventParams event;
+  GetLastAccEvent(&event);
+  ASSERT_EQ(5U, event.update.nodes.size());
+
+  EXPECT_EQ(body.axID(), event.update.nodes[0].id);
+  EXPECT_EQ(text_1.axID(), event.update.nodes[1].id);
+  // The third event is to update text_2, but its id changes
+  // so we don't have a test expectation for it.
+}
+
 }  // namespace content

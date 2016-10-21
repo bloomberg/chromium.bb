@@ -1,3 +1,4 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.Image role_description='graphic' name='Pipe'
+++android.view.View
+++++android.widget.Image role_description='graphic' name='Pipe'
 ++android.view.View name='The pipe clicked by SomeOne.'

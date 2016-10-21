@@ -5,10 +5,12 @@ AXWebArea
 ++++++++AXListMarker AXValue='•'
 ++++++++AXStaticText AXValue='One'
 ++++AXGroup AXTitle='Two'
-++++++AXListMarker AXValue='•'
+++++++AXGroup
+++++++++AXListMarker AXValue='•'
 ++++++AXGroup
 ++++++++AXStaticText AXValue='Two'
 ++AXGroup AXTitle='Three'
-++++AXListMarker AXValue='•'
+++++AXGroup
+++++++AXListMarker AXValue='•'
 ++++AXGroup
 ++++++AXStaticText AXValue='Three'

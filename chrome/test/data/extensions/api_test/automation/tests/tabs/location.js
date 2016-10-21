@@ -5,8 +5,7 @@
 var allTests = [
   function testLocation() {
     function assertOkButtonLocation(event) {
-      var okButton = rootNode.find({ role: RoleType.button,
-                                     attributes: { name: 'Ok' }});
+      var okButton = rootNode.firstChild.firstChild;
       assertTrue('location' in okButton);
 
       // We can't assert the left and top positions because they're

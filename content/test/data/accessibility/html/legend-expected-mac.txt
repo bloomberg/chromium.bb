@@ -3,7 +3,8 @@ AXWebArea
 ++++AXGroup AXTitle='Browser Engines:'
 ++++++AXGroup
 ++++++++AXStaticText AXValue='Browser Engines:'
-++++++AXStaticText AXValue='Browser: '
-++++++AXTextField
-++++++AXStaticText AXValue=' Rendering Engine: '
-++++++AXTextField
+++++++AXGroup
+++++++++AXStaticText AXValue='Browser: '
+++++++++AXTextField
+++++++++AXStaticText AXValue=' Rendering Engine: '
+++++++++AXTextField

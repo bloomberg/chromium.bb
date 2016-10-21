@@ -1,5 +1,6 @@
 AXWebArea
 ++AXGroup AXTitle='Fig.1 - A green Box'
-++++AXImage AXDescription='This is a green box.'
+++++AXGroup
+++++++AXImage AXDescription='This is a green box.'
 ++++AXGroup
 ++++++AXStaticText AXValue='Fig.1 - A green Box'

@@ -1,4 +1,6 @@
 AXWebArea AXRoleDescription='HTML content'
-++AXStaticText AXRoleDescription='text' AXValue='Before'
+++AXGroup AXRoleDescription='group'
+++++AXStaticText AXRoleDescription='text' AXValue='Before'
 ++AXSplitter AXRoleDescription='splitter'
-++AXStaticText AXRoleDescription='text' AXValue='After'
+++AXGroup AXRoleDescription='group'
+++++AXStaticText AXRoleDescription='text' AXValue='After'
