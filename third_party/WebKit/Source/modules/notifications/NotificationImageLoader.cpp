@@ -19,6 +19,13 @@
 #include "wtf/Threading.h"
 #include <memory>
 
+namespace {
+
+// 99.9% of all images were fetched successfully in 90 seconds.
+const unsigned long kImageFetchTimeoutInMs = 90000;
+
+}  // namespace
+
 namespace blink {
 
 NotificationImageLoader::NotificationImageLoader()
@@ -35,10 +42,10 @@ void NotificationImageLoader::start(
   m_startTime = monotonicallyIncreasingTimeMS();
   m_imageCallback = std::move(imageCallback);
 
-  // TODO(mvanouwerkerk): Add a timeout mechanism: crbug.com/579137.
   ThreadableLoaderOptions threadableLoaderOptions;
   threadableLoaderOptions.preflightPolicy = PreventPreflight;
   threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
+  threadableLoaderOptions.timeoutMilliseconds = kImageFetchTimeoutInMs;
 
   // TODO(mvanouwerkerk): Add an entry for notifications to
   // FetchInitiatorTypeNames and use it.

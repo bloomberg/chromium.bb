@@ -7,6 +7,7 @@
 
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
@@ -23,7 +24,7 @@ class ResourceError;
 
 // Asynchronously downloads an image when given a url, decodes the loaded data,
 // and passes the bitmap to the given callback.
-class NotificationImageLoader final
+class MODULES_EXPORT NotificationImageLoader final
     : public GarbageCollectedFinalized<NotificationImageLoader>,
       public ThreadableLoaderClient {
  public:
@@ -35,7 +36,8 @@ class NotificationImageLoader final
   ~NotificationImageLoader() override;
 
   // Asynchronously downloads an image from the given url, decodes the loaded
-  // data, and passes the bitmap to the callback.
+  // data, and passes the bitmap to the callback. Times out if the load takes
+  // too long and ImageCallback is invoked with an empty bitmap.
   void start(ExecutionContext*, const KURL&, std::unique_ptr<ImageCallback>);
 
   // Cancels the pending load, if there is one. The |m_imageCallback| will not

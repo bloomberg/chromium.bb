@@ -250,6 +250,7 @@ source_set("unit_tests") {
     "indexeddb/MockWebIDBDatabase.h",
     "mediastream/MediaConstraintsTest.cpp",
     "notifications/NotificationDataTest.cpp",
+    "notifications/NotificationImageLoaderTest.cpp",
     "notifications/NotificationResourcesLoaderTest.cpp",
     "payments/AbortTest.cpp",
     "payments/CompleteTest.cpp",
