@@ -584,11 +584,13 @@ void MetricsService::InitializeMetricsState() {
     clean_exit_beacon_.WriteBeaconValue(true);
   }
 
+  // ProvidersHaveInitialStabilityMetrics is called first to ensure it is never
+  // bypassed.
+  const bool is_initial_stability_log_required =
+      ProvidersHaveInitialStabilityMetrics() ||
+      !clean_exit_beacon_.exited_cleanly();
   bool has_initial_stability_log = false;
-  bool providers_have_initial_stability_metrics =
-      ProvidersHaveInitialStabilityMetrics();
-  if (!clean_exit_beacon_.exited_cleanly() ||
-      providers_have_initial_stability_metrics) {
+  if (is_initial_stability_log_required) {
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =
@@ -606,15 +608,27 @@ void MetricsService::InitializeMetricsState() {
     }
   }
 
-  // If no initial stability log was generated and there was a version upgrade,
-  // clear the stability stats from the previous version (so that they don't get
+  // If the version changed, but no initial stability log was generated, clear
+  // the stability stats from the previous version (so that they don't get
   // attributed to the current version). This could otherwise happen due to a
   // number of different edge cases, such as if the last version crashed before
   // it could save off a system profile or if UMA reporting is disabled (which
   // normally results in stats being accumulated).
-  if (!has_initial_stability_log && version_changed) {
+  if (version_changed && !has_initial_stability_log) {
     ClearSavedStabilityMetrics();
     IncrementPrefValue(prefs::kStabilityDiscardCount);
+  }
+
+  // If the version changed, the system profile is obsolete and needs to be
+  // cleared. This is to avoid the stability data misattribution that could
+  // occur if the current version crashed before saving its own system profile.
+  // Note however this clearing occurs only after preparing the initial
+  // stability log, an operation that requires the previous version's system
+  // profile. At this point, stability metrics pertaining to the previous
+  // version have been cleared.
+  if (version_changed) {
+    local_state_->ClearPref(prefs::kStabilitySavedSystemProfile);
+    local_state_->ClearPref(prefs::kStabilitySavedSystemProfileHash);
   }
 
   // Update session ID.

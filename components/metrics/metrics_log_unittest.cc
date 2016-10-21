@@ -307,9 +307,9 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     // Check some values in the system profile.
     EXPECT_EQ(kInstallDateExpected, log.system_profile().install_date());
     EXPECT_EQ(kEnabledDateExpected, log.system_profile().uma_enabled_date());
-    // Ensure that the call cleared the prefs.
-    EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
-    EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
+    // Ensure that the call did not clear the prefs.
+    EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_FALSE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
 
   // Ensure that a non-matching hash results in the pref being invalid.
@@ -330,9 +330,9 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     std::string app_version;
     EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs(&app_version));
     EXPECT_TRUE(app_version.empty());
-    // Ensure that the prefs are cleared, even if the call failed.
-    EXPECT_TRUE(prefs_.GetString(kSystemProfilePref).empty());
-    EXPECT_TRUE(prefs_.GetString(kSystemProfileHashPref).empty());
+    // Ensure that the prefs are not cleared, even if the call failed.
+    EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
+    EXPECT_FALSE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
 }
 

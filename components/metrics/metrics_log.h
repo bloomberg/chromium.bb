@@ -87,12 +87,10 @@ class MetricsLog {
                             const base::HistogramSamples& snapshot);
 
   // Records the current operating environment, including metrics provided by
-  // the specified set of |metrics_providers|.  Takes the list of installed
-  // plugins, Google Update statistics, and synthetic trial IDs as parameters
-  // because those can't be obtained synchronously from the UI thread.
-  // A synthetic trial is one that is set up dynamically by code in Chrome. For
-  // example, a pref may be mapped to a synthetic trial such that the group
-  // is determined by the pref value.
+  // the specified set of |metrics_providers|.  Takes the list of synthetic
+  // trial IDs as a parameter. A synthetic trial is one that is set up
+  // dynamically by code in Chrome. For example, a pref may be mapped to a
+  // synthetic trial such that the group is determined by the pref value.
   void RecordEnvironment(
       const std::vector<MetricsProvider*>& metrics_providers,
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
@@ -100,10 +98,9 @@ class MetricsLog {
       int64_t metrics_reporting_enabled_date);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
-  // call from prefs and clears the pref value. On success, returns true and
-  // |app_version| contains the recovered version. Otherwise (if there was no
-  // saved environment in prefs or it could not be decoded), returns false and
-  // |app_version| is empty.
+  // call from prefs. On success, returns true and |app_version| contains the
+  // recovered version. Otherwise (if there was no saved environment in prefs
+  // or it could not be decoded), returns false and |app_version| is empty.
   bool LoadSavedEnvironmentFromPrefs(std::string* app_version);
 
   // Writes application stability metrics, including stability metrics provided
