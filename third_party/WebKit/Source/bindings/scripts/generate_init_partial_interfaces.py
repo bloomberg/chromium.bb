@@ -5,11 +5,13 @@
 
 """Generate initPartialInterfacesInModules(), which registers partial interfaces in modules to core interfaces."""
 
-import cPickle as pickle
+# pylint: disable=relative-import
+
 from optparse import OptionParser
 import os
 import posixpath
 import sys
+
 from utilities import get_file_contents
 from utilities import idl_filename_to_interface_name
 from utilities import read_idl_files_list_from_file

@@ -299,8 +299,12 @@ def read_idl_files_list_from_file(filename, is_gyp_format):
 
 def read_pickle_files(pickle_filenames):
     for pickle_filename in pickle_filenames:
-        with open(pickle_filename) as pickle_file:
-            yield pickle.load(pickle_file)
+        yield read_pickle_file(pickle_filename)
+
+
+def read_pickle_file(pickle_filename):
+    with open(pickle_filename) as pickle_file:
+        return pickle.load(pickle_file)
 
 
 def write_file(new_text, destination_filename):

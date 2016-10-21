@@ -37,7 +37,6 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 import abc
 from optparse import OptionParser
 import os
-import cPickle as pickle
 import sys
 
 from code_generator_v8 import CodeGeneratorDictionaryImpl

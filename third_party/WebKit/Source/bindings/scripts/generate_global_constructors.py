@@ -17,17 +17,25 @@ http://heycam.github.io/webidl/#Exposed
 Design document: http://www.chromium.org/developers/design-documents/idl-build
 """
 
+# pylint: disable=relative-import
+
 import itertools
 import optparse
 import os
-import cPickle as pickle
 import re
 import sys
 
-from v8_utilities import EXPOSED_EXECUTION_CONTEXT_METHOD
-
 from collections import defaultdict
-from utilities import should_generate_impl_file_from_idl, get_file_contents, idl_filename_to_interface_name, read_file_to_list, write_file, get_interface_extended_attributes_from_idl, get_interface_exposed_arguments, is_callback_interface_from_idl
+from utilities import get_file_contents
+from utilities import get_interface_exposed_arguments
+from utilities import get_interface_extended_attributes_from_idl
+from utilities import idl_filename_to_interface_name
+from utilities import is_callback_interface_from_idl
+from utilities import read_file_to_list
+from utilities import read_pickle_file
+from utilities import should_generate_impl_file_from_idl
+from utilities import write_file
+from v8_utilities import EXPOSED_EXECUTION_CONTEXT_METHOD
 
 interface_name_to_global_names = {}
 global_name_to_constructors = defaultdict(list)
@@ -155,8 +163,7 @@ def main():
     interface_name_idl_filename = [(args[i], args[i + 1])
                                    for i in range(0, len(args), 2)]
 
-    with open(options.global_objects_file) as global_objects_file:
-        interface_name_to_global_names.update(pickle.load(global_objects_file))
+    interface_name_to_global_names.update(read_pickle_file(options.global_objects_file))
 
     for idl_filename in idl_files:
         record_global_constructors(idl_filename)

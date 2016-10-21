@@ -81,12 +81,17 @@ code changes (for inherited extended attributes).
 Design doc: http://www.chromium.org/developers/design-documents/idl-build
 """
 
-from collections import defaultdict
-import cPickle as pickle
+# pylint: disable=relative-import
+
 import optparse
 import sys
 
-from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file, merge_dict_recursively, shorten_union_name
+from collections import defaultdict
+from utilities import idl_filename_to_component
+from utilities import merge_dict_recursively
+from utilities import read_pickle_files
+from utilities import shorten_union_name
+from utilities import write_pickle_file
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveScriptWrappable',
