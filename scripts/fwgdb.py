@@ -9,7 +9,6 @@ from __future__ import print_function
 import errno
 import os
 import re
-import signal
 import socket
 import time
 
@@ -17,7 +16,6 @@ from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 # Need to do this before Servo import
@@ -26,6 +24,7 @@ cros_build_lib.AssertInsideChroot()
 # pylint: disable=import-error
 from servo import client
 from servo import multiservo
+from servo import terminal_freezer
 # pylint: enable=import-error
 
 
@@ -37,42 +36,6 @@ _SRC_LP = os.path.join(_SRC_ROOT, 'third_party/coreboot/payloads/libpayload')
 _PTRN_DEVMODE = 'Entering VbBootDeveloper()'
 _PTRN_GDB = 'Ready for GDB connection'
 _PTRN_BOARD = 'Starting(?: read-only| read/write)? depthcharge on ([a-z_]+)...'
-
-
-class TerminalFreezer(object):
-  """SIGSTOP all processes (and their parents) that have the TTY open."""
-
-  def __init__(self, tty):
-    self._tty = tty
-    self._processes = None
-    if 'cros_sdk' in osutils.ReadFile('/proc/1/cmdline'):
-      raise OSError('You must run this tool in a chroot that was entered with '
-                    '"cros_sdk --no-ns-pid" (see crbug.com/444931 for details)')
-
-  def __enter__(self):
-    lsof = cros_build_lib.RunCommand(
-        ['lsof', '-FR', self._tty],
-        capture_output=True, log_output=True, error_code_ok=True)
-    self._processes = re.findall(r'^(?:R|p)(\d+)$', lsof.output, re.MULTILINE)
-
-    # SIGSTOP parents before children
-    try:
-      for p in reversed(self._processes):
-        logging.info('Sending SIGSTOP to process %s!', p)
-        time.sleep(0.02)
-        os.kill(int(p), signal.SIGSTOP)
-    except OSError:
-      self.__exit__(None, None, None)
-      raise
-
-  def __exit__(self, _t, _v, _b):
-    # ...and wake 'em up again in reverse order
-    for p in self._processes:
-      logging.info('Sending SIGCONT to process %s!', p)
-      try:
-        os.kill(int(p), signal.SIGCONT)
-      except OSError as e:
-        logging.error('Error when trying to unfreeze process %s: %s', p, e)
 
 
 def ParsePortage(board):
@@ -209,7 +172,7 @@ def main(argv):
       logging.error('Cannot auto-detect TTY file without servod. Use the --tty '
                     'option.')
       raise
-  with TerminalFreezer(opts.tty):
+  with terminal_freezer.TerminalFreezer(opts.tty):
     fd = os.open(opts.tty, os.O_RDWR | os.O_NONBLOCK)
 
     data = ReadAll(fd)
