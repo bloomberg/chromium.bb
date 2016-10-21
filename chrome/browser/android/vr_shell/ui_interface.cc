@@ -14,7 +14,7 @@ UiInterface::UiInterface() {
 
 UiInterface::~UiInterface() {}
 
-void UiInterface::SetUiMessageHandler(VrShellUIMessageHandler* handler) {
+void UiInterface::SetUiCommandHandler(UiCommandHandler* handler) {
   handler_ = handler;
 }
 

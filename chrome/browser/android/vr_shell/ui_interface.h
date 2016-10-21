@@ -8,9 +8,12 @@
 #include "base/macros.h"
 #include "base/values.h"
 
-class VrShellUIMessageHandler;
-
 namespace vr_shell {
+
+class UiCommandHandler {
+ public:
+  virtual void SendCommandToUi(const base::Value& value) = 0;
+};
 
 // This class manages the communication of browser state from VR shell to the
 // HTML UI. State information is asynchronous and unidirectional.
@@ -29,12 +32,12 @@ class UiInterface {
 
   // Called by WebUI when starting VR.
   void OnDomContentsLoaded();
-  void SetUiMessageHandler(VrShellUIMessageHandler* handler);
+  void SetUiCommandHandler(UiCommandHandler* handler);
 
  private:
   void FlushUpdates();
 
-  VrShellUIMessageHandler* handler_;
+  UiCommandHandler* handler_;
   bool loaded_ = false;
   base::DictionaryValue updates_;
 

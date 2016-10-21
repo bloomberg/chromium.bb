@@ -19,7 +19,7 @@ VrShellUIMessageHandler::VrShellUIMessageHandler() = default;
 
 VrShellUIMessageHandler::~VrShellUIMessageHandler() {
   if (vr_shell_) {
-    vr_shell_->GetUiInterface()->SetUiMessageHandler(nullptr);
+    vr_shell_->GetUiInterface()->SetUiCommandHandler(nullptr);
   }
 }
 
@@ -43,7 +43,7 @@ void VrShellUIMessageHandler::HandleDomLoaded(const base::ListValue* args) {
 
 void VrShellUIMessageHandler::OnJavascriptAllowed() {
   CHECK(vr_shell_);
-  vr_shell_->GetUiInterface()->SetUiMessageHandler(this);
+  vr_shell_->GetUiInterface()->SetUiCommandHandler(this);
   vr_shell_->OnDomContentsLoaded();
 }
 
