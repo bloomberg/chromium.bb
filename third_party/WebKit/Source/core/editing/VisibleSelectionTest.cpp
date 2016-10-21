@@ -431,7 +431,9 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
 
   // Simulates saving selection in undo stack.
   VisibleSelection selection =
-      createVisibleSelection(Position(sample->firstChild(), 0));
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(Position(sample->firstChild(), 0))
+                                 .build());
   EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
 
   // Simulates modifying DOM tree to invalidate distribution.

@@ -1646,8 +1646,11 @@ void CompositeEditCommand::moveParagraphs(
       Position::firstPositionInNode(document().documentElement()),
       destination.toParentAnchoredPosition(), true);
 
-  VisibleSelection destinationSelection = createVisibleSelection(
-      destination.toPositionWithAffinity(), originalIsDirectional);
+  VisibleSelection destinationSelection =
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(destination.toPositionWithAffinity())
+                                 .setIsDirectional(originalIsDirectional)
+                                 .build());
   if (endingSelection().isNone()) {
     // We abort executing command since |destination| becomes invisible.
     editingState->abort();
@@ -1871,8 +1874,11 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph(
       return false;
     document().updateStyleAndLayoutIgnorePendingStylesheets();
   }
-  setEndingSelection(createVisibleSelection(atBR.toPositionWithAffinity(),
-                                            endingSelection().isDirectional()));
+  setEndingSelection(createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(atBR.toPositionWithAffinity())
+          .setIsDirectional(endingSelection().isDirectional())
+          .build()));
 
   // If this is an empty paragraph there must be a line break here.
   if (!lineBreakExistsAtVisiblePosition(caret))

@@ -245,7 +245,9 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
   document().body()->appendChild(script);
   document().updateStyleAndLayout();
   document().frame()->selection().setSelection(
-      createVisibleSelection(Position(document().body(), 0)));
+      SelectionInDOMTree::Builder()
+          .collapse(Position(document().body(), 0))
+          .build());
   PlatformMouseEvent mouseDownEvent(
       IntPoint(0, 0), IntPoint(100, 200), WebPointerProperties::Button::Right,
       PlatformEvent::MousePressed, 1, PlatformEvent::Modifiers::RightButtonDown,

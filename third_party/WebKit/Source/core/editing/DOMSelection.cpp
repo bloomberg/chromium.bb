@@ -210,15 +210,11 @@ void DOMSelection::collapse(Node* node,
   if (exceptionState.hadException())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term, we should change FrameSelection::setSelection to take a
-  // parameter that does not require clean layout, so that modifying selection
-  // no longer performs synchronous layout by itself.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  frame()->selection().setSelection(createVisibleSelection(
-      Position(node, offset), frame()->selection().isDirectional()));
+  frame()->selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position(node, offset))
+          .setIsDirectional(frame()->selection().isDirectional())
+          .build());
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {

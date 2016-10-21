@@ -456,18 +456,27 @@ DragOperation DragController::operationForLoad(DragData* dragData) {
   return dragOperation(dragData);
 }
 
+// Returns true if node at |point| is editable with populating |dragCaret| and
+// |range|, otherwise returns false.
+// TODO(yosin): We should return |VisibleSelection| rather than three values.
 static bool setSelectionToDragCaret(LocalFrame* frame,
                                     VisibleSelection& dragCaret,
                                     Range*& range,
                                     const IntPoint& point) {
   frame->selection().setSelection(dragCaret);
   if (frame->selection().isNone()) {
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): The use of
+    // updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
+    // |LocalFrame::positinForPoint()| requires clean layout.
     frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    const PositionWithAffinity& position = frame->positionForPoint(point);
+    if (!position.isConnected())
+      return false;
 
-    dragCaret = createVisibleSelection(frame->positionForPoint(point));
-    frame->selection().setSelection(dragCaret);
+    frame->selection().setSelection(
+        SelectionInDOMTree::Builder().collapse(position).build());
+    dragCaret = frame->selection().selection();
     range = createRange(dragCaret.toNormalizedEphemeralRange());
   }
   return !frame->selection().isNone() && frame->selection().isContentEditable();
@@ -482,8 +491,12 @@ DispatchEventResult DragController::dispatchTextInputEventFor(
   String text = m_page->dragCaretController().isContentRichlyEditable()
                     ? ""
                     : dragData->asPlainText();
-  Element* target = innerFrame->editor().findEventTargetFrom(
-      createVisibleSelection(m_page->dragCaretController().caretPosition()));
+  const PositionWithAffinity& caretPosition =
+      m_page->dragCaretController().caretPosition();
+  DCHECK(caretPosition.isConnected()) << caretPosition;
+  Element* target =
+      innerFrame->editor().findEventTargetFrom(createVisibleSelection(
+          SelectionInDOMTree::Builder().collapse(caretPosition).build()));
   return target->dispatchEvent(
       TextEvent::createForDrop(innerFrame->domWindow(), text));
 }
@@ -539,8 +552,16 @@ bool DragController::concludeEditDrag(DragData* dragData) {
         ->updateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  VisibleSelection dragCaret =
-      createVisibleSelection(m_page->dragCaretController().caretPosition());
+  const PositionWithAffinity& caretPosition =
+      m_page->dragCaretController().caretPosition();
+  if (!caretPosition.isConnected()) {
+    // "editing/pasteboard/drop-text-events-sideeffect-crash.html" and
+    // "editing/pasteboard/drop-text-events-sideeffect.html" reach here.
+    m_page->dragCaretController().clear();
+    return false;
+  }
+  VisibleSelection dragCaret = createVisibleSelection(
+      SelectionInDOMTree::Builder().collapse(caretPosition).build());
   m_page->dragCaretController().clear();
   // |innerFrame| can be removed by event handler called by
   // |dispatchTextInputEventFor()|.

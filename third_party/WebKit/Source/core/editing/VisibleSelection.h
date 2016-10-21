@@ -220,8 +220,6 @@ createVisibleSelection(const Position& base,
 CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
                                                     const VisiblePosition&,
                                                     bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&,
-                                                    bool isDirectional = false);
 
 CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const SelectionInFlatTree&);
