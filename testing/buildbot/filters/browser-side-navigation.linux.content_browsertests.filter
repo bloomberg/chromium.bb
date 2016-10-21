@@ -1,6 +1,7 @@
 -IFrameZoomBrowserTest.RedirectToPageWithSubframeZoomsCorrectly
 -IFrameZoomBrowserTest.SubframesDontZoomIndependently
 -NavigationControllerBrowserTest.EnsureSamePageNavigationUpdatesFrameNavigationEntry
+-NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedInjectedSrcdocSubframe
 -RequestDataResourceDispatcherHostBrowserTest.*
 
 # Fail in Debug

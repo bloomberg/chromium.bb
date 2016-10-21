@@ -147,7 +147,7 @@ RequestNavigationParams::RequestNavigationParams(
     int nav_entry_id,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
-    std::set<std::string> subframe_unique_names,
+    std::map<std::string, bool> subframe_unique_names,
     bool has_committed_real_load,
     bool intended_as_new_entry,
     int pending_history_list_offset,

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <set>
+#include <map>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -222,7 +222,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int nav_entry_id,
                           bool is_same_document_history_load,
                           bool is_history_navigation_in_new_child,
-                          std::set<std::string> subframe_unique_names,
+                          std::map<std::string, bool> subframe_unique_names,
                           bool has_committed_real_load,
                           bool intended_as_new_entry,
                           int pending_history_list_offset,
@@ -271,13 +271,14 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // a URL from a session history item.  Defaults to false.
   bool is_history_navigation_in_new_child;
 
-  // If this is a history navigation, this contains a set of frame unique names
-  // for immediate children of the frame being navigated for which there are
-  // history items.  The renderer process only needs to check with the browser
-  // process for newly created subframes that have these unique names.
+  // If this is a history navigation, this contains a map of frame unique names
+  // to |is_about_blank| for immediate children of the frame being navigated for
+  // which there are history items.  The renderer process only needs to check
+  // with the browser process for newly created subframes that have these unique
+  // names (and only when not staying on about:blank).
   // TODO(creis): Expand this to a data structure including corresponding
-  // same-process PageStates as well in https://crbug.com/639842.
-  std::set<std::string> subframe_unique_names;
+  // same-process PageStates for the whole subtree in https://crbug.com/639842.
+  std::map<std::string, bool> subframe_unique_names;
 
   // Whether the frame being navigated has already committed a real page, which
   // affects how new navigations are classified in the renderer process.

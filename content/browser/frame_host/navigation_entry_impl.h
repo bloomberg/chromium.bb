@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <set>
+#include <map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -187,7 +187,7 @@ class CONTENT_EXPORT NavigationEntryImpl
       const FrameNavigationEntry& frame_entry,
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
-      const std::set<std::string>& subframe_unique_names,
+      const std::map<std::string, bool>& subframe_unique_names,
       bool has_committed_real_load,
       bool intended_as_new_entry,
       int pending_offset_to_send,
@@ -232,15 +232,18 @@ class CONTENT_EXPORT NavigationEntryImpl
   // there is one in this NavigationEntry.
   FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node) const;
 
-  // Returns a set of frame unique names for immediate children of the TreeNode
-  // associated with |frame_tree_node|.  The renderer process will use this list
-  // of names to know whether to ask the browser process for a history item when
-  // new subframes are created during a back/forward navigation.
+  // Returns a map of frame unique names to |is_about_blank| for immediate
+  // children of the TreeNode associated with |frame_tree_node|.  The renderer
+  // process will use this list of names to know whether to ask the browser
+  // process for a history item when new subframes are created during a
+  // back/forward navigation.  (|is_about_blank| can be used to skip the request
+  // if the frame's default URL is about:blank and the history item would be a
+  // no-op.  See https://crbug.com/657896.)
   // TODO(creis): Send a data structure that also contains all corresponding
-  // same-process PageStates for the subtree, so that the renderer process only
-  // needs to ask the browser process to handle the cross-process cases.
+  // same-process PageStates for the whole subtree, so that the renderer process
+  // only needs to ask the browser process to handle the cross-process cases.
   // See https://crbug.com/639842.
-  std::set<std::string> GetSubframeUniqueNames(
+  std::map<std::string, bool> GetSubframeUniqueNames(
       FrameTreeNode* frame_tree_node) const;
 
   // Removes any subframe FrameNavigationEntries that match the unique name of

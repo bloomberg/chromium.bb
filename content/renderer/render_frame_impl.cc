@@ -5121,31 +5121,47 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   }
 
   // In OOPIF-enabled modes, back/forward navigations in newly created subframes
-  // should be sent to the browser if there is a matching FrameNavigationEntry.
-  // If this frame isn't on the list of unique names that have history items,
-  // fall back to loading the default url.  (We remove each name as we encounter
-  // it, because it will only be used once as the frame is created.)
+  // should be sent to the browser if there is a matching FrameNavigationEntry,
+  // and if it isn't just staying at about:blank.  If this frame isn't in the
+  // map of unique names that have history items, or if it's staying at the
+  // initial about:blank URL, fall back to loading the default url.  (We remove
+  // each name as we encounter it, because it will only be used once as the
+  // frame is created.)
   if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
       info.isHistoryNavigationInNewChildFrame && is_content_initiated &&
-      frame_->parent() &&
-      RenderFrameImpl::FromWebFrame(frame_->parent())
-              ->history_subframe_unique_names_.erase(
-                  frame_->uniqueName().utf8()) > 0) {
-    // Don't do this if |info| also says it is a client redirect, in which case
-    // JavaScript on the page is trying to interrupt the history navigation.
-    if (!info.isClientRedirect) {
-      OpenURL(url, IsHttpPost(info.urlRequest),
-              GetRequestBodyForWebURLRequest(info.urlRequest),
-              GetWebURLRequestHeaders(info.urlRequest), referrer,
-              info.defaultPolicy, info.replacesCurrentHistoryItem, true);
-      // Suppress the load in Blink but mark the frame as loading.
-      return blink::WebNavigationPolicyHandledByClient;
-    } else {
-      // Client redirects during an initial history load should attempt to
-      // cancel the history navigation.  They will create a provisional document
-      // loader, causing the history load to be ignored in NavigateInternal, and
-      // this IPC will try to cancel any cross-process history load.
-      Send(new FrameHostMsg_CancelInitialHistoryLoad(routing_id_));
+      frame_->parent()) {
+    // Check whether the browser has a history item for this frame that isn't
+    // just staying at the initial about:blank document.
+    bool should_ask_browser = false;
+    RenderFrameImpl* parent = RenderFrameImpl::FromWebFrame(frame_->parent());
+    const auto& iter = parent->history_subframe_unique_names_.find(
+        frame_->uniqueName().utf8());
+    if (iter != parent->history_subframe_unique_names_.end()) {
+      bool history_item_is_about_blank = iter->second;
+      should_ask_browser =
+          !history_item_is_about_blank || url != GURL(url::kAboutBlankURL);
+      parent->history_subframe_unique_names_.erase(frame_->uniqueName().utf8());
+    }
+
+    if (should_ask_browser) {
+      // Don't do this if |info| also says it is a client redirect, in which
+      // case JavaScript on the page is trying to interrupt the history
+      // navigation.
+      if (!info.isClientRedirect) {
+        OpenURL(url, IsHttpPost(info.urlRequest),
+                GetRequestBodyForWebURLRequest(info.urlRequest),
+                GetWebURLRequestHeaders(info.urlRequest), referrer,
+                info.defaultPolicy, info.replacesCurrentHistoryItem, true);
+        // Suppress the load in Blink but mark the frame as loading.
+        return blink::WebNavigationPolicyHandledByClient;
+      } else {
+        // Client redirects during an initial history load should attempt to
+        // cancel the history navigation.  They will create a provisional
+        // document loader, causing the history load to be ignored in
+        // NavigateInternal, and this IPC will try to cancel any cross-process
+        // history load.
+        Send(new FrameHostMsg_CancelInitialHistoryLoad(routing_id_));
+      }
     }
   }
 
@@ -5783,34 +5799,12 @@ void RenderFrameImpl::NavigateInternal(
         // want to ignore it in some cases.  If a Javascript navigation (i.e.,
         // client redirect) interrupted it and has either been scheduled,
         // started loading, or has committed, we should ignore the history item.
-        // Similarly, if the history item just says to stay on about:blank,
-        // don't load it again, which might clobber injected content.
         bool interrupted_by_client_redirect =
             frame_->isNavigationScheduledWithin(0) ||
             frame_->provisionalDataSource() ||
             !current_history_item_.isNull();
-        bool staying_at_about_blank =
-            current_history_item_.isNull() &&
-            item_for_history_navigation.urlString() == url::kAboutBlankURL;
-        if (staying_at_about_blank) {
-          // TODO(creis): We should avoid the need to go to the browser and back
-          // when loading about:blank as a history item, which we can do by
-          // sending a subtree of same-process history items when navigating a
-          // frame back/forward (see https://crbug.com/639842).
-          //
-          // Until then, we need to fake a DidStopLoading, since there's no easy
-          // way to generate a commit for the initial empty document at this
-          // point in time.
-          //
-          // Note that the stopLoading call may run script which might delete
-          // this frame, so return immediately if this frame is no longer valid.
-          base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-          frame_->stopLoading();
-          if (!weak_this)
-            return;
-        }
         if (request_params.is_history_navigation_in_new_child &&
-            (interrupted_by_client_redirect || staying_at_about_blank)) {
+            interrupted_by_client_redirect) {
           should_load_request = false;
           has_history_navigation_in_frame = false;
         }

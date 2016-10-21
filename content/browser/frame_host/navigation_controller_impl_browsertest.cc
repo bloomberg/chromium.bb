@@ -3171,14 +3171,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
   ASSERT_EQ(1U, root->child_count());
   EXPECT_EQ(main_url, root->current_url());
-
-  // TODO(creis): The child's current_url should be about:blank, but we're not
-  // currently getting a commit in this case.  For now, we'll lack a commit for
-  // this frame, similar to the slow URL case.  See https://crbug.com/626416.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    EXPECT_TRUE(root->child_at(0)->current_url().is_empty());
-  else
-    EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
 
   // Verify that the parent was able to script the iframe.
   {
@@ -3191,6 +3184,260 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+
+  // The entry should have a FrameNavigationEntry for the blank subframe.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+  }
+}
+
+// Verify that we correctly load nested iframes injected into a page if we go
+// back and recreate them.  Also confirm that form values are not restored for
+// forms injected into about:blank pages.  See https://crbug.com/657896.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RecreatedInjectedBlankSubframe) {
+  // 1. Start on a page that injects a nested iframe into an injected
+  // about:blank iframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/inject_subframe_into_blank_iframe.html"));
+  GURL blank_url(url::kAboutBlankURL);
+  GURL inner_url(
+      embedded_test_server()->GetURL("/navigation_controller/form.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Verify that the inner iframe was able to load.
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(1U, root->child_at(0)->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+  EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+  // The entry should have FrameNavigationEntries for the subframes.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+    EXPECT_EQ(inner_url,
+              entry->root_node()->children[0]->children[0]->frame_entry->url());
+  }
+
+  // Set a value in the form which will be stored in the PageState.
+  EXPECT_TRUE(
+      ExecuteScript(root->child_at(0)->child_at(0),
+                    "document.getElementById('itext').value = 'modified';"));
+
+  // 2. Navigate the main frame same-site, destroying the subframes.
+  GURL main_url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_2, root->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // 3. Go back, recreating the subframes.
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  // Verify that the inner iframe went to the correct URL.
+  EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+
+  // The entry should have FrameNavigationEntries for the subframes.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+    EXPECT_EQ(inner_url,
+              entry->root_node()->children[0]->children[0]->frame_entry->url());
+  }
+
+  // With injected about:blank iframes, we never restore form values from
+  // PageState.
+  std::string form_value = "fail";
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(root->child_at(0)->child_at(0),
+                                    "window.domAutomationController.send("
+                                    "document.getElementById('itext').value);",
+                                    &form_value));
+  EXPECT_EQ("", form_value);
+}
+
+// Verify that we correctly load a nested iframe created by an injected iframe
+// srcdoc if we go back and recreate the frames.  Also verify that form values
+// are correctly restored for forms within srcdoc frames, unlike forms injected
+// into about:blank pages (as tested in
+// FrameNavigationEntry_RecreatedInjectedBlankSubframe).
+//
+// This test worked before and after the fix for https://crbug.com/657896, but
+// it failed with a preliminary version of the fix.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RecreatedInjectedSrcdocSubframe) {
+  // 1. Start on a page that injects a nested iframe srcdoc which contains a
+  // nested iframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/inject_iframe_srcdoc_with_nested_frame.html"));
+  GURL blank_url(url::kAboutBlankURL);
+  GURL inner_url(
+      embedded_test_server()->GetURL("/navigation_controller/form.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Verify that the inner iframe was able to load.
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(1U, root->child_at(0)->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+  EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+  // The entry should have FrameNavigationEntries for the subframes.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+    EXPECT_EQ(inner_url,
+              entry->root_node()->children[0]->children[0]->frame_entry->url());
+  }
+
+  // Set a value in the form which will be stored in the PageState.
+  EXPECT_TRUE(
+      ExecuteScript(root->child_at(0)->child_at(0),
+                    "document.getElementById('itext').value = 'modified';"));
+
+  // 2. Navigate the main frame same-site, destroying the subframes.
+  GURL main_url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_2, root->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // 3. Go back, recreating the subframes.
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+  ASSERT_EQ(1U, root->child_count());
+  // TODO(creis): This line is unexpectedly failing in PlzNavigate, so the test
+  // is disabled there for now.
+  ASSERT_EQ(1U, root->child_at(0)->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  // Verify that the inner iframe went to the correct URL.
+  EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+
+  // The entry should have FrameNavigationEntries for the subframes.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+    EXPECT_EQ(inner_url,
+              entry->root_node()->children[0]->children[0]->frame_entry->url());
+  }
+
+  // With injected iframe srcdoc pages, we do restore form values from
+  // PageState.
+  std::string form_value;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(root->child_at(0)->child_at(0),
+                                    "window.domAutomationController.send("
+                                    "document.getElementById('itext').value);",
+                                    &form_value));
+  EXPECT_EQ("modified", form_value);
+}
+
+// Verify that we can load about:blank in an iframe when going back to a page,
+// if that iframe did not originally have about:blank in it.  See
+// https://crbug.com/657896.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_RecreatedSubframeToBlank) {
+  // 1. Start on a page with a data iframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  GURL data_url("data:text/html,Subframe");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(data_url, root->child_at(0)->current_url());
+
+  // 2. Navigate the subframe to about:blank.
+  GURL blank_url(url::kAboutBlankURL);
+  NavigateFrameToURL(root->child_at(0), blank_url);
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+
+  // The entry should have a FrameNavigationEntry for the blank subframe.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
+  }
+
+  // 3. Navigate the main frame, destroying the frames.
+  GURL main_url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_2));
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_2, root->current_url());
+
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+
+  // 3. Go back, recreating the iframe.
+  {
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(main_url, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
   // The entry should have a FrameNavigationEntry for the blank subframe.
@@ -5470,14 +5717,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(url_b, root->current_url());
-
-  // TODO(creis): The child's current_url should be about:blank, but we're not
-  // currently getting a commit in this case.  For now, we'll lack a commit for
-  // this frame, similar to the slow URL case.  See https://crbug.com/626416.
-  if (SiteIsolationPolicy::UseSubframeNavigationEntries())
-    EXPECT_TRUE(root->child_at(0)->current_url().is_empty());
-  else
-    EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
+  EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
 
   // Check the PageState of the previous entry to ensure it isn't corrupted.
   NavigationEntry* entry = controller.GetEntryAtIndex(1);

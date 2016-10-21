@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -1123,15 +1124,18 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<NavigationParams> pending_navigation_params_;
 
   // Keeps track of which future subframes the browser process has history items
-  // for during a history navigation.  The renderer process should ask the
-  // browser for history items when subframes with these names are created, and
-  // directly load the initial URLs for any other subframes.  This state is
-  // incrementally cleared as it is used and then reset in didStopLoading, since
-  // it is not needed after the first load completes and is never used after the
-  // initial navigation.
+  // for during a history navigation, as well as whether those items are for
+  // about:blank.  The renderer process should ask the browser for history items
+  // when subframes with these names are created (as long as they are not
+  // staying at about:blank), and directly load the initial URLs for any other
+  // subframes.
+  //
+  // This state is incrementally cleared as it is used and then reset in
+  // didStopLoading, since it is not needed after the first load completes and
+  // is never used after the initial navigation.
   // TODO(creis): Expand this to include any corresponding same-process
   // PageStates for the whole subtree in https://crbug.com/639842.
-  std::set<std::string> history_subframe_unique_names_;
+  std::map<std::string, bool> history_subframe_unique_names_;
 
   // Stores the current history item for this frame, so that updates to it can
   // be reported to the browser process via SendUpdateState.
