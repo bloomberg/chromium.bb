@@ -138,6 +138,30 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   return *unread_.begin();
 }
 
+void ReadingListModelImpl::MarkUnreadByURL(const GURL& url) {
+  DCHECK(loaded());
+  ReadingListEntry entry(url, std::string());
+  auto result = std::find(read_.begin(), read_.end(), entry);
+  if (result == read_.end())
+    return;
+
+  for (ReadingListModelObserver& observer : observers_) {
+    observer.ReadingListWillMoveEntry(this,
+                                      std::distance(read_.begin(), result));
+  }
+
+  unread_.insert(unread_.begin(), std::move(*result));
+  read_.erase(result);
+
+  if (storageLayer_ && !IsPerformingBatchUpdates()) {
+    storageLayer_->SavePersistentUnreadList(read_);
+    storageLayer_->SavePersistentReadList(unread_);
+  }
+  for (ReadingListModelObserver& observer : observers_) {
+    observer.ReadingListDidApplyChanges(this);
+  }
+}
+
 void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
   DCHECK(loaded());
   ReadingListEntry entry(url, std::string());

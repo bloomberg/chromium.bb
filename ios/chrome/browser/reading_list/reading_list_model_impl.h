@@ -49,6 +49,7 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
                                    const std::string& title) override;
 
   void MarkReadByURL(const GURL& url) override;
+  void MarkUnreadByURL(const GURL& url) override;
 
   void SetEntryTitle(const GURL& url, const std::string& title) override;
   void SetEntryDistilledURL(const GURL& url,

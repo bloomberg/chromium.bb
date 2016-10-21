@@ -171,6 +171,28 @@ TEST_F(ReadingListModelTest, ReadEntry) {
   EXPECT_EQ("sample", other_entry.Title());
 }
 
+TEST_F(ReadingListModelTest, UnreadEntry) {
+  // Setup.
+  model_->AddEntry(GURL("http://example.com"), "sample");
+  model_->MarkReadByURL(GURL("http://example.com"));
+  ClearCounts();
+  ASSERT_EQ(0ul, model_->unread_size());
+  ASSERT_EQ(1ul, model_->read_size());
+
+  // Action.
+  model_->MarkUnreadByURL(GURL("http://example.com"));
+
+  // Tests.
+  AssertObserverCount(0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+  EXPECT_EQ(1ul, model_->unread_size());
+  EXPECT_EQ(0ul, model_->read_size());
+  EXPECT_TRUE(model_->HasUnseenEntries());
+
+  const ReadingListEntry& other_entry = model_->GetUnreadEntryAtIndex(0);
+  EXPECT_EQ(GURL("http://example.com"), other_entry.URL());
+  EXPECT_EQ("sample", other_entry.Title());
+}
+
 TEST_F(ReadingListModelTest, BatchUpdates) {
   auto token = model_->BeginBatchUpdates();
   AssertObserverCount(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

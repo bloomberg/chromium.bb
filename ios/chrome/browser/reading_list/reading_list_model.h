@@ -79,6 +79,10 @@ class ReadingListModel {
   // the reading list and read, move it to the top of unread if it is not here
   // already. This may trigger deletion of old read entries.
   virtual void MarkReadByURL(const GURL& url) = 0;
+  // If the |url| is in the reading list and read, mark it unread. If it is in
+  // the reading list and unread, move it to the top of read if it is not here
+  // already.
+  virtual void MarkUnreadByURL(const GURL& url) = 0;
 
   // Methods to mutate an entry. Will locate the relevant entry by URL. Does
   // nothing if the entry is not found.
