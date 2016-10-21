@@ -56,9 +56,10 @@ public class WebApkActivity extends WebappActivity {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         updateStorage(storage);
-                        // Initialize the update related timestamps to the registration time.
+                        // Initialize the time of the last is-update-needed check with the
+                        // registration time. This prevents checking for updates on the first run.
                         storage.updateTimeOfLastCheckForUpdatedWebManifest();
-                        storage.updateTimeOfLastWebApkUpdateRequestCompletion();
+
                         // The downloading of the splash screen image happens before a WebAPK's
                         // package name is available. If we want to use the image in the first
                         // launch, we need to cache the image, register the WebAPK and store the

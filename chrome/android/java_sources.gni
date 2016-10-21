@@ -1471,6 +1471,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webapps/WebappDataStorageTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkMetaDataUtilsTest.java",
+  "junit/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerTest.java",
 ]
 
 sync_shell_test_java_sources = [

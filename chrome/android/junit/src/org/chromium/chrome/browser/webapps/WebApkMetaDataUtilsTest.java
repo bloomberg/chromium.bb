@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.app.Application;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.os.Bundle;
 
 import org.junit.Assert;
@@ -14,10 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadows.ShadowApplication;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -25,6 +19,7 @@ import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.webapk.test.WebApkTestHelper;
 
 /**
  * Tests WebApkMetaDataUtils.
@@ -32,8 +27,6 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class WebApkMetaDataUtilsTest {
-
-    private static final String PACKAGE_NAME = "package_name";
 
     // Android Manifest meta data for {@link PACKAGE_NAME}.
     private static final String START_URL = "https://www.google.com/scope/a_is_for_apple";
@@ -45,16 +38,9 @@ public class WebApkMetaDataUtilsTest {
     private static final String THEME_COLOR = "1L";
     private static final String BACKGROUND_COLOR = "2L";
 
-    private ShadowApplication mShadowApplication;
-    private RobolectricPackageManager mPackageManager;
-
     @Before
     public void setUp() {
-        Application application = RuntimeEnvironment.application;
-        ContextUtils.initApplicationContextForTests(application);
-        mShadowApplication = Shadows.shadowOf(application);
-        mShadowApplication.setPackageName(PACKAGE_NAME);
-        mPackageManager = (RobolectricPackageManager) application.getPackageManager();
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
     }
 
     @Test
@@ -67,13 +53,13 @@ public class WebApkMetaDataUtilsTest {
         bundle.putString(WebApkMetaDataKeys.ORIENTATION, ORIENTATION);
         bundle.putString(WebApkMetaDataKeys.THEME_COLOR, THEME_COLOR);
         bundle.putString(WebApkMetaDataKeys.BACKGROUND_COLOR, BACKGROUND_COLOR);
-        PackageInfo packageInfo = newPackageInfo(PACKAGE_NAME, bundle);
-        mPackageManager.addPackage(packageInfo);
+        WebApkTestHelper.registerWebApkWithMetaData(bundle);
 
-        WebappInfo webappInfo =
-                WebApkMetaDataUtils.extractWebappInfoFromWebApk(PACKAGE_NAME, START_URL, 0);
+        WebappInfo webappInfo = WebApkMetaDataUtils.extractWebappInfoFromWebApk(
+                WebApkTestHelper.WEBAPK_PACKAGE_NAME, START_URL, 0);
 
-        Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + PACKAGE_NAME, webappInfo.id());
+        Assert.assertEquals(WebApkConstants.WEBAPK_ID_PREFIX + WebApkTestHelper.WEBAPK_PACKAGE_NAME,
+                webappInfo.id());
         Assert.assertEquals(SCOPE, webappInfo.scopeUri().toString());
         Assert.assertEquals(NAME, webappInfo.name());
         Assert.assertEquals(SHORT_NAME, webappInfo.shortName());
@@ -83,7 +69,7 @@ public class WebApkMetaDataUtilsTest {
         Assert.assertEquals(1L, webappInfo.themeColor());
         Assert.assertTrue(webappInfo.hasValidBackgroundColor());
         Assert.assertEquals(2L, webappInfo.backgroundColor());
-        Assert.assertEquals(PACKAGE_NAME, webappInfo.webApkPackageName());
+        Assert.assertEquals(WebApkTestHelper.WEBAPK_PACKAGE_NAME, webappInfo.webApkPackageName());
     }
 
     /**
@@ -98,20 +84,10 @@ public class WebApkMetaDataUtilsTest {
 
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        PackageInfo packageInfo = newPackageInfo(PACKAGE_NAME, bundle);
-        mPackageManager.addPackage(packageInfo);
+        WebApkTestHelper.registerWebApkWithMetaData(bundle);
 
-        WebappInfo webappInfo =
-                WebApkMetaDataUtils.extractWebappInfoFromWebApk(PACKAGE_NAME, passedInStartUrl, 0);
+        WebappInfo webappInfo = WebApkMetaDataUtils.extractWebappInfoFromWebApk(
+                WebApkTestHelper.WEBAPK_PACKAGE_NAME, passedInStartUrl, 0);
         Assert.assertEquals(passedInStartUrl, webappInfo.uri().toString());
-    }
-
-    private static PackageInfo newPackageInfo(String packageName, Bundle metaData) {
-        ApplicationInfo applicationInfo = new ApplicationInfo();
-        applicationInfo.metaData = metaData;
-        PackageInfo packageInfo = new PackageInfo();
-        packageInfo.packageName = packageName;
-        packageInfo.applicationInfo = applicationInfo;
-        return packageInfo;
     }
 }

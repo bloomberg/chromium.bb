@@ -144,5 +144,6 @@ junit_binary("webapk_shell_apk_junit_tests") {
   deps = [
     ":webapk_java",
     "//chrome/android/webapk/libs/common:common_java",
+    "//chrome/android/webapk/test:junit_test_support",
   ]
 }
