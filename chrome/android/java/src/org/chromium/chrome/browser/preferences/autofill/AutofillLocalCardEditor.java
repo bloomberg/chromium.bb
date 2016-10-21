@@ -188,7 +188,11 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         mNumberText.addTextChangedListener(this);
         mExpirationMonth.setOnItemSelectedListener(this);
         mExpirationYear.setOnItemSelectedListener(this);
-        mBillingAddress.setOnItemSelectedListener(this);
+
+        // Listen for touch events for drop down menus. We clear the keyboard when user touches
+        // any of these fields.
+        mExpirationMonth.setOnTouchListener(this);
+        mExpirationYear.setOnTouchListener(this);
     }
 
     private void updateSaveButtonEnabled() {

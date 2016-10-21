@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -13,12 +14,16 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.EditorView;
@@ -27,7 +32,7 @@ import org.chromium.chrome.browser.widget.DualControlLayout;
 
 /** Base class for Autofill editors (e.g. credit cards and profiles). */
 public abstract class AutofillEditorBase
-        extends Fragment implements OnItemSelectedListener, TextWatcher {
+        extends Fragment implements OnItemSelectedListener, OnTouchListener, TextWatcher {
 
     /** GUID of the profile we are editing.  Empty if creating a new profile. */
     protected String mGUID;
@@ -84,6 +89,18 @@ public abstract class AutofillEditorBase
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    // Process touch event on spinner views so we can clear the keyboard.
+    @Override
+    @SuppressLint("ClickableViewAccessibility")
+    public boolean onTouch(View v, MotionEvent event) {
+        if (v instanceof Spinner) {
+            InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
+        return false;
     }
 
     @Override

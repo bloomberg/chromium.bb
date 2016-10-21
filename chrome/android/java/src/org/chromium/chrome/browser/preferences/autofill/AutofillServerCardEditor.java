@@ -99,10 +99,4 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
     protected boolean getIsDeletable() {
         return false;
     }
-
-    @Override
-    protected void initializeButtons(View v) {
-        super.initializeButtons(v);
-        mBillingAddress.setOnItemSelectedListener(this);
-    }
 }

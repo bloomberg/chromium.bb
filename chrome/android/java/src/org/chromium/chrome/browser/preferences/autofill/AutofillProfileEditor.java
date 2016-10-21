@@ -279,6 +279,10 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         mEmailText.addTextChangedListener(this);
         mCountriesDropdown.setOnItemSelectedListener(this);
         mNoCountryItemIsSelected = true;
+
+        // Listen for touch events on country field. We clear the keyboard when user touches
+        // the country field because it is a drop down menu.
+        mCountriesDropdown.setOnTouchListener(this);
     }
 
     private void setSaveButtonEnabled(boolean enabled) {
