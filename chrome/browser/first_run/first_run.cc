@@ -330,12 +330,19 @@ bool IsOnWelcomePage(content::WebContents* contents) {
   // We have to check both the GetURL() similar to the other checks below, but
   // also the original request url because the welcome page we use is a
   // redirect.
-  GURL welcome_page(l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
-  return contents->GetURL() == welcome_page ||
-         (contents->GetController().GetVisibleEntry() &&
-          contents->GetController()
-                  .GetVisibleEntry()
-                  ->GetOriginalRequestURL() == welcome_page);
+  // TODO(crbug.com/651465): Remove this once kUseConsolidatedStartupFlow is on
+  // by default.
+  const GURL deprecated_welcome_page(
+      l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
+  if (contents->GetURL() == deprecated_welcome_page ||
+      (contents->GetController().GetVisibleEntry() &&
+       contents->GetController().GetVisibleEntry()->GetOriginalRequestURL() ==
+           deprecated_welcome_page)) {
+    return true;
+  }
+
+  const GURL welcome_page(chrome::kChromeUIWelcomeURL);
+  return contents->GetURL().GetWithEmptyPath() == welcome_page;
 }
 
 // Show the first run search engine bubble at the first appropriate opportunity.
