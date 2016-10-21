@@ -41,7 +41,7 @@ public class AutofillAddress extends PaymentOption {
      */
     public AutofillAddress(AutofillProfile profile, boolean isComplete) {
         super(profile.getGUID(), profile.getFullName(), profile.getLabel(),
-                profile.getPhoneNumber(), PaymentOption.NO_ICON);
+                profile.getPhoneNumber(), null);
         mProfile = profile;
         mIsComplete = isComplete;
     }

@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
+
+import org.json.JSONObject;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.content_public.browser.WebContents;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,14 +24,17 @@ import java.util.Set;
  * Provides access to locally stored user credit cards.
  */
 public class AutofillPaymentApp implements PaymentApp {
+    private final Context mContext;
     private final WebContents mWebContents;
 
     /**
      * Builds a payment app backed by autofill cards.
      *
+     * @param context     The context.
      * @param webContents The web contents where PaymentRequest was invoked.
      */
-    public AutofillPaymentApp(WebContents webContents) {
+    public AutofillPaymentApp(Context context, WebContents webContents) {
+        mContext = context;
         mWebContents = webContents;
     }
 
@@ -44,7 +48,8 @@ public class AutofillPaymentApp implements PaymentApp {
             CreditCard card = cards.get(i);
             AutofillProfile billingAddress = TextUtils.isEmpty(card.getBillingAddressId())
                     ? null : pdm.getProfile(card.getBillingAddressId());
-            instruments.add(new AutofillPaymentInstrument(mWebContents, card, billingAddress));
+            instruments.add(new AutofillPaymentInstrument(mContext, mWebContents, card,
+                    billingAddress));
         }
 
         new Handler().post(new Runnable() {

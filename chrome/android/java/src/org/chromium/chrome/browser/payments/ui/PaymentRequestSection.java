@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
@@ -135,7 +136,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     private TextView mSummaryLeftTextView;
     private TextView mSummaryRightTextView;
 
-    private int mLogoResourceId;
+    private Drawable mLogo;
     private boolean mIsSummaryAllowed = true;
 
     /**
@@ -173,12 +174,12 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     /**
      * Sets what logo should be displayed.
      *
-     * @param resourceId ID of the logo to display.
+     * @param logo The logo to display.
      */
-    protected void setLogoResource(int resourceId) {
+    protected void setLogoDrawable(Drawable logo) {
         assert isLogoNecessary();
-        mLogoResourceId = resourceId;
-        mLogoView.setImageResource(resourceId);
+        mLogo = logo;
+        mLogoView.setImageDrawable(mLogo);
     }
 
     @Override
@@ -411,7 +412,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
         // Update whether the logo is displayed.
         if (mLogoView != null) {
-            boolean show = mLogoResourceId != 0 && mDisplayMode != DISPLAY_MODE_FOCUSED;
+            boolean show = mLogo != null && mDisplayMode != DISPLAY_MODE_FOCUSED;
             mLogoView.setVisibility(show ? VISIBLE : GONE);
         }
 
@@ -718,7 +719,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
             public OptionRow(GridLayout parent, int rowIndex, int rowType, PaymentOption item,
                     boolean isSelected) {
-                boolean iconExists = item != null && item.getDrawableIconId() != 0;
+                boolean iconExists = item != null && item.getDrawableIcon() != null;
                 boolean isEnabled = item != null && item.isValid();
                 mRowType = rowType;
                 mOption = item;
@@ -871,7 +872,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 ImageView icon = new ImageView(parent.getContext());
                 icon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
                 icon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
-                icon.setImageResource(mOption.getDrawableIconId());
+                icon.setImageDrawable(mOption.getDrawableIcon());
                 icon.setMaxWidth(mIconMaxWidth);
 
                 // The icon floats to the right of everything.
@@ -1053,11 +1054,11 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
         private void updateSelectedItem(PaymentOption selectedItem) {
             if (selectedItem == null) {
-                setLogoResource(0);
+                setLogoDrawable(null);
                 setIsSummaryAllowed(false);
                 setSummaryText(null, null);
             } else {
-                setLogoResource(selectedItem.getDrawableIconId());
+                setLogoDrawable(selectedItem.getDrawableIcon());
                 setSummaryText(convertOptionToString(selectedItem, false), null);
             }
 
