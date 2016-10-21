@@ -39,6 +39,7 @@ class MediaQueryExp;
 class MediaQueryResult;
 class MediaQuerySet;
 class MediaValues;
+class MediaValuesInitialViewport;
 
 using MediaQueryResultList = HeapVector<Member<MediaQueryResult>>;
 
@@ -80,19 +81,21 @@ class CORE_EXPORT MediaQueryEvaluator final
   // values.
   explicit MediaQueryEvaluator(const MediaValues&);
 
+  explicit MediaQueryEvaluator(MediaValuesInitialViewport*);
+
   ~MediaQueryEvaluator();
 
   bool mediaTypeMatch(const String& mediaTypeToMatch) const;
 
   // Evaluates a list of media queries.
   bool eval(const MediaQuerySet*,
-            MediaQueryResultList* viewportDependent = 0,
-            MediaQueryResultList* deviceDependent = 0) const;
+            MediaQueryResultList* viewportDependent = nullptr,
+            MediaQueryResultList* deviceDependent = nullptr) const;
 
   // Evaluates media query.
   bool eval(const MediaQuery*,
-            MediaQueryResultList* viewportDependent = 0,
-            MediaQueryResultList* deviceDependent = 0) const;
+            MediaQueryResultList* viewportDependent = nullptr,
+            MediaQueryResultList* deviceDependent = nullptr) const;
 
   // Evaluates media query subexpression, ie "and (media-feature: value)" part.
   bool eval(const MediaQueryExp*) const;
@@ -103,7 +106,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   const String mediaType() const;
 
   String m_mediaType;
-  bool m_expectedResult;
+  bool m_expectedResult = false;
   Member<MediaValues> m_mediaValues;
 };
 

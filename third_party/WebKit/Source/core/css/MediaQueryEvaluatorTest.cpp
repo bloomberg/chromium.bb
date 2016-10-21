@@ -7,6 +7,7 @@
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaValuesCached.h"
+#include "core/css/MediaValuesInitialViewport.h"
 #include "core/frame/FrameView.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -211,6 +212,20 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly) {
 
   MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
   testMQEvaluator(floatNonFriendlyViewportTestCases, mediaQueryEvaluator);
+}
+
+TEST(MediaQueryEvaluatorTest, InitialViewport) {
+  std::unique_ptr<DummyPageHolder> pageHolder =
+      DummyPageHolder::create(IntSize(500, 500));
+  pageHolder->frameView().setMediaType(MediaTypeNames::screen);
+  pageHolder->frameView().setLayoutSizeFixedToFrameSize(false);
+  pageHolder->frameView().setInitialViewportSize(IntSize(500, 500));
+  pageHolder->frameView().setLayoutSize(IntSize(800, 800));
+  pageHolder->frameView().setFrameRect(IntRect(0, 0, 800, 800));
+
+  MediaQueryEvaluator mediaQueryEvaluator(
+      MediaValuesInitialViewport::create(pageHolder->frame()));
+  testMQEvaluator(viewportTestCases, mediaQueryEvaluator);
 }
 
 }  // namespace blink

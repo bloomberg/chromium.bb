@@ -39,6 +39,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaValuesDynamic.h"
+#include "core/css/MediaValuesInitialViewport.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
@@ -74,13 +75,16 @@ MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType,
     : m_mediaType(acceptedMediaType), m_expectedResult(mediaFeatureResult) {}
 
 MediaQueryEvaluator::MediaQueryEvaluator(LocalFrame* frame)
-    // Doesn't matter when we have m_frame and m_style.
-    : m_expectedResult(false),
-      m_mediaValues(MediaValues::createDynamicIfFrameExists(frame)) {}
+    : m_mediaValues(MediaValues::createDynamicIfFrameExists(frame)) {}
 
 MediaQueryEvaluator::MediaQueryEvaluator(const MediaValues& mediaValues)
-    : m_expectedResult(false),  // Doesn't matter when we have mediaValues.
-      m_mediaValues(mediaValues.copy()) {}
+    : m_mediaValues(mediaValues.copy()) {}
+
+MediaQueryEvaluator::MediaQueryEvaluator(
+    MediaValuesInitialViewport* mediaValues)
+    : m_mediaValues(mediaValues) {
+  DCHECK(mediaValues);
+}
 
 MediaQueryEvaluator::~MediaQueryEvaluator() {}
 

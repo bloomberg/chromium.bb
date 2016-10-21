@@ -2711,6 +2711,14 @@ TEST_P(ParameterizedWebFrameTest, AtViewportInsideAtMediaInitialViewport) {
                       ->frameView()
                       ->layoutSize()
                       .width());
+
+  webViewHelper.resize(WebSize(1200, 480));
+
+  EXPECT_EQ(1200, webViewHelper.webView()
+                      ->mainFrameImpl()
+                      ->frameView()
+                      ->layoutSize()
+                      .width());
 }
 
 TEST_P(ParameterizedWebFrameTest, AtViewportAffectingAtMediaRecalcCount) {

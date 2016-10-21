@@ -11,7 +11,8 @@
 
 namespace blink {
 
-MediaValues* MediaValuesInitialViewport::create(LocalFrame& frame) {
+MediaValuesInitialViewport* MediaValuesInitialViewport::create(
+    LocalFrame& frame) {
   return new MediaValuesInitialViewport(frame);
 }
 
