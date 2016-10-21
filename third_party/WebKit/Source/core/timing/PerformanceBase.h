@@ -100,10 +100,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   void addResourceTiming(const ResourceTimingInfo&);
 
-  void addRenderTiming(Document*, unsigned, double, double);
-
-  void addCompositeTiming(Document*, unsigned, double);
-
   void mark(const String& markName, ExceptionState&);
   void clearMarks(const String& markName);
 

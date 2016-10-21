@@ -34,10 +34,8 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
-#include "core/timing/PerformanceCompositeTiming.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
-#include "core/timing/PerformanceRenderTiming.h"
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
 #include "platform/network/ResourceTimingInfo.h"
@@ -306,33 +304,6 @@ void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry) {
 
 bool PerformanceBase::isResourceTimingBufferFull() {
   return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
-}
-
-void PerformanceBase::addRenderTiming(Document* initiatorDocument,
-                                      unsigned sourceFrame,
-                                      double startTime,
-                                      double finishTime) {
-  if (isFrameTimingBufferFull() && !hasObserverFor(PerformanceEntry::Render))
-    return;
-
-  PerformanceEntry* entry = PerformanceRenderTiming::create(
-      initiatorDocument, sourceFrame, startTime, finishTime);
-  notifyObserversOfEntry(*entry);
-  if (!isFrameTimingBufferFull())
-    addFrameTimingBuffer(*entry);
-}
-
-void PerformanceBase::addCompositeTiming(Document* initiatorDocument,
-                                         unsigned sourceFrame,
-                                         double startTime) {
-  if (isFrameTimingBufferFull() && !hasObserverFor(PerformanceEntry::Composite))
-    return;
-
-  PerformanceEntry* entry = PerformanceCompositeTiming::create(
-      initiatorDocument, sourceFrame, startTime);
-  notifyObserversOfEntry(*entry);
-  if (!isFrameTimingBufferFull())
-    addFrameTimingBuffer(*entry);
 }
 
 void PerformanceBase::addFrameTimingBuffer(PerformanceEntry& entry) {

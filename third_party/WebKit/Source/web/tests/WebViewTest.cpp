@@ -54,7 +54,6 @@
 #include "core/paint/PaintLayerPainter.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
-#include "core/timing/PerformanceCompositeTiming.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntRect.h"
