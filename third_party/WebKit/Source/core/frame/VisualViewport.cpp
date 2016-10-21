@@ -391,9 +391,10 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot) {
         m_innerViewportContainerLayer->platformLayer());
     m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
     if (mainFrame()) {
-      if (Document* document = mainFrame()->document())
+      if (Document* document = mainFrame()->document()) {
         m_innerViewportScrollLayer->setElementId(createCompositorElementId(
-            DOMNodeIds::idForNode(document), CompositorSubElementId::Scroll));
+            DOMNodeIds::idForNode(document), CompositorSubElementId::Viewport));
+      }
     }
 
     m_rootTransformLayer->addChild(m_innerViewportContainerLayer.get());

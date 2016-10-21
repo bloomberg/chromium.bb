@@ -268,6 +268,8 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   WebLayer* contentsLayer() const { return m_contentsLayer; }
 
   void setElementId(const CompositorElementId&);
+  CompositorElementId elementId() const;
+
   void setCompositorMutableProperties(uint32_t);
 
   ContentLayerDelegate* contentLayerDelegateForTesting() const {

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-enum class CompositorSubElementId { Primary, Scroll, LinkHighlight };
+enum class CompositorSubElementId { Primary, Scroll, Viewport, LinkHighlight };
 
 using CompositorElementId = cc::ElementId;
 

@@ -1175,6 +1175,12 @@ void GraphicsLayer::setElementId(const CompositorElementId& id) {
     layer->setElementId(id);
 }
 
+CompositorElementId GraphicsLayer::elementId() const {
+  if (WebLayer* layer = platformLayer())
+    return layer->elementId();
+  return CompositorElementId();
+}
+
 void GraphicsLayer::setCompositorMutableProperties(uint32_t properties) {
   if (WebLayer* layer = platformLayer())
     layer->setCompositorMutableProperties(properties);

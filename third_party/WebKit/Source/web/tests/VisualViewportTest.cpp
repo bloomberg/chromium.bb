@@ -19,6 +19,7 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/DoubleRect.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -782,6 +783,9 @@ TEST_P(ParameterizedVisualViewportTest,
 
   // Ensure the scroll layer matches the frame view's size.
   EXPECT_SIZE_EQ(FloatSize(320, 240), visualViewport.scrollLayer()->size());
+
+  EXPECT_EQ(static_cast<int>(CompositorSubElementId::Viewport),
+            visualViewport.scrollLayer()->elementId().secondaryId);
 
   // Ensure the location and scale were reset.
   EXPECT_SIZE_EQ(FloatSize(), visualViewport.scrollOffset());
