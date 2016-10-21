@@ -134,6 +134,7 @@ class SyncerProtoUtil {
   static base::TimeDelta GetThrottleDelay(
       const sync_pb::ClientToServerResponse& response);
 
+  friend class LoopbackServerTest;
   friend class SyncerProtoUtilTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, AddRequestBirthday);
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, PostAndProcessHeaders);

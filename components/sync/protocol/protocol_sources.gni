@@ -27,6 +27,7 @@ sync_protocol_sources = [
   "//components/sync/protocol/get_updates_caller_info.proto",
   "//components/sync/protocol/history_delete_directive_specifics.proto",
   "//components/sync/protocol/history_status.proto",
+  "//components/sync/protocol/loopback_server.proto",
   "//components/sync/protocol/nigori_specifics.proto",
   "//components/sync/protocol/managed_user_setting_specifics.proto",
   "//components/sync/protocol/managed_user_shared_setting_specifics.proto",

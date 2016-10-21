@@ -588,6 +588,25 @@ static_library("sync") {
     ]
   }
 
+  if (is_win) {
+    sources += [
+      "engine_impl/loopback_server/loopback_connection_manager.cc",
+      "engine_impl/loopback_server/loopback_connection_manager.h",
+      "engine_impl/loopback_server/loopback_server.cc",
+      "engine_impl/loopback_server/loopback_server.h",
+      "engine_impl/loopback_server/loopback_server_entity.cc",
+      "engine_impl/loopback_server/loopback_server_entity.h",
+      "engine_impl/loopback_server/persistent_bookmark_entity.cc",
+      "engine_impl/loopback_server/persistent_bookmark_entity.h",
+      "engine_impl/loopback_server/persistent_permanent_entity.cc",
+      "engine_impl/loopback_server/persistent_permanent_entity.h",
+      "engine_impl/loopback_server/persistent_tombstone_entity.cc",
+      "engine_impl/loopback_server/persistent_tombstone_entity.h",
+      "engine_impl/loopback_server/persistent_unique_client_entity.cc",
+      "engine_impl/loopback_server/persistent_unique_client_entity.h",
+    ]
+  }
+
   if (enable_configuration_policy) {
     sources += [
       "driver/sync_policy_handler.cc",
@@ -946,6 +965,10 @@ source_set("unit_tests") {
 
   if (is_ios) {
     sources -= [ "engine/net/http_bridge_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "engine_impl/loopback_server/loopback_server_unittest.cc" ]
   }
 
   if (enable_configuration_policy) {
