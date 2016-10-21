@@ -12,6 +12,8 @@ class Window;
 
 namespace client {
 
+class CaptureClientObserver;
+
 // An interface implemented by an object that manages input capture.
 class AURA_EXPORT CaptureClient {
  public:
@@ -30,6 +32,9 @@ class AURA_EXPORT CaptureClient {
 
   // See description of GetCaptureWindow() for details.
   virtual Window* GetGlobalCaptureWindow() = 0;
+
+  virtual void AddObserver(CaptureClientObserver* observer) = 0;
+  virtual void RemoveObserver(CaptureClientObserver* observer) = 0;
 
  protected:
   virtual ~CaptureClient() {}

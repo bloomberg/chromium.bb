@@ -7,8 +7,8 @@
 
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/wm_export.h"
@@ -39,6 +39,8 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
   void ReleaseCapture(aura::Window* window) override;
   aura::Window* GetCaptureWindow() override;
   aura::Window* GetGlobalCaptureWindow() override;
+  void AddObserver(aura::client::CaptureClientObserver* observer) override;
+  void RemoveObserver(aura::client::CaptureClientObserver* observer) override;
 
  private:
   friend class ScopedCaptureClient;
@@ -57,6 +59,8 @@ class WM_EXPORT CaptureController : public aura::client::CaptureClient {
 
   // The delegates notified when capture changes.
   std::map<aura::Window*, aura::client::CaptureDelegate*> delegates_;
+
+  base::ObserverList<aura::client::CaptureClientObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureController);
 };

@@ -98,4 +98,14 @@ aura::Window* DesktopCaptureClient::GetGlobalCaptureWindow() {
   return NULL;
 }
 
+void DesktopCaptureClient::AddObserver(
+    aura::client::CaptureClientObserver* observer) {
+  NOTREACHED();
+}
+
+void DesktopCaptureClient::RemoveObserver(
+    aura::client::CaptureClientObserver* observer) {
+  NOTREACHED();
+}
+
 }  // namespace views

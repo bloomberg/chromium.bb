@@ -94,21 +94,21 @@ class MirroringScreenPositionClient
   DISALLOW_COPY_AND_ASSIGN(MirroringScreenPositionClient);
 };
 
+// A trivial CaptureClient that does nothing. That is, calls to set/release
+// capture are dropped.
 class NoneCaptureClient : public aura::client::CaptureClient {
  public:
   NoneCaptureClient() {}
   ~NoneCaptureClient() override {}
 
  private:
-  // Does a capture on the |window|.
+  // aura::client::CaptureClient:
   void SetCapture(aura::Window* window) override {}
-
-  // Releases a capture from the |window|.
   void ReleaseCapture(aura::Window* window) override {}
-
-  // Returns the current capture window.
-  aura::Window* GetCaptureWindow() override { return NULL; }
-  aura::Window* GetGlobalCaptureWindow() override { return NULL; }
+  aura::Window* GetCaptureWindow() override { return nullptr; }
+  aura::Window* GetGlobalCaptureWindow() override { return nullptr; }
+  void AddObserver(aura::client::CaptureClientObserver* observer) override {}
+  void RemoveObserver(aura::client::CaptureClientObserver* observer) override {}
 
   DISALLOW_COPY_AND_ASSIGN(NoneCaptureClient);
 };

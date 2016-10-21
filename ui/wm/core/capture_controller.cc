@@ -4,6 +4,7 @@
 
 #include "ui/wm/core/capture_controller.h"
 
+#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
@@ -72,6 +73,9 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
     if (capture_delegate_)
       capture_delegate_->SetNativeCapture();
   }
+
+  for (aura::client::CaptureClientObserver& observer : observers_)
+    observer.OnCaptureChanged(old_capture_window, capture_window_);
 }
 
 void CaptureController::ReleaseCapture(aura::Window* window) {
@@ -86,6 +90,16 @@ aura::Window* CaptureController::GetCaptureWindow() {
 
 aura::Window* CaptureController::GetGlobalCaptureWindow() {
   return capture_window_;
+}
+
+void CaptureController::AddObserver(
+    aura::client::CaptureClientObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CaptureController::RemoveObserver(
+    aura::client::CaptureClientObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
