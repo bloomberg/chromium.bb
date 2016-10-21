@@ -1324,6 +1324,10 @@ void WebContentsImpl::SetLastActiveTime(base::TimeTicks last_active_time) {
   last_active_time_ = last_active_time;
 }
 
+base::TimeTicks WebContentsImpl::GetLastHiddenTime() const {
+  return last_hidden_time_;
+}
+
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
 
@@ -1363,6 +1367,8 @@ void WebContentsImpl::WasHidden() {
 
     SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
   }
+
+  last_hidden_time_ = base::TimeTicks::Now();
 
   for (auto& observer : observers_)
     observer.WasHidden();

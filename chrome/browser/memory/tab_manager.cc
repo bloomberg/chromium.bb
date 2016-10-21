@@ -638,6 +638,7 @@ void TabManager::AddTabStats(const TabStripModel* model,
           contents->GetPageImportanceSignals().had_form_interaction;
       stats.discard_count = GetWebContentsData(contents)->DiscardCount();
       stats.last_active = contents->GetLastActiveTime();
+      stats.last_hidden = contents->GetLastHiddenTime();
       stats.render_process_host = contents->GetRenderProcessHost();
       stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
       stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
@@ -709,7 +710,7 @@ void TabManager::PurgeAndSuspendBackgroundedTabs() {
     // timers for simplicity, so PurgeAndSuspend is called even after the
     // renderer is purged and suspended once. This should be replaced with
     // timers if we want necessary and sufficient signals.
-    if (tab.last_active > purge_and_suspend_time_threshold)
+    if (tab.last_hidden > purge_and_suspend_time_threshold)
       continue;
     if (!CanSuspendBackgroundedRenderer(tab.child_process_host_id))
       continue;
