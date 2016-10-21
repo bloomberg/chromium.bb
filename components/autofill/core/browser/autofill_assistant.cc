@@ -29,9 +29,12 @@ bool AutofillAssistant::CanShowCreditCardAssist(
     const std::vector<std::unique_ptr<FormStructure>>& form_structures) {
   if (form_structures.empty() || credit_card_form_data_ != nullptr ||
       !IsAutofillCreditCardAssistEnabled() ||
-      !autofill_manager_->client()->IsContextSecure(
-          form_structures.front()->source_url()) ||
-      !form_structures.front()->target_url().SchemeIs("https")) {
+      // Context of the page is not secure or target URL is valid but not
+      // secure.
+      !(autofill_manager_->client()->IsContextSecure(
+            form_structures.front()->source_url()) &&
+        (!form_structures.front()->target_url().is_valid() ||
+         !form_structures.front()->target_url().SchemeIs("http")))) {
     return false;
   }
 

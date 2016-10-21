@@ -1576,10 +1576,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
 
 // Test that we return a warning explaining that credit card profile suggestions
 // are unavailable when the page and the form target URL are not secure.
-TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonHTTPS) {
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonSecureContext) {
   // Set up our form data.
   FormData form;
-  CreateTestCreditCardFormData(&form, false, false);
+  CreateTestCreditCardFormData(&form, /* is_https */ false, false);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
@@ -1601,9 +1601,10 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonHTTPS) {
 }
 
 // Test that we return a warning explaining that credit card profile suggestions
-// are unavailable when the page is secure, but the form target URL is not
-// secure.
-TEST_F(AutofillManagerTest, GetCreditCardSuggestions_TargetURLNonHTTPS) {
+// are unavailable when the page is secure, but the form action URL is valid but
+// not secure.
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_SecureContext_FormActionNotHTTPS) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, /* is_https= */ true, false);
@@ -1626,6 +1627,60 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_TargetURLNonHTTPS) {
   GetAutofillSuggestions(form, field);
   // Autocomplete suggestions are queried, but not Autofill.
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Test that we return credit card suggestions for secure pages that have an
+// empty form action target URL.
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_SecureContext_EmptyFormAction) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  // Clear the form action.
+  form.action = GURL();
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Visa\xC2\xA0\xE2\x8B\xAF"
+                                 "3456",
+                                 "04/99", kVisaCard,
+                                 autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion("MasterCard\xC2\xA0\xE2\x8B\xAF"
+                 "8765",
+                 "10/98", kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
+}
+
+// Test that we return credit card suggestions for secure pages that have a
+// form action set to "javascript:something".
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_SecureContext_JavascriptFormAction) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  // Have the form action be a javascript function (which is a valid URL).
+  form.action = GURL("javascript:alert('Hello');");
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Visa\xC2\xA0\xE2\x8B\xAF"
+                                 "3456",
+                                 "04/99", kVisaCard,
+                                 autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion("MasterCard\xC2\xA0\xE2\x8B\xAF"
+                 "8765",
+                 "10/98", kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card suggestions in the case that two cards
