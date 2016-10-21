@@ -689,7 +689,9 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
   def BuildUpdatePayloads(self):
     """Archives update payloads when they are ready."""
     # If we are not configured to generate payloads, don't.
-    if not (self._run.config.upload_hw_test_artifacts and
+    if not (self._run.options.build and
+            self._run.options.tests and
+            self._run.config.upload_hw_test_artifacts and
             self._run.config.images):
       return
 
