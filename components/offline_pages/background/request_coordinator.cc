@@ -447,8 +447,11 @@ RequestCoordinator::TryImmediateStart() {
     return OfflinerImmediateStartStatus::BUSY;
 
   // Make sure we are not on svelte device to start immediately.
-  if (base::SysInfo::IsLowEndDevice())
+  // Let the scheduler know we are done processing and failed due to svelte.
+  if (base::SysInfo::IsLowEndDevice()) {
+    immediate_schedule_callback_.Run(false);
     return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
+  }
 
   // Make sure we have reasonable network quality (or at least a connection).
   if (network_quality_estimator_) {

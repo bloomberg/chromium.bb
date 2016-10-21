@@ -523,7 +523,13 @@ TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
   // Wait for callbacks to finish, both request queue and offliner.
   PumpLoop();
   // Will not be called since the offliner is disabled.
-  EXPECT_FALSE(immediate_schedule_callback_called());
+  // On low-end devices the callback will be called with false since the
+  // processing started but failed due to svelte devices.
+  if (base::SysInfo::IsLowEndDevice()) {
+    EXPECT_TRUE(immediate_schedule_callback_called());
+  } else {
+    EXPECT_FALSE(immediate_schedule_callback_called());
+  }
 
   // Check the request queue is as expected.
   EXPECT_EQ(1UL, last_requests().size());
