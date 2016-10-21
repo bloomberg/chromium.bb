@@ -296,17 +296,87 @@ static gfx::Size SoftwarePlaneDimension(media::VideoFrame* input_frame,
   return gfx::Size(plane_width, plane_height);
 }
 
-void VideoResourceUpdater::MakeHalfFloats(const uint16_t* src,
-                                          int bits_per_channel,
-                                          size_t num,
-                                          uint16_t* dst) {
-  // Source and dest stride can be zero since we're only copying
-  // one row at a time.
-  int stride = 0;
-  // Maximum value used in |src|.
-  int max_value = (1 << bits_per_channel) - 1;
-  int rows = 1;
-  libyuv::HalfFloatPlane(src, stride, dst, stride, 1.0f / max_value, num, rows);
+namespace {
+// By OR-ing with 0x3800, 10-bit numbers become half-floats in the
+// range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
+//
+// Half-floats are evaluated as:
+// float value = pow(2.0, exponent - 25) * (0x400 + fraction);
+//
+// In our case the exponent is 14 (since we or with 0x3800) and
+// pow(2.0, 14-25) * 0x400 evaluates to 0.5 (our offset) and
+// pow(2.0, 14-25) * fraction is [0..0.49951171875] for 10-bit and
+// [0..0.24951171875] for 9-bit.
+//
+// https://en.wikipedia.org/wiki/Half-precision_floating-point_format
+class HalfFloatMaker_xor : public VideoResourceUpdater::HalfFloatMaker {
+ public:
+  explicit HalfFloatMaker_xor(int bits_per_channel)
+      : bits_per_channel_(bits_per_channel) {}
+  float Offset() const override { return 0.5; }
+  float Multiplier() const override {
+    int max_input_value = (1 << bits_per_channel_) - 1;
+    // 2 << 11 = 2048 would be 1.0 with our exponent.
+    return 2048.0 / max_input_value;
+  }
+  void MakeHalfFloats(const uint16_t* src, size_t num, uint16_t* dst) override {
+    // Micro-benchmarking indicates that the compiler does
+    // a good enough job of optimizing this loop that trying
+    // to manually operate on one uint64 at a time is not
+    // actually helpful.
+    // Note to future optimizers: Benchmark your optimizations!
+    for (size_t i = 0; i < num; i++)
+      dst[i] = src[i] | 0x3800;
+  }
+
+ private:
+  int bits_per_channel_;
+};
+
+class HalfFloatMaker_libyuv : public VideoResourceUpdater::HalfFloatMaker {
+ public:
+  explicit HalfFloatMaker_libyuv(int bits_per_channel) {
+    int max_value = (1 << bits_per_channel) - 1;
+    // For less than 15 bits, we can give libyuv a multiplier of
+    // 1.0, which is faster on some platforms. If bits is 16 or larger,
+    // a multiplier of 1.0 would cause overflows. However, a multiplier
+    // of 1/max_value would cause subnormal floats, which perform
+    // very poorly on some platforms.
+    if (bits_per_channel <= 15) {
+      libyuv_multiplier_ = 1.0f;
+    } else {
+      // This multiplier makes sure that we avoid subnormal values.
+      libyuv_multiplier_ = 1.0f / 4096.0f;
+    }
+    resource_multiplier_ = 1.0f / libyuv_multiplier_ / max_value;
+  }
+  float Offset() const override { return 0.0f; }
+  float Multiplier() const override { return resource_multiplier_; }
+  void MakeHalfFloats(const uint16_t* src, size_t num, uint16_t* dst) override {
+    // Source and dest stride can be zero since we're only copying
+    // one row at a time.
+    int stride = 0;
+    int rows = 1;
+    libyuv::HalfFloatPlane(src, stride, dst, stride, libyuv_multiplier_, num,
+                           rows);
+  }
+
+ private:
+  float libyuv_multiplier_;
+  float resource_multiplier_;
+};
+
+}  // namespace
+
+std::unique_ptr<VideoResourceUpdater::HalfFloatMaker>
+VideoResourceUpdater::NewHalfFloatMaker(int bits_per_channel) {
+  if (bits_per_channel < 11) {
+    return std::unique_ptr<VideoResourceUpdater::HalfFloatMaker>(
+        new HalfFloatMaker_xor(bits_per_channel));
+  } else {
+    return std::unique_ptr<VideoResourceUpdater::HalfFloatMaker>(
+        new HalfFloatMaker_libyuv(bits_per_channel));
+  }
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
@@ -484,6 +554,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     return external_resources;
   }
 
+  std::unique_ptr<HalfFloatMaker> half_float_maker;
+  if (resource_provider_->YuvResourceFormat(bits_per_channel) ==
+      LUMINANCE_F16) {
+    half_float_maker = NewHalfFloatMaker(bits_per_channel);
+    external_resources.offset = half_float_maker->Offset();
+    external_resources.multiplier = half_float_maker->Multiplier();
+  }
+
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     PlaneResource& plane_resource = *plane_resources[i];
     // Update each plane's resource id with its content.
@@ -538,17 +616,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                 &upload_pixels_[upload_image_stride * row]);
             const uint16_t* src = reinterpret_cast<uint16_t*>(
                 video_frame->data(i) + (video_stride_bytes * row));
-            if (bits_per_channel <= 10) {
-              // Micro-benchmarking indicates that the compiler does
-              // a good enough job of optimizing this loop that trying
-              // to manually operate on one uint64 at a time is not
-              // actually helpful.
-              // Note to future optimizers: Benchmark your optimizations!
-              for (size_t i = 0; i < bytes_per_row / 2; i++)
-                dst[i] = src[i] | 0x3800;
-            } else {
-              MakeHalfFloats(src, bits_per_channel, bytes_per_row / 2, dst);
-            }
+            half_float_maker->MakeHalfFloats(src, bytes_per_row / 2, dst);
           } else if (shift != 0) {
             // We have more-than-8-bit input which we need to shift
             // down to fit it into an 8-bit texture.
@@ -572,36 +640,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       resource_provider_->CopyToResource(plane_resource.resource_id(), pixels,
                                          resource_size_pixels);
       plane_resource.SetUniqueId(video_frame->unique_id(), i);
-    }
-
-    if (plane_resource.resource_format() == LUMINANCE_F16) {
-      // If the input data was 9 or 10 bit, and we output to half-floats,
-      // then we used the OR path above, which means that we need to
-      // adjust the resource offset and multiplier accordingly. If the
-      // input data uses more than 10 bits, it will already be normalized
-      // to 0.0..1.0, so there is no need to do anything.
-      if (bits_per_channel <= 10) {
-        // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
-        // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
-        //
-        // Half-floats are evaluated as:
-        // float value = pow(2.0, exponent - 25) * (0x400 + fraction);
-        //
-        // In our case the exponent is 14 (since we or with 0x3800) and
-        // pow(2.0, 14-25) * 0x400 evaluates to 0.5 (our offset) and
-        // pow(2.0, 14-25) * fraction is [0..0.49951171875] for 10-bit and
-        // [0..0.24951171875] for 9-bit.
-        //
-        // https://en.wikipedia.org/wiki/Half-precision_floating-point_format
-        //
-        // PLEASE NOTE:
-        // All planes are assumed to use the same multiplier/offset.
-        external_resources.offset = 0.5f;
-        // Max value from input data.
-        int max_input_value = (1 << bits_per_channel) - 1;
-        // 2 << 11 = 2048 would be 1.0 with our exponent.
-        external_resources.multiplier = 2048.0 / max_input_value;
-      }
     }
 
     // VideoResourceUpdater shares a context with the compositor so a

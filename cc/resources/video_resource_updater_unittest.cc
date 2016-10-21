@@ -536,27 +536,35 @@ double FromHalfFloat(uint16_t half_float) {
 }  // namespace
 
 TEST_F(VideoResourceUpdaterTest, MakeHalfFloatTest) {
-  unsigned short integers[1 << 12];
-  unsigned short half_floats[1 << 12];
-  for (int bits = 9; bits <= 12; bits++) {
+  unsigned short integers[1 << 16];
+  unsigned short half_floats[1 << 16];
+  for (int bits = 9; bits <= 16; bits++) {
+    std::unique_ptr<VideoResourceUpdater::HalfFloatMaker> half_float_maker;
+    half_float_maker = VideoResourceUpdater::NewHalfFloatMaker(bits);
     int num_values = 1 << bits;
     for (int i = 0; i < num_values; i++)
       integers[i] = i;
 
-    VideoResourceUpdater::MakeHalfFloats(integers, bits, num_values,
-                                         half_floats);
-
+    half_float_maker->MakeHalfFloats(integers, num_values, half_floats);
     // Multiplier to converting integers to 0.0..1.0 range.
     double multiplier = 1.0 / (num_values - 1);
 
     for (int i = 0; i < num_values; i++) {
+      // This value is in range 0..1
+      float value = integers[i] * multiplier;
+      // Reverse the effect of offset and multiplier to get the expected
+      // output value from the half-float converter.
+      float expected_value =
+          value / half_float_maker->Multiplier() + half_float_maker->Offset();
+      EXPECT_EQ(integers[i], i);
+
       // We expect the result to be within +/- one least-significant bit.
       // Within the range we care about, half-floats values and
       // their representation both sort in the same order, so we
       // can just add one to get the next bigger half-float.
       float expected_precision =
           FromHalfFloat(half_floats[i] + 1) - FromHalfFloat(half_floats[i]);
-      EXPECT_NEAR(FromHalfFloat(half_floats[i]), integers[i] * multiplier,
+      EXPECT_NEAR(FromHalfFloat(half_floats[i]), expected_value,
                   expected_precision)
           << "i = " << i << " bits = " << bits;
     }
