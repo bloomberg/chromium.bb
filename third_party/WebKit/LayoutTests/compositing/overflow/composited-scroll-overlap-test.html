@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+div::-webkit-scrollbar {
+    display: none;
+}
+</style>
+<div id=scroller style="width: 400px; height: 400px; overflow-y: scroll; will-change: transform">
+  <div style="height: 400px"></div>
+  <div id=overlap style="backface-visibility: hidden; width: 100px; height: 100px; background-color: red"></div>
+  <div id=target style="position: relative; top: -50px; left: 50px; width: 100px; height: 100px; background-color: green"></div>
+</div>
+<div id="notscrolled" style="position: relative; width: 50px; height: 300px; background: lightgray"></div>
+<script>
+if (testRunner) {
+  testRunner.waitUntilDone();
+  testRunner.dumpAsText();
+}
+// Test passes if 'target' (green) is on top of 'overlap' (red).
+// The actual test output is a layerization where 'overlap' has a composited layer,
+// and 'target' does, but 'notscrolled'. 'target' has a composited layer because
+// it overlaps 'overlap'. 'notscrolled' does not have one because it does not
+// intersect the scroller and is outside of it.
+
+function drawsContentAndLayoutObject(layer) {
+    if (!layer["drawsContent"])
+        return false;
+    if (layer["name"].indexOf("Layout") == -1)
+        return false;
+    return true;
+}
+
+onload = function() {
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      scroller.scrollTop = 400;
+      if (internals) {
+        var layers = JSON.parse(internals.layerTreeAsText(document))["layers"];
+        var desiredLayers = layers.filter(drawsContentAndLayoutObject);
+        assert_equals(desiredLayers.length, 4);
+        assert_not_equals(desiredLayers[0]["name"].indexOf("document"), -1, "document");
+        assert_not_equals(desiredLayers[1]["name"].indexOf("scroller"), -1, "scroller");
+        assert_not_equals(desiredLayers[2]["name"].indexOf("overlap"), -1, "overlap");
+        assert_not_equals(desiredLayers[3]["name"].indexOf("target"), -1, "target");
+      }
+      if (testRunner)
+        testRunner.notifyDone();
+    });
+  });
+};
+</script>

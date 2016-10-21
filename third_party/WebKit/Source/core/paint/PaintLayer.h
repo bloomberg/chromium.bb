@@ -82,7 +82,7 @@ enum CompositingQueryMode {
   CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases
 };
 
-// FIXME: remove this once the compositing query ASSERTS are no longer hit.
+// FIXME: remove this once the compositing query DCHECKS are no longer hit.
 class CORE_EXPORT DisableCompositingQueryAsserts {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(DisableCompositingQueryAsserts);
@@ -268,10 +268,12 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   const LayoutPoint& location() const {
-    ASSERT(!m_needsPositionUpdate);
+#if DCHECK_IS_ON()
+    DCHECK(!m_needsPositionUpdate);
+#endif
     return m_location;
   }
-  // FIXME: size() should ASSERT(!m_needsPositionUpdate) as well, but that fails
+  // FIXME: size() should DCHECK(!m_needsPositionUpdate) as well, but that fails
   // in some tests, for example, fast/repaint/clipped-relative.html.
   const IntSize& size() const { return m_size; }
   void setSizeHackForLayoutTreeAsText(const IntSize& size) { m_size = size; }
@@ -626,7 +628,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                       : CompositingReasonNone;
   }
   void setPotentialCompositingReasonsFromStyle(CompositingReasons reasons) {
-    ASSERT(reasons ==
+    DCHECK(reasons ==
            (reasons & CompositingReasonComboAllStyleDeterminedReasons));
     if (m_rareData || reasons != CompositingReasonNone)
       ensureRareData().potentialCompositingReasonsFromStyle = reasons;
@@ -644,6 +646,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     AncestorDependentCompositingInputs() : clippingContainer(nullptr) {}
 
     IntRect clippedAbsoluteBoundingBox;
+    IntRect unclippedAbsoluteBoundingBox;
     const LayoutObject* clippingContainer;
   };
 
@@ -697,7 +700,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool needsCompositingInputsUpdate() const {
     // While we're updating the compositing inputs, these values may differ.
     // We should never be asking for this value when that is the case.
-    ASSERT(m_needsDescendantDependentCompositingInputsUpdate ==
+    DCHECK(m_needsDescendantDependentCompositingInputsUpdate ==
            m_needsAncestorDependentCompositingInputsUpdate);
     return m_needsDescendantDependentCompositingInputsUpdate;
   }
@@ -716,103 +719,107 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void didUpdateCompositingInputs();
 
   IntRect clippedAbsoluteBoundingBox() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_ancestorDependentCompositingInputs.clippedAbsoluteBoundingBox;
   }
+  IntRect unclippedAbsoluteBoundingBox() const {
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
+    return m_ancestorDependentCompositingInputs.unclippedAbsoluteBoundingBox;
+  }
   const PaintLayer* opacityAncestor() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs->opacityAncestor
                : nullptr;
   }
   const PaintLayer* transformAncestor() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs->transformAncestor
                : nullptr;
   }
   const PaintLayer* filterAncestor() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs->filterAncestor
                : nullptr;
   }
   const LayoutObject* clippingContainer() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_ancestorDependentCompositingInputs.clippingContainer;
   }
   const PaintLayer* ancestorOverflowLayer() const {
     return m_ancestorOverflowLayer;
   }
   const PaintLayer* ancestorScrollingLayer() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs
                      ->ancestorScrollingLayer
                : nullptr;
   }
   const PaintLayer* nearestFixedPositionLayer() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs
                      ->nearestFixedPositionLayer
                : nullptr;
   }
   const PaintLayer* scrollParent() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs->scrollParent
                : nullptr;
   }
   const PaintLayer* clipParent() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_rareAncestorDependentCompositingInputs
                ? m_rareAncestorDependentCompositingInputs->clipParent
                : nullptr;
   }
   bool hasAncestorWithClipPath() const {
-    ASSERT(!m_needsAncestorDependentCompositingInputsUpdate);
+    DCHECK(!m_needsAncestorDependentCompositingInputsUpdate);
     return m_hasAncestorWithClipPath;
   }
   bool hasDescendantWithClipPath() const {
-    ASSERT(!m_needsDescendantDependentCompositingInputsUpdate);
+    DCHECK(!m_needsDescendantDependentCompositingInputsUpdate);
     return m_hasDescendantWithClipPath;
   }
   bool hasNonIsolatedDescendantWithBlendMode() const;
 
   bool hasRootScrollerAsDescendant() const {
-    ASSERT(!m_needsDescendantDependentCompositingInputsUpdate);
+    DCHECK(!m_needsDescendantDependentCompositingInputsUpdate);
     return m_hasRootScrollerAsDescendant;
   }
 
   bool lostGroupedMapping() const {
-    ASSERT(isAllowedToQueryCompositingState());
+    DCHECK(isAllowedToQueryCompositingState());
     return m_lostGroupedMapping;
   }
   void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }
 
   CompositingReasons getCompositingReasons() const {
-    ASSERT(isAllowedToQueryCompositingState());
+    DCHECK(isAllowedToQueryCompositingState());
     return m_rareData ? m_rareData->compositingReasons : CompositingReasonNone;
   }
   void setCompositingReasons(CompositingReasons,
                              CompositingReasons mask = CompositingReasonAll);
 
   SquashingDisallowedReasons getSquashingDisallowedReasons() const {
-    ASSERT(isAllowedToQueryCompositingState());
+    DCHECK(isAllowedToQueryCompositingState());
     return m_rareData ? m_rareData->squashingDisallowedReasons
                       : SquashingDisallowedReasonsNone;
   }
   void setSquashingDisallowedReasons(SquashingDisallowedReasons);
 
   bool hasCompositingDescendant() const {
-    ASSERT(isAllowedToQueryCompositingState());
+    DCHECK(isAllowedToQueryCompositingState());
     return m_hasCompositingDescendant;
   }
   void setHasCompositingDescendant(bool);
 
   bool shouldIsolateCompositedDescendants() const {
-    ASSERT(isAllowedToQueryCompositingState());
+    DCHECK(isAllowedToQueryCompositingState());
     return m_shouldIsolateCompositedDescendants;
   }
   void setShouldIsolateCompositedDescendants(bool);
@@ -834,7 +841,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool hasSelfPaintingLayerDescendant() const {
     if (m_hasSelfPaintingLayerDescendantDirty)
       updateHasSelfPaintingLayerDescendant();
-    ASSERT(!m_hasSelfPaintingLayerDescendantDirty);
+    DCHECK(!m_hasSelfPaintingLayerDescendantDirty);
     return m_hasSelfPaintingLayerDescendant;
   }
   LayoutRect paintingExtent(const PaintLayer* rootLayer,
@@ -917,7 +924,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   void setPreviousPaintResult(PaintLayerPainter::PaintResult result) {
     m_previousPaintResult = static_cast<unsigned>(result);
-    ASSERT(m_previousPaintResult == static_cast<unsigned>(result));
+    DCHECK(m_previousPaintResult == static_cast<unsigned>(result));
   }
 
   // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never
@@ -1137,7 +1144,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_isVisibleDescendantDirty : 1;
   unsigned m_hasVisibleDescendant : 1;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   unsigned m_needsPositionUpdate : 1;
 #endif
 

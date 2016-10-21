@@ -148,20 +148,22 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
 
     if (!layer->isRootLayer()) {
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        properties.clippedAbsoluteBoundingBox =
+        properties.unclippedAbsoluteBoundingBox =
             enclosingIntRect(m_geometryMap.absoluteRect(
                 FloatRect(layer->boundingBoxForCompositingOverlapTest())));
         // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little
         // sense, but removing this code will make JSGameBench sad.
         // See https://codereview.chromium.org/13912020/
-        if (properties.clippedAbsoluteBoundingBox.isEmpty())
-          properties.clippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
+        if (properties.unclippedAbsoluteBoundingBox.isEmpty())
+          properties.unclippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
 
         IntRect clipRect =
             pixelSnappedIntRect(layer->clipper()
                                     .backgroundClipRect(ClipRectsContext(
                                         m_rootLayer, AbsoluteClipRects))
                                     .rect());
+        properties.clippedAbsoluteBoundingBox =
+            properties.unclippedAbsoluteBoundingBox;
         properties.clippedAbsoluteBoundingBox.intersect(clipRect);
       }
 

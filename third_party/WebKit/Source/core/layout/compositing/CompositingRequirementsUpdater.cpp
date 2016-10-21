@@ -65,6 +65,11 @@ class OverlapMapContainer {
   IntRect m_boundingBox;
 };
 
+struct OverlapMapContainers {
+  OverlapMapContainer clipped;
+  OverlapMapContainer unclipped;
+};
+
 class CompositingRequirementsUpdater::OverlapMap {
   WTF_MAKE_NONCOPYABLE(OverlapMap);
 
@@ -76,7 +81,16 @@ class CompositingRequirementsUpdater::OverlapMap {
     beginNewOverlapTestingContext();
   }
 
-  void add(PaintLayer* layer, const IntRect& bounds) {
+  // Each rect added is marked as clipped or unclipped. clipped rects may
+  // overlap only with other clipped rects, but unclipped rects may overlap
+  // with anything.
+  //
+  // This is used to model composited overflow scrolling, where PaintLayers
+  // within the scroller are not clipped for overlap testing, whereas
+  // PaintLayers not within it are. This is necessary because PaintLayerClipper
+  // is not smart enough to understand not to clip composited overflow clips,
+  // but still clip otherwise.
+  void add(PaintLayer* layer, const IntRect& bounds, bool isClipped) {
     DCHECK(!layer->isRootLayer());
     if (bounds.isEmpty())
       return;
@@ -85,18 +99,26 @@ class CompositingRequirementsUpdater::OverlapMap {
     // contribute to overlap as soon as they have been recursively processed
     // and popped off the stack.
     DCHECK_GE(m_overlapStack.size(), 2ul);
-    m_overlapStack[m_overlapStack.size() - 2].add(bounds);
+    if (isClipped)
+      m_overlapStack[m_overlapStack.size() - 2].clipped.add(bounds);
+    else
+      m_overlapStack[m_overlapStack.size() - 2].unclipped.add(bounds);
   }
 
-  bool overlapsLayers(const IntRect& bounds) const {
-    return m_overlapStack.last().overlapsLayers(bounds);
+  bool overlapsLayers(const IntRect& bounds, bool isClipped) const {
+    bool clippedOverlap = m_overlapStack.last().clipped.overlapsLayers(bounds);
+    if (isClipped)
+      return clippedOverlap;
+    // Unclipped is allowed to overlap clipped, but not vice-versa.
+    return clippedOverlap ||
+           m_overlapStack.last().unclipped.overlapsLayers(bounds);
   }
 
   void beginNewOverlapTestingContext() {
     // This effectively creates a new "clean slate" for overlap state.
     // This is used when we know that a subtree or remaining set of
     // siblings does not need to check overlap with things behind it.
-    m_overlapStack.append(OverlapMapContainer());
+    m_overlapStack.append(OverlapMapContainers());
   }
 
   void finishCurrentOverlapTestingContext() {
@@ -107,12 +129,15 @@ class CompositingRequirementsUpdater::OverlapMap {
     //
     // FIXME: we may be able to avoid this deep copy by rearranging how
     //        overlapMap state is managed.
-    m_overlapStack[m_overlapStack.size() - 2].unite(m_overlapStack.last());
+    m_overlapStack[m_overlapStack.size() - 2].clipped.unite(
+        m_overlapStack.last().clipped);
+    m_overlapStack[m_overlapStack.size() - 2].unclipped.unite(
+        m_overlapStack.last().unclipped);
     m_overlapStack.removeLast();
   }
 
  private:
-  Vector<OverlapMapContainer> m_overlapStack;
+  Vector<OverlapMapContainers> m_overlapStack;
 };
 
 class CompositingRequirementsUpdater::RecursionData {
@@ -233,6 +258,13 @@ void CompositingRequirementsUpdater::updateRecursive(
       currentRecursionData.m_compositingAncestor->layoutObject()->isVideo())
     directReasons |= CompositingReasonVideoOverlay;
 
+  bool hasCompositedScrollingAncestor =
+      layer->ancestorScrollingLayer() &&
+      (m_compositingReasonFinder.directReasons(
+           layer->ancestorScrollingLayer()) &
+       CompositingReasonOverflowScrollingTouch);
+
+  // TODO(chrishtr): use |hasCompositedScrollingAncestor| instead.
   if (currentRecursionData.m_hasCompositedScrollingAncestor &&
       layer->layoutObject()->styleRef().hasViewportConstrainedPosition())
     directReasons |= CompositingReasonScrollDependentPosition;
@@ -278,6 +310,7 @@ void CompositingRequirementsUpdater::updateRecursive(
           ? CompositingReasonAssumedOverlap
           : CompositingReasonNone;
 
+  // TODO(chrishtr): use |hasCompositedScrollingAncestor| instead.
   if (currentRecursionData.m_hasCompositedScrollingAncestor) {
     Vector<size_t> unclippedDescendantsToRemove;
     for (size_t i = 0; i < unclippedDescendants.size(); i++) {
@@ -310,14 +343,16 @@ void CompositingRequirementsUpdater::updateRecursive(
     }
   }
 
-  const IntRect& absBounds = layer->clippedAbsoluteBoundingBox();
+  const IntRect& absBounds = hasCompositedScrollingAncestor
+                                 ? layer->unclippedAbsoluteBoundingBox()
+                                 : layer->clippedAbsoluteBoundingBox();
   absoluteDescendantBoundingBox = absBounds;
-
   if (currentRecursionData.m_testingOverlap &&
       !requiresCompositingOrSquashing(directReasons)) {
-    overlapCompositingReason = overlapMap.overlapsLayers(absBounds)
-                                   ? CompositingReasonOverlap
-                                   : CompositingReasonNone;
+    bool overlaps =
+        overlapMap.overlapsLayers(absBounds, !hasCompositedScrollingAncestor);
+    overlapCompositingReason =
+        overlaps ? CompositingReasonOverlap : CompositingReasonNone;
   }
 
   reasonsToComposite |= overlapCompositingReason;
@@ -379,7 +414,7 @@ void CompositingRequirementsUpdater::updateRecursive(
           // the negative z-index child's bounds to the new overlap context.
           overlapMap.beginNewOverlapTestingContext();
           overlapMap.add(curNode->layer(),
-                         curNode->layer()->clippedAbsoluteBoundingBox());
+                         curNode->layer()->clippedAbsoluteBoundingBox(), true);
           overlapMap.finishCurrentOverlapTestingContext();
         }
       }
@@ -449,7 +484,7 @@ void CompositingRequirementsUpdater::updateRecursive(
     // for overlap.
     if (childRecursionData.m_compositingAncestor &&
         !childRecursionData.m_compositingAncestor->isRootLayer())
-      overlapMap.add(layer, absBounds);
+      overlapMap.add(layer, absBounds, !hasCompositedScrollingAncestor);
 
     // Now check for reasons to become composited that depend on the state of
     // descendant layers.
@@ -464,7 +499,8 @@ void CompositingRequirementsUpdater::updateRecursive(
       // now, because the code is designed to push overlap information to the
       // second-from-top context of the stack.
       overlapMap.beginNewOverlapTestingContext();
-      overlapMap.add(layer, absoluteDescendantBoundingBox);
+      overlapMap.add(layer, absoluteDescendantBoundingBox,
+                     !hasCompositedScrollingAncestor);
       willBeCompositedOrSquashed = true;
     }
 
