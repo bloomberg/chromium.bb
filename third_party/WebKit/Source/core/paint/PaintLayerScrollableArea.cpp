@@ -667,58 +667,24 @@ void PaintLayerScrollableArea::updateAfterLayout() {
 
   updateScrollDimensions();
 
-  bool hasHorizontalOverflow = this->hasHorizontalOverflow();
-  bool hasVerticalOverflow = this->hasVerticalOverflow();
+  bool hadHorizontalScrollbar = hasHorizontalScrollbar();
+  bool hadVerticalScrollbar = hasVerticalScrollbar();
 
-  // Don't add auto scrollbars if the box contents aren't visible.
-  bool shouldHaveAutoHorizontalScrollbar =
-      hasHorizontalOverflow && box().pixelSnappedClientHeight();
-  bool shouldHaveAutoVerticalScrollbar =
-      hasVerticalOverflow && box().pixelSnappedClientWidth();
+  bool needsHorizontalScrollbar;
+  bool needsVerticalScrollbar;
+  computeScrollbarExistence(needsHorizontalScrollbar, needsVerticalScrollbar);
 
-  {
-    // Hits in
-    // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
-    DisableCompositingQueryAsserts disabler;
-
-    // overflow:scroll should just enable/disable.
-    if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar())
-      horizontalScrollbar()->setEnabled(hasHorizontalOverflow);
-    if (box().style()->overflowY() == OverflowScroll && verticalScrollbar())
-      verticalScrollbar()->setEnabled(hasVerticalOverflow);
-  }
-
-  // We need to layout again if scrollbars are added or removed by
-  // overflow:auto, or by changing between native and custom.
-  DCHECK(box().frame()->settings());
   bool horizontalScrollbarShouldChange =
-      ((box().hasAutoHorizontalScrollbar() &&
-        (hasHorizontalScrollbar() != shouldHaveAutoHorizontalScrollbar)) ||
-       (box().style()->overflowX() == OverflowScroll &&
-        !horizontalScrollbar())) &&
-      (!box().frame()->settings()->hideScrollbars() ||
-       hasHorizontalScrollbar());
+      needsHorizontalScrollbar != hadHorizontalScrollbar;
   bool verticalScrollbarShouldChange =
-      ((box().hasAutoVerticalScrollbar() &&
-        (hasVerticalScrollbar() != shouldHaveAutoVerticalScrollbar)) ||
-       (box().style()->overflowY() == OverflowScroll &&
-        !verticalScrollbar())) &&
-      (!box().frame()->settings()->hideScrollbars() || hasVerticalScrollbar());
-  bool scrollbarsWillChange =
-      !scrollbarsAreFrozen && !visualViewportSuppliesScrollbars() &&
-      (horizontalScrollbarShouldChange || verticalScrollbarShouldChange);
+      needsVerticalScrollbar != hadVerticalScrollbar;
 
+  bool scrollbarsWillChange =
+      !scrollbarsAreFrozen &&
+      (horizontalScrollbarShouldChange || verticalScrollbarShouldChange);
   if (scrollbarsWillChange) {
-    bool hadHorizontalScrollbar = hasHorizontalScrollbar();
-    bool hadVerticalScrollbar = hasVerticalScrollbar();
-    if (box().hasAutoHorizontalScrollbar())
-      setHasHorizontalScrollbar(shouldHaveAutoHorizontalScrollbar);
-    else if (box().style()->overflowX() == OverflowScroll)
-      setHasHorizontalScrollbar(true);
-    if (box().hasAutoVerticalScrollbar())
-      setHasVerticalScrollbar(shouldHaveAutoVerticalScrollbar);
-    else if (box().style()->overflowY() == OverflowScroll)
-      setHasVerticalScrollbar(true);
+    setHasHorizontalScrollbar(needsHorizontalScrollbar);
+    setHasVerticalScrollbar(needsVerticalScrollbar);
 
     if (hasScrollbar())
       updateScrollCornerStyle();
@@ -773,6 +739,12 @@ void PaintLayerScrollableArea::updateAfterLayout() {
     // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
     DisableCompositingQueryAsserts disabler;
 
+    // overflow:scroll should just enable/disable.
+    if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar())
+      horizontalScrollbar()->setEnabled(hasHorizontalOverflow());
+    if (box().style()->overflowY() == OverflowScroll && verticalScrollbar())
+      verticalScrollbar()->setEnabled(hasVerticalOverflow());
+
     // Set up the range (and page step/line step).
     if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
       int clientWidth = box().pixelSnappedClientWidth();
@@ -796,9 +768,8 @@ void PaintLayerScrollableArea::updateAfterLayout() {
   clampScrollOffsetsAfterLayout();
 
   if (!scrollbarsAreFrozen) {
-    bool hasOverflow =
-        hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow();
-    updateScrollableAreaSet(hasOverflow);
+    updateScrollableAreaSet(hasScrollableHorizontalOverflow() ||
+                            hasScrollableVerticalOverflow());
   }
 
   DisableCompositingQueryAsserts disabler;
@@ -868,14 +839,6 @@ bool PaintLayerScrollableArea::hasScrollableVerticalOverflow() const {
   return hasVerticalOverflow() && box().scrollsOverflowY();
 }
 
-static bool overflowRequiresScrollbar(EOverflow overflow) {
-  return overflow == OverflowScroll;
-}
-
-static bool overflowDefinesAutomaticScrollbar(EOverflow overflow) {
-  return overflow == OverflowAuto || overflow == OverflowOverlay;
-}
-
 // This function returns true if the given box requires overflow scrollbars (as
 // opposed to the 'viewport' scrollbars managed by the PaintLayerCompositor).
 // FIXME: we should use the same scrolling machinery for both the viewport and
@@ -890,51 +853,20 @@ static bool canHaveOverflowScrollbars(const LayoutBox& box) {
 void PaintLayerScrollableArea::updateAfterStyleChange(
     const ComputedStyle* oldStyle) {
   // Don't do this on first style recalc, before layout has ever happened.
-  if (!overflowRect().size().isZero())
+  if (!overflowRect().size().isZero()) {
     updateScrollableAreaSet(hasScrollableHorizontalOverflow() ||
                             hasScrollableVerticalOverflow());
-
-  if (!canHaveOverflowScrollbars(box()))
-    return;
-
-  // Avoid drawing two sets of scrollbars when one is provided by the visual
-  // viewport.
-  if (visualViewportSuppliesScrollbars()) {
-    setHasHorizontalScrollbar(false);
-    setHasVerticalScrollbar(false);
-    return;
   }
 
-  EOverflow overflowX = box().style()->overflowX();
-  EOverflow overflowY = box().style()->overflowY();
+  bool needsHorizontalScrollbar;
+  bool needsVerticalScrollbar;
+  // We add auto scrollbars only during layout to prevent spurious activations.
+  computeScrollbarExistence(needsHorizontalScrollbar, needsVerticalScrollbar,
+                            ForbidAddingAutoBars);
 
-  bool needsHorizontalScrollbar =
-      (hasHorizontalScrollbar() &&
-       overflowDefinesAutomaticScrollbar(overflowX)) ||
-      overflowRequiresScrollbar(overflowX);
-  bool needsVerticalScrollbar =
-      (hasVerticalScrollbar() &&
-       overflowDefinesAutomaticScrollbar(overflowY)) ||
-      overflowRequiresScrollbar(overflowY);
-
-  // Look for the scrollbarModes and reset the needs Horizontal & vertical
-  // Scrollbar values based on scrollbarModes, as during force style change
-  // StyleResolver::styleForDocument returns documentStyle with  no overflow
-  // values, due to which we are destorying the scrollbars that was already
-  // present.
-  if (box().isLayoutView()) {
-    if (LocalFrame* frame = box().frame()) {
-      if (FrameView* frameView = frame->view()) {
-        ScrollbarMode hMode;
-        ScrollbarMode vMode;
-        frameView->calculateScrollbarModes(hMode, vMode);
-        if (hMode == ScrollbarAlwaysOn && !needsHorizontalScrollbar)
-          needsHorizontalScrollbar = true;
-        if (vMode == ScrollbarAlwaysOn && !needsVerticalScrollbar)
-          needsVerticalScrollbar = true;
-      }
-    }
-  }
+  // Avoid some unnecessary computation if there were and will be no scrollbars.
+  if (!hasScrollbar() && !needsHorizontalScrollbar && !needsVerticalScrollbar)
+    return;
 
   setHasHorizontalScrollbar(needsHorizontalScrollbar);
   setHasVerticalScrollbar(needsVerticalScrollbar);
@@ -942,12 +874,14 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
   // With overflow: scroll, scrollbars are always visible but may be disabled.
   // When switching to another value, we need to re-enable them (see bug 11985).
   if (hasHorizontalScrollbar() && oldStyle &&
-      oldStyle->overflowX() == OverflowScroll && overflowX != OverflowScroll) {
+      oldStyle->overflowX() == OverflowScroll &&
+      box().style()->overflowX() != OverflowScroll) {
     horizontalScrollbar()->setEnabled(true);
   }
 
   if (hasVerticalScrollbar() && oldStyle &&
-      oldStyle->overflowY() == OverflowScroll && overflowY != OverflowScroll) {
+      oldStyle->overflowY() == OverflowScroll &&
+      box().style()->overflowY() != OverflowScroll) {
     verticalScrollbar()->setEnabled(true);
   }
 
@@ -998,17 +932,20 @@ void PaintLayerScrollableArea::updateAfterOverflowRecalc() {
                                      overflowRect().height().toInt());
   }
 
-  bool hasHorizontalOverflow = this->hasHorizontalOverflow();
-  bool hasVerticalOverflow = this->hasVerticalOverflow();
-  bool autoHorizontalScrollbarChanged =
-      box().hasAutoHorizontalScrollbar() &&
-      (hasHorizontalScrollbar() != hasHorizontalOverflow);
-  bool autoVerticalScrollbarChanged =
-      box().hasAutoVerticalScrollbar() &&
-      (hasVerticalScrollbar() != hasVerticalOverflow);
-  if (autoHorizontalScrollbarChanged || autoVerticalScrollbarChanged)
+  bool needsHorizontalScrollbar;
+  bool needsVerticalScrollbar;
+  computeScrollbarExistence(needsHorizontalScrollbar, needsVerticalScrollbar);
+
+  bool horizontalScrollbarShouldChange =
+      needsHorizontalScrollbar != hasHorizontalScrollbar();
+  bool verticalScrollbarShouldChange =
+      needsVerticalScrollbar != hasVerticalScrollbar();
+
+  if ((box().hasAutoHorizontalScrollbar() && horizontalScrollbarShouldChange) ||
+      (box().hasAutoVerticalScrollbar() && verticalScrollbarShouldChange)) {
     box().setNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::Unknown);
+  }
 }
 
 IntRect PaintLayerScrollableArea::rectForHorizontalScrollbar(
@@ -1141,13 +1078,61 @@ bool PaintLayerScrollableArea::needsScrollbarReconstruction() const {
           (shouldUseCustom && didCustomScrollbarOwnerChanged));
 }
 
+void PaintLayerScrollableArea::computeScrollbarExistence(
+    bool& needsHorizontalScrollbar,
+    bool& needsVerticalScrollbar,
+    ComputeScrollbarExistenceOption option) const {
+  // Scrollbars may be hidden or provided by visual viewport or frame instead.
+  DCHECK(box().frame()->settings());
+  if (visualViewportSuppliesScrollbars() || !canHaveOverflowScrollbars(box()) ||
+      box().frame()->settings()->hideScrollbars()) {
+    needsHorizontalScrollbar = false;
+    needsVerticalScrollbar = false;
+    return;
+  }
+
+  needsHorizontalScrollbar = box().scrollsOverflowX();
+  needsVerticalScrollbar = box().scrollsOverflowY();
+
+  // Don't add auto scrollbars if the box contents aren't visible.
+  if (box().hasAutoHorizontalScrollbar()) {
+    if (option == ForbidAddingAutoBars)
+      needsHorizontalScrollbar &= hasHorizontalScrollbar();
+    needsHorizontalScrollbar &= box().isRooted() &&
+                                this->hasHorizontalOverflow() &&
+                                box().pixelSnappedClientHeight();
+  }
+
+  if (box().hasAutoVerticalScrollbar()) {
+    if (option == ForbidAddingAutoBars)
+      needsVerticalScrollbar &= hasVerticalScrollbar();
+    needsVerticalScrollbar &= box().isRooted() && this->hasVerticalOverflow() &&
+                              box().pixelSnappedClientWidth();
+  }
+
+  // Look for the scrollbarModes and reset the needs Horizontal & vertical
+  // Scrollbar values based on scrollbarModes, as during force style change
+  // StyleResolver::styleForDocument returns documentStyle with no overflow
+  // values, due to which we are destroying the scrollbars that were already
+  // present.
+  if (box().isLayoutView()) {
+    if (LocalFrame* frame = box().frame()) {
+      if (FrameView* frameView = frame->view()) {
+        ScrollbarMode hMode;
+        ScrollbarMode vMode;
+        frameView->calculateScrollbarModes(hMode, vMode);
+        if (hMode == ScrollbarAlwaysOn)
+          needsHorizontalScrollbar = true;
+        if (vMode == ScrollbarAlwaysOn)
+          needsVerticalScrollbar = true;
+      }
+    }
+  }
+}
+
 void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar) {
   if (FreezeScrollbarsScope::scrollbarsAreFrozen())
     return;
-
-  DCHECK(box().frame()->settings());
-  if (box().frame()->settings()->hideScrollbars())
-    hasScrollbar = false;
 
   if (hasScrollbar == hasHorizontalScrollbar())
     return;
@@ -1175,10 +1160,6 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar) {
 void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar) {
   if (FreezeScrollbarsScope::scrollbarsAreFrozen())
     return;
-
-  DCHECK(box().frame()->settings());
-  if (box().frame()->settings()->hideScrollbars())
-    hasScrollbar = false;
 
   if (hasScrollbar == hasVerticalScrollbar())
     return;

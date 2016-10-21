@@ -510,6 +510,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
   int horizontalScrollbarStart(int minX) const;
   IntSize scrollbarOffset(const Scrollbar&) const;
 
+  enum ComputeScrollbarExistenceOption { Default, ForbidAddingAutoBars };
+  void computeScrollbarExistence(
+      bool& needsHorizontalScrollbar,
+      bool& needsVerticalScrollbar,
+      ComputeScrollbarExistenceOption = Default) const;
+
   void setHasHorizontalScrollbar(bool hasScrollbar);
   void setHasVerticalScrollbar(bool hasScrollbar);
 

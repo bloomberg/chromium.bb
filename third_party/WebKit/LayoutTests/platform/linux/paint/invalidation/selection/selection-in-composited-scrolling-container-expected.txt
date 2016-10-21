@@ -46,12 +46,6 @@
       "position": [0, 16],
       "bounds": [60, 0],
       "drawsContent": true
-    },
-    {
-      "name": "Vertical Scrollbar Layer",
-      "position": [60, 0],
-      "bounds": [0, 16],
-      "drawsContent": true
     }
   ],
   "objectPaintInvalidations": [

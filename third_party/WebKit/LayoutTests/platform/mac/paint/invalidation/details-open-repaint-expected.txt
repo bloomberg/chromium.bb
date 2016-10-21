@@ -59,14 +59,6 @@
       "reason": "scroll"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "scroll"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject insertion"
     },
