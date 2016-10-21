@@ -9,7 +9,9 @@ import("ffmpeg_generated.gni")
 platform_config_root =
     "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
 
-has_yasm_deps = ffmpeg_yasm_sources != [] && (current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
+has_yasm_deps =
+    ffmpeg_yasm_sources != [] &&
+    (current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
 if (has_yasm_deps) {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
@@ -41,7 +43,8 @@ if (has_yasm_deps) {
     # Disable warnings, prevents log spam for things we won't fix.
     yasm_flags += [
       "-w",
-      "-P", rebase_path("$platform_config_root/config.asm", root_build_dir),
+      "-P",
+      rebase_path("$platform_config_root/config.asm", root_build_dir),
     ]
 
     if (is_mac) {
@@ -69,14 +72,20 @@ if (is_win) {
   action("ffmpeg_generate_def") {
     script = generate_stubs_script
     sources = sig_files
-    outputs = [ "$target_gen_dir/ffmpeg.def" ]
+    outputs = [
+      "$target_gen_dir/ffmpeg.def",
+    ]
     args = [
-  # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
-      "-i", rebase_path(target_out_dir, root_build_dir),
-      "-o", rebase_path(target_gen_dir, root_build_dir),
-      "-t", "windows_def",
-      "-m", "ffmpeg.dll",
-    ] + rebase_path(sources, root_build_dir)
+             # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
+             "-i",
+             rebase_path(target_out_dir, root_build_dir),
+             "-o",
+             rebase_path(target_gen_dir, root_build_dir),
+             "-t",
+             "windows_def",
+             "-m",
+             "ffmpeg.dll",
+           ] + rebase_path(sources, root_build_dir)
   }
 }
 
@@ -87,32 +96,44 @@ config("ffmpegsumo_warnings") {
   if (is_clang) {
     cflags = [
       "-Wno-absolute-value",
+
       # ffmpeg uses its own deprecated functions.
       "-Wno-deprecated-declarations",
+
       # ffmpeg doesn't care about pointer constness.
       "-Wno-incompatible-pointer-types",
+
       # ffmpeg doesn't follow usual parentheses conventions.
       "-Wno-logical-op-parentheses",
+
       # ffmpeg doesn't care about pointer signedness.
       "-Wno-parentheses",
+
       # ffmpeg doesn't care about pointer signedness.
       "-Wno-pointer-sign",
+
       # ffmpeg doesn't believe in exhaustive switch statements.
       "-Wno-switch",
+
       # matroskadec.c has a "failed:" label that's only used if some
       # CONFIG_ flags we don't set are set.
       "-Wno-unused-label",
+
       # ffmpeg has a lot of unused variables.
       "-Wno-unused-variable",
+
       # This fires on `av_assert0(!"valid element size")` in utils.c
       "-Wno-string-conversion",
+
       # This fires on `pos_min` and `pos_max` in
       # autorename_libavformat_utils.c
       "-Wno-sometimes-uninitialized",
+
       # ffmpeg contains static functions in header files, which lead
       # to unused function warnings. There are a few legit unused
       # functions too.
       "-Wno-unused-function",
+
       # vp3data.h's vp31_inter_dequant stores '128' in an int8_t array.
       "-Wno-constant-conversion",
     ]
@@ -132,9 +153,9 @@ if (is_component_ffmpeg) {
 }
 target(link_target_type, "ffmpeg_internal") {
   sources = ffmpeg_c_sources + ffmpeg_gas_sources + [
-    "$platform_config_root/config.h",
-    "$platform_config_root/libavutil/avconfig.h",
-  ]
+              "$platform_config_root/config.h",
+              "$platform_config_root/libavutil/avconfig.h",
+            ]
   include_dirs = [
     platform_config_root,
     ".",
@@ -144,10 +165,12 @@ target(link_target_type, "ffmpeg_internal") {
     "_POSIX_C_SOURCE=200112",
     "_XOPEN_SOURCE=600",
     "PIC",
+
     # Disable deprecated features that generate spammy warnings.
     # media/ffmpeg/ffmpeg_common.h defines these as well and must be kept
     # in sync with this file.
     "FF_API_CONVERGENCE_DURATION=0",
+
     # Upstream libavcodec/utils.c still uses the deprecated
     # av_dup_packet(), causing deprecation warnings.
     # The normal fix for such things is to disable the feature as below,
@@ -161,11 +184,14 @@ target(link_target_type, "ffmpeg_internal") {
   cflags = []
   ldflags = []
   libs = []
-  deps = []
+  deps = [
+    "//third_party/opus",
+  ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",
+
     # These must be after no_chromium_code for warning flags to be ordered
     # correctly.
     "//build/config/compiler:no_incompatible_pointer_warnings",
@@ -201,6 +227,7 @@ target(link_target_type, "ffmpeg_internal") {
     cflags += [
       "-fPIC",
       "-fomit-frame-pointer",
+
       # ffmpeg uses its own deprecated functions.
       "-Wno-deprecated-declarations",
     ]
@@ -225,6 +252,7 @@ target(link_target_type, "ffmpeg_internal") {
           import("//build/config/android/config.gni")
           rebased_android_toolchain_root =
               rebase_path(android_toolchain_root, root_build_dir)
+
           # Else /usr/bin/as gets picked up.
           asmflags += [ "-B${rebased_android_toolchain_root}/bin" ]
         }
@@ -236,6 +264,7 @@ target(link_target_type, "ffmpeg_internal") {
     defines += [
       "_ISOC99_SOURCE",
       "_LARGEFILE_SOURCE",
+
       # BUG(ihf): ffmpeg compiles with this define. But according to
       # ajwong: I wouldn't change _FILE_OFFSET_BITS.  That's a scary change
       # cause it affects the default length of off_t, and fpos_t,
@@ -253,7 +282,8 @@ target(link_target_type, "ffmpeg_internal") {
       "-fomit-frame-pointer",
     ]
     ldflags = [
-      "-L", rebase_path(target_gen_dir, root_build_dir),
+      "-L",
+      rebase_path(target_gen_dir, root_build_dir),
     ]
     if (!is_android) {
       # OS=android requires that both -lz and -lm occur after
@@ -270,13 +300,18 @@ target(link_target_type, "ffmpeg_internal") {
       # all unwinder-providing libraries).
 
       # librt for clock_gettime on precise
-      libs += [ "m", "z", "rt" ]
+      libs += [
+        "m",
+        "z",
+        "rt",
+      ]
     }
     if (is_component_ffmpeg) {
       # Export all symbols when building as component.
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
       configs += [ "//build/config/gcc:symbol_visibility_default" ]
     }
+
     # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
     #      if (is_openbsd) {
     #       # OpenBSD's gcc (4.2.1) does not support this flag
@@ -294,7 +329,7 @@ target(link_target_type, "ffmpeg_internal") {
   } else if (is_win) {
     import("//build/config/win/visual_studio_version.gni")
 
-    if ((visual_studio_version == "2013") || (visual_studio_version == "2013e")) {
+    if (visual_studio_version == "2013" || visual_studio_version == "2013e") {
       defines += [
         # VS 2015 supports these natively so they cannot be #defines.
         "inline=__inline",
@@ -302,6 +337,7 @@ target(link_target_type, "ffmpeg_internal") {
         "strtod=avpriv_strtod",
         "snprintf=avpriv_snprintf",
         "vsnprintf=avpriv_vsnprintf",
+
         # This leads to duplicate avpriv_snprintf definitions due to inline
         # _snprintf in VC++ 2015 stdio.h.
         "_snprintf=avpriv_snprintf",
@@ -315,37 +351,41 @@ target(link_target_type, "ffmpeg_internal") {
 
     if (is_component_ffmpeg) {
       # Required to avoid 4049 and 4217 errors around redundant imports.
-      cflags += [ "/FIcompat/msvcrt/snprintf.h", "/FIcompat/msvcrt/strtod.h" ]
+      cflags += [
+        "/FIcompat/msvcrt/snprintf.h",
+        "/FIcompat/msvcrt/strtod.h",
+      ]
     }
 
     # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
     cflags += [
-      "/wd4996", # 'function': was declared deprecated
-      "/wd4018", # 'expression': signed/unsigned mismatch
-      "/wd4090", # 'operation' : different 'modifier' qualifiers
-      "/wd4305", # 'identifier': truncation from 'type1' to 'type2'
-      "/wd4133", # 'type' : incompatible types - from 'type1' to 'type2'
-      "/wd4146", # unary minus operator applied to unsigned type, result
-                 #   still unsigned
-      "/wd4554", # 'operator' : check operator precedence for possible
-                 #   error; use parentheses to clarify precedence
-      "/wd4028", # formal parameter 'number' different from declaration
-      "/wd4334", # 'operator' : result of 32-bit shift implicitly
-                 #   converted to 64 bits (was 64-bit shift intended?)
-      "/wd4101", # 'identifier' : unreferenced local variable
-      "/wd4102", # 'label' : unreferenced label
-      "/wd4116", # unnamed type definition in parentheses
-      "/wd4307", # 'operator' : integral constant overflow
-      "/wd4273", # 'function' : inconsistent DLL linkage
-      "/wd4005", # 'identifier' : macro redefinition
-      "/wd4056", # overflow in floating point constant arithmetic
-      "/wd4756", # overflow in constant arithmetic
+      "/wd4996",  # 'function': was declared deprecated
+      "/wd4018",  # 'expression': signed/unsigned mismatch
+      "/wd4090",  # 'operation' : different 'modifier' qualifiers
+      "/wd4305",  # 'identifier': truncation from 'type1' to 'type2'
+      "/wd4133",  # 'type' : incompatible types - from 'type1' to 'type2'
+      "/wd4146",  # unary minus operator applied to unsigned type, result
+                  #   still unsigned
+
+      "/wd4554",  # 'operator' : check operator precedence for possible
+                  #   error; use parentheses to clarify precedence
+
+      "/wd4028",  # formal parameter 'number' different from declaration
+      "/wd4334",  # 'operator' : result of 32-bit shift implicitly
+                  #   converted to 64 bits (was 64-bit shift intended?)
+
+      "/wd4101",  # 'identifier' : unreferenced local variable
+      "/wd4102",  # 'label' : unreferenced label
+      "/wd4116",  # unnamed type definition in parentheses
+      "/wd4307",  # 'operator' : integral constant overflow
+      "/wd4273",  # 'function' : inconsistent DLL linkage
+      "/wd4005",  # 'identifier' : macro redefinition
+      "/wd4056",  # overflow in floating point constant arithmetic
+      "/wd4756",  # overflow in constant arithmetic
     ]
     if (current_cpu == "x64") {
       # TODO(wolenetz): We should fix this.  http://crbug.com/171009
-      cflags += [
-        "/wd4267"  # Conversion from size_t to 'type'.
-      ]
+      cflags += [ "/wd4267" ]  # Conversion from size_t to 'type'.
     }
   }
 
@@ -357,7 +397,9 @@ target(link_target_type, "ffmpeg_internal") {
 if (is_component_ffmpeg) {
   shared_library("ffmpeg") {
     public_configs = [ ":ffmpeg_dependent_config" ]
-    deps = [ ":ffmpeg_internal" ]
+    deps = [
+      ":ffmpeg_internal",
+    ]
 
     # So we can append below and assume they're defined.
     ldflags = []
@@ -366,17 +408,22 @@ if (is_component_ffmpeg) {
       # Fixes warnings PIC relocation when building as component.
       ldflags += [
         "-Wl,-Bsymbolic",
-        "-L", rebase_path(target_gen_dir, root_build_dir),
+        "-L",
+        rebase_path(target_gen_dir, root_build_dir),
       ]
     } else if (is_win) {
       # Windows component build needs the .def file to export ffmpeg symbols.
       deps += [ ":ffmpeg_generate_def" ]
-      sources = [ "$target_gen_dir/ffmpeg.def" ]
+      sources = [
+        "$target_gen_dir/ffmpeg.def",
+      ]
     }
   }
 } else {
   source_set("ffmpeg") {
     public_configs = [ ":ffmpeg_dependent_config" ]
-    deps = [ ":ffmpeg_internal" ]
+    deps = [
+      ":ffmpeg_internal",
+    ]
   }
 }

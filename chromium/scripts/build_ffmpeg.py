@@ -300,6 +300,7 @@ def main(argv):
       '--enable-fft',
       '--enable-rdft',
       '--enable-static',
+      '--enable-libopus',
 
       # Disable features.
       '--disable-bzlib',
@@ -324,11 +325,15 @@ def main(argv):
       '--disable-videotoolbox',
 
       # Common codecs.
-      '--enable-decoder=vorbis',
+      '--enable-decoder=vorbis,libopus',
       '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le',
       '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
       '--enable-demuxer=ogg,matroska,wav',
       '--enable-parser=opus,vorbis',
+
+      # Setup include path so Chromium's libopus can be used.
+      '--extra-cflags=-I' + os.path.join(CHROMIUM_ROOT_DIR,
+                                         'third_party/opus/src/include')
   ])
 
   if target_os == 'android':
