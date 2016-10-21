@@ -452,8 +452,9 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        // Forward touch events to the NTP if the toolbar is moved away.
-        if (mNtpSearchBoxTranslation.y < 0) {
+        // Forward touch events to the NTP if the toolbar is moved away but the search box hasn't
+        // reached the top of the page yet.
+        if (mNtpSearchBoxTranslation.y < 0 && mLocationBar.getTranslationY() > 0) {
             NewTabPage newTabPage = getToolbarDataProvider().getNewTabPageForCurrentTab();
 
             // No null check -- the toolbar should not be moved if we are not on an NTP.
