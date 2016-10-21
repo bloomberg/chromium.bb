@@ -39,7 +39,6 @@ class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCAnswerOptions;
-class WebRTCConfiguration;
 class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
@@ -49,6 +48,7 @@ class WebRTCSessionDescriptionRequest;
 class WebRTCStatsRequest;
 class WebRTCVoidRequest;
 class WebString;
+struct WebRTCConfiguration;
 struct WebRTCDataChannelInit;
 
 // Used to back histogram value of

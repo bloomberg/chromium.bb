@@ -75,7 +75,6 @@
 #include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
-#include "platform/peerconnection/RTCConfiguration.h"
 #include "platform/peerconnection/RTCOfferOptionsPlatform.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
@@ -218,23 +217,24 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
   Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-RTCConfiguration* parseConfiguration(const Dictionary& configuration,
-                                     ExceptionState& exceptionState,
-                                     RtcpMuxPolicy* selectedRtcpMuxPolicy) {
+WebRTCConfiguration parseConfiguration(const Dictionary& configuration,
+                                       ExceptionState& exceptionState,
+                                       RtcpMuxPolicy* selectedRtcpMuxPolicy) {
+  WebRTCConfiguration rtcConfiguration;
   if (configuration.isUndefinedOrNull())
-    return 0;
+    return WebRTCConfiguration();
 
-  RTCIceTransports iceTransports = RTCIceTransportsAll;
+  WebRTCIceTransports iceTransports = WebRTCIceTransports::kAll;
   String iceTransportsString;
   if (DictionaryHelper::get(configuration, "iceTransports",
                             iceTransportsString)) {
     if (iceTransportsString == "none") {
-      iceTransports = RTCIceTransportsNone;
+      iceTransports = WebRTCIceTransports::kNone;
     } else if (iceTransportsString == "relay") {
-      iceTransports = RTCIceTransportsRelay;
+      iceTransports = WebRTCIceTransports::kRelay;
     } else if (iceTransportsString != "all") {
       exceptionState.throwTypeError("Malformed RTCIceTransports");
-      return 0;
+      return WebRTCConfiguration();
     }
   }
 
@@ -242,59 +242,58 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration,
   bool ok = DictionaryHelper::get(configuration, "iceServers", iceServers);
   if (!ok || iceServers.isUndefinedOrNull()) {
     exceptionState.throwTypeError("Malformed RTCConfiguration");
-    return 0;
+    return WebRTCConfiguration();
   }
 
   size_t numberOfServers;
   ok = iceServers.length(numberOfServers);
   if (!ok) {
     exceptionState.throwTypeError("Malformed RTCConfiguration");
-    return 0;
+    return WebRTCConfiguration();
   }
 
-  RTCBundlePolicy bundlePolicy = RTCBundlePolicyBalanced;
+  WebRTCBundlePolicy bundlePolicy = WebRTCBundlePolicy::kBalanced;
   String bundlePolicyString;
   if (DictionaryHelper::get(configuration, "bundlePolicy",
                             bundlePolicyString)) {
     if (bundlePolicyString == "max-compat") {
-      bundlePolicy = RTCBundlePolicyMaxCompat;
+      bundlePolicy = WebRTCBundlePolicy::kMaxCompat;
     } else if (bundlePolicyString == "max-bundle") {
-      bundlePolicy = RTCBundlePolicyMaxBundle;
+      bundlePolicy = WebRTCBundlePolicy::kMaxBundle;
     } else if (bundlePolicyString != "balanced") {
       exceptionState.throwTypeError("Malformed RTCBundlePolicy");
-      return 0;
+      return WebRTCConfiguration();
     }
   }
 
   // For the histogram value of "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
   *selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
-  RTCRtcpMuxPolicy rtcpMuxPolicy = RTCRtcpMuxPolicyNegotiate;
+  WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
   String rtcpMuxPolicyString;
   if (DictionaryHelper::get(configuration, "rtcpMuxPolicy",
                             rtcpMuxPolicyString)) {
     if (rtcpMuxPolicyString == "require") {
       *selectedRtcpMuxPolicy = RtcpMuxPolicyRequire;
-      rtcpMuxPolicy = RTCRtcpMuxPolicyRequire;
+      rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kRequire;
     } else if (rtcpMuxPolicyString == "negotiate") {
       *selectedRtcpMuxPolicy = RtcpMuxPolicyNegotiate;
-      rtcpMuxPolicy = RTCRtcpMuxPolicyNegotiate;
+      rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
     } else {
       exceptionState.throwTypeError("Malformed RTCRtcpMuxPolicy");
-      return 0;
+      return WebRTCConfiguration();
     }
   }
 
-  RTCConfiguration* rtcConfiguration = RTCConfiguration::create();
-  rtcConfiguration->setIceTransports(iceTransports);
-  rtcConfiguration->setBundlePolicy(bundlePolicy);
-  rtcConfiguration->setRtcpMuxPolicy(rtcpMuxPolicy);
+  rtcConfiguration.iceTransports = iceTransports;
+  rtcConfiguration.bundlePolicy = bundlePolicy;
+  rtcConfiguration.rtcpMuxPolicy = rtcpMuxPolicy;
 
   for (size_t i = 0; i < numberOfServers; ++i) {
     Dictionary iceServer;
     ok = iceServers.get(i, iceServer);
     if (!ok) {
       exceptionState.throwTypeError("Malformed RTCIceServer");
-      return 0;
+      return WebRTCConfiguration();
     }
 
     Vector<String> names;
@@ -309,7 +308,7 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration,
           urlStrings.append(urlString);
         } else {
           exceptionState.throwTypeError("Malformed RTCIceServer");
-          return 0;
+          return WebRTCConfiguration();
         }
       }
     } else if (names.contains("url")) {
@@ -318,17 +317,18 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration,
         urlStrings.append(urlString);
       } else {
         exceptionState.throwTypeError("Malformed RTCIceServer");
-        return 0;
+        return WebRTCConfiguration();
       }
     } else {
       exceptionState.throwTypeError("Malformed RTCIceServer");
-      return 0;
+      return WebRTCConfiguration();
     }
 
     String username, credential;
     DictionaryHelper::get(iceServer, "username", username);
     DictionaryHelper::get(iceServer, "credential", credential);
 
+    Vector<WebRTCIceServer> iceServers;
     for (Vector<String>::iterator iter = urlStrings.begin();
          iter != urlStrings.end(); ++iter) {
       KURL url(KURL(), *iter);
@@ -336,12 +336,11 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration,
           !(url.protocolIs("turn") || url.protocolIs("turns") ||
             url.protocolIs("stun"))) {
         exceptionState.throwTypeError("Malformed URL");
-        return 0;
+        return WebRTCConfiguration();
       }
-
-      rtcConfiguration->appendServer(
-          RTCIceServer::create(url, username, credential));
+      iceServers.append(WebRTCIceServer{url, username, credential});
     }
+    rtcConfiguration.iceServers = iceServers;
   }
 
   ArrayValue certificates;
@@ -349,6 +348,8 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration,
       !certificates.isUndefinedOrNull()) {
     size_t numberOfCertificates;
     certificates.length(numberOfCertificates);
+    WebVector<std::unique_ptr<WebRTCCertificate>> certificatesCopy(
+        numberOfCertificates);
     for (size_t i = 0; i < numberOfCertificates; ++i) {
       RTCCertificate* certificate = nullptr;
 
@@ -361,12 +362,12 @@ RTCConfiguration* parseConfiguration(const Dictionary& configuration,
       }
       if (!certificate) {
         exceptionState.throwTypeError("Malformed sequence<RTCCertificate>");
-        return 0;
+        return WebRTCConfiguration();
       }
 
-      rtcConfiguration->appendCertificate(
-          certificate->certificateShallowCopy());
+      certificatesCopy[i] = certificate->certificateShallowCopy();
     }
+    rtcConfiguration.certificates = std::move(certificatesCopy);
   }
   return rtcConfiguration;
 }
@@ -465,17 +466,20 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context,
   // Record the RtcpMuxPolicy for histogram
   // "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
   RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
-  RTCConfiguration* configuration = parseConfiguration(
+  WebRTCConfiguration configuration = parseConfiguration(
       rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
   if (exceptionState.hadException())
     return 0;
 
   // Make sure no certificates have expired.
-  if (configuration && configuration->numberOfCertificates() > 0) {
+  if (configuration.certificates.size() > 0) {
     DOMTimeStamp now = convertSecondsToDOMTimeStamp(currentTime());
-    for (size_t i = 0; i < configuration->numberOfCertificates(); ++i) {
-      DOMTimeStamp expires = configuration->certificate(i)->expires();
+    for (const std::unique_ptr<WebRTCCertificate>& certificate :
+         configuration.certificates) {
+      DOMTimeStamp expires = certificate->expires();
       if (expires <= now) {
+        // TODO(hbos): Per https://w3c.github.io/webrtc-pc/#operation this
+        // should throw InvalidAccessError, not InvalidStateError.
         exceptionState.throwDOMException(InvalidStateError,
                                          "Expired certificate(s).");
         return 0;
@@ -504,7 +508,7 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context,
 }
 
 RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
-                                     RTCConfiguration* configuration,
+                                     const WebRTCConfiguration& configuration,
                                      WebMediaConstraints constraints,
                                      ExceptionState& exceptionState)
     : ActiveScriptWrappable(this),
@@ -828,7 +832,7 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration,
     return;
 
   RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
-  RTCConfiguration* configuration = parseConfiguration(
+  WebRTCConfiguration configuration = parseConfiguration(
       rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
 
   if (exceptionState.hadException())

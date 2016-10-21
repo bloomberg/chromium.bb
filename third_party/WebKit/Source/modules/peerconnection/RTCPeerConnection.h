@@ -49,7 +49,6 @@ namespace blink {
 class ExceptionState;
 class MediaStreamTrack;
 class RTCAnswerOptions;
-class RTCConfiguration;
 class RTCDTMFSender;
 class RTCDataChannel;
 class RTCIceCandidateInitOrRTCIceCandidate;
@@ -61,6 +60,7 @@ class RTCSessionDescriptionInit;
 class RTCStatsCallback;
 class ScriptState;
 class VoidCallback;
+struct WebRTCConfiguration;
 
 class RTCPeerConnection final : public EventTargetWithInlineData,
                                 public WebRTCPeerConnectionHandlerClient,
@@ -213,7 +213,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   };
 
   RTCPeerConnection(ExecutionContext*,
-                    RTCConfiguration*,
+                    const WebRTCConfiguration&,
                     WebMediaConstraints,
                     ExceptionState&);
   void dispose();

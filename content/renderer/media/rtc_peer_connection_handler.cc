@@ -187,51 +187,47 @@ void GetSdpAndTypeFromSessionDescription(
   }
 }
 
-// Converter functions from WebKit types to WebRTC types.
+// Converter functions from Blink types to WebRTC types.
 
 void GetNativeRtcConfiguration(
     const blink::WebRTCConfiguration& blink_config,
     webrtc::PeerConnectionInterface::RTCConfiguration* webrtc_config) {
   DCHECK(webrtc_config);
-  if (blink_config.isNull())
-    return;
 
-  for (size_t i = 0; i < blink_config.numberOfServers(); ++i) {
+  for (const blink::WebRTCIceServer& blink_server : blink_config.iceServers) {
     webrtc::PeerConnectionInterface::IceServer server;
-    const blink::WebRTCICEServer& webkit_server =
-        blink_config.server(i);
     server.username =
-        base::UTF16ToUTF8(base::StringPiece16(webkit_server.username()));
+        base::UTF16ToUTF8(base::StringPiece16(blink_server.username));
     server.password =
-        base::UTF16ToUTF8(base::StringPiece16(webkit_server.credential()));
-    server.uri = webkit_server.uri().string().utf8();
+        base::UTF16ToUTF8(base::StringPiece16(blink_server.credential));
+    server.uri = blink_server.url.string().utf8();
     webrtc_config->servers.push_back(server);
   }
 
-  switch (blink_config.iceTransports()) {
-    case blink::WebRTCIceTransportsNone:
+  switch (blink_config.iceTransports) {
+    case blink::WebRTCIceTransports::kNone:
       webrtc_config->type = webrtc::PeerConnectionInterface::kNone;
       break;
-    case blink::WebRTCIceTransportsRelay:
+    case blink::WebRTCIceTransports::kRelay:
       webrtc_config->type = webrtc::PeerConnectionInterface::kRelay;
       break;
-    case blink::WebRTCIceTransportsAll:
+    case blink::WebRTCIceTransports::kAll:
       webrtc_config->type = webrtc::PeerConnectionInterface::kAll;
       break;
     default:
       NOTREACHED();
   }
 
-  switch (blink_config.bundlePolicy()) {
-    case blink::WebRTCBundlePolicyBalanced:
+  switch (blink_config.bundlePolicy) {
+    case blink::WebRTCBundlePolicy::kBalanced:
       webrtc_config->bundle_policy =
           webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
       break;
-    case blink::WebRTCBundlePolicyMaxBundle:
+    case blink::WebRTCBundlePolicy::kMaxBundle:
       webrtc_config->bundle_policy =
           webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
       break;
-    case blink::WebRTCBundlePolicyMaxCompat:
+    case blink::WebRTCBundlePolicy::kMaxCompat:
       webrtc_config->bundle_policy =
           webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat;
       break;
@@ -239,12 +235,12 @@ void GetNativeRtcConfiguration(
       NOTREACHED();
   }
 
-  switch (blink_config.rtcpMuxPolicy()) {
-    case blink::WebRTCRtcpMuxPolicyNegotiate:
+  switch (blink_config.rtcpMuxPolicy) {
+    case blink::WebRTCRtcpMuxPolicy::kNegotiate:
       webrtc_config->rtcp_mux_policy =
           webrtc::PeerConnectionInterface::kRtcpMuxPolicyNegotiate;
       break;
-    case blink::WebRTCRtcpMuxPolicyRequire:
+    case blink::WebRTCRtcpMuxPolicy::kRequire:
       webrtc_config->rtcp_mux_policy =
           webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
       break;
@@ -252,10 +248,11 @@ void GetNativeRtcConfiguration(
       NOTREACHED();
   }
 
-  for (size_t i = 0; i < blink_config.numberOfCertificates(); ++i) {
+  for (const std::unique_ptr<blink::WebRTCCertificate>& blink_certificate :
+       blink_config.certificates) {
     webrtc_config->certificates.push_back(
-        static_cast<RTCCertificate*>(
-            blink_config.certificate(i))->rtcCertificate());
+        static_cast<RTCCertificate*>(blink_certificate.get())
+            ->rtcCertificate());
   }
 }
 
