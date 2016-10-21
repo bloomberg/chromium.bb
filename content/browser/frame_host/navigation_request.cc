@@ -450,6 +450,11 @@ void NavigationRequest::OnStartChecksComplete(
     return;
   }
 
+  if (result == NavigationThrottle::BLOCK_REQUEST) {
+    OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+    return;
+  }
+
   // Use the SiteInstance of the navigating RenderFrameHost to get access to
   // the StoragePartition. Using the url of the navigation will result in a
   // wrong StoragePartition being picked when a WebView is navigating.

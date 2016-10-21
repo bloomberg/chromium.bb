@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_protocols.h"
@@ -230,18 +231,24 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
 
     // Now do a subframe request.
     {
-      std::unique_ptr<net::URLRequest> request(
-          resource_context_.GetRequestContext()->CreateRequest(
-              extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
-              &test_delegate_));
-      StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
+      // With PlzNavigate, the subframe navigation requests are blocked in
+      // ExtensionNavigationThrottle which isn't added in this unit test. This
+      // is tested in an integration test in
+      // ExtensionResourceRequestPolicyTest.IframeNavigateToInaccessible.
+      if (!content::IsBrowserSideNavigationEnabled()) {
+        std::unique_ptr<net::URLRequest> request(
+            resource_context_.GetRequestContext()->CreateRequest(
+                extension->GetResourceURL("404.html"), net::DEFAULT_PRIORITY,
+                &test_delegate_));
+        StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
 
-      if (cases[i].should_allow_sub_frame_load) {
-        EXPECT_EQ(net::ERR_FILE_NOT_FOUND, test_delegate_.request_status())
-            << cases[i].name;
-      } else {
-        EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status())
-            << cases[i].name;
+        if (cases[i].should_allow_sub_frame_load) {
+          EXPECT_EQ(net::ERR_FILE_NOT_FOUND, test_delegate_.request_status())
+              << cases[i].name;
+        } else {
+          EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status())
+              << cases[i].name;
+        }
       }
     }
   }
@@ -356,12 +363,18 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
     EXPECT_EQ(net::OK, test_delegate_.request_status());
   }
   {
-    std::unique_ptr<net::URLRequest> request(
-        resource_context_.GetRequestContext()->CreateRequest(
-            extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
-            &test_delegate_));
-    StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
-    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status());
+    // With PlzNavigate, the subframe navigation requests are blocked in
+    // ExtensionNavigationThrottle which isn't added in this unit test. This is
+    // tested in an integration test in
+    // ExtensionResourceRequestPolicyTest.IframeNavigateToInaccessible.
+    if (!content::IsBrowserSideNavigationEnabled()) {
+      std::unique_ptr<net::URLRequest> request(
+          resource_context_.GetRequestContext()->CreateRequest(
+              extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
+              &test_delegate_));
+      StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
+      EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, test_delegate_.request_status());
+    }
   }
 
   // And subresource types, such as media, should fail.
