@@ -1,7 +1,7 @@
 This tests platform specific system font styles. If any of the styles appear in monospace the test fails.
-caption: normal normal normal normal 13px / normal BlinkMacSystemFont
-icon: normal normal normal normal 13px / normal BlinkMacSystemFont
-menu: normal normal normal normal 13px / normal BlinkMacSystemFont
-message-box: normal normal normal normal 13px / normal BlinkMacSystemFont
-small-caption: normal normal normal normal 11px / normal BlinkMacSystemFont
-status-bar: normal normal normal normal 10px / normal BlinkMacSystemFont
+caption: normal normal normal normal 13px / normal system-ui
+icon: normal normal normal normal 13px / normal system-ui
+menu: normal normal normal normal 13px / normal system-ui
+message-box: normal normal normal normal 13px / normal system-ui
+small-caption: normal normal normal normal 11px / normal system-ui
+status-bar: normal normal normal normal 10px / normal system-ui

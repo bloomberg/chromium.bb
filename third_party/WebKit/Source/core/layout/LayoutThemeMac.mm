@@ -250,14 +250,14 @@ void LayoutThemeMac::systemFont(CSSValueID systemFontID,
                   : FontStyleNormal;
   fontWeight = toFontWeight([fontManager weightOfFont:font]);
   fontSize = [font pointSize];
-  fontFamily = @"BlinkMacSystemFont";
+  fontFamily = FontFamilyNames::system_ui;
 }
 
 bool LayoutThemeMac::needsHackForTextControlWithFontFamily(
     const AtomicString& family) const {
   // This hack is only applied on OSX 10.9.
   // https://code.google.com/p/chromium/issues/detail?id=515989#c8
-  return IsOS10_9() && family == "BlinkMacSystemFont";
+  return IsOS10_9() && family == FontFamilyNames::system_ui;
 }
 
 static RGBA32 convertNSColorToColor(NSColor* color) {
@@ -478,7 +478,8 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const {
       return true;
     if (!fontSizeMatchesToControlSize(style))
       return true;
-    if (style.getFontDescription().family().family() != "BlinkMacSystemFont")
+    if (style.getFontDescription().family().family() !=
+        FontFamilyNames::system_ui)
       return true;
     if (!style.height().isIntrinsicOrAuto())
       return true;
@@ -644,7 +645,7 @@ void LayoutThemeMac::setFontFromControlSize(ComputedStyle& style,
 
   NSFont* font = [NSFont
       systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSize]];
-  fontDescription.firstFamily().setFamily(@"BlinkMacSystemFont");
+  fontDescription.firstFamily().setFamily(FontFamilyNames::system_ui);
   fontDescription.setComputedSize([font pointSize] * style.effectiveZoom());
   fontDescription.setSpecifiedSize([font pointSize] * style.effectiveZoom());
 

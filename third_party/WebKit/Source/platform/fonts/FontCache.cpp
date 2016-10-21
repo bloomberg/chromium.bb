@@ -98,6 +98,21 @@ FontCache* FontCache::fontCache() {
   return &globalFontCache;
 }
 
+#if !OS(MACOSX)
+FontPlatformData* FontCache::systemFontPlatformData(
+    const FontDescription& fontDescription) {
+  const AtomicString& family = FontCache::systemFontFamily();
+#if OS(LINUX)
+  if (family.isEmpty() || family == FontFamilyNames::system_ui)
+    return nullptr;
+#else
+  DCHECK(!family.isEmpty() && family != FontFamilyNames::system_ui);
+#endif
+  return getFontPlatformData(fontDescription, FontFaceCreationParams(family),
+                             true);
+}
+#endif
+
 FontPlatformData* FontCache::getFontPlatformData(
     const FontDescription& fontDescription,
     const FontFaceCreationParams& creationParams,
@@ -107,28 +122,12 @@ FontPlatformData* FontCache::getFontPlatformData(
     platformInit();
   }
 
-  if (creationParams.creationType() == CreateFontByFamily) {
-#if OS(MACOSX)
-    if (creationParams.family() == FontCache::legacySystemFontFamily()) {
-      return getFontPlatformData(
-          fontDescription, FontFaceCreationParams(FontFamilyNames::system_ui),
-          true);
-    }
-#else
-    if (creationParams.family() == FontFamilyNames::system_ui) {
-      const AtomicString& actualFamily = FontCache::systemFontFamily();
-#if OS(LINUX)
-      if (actualFamily.isEmpty() || actualFamily == FontFamilyNames::system_ui)
-        return nullptr;
-#else
-      DCHECK(!actualFamily.isEmpty() &&
-             actualFamily != FontFamilyNames::system_ui);
-#endif
-      return getFontPlatformData(fontDescription,
-                                 FontFaceCreationParams(actualFamily), true);
-    }
-#endif
+#if !OS(MACOSX)
+  if (creationParams.creationType() == CreateFontByFamily &&
+      creationParams.family() == FontFamilyNames::system_ui) {
+    return systemFontPlatformData(fontDescription);
   }
+#endif
 
   float size = fontDescription.effectiveFontSize();
   unsigned roundedSize = size * FontCacheKey::precisionMultiplier();

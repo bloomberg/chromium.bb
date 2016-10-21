@@ -46,9 +46,11 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/style/ClipPathOperation.h"
 #include "core/style/TextSizeAdjust.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
@@ -188,6 +190,12 @@ static bool convertFontFamilyName(
   if (value.isFontFamilyValue()) {
     genericFamily = FontDescription::NoFamily;
     familyName = AtomicString(toCSSFontFamilyValue(value).value());
+#if OS(MACOSX)
+    if (familyName == FontCache::legacySystemFontFamily()) {
+      UseCounter::count(state.document(), UseCounter::BlinkMacSystemFont);
+      familyName = FontFamilyNames::system_ui;
+    }
+#endif
   } else if (state.document().settings()) {
     genericFamily =
         convertGenericFamily(toCSSIdentifierValue(value).getValueID());

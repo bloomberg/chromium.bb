@@ -393,7 +393,7 @@ FontDescription ThemeMac::controlFont(ControlPart part,
       NSFont* nsFont = [NSFont
           systemFontOfSize:[NSFont systemFontSizeForControlSize:
                                        controlSizeForFont(fontDescription)]];
-      result.firstFamily().setFamily(@"BlinkMacSystemFont");
+      result.firstFamily().setFamily(FontFamilyNames::system_ui);
       result.setComputedSize([nsFont pointSize] * zoomFactor);
       result.setSpecifiedSize([nsFont pointSize] * zoomFactor);
       return result;

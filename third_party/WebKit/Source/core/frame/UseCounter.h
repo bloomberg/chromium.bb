@@ -1375,6 +1375,7 @@ class CORE_EXPORT UseCounter {
     WebAudioConstantSourceNode = 1651,
     LoopbackEmbeddedInSecureContext = 1652,
     LoopbackEmbeddedInNonSecureContext = 1653,
+    BlinkMacSystemFont = 1654,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

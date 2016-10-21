@@ -210,6 +210,9 @@ class PLATFORM_EXPORT FontCache {
   FontPlatformData* getFontPlatformData(const FontDescription&,
                                         const FontFaceCreationParams&,
                                         bool checkingAlternateName = false);
+#if !OS(MACOSX)
+  FontPlatformData* systemFontPlatformData(const FontDescription&);
+#endif
 
   // These methods are implemented by each platform.
   std::unique_ptr<FontPlatformData> createFontPlatformData(
