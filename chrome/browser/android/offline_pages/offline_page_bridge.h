@@ -55,16 +55,26 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
                    const base::android::JavaParamRef<jobject>& j_result_obj,
                    const base::android::JavaParamRef<jobject>& j_callback_obj);
 
-  base::android::ScopedJavaLocalRef<jlongArray> GetOfflineIdsForClientId(
+  void GetPageByOfflineId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_namespace,
-      const base::android::JavaParamRef<jstring>& j_client_id);
+      jlong offline_id,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
 
-  base::android::ScopedJavaLocalRef<jobject> GetPageByOfflineId(
+  void DeletePagesByClientId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jlong offline_id);
+      const base::android::JavaParamRef<jobjectArray>& j_namespaces_array,
+      const base::android::JavaParamRef<jobjectArray>& j_ids_array,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
+
+  void GetPagesByClientId(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_result_obj,
+      const base::android::JavaParamRef<jobjectArray>& j_namespaces_array,
+      const base::android::JavaParamRef<jobjectArray>& j_ids_array,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
 
   void SelectPageForOnlineUrl(
       JNIEnv* env,
@@ -87,12 +97,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
                      const base::android::JavaParamRef<jstring>& j_namespace,
                      const base::android::JavaParamRef<jstring>& j_client_id,
                      jboolean user_requested);
-
-  void DeletePages(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_callback_obj,
-      const base::android::JavaParamRef<jlongArray>& j_offline_ids_array);
 
   base::android::ScopedJavaLocalRef<jstring> GetOfflinePageHeaderForReload(
       JNIEnv* env,

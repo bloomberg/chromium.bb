@@ -103,6 +103,15 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                                       const DeletePageCallback& callback) = 0;
 
+  // Deletes all pages associated with any of |client_ids|.
+  virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
+                                      const DeletePageCallback& callback) = 0;
+
+  // Retrieves all pages associated with any of |client_ids|.
+  virtual void GetPagesByClientIds(
+      const std::vector<ClientId>& client_ids,
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
   // Deletes cached offline pages matching the URL predicate.
   virtual void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
@@ -126,33 +135,15 @@ class OfflinePageModel : public base::SupportsUserData {
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) = 0;
 
-  // Gets all offline ids where the offline page has the matching client id.
-  // Requires that the model is loaded.  May not return matching IDs depending
-  // on the internal state of the model.
-  //
-  // This function is deprecated.  Use |GetOfflineIdsForClientId| instead.
-  virtual const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
-      const ClientId& client_id) const = 0;
-
   // Returns zero or one offline pages associated with a specified |offline_id|.
   virtual void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) = 0;
 
-  // Returns an offline page associated with a specified |offline_id|. nullptr
-  // is returned if not found.
-  virtual const OfflinePageItem* MaybeGetPageByOfflineId(
-      int64_t offline_id) const = 0;
-
   // Returns the offline pages that are stored under |online_url|.
   virtual void GetPagesByOnlineURL(
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) = 0;
-
-  // Returns an offline page saved for |online_url|. A nullptr is returned if
-  // not found.  See |GetBestPageForOnlineURL| for selection criteria.
-  virtual const OfflinePageItem* MaybeGetBestPageForOnlineURL(
-      const GURL& online_url) const = 0;
 
   // Marks pages with |offline_ids| as expired and deletes the associated
   // archive files.

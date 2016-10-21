@@ -73,6 +73,12 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void MarkPageAccessed(int64_t offline_id) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback) override;
+  void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
+                              const DeletePageCallback& callback) override;
+  void GetPagesByClientIds(
+      const std::vector<ClientId>& client_ids,
+      const MultipleOfflinePageItemCallback& callback) override;
+
   void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) override;
@@ -85,18 +91,12 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
-  const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
-      const ClientId& client_id) const override;
   void GetPageByOfflineId(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) override;
-  const OfflinePageItem* MaybeGetPageByOfflineId(
-      int64_t offline_id) const override;
   void GetPagesByOnlineURL(
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) override;
-  const OfflinePageItem* MaybeGetBestPageForOnlineURL(
-      const GURL& online_url) const override;
   void ExpirePages(const std::vector<int64_t>& offline_ids,
                    const base::Time& expiration_time,
                    const base::Callback<void(bool)>& callback) override;
@@ -142,6 +142,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void GetPageByOfflineIdWhenLoadDone(
       int64_t offline_id,
       const SingleOfflinePageItemCallback& callback) const;
+  const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
+      const ClientId& client_id) const;
+  const OfflinePageItem* MaybeGetPageByOfflineId(int64_t offline_id) const;
   void GetPagesByOnlineURLWhenLoadDone(
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) const;
@@ -216,6 +219,13 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Actually does the work of deleting, requires the model is loaded.
   void DoDeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                                 const DeletePageCallback& callback);
+
+  // Actually does the work of deleting, requires the model is loaded.
+  void DoDeletePagesByClientIds(const std::vector<ClientId>& client_ids,
+                                const DeletePageCallback& callback);
+
+  void DoGetPagesByClientIds(const std::vector<ClientId>& client_ids,
+                             const MultipleOfflinePageItemCallback& callback);
 
   // Similar to DoDeletePagesByOfflineId, does actual work of deleting, and
   // requires that the model is loaded.

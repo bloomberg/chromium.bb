@@ -428,6 +428,51 @@ void OfflinePageModelImpl::DoDeletePagesByOfflineId(
                  weak_ptr_factory_.GetWeakPtr(), offline_ids, callback));
 }
 
+void OfflinePageModelImpl::DeletePagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    const DeletePageCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoDeletePagesByClientIds,
+                           weak_ptr_factory_.GetWeakPtr(), client_ids,
+                           callback));
+}
+
+void OfflinePageModelImpl::DoDeletePagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    const DeletePageCallback& callback) {
+  std::set<ClientId> client_id_set(client_ids.begin(), client_ids.end());
+
+  std::vector<int64_t> offline_ids;
+  for (const auto& page_pair : offline_pages_) {
+    if (client_id_set.count(page_pair.second.client_id) > 0)
+      offline_ids.emplace_back(page_pair.first);
+  }
+
+  DoDeletePagesByOfflineId(offline_ids, callback);
+}
+
+void OfflinePageModelImpl::GetPagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    const MultipleOfflinePageItemCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoGetPagesByClientIds,
+                           weak_ptr_factory_.GetWeakPtr(), client_ids,
+                           callback));
+}
+
+void OfflinePageModelImpl::DoGetPagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    const MultipleOfflinePageItemCallback& callback) {
+  std::set<ClientId> client_id_set(client_ids.begin(), client_ids.end());
+
+  std::vector<OfflinePageItem> result;
+  for (const auto& page_pair : offline_pages_) {
+    if (!page_pair.second.IsExpired() &&
+        client_id_set.count(page_pair.second.client_id) > 0) {
+      result.emplace_back(page_pair.second);
+    }
+  }
+  callback.Run(result);
+}
+
 void OfflinePageModelImpl::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {
@@ -593,19 +638,6 @@ void OfflinePageModelImpl::GetPagesByOnlineURLWhenLoadDone(
   }
 
   callback.Run(result);
-}
-
-const OfflinePageItem* OfflinePageModelImpl::MaybeGetBestPageForOnlineURL(
-    const GURL& online_url) const {
-  const OfflinePageItem* result = nullptr;
-  for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.url == online_url &&
-        !id_page_pair.second.IsExpired()) {
-      if (!result || id_page_pair.second.creation_time > result->creation_time)
-        result = &(id_page_pair.second);
-    }
-  }
-  return result;
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {

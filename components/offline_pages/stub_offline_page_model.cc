@@ -21,6 +21,12 @@ void StubOfflinePageModel::MarkPageAccessed(int64_t offline_id) {}
 void StubOfflinePageModel::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback) {}
+void StubOfflinePageModel::DeletePagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    const DeletePageCallback& callback) {}
+void StubOfflinePageModel::GetPagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {}
@@ -34,25 +40,12 @@ void StubOfflinePageModel::GetAllPagesWithExpired(
 void StubOfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {}
-const std::vector<int64_t> StubOfflinePageModel::MaybeGetOfflineIdsForClientId(
-    const ClientId& client_id) const {
-  std::vector<int64_t> offline_ids;
-  return offline_ids;
-}
 void StubOfflinePageModel::GetPageByOfflineId(
     int64_t offline_id,
     const SingleOfflinePageItemCallback& callback) {}
-const OfflinePageItem* StubOfflinePageModel::MaybeGetPageByOfflineId(
-    int64_t offline_id) const {
-  return nullptr;
-}
 void StubOfflinePageModel::GetPagesByOnlineURL(
     const GURL& online_url,
     const MultipleOfflinePageItemCallback& callback) {}
-const OfflinePageItem* StubOfflinePageModel::MaybeGetBestPageForOnlineURL(
-    const GURL& online_url) const {
-  return nullptr;
-}
 void StubOfflinePageModel::ExpirePages(
     const std::vector<int64_t>& offline_ids,
     const base::Time& expiration_time,
