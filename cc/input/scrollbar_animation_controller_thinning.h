@@ -24,7 +24,8 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,
       base::TimeDelta resize_delay_before_starting,
-      base::TimeDelta duration);
+      base::TimeDelta fade_duration,
+      base::TimeDelta thinning_duration);
 
   ~ScrollbarAnimationControllerThinning() override;
 
@@ -47,33 +48,41 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
       ScrollbarAnimationControllerClient* client,
       base::TimeDelta delay_before_starting,
       base::TimeDelta resize_delay_before_starting,
-      base::TimeDelta duration);
+      base::TimeDelta fade_duration,
+      base::TimeDelta thinning_duration);
 
   void RunAnimationFrame(float progress) override;
+  const base::TimeDelta& Duration() override;
 
  private:
-  // Describes whether the current animation should INCREASE (darken / thicken)
-  // a bar or DECREASE it (lighten / thin).
+  // Describes whether the current animation should INCREASE (thicken)
+  // a bar or DECREASE it (thin).
   enum AnimationChange { NONE, INCREASE, DECREASE };
-  float OpacityAtAnimationProgress(float progress);
-  float ThumbThicknessScaleAtAnimationProgress(float progress);
+  enum AnimatingProperty { OPACITY, THICKNESS };
+  float ThumbThicknessScaleAt(float progress);
   float AdjustScale(float new_value,
                     float current_value,
                     AnimationChange animation_change,
                     float min_value,
                     float max_value);
-  void ApplyOpacityAndThumbThicknessScale(float opacity,
-                                          float thumb_thickness_scale);
+  void ApplyOpacity(float opacity);
+  void ApplyThumbThicknessScale(float thumb_thickness_scale);
 
+  void SetCurrentAnimatingProperty(AnimatingProperty property);
+
+  float opacity_;
   bool captured_;
   bool mouse_is_over_scrollbar_;
   bool mouse_is_near_scrollbar_;
   // Are we narrowing or thickening the bars.
   AnimationChange thickness_change_;
-  // Are we darkening or lightening the bars.
-  AnimationChange opacity_change_;
   // How close should the mouse be to the scrollbar before we thicken it.
   float mouse_move_distance_to_trigger_animation_;
+
+  base::TimeDelta fade_duration_;
+  base::TimeDelta thinning_duration_;
+
+  AnimatingProperty current_animating_property_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarAnimationControllerThinning);
 };

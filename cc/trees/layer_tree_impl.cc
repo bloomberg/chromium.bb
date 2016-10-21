@@ -1363,17 +1363,19 @@ LayerTreeImpl::CreateScrollbarAnimationController(int scroll_layer_id) {
   DCHECK(!settings().scrollbar_fade_duration.is_zero());
   base::TimeDelta delay = settings().scrollbar_fade_delay;
   base::TimeDelta resize_delay = settings().scrollbar_fade_resize_delay;
-  base::TimeDelta duration = settings().scrollbar_fade_duration;
+  base::TimeDelta fade_duration = settings().scrollbar_fade_duration;
   switch (settings().scrollbar_animator) {
     case LayerTreeSettings::LINEAR_FADE: {
       return ScrollbarAnimationControllerLinearFade::Create(
           scroll_layer_id, layer_tree_host_impl_, delay, resize_delay,
-          duration);
+          fade_duration);
     }
     case LayerTreeSettings::THINNING: {
+      base::TimeDelta thinning_duration =
+          settings().scrollbar_thinning_duration;
       return ScrollbarAnimationControllerThinning::Create(
           scroll_layer_id, layer_tree_host_impl_, delay, resize_delay,
-          duration);
+          fade_duration, thinning_duration);
     }
     case LayerTreeSettings::NO_ANIMATOR:
       NOTREACHED();

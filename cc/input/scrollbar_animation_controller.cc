@@ -15,12 +15,10 @@ ScrollbarAnimationController::ScrollbarAnimationController(
     int scroll_layer_id,
     ScrollbarAnimationControllerClient* client,
     base::TimeDelta delay_before_starting,
-    base::TimeDelta resize_delay_before_starting,
-    base::TimeDelta duration)
+    base::TimeDelta resize_delay_before_starting)
     : client_(client),
       delay_before_starting_(delay_before_starting),
       resize_delay_before_starting_(resize_delay_before_starting),
-      duration_(duration),
       is_animating_(false),
       scroll_layer_id_(scroll_layer_id),
       currently_scrolling_(false),
@@ -47,7 +45,7 @@ bool ScrollbarAnimationController::Animate(base::TimeTicks now) {
 float ScrollbarAnimationController::AnimationProgressAtTime(
     base::TimeTicks now) {
   base::TimeDelta delta = now - last_awaken_time_;
-  float progress = delta.InSecondsF() / duration_.InSecondsF();
+  float progress = delta.InSecondsF() / Duration().InSecondsF();
   return std::max(std::min(progress, 1.f), 0.f);
 }
 
@@ -57,7 +55,6 @@ void ScrollbarAnimationController::DidScrollBegin() {
 
 void ScrollbarAnimationController::DidScrollUpdate(bool on_resize) {
   StopAnimation();
-  delayed_scrollbar_fade_.Cancel();
 
   // As an optimization, we avoid spamming fade delay tasks during active fast
   // scrolls.  But if we're not within one, we need to post every scroll update.
@@ -94,6 +91,7 @@ void ScrollbarAnimationController::StartAnimation() {
 }
 
 void ScrollbarAnimationController::StopAnimation() {
+  delayed_scrollbar_fade_.Cancel();
   is_animating_ = false;
 }
 

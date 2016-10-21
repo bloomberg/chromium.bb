@@ -50,10 +50,10 @@ class CC_EXPORT ScrollbarAnimationController {
   ScrollbarAnimationController(int scroll_layer_id,
                                ScrollbarAnimationControllerClient* client,
                                base::TimeDelta delay_before_starting,
-                               base::TimeDelta resize_delay_before_starting,
-                               base::TimeDelta duration);
+                               base::TimeDelta resize_delay_before_starting);
 
   virtual void RunAnimationFrame(float progress) = 0;
+  virtual const base::TimeDelta& Duration() = 0;
 
   void StartAnimation();
   void StopAnimation();
@@ -61,17 +61,16 @@ class CC_EXPORT ScrollbarAnimationController {
 
   ScrollbarAnimationControllerClient* client_;
 
+  void PostDelayedAnimationTask(bool on_resize);
+
  private:
   // Returns how far through the animation we are as a progress value from
   // 0 to 1.
   float AnimationProgressAtTime(base::TimeTicks now);
 
-  void PostDelayedAnimationTask(bool on_resize);
-
   base::TimeTicks last_awaken_time_;
   base::TimeDelta delay_before_starting_;
   base::TimeDelta resize_delay_before_starting_;
-  base::TimeDelta duration_;
 
   bool is_animating_;
 

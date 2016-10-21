@@ -33,8 +33,8 @@ ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(
     : ScrollbarAnimationController(scroll_layer_id,
                                    client,
                                    delay_before_starting,
-                                   resize_delay_before_starting,
-                                   duration) {}
+                                   resize_delay_before_starting),
+      duration_(duration) {}
 
 ScrollbarAnimationControllerLinearFade::
     ~ScrollbarAnimationControllerLinearFade() {}
@@ -44,6 +44,10 @@ void ScrollbarAnimationControllerLinearFade::RunAnimationFrame(float progress) {
   client_->SetNeedsRedrawForScrollbarAnimation();
   if (progress == 1.f)
     StopAnimation();
+}
+
+const base::TimeDelta& ScrollbarAnimationControllerLinearFade::Duration() {
+  return duration_;
 }
 
 void ScrollbarAnimationControllerLinearFade::DidScrollUpdate(bool on_resize) {
