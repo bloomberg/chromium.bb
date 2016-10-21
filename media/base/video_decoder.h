@@ -79,8 +79,7 @@ class MEDIA_EXPORT VideoDecoder {
   // frame are returned via the provided callback. Some decoders may allow
   // decoding multiple buffers in parallel. Callers should call
   // GetMaxDecodeRequests() to get number of buffers that may be decoded in
-  // parallel. Decoder must call |decode_cb| in the same order in which Decode()
-  // is called.
+  // parallel.
   //
   // Implementations guarantee that the |decode_cb| will not be called from
   // within this method, and that it will be called even if Decode() is never

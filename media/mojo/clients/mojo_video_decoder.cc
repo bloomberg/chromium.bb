@@ -32,9 +32,11 @@ MojoVideoDecoder::MojoVideoDecoder(
 
 MojoVideoDecoder::~MojoVideoDecoder() {
   DVLOG(1) << __FUNCTION__;
+  Stop();
 }
 
 std::string MojoVideoDecoder::GetDisplayName() const {
+  // TODO(sandersd): Build the name including information from the remote end.
   return "MojoVideoDecoder";
 }
 
@@ -55,6 +57,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  initialized_ = false;
   init_cb_ = init_cb;
   output_cb_ = output_cb;
   remote_decoder_->Initialize(
@@ -62,17 +65,20 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
       base::Bind(&MojoVideoDecoder::OnInitializeDone, base::Unretained(this)));
 }
 
-// TODO(sandersd): Remove this indirection once a working decoder has been
-// brought up.
-void MojoVideoDecoder::OnInitializeDone(bool status) {
+void MojoVideoDecoder::OnInitializeDone(bool status,
+                                        bool needs_bitstream_conversion,
+                                        int32_t max_decode_requests) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  initialized_ = status;
+  needs_bitstream_conversion_ = needs_bitstream_conversion;
+  max_decode_requests_ = max_decode_requests;
   base::ResetAndReturn(&init_cb_).Run(status);
 }
 
 void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                               const DecodeCB& decode_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -89,23 +95,32 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     return;
   }
 
-  // TODO(sandersd): Support more than one decode at a time.
-  decode_cb_ = decode_cb;
-  remote_decoder_->Decode(
-      std::move(mojo_buffer),
-      base::Bind(&MojoVideoDecoder::OnDecodeDone, base::Unretained(this)));
+  uint64_t decode_id = decode_counter_++;
+  pending_decodes_[decode_id] = decode_cb;
+  remote_decoder_->Decode(std::move(mojo_buffer),
+                          base::Bind(&MojoVideoDecoder::OnDecodeDone,
+                                     base::Unretained(this), decode_id));
 }
 
 void MojoVideoDecoder::OnVideoFrameDecoded(mojom::VideoFramePtr frame) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   output_cb_.Run(frame.To<scoped_refptr<VideoFrame>>());
 }
 
-void MojoVideoDecoder::OnDecodeDone(DecodeStatus status) {
-  DVLOG(1) << __FUNCTION__;
+void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::ResetAndReturn(&decode_cb_).Run(status);
+
+  auto it = pending_decodes_.find(decode_id);
+  if (it == pending_decodes_.end()) {
+    DLOG(ERROR) << "Decode request " << decode_id << " not found";
+    Stop();
+    return;
+  }
+  DecodeCB decode_cb = it->second;
+  pending_decodes_.erase(it);
+  decode_cb.Run(status);
 }
 
 void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
@@ -129,22 +144,24 @@ void MojoVideoDecoder::OnResetDone() {
 }
 
 bool MojoVideoDecoder::NeedsBitstreamConversion() const {
-  DVLOG(1) << __FUNCTION__;
-  return false;
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(initialized_);
+  return needs_bitstream_conversion_;
 }
 
 bool MojoVideoDecoder::CanReadWithoutStalling() const {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(3) << __FUNCTION__;
   return true;
 }
 
 int MojoVideoDecoder::GetMaxDecodeRequests() const {
-  DVLOG(1) << __FUNCTION__;
-  return 1;
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(initialized_);
+  return max_decode_requests_;
 }
 
 void MojoVideoDecoder::BindRemoteDecoder() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(3) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!remote_decoder_bound_);
 
@@ -152,8 +169,9 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_bound_ = true;
 
   remote_decoder_.set_connection_error_handler(
-      base::Bind(&MojoVideoDecoder::OnConnectionError, base::Unretained(this)));
+      base::Bind(&MojoVideoDecoder::Stop, base::Unretained(this)));
 
+  // TODO(sandersd): Does this need its own error handler?
   mojom::VideoDecoderClientAssociatedPtrInfo client_ptr_info;
   client_binding_.Bind(&client_ptr_info, remote_decoder_.associated_group());
 
@@ -166,19 +184,19 @@ void MojoVideoDecoder::BindRemoteDecoder() {
                              std::move(remote_consumer_handle));
 }
 
-void MojoVideoDecoder::OnConnectionError() {
-  DVLOG(1) << __FUNCTION__;
+void MojoVideoDecoder::Stop() {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   has_connection_error_ = true;
 
-  // TODO(sandersd): Write a wrapper class (like BindToCurrentLoop) that handles
-  // the lifetime of callbacks like this.
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
-  // TODO(sandersd): If there is a pending reset, should these be aborted?
-  if (!decode_cb_.is_null())
-    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::DECODE_ERROR);
+
+  for (const auto& pending_decode : pending_decodes_)
+    pending_decode.second.Run(DecodeStatus::DECODE_ERROR);
+  pending_decodes_.clear();
+
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
 }

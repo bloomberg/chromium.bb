@@ -37,7 +37,7 @@ void MojoVideoDecoderService::Construct(
   if (decoder_)
     return;
 
-  // TODO(sandersd): Provide callback for requesting a stub.
+  // TODO(sandersd): Provide callback for requesting a GpuCommandBufferStub.
   decoder_ = mojo_media_client_->CreateVideoDecoder(
       base::ThreadTaskRunnerHandle::Get());
 
@@ -53,7 +53,7 @@ void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
   DVLOG(1) << __FUNCTION__;
 
   if (!decoder_) {
-    callback.Run(false);
+    callback.Run(false, false, 1);
     return;
   }
 
@@ -66,7 +66,7 @@ void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
                                      const DecodeCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
 
   if (!decoder_) {
     callback.Run(DecodeStatus::DECODE_ERROR);
@@ -103,12 +103,16 @@ void MojoVideoDecoderService::OnDecoderInitialized(
     const InitializeCallback& callback,
     bool success) {
   DVLOG(1) << __FUNCTION__;
-  callback.Run(success);
+  DCHECK(decoder_);
+  callback.Run(success, decoder_->NeedsBitstreamConversion(),
+               decoder_->GetMaxDecodeRequests());
 }
 
 void MojoVideoDecoderService::OnDecoderDecoded(const DecodeCallback& callback,
                                                DecodeStatus status) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
+  DCHECK(decoder_);
+  DCHECK(decoder_->CanReadWithoutStalling());
   callback.Run(status);
 }
 
@@ -119,7 +123,7 @@ void MojoVideoDecoderService::OnDecoderReset(const ResetCallback& callback) {
 
 void MojoVideoDecoderService::OnDecoderOutput(
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   DCHECK(client_);
   client_->OnVideoFrameDecoded(mojom::VideoFrame::From(frame));
 }
