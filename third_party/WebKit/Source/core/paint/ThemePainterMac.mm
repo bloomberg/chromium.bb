@@ -62,24 +62,20 @@ bool ThemePainterMac::paintTextField(const LayoutObject& o,
                                      const IntRect& r) {
   LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
-#if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
   bool useNSTextFieldCell = o.styleRef().hasAppearance() &&
                             o.styleRef().visitedDependentColor(
                                 CSSPropertyBackgroundColor) == Color::white &&
                             !o.styleRef().hasBackgroundImage();
 
-  // We do not use NSTextFieldCell to draw styled text fields on Lion and
-  // SnowLeopard because there are a number of bugs on those platforms that
-  // require NSTextFieldCell to be in charge of painting its own
-  // background. We need WebCore to paint styled backgrounds, so we'll use
-  // this AppKit SPI function instead.
+  // We do not use NSTextFieldCell to draw styled text fields since it induces a
+  // behavior change while remaining a fragile solution.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=658085#c3
   if (!useNSTextFieldCell) {
     _NSDrawCarbonThemeBezel(
         r, LayoutTheme::isEnabled(o) && !LayoutTheme::isReadOnlyControl(o),
         YES);
     return false;
   }
-#endif
 
   NSTextFieldCell* textField = m_layoutTheme.textField();
 

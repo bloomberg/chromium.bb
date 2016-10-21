@@ -980,15 +980,8 @@ NSTextFieldCell* LayoutThemeMac::textField() const {
     [m_textField.get() setBezeled:YES];
     [m_textField.get() setEditable:YES];
     [m_textField.get() setFocusRingType:NSFocusRingTypeExterior];
-#if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
     [m_textField.get() setDrawsBackground:YES];
     [m_textField.get() setBackgroundColor:[NSColor whiteColor]];
-#else
-    // Post-Lion, Blink can be in charge of paintinng the background
-    // thanks to the workaround in place for <rdar://problem/11385461>,
-    // which is implemented above as _coreUIDrawOptionsWithFrame.
-    [m_textField.get() setDrawsBackground:NO];
-#endif
   }
 
   return m_textField.get();
