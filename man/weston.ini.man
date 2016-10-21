@@ -168,6 +168,11 @@ time, the one specified in the command-line will be used. On the other
 hand, if none of these sets the value, default idle timeout will be
 set to 300 seconds.
 .RS
+.PP
+.RE
+.TP 7
+.BI "require-input=" true
+require an input device for launch
 
 .SH "LIBINPUT SECTION"
 The

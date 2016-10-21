@@ -259,6 +259,12 @@ udev_input_enable(struct udev_input *input)
 			devices_found = 1;
 	}
 
+	if (devices_found == 0 && !c->require_input) {
+		weston_log("warning: no input devices found, but none required "
+			   "as per configuration.\n");
+		return 0;
+	}
+
 	if (devices_found == 0) {
 		weston_log(
 			"warning: no input devices on entering Weston. "

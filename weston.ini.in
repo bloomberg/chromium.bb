@@ -2,6 +2,7 @@
 #modules=xwayland.so,cms-colord.so
 #shell=desktop-shell.so
 #gbm-format=xrgb2101010
+#require-input=true
 
 [shell]
 background-image=/usr/share/backgrounds/gnome/Aqua.jpg

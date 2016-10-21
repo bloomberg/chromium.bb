@@ -830,6 +830,10 @@ struct weston_compositor {
 
 	void *user_data;
 	void (*exit)(struct weston_compositor *c);
+
+	/* Whether to let the compositor run without any input device. */
+	bool require_input;
+
 };
 
 struct weston_buffer {

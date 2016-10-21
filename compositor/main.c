@@ -1738,6 +1738,7 @@ int main(int argc, char *argv[])
 	struct wl_listener primary_client_destroyed;
 	struct weston_seat *seat;
 	struct wet_compositor user_data;
+	int require_input;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
@@ -1821,6 +1822,10 @@ int main(int argc, char *argv[])
 
 	if (weston_compositor_init_config(ec, config) < 0)
 		goto out;
+
+	weston_config_section_get_bool(section, "require-input",
+				       &require_input, true);
+	ec->require_input = require_input;
 
 	if (load_backend(ec, backend, &argc, argv, config) < 0) {
 		weston_log("fatal: failed to create compositor backend\n");
