@@ -15,6 +15,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.FileUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -91,6 +92,7 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @Feature({"Webapps"})
     public void testDeletesOwnDirectory() throws Exception {
         File webappDirectory = new File(
                 mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPP_ID_1);
@@ -107,6 +109,7 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
      * apps that no longer correspond to tasks in Recents.
      */
     @SmallTest
+    @Feature({"Webapps"})
     public void testDeletesDirectoriesForDeadTasks() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
@@ -136,6 +139,7 @@ public class WebappDirectoryManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @Feature({"Webapps"})
     public void testDeletesObsoleteDirectories() throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 

@@ -9,9 +9,14 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.Feature;
 
+/**
+ * Tests for {@link WebappAuthenticator}.
+ */
 public class WebappAuthenticatorTest extends InstrumentationTestCase {
     @SmallTest
+    @Feature({"Webapps"})
     public void testAuthentication() {
         RecordHistogram.disableForTests();
         Context context = getInstrumentation().getTargetContext();

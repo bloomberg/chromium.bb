@@ -14,6 +14,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -120,6 +121,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Tests that WebappActivities are started properly.
      */
     @MediumTest
+    @Feature({"Webapps"})
     public void testWebappLaunches() throws Exception {
         final WebappActivity firstActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
@@ -157,6 +159,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Tests that the WebappActivity gets the next available Tab ID instead of 0.
      */
     @MediumTest
+    @Feature({"Webapps"})
     public void testWebappTabIdsProperlyAssigned() throws Exception {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
@@ -173,6 +176,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * TabOpenType.BRING_TAB_TO_FRONT.
      */
     @MediumTest
+    @Feature({"Webapps"})
     public void testBringTabToFront() throws Exception {
         // Start the WebappActivity.
         final WebappActivity firstActivity =
@@ -210,6 +214,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Ensure WebappActivities can't be launched without proper security checks.
      */
     @MediumTest
+    @Feature({"Webapps"})
     public void testWebappRequiresValidMac() throws Exception {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
@@ -238,6 +243,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Tests that WebappActivities handle window.open() properly in tabbed mode.
      */
     @MediumTest
+    @Feature({"Webapps"})
     public void testWebappHandlesWindowOpenInTabbedMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, ONCLICK_LINK, true);
     }
@@ -246,6 +252,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * Tests that WebappActivities handle suppressed window.open() properly in tabbed mode.
      */
     @MediumTest
+    @Feature({"Webapps"})
     public void testWebappHandlesSuppressedWindowOpenInTabbedMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, HREF_NO_REFERRER_LINK, false);
     }
