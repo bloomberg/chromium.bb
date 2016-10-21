@@ -308,6 +308,8 @@ crbug.com/584807 virtual/threaded/printing/webgl-oversized-printing.html [ Slow 
 
 crbug.com/592183 usb/usbDevice.html [ Slow ]
 
+crbug.com/658318 [ Win Debug ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer-hour.html [ Slow ]
+
 crbug.com/594189 virtual/spv2/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
 
 crbug.com/611442 imported/wpt/quirks-mode/hashless-hex-color.html [ Slow ]
