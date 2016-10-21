@@ -462,11 +462,16 @@ void V4LocalDatabaseManager::RespondSafeToQueuedChecks() {
 }
 
 void V4LocalDatabaseManager::RespondToClient(
-    std::unique_ptr<PendingCheck> pending_check) {
-  DCHECK(pending_check.get());
-  DCHECK_EQ(ClientCallbackType::CHECK_BROWSE_URL,
-            pending_check->client_callback_type);
-  // TODO(vakh): Implement this skeleton.
+    std::unique_ptr<PendingCheck> check) {
+  DCHECK(check.get());
+  DCHECK_GT(ClientCallbackType::CHECK_MAX, check->client_callback_type);
+
+  if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL) {
+    check->client->OnCheckBrowseUrlResult(check->url, check->result_threat_type,
+                                          check->url_metadata);
+  } else {
+    NOTREACHED() << "Unexpected client_callback_type encountered";
+  }
 }
 
 void V4LocalDatabaseManager::SetupDatabase() {

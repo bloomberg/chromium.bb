@@ -93,14 +93,15 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       threat_type_(safe_browsing::SB_THREAT_TYPE_SAFE),
-      database_manager_(sb_service->database_manager()),
+      database_manager_(safe_browsing::V4FeatureList::IsV4HybridEnabled()
+                            ? sb_service->v4_local_database_manager()
+                            : sb_service->database_manager()),
       ui_manager_(sb_service->ui_manager()),
       request_(request),
       resource_type_(resource_type),
       net_log_with_source_(
           net::NetLogWithSource::Make(request->net_log().net_log(),
-                                      NetLogSourceType::SAFE_BROWSING)),
-      v4_local_database_manager_(sb_service->v4_local_database_manager()) {}
+                                      NetLogSourceType::SAFE_BROWSING)) {}
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {
   if (defer_state_ != DEFERRED_NONE) {
@@ -109,10 +110,6 @@ SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {
 
   if (state_ == STATE_CHECKING_URL) {
     database_manager_->CancelCheck(this);
-    if (safe_browsing::V4FeatureList::IsParallelCheckEnabled()) {
-      v4_local_database_manager_->CancelCheck(this);
-    }
-
     EndNetLogEvent(NetLogEventType::SAFE_BROWSING_CHECKING_URL, "result",
                    "request_canceled");
   }
@@ -372,21 +369,19 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
   // To reduce aggregate latency on mobile, check only the most dangerous
   // resource types.
   if (!database_manager_->CanCheckResourceType(resource_type_)) {
+    // TODO(vakh): Consider changing this metric to SafeBrowsing.V4ResourceType
+    // to be consistent with the other PVer4 metrics.
     UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Skipped", resource_type_,
                               content::RESOURCE_TYPE_LAST_TYPE);
     return true;
   }
 
-  bool succeeded_synchronously = database_manager_->CheckBrowseUrl(url, this);
+  // TODO(vakh): Consider changing this metric to SafeBrowsing.V4ResourceType to
+  // be consistent with the other PVer4 metrics.
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Checked", resource_type_,
                             content::RESOURCE_TYPE_LAST_TYPE);
 
-  if (safe_browsing::V4FeatureList::IsParallelCheckEnabled() &&
-      v4_local_database_manager_->CanCheckResourceType(resource_type_)) {
-    v4_local_database_manager_->CheckBrowseUrl(url, this);
-  }
-
-  if (succeeded_synchronously) {
+  if (database_manager_->CheckBrowseUrl(url, this)) {
     threat_type_ = safe_browsing::SB_THREAT_TYPE_SAFE;
     ui_manager_->LogPauseDelay(base::TimeDelta());  // No delay.
     return true;
@@ -411,9 +406,7 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
   CHECK_EQ(state_, STATE_CHECKING_URL);
 
   database_manager_->CancelCheck(this);
-  if (safe_browsing::V4FeatureList::IsParallelCheckEnabled()) {
-    v4_local_database_manager_->CancelCheck(this);
-  }
+
   OnCheckBrowseUrlResult(url_being_checked_, safe_browsing::SB_THREAT_TYPE_SAFE,
                          safe_browsing::ThreatMetadata());
 }

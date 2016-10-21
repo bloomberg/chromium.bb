@@ -183,8 +183,6 @@ class SafeBrowsingResourceThrottle
   const net::URLRequest* request_;
   const content::ResourceType resource_type_;
   net::NetLogWithSource net_log_with_source_;
-  scoped_refptr<safe_browsing::V4LocalDatabaseManager>
-      v4_local_database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };

@@ -14,17 +14,18 @@ const base::Feature kLocalDatabaseManagerEnabled{
     "SafeBrowsingV4LocalDatabaseManagerEnabled",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kParallelCheckEnabled{"SafeBrowingV4ParallelCheckEnabled",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kV4HybridEnabled{"SafeBrowingV4HybridEnabled",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
 
 bool IsLocalDatabaseManagerEnabled() {
-  return IsParallelCheckEnabled() ||
-         base::FeatureList::IsEnabled(kLocalDatabaseManagerEnabled);
+  return base::FeatureList::IsEnabled(kLocalDatabaseManagerEnabled) ||
+         IsV4HybridEnabled();
 }
 
-bool IsParallelCheckEnabled() {
-  return base::FeatureList::IsEnabled(kParallelCheckEnabled);
+bool IsV4HybridEnabled() {
+  return base::FeatureList::IsEnabled(kV4HybridEnabled);
 }
 
 }  // namespace V4FeatureList
