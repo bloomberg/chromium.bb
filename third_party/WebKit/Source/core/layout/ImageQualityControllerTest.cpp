@@ -24,7 +24,6 @@ class ImageQualityControllerTest : public RenderingTest {
     m_controller = ImageQualityController::imageQualityController();
     RenderingTest::SetUp();
   }
-  void TearDown() override {}
 
   ImageQualityController* m_controller;
 };

@@ -2,12 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintLayerScrollableAreaTest.h"
+#include "core/paint/PaintLayerScrollableArea.h"
 
+#include "core/frame/FrameView.h"
+#include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutTestHelper.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
+
+class PaintLayerScrollableAreaTest : public RenderingTest {
+ public:
+  PaintLayerScrollableAreaTest()
+      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
+
+  bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId) {
+    PaintLayer* paintLayer =
+        toLayoutBlock(getLayoutObjectByElementId(elementId))->layer();
+    return paintLayer->canPaintBackgroundOntoScrollingContentsLayer();
+  }
+
+ private:
+  void SetUp() override {
+    RenderingTest::SetUp();
+    enableCompositing();
+  }
+};
 
 TEST_F(PaintLayerScrollableAreaTest,
        CanPaintBackgroundOntoScrollingContentsLayer) {

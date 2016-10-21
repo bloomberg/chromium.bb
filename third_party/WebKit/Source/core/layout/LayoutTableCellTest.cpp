@@ -38,7 +38,10 @@ class LayoutTableCellDeathTest : public RenderingTest {
     m_cell = LayoutTableCell::createAnonymous(&document());
   }
 
-  virtual void TearDown() { m_cell->destroy(); }
+  virtual void TearDown() {
+    m_cell->destroy();
+    RenderingTest::TearDown();
+  }
 
   LayoutTableCell* m_cell;
 };

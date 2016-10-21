@@ -8,11 +8,11 @@
 #include "core/dom/Range.h"
 #include "core/editing/DOMSelection.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/geometry/IntRectOutsets.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -24,7 +24,7 @@
 namespace blink {
 namespace {
 
-class SVGInlineTextBoxPainterTest : public RenderingTest {
+class SVGInlineTextBoxPainterTest : public PaintControllerPaintTest {
  public:
   const DrawingDisplayItem* getDrawingForSVGTextById(const char* elementName) {
     // Look up the inline text box that serves as the display item client for
@@ -57,17 +57,8 @@ class SVGInlineTextBoxPainterTest : public RenderingTest {
   }
 
  private:
-  PaintController& rootPaintController() {
-    return document()
-        .view()
-        ->layoutView()
-        ->layer()
-        ->graphicsLayerBacking()
-        ->getPaintController();
-  }
-
   void SetUp() override {
-    RenderingTest::SetUp();
+    PaintControllerPaintTest::SetUp();
     enableCompositing();
   }
 };

@@ -10,6 +10,8 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/api/LayoutAPIShim.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/Allocator.h"
@@ -33,6 +35,10 @@ class RenderingTest : public testing::Test {
   void TearDown() override;
 
   Document& document() const { return m_pageHolder->document(); }
+  LayoutView& layoutView() const {
+    return *toLayoutView(
+        LayoutAPIShim::layoutObjectFrom(document().view()->layoutViewItem()));
+  }
 
   // Both sets the inner html and runs the document lifecycle.
   void setBodyInnerHTML(const String& htmlContent) {

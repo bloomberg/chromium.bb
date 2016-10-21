@@ -4,12 +4,10 @@
 
 #include "core/paint/LayerClipRecorder.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutAPIShim.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -19,27 +17,12 @@
 namespace blink {
 namespace {
 
-class LayerClipRecorderTest : public RenderingTest {
- public:
-  LayerClipRecorderTest() : m_layoutView(nullptr) {}
-
- protected:
-  LayoutView& layoutView() { return *m_layoutView; }
-  PaintController& rootPaintController() {
-    return layoutView().layer()->graphicsLayerBacking()->getPaintController();
-  }
-
+class LayerClipRecorderTest : public PaintControllerPaintTest {
  private:
   void SetUp() override {
-    RenderingTest::SetUp();
+    PaintControllerPaintTest::SetUp();
     enableCompositing();
-
-    m_layoutView = toLayoutView(
-        LayoutAPIShim::layoutObjectFrom(document().view()->layoutViewItem()));
-    ASSERT_TRUE(m_layoutView);
   }
-
-  LayoutView* m_layoutView;
 };
 
 void drawEmptyClip(GraphicsContext& context,
