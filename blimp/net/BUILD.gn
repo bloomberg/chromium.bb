@@ -159,11 +159,9 @@ source_set("unit_tests") {
     "//blimp/common",
     "//blimp/common:test_support",
     "//blimp/common/proto",
-    "//blimp/helium",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink_headers",
-    "//third_party/protobuf:protobuf_lite",
   ]
 }

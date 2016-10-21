@@ -11,7 +11,6 @@
 
 namespace blimp {
 namespace helium {
-namespace test {
 
 class HeliumTest : public ::testing::Test {
  public:
@@ -24,7 +23,6 @@ class HeliumTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HeliumTest);
 };
 
-}  // namespace test
 }  // namespace helium
 }  // namespace blimp
 

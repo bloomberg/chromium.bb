@@ -22,8 +22,6 @@ TEST_F(ResultTest, ResultToStringWorks) {
   // specified that we can verify that the switch/case mapping works as
   // intended.
   EXPECT_STREQ("SUCCESS", ResultToString(Result::SUCCESS));
-  EXPECT_STREQ("ERR_INTERNAL_ERROR",
-               ResultToString(Result::ERR_INTERNAL_ERROR));
   EXPECT_STREQ("ERR_DISCONNECTED", ResultToString(Result::ERR_DISCONNECTED));
 }
 

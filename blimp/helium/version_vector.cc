@@ -18,7 +18,7 @@ VersionVector::VersionVector(Revision local_revision, Revision remote_revision)
 
 VersionVector::Comparison VersionVector::CompareTo(
     const VersionVector& other) const {
-  DCHECK(local_revision_ >= other.local_revision());
+  DCHECK_GE(local_revision_, other.local_revision());
 
   if (local_revision_ == other.local_revision()) {
     if (remote_revision_ == other.remote_revision()) {

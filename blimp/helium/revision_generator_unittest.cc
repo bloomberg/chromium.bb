@@ -11,21 +11,21 @@ namespace blimp {
 namespace helium {
 namespace {
 
-using test::HeliumTest;
+class RevisionGeneratorTest : public HeliumTest {};
 
-TEST_F(HeliumTest, CheckCurrentDoesntIncrease) {
+TEST_F(RevisionGeneratorTest, CheckCurrentDoesntIncrease) {
   RevisionGenerator gen;
   EXPECT_EQ(0UL, gen.current());
 }
 
-TEST_F(HeliumTest, MonotonicallyIncreasing) {
+TEST_F(RevisionGeneratorTest, MonotonicallyIncreasing) {
   RevisionGenerator gen;
   EXPECT_EQ(1UL, gen.GetNextRevision());
   EXPECT_EQ(2UL, gen.GetNextRevision());
   EXPECT_EQ(2UL, gen.current());
 }
 
-TEST_F(HeliumTest, GetNextRevisionCall) {
+TEST_F(RevisionGeneratorTest, GetNextRevisionCall) {
   EXPECT_EQ(1UL, GetNextRevision());
   EXPECT_EQ(2UL, GetNextRevision());
   EXPECT_EQ(2UL, RevisionGenerator::GetInstance()->current());

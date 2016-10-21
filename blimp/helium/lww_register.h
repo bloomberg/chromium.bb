@@ -86,17 +86,21 @@ Result LwwRegister<RegisterType>::ApplyChangeset(
     google::protobuf::io::CodedInputStream* input_stream) {
   VersionVector remote;
   if (!CodedValueSerializer::Deserialize(input_stream, &remote)) {
-    return Result::ERR_INTERNAL_ERROR;
+    return Result::ERR_PROTOCOL_ERROR;
   }
   remote = remote.Invert();
   VersionVector::Comparison cmp = last_modified_.CompareTo(remote);
+
+  RegisterType input_value;
+  if (!CodedValueSerializer::Deserialize(input_stream, &input_value)) {
+    return Result::ERR_PROTOCOL_ERROR;
+  }
   if (cmp == VersionVector::Comparison::LessThan ||
       (cmp == VersionVector::Comparison::Conflict && !locally_owned_)) {
-    if (!CodedValueSerializer::Deserialize(input_stream, &value_)) {
-      return Result::ERR_INTERNAL_ERROR;
-    }
+    value_ = input_value;
     value_set_ = true;
   }
+
   last_modified_ = last_modified_.MergeWith(remote);
   return Result::SUCCESS;
 }

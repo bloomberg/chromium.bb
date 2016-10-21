@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "blimp/helium/helium_test.h"
 #include "blimp/helium/revision_generator.h"
 #include "blimp/helium/version_vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,7 @@ namespace blimp {
 namespace helium {
 namespace {
 
-class LwwRegisterTest : public testing::Test {
+class LwwRegisterTest : public HeliumTest {
  public:
   LwwRegisterTest() {}
   ~LwwRegisterTest() override = default;
