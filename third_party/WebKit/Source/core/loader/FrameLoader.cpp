@@ -964,17 +964,6 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request) {
   return true;
 }
 
-static bool shouldOpenInNewWindow(Frame* targetFrame,
-                                  const FrameLoadRequest& request,
-                                  NavigationPolicy policy) {
-  if (!targetFrame && !request.frameName().isEmpty())
-    return true;
-  // FIXME: This case is a workaround for the fact that ctrl+clicking a form
-  // submission incorrectly sends as a GET rather than a POST if it creates a
-  // new window in a different process.
-  return request.form() && policy != NavigationPolicyCurrentTab;
-}
-
 static bool shouldNavigateTargetFrame(NavigationPolicy policy) {
   switch (policy) {
     case NavigationPolicyCurrentTab:
@@ -1108,6 +1097,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest,
     m_provisionalItem = historyItem;
   }
 
+  // Form submissions appear to need their special-case of finding the target at
+  // schedule rather than at fire.
   Frame* targetFrame = request.form()
                            ? nullptr
                            : m_frame->findFrameForNavigation(
@@ -1127,7 +1118,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest,
 
   setReferrerForFrameRequest(request);
 
-  if (shouldOpenInNewWindow(targetFrame, request, policy)) {
+  if (!targetFrame && !request.frameName().isEmpty()) {
     if (policy == NavigationPolicyDownload) {
       client()->loadURLExternally(request.resourceRequest(),
                                   NavigationPolicyDownload, String(), false);

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -85,10 +86,11 @@ class Shell : public WebContentsDelegate,
   // Do one time initialization at application startup.
   static void Initialize();
 
-  static Shell* CreateNewWindow(BrowserContext* browser_context,
-                                const GURL& url,
-                                SiteInstance* site_instance,
-                                const gfx::Size& initial_size);
+  static Shell* CreateNewWindow(
+      BrowserContext* browser_context,
+      const GURL& url,
+      const scoped_refptr<SiteInstance>& site_instance,
+      const gfx::Size& initial_size);
 
   // Returns the Shell object corresponding to the given RenderViewHost.
   static Shell* FromRenderViewHost(RenderViewHost* rvh);

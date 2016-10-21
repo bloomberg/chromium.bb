@@ -32,6 +32,9 @@ if (window.testRunner) {
         eventSender.mouseUp(0, ['shiftKey']);
     };
 
+    // Shift-clicking doesn't set window.opener, so we allow the new window
+    // to find the opener using the name being set below.
+    window.name = "mainTestWindow";
     window.addEventListener('message', function(e) {
         concludeTest(e.data);
     });
