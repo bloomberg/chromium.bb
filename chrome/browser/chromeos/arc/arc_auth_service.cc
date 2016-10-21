@@ -304,7 +304,7 @@ void ArcAuthService::GetAuthCodeDeprecated(
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // GetAuthCodeAndAccountType operation must not be in progress.
-  DCHECK(!auth_account_callback_.is_null());
+  DCHECK(auth_account_callback_.is_null());
 
   const std::string auth_code = GetAndResetAuthCode();
   const bool verification_disabled = IsOptInVerificationDisabled();
@@ -313,16 +313,15 @@ void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
     return;
   }
 
-  initial_opt_in_ = false;
   auth_callback_ = callback;
-  StartUI();
+  PrepareContextForAuthCodeRequest();
 }
 
 void ArcAuthService::GetAuthCodeAndAccountType(
     const GetAuthCodeAndAccountTypeCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // GetAuthCode operation must not be in progress.
-  DCHECK(!auth_callback_.is_null());
+  DCHECK(auth_callback_.is_null());
 
   const std::string auth_code = GetAndResetAuthCode();
   const bool verification_disabled = IsOptInVerificationDisabled();
@@ -332,9 +331,25 @@ void ArcAuthService::GetAuthCodeAndAccountType(
     return;
   }
 
-  initial_opt_in_ = false;
   auth_account_callback_ = callback;
-  StartUI();
+  PrepareContextForAuthCodeRequest();
+}
+
+bool ArcAuthService::IsAuthCodeRequest() const {
+  return !auth_callback_.is_null() || !auth_account_callback_.is_null();
+}
+
+void ArcAuthService::PrepareContextForAuthCodeRequest() {
+  // Requesting auth code on demand happens in following cases:
+  // 1. To handle account password revoke.
+  // 2. In case Arc is activated in OOBE flow.
+  // 3. For any other state on Android side that leads device appears in
+  // non-signed state.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(IsAuthCodeRequest());
+  DCHECK_EQ(state_, State::ACTIVE);
+  initial_opt_in_ = false;
+  context_->PrepareContext();
 }
 
 void ArcAuthService::OnSignInComplete() {
@@ -699,7 +714,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!auth_code.empty());
 
-  if (!auth_callback_.is_null() || !auth_account_callback_.is_null()) {
+  if (IsAuthCodeRequest()) {
     DCHECK_EQ(state_, State::FETCHING_CODE);
     SetState(State::ACTIVE);
     if (!auth_callback_.is_null()) {
@@ -747,6 +762,7 @@ void ArcAuthService::StartLso() {
     ShutdownBridge();
   }
 
+  // TODO(khmel): Use PrepareContextForAuthCodeRequest for this case.
   initial_opt_in_ = false;
   StartUI();
 }
@@ -862,14 +878,14 @@ void ArcAuthService::OnAuthCodeFailed() {
 void ArcAuthService::CheckAndroidManagement(bool background_mode) {
   // Do not send requests for Chrome OS managed users.
   if (IsAccountManaged(profile_)) {
-    StartArcIfSignedIn();
+    OnAndroidManagementPassed();
     return;
   }
 
   // Do not send requests for well-known consumer domains.
   if (policy::BrowserPolicyConnector::IsNonEnterpriseUser(
           profile_->GetProfileUserName())) {
-    StartArcIfSignedIn();
+    OnAndroidManagementPassed();
     return;
   }
 
@@ -877,14 +893,14 @@ void ArcAuthService::CheckAndroidManagement(bool background_mode) {
       new ArcAndroidManagementChecker(this, context_->token_service(),
                                       context_->account_id(), background_mode));
   if (background_mode)
-    StartArcIfSignedIn();
+    OnAndroidManagementPassed();
 }
 
 void ArcAuthService::OnAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   switch (result) {
     case policy::AndroidManagementClient::Result::RESULT_UNMANAGED:
-      StartArcIfSignedIn();
+      OnAndroidManagementPassed();
       break;
     case policy::AndroidManagementClient::Result::RESULT_MANAGED:
       if (android_management_checker_->background_mode()) {
@@ -907,29 +923,39 @@ void ArcAuthService::OnAndroidManagementChecked(
   }
 }
 
-void ArcAuthService::StartArcIfSignedIn() {
+void ArcAuthService::FetchAuthCode() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (state_ == State::ACTIVE)
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  std::string auth_endpoint;
+  if (command_line->HasSwitch(chromeos::switches::kArcUseAuthEndpoint)) {
+    auth_endpoint = command_line->GetSwitchValueASCII(
+        chromeos::switches::kArcUseAuthEndpoint);
+  }
+
+  if (!auth_endpoint.empty()) {
+    auth_code_fetcher_.reset(new ArcAuthCodeFetcher(
+        this, context_->GetURLRequestContext(), profile_, auth_endpoint));
+  } else {
+    ShowUI(UIPage::LSO_PROGRESS, base::string16());
+  }
+}
+
+void ArcAuthService::OnAndroidManagementPassed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (state_ == State::ACTIVE) {
+    if (IsAuthCodeRequest())
+      FetchAuthCode();
     return;
+  }
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
       IsOptInVerificationDisabled()) {
     StartArc();
   } else {
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    std::string auth_endpoint;
-    if (command_line->HasSwitch(chromeos::switches::kArcUseAuthEndpoint)) {
-      auth_endpoint = command_line->GetSwitchValueASCII(
-          chromeos::switches::kArcUseAuthEndpoint);
-    }
-
-    if (!auth_endpoint.empty()) {
-      auth_code_fetcher_.reset(new ArcAuthCodeFetcher(
-          this, context_->GetURLRequestContext(), profile_, auth_endpoint));
-    } else {
-      ShowUI(UIPage::LSO_PROGRESS, base::string16());
-    }
+    FetchAuthCode();
   }
 }
 

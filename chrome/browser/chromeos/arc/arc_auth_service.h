@@ -205,7 +205,7 @@ class ArcAuthService : public ArcService,
   UIPage ui_page() const { return ui_page_; }
 
   // Returns current page status, relevant to the specific page.
-  const base::string16& ui_page_status() { return ui_page_status_; }
+  const base::string16& ui_page_status() const { return ui_page_status_; }
 
  private:
   void StartArc();
@@ -220,9 +220,12 @@ class ArcAuthService : public ArcService,
   void StartUI();
   void StartAndroidManagementClient();
   void CheckAndroidManagement(bool background_mode);
-  void StartArcIfSignedIn();
+  void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
+  bool IsAuthCodeRequest() const;
+  void FetchAuthCode();
+  void PrepareContextForAuthCodeRequest();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
