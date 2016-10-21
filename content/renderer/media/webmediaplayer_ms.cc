@@ -184,13 +184,8 @@ void WebMediaPlayerMS::play() {
     // TODO(perkj, magjed): We use Uncontrollable type here to avoid creating an
     // interactive media session on Android. See http://crbug.com/596516 for
     // more details.
-#if defined(OS_ANDROID)
-    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
-                       media::MediaContentType::Uncontrollable);
-#else  // defined(OS_ANDROID)
     delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
                        media::MediaContentType::Persistent);
-#endif  // defined(OS_ANDROID)
   }
 
   paused_ = false;
