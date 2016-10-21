@@ -35,7 +35,8 @@ Pre-built data files are generated and checked in with the following steps
 
   b. Run
 
-    ${CHROME_ICU_TREE_TOP}/source/runConfigureICU Linux --disable-layout
+    ${CHROME_ICU_TREE_TOP}/source/runConfigureICU Linux --disable-layout --disable-tests
+
 
   c. Run make
      'make' will fail  when pkgdata looks for css3transform.res. This
