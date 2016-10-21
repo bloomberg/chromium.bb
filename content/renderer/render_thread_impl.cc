@@ -1760,6 +1760,9 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   } else {
     renderer_scheduler_->OnRendererForegrounded();
     record_purge_suspend_metric_closure_.Cancel();
+    record_purge_suspend_metric_closure_.Reset(
+        base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMetrics,
+                   base::Unretained(this)));
     is_renderer_suspended_ = false;
   }
 }
