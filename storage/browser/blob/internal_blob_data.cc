@@ -58,7 +58,7 @@ InternalBlobData::items() const {
 void InternalBlobData::RemoveBlobFromShareableItems(
     const std::string& blob_uuid) {
   for (auto& data_item : items_) {
-    data_item->referencing_blobs().erase(blob_uuid);
+    data_item->referencing_blobs_mutable()->erase(blob_uuid);
   }
 }
 

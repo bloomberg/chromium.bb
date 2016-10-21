@@ -61,7 +61,7 @@ class FileStorageStrategy {
     request.message.handle_offset = segment_offset;
 
     requests->push_back(request);
-    builder->AppendFutureFile(segment_offset, size);
+    builder->AppendFutureFile(segment_offset, size, segment_index);
     current_item_index++;
   }
 

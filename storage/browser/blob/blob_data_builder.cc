@@ -12,9 +12,12 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/disk_cache/disk_cache.h"
-#include "storage/browser/blob/shareable_file_reference.h"
+
+using base::FilePath;
 
 namespace storage {
 
@@ -24,13 +27,37 @@ const static int kInvalidDiskCacheSideStreamIndex = -1;
 
 }  // namespace
 
-const char BlobDataBuilder::kAppendFutureFileTemporaryFileName[] =
-    "kFakeFilenameToBeChangedByPopulateFutureFile";
+const FilePath::CharType kFutureFileName[] = FILE_PATH_LITERAL("_future_name_");
 
-BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {
+/* static */
+base::FilePath BlobDataBuilder::GetFutureFileItemPath(uint64_t file_id) {
+  std::string file_id_str = base::Uint64ToString(file_id);
+  return base::FilePath(kFutureFileName)
+      .AddExtension(
+          base::FilePath::StringType(file_id_str.begin(), file_id_str.end()));
 }
-BlobDataBuilder::~BlobDataBuilder() {
+
+/* static */
+bool BlobDataBuilder::IsFutureFileItem(const DataElement& element) {
+  const FilePath::StringType prefix(kFutureFileName);
+  // The prefix shouldn't occur unless the user used "AppendFutureFile". We
+  // DCHECK on AppendFile to make sure no one appends a future file.
+  return base::StartsWith(element.path().value(), prefix,
+                          base::CompareCase::SENSITIVE);
 }
+
+/* static */
+uint64_t BlobDataBuilder::GetFutureFileID(const DataElement& element) {
+  DCHECK(IsFutureFileItem(element));
+  uint64_t id = 0;
+  bool success =
+      base::StringToUint64(element.path().Extension().substr(1), &id);
+  DCHECK(success) << element.path().Extension();
+  return id;
+}
+
+BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {}
+BlobDataBuilder::~BlobDataBuilder() {}
 
 void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {
   uint64_t length = ipc_data.length();
@@ -83,7 +110,7 @@ bool BlobDataBuilder::PopulateFutureData(size_t index,
                                          size_t length) {
   DCHECK_LT(index, items_.size());
   DCHECK(data);
-  DataElement* element = items_.at(index)->data_element_ptr();
+  DataElement* element = items_[index]->data_element_ptr();
 
   // We lazily allocate our data buffer by waiting until the first
   // PopulateFutureData call.
@@ -110,12 +137,13 @@ bool BlobDataBuilder::PopulateFutureData(size_t index,
   return true;
 }
 
-size_t BlobDataBuilder::AppendFutureFile(uint64_t offset, uint64_t length) {
+size_t BlobDataBuilder::AppendFutureFile(uint64_t offset,
+                                         uint64_t length,
+                                         uint64_t file_id) {
   CHECK_NE(length, 0ull);
   std::unique_ptr<DataElement> element(new DataElement());
-  element->SetToFilePathRange(base::FilePath::FromUTF8Unsafe(std::string(
-                                  kAppendFutureFileTemporaryFileName)),
-                              offset, length, base::Time());
+  element->SetToFilePathRange(GetFutureFileItemPath(file_id), offset, length,
+                              base::Time());
   items_.push_back(new BlobDataItem(std::move(element)));
   return items_.size() - 1;
 }
@@ -125,32 +153,31 @@ bool BlobDataBuilder::PopulateFutureFile(
     const scoped_refptr<ShareableFileReference>& file_reference,
     const base::Time& expected_modification_time) {
   DCHECK_LT(index, items_.size());
-  DataElement* old_element = items_.at(index)->data_element_ptr();
+  DataElement* element = items_[index]->data_element_ptr();
 
-  if (old_element->type() != DataElement::TYPE_FILE) {
+  if (element->type() != DataElement::TYPE_FILE) {
     DVLOG(1) << "Invalid item type.";
     return false;
-  } else if (old_element->path().AsUTF8Unsafe() !=
-             std::string(kAppendFutureFileTemporaryFileName)) {
+  } else if (!IsFutureFileItem(*element)) {
     DVLOG(1) << "Item not created by AppendFutureFile";
     return false;
   }
-  uint64_t length = old_element->length();
-  uint64_t offset = old_element->offset();
-  std::unique_ptr<DataElement> element(new DataElement());
+  uint64_t length = element->length();
+  uint64_t offset = element->offset();
+  items_[index]->data_handle_ = std::move(file_reference);
   element->SetToFilePathRange(file_reference->path(), offset, length,
                               expected_modification_time);
-  items_[index] = new BlobDataItem(std::move(element), file_reference);
   return true;
 }
 
-void BlobDataBuilder::AppendFile(const base::FilePath& file_path,
+void BlobDataBuilder::AppendFile(const FilePath& file_path,
                                  uint64_t offset,
                                  uint64_t length,
                                  const base::Time& expected_modification_time) {
   std::unique_ptr<DataElement> element(new DataElement());
   element->SetToFilePathRange(file_path, offset, length,
                               expected_modification_time);
+  DCHECK(!IsFutureFileItem(*element)) << file_path.value();
   items_.push_back(new BlobDataItem(std::move(element),
                                     ShareableFileReference::Get(file_path)));
 }

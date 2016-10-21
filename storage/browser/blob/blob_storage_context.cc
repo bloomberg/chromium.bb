@@ -290,8 +290,9 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
         break;
       }
       memory_usage_ += length;
-      target_blob_builder->AppendSharedBlobItem(
-          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+          target_blob_uuid, blob_item,
+          ShareableBlobDataItem::POPULATED_WITH_QUOTA));
       break;
     case DataElement::TYPE_FILE: {
       bool full_file = (length == std::numeric_limits<uint64_t>::max());
@@ -300,8 +301,9 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.File",
                              (length - offset) / 1024);
       }
-      target_blob_builder->AppendSharedBlobItem(
-          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+          target_blob_uuid, blob_item,
+          ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
       break;
     }
     case DataElement::TYPE_FILE_FILESYSTEM: {
@@ -312,8 +314,9 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.FileSystem",
                              (length - offset) / 1024);
       }
-      target_blob_builder->AppendSharedBlobItem(
-          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+          target_blob_uuid, blob_item,
+          ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
       break;
     }
     case DataElement::TYPE_BLOB: {
@@ -340,8 +343,9 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
     case DataElement::TYPE_DISK_CACHE_ENTRY: {
       UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.CacheEntry",
                            (length - offset) / 1024);
-      target_blob_builder->AppendSharedBlobItem(
-          new ShareableBlobDataItem(target_blob_uuid, blob_item));
+      target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
+          target_blob_uuid, blob_item,
+          ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
       break;
     }
     case DataElement::TYPE_BYTES_DESCRIPTION:
@@ -385,7 +389,7 @@ bool BlobStorageContext::AppendBlob(
     bool reusing_blob_item = offset == 0 && new_length == item.length();
     UMA_HISTOGRAM_BOOLEAN("Storage.Blob.ReusedItem", reusing_blob_item);
     if (reusing_blob_item) {
-      shareable_item->referencing_blobs().insert(target_blob_uuid);
+      shareable_item->referencing_blobs_mutable()->insert(target_blob_uuid);
       target_blob_builder->AppendSharedBlobItem(shareable_item);
       length -= new_length;
       continue;
@@ -406,7 +410,8 @@ bool BlobStorageContext::AppendBlob(
                             static_cast<int64_t>(new_length));
         memory_usage_ += new_length;
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
-            target_blob_uuid, new BlobDataItem(std::move(element))));
+            target_blob_uuid, new BlobDataItem(std::move(element)),
+            ShareableBlobDataItem::POPULATED_WITH_QUOTA));
       } break;
       case DataElement::TYPE_FILE: {
         DCHECK_NE(item.length(), std::numeric_limits<uint64_t>::max())
@@ -419,7 +424,8 @@ bool BlobStorageContext::AppendBlob(
                                     item.expected_modification_time());
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
             target_blob_uuid,
-            new BlobDataItem(std::move(element), item.data_handle_)));
+            new BlobDataItem(std::move(element), item.data_handle_),
+            ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
       } break;
       case DataElement::TYPE_FILE_FILESYSTEM: {
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.FileSystem",
@@ -429,7 +435,8 @@ bool BlobStorageContext::AppendBlob(
                                          item.offset() + offset, new_length,
                                          item.expected_modification_time());
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(
-            target_blob_uuid, new BlobDataItem(std::move(element))));
+            target_blob_uuid, new BlobDataItem(std::move(element)),
+            ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
       } break;
       case DataElement::TYPE_DISK_CACHE_ENTRY: {
         std::unique_ptr<DataElement> element(new DataElement());
@@ -440,7 +447,8 @@ bool BlobStorageContext::AppendBlob(
             new BlobDataItem(std::move(element), item.data_handle_,
                              item.disk_cache_entry(),
                              item.disk_cache_stream_index(),
-                             item.disk_cache_side_stream_index())));
+                             item.disk_cache_side_stream_index()),
+            ShareableBlobDataItem::POPULATED_WITHOUT_QUOTA));
       } break;
       case DataElement::TYPE_BYTES_DESCRIPTION:
       case DataElement::TYPE_BLOB:

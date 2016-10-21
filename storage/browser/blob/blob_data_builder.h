@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace disk_cache {
@@ -26,13 +27,21 @@ namespace storage {
 class BlobStorageContext;
 class ShareableFileReference;
 
+// This class is used to build blobs. It also facilitates the operation of
+// 'pending' data, where the user knows the size and existence of a file or
+// bytes item, but we don't have the memory or file yet. See AppendFuture* and
+// PopulateFuture* methods for more description. Use
+// BlobDataHandle::GetBlobStatus to check for an error after creating the blob.
 class STORAGE_EXPORT BlobDataBuilder {
  public:
   using DataHandle = BlobDataItem::DataHandle;
+  // Visible for testing.
+  static base::FilePath GetFutureFileItemPath(uint64_t file_id);
 
-  // This is the filename used for the temporary file items added by
-  // AppendFutureFile.
-  const static char kAppendFutureFileTemporaryFileName[];
+  // Returns if the given item was created by AppendFutureFile.
+  static bool IsFutureFileItem(const DataElement& element);
+  // Returns |file_id| given to AppendFutureFile.
+  static uint64_t GetFutureFileID(const DataElement& element);
 
   explicit BlobDataBuilder(const std::string& uuid);
   ~BlobDataBuilder();
@@ -73,9 +82,12 @@ class STORAGE_EXPORT BlobDataBuilder {
   // Adds an item that is flagged for future data population. Use
   // 'PopulateFutureFile' to set the file path and expected modification time
   // of this file. Returns the index of the item (to be used in
-  // PopulateFutureFile). The temporary filename used by this method is
-  // kAppendFutureFileTemporaryFileName. |length| cannot be 0.
-  size_t AppendFutureFile(uint64_t offset, uint64_t length);
+  // PopulateFutureFile). |length| cannot be 0.
+  // Data for multiple items can be stored in the same 'future' file, just at
+  // different offsets and lengths. The |file_id| is used to differentiate
+  // between different 'future' files that will be used to store data for these
+  // items.
+  size_t AppendFutureFile(uint64_t offset, uint64_t length, uint64_t file_id);
 
   // Populates a part of an item previously allocated with AppendFutureFile.
   // Returns true if:
@@ -106,6 +118,7 @@ class STORAGE_EXPORT BlobDataBuilder {
   void AppendDiskCacheEntry(const scoped_refptr<DataHandle>& data_handle,
                             disk_cache::Entry* disk_cache_entry,
                             int disk_cache_stream_index);
+
   // The content of the side data is accessible with BlobReader::ReadSideData().
   void AppendDiskCacheEntryWithSideData(
       const scoped_refptr<DataHandle>& data_handle,
@@ -124,12 +137,14 @@ class STORAGE_EXPORT BlobDataBuilder {
   void Clear();
 
  private:
+  friend class BlobMemoryControllerTest;
   friend class BlobStorageContext;
-  friend class BlobAsyncBuilderHostTest;
   friend bool operator==(const BlobDataBuilder& a, const BlobDataBuilder& b);
   friend bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b);
   friend STORAGE_EXPORT void PrintTo(const BlobDataBuilder& x,
                                      ::std::ostream* os);
+  FRIEND_TEST_ALL_PREFIXES(BlobDataBuilderTest, TestFutureFiles);
+  FRIEND_TEST_ALL_PREFIXES(BlobStorageContextTest, BuildBlobFuzzy);
 
   std::string uuid_;
   std::string content_type_;

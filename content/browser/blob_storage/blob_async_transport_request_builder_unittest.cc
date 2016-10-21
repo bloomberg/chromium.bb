@@ -15,8 +15,6 @@ namespace storage {
 namespace {
 
 const char kNewUUID[] = "newUUID";
-const base::FilePath kFuturePopulatingFilePath = base::FilePath::FromUTF8Unsafe(
-    std::string(BlobDataBuilder::kAppendFutureFileTemporaryFileName));
 const char kFakeBlobUUID[] = "fakeBlob";
 
 void AddMemoryItem(size_t length, std::vector<DataElement>* out) {
@@ -87,8 +85,7 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFile) {
       memory_item_request.message);
 
   BlobDataBuilder expected_builder(kNewUUID);
-  expected_builder.AppendFile(kFuturePopulatingFilePath, 0, 305,
-                              base::Time::FromDoubleT(0));
+  expected_builder.AppendFutureFile(0, 305, 0);
   EXPECT_EQ(expected_builder, builder);
 }
 
@@ -131,12 +128,9 @@ TEST(BlobAsyncTransportRequestBuilderTest, TestLargeBlockToFiles) {
       memory_item_request.message);
 
   BlobDataBuilder expected_builder(kNewUUID);
-  expected_builder.AppendFile(kFuturePopulatingFilePath, 0, 400,
-                              base::Time::FromDoubleT(0));
-  expected_builder.AppendFile(kFuturePopulatingFilePath, 0, 400,
-                              base::Time::FromDoubleT(0));
-  expected_builder.AppendFile(kFuturePopulatingFilePath, 0, 200,
-                              base::Time::FromDoubleT(0));
+  expected_builder.AppendFutureFile(0, 400, 0);
+  expected_builder.AppendFutureFile(0, 400, 1);
+  expected_builder.AppendFutureFile(0, 200, 2);
   EXPECT_EQ(expected_builder, builder);
 }
 

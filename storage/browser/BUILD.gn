@@ -18,6 +18,8 @@ component("browser") {
     "blob/blob_data_item.h",
     "blob/blob_data_snapshot.cc",
     "blob/blob_data_snapshot.h",
+    "blob/blob_memory_controller.cc",
+    "blob/blob_memory_controller.h",
     "blob/blob_reader.cc",
     "blob/blob_reader.h",
     "blob/blob_storage_context.cc",

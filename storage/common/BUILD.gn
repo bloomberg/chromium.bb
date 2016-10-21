@@ -9,6 +9,7 @@ component("common") {
     "blob_storage/blob_item_bytes_request.h",
     "blob_storage/blob_item_bytes_response.cc",
     "blob_storage/blob_item_bytes_response.h",
+    "blob_storage/blob_storage_constants.cc",
     "blob_storage/blob_storage_constants.h",
     "data_element.cc",
     "data_element.h",
