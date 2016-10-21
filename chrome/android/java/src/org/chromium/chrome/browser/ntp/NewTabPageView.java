@@ -524,9 +524,6 @@ public class NewTabPageView extends FrameLayout
         // wrong page.
         if (!mManager.isCurrentPage()) return;
 
-        // Disable the search box contents if it is the process of being animated away.
-        ViewUtils.setEnabledRecursive(mSearchBoxView, mSearchBoxView.getAlpha() == 1.0f);
-
         if (mSearchBoxScrollListener != null) {
             mSearchBoxScrollListener.onNtpScrollChanged(getToolbarTransitionPercentage());
         }
@@ -809,6 +806,9 @@ public class NewTabPageView extends FrameLayout
      */
     public void setSearchBoxAlpha(float alpha) {
         mSearchBoxView.setAlpha(alpha);
+
+        // Disable the search box contents if it is the process of being animated away.
+        ViewUtils.setEnabledRecursive(mSearchBoxView, mSearchBoxView.getAlpha() == 1.0f);
     }
 
     /**
