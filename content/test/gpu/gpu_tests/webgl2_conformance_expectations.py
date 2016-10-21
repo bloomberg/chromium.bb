@@ -55,6 +55,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=654187)
 
     # All platforms.
+    self.Fail('conformance/glsl/bugs/samplers-in-ternary-operator.html',
+        bug=657853)
+    self.Fail('conformance2/glsl3/uniform-block-layouts.html',
+        bug=657859)
     self.Fail('conformance2/context/methods-2.html', bug=616554)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance/buffers/buffer-uninitialized.html',
@@ -657,8 +661,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'amd'], bug=634525)
-    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
-        ['linux', 'amd'], bug=644740)
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
