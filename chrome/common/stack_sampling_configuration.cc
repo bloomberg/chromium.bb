@@ -178,10 +178,10 @@ StackSamplingConfiguration::GenerateConfiguration() {
 
     case version_info::Channel::CANARY:
       return ChooseConfiguration({
-        { PROFILE_BROWSER_PROCESS, 80},
+        { PROFILE_BROWSER_PROCESS, 0},
         { PROFILE_GPU_PROCESS, 0},
-        { PROFILE_BROWSER_AND_GPU_PROCESS, 10},
-        { PROFILE_CONTROL, 10},
+        { PROFILE_BROWSER_AND_GPU_PROCESS, 50},
+        { PROFILE_CONTROL, 50},
         { PROFILE_DISABLED, 0}
       });
 
