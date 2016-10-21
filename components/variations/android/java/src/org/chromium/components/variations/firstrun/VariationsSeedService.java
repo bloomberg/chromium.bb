@@ -6,19 +6,15 @@ package org.chromium.components.variations.firstrun;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.SystemClock;
 
 import org.chromium.base.Log;
-import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Background service that fetches the variations seed before the actual first run of Chrome.
@@ -30,12 +26,6 @@ public class VariationsSeedService extends IntentService {
     private static final int BUFFER_SIZE = 4096;
     private static final int READ_TIMEOUT = 10000; // time in ms
     private static final int REQUEST_TIMEOUT = 15000; // time in ms
-
-    // Values for the "Variations.FirstRun.SeedFetchResult" sparse histogram, which also logs
-    // HTTP result codes. These are negative so that they don't conflict with the HTTP codes.
-    // These values should not be renumbered or re-used since they are logged to UMA.
-    private static final int SEED_FETCH_RESULT_TIMEOUT = -2;
-    private static final int SEED_FETCH_RESULT_IOEXCEPTION = -1;
 
     // Static variable that indicates a status of the variations seed fetch. If one request is in
     // progress, we do not start another fetch.
@@ -55,7 +45,9 @@ public class VariationsSeedService extends IntentService {
         }
         setFetchInProgressFlagValue(true);
         try {
-            downloadContent();
+            downloadContent(new URL(VARIATIONS_SERVER_URL));
+        } catch (MalformedURLException e) {
+            Log.w(TAG, "Variations server URL is malformed.", e);
         } finally {
             setFetchInProgressFlagValue(false);
         }
@@ -67,32 +59,16 @@ public class VariationsSeedService extends IntentService {
         sFetchInProgress = value;
     }
 
-    private void recordFetchResultOrCode(int resultOrCode) {
-        SparseHistogramSample histogram =
-                new SparseHistogramSample("Variations.FirstRun.SeedFetchResult");
-        histogram.record(resultOrCode);
-    }
-
-    private void recordSeedFetchTime(long timeDeltaMillis) {
-        Log.i(TAG, "Fetched first run seed in " + timeDeltaMillis + " ms");
-        TimesHistogramSample histogram = new TimesHistogramSample(
-                "Variations.FirstRun.SeedFetchTime", TimeUnit.MILLISECONDS);
-        histogram.record(timeDeltaMillis);
-    }
-
-    private boolean downloadContent() {
+    private boolean downloadContent(URL variationsServerUrl) {
         HttpURLConnection connection = null;
         try {
-            long startTimeMillis = SystemClock.elapsedRealtime();
-            URL url = new URL(VARIATIONS_SERVER_URL);
-            connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) variationsServerUrl.openConnection();
             connection.setReadTimeout(READ_TIMEOUT);
             connection.setConnectTimeout(REQUEST_TIMEOUT);
             connection.setDoInput(true);
             connection.setRequestProperty("A-IM", "gzip");
             connection.connect();
             int responseCode = connection.getResponseCode();
-            recordFetchResultOrCode(responseCode);
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 Log.w(TAG, "Non-OK response code = %d", responseCode);
                 return false;
@@ -106,14 +82,8 @@ public class VariationsSeedService extends IntentService {
             boolean isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
             VariationsSeedBridge.setVariationsFirstRunSeed(
                     getApplicationContext(), rawSeed, signature, country, date, isGzipCompressed);
-            recordSeedFetchTime(SystemClock.elapsedRealtime() - startTimeMillis);
             return true;
-        } catch (SocketTimeoutException e) {
-            recordFetchResultOrCode(SEED_FETCH_RESULT_TIMEOUT);
-            Log.w(TAG, "SocketTimeoutException fetching first run seed: ", e);
-            return false;
         } catch (IOException e) {
-            recordFetchResultOrCode(SEED_FETCH_RESULT_IOEXCEPTION);
             Log.w(TAG, "IOException fetching first run seed: ", e);
             return false;
         } finally {
