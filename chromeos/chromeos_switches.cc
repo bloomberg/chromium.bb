@@ -200,10 +200,6 @@ const char kDisableRollbackOption[] = "disable-rollback-option";
 const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
     "disable-system-timezone-automatic-detection";
 
-// Disables automatic timezone update.
-const char kDisableTimeZoneTrackingOption[] =
-    "disable-timezone-tracking-option";
-
 // Disables volume adjust sound.
 const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 

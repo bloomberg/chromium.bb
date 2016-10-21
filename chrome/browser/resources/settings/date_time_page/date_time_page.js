@@ -74,20 +74,6 @@ Polymer({
             null;
       },
     },
-
-    /**
-     * Hides the time zone auto-detection feature when the
-     * --disable-timezone-tracking-option flag is set.
-     * @private
-     */
-    hideTimeZoneDetection_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.valueExists('hideTimeZoneDetection') &&
-               loadTimeData.getBoolean('hideTimeZoneDetection');
-      },
-      readOnly: true,
-    },
   },
 
   observers: [
@@ -112,10 +98,6 @@ Polymer({
                                    systemTimeZoneManaged,
                                    systemTimeZoneDetectionManaged,
                                    systemTimeZoneDetectionPolicyValue) {
-    // Do nothing if the feature is disabled by a flag.
-    if (this.hideTimeZoneDetection_)
-      return;
-
     var checkbox = this.$.timeZoneDetectionCheckbox;
 
     // Time zone auto-detection is disabled when the time zone is managed.

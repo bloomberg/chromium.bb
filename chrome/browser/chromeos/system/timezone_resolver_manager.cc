@@ -160,10 +160,6 @@ bool TimeZoneResolverManager::TimeZoneResolverShouldBeRunningForTests() {
 }
 
 bool TimeZoneResolverManager::TimeZoneResolverShouldBeRunning() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableTimeZoneTrackingOption)) {
-    return false;
-  }
   ServiceConfiguration result = GetServiceConfigurationFromPolicy();
 
   if (result == UNSPECIFIED) {

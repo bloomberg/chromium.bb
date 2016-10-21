@@ -60,11 +60,6 @@ DateTimeHandler* DateTimeHandler::Create(
         GetSystemTimezoneAutomaticDetectionPolicyValue());
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableTimeZoneTrackingOption)) {
-    html_source->AddBoolean("hideTimeZoneDetection", true);
-  }
-
   return new DateTimeHandler;
 }
 

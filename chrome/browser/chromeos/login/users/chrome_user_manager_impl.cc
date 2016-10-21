@@ -1173,11 +1173,6 @@ void ChromeUserManagerImpl::UpdateNumberOfUsers() {
 }
 
 void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableTimeZoneTrackingOption)) {
-    return;
-  }
-
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   if (user == NULL)
