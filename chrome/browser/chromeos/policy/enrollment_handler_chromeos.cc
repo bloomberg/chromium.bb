@@ -39,27 +39,27 @@ const int kLockRetryIntervalMs = 500;
 const int kLockRetryTimeoutMs = 10 * 60 * 1000;  // 10 minutes.
 
 em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
-    policy::EnrollmentConfig::Mode mode) {
+    EnrollmentConfig::Mode mode) {
   switch (mode) {
-    case policy::EnrollmentConfig::MODE_NONE:
+    case EnrollmentConfig::MODE_NONE:
       break;
-    case policy::EnrollmentConfig::MODE_MANUAL:
+    case EnrollmentConfig::MODE_MANUAL:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL;
-    case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
+    case EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_MANUAL_RENEW;
-    case policy::EnrollmentConfig::MODE_LOCAL_FORCED:
+    case EnrollmentConfig::MODE_LOCAL_FORCED:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_LOCAL_FORCED;
-    case policy::EnrollmentConfig::MODE_LOCAL_ADVERTISED:
+    case EnrollmentConfig::MODE_LOCAL_ADVERTISED:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_LOCAL_ADVERTISED;
-    case policy::EnrollmentConfig::MODE_SERVER_FORCED:
+    case EnrollmentConfig::MODE_SERVER_FORCED:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_SERVER_FORCED;
-    case policy::EnrollmentConfig::MODE_SERVER_ADVERTISED:
+    case EnrollmentConfig::MODE_SERVER_ADVERTISED:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_SERVER_ADVERTISED;
-    case policy::EnrollmentConfig::MODE_RECOVERY:
+    case EnrollmentConfig::MODE_RECOVERY:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY;
-    case policy::EnrollmentConfig::MODE_ATTESTATION:
+    case EnrollmentConfig::MODE_ATTESTATION:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION;
-    case policy::EnrollmentConfig::MODE_ATTESTATION_FORCED:
+    case EnrollmentConfig::MODE_ATTESTATION_FORCED:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION_FORCED;
   }
 
@@ -197,7 +197,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
   if (enrollment_step_ == STEP_REGISTRATION && client_->is_registered()) {
     enrollment_step_ = STEP_POLICY_FETCH,
     device_mode_ = client_->device_mode();
-    if (device_mode_ != policy::DEVICE_MODE_ENTERPRISE) {
+    if (device_mode_ != DEVICE_MODE_ENTERPRISE) {
       LOG(ERROR) << "Bad device mode " << device_mode_;
       ReportResult(EnrollmentStatus::ForStatus(
           EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE));
@@ -321,7 +321,6 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
     device_id_ = validator->policy_data()->device_id();
     policy_ = std::move(validator->policy());
-    request_token_ = validator->policy_data()->request_token();
     enrollment_step_ = STEP_ROBOT_AUTH_FETCH;
     client_->FetchRobotAuthCodes(auth_token_);
   } else {

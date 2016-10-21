@@ -189,7 +189,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;
   std::string domain_;
   std::string device_id_;
-  std::string request_token_;
 
   // Current enrollment step.
   EnrollmentStep enrollment_step_;
