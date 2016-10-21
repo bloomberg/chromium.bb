@@ -427,8 +427,15 @@ void WindowSelectorItem::Shutdown() {
     // gradual upon exiting the overview mode.
     WmWindow* label_window =
         WmLookup::Get()->GetWindowForWidget(window_label_.get());
-    label_window->GetParent()->StackChildAbove(label_window,
-                                               transform_window_.window());
+
+    // |label_window| was originally created in the same container as the
+    // |transform_window_| but when closing overview the |transform_window_|
+    // could have been reparented if a drag was active. Only change stacking
+    // if the windows still belong to the same container.
+    if (label_window->GetParent() == transform_window_.window()->GetParent()) {
+      label_window->GetParent()->StackChildAbove(label_window,
+                                                 transform_window_.window());
+    }
   }
   if (background_view_) {
     background_view_->OnItemRestored();

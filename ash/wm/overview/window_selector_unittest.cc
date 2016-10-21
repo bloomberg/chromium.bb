@@ -24,6 +24,7 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window_property.h"
@@ -54,6 +55,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/events/event_utils.h"
@@ -2015,6 +2017,22 @@ TEST_F(WindowSelectorTest, TransformedRectIsCenteredWithInset) {
   EXPECT_NEAR(
       transformed_rect.y() + (int)(scale * inset) - header_height - bounds.y(),
       bounds.bottom() - transformed_rect.bottom(), 1);
+}
+
+// Start dragging a window and activate overview mode. This test should not
+// crash or DCHECK inside aura::Window::StackChildRelativeTo().
+TEST_F(WindowSelectorTest, OverviewWhileDragging) {
+  const gfx::Rect bounds(10, 10, 100, 100);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<WindowResizer> resizer(
+      CreateWindowResizer(WmWindowAura::Get(window.get()), gfx::Point(),
+                          HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE));
+  ASSERT_TRUE(resizer.get());
+  gfx::Point location = resizer->GetInitialLocation();
+  location.Offset(20, 20);
+  resizer->Drag(location, 0);
+  ToggleOverview();
+  resizer->RevertDrag();
 }
 
 }  // namespace ash
