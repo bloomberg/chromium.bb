@@ -90,7 +90,6 @@ SpdyHeaderBlock::ValueProxy::ValueProxy(
       lookup_result_(lookup_result),
       key_(key),
       valid_(true) {
-  DVLOG(1) << "Constructing ValueProxy with key: " << key;
 }
 
 SpdyHeaderBlock::ValueProxy::ValueProxy(ValueProxy&& other)
