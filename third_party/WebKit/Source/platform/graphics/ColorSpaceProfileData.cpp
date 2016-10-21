@@ -6,7 +6,7 @@
 
 #include "wtf/Assertions.h"
 
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
 
 struct bt709ColorProfile {
   static char* data()  // BT.709 HDTV ITU
@@ -94,11 +94,11 @@ struct bt601ColorProfile {
   static size_t size() { return 380u; }
 };
 
-#endif  // USE(SKCOLORXFORM)
+#endif  // USE(QCMSLIB)
 
 namespace blink {
 
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
 
 void bt709ColorProfileData(Vector<char>& data) {
   ASSERT(WTF::isMainThread() && data.isEmpty());
@@ -122,6 +122,6 @@ void bt601ColorProfileData(Vector<char>&) {
   ASSERT_NOT_REACHED();
 }
 
-#endif  // USE(SKCOLORXFORM)
+#endif  // USE(QCMSLIB)
 
 }  // namespace blink

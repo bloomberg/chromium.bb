@@ -49,6 +49,9 @@ extern "C" {
 #if USE(ICCJPEG)
 #include "iccjpeg.h"
 #endif
+#if USE(QCMSLIB)
+#include "qcms.h"
+#endif
 #include <setjmp.h>
 }
 
@@ -70,9 +73,15 @@ inline J_COLOR_SPACE rgbOutputColorSpace() {
 inline bool turboSwizzled(J_COLOR_SPACE colorSpace) {
   return colorSpace == JCS_EXT_RGBA || colorSpace == JCS_EXT_BGRA;
 }
+inline bool colorSpaceHasAlpha(J_COLOR_SPACE colorSpace) {
+  return turboSwizzled(colorSpace);
+}
 #else
 inline J_COLOR_SPACE rgbOutputColorSpace() {
   return JCS_RGB;
+}
+inline bool colorSpaceHasAlpha(J_COLOR_SPACE) {
+  return false;
 }
 #endif
 
@@ -306,7 +315,6 @@ class JPEGImageReader final {
     // Retain ICC color profile markers for color management.
     setup_read_icc_profile(&m_info);
 #endif
-
     // Keep APP1 blocks, for obtaining exif data.
     jpeg_save_markers(&m_info, exifMarker, 0xFFFF);
   }
@@ -453,17 +461,23 @@ class JPEGImageReader final {
           JOCTET* profile = nullptr;
           unsigned profileLength = 0;
           if (read_icc_profile(info(), &profile, &profileLength)) {
-            decoder()->setColorSpaceAndComputeTransform(
+            decoder()->setColorProfileAndComputeTransform(
                 reinterpret_cast<char*>(profile), profileLength,
+                colorSpaceHasAlpha(info()->out_color_space),
                 false /* useSRGB */);
             free(profile);
           }
 #endif  // USE(ICCJPEG)
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
           if (decoder()->colorTransform()) {
             overrideColorSpace = JCS_UNKNOWN;
+#if defined(TURBO_JPEG_RGB_SWIZZLE)
+            // Input RGBA data to qcms. Note: restored to BGRA on output.
+            if (m_info.out_color_space == JCS_EXT_BGRA)
+              m_info.out_color_space = JCS_EXT_RGBA;
+#endif  // defined(TURBO_JPEG_RGB_SWIZZLE)
           }
-#endif  // USE(SKCOLORXFORM)
+#endif  // USE(QCMSLIB)
         }
         if (overrideColorSpace == JCS_YCbCr) {
           m_info.out_color_space = JCS_YCbCr;
@@ -800,7 +814,6 @@ void setPixel(ImageFrame& buffer,
   ASSERT_NOT_REACHED();
 }
 
-// Used only for debugging with libjpeg (instead of libjpeg-turbo).
 template <>
 void setPixel<JCS_RGB>(ImageFrame& buffer,
                        ImageFrame::PixelData* pixel,
@@ -831,8 +844,6 @@ void setPixel<JCS_CMYK>(ImageFrame& buffer,
                     jsample[2] * k / 255, 255);
 }
 
-// Used only for JCS_CMYK and JCS_RGB output.  Note that JCS_RGB is used only
-// for debugging with libjpeg (instead of libjpeg-turbo).
 template <J_COLOR_SPACE colorSpace>
 bool outputRows(JPEGImageReader* reader, ImageFrame& buffer) {
   JSAMPARRAY samples = reader->samples();
@@ -846,19 +857,14 @@ bool outputRows(JPEGImageReader* reader, ImageFrame& buffer) {
     // Request one scanline: returns 0 or 1 scanlines.
     if (jpeg_read_scanlines(info, samples, 1) != 1)
       return false;
-
+#if USE(QCMSLIB)
+    if (reader->decoder()->colorTransform() && colorSpace == JCS_RGB)
+      qcms_transform_data(reader->decoder()->colorTransform(), *samples,
+                          *samples, width);
+#endif
     ImageFrame::PixelData* pixel = buffer.getAddr(0, y);
     for (int x = 0; x < width; ++pixel, ++x)
       setPixel<colorSpace>(buffer, pixel, samples, x);
-
-#if USE(SKCOLORXFORM)
-    SkColorSpaceXform* xform = reader->decoder()->colorTransform();
-    if (JCS_RGB == colorSpace && xform) {
-      ImageFrame::PixelData* row = buffer.getAddr(0, y);
-      xform->apply(xformColorFormat(), row, xformColorFormat(), row, width,
-                   kOpaque_SkAlphaType);
-    }
-#endif
   }
 
   buffer.setPixelsChanged(true);
@@ -959,13 +965,12 @@ bool JPEGImageDecoder::outputScanlines() {
           buffer.getAddr(0, info->output_scanline));
       if (jpeg_read_scanlines(info, &row, 1) != 1)
         return false;
-
-#if USE(SKCOLORXFORM)
-      SkColorSpaceXform* xform = colorTransform();
-      if (xform) {
-        xform->apply(xformColorFormat(), row, xformColorFormat(), row,
-                     info->output_width, kOpaque_SkAlphaType);
-      }
+#if USE(QCMSLIB)
+      if (qcms_transform* transform = colorTransform())
+        qcms_transform_data_type(transform, row, row, info->output_width,
+                                 rgbOutputColorSpace() == JCS_EXT_BGRA
+                                     ? QCMS_OUTPUT_BGRX
+                                     : QCMS_OUTPUT_RGBX);
 #endif
     }
     buffer.setPixelsChanged(true);

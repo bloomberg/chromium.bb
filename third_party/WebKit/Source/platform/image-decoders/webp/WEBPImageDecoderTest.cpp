@@ -159,7 +159,7 @@ void testByteByByteSizeAvailable(const char* webpFile,
     } else {
       EXPECT_TRUE(decoder->isSizeAvailable());
       EXPECT_FALSE(decoder->size().isEmpty());
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
       if (hasColorProfile)
         EXPECT_TRUE(decoder->hasColorProfile());
       else

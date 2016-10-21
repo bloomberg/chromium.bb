@@ -42,23 +42,23 @@
 #include "wtf/text/WTFString.h"
 #include <memory>
 
-#if USE(SKCOLORXFORM)
-#include "SkColorSpaceXform.h"
+#if USE(QCMSLIB)
+#include "qcms.h"
 #endif
 
 namespace blink {
 
-#if USE(SKCOLORXFORM)
-#if SK_B32_SHIFT
-inline SkColorSpaceXform::ColorFormat xformColorFormat() {
-  return SkColorSpaceXform::kRGBA_8888_ColorFormat;
-}
-#else
-inline SkColorSpaceXform::ColorFormat xformColorFormat() {
-  return SkColorSpaceXform::kBGRA_8888_ColorFormat;
-}
-#endif
-#endif  // USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
+struct QCMSTransformDeleter {
+  void operator()(qcms_transform* transform) {
+    if (transform)
+      qcms_transform_release(transform);
+  }
+};
+
+using QCMSTransformUniquePtr =
+    std::unique_ptr<qcms_transform, QCMSTransformDeleter>;
+#endif  // USE(QCMSLIB)
 
 // ImagePlanes can be used to decode color components into provided buffers
 // instead of using an ImageFrame.
@@ -224,13 +224,15 @@ class PLATFORM_EXPORT ImageDecoder {
   // embedded color profile, and is independent of whether or not that
   // profile's transform has been baked into the pixel values.
   bool hasColorProfile() const { return m_hasColorProfile; }
-  void setColorSpaceAndComputeTransform(const char* iccData,
-                                        unsigned iccLength,
-                                        bool useSRGB);
+  void setColorProfileAndComputeTransform(const char* iccData,
+                                          unsigned iccLength,
+                                          bool hasAlpha,
+                                          bool useSRGB);
 
-#if USE(SKCOLORXFORM)
-  // Transformation from encoded color space to target color space.
-  SkColorSpaceXform* colorTransform() {
+#if USE(QCMSLIB)
+  // In contrast with hasColorProfile, this refers to the transform that has
+  // been baked into the pixels.
+  qcms_transform* colorTransform() {
     return m_sourceToOutputDeviceColorTransform.get();
   }
 #endif
@@ -359,8 +361,8 @@ class PLATFORM_EXPORT ImageDecoder {
   bool m_hasColorProfile = false;
   ImageFrame::ICCProfile m_colorProfile;
 
-#if USE(SKCOLORXFORM)
-  std::unique_ptr<SkColorSpaceXform> m_sourceToOutputDeviceColorTransform;
+#if USE(QCMSLIB)
+  QCMSTransformUniquePtr m_sourceToOutputDeviceColorTransform;
 #endif
 };
 

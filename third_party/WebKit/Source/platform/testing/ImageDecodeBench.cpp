@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
 
   bool applyColorCorrection = false;
 
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
   if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0)
     applyColorCorrection = (--argc, ++argv, true);
 

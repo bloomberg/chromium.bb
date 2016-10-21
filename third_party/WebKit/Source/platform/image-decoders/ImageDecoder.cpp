@@ -35,6 +35,17 @@
 
 namespace blink {
 
+#if USE(QCMSLIB)
+struct QCMSProfileDeleter {
+  void operator()(qcms_profile* profile) {
+    if (profile)
+      qcms_profile_release(profile);
+  }
+};
+
+using QCMSProfileUniquePtr = std::unique_ptr<qcms_profile, QCMSProfileDeleter>;
+#endif  // USE(QCMSLIB)
+
 inline bool matchesJPEGSignature(const char* contents) {
   return !memcmp(contents, "\xFF\xD8\xFF", 3);
 }
@@ -332,41 +343,71 @@ size_t ImagePlanes::rowBytes(int i) const {
 
 namespace {
 
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
 
-// The output device color space is global and shared across multiple threads.
-SpinLock gTargetColorSpaceLock;
-SkColorSpace* gTargetColorSpace = nullptr;
+const unsigned kIccColorProfileHeaderLength = 128;
 
-#endif  // USE(SKCOLORXFORM)
+bool rgbColorProfile(const char* profileData, unsigned profileLength) {
+  DCHECK_GE(profileLength, kIccColorProfileHeaderLength);
+
+  return !memcmp(&profileData[16], "RGB ", 4);
+}
+
+bool inputDeviceColorProfile(const char* profileData, unsigned profileLength) {
+  DCHECK_GE(profileLength, kIccColorProfileHeaderLength);
+
+  return !memcmp(&profileData[12], "mntr", 4) ||
+         !memcmp(&profileData[12], "scnr", 4);
+}
+
+// The output device color profile is global and shared across multiple threads.
+SpinLock gTargetColorProfileLock;
+qcms_profile* gTargetColorProfile = nullptr;
+
+#endif  // USE(QCMSLIB)
 
 }  // namespace
 
 // static
 void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
-#if USE(SKCOLORXFORM)
+#if USE(QCMSLIB)
   if (profile.isEmpty())
     return;
 
   // Take a lock around initializing and accessing the global device color
   // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
+  SpinLock::Guard guard(gTargetColorProfileLock);
 
   // Layout tests expect that only the first call will take effect.
-  if (gTargetColorSpace)
+  if (gTargetColorProfile)
     return;
 
-  gTargetColorSpace =
-      SkColorSpace::NewICC(profile.data(), profile.size()).release();
+  {
+    sk_sp<SkColorSpace> colorSpace =
+        SkColorSpace::NewICC(profile.data(), profile.size());
+    BitmapImageMetrics::countGamma(colorSpace.get());
+  }
 
-  // UMA statistics.
-  BitmapImageMetrics::countGamma(gTargetColorSpace);
-#endif  // USE(SKCOLORXFORM)
+  // FIXME: Add optional ICCv4 support and support for multiple monitors.
+  gTargetColorProfile =
+      qcms_profile_from_memory(profile.data(), profile.size());
+  if (!gTargetColorProfile)
+    return;
+
+  if (qcms_profile_is_bogus(gTargetColorProfile)) {
+    qcms_profile_release(gTargetColorProfile);
+    gTargetColorProfile = nullptr;
+    return;
+  }
+
+  qcms_profile_precache_output_transform(gTargetColorProfile);
+#endif  // USE(QCMSLIB)
 }
 
-void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
-                                                    unsigned iccLength,
-                                                    bool useSRGB) {
+void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
+                                                      unsigned iccLength,
+                                                      bool hasAlpha,
+                                                      bool useSRGB) {
   // Sub-classes should not call this if they were instructed to ignore embedded
   // color profiles.
   DCHECK(!m_ignoreGammaAndColorProfile);
@@ -374,44 +415,56 @@ void ImageDecoder::setColorSpaceAndComputeTransform(const char* iccData,
   m_colorProfile.assign(iccData, iccLength);
   m_hasColorProfile = true;
 
-  // With color correct rendering, we do not transform to the output color space
-  // at decode time.  Instead, we tag the raw image pixels and pass the tagged
-  // SkImage to Skia.
+  // With color correct rendering, we use Skia instead of QCMS to color correct
+  // images.
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return;
 
-#if USE(SKCOLORXFORM)
-  m_sourceToOutputDeviceColorTransform = nullptr;
+#if USE(QCMSLIB)
+  m_sourceToOutputDeviceColorTransform.reset();
 
-  // Create the input profile.
-  sk_sp<SkColorSpace> srcSpace = nullptr;
+  // Create the input profile
+  QCMSProfileUniquePtr inputProfile;
   if (useSRGB) {
-    srcSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+    inputProfile.reset(qcms_profile_sRGB());
   } else {
-    srcSpace = SkColorSpace::NewICC(iccData, iccLength);
+    // Only accept RGB color profiles from input class devices.
+    if (iccLength < kIccColorProfileHeaderLength)
+      return;
+    if (!rgbColorProfile(iccData, iccLength))
+      return;
+    if (!inputDeviceColorProfile(iccData, iccLength))
+      return;
+    inputProfile.reset(qcms_profile_from_memory(iccData, iccLength));
   }
-
-  if (!srcSpace)
+  if (!inputProfile)
     return;
+
+  // We currently only support color profiles for RGB profiled images.
+  ASSERT(rgbData == qcms_profile_get_color_space(inputProfile.get()));
 
   // Take a lock around initializing and accessing the global device color
   // profile.
-  SpinLock::Guard guard(gTargetColorSpaceLock);
+  SpinLock::Guard guard(gTargetColorProfileLock);
 
   // Initialize the output device profile to sRGB if it has not yet been
   // initialized.
-  if (!gTargetColorSpace) {
-    gTargetColorSpace =
-        SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named).release();
+  if (!gTargetColorProfile) {
+    gTargetColorProfile = qcms_profile_sRGB();
+    qcms_profile_precache_output_transform(gTargetColorProfile);
   }
 
-  if (SkColorSpace::Equals(srcSpace.get(), gTargetColorSpace)) {
+  if (qcms_profile_match(inputProfile.get(), gTargetColorProfile))
     return;
-  }
 
-  m_sourceToOutputDeviceColorTransform =
-      SkColorSpaceXform::New(srcSpace.get(), gTargetColorSpace);
-#endif  // USE(SKCOLORXFORM)
+  qcms_data_type dataFormat = hasAlpha ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
+
+  // FIXME: Don't force perceptual intent if the image profile contains an
+  // intent.
+  m_sourceToOutputDeviceColorTransform.reset(
+      qcms_transform_create(inputProfile.get(), dataFormat, gTargetColorProfile,
+                            QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));
+#endif  // USE(QCMSLIB)
 }
 
 }  // namespace blink
