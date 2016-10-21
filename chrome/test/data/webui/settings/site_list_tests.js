@@ -319,15 +319,17 @@ cr.define('site_list', function() {
         document.body.appendChild(testElement);
       });
 
+      teardown(function() {
+        closeActionMenu();
+      });
+
       /**
-       * Fetch the non-hidden menu items from the list.
-       * @param {!HTMLElement} parentElement
-       * @param {number} index The index of the child element (which site) to
-       *     fetch.
+       * Fetch the non-hidden menu items from the action menu.
        */
-      function getMenuItems(listContainer, index) {
-        return listContainer.children[index].querySelectorAll(
-            'iron-dropdown .dropdown-item:not([hidden])');
+      function getMenuItems() {
+        var menu = testElement.$$('dialog[is=settings-action-menu]');
+        assertTrue(!!menu);
+        return menu.querySelectorAll('button:not([hidden])');
       }
 
       /**
@@ -342,14 +344,19 @@ cr.define('site_list', function() {
         Polymer.dom.flush();
       }
 
+      /** Closes the action menu. */
+      function closeActionMenu() {
+        var menu = testElement.$$('dialog[is=settings-action-menu]');
+        if (menu.open)
+          menu.close();
+      }
+
       /**
        * Asserts the menu looks as expected.
        * @param {Array<string>} items The items expected to show in the menu.
-       * @param {!HTMLElement} parentElement The parent node to start looking
-       *     in.
        */
-      function assertMenu(items, parentElement) {
-        var menuItems = getMenuItems(parentElement.$.listContainer, 0);
+      function assertMenu(items) {
+        var menuItems = getMenuItems();
         assertEquals(items.length, menuItems.length);
         for (var i = 0; i < items.length; i++)
           assertEquals(items[i], menuItems[i].textContent.trim());
@@ -515,7 +522,7 @@ cr.define('site_list', function() {
               assertMenu(['Allow', 'Clear on exit', 'Remove'], testElement);
 
               // Select 'Remove from menu'.
-              var menuItems = getMenuItems(testElement.$.listContainer, 0);
+              var menuItems = getMenuItems();
               assertTrue(!!menuItems);
               MockInteractions.tap(menuItems[2]);
               return browserProxy.whenCalled(
@@ -548,10 +555,11 @@ cr.define('site_list', function() {
               openActionMenu(0);
               // 'Clear on exit' is hidden for incognito items.
               assertMenu(['Block', 'Remove'], testElement);
+              closeActionMenu();
 
               // Select 'Remove' from menu on 'foo.com'.
               openActionMenu(1);
-              var menuItems = getMenuItems(testElement.$.listContainer, 1);
+              var menuItems = getMenuItems();
               assertTrue(!!menuItems);
               MockInteractions.tap(menuItems[1]);
               return browserProxy.whenCalled(
@@ -776,7 +784,7 @@ cr.define('site_list', function() {
             contentType) {
           Polymer.dom.flush();
           openActionMenu(0);
-          var menuItems = getMenuItems(testElement.$.listContainer, 0);
+          var menuItems = getMenuItems();
           assertTrue(!!menuItems);
           MockInteractions.tap(menuItems[0]);
           return browserProxy.whenCalled('setCategoryPermissionForOrigin');
@@ -792,7 +800,7 @@ cr.define('site_list', function() {
           openActionMenu(0);
           assertMenu(['Allow', 'Remove'], testElement);
 
-          var menuItems = getMenuItems(testElement.$.listContainer, 0);
+          var menuItems = getMenuItems();
           assertTrue(!!menuItems);
           MockInteractions.tap(menuItems[0]);  // Action: Allow.
           return browserProxy.whenCalled('setCategoryPermissionForOrigin');

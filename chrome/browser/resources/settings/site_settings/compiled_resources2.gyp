@@ -120,10 +120,12 @@
       'target_name': 'site_list',
       'dependencies': [
         '../compiled_resources2.gyp:route',
+        '../compiled_resources2.gyp:settings_action_menu',
+        'constants',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '<(EXTERNS_GYP):settings_private',
-        'constants',
         'site_settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

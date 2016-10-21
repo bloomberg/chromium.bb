@@ -44,6 +44,12 @@ Polymer({
     },
 
     /**
+     * The site serving as the model for the currenly open action menu.
+     * @private {?SiteException}
+     */
+    actionMenuSite_: Object,
+
+    /**
      * Array of sites to display in the widget.
      * @type {!Array<SiteException>}
      */
@@ -363,15 +369,15 @@ Polymer({
   },
 
   /**
-   * Whether to show the Session Only menu item for a given site.
-   * @param {SiteException} site The site in question.
-   * @return {boolean} Whether to show the menu item.
+   * @return {boolean} Whether to show the "Session Only" menu item for the
+   *     currently active site.
+   * @private
    */
-  showSessionOnlyActionForSite_: function(site) {
+  showSessionOnlyActionForSite_: function() {
     // It makes no sense to show "clear on exit" for exceptions that only apply
     // to incognito. It gives the impression that they might under some
     // circumstances not be cleared on exit, which isn't true.
-    if (site.incognito)
+    if (!this.actionMenuSite_ || this.actionMenuSite_.incognito)
       return false;
 
     return this.showSessionOnlyAction_;
@@ -379,6 +385,7 @@ Polymer({
 
   /**
    * A handler for selecting a site (by clicking on the origin).
+   * @param {!{model: !{item: !SiteException}}} event
    * @private
    */
   onOriginTap_: function(event) {
@@ -391,15 +398,14 @@ Polymer({
 
   /**
    * A handler for activating one of the menu action items.
-   * @param {!{model: !{item: !{origin: string}}}} event
    * @param {string} action The permission to set (Allow, Block, SessionOnly,
    *     etc).
    * @private
    */
-  onActionMenuActivate_: function(event, action) {
-    var origin = event.model.item.origin;
-    var incognito = event.model.item.incognito;
-    var embeddingOrigin = event.model.item.embeddingOrigin;
+  onActionMenuActivate_: function(action) {
+    var origin = this.actionMenuSite_.origin;
+    var incognito = this.actionMenuSite_.incognito;
+    var embeddingOrigin = this.actionMenuSite_.embeddingOrigin;
     if (action == settings.PermissionValues.DEFAULT) {
       this.browserProxy.resetCategoryPermissionForOrigin(
           origin, embeddingOrigin, this.category, incognito);
@@ -410,23 +416,27 @@ Polymer({
   },
 
   /** @private */
-  onAllowTap_: function(event) {
-    this.onActionMenuActivate_(event, settings.PermissionValues.ALLOW);
+  onAllowTap_: function() {
+    this.onActionMenuActivate_(settings.PermissionValues.ALLOW);
+    this.closeActionMenu_();
   },
 
   /** @private */
-  onBlockTap_: function(event) {
-    this.onActionMenuActivate_(event, settings.PermissionValues.BLOCK);
+  onBlockTap_: function() {
+    this.onActionMenuActivate_(settings.PermissionValues.BLOCK);
+    this.closeActionMenu_();
   },
 
   /** @private */
-  onSessionOnlyTap_: function(event) {
-    this.onActionMenuActivate_(event, settings.PermissionValues.SESSION_ONLY);
+  onSessionOnlyTap_: function() {
+    this.onActionMenuActivate_(settings.PermissionValues.SESSION_ONLY);
+    this.closeActionMenu_();
   },
 
   /** @private */
-  onResetTap_: function(event) {
-    this.onActionMenuActivate_(event, settings.PermissionValues.DEFAULT);
+  onResetTap_: function() {
+    this.onActionMenuActivate_(settings.PermissionValues.DEFAULT);
+    this.closeActionMenu_();
   },
 
   /**
@@ -481,5 +491,24 @@ Polymer({
       return siteList.length > 0;
 
     return toggleState;
+  },
+
+  /**
+   * @param {!{model: !{item: !SiteException}}} e
+   * @private
+   */
+  onShowActionMenuTap_: function(e) {
+    this.actionMenuSite_ = e.model.item;
+    /** @type {!SettingsActionMenuElement} */ (
+        this.$$('dialog[is=settings-action-menu]')).showAt(
+            /** @type {!Element} */ (
+                Polymer.dom(/** @type {!Event} */ (e)).localTarget));
+  },
+
+  /** @private */
+  closeActionMenu_: function() {
+    this.actionMenuSite_ = null;
+    /** @type {!SettingsActionMenuElement} */ (
+        this.$$('dialog[is=settings-action-menu]')).close();
   },
 });
