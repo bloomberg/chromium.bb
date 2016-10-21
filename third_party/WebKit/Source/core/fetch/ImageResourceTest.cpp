@@ -348,7 +348,9 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
       nullptr);
   cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()),
                           jpeg.size());
+  EXPECT_NE(0u, cachedImage->encodedSizeMemoryUsageForTesting());
   cachedImage->finish();
+  EXPECT_EQ(0u, cachedImage->encodedSizeMemoryUsageForTesting());
   EXPECT_FALSE(cachedImage->errorOccurred());
   ASSERT_TRUE(cachedImage->hasImage());
   EXPECT_FALSE(cachedImage->getImage()->isNull());

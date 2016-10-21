@@ -304,6 +304,7 @@ Resource::Resource(const ResourceRequest& request,
     : m_loadFinishTime(0),
       m_identifier(0),
       m_encodedSize(0),
+      m_encodedSizeMemoryUsage(0),
       m_decodedSize(0),
       m_overheadSize(calculateOverheadSize()),
       m_preloadCount(0),
@@ -793,11 +794,16 @@ void Resource::setDecodedSize(size_t decodedSize) {
 }
 
 void Resource::setEncodedSize(size_t encodedSize) {
-  if (encodedSize == m_encodedSize)
+  if (encodedSize == m_encodedSize && encodedSize == m_encodedSizeMemoryUsage)
     return;
   size_t oldSize = size();
   m_encodedSize = encodedSize;
+  m_encodedSizeMemoryUsage = encodedSize;
   memoryCache()->update(this, oldSize, size());
+}
+
+void Resource::setEncodedSizeMemoryUsage(size_t encodedSize) {
+  m_encodedSizeMemoryUsage = encodedSize;
 }
 
 void Resource::didAccessDecodedData() {
@@ -861,11 +867,11 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail,
   const String dumpName = getMemoryDumpName();
   WebMemoryAllocatorDump* dump =
       memoryDump->createMemoryAllocatorDump(dumpName);
-  dump->addScalar("encoded_size", "bytes", m_encodedSize);
+  dump->addScalar("encoded_size", "bytes", m_encodedSizeMemoryUsage);
   if (hasClientsOrObservers())
-    dump->addScalar("live_size", "bytes", m_encodedSize);
+    dump->addScalar("live_size", "bytes", m_encodedSizeMemoryUsage);
   else
-    dump->addScalar("dead_size", "bytes", m_encodedSize);
+    dump->addScalar("dead_size", "bytes", m_encodedSizeMemoryUsage);
 
   if (m_data)
     m_data->onMemoryDump(dumpName, memoryDump);
