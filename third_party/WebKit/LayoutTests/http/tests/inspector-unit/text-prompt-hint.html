@@ -1,0 +1,111 @@
+<html>
+<head>
+<base href="/inspector-debug/"></base>
+<script src="/inspector-debug/Runtime.js"></script>
+<script src="/inspector-unit/inspector-unit-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    var suggestions = ["testTextPrompt"];
+    var waitingForAutocomplete = null;
+    var completionsDone = function () {
+        console.error("completionsDone called too early!");
+        UnitTest.completeTest();
+    }
+    var prompt = new WebInspector.TextPrompt(completions);
+    var element = createElement("div");
+    WebInspector.inspectorView.element.appendChild(element);
+    var proxy = prompt.attachAndStartEditing(element);
+    prompt.setText("testT");
+    prompt.complete();
+    dumpTextPrompt();
+    completionsDone();
+    dumpTextPrompt();
+
+    typeCharacter("e");
+    dumpTextPrompt();
+
+    waitForAutocomplete(step2)
+    function step2()
+    {
+        completionsDone();
+        dumpTextPrompt();
+
+        typeCharacter("z");
+        waitForAutocomplete(step3);
+    }
+
+    function step3()
+    {
+        completionsDone();
+        dumpTextPrompt();
+        typeCharacter(null);
+        waitForAutocomplete(step4);
+    }
+
+    function step4()
+    {
+        completionsDone();
+        dumpTextPrompt();
+        typeCharacter(null);
+        waitForAutocomplete(step5);
+    }
+    function step5()
+    {
+        completionsDone();
+        dumpTextPrompt();
+        UnitTest.completeTest();
+    }
+
+    function completions(element, range, force, callback)
+    {
+        UnitTest.addResult("Requesting completions");
+        completionsDone = () => callback(suggestions.filter(s => s.startsWith(range.toString())));
+        var temp = waitingForAutocomplete;
+        waitingForAutocomplete = null;
+        if (temp)
+            temp();
+    }
+
+    function waitForAutocomplete(fn)
+    {
+        waitingForAutocomplete = fn;
+    }
+
+    function dumpTextPrompt()
+    {
+        UnitTest.addResult("");
+        UnitTest.addResult("Text:" + prompt.text());
+        UnitTest.addResult("UserEnteredText:" + prompt.userEnteredText());
+    }
+
+    function typeCharacter(character)
+    {
+        var keyboardEvent = new KeyboardEvent("keydown", {
+            key: character || "Backspace",
+            charCode: character ? character.charCodeAt(0) : ""
+        });
+        element.dispatchEvent(keyboardEvent);
+
+        var selection = element.getComponentSelection();
+        var range = selection.getRangeAt(0);
+        var textNode = prompt._autocompleteElement ? prompt._autocompleteElement.previousSibling : element.childTextNodes()[element.childTextNodes().length-1];
+        if (!character)
+            textNode.textContent = textNode.textContent.substring(0,textNode.textContent.length-1);
+        else
+            textNode.textContent += character;
+        range.setStart(range.startContainer, range.startContainer.textContent.length);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        element.dispatchEvent(new Event("input", {bubbles: true, cancelable: false}));
+    }
+}
+
+
+</script>
+</head>
+<body>
+<p>Tests that the hint displays properly on a WebInspector.TextPrompt with autocomplete.</p>
+</body>
+</html>
