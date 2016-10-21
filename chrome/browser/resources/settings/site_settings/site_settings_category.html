@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -12,18 +11,6 @@
 <dom-module id="site-settings-category">
   <template>
     <style include="settings-shared">
-      :host {
-        display: block;
-      }
-
-      .toggle-icon {
-        -webkit-margin-start: 4px;
-      }
-
-      .toggle-text {
-        -webkit-margin-start: -11px;
-      }
-
       site-list {
         border-bottom: 1px solid var(--paper-grey-300);
       }
@@ -46,22 +33,24 @@
 
     <template is="dom-if" if="[[isCookiesCategory_(category)]]">
       <div class="settings-box">
-        <paper-checkbox id="sessionOnlyCheckbox" disabled="[[!categoryEnabled]]"
-            checked="{{cookiesSessionOnly_}}"
+        <div class="start">$i18n{deleteDataPostSession}</div>
+        <paper-toggle-button checked="{{cookiesSessionOnly_}}"
+            disabled="[[!categoryEnabled]]" id="sessionOnlyCheckbox"
             on-change="onChangePermissionControl_">
-          <div>$i18n{deleteDataPostSession}</div>
-        </paper-checkbox>
+        </paper-toggle-button>
       </div>
     </template>
 
     <template is="dom-if" if="[[isFlashCategory_(category)]]">
       <div class="settings-box two-line">
-        <paper-checkbox id="flashAskCheckbox" checked="{{flashAskFirst_}}"
-            on-change="onChangePermissionControl_"
-            disabled="[[!categoryEnabled]]">
-          <div>$i18n{siteSettingsFlashAskBefore}</div>
+        <div class="start">
+          $i18n{siteSettingsFlashAskBefore}
           <div class="secondary">$i18n{siteSettingsFlashAskBeforeSubtitle}</div>
-        </paper-checkbox>
+        </div>
+        <paper-toggle-button checked="{{flashAskFirst_}}"
+            disabled="[[!categoryEnabled]]" id="flashAskCheckbox"
+            on-change="onChangePermissionControl_">
+        </paper-toggle-button>
       </div>
     </template>
 

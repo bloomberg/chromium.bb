@@ -30,14 +30,19 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'settings_checkbox',
+      'target_name': 'settings_boolean_control_behavior',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_indicator_behavior',
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-        '<(EXTERNS_GYP):settings_private',
+        '../prefs/compiled_resources2.gyp:prefs_types',
         'pref_control_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'settings_checkbox',
+      'dependencies': [
+        'settings_boolean_control_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -74,6 +79,13 @@
         '<(EXTERNS_GYP):settings_private',
         '../prefs/compiled_resources2.gyp:pref_util',
         'pref_control_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'settings_toggle_button',
+      'dependencies': [
+        'settings_boolean_control_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

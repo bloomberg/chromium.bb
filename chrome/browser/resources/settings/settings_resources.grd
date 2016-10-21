@@ -336,6 +336,12 @@
       <structure name="IDR_SETTINGS_HISTORY_DELETION_DIALOG_JS"
                  file="clear_browsing_data_dialog/history_deletion_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_BOOLEAN_CONTROL_BEHAVIOR_HTML"
+                 file="controls/settings_boolean_control_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_BOOLEAN_CONTROL_BEHAVIOR_JS"
+                 file="controls/settings_boolean_control_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_JS"
                  file="controls/controlled_button.js"
                  type="chrome_html" />
@@ -377,6 +383,12 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_RADIO_GROUP_JS"
                  file="controls/settings_radio_group.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_TOGGLE_BUTTON_HTML"
+                 file="controls/settings_toggle_button.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_TOGGLE_BUTTON_JS"
+                 file="controls/settings_toggle_button.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_COOKIE_INFO_JS"
                  file="site_settings/cookie_info.js"

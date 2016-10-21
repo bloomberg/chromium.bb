@@ -64,6 +64,25 @@ TEST_F('CrSettingsCheckboxTest', 'All', function() {
   mocha.run();
 });
 
+function CrSettingsToggleButtonTest() {}
+
+CrSettingsToggleButtonTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/controls/settings_toggle_button.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'settings_toggle_button_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsToggleButtonTest', 'All', function() {
+  settings_toggle_button.registerTests();
+  mocha.run();
+});
+
 function CrSettingsDropdownMenuTest() {}
 
 CrSettingsDropdownMenuTest.prototype = {

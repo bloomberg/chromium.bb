@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/controls/settings_toggle_button.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_page/settings_subpage.html">
@@ -216,11 +217,11 @@
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.COOKIES}}">
             <div class="settings-box cookie-controls">
-              <settings-checkbox class="start"
+              <settings-toggle-button class="start"
                   label="$i18n{thirdPartyCookie}"
                   sub-label="$i18n{thirdPartyCookieSublabel}"
                   pref="{{prefs.profile.block_third_party_cookies}}">
-              </settings-checkbox>
+              </settings-toggle-button>
             </div>
             <site-data class="site-data"></site-data>
           </site-settings-category>
