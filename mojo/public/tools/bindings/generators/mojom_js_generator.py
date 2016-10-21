@@ -133,8 +133,7 @@ def CodecType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "codec.AssociatedInterfaceRequestNotSupported"
   if mojom.IsEnumKind(kind):
-    element_type = kind.name
-    return "new codec.Enum(%s)" % (element_type)
+    return "new codec.Enum(%s)" % JavaScriptType(kind)
   if mojom.IsMapKind(kind):
     map_type = "NullableMapOf" if mojom.IsNullableKind(kind) else "MapOf"
     key_type = ElementCodecType(kind.key_kind)
