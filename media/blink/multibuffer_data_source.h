@@ -167,6 +167,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // we are currently loading, regardless of what reader_->IsLoading() says.
   // Caller must hold |lock_|.
   void UpdateLoadingState_Locked(bool force_loading);
+  void UpdateLoadingState();
 
   // Update |reader_|'s preload and buffer settings.
   void UpdateBufferSizes();

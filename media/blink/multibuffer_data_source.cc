@@ -505,6 +505,14 @@ void MultibufferDataSource::StartCallback() {
   render_task_runner_->PostTask(
       FROM_HERE, base::Bind(base::ResetAndReturn(&init_cb_), success));
 
+  // When we tell our clients that we're loading below, it's possible that
+  // the entire file is already cashed. If that's true, then we won't get
+  // any progress callbacks later, so we'll never tell the client that we
+  // stopped loading. Post a task to make sure that we check the loading
+  // state at least once.
+  render_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MultibufferDataSource::UpdateLoadingState,
+                            weak_factory_.GetWeakPtr()));
   // Even if data is cached, say that we're loading at this point for
   // compatibility.
   UpdateLoadingState_Locked(true);
@@ -550,6 +558,12 @@ void MultibufferDataSource::UpdateLoadingState_Locked(bool force_loading) {
     // Callback could kill us, be sure to call it last.
     downloading_cb_.Run(loading_);
   }
+}
+
+void MultibufferDataSource::UpdateLoadingState() {
+  DCHECK(render_task_runner_->BelongsToCurrentThread());
+  base::AutoLock auto_lock(lock_);
+  UpdateLoadingState_Locked(false);
 }
 
 void MultibufferDataSource::UpdateBufferSizes() {
