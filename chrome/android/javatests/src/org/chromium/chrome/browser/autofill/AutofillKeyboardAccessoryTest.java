@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -191,9 +193,13 @@ public class AutofillKeyboardAccessoryTest extends ChromeActivityTestCaseBase<Ch
 
     /**
      * Switching fields in RTL should re-scroll the keyboard accessory to the right.
+     *
+     * RTL is only supported on Jelly Bean MR 1+.
+     * http://android-developers.blogspot.com/2013/03/native-rtl-support-in-android-42.html
      */
     @MediumTest
     @Feature({"keyboard-accessory"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void testSwitchFieldsRescrollsKeyboardAccessoryRtl() throws ExecutionException,
              InterruptedException, TimeoutException {
         loadTestPage(true);
