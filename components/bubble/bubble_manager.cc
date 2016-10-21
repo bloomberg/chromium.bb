@@ -33,8 +33,8 @@ BubbleReference BubbleManager::ShowBubble(
       controllers_.push_back(std::move(controller));
       break;
     case NO_MORE_BUBBLES:
-      FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
-                        OnBubbleNeverShown(controller->AsWeakPtr()));
+      for (auto& observer : observers_)
+        observer.OnBubbleNeverShown(controller->AsWeakPtr());
       break;
     default:
       NOTREACHED();
@@ -125,8 +125,8 @@ bool BubbleManager::CloseAllMatchingBubbles(
   for (auto* controller : close_queue) {
     controller->DoClose(reason);
 
-    FOR_EACH_OBSERVER(BubbleManagerObserver, observers_,
-                      OnBubbleClosed(controller->AsWeakPtr(), reason));
+    for (auto& observer : observers_)
+      observer.OnBubbleClosed(controller->AsWeakPtr(), reason);
   }
 
   return !close_queue.empty();
