@@ -426,6 +426,9 @@ const char kDnsPrefetchingHostReferralList[] =
 // Prefs for persisting HttpServerProperties.
 const char kHttpServerProperties[] = "net.http_server_properties";
 
+// Prefs for persisting network qualities.
+const char kNetworkQualities[] = "net.network_qualities";
+
 #if defined(OS_ANDROID)
 // Last time that a check for cloud policy management was done. This time is
 // recorded on Android so that retries aren't attempted on every startup.

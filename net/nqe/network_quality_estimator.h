@@ -281,6 +281,12 @@ class NET_EXPORT NetworkQualityEstimator
       nqe::internal::NetworkQualityStore::NetworkQualitiesCacheObserver*
           observer);
 
+  // Called when the persistent prefs have been read. |read_prefs| contains the
+  // parsed prefs as a map between NetworkIDs and CachedNetworkQualities.
+  void OnPrefsRead(
+      const std::map<nqe::internal::NetworkID,
+                     nqe::internal::CachedNetworkQuality> read_prefs);
+
  protected:
   // NetworkChangeNotifier::ConnectionTypeObserver implementation:
   void OnConnectionTypeChanged(

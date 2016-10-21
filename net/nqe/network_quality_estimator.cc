@@ -993,6 +993,12 @@ void NetworkQualityEstimator::ReportEffectiveConnectionTypeForTesting(
   DCHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : effective_connection_type_observer_list_)
     observer.OnEffectiveConnectionTypeChanged(effective_connection_type);
+
+  network_quality_store_->Add(
+      current_network_id_,
+      nqe::internal::CachedNetworkQuality(tick_clock_->NowTicks(),
+                                          estimated_quality_at_last_main_frame_,
+                                          effective_connection_type));
 }
 
 bool NetworkQualityEstimator::RequestProvidesRTTObservation(
@@ -1796,6 +1802,15 @@ void NetworkQualityEstimator::RemoveNetworkQualitiesCacheObserver(
         observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_quality_store_->RemoveNetworkQualitiesCacheObserver(observer);
+}
+
+void NetworkQualityEstimator::OnPrefsRead(
+    const std::map<nqe::internal::NetworkID,
+                   nqe::internal::CachedNetworkQuality> read_prefs) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  UMA_HISTOGRAM_COUNTS("NQE.Prefs.ReadSize", read_prefs.size());
+  // TODO(tbansal): crbug.com/490870. Incorporate the network quality into the
+  // current estimates.
 }
 
 }  // namespace net

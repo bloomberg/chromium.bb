@@ -32,7 +32,15 @@ UINetworkQualityEstimatorServiceFactory::
 UINetworkQualityEstimatorServiceFactory::
     ~UINetworkQualityEstimatorServiceFactory() {}
 
+bool UINetworkQualityEstimatorServiceFactory::
+    ServiceIsCreatedWithBrowserContext() const {
+  // Initialize the UI network quality estimator service so it can
+  // read/write the prefs.
+  return true;
+}
+
 KeyedService* UINetworkQualityEstimatorServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new UINetworkQualityEstimatorService();
+  return new UINetworkQualityEstimatorService(
+      Profile::FromBrowserContext(context));
 }
