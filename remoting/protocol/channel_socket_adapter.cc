@@ -124,13 +124,13 @@ void TransportChannelSocketAdapter::Close(int error_code) {
 }
 
 void TransportChannelSocketAdapter::OnNewPacket(
-    cricket::TransportChannel* channel,
+    rtc::PacketTransportInterface* transport,
     const char* data,
     size_t data_size,
     const rtc::PacketTime& packet_time,
     int flags) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(channel, channel_);
+  DCHECK_EQ(transport, channel_);
   if (!read_callback_.is_null()) {
     DCHECK(read_buffer_.get());
     CHECK_LT(data_size, static_cast<size_t>(std::numeric_limits<int>::max()));
@@ -155,7 +155,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
 }
 
 void TransportChannelSocketAdapter::OnWritableState(
-    cricket::TransportChannel* channel) {
+    rtc::PacketTransportInterface* transport) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Try to send the packet if there is a pending write.
   if (!write_callback_.is_null()) {

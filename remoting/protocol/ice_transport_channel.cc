@@ -19,6 +19,7 @@
 #include "third_party/webrtc/base/network.h"
 #include "third_party/webrtc/p2p/base/p2pconstants.h"
 #include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
+#include "third_party/webrtc/p2p/base/packettransportinterface.h"
 #include "third_party/webrtc/p2p/base/port.h"
 
 namespace remoting {
@@ -196,10 +197,12 @@ void IceTransportChannel::OnRouteChange(
     NotifyRouteChanged();
 }
 
-void IceTransportChannel::OnWritableState(cricket::TransportChannel* channel) {
-  DCHECK_EQ(channel, static_cast<cricket::TransportChannel*>(channel_.get()));
+void IceTransportChannel::OnWritableState(
+    rtc::PacketTransportInterface* transport) {
+  DCHECK_EQ(transport,
+            static_cast<rtc::PacketTransportInterface*>(channel_.get()));
 
-  if (channel->writable()) {
+  if (transport->writable()) {
     connect_attempts_left_ =
         transport_context_->network_settings().ice_reconnect_attempts;
     reconnect_timer_.Stop();

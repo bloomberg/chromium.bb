@@ -15,6 +15,10 @@
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/sigslot.h"
 #include "third_party/webrtc/base/socketaddress.h"
+// TODO(johan): Replace #include by forward declaration once proper
+// inheritance is defined for rtc::PacketTransportInterface and
+// cricket::TransportChannel.
+#include "third_party/webrtc/p2p/base/packettransportinterface.h"
 
 namespace cricket {
 class TransportChannel;
@@ -51,12 +55,12 @@ class TransportChannelSocketAdapter : public P2PDatagramSocket,
            const net::CompletionCallback& callback) override;
 
  private:
-  void OnNewPacket(cricket::TransportChannel* channel,
+  void OnNewPacket(rtc::PacketTransportInterface* transport,
                    const char* data,
                    size_t data_size,
                    const rtc::PacketTime& packet_time,
                    int flags);
-  void OnWritableState(cricket::TransportChannel* channel);
+  void OnWritableState(rtc::PacketTransportInterface* transport);
   void OnChannelDestroyed(cricket::TransportChannel* channel);
 
   base::ThreadChecker thread_checker_;
