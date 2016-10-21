@@ -239,7 +239,7 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
 
   std::unique_ptr<WebGraphicsContext3DProvider> provider = wrapUnique(
       Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-  if (!provider)
+  if (!provider || !provider->grContext())
     return false;
   gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
 
@@ -280,8 +280,10 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   // mapping between the two.
   sharedGL->ProduceTextureDirectCHROMIUM(0, textureInfo->fTarget, mailbox.name);
 
-  // Undo grContext texture binding changes introduced in this function
-  provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);
+  // Undo grContext texture binding changes introduced in this function.
+  GrContext* grContext = provider->grContext();
+  CHECK(grContext);  // We already check / early-out above if null.
+  grContext->resetContext(kTextureBinding_GrGLBackendState);
 
   return true;
 }
