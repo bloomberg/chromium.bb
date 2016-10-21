@@ -2,6 +2,7 @@
 <script>
 
 window.onload = function() {
+  var form = document.getElementById('form');
   var input = document.getElementById('input');
 
   input.oninput = function() {
@@ -12,7 +13,14 @@ window.onload = function() {
   document.onclick = function() {
     input.focus();
   };
+  
+  form.onsubmit = function() {
+    window.domAutomationController.setAutomationId(0);
+    window.domAutomationController.send("Submitted");
+  };
 };
 
 </script>
-<input type="text" id="input">
+<form id="form">
+  <input type="text" id="input">
+</form>

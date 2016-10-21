@@ -14,13 +14,20 @@
 namespace blimp {
 namespace client {
 
-ImeFeature::ImeFeature() {}
+ImeFeature::WebInputRequest::WebInputRequest()
+    : input_type(ui::TEXT_INPUT_TYPE_NONE) {}
+
+ImeFeature::WebInputRequest::~WebInputRequest() = default;
+
+ImeFeature::WebInputResponse::WebInputResponse() : submit(false) {}
+
+ImeFeature::ImeFeature() : weak_factory_(this) {}
 
 ImeFeature::~ImeFeature() {}
 
 void ImeFeature::OnImeTextEntered(int tab_id,
                                   int render_widget_id,
-                                  const std::string& text) {
+                                  const WebInputResponse& response) {
   DCHECK_LE(0, tab_id);
   DCHECK_LT(0, render_widget_id);
 
@@ -29,7 +36,8 @@ void ImeFeature::OnImeTextEntered(int tab_id,
       CreateBlimpMessage(&ime_message, tab_id);
   ime_message->set_render_widget_id(render_widget_id);
   ime_message->set_type(ImeMessage::SET_TEXT);
-  ime_message->set_ime_text(text);
+  ime_message->set_ime_text(response.text);
+  ime_message->set_auto_submit(response.submit);
 
   outgoing_message_processor_->ProcessMessage(std::move(blimp_message),
                                               net::CompletionCallback());
@@ -52,13 +60,15 @@ void ImeFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
         return;
       }
       {
-        ShowImeCallback show_ime_callback = base::Bind(
-            &ImeFeature::OnImeTextEntered, base::Unretained(this),
+        WebInputRequest request;
+        request.input_type = InputMessageConverter::TextInputTypeFromProto(
+            ime_message.text_input_type());
+        request.text = ime_message.ime_text();
+        request.show_ime_callback = base::Bind(
+            &ImeFeature::OnImeTextEntered, weak_factory_.GetWeakPtr(),
             message->target_tab_id(), ime_message.render_widget_id());
-        delegate_->OnShowImeRequested(
-            InputMessageConverter::TextInputTypeFromProto(
-                ime_message.text_input_type()),
-            ime_message.ime_text(), show_ime_callback);
+
+        delegate_->OnShowImeRequested(request);
       }
       break;
     case ImeMessage::HIDE_IME:

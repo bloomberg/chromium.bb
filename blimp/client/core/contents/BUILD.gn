@@ -123,6 +123,7 @@ source_set("unit_tests") {
     "blimp_contents_manager_unittest.cc",
     "blimp_contents_observer_unittest.cc",
     "blimp_navigation_controller_impl_unittest.cc",
+    "ime_feature_unittest.cc",
     "navigation_feature_unittest.cc",
     "tab_control_feature_unittest.cc",
   ]

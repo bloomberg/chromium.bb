@@ -14,11 +14,8 @@ namespace {
 class AuraImeDelegate : public ImeFeature::Delegate {
  public:
   ~AuraImeDelegate() override = default;
-  void OnShowImeRequested(
-      ui::TextInputType input_type,
-      const std::string& text,
-      const ImeFeature::ShowImeCallback& callback) override {
-    callback.Run("");
+  void OnShowImeRequested(const ImeFeature::WebInputRequest& request) override {
+    request.show_ime_callback.Run(ImeFeature::WebInputResponse());
   }
 
   void OnHideImeRequested() override {}

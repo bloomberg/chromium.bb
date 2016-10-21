@@ -29,16 +29,14 @@ ImeHelperDialog::~ImeHelperDialog() {
 }
 
 void ImeHelperDialog::OnShowImeRequested(
-    ui::TextInputType input_type,
-    const std::string& text,
-    const ImeFeature::ShowImeCallback& callback) {
-  text_submit_callback_ = callback;
+    const ImeFeature::WebInputRequest& request) {
+  current_request_ = request;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK_NE(ui::TEXT_INPUT_TYPE_NONE, input_type);
+  DCHECK_NE(ui::TEXT_INPUT_TYPE_NONE, current_request_.input_type);
   Java_ImeHelperDialog_onShowImeRequested(
-      env, java_obj_, input_type,
-      base::android::ConvertUTF8ToJavaString(env, text));
+      env, java_obj_, current_request_.input_type,
+      base::android::ConvertUTF8ToJavaString(env, current_request_.text));
 }
 
 void ImeHelperDialog::OnHideImeRequested() {
@@ -49,9 +47,15 @@ void ImeHelperDialog::OnHideImeRequested() {
 void ImeHelperDialog::OnImeTextEntered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj,
-    const base::android::JavaParamRef<jstring>& text) {
+    const base::android::JavaParamRef<jstring>& text,
+    jboolean submit) {
   std::string text_input = base::android::ConvertJavaStringToUTF8(env, text);
-  base::ResetAndReturn(&text_submit_callback_).Run(text_input);
+
+  ImeFeature::WebInputResponse response;
+  response.text = text_input;
+  response.submit = submit;
+
+  base::ResetAndReturn(&current_request_.show_ime_callback).Run(response);
 }
 
 }  // namespace client

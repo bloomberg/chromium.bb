@@ -48,4 +48,5 @@ message ImeMessage {
   optional Type type = 2 [default = UNKNOWN];
   optional InputType text_input_type = 3;
   optional string ime_text = 4;
+  optional bool auto_submit = 5;
 }

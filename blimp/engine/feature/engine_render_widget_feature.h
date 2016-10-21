@@ -151,9 +151,11 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor,
   content::RenderWidgetHost* GetRenderWidgetHost(const int tab_id,
                                                  const int render_widget_id);
 
-  // Inserts the text entered by the user into the |client|.
+  // Sends the text entered by the user to the renderer.
   // The existing text in the box gets replaced by the new text from IME.
-  void SetTextFromIME(ui::TextInputClient* client, std::string text);
+  void SetTextFromIME(content::RenderWidgetHost* render_widget_host,
+                      std::string text,
+                      bool auto_submit);
 
   DelegateMap delegates_;
   TabMap tabs_;

@@ -59,11 +59,12 @@ public class ImeHelperDialog {
     /**
      * Sends the text entered from IME to blimp engine.
      * @param text The text the user entered.
+     * @param submit Whether or not to submit the form.
      */
-    private void onImeTextEntered(String text) {
+    private void onImeTextEntered(String text, boolean submit) {
         if (mNativeImeHelperDialog == 0) return;
 
-        nativeOnImeTextEntered(mNativeImeHelperDialog, text);
+        nativeOnImeTextEntered(mNativeImeHelperDialog, text, submit);
     }
 
     @CalledByNative
@@ -92,7 +93,8 @@ public class ImeHelperDialog {
                                        new DialogInterface.OnClickListener() {
                                            @Override
                                            public void onClick(DialogInterface dialog, int which) {
-                                               onImeTextEntered(editText.getText().toString());
+                                               onImeTextEntered(
+                                                       editText.getText().toString(), false);
                                                dialog.dismiss();
                                            }
                                        })
@@ -120,7 +122,7 @@ public class ImeHelperDialog {
                     case EditorInfo.IME_ACTION_DONE:
                     case EditorInfo.IME_ACTION_SEARCH:
                     case EditorInfo.IME_ACTION_GO:
-                        onImeTextEntered(tv.getText().toString());
+                        onImeTextEntered(tv.getText().toString(), true);
                         mAlertDialog.dismiss();
                         return true;
                     default:
@@ -185,5 +187,6 @@ public class ImeHelperDialog {
         editText.setImeOptions(imeOptions);
     }
 
-    private native void nativeOnImeTextEntered(long nativeImeHelperDialog, String text);
+    private native void nativeOnImeTextEntered(
+            long nativeImeHelperDialog, String text, boolean submit);
 }

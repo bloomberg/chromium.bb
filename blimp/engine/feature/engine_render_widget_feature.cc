@@ -16,6 +16,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace blimp {
 namespace engine {
@@ -229,8 +231,8 @@ void EngineRenderWidgetFeature::ProcessMessage(
       render_widget_host =
           GetRenderWidgetHost(target_tab_id, message->ime().render_widget_id());
       if (render_widget_host && render_widget_host->GetView()) {
-        SetTextFromIME(render_widget_host->GetView()->GetTextInputClient(),
-                       message->ime().ime_text());
+        SetTextFromIME(render_widget_host, message->ime().ime_text(),
+                       message->ime().auto_submit());
       }
       break;
     default:
@@ -256,16 +258,39 @@ void EngineRenderWidgetFeature::OnWebPreferencesChanged() {
   }
 }
 
-void EngineRenderWidgetFeature::SetTextFromIME(ui::TextInputClient* client,
-                                               std::string text) {
-  if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
-    // Clear out any existing text first and then insert new text entered
-    // through IME.
-    gfx::Range text_range;
-    client->GetTextRange(&text_range);
-    client->ExtendSelectionAndDelete(text_range.length(), text_range.length());
+void EngineRenderWidgetFeature::SetTextFromIME(
+    content::RenderWidgetHost* render_widget_host,
+    std::string text,
+    bool auto_submit) {
+  ui::TextInputClient* client =
+      render_widget_host->GetView()->GetTextInputClient();
+  DCHECK(client);
 
-    client->InsertText(base::UTF8ToUTF16(text));
+  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  // Clear out any existing text first and then insert new text entered
+  // through IME.
+  gfx::Range text_range;
+  client->GetTextRange(&text_range);
+  client->ExtendSelectionAndDelete(text_range.length(), text_range.length());
+
+  client->InsertText(base::UTF8ToUTF16(text));
+
+  if (auto_submit) {
+    // Send a synthetic key event to the renderer notifying that user has hit
+    // Return key. This should submit the current form.
+    ui::KeyEvent press(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::DomCode::ENTER,
+                       0);
+    ui::KeyEvent char_event('\r', ui::VKEY_RETURN, 0);
+    ui::KeyEvent release(ui::ET_KEY_RELEASED, ui::VKEY_RETURN,
+                         ui::DomCode::ENTER, 0);
+    render_widget_host->ForwardKeyboardEvent(
+        content::NativeWebKeyboardEvent(press));
+    render_widget_host->ForwardKeyboardEvent(
+        content::NativeWebKeyboardEvent(char_event));
+    render_widget_host->ForwardKeyboardEvent(
+        content::NativeWebKeyboardEvent(release));
   }
 }
 

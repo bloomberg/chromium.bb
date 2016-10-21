@@ -29,22 +29,21 @@ class ImeHelperDialog : public ImeFeature::Delegate {
   ~ImeHelperDialog() override;
 
   // ImeFeature::Delegate implementation.
-  void OnShowImeRequested(ui::TextInputType input_type,
-                          const std::string& text,
-                          const ImeFeature::ShowImeCallback& callback) override;
+  void OnShowImeRequested(const ImeFeature::WebInputRequest& request) override;
   void OnHideImeRequested() override;
 
   // Sends the text entered from IME to the blimp engine.
   void OnImeTextEntered(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& jobj,
-                        const base::android::JavaParamRef<jstring>& text);
+                        const base::android::JavaParamRef<jstring>& text,
+                        jboolean submit);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
-  // A callback for the current request to be executed on text submission from
-  // the user.
-  ImeFeature::ShowImeCallback text_submit_callback_;
+  // The current request is saved in order to populate the fields of the
+  // subsequent response.
+  ImeFeature::WebInputRequest current_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeHelperDialog);
 };

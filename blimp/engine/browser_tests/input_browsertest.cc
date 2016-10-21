@@ -14,6 +14,7 @@
 #include "blimp/client/public/session/assignment.h"
 #include "blimp/engine/browser_tests/blimp_browser_test.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,14 +121,14 @@ IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputText) {
 
   blink::WebGestureEvent event;
   event.type = blink::WebInputEvent::Type::GestureTap;
-  client::ImeFeature::ShowImeCallback callback;
+  client::ImeFeature::WebInputRequest request;
 
   // Send a tap event from the client and expect the IME dialog to show.
-  EXPECT_CALL(client_ime_feature_delegate_, OnShowImeRequested(_, "", _))
+  EXPECT_CALL(client_ime_feature_delegate_, OnShowImeRequested(_))
       .Times(AtLeast(1))
       .WillOnce(
           DoAll(InvokeWithoutArgs(this, &InputBrowserTest::SignalCompletion),
-                SaveArg<2>(&callback)));
+                SaveArg<0>(&request)));
   client_session_->GetRenderWidgetFeature()->SendWebGestureEvent(kDummyTabId, 1,
                                                                  event);
   RunAndVerify();
@@ -136,8 +137,41 @@ IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputText) {
   // the page title.
   EXPECT_CALL(client_nav_feature_delegate_, OnTitleChanged(kDummyTabId, "test"))
       .WillOnce(InvokeWithoutArgs(this, &InputBrowserTest::SignalCompletion));
-  callback.Run("test");
+
+  client::ImeFeature::WebInputResponse response;
+  response.text = "test";
+  response.submit = false;
+  request.show_ime_callback.Run(response);
   RunAndVerify();
+}
+
+IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputTextAndSubmit) {
+  LoadPage(kInputPagePath);
+
+  blink::WebGestureEvent event;
+  event.type = blink::WebInputEvent::Type::GestureTap;
+  client::ImeFeature::WebInputRequest request;
+
+  // Send a tap event from the client and expect the IME dialog to show.
+  EXPECT_CALL(client_ime_feature_delegate_, OnShowImeRequested(_))
+      .Times(AtLeast(1))
+      .WillOnce(
+          DoAll(InvokeWithoutArgs(this, &InputBrowserTest::SignalCompletion),
+                SaveArg<0>(&request)));
+  client_session_->GetRenderWidgetFeature()->SendWebGestureEvent(kDummyTabId, 1,
+                                                                 event);
+  RunAndVerify();
+
+  // Enter text from client and submit the form.
+  client::ImeFeature::WebInputResponse response;
+  response.text = "test";
+  response.submit = true;
+  request.show_ime_callback.Run(response);
+
+  content::DOMMessageQueue queue;
+  std::string status;
+  EXPECT_TRUE(queue.WaitForMessage(&status));
+  EXPECT_EQ(status, "\"Submitted\"");
 }
 
 }  // namespace

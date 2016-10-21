@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -27,16 +28,35 @@ namespace client {
 
 class ImeFeature : public BlimpMessageProcessor {
  public:
+  struct WebInputResponse;
+
   // A callback to show IME.
-  using ShowImeCallback = base::Callback<void(const std::string&)>;
+  using ShowImeCallback = base::Callback<void(const WebInputResponse&)>;
+
+  // A bundle of params required by the client.
+  struct WebInputRequest {
+    WebInputRequest();
+    ~WebInputRequest();
+
+    ui::TextInputType input_type;
+    std::string text;
+    ShowImeCallback show_ime_callback;
+  };
+
+  // A bundle of params to be sent to the engine.
+  struct WebInputResponse {
+    WebInputResponse();
+    ~WebInputResponse() = default;
+
+    std::string text;
+    bool submit;
+  };
 
   // A delegate to be notified of text input requests.
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void OnShowImeRequested(ui::TextInputType input_type,
-                                    const std::string& text,
-                                    const ShowImeCallback& callback) = 0;
+    virtual void OnShowImeRequested(const WebInputRequest& request) = 0;
     virtual void OnHideImeRequested() = 0;
   };
 
@@ -63,13 +83,15 @@ class ImeFeature : public BlimpMessageProcessor {
   // Sends text from IME to the blimp engine.
   void OnImeTextEntered(int tab_id,
                         int render_widget_id,
-                        const std::string& text);
+                        const WebInputResponse& response);
 
   // Used to actually show or hide the IME. See notes on |set_delegate|.
   Delegate* delegate_ = nullptr;
 
   // Used to send BlimpMessage::IME messages to the engine.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
+
+  base::WeakPtrFactory<ImeFeature> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeFeature);
 };
