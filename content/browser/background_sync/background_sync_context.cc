@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
@@ -55,10 +56,9 @@ void BackgroundSyncContext::CreateService(
 void BackgroundSyncContext::ServiceHadConnectionError(
     BackgroundSyncServiceImpl* service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsValue(services_, service));
+  DCHECK(base::ContainsKey(services_, service));
 
   services_.erase(service);
-  delete service;
 }
 
 BackgroundSyncManager* BackgroundSyncContext::background_sync_manager() const {
@@ -86,13 +86,15 @@ void BackgroundSyncContext::CreateServiceOnIOThread(
     mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
-  services_.insert(new BackgroundSyncServiceImpl(this, std::move(request)));
+  BackgroundSyncServiceImpl* service =
+      new BackgroundSyncServiceImpl(this, std::move(request));
+  services_[service] = base::WrapUnique(service);
 }
 
 void BackgroundSyncContext::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::STLDeleteElements(&services_);
+  services_.clear();
   background_sync_manager_.reset();
 }
 

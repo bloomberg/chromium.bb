@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
@@ -391,7 +392,6 @@ MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {
 MHTMLGenerationManager::MHTMLGenerationManager() : next_job_id_(0) {}
 
 MHTMLGenerationManager::~MHTMLGenerationManager() {
-  base::STLDeleteValues(&id_to_job_);
 }
 
 void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
@@ -513,7 +513,6 @@ void MHTMLGenerationManager::OnFileClosed(int job_id,
                       base::TimeTicks::Now() - job->creation_time());
   job->callback().Run(job_status == JobStatus::SUCCESS ? file_size : -1);
   id_to_job_.erase(job_id);
-  delete job;
 }
 
 MHTMLGenerationManager::Job* MHTMLGenerationManager::NewJob(
@@ -523,19 +522,19 @@ MHTMLGenerationManager::Job* MHTMLGenerationManager::NewJob(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Job* job = new Job(++next_job_id_, web_contents, params, callback);
-  id_to_job_[job->id()] = job;
+  id_to_job_[job->id()] = base::WrapUnique(job);
   return job;
 }
 
 MHTMLGenerationManager::Job* MHTMLGenerationManager::FindJob(int job_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  IDToJobMap::iterator iter = id_to_job_.find(job_id);
+  auto iter = id_to_job_.find(job_id);
   if (iter == id_to_job_.end()) {
     NOTREACHED();
     return nullptr;
   }
-  return iter->second;
+  return iter->second.get();
 }
 
 void MHTMLGenerationManager::RenderProcessExited(Job* job) {

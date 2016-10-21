@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -51,12 +51,14 @@ class AppCacheServiceImpl::AsyncHelper
   AsyncHelper(AppCacheServiceImpl* service,
               const net::CompletionCallback& callback)
       : service_(service), callback_(callback) {
-    service_->pending_helpers_.insert(this);
+    service_->pending_helpers_[this] = base::WrapUnique(this);
   }
 
   ~AsyncHelper() override {
-    if (service_)
+    if (service_) {
+      service_->pending_helpers_[this].release();
       service_->pending_helpers_.erase(this);
+    }
   }
 
   virtual void Start() = 0;
@@ -82,7 +84,7 @@ void AppCacheServiceImpl::AsyncHelper::Cancel() {
     callback_.Reset();
   }
   service_->storage()->CancelDelegateCallbacks(this);
-  service_ = NULL;
+  service_ = nullptr;
 }
 
 // DeleteHelper -------
@@ -397,11 +399,11 @@ AppCacheStorageReference::~AppCacheStorageReference() {}
 
 AppCacheServiceImpl::AppCacheServiceImpl(
     storage::QuotaManagerProxy* quota_manager_proxy)
-    : appcache_policy_(NULL),
-      quota_client_(NULL),
-      handler_factory_(NULL),
+    : appcache_policy_(nullptr),
+      quota_client_(nullptr),
+      handler_factory_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
-      request_context_(NULL),
+      request_context_(nullptr),
       force_keep_session_state_(false),
       weak_factory_(this) {
   if (quota_manager_proxy_.get()) {
@@ -414,9 +416,9 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
   DCHECK(backends_.empty());
   for (auto& observer : observers_)
     observer.OnServiceDestructionImminent(this);
-  for (auto* helper : pending_helpers_)
-    helper->Cancel();
-  base::STLDeleteElements(&pending_helpers_);
+  for (auto& helper : pending_helpers_)
+    helper.first->Cancel();
+  pending_helpers_.clear();
   if (quota_client_)
     quota_client_->NotifyAppCacheDestroyed();
 

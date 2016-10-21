@@ -53,11 +53,11 @@ class CONTENT_EXPORT AppCacheBackendImpl {
 
   // Returns a pointer to a registered host. The backend retains ownership.
   AppCacheHost* GetHost(int host_id) {
-    HostMap::iterator it = hosts_.find(host_id);
-    return (it != hosts_.end()) ? (it->second) : NULL;
+    auto it = hosts_.find(host_id);
+    return (it != hosts_.end()) ? (it->second.get()) : nullptr;
   }
 
-  typedef base::hash_map<int, AppCacheHost*> HostMap;
+  typedef base::hash_map<int, std::unique_ptr<AppCacheHost>> HostMap;
   const HostMap& hosts() { return hosts_; }
 
   // Methods to support cross site navigations. Hosts are transferred
@@ -71,6 +71,8 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   AppCacheFrontend* frontend_;
   int process_id_;
   HostMap hosts_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppCacheBackendImpl);
 };
 
 }  // namespace

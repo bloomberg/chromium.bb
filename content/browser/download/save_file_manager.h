@@ -210,15 +210,12 @@ class CONTENT_EXPORT SaveFileManager
   void ExecuteCancelSaveRequest(int render_process_id, int request_id);
 
   // A map from save_item_id into SaveFiles.
-  using SaveFileMap =
-      std::unordered_map<SaveItemId, SaveFile*, SaveItemId::Hasher>;
-  SaveFileMap save_file_map_;
+  std::unordered_map<SaveItemId, std::unique_ptr<SaveFile>, SaveItemId::Hasher>
+      save_file_map_;
 
   // Tracks which SavePackage to send data to, called only on UI thread.
   // SavePackageMap maps save item ids to their SavePackage.
-  using SavePackageMap =
-      std::unordered_map<SaveItemId, SavePackage*, SaveItemId::Hasher>;
-  SavePackageMap packages_;
+  std::unordered_map<SaveItemId, SavePackage*, SaveItemId::Hasher> packages_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFileManager);
 };

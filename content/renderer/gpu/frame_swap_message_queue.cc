@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
@@ -49,14 +50,9 @@ class SendMessageScopeImpl : public FrameSwapMessageQueue::SendMessageScope {
 
 class VisualStateQueue : public FrameSwapMessageSubQueue {
  public:
-  VisualStateQueue() {}
+  VisualStateQueue() = default;
 
-  ~VisualStateQueue() override {
-    for (VisualStateQueueMap::iterator i = queue_.begin(); i != queue_.end();
-         i++) {
-      base::STLDeleteElements(&i->second);
-    }
-  }
+  ~VisualStateQueue() override = default;
 
   bool Empty() const override { return queue_.empty(); }
 
@@ -66,7 +62,7 @@ class VisualStateQueue : public FrameSwapMessageSubQueue {
     if (is_first)
       *is_first = (queue_.count(source_frame_number) == 0);
 
-    queue_[source_frame_number].push_back(msg.release());
+    queue_[source_frame_number].push_back(std::move(msg));
   }
 
   void DrainMessages(
@@ -75,17 +71,14 @@ class VisualStateQueue : public FrameSwapMessageSubQueue {
     auto end = queue_.upper_bound(source_frame_number);
     for (auto i = queue_.begin(); i != end; i++) {
       DCHECK(i->first <= source_frame_number);
-      for (IPC::Message* msg : i->second) {
-        messages->push_back(base::WrapUnique(msg));
-      }
-      i->second.clear();
+      std::move(i->second.begin(), i->second.end(),
+                std::back_inserter(*messages));
     }
     queue_.erase(queue_.begin(), end);
   }
 
  private:
-  typedef std::map<int, std::vector<IPC::Message*> > VisualStateQueueMap;
-  VisualStateQueueMap queue_;
+  std::map<int, std::vector<std::unique_ptr<IPC::Message>>> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(VisualStateQueue);
 };

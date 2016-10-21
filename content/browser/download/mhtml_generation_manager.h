@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -88,8 +89,7 @@ class MHTMLGenerationManager {
   // Called when the render process connected to a job exits.
   void RenderProcessExited(Job* job);
 
-  typedef std::map<int, Job*> IDToJobMap;
-  IDToJobMap id_to_job_;
+  std::map<int, std::unique_ptr<Job>> id_to_job_;
 
   int next_job_id_;
 

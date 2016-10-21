@@ -14,9 +14,9 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -1057,7 +1057,6 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
   g_peer_connection_handlers.Get().erase(this);
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
-  base::STLDeleteValues(&remote_streams_);
 
   UMA_HISTOGRAM_COUNTS_10000(
       "WebRTC.NumDataChannelsPerPeerConnection", num_data_channels_created_);
@@ -1782,30 +1781,28 @@ void RTCPeerConnectionHandler::OnAddStream(
   DCHECK(stream->webkit_stream().getExtraData()) << "Initialization not done";
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddStreamImpl");
 
-  // Ownership is with remote_streams_ now.
-  RemoteMediaStreamImpl* s = stream.release();
-  remote_streams_.insert(
-      std::pair<webrtc::MediaStreamInterface*, RemoteMediaStreamImpl*> (
-          s->webrtc_stream().get(), s));
+  RemoteMediaStreamImpl* stream_ptr = stream.get();
+  remote_streams_[stream_ptr->webrtc_stream().get()] = std::move(stream);
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddStream(
-        this, s->webkit_stream(), PeerConnectionTracker::SOURCE_REMOTE);
+        this, stream_ptr->webkit_stream(),
+        PeerConnectionTracker::SOURCE_REMOTE);
   }
 
   PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
 
   track_metrics_.AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM,
-                           s->webrtc_stream().get());
+                           stream_ptr->webrtc_stream().get());
   if (!is_closed_)
-    client_->didAddRemoteStream(s->webkit_stream());
+    client_->didAddRemoteStream(stream_ptr->webkit_stream());
 }
 
 void RTCPeerConnectionHandler::OnRemoveStream(
     const scoped_refptr<webrtc::MediaStreamInterface>& stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnRemoveStreamImpl");
-  RemoteStreamMap::iterator it = remote_streams_.find(stream.get());
+  auto it = remote_streams_.find(stream.get());
   if (it == remote_streams_.end()) {
     NOTREACHED() << "Stream not found";
     return;
@@ -1815,7 +1812,7 @@ void RTCPeerConnectionHandler::OnRemoveStream(
                               stream.get());
   PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
 
-  std::unique_ptr<RemoteMediaStreamImpl> remote_stream(it->second);
+  std::unique_ptr<RemoteMediaStreamImpl> remote_stream = std::move(it->second);
   const blink::WebMediaStream& webkit_stream = remote_stream->webkit_stream();
   DCHECK(!webkit_stream.isNull());
   remote_streams_.erase(it);

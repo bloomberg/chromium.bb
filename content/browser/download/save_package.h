@@ -10,6 +10,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -134,10 +135,8 @@ class CONTENT_EXPORT SavePackage
   FRIEND_TEST_ALL_PREFIXES(SavePackageBrowserTest, ExplicitCancel);
 
   // Map from SaveItem::id() (aka save_item_id) into a SaveItem.
-  using SaveItemIdMap =
-      std::unordered_map<SaveItemId, SaveItem*, SaveItemId::Hasher>;
-
-  using SaveItemQueue = std::deque<SaveItem*>;
+  using SaveItemIdMap = std::
+      unordered_map<SaveItemId, std::unique_ptr<SaveItem>, SaveItemId::Hasher>;
 
   using FileNameSet = std::set<base::FilePath::StringType,
                                bool (*)(base::FilePath::StringPieceType,
@@ -359,7 +358,7 @@ class CONTENT_EXPORT SavePackage
       const std::string& contents_mime_type);
 
   // A queue for items we are about to start saving.
-  SaveItemQueue waiting_item_queue_;
+  std::deque<std::unique_ptr<SaveItem>> waiting_item_queue_;
 
   // Map of all saving job in in-progress state.
   SaveItemIdMap in_progress_items_;

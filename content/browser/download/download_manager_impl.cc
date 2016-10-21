@@ -172,14 +172,13 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 
 }  // namespace
 
-DownloadManagerImpl::DownloadManagerImpl(
-    net::NetLog* net_log,
-    BrowserContext* browser_context)
+DownloadManagerImpl::DownloadManagerImpl(net::NetLog* net_log,
+                                         BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
       file_factory_(new DownloadFileFactory()),
       shutdown_needed_(true),
       browser_context_(browser_context),
-      delegate_(NULL),
+      delegate_(nullptr),
       net_log_(net_log),
       weak_factory_(this) {
   DCHECK(browser_context);
@@ -198,7 +197,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
       net::NetLogWithSource::Make(net_log_, net::NetLogSourceType::DOWNLOAD);
   DownloadItemImpl* download =
       item_factory_->CreateActiveItem(this, id, info, net_log);
-  downloads_[id] = download;
+  downloads_[id] = base::WrapUnique(download);
   downloads_by_guid_[download->GetGuid()] = download;
   return download;
 }
@@ -283,11 +282,11 @@ void DownloadManagerImpl::Shutdown() {
   // accepted or discarded. Canceling will remove the intermediate download
   // file.
   for (const auto& it : downloads_) {
-    DownloadItemImpl* download = it.second;
+    DownloadItemImpl* download = it.second.get();
     if (download->GetState() == DownloadItem::IN_PROGRESS)
       download->Cancel(false);
   }
-  base::STLDeleteValues(&downloads_);
+  downloads_.clear();
   downloads_by_guid_.clear();
   url_downloaders_.clear();
 
@@ -296,7 +295,7 @@ void DownloadManagerImpl::Shutdown() {
 
   if (delegate_)
     delegate_->Shutdown();
-  delegate_ = NULL;
+  delegate_ = nullptr;
 }
 
 void DownloadManagerImpl::StartDownload(
@@ -332,11 +331,11 @@ void DownloadManagerImpl::StartDownloadWithId(
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(content::DownloadItem::kInvalidId, id);
-  DownloadItemImpl* download = NULL;
+  DownloadItemImpl* download = nullptr;
   if (new_download) {
     download = CreateActiveItem(id, *info);
   } else {
-    DownloadMap::iterator item_iterator = downloads_.find(id);
+    auto item_iterator = downloads_.find(id);
     // Trying to resume an interrupted download.
     if (item_iterator == downloads_.end() ||
         (item_iterator->second->GetState() == DownloadItem::CANCELLED)) {
@@ -345,14 +344,14 @@ void DownloadManagerImpl::StartDownloadWithId(
       // while resuming, then also ignore the request.
       info->request_handle->CancelRequest();
       if (!on_started.is_null())
-        on_started.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+        on_started.Run(nullptr, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
       // The ByteStreamReader lives and dies on the FILE thread.
       if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE)
         BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
                                   stream.release());
       return;
     }
-    download = item_iterator->second;
+    download = item_iterator->second.get();
   }
 
   base::FilePath default_download_directory;
@@ -396,7 +395,7 @@ void DownloadManagerImpl::StartDownloadWithId(
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& it : downloads_) {
-    DownloadItemImpl* item = it.second;
+    DownloadItemImpl* item = it.second.get();
     CheckForFileRemoval(item);
   }
 }
@@ -460,7 +459,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle),
       net_log);
-  downloads_[download_item->GetId()] = download_item;
+  downloads_[download_item->GetId()] = base::WrapUnique(download_item);
   DCHECK(!base::ContainsKey(downloads_by_guid_, download_item->GetGuid()));
   downloads_by_guid_[download_item->GetGuid()] = download_item;
   for (auto& observer : observers_)
@@ -509,11 +508,7 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
     return;
 
   downloads_by_guid_.erase(download->GetGuid());
-
-  uint32_t download_id = download->GetId();
-  if (downloads_.erase(download_id) == 0)
-    return;
-  delete download;
+  downloads_.erase(download->GetId());
 }
 
 void DownloadManagerImpl::AddUrlDownloader(
@@ -613,9 +608,9 @@ bool RemoveDownloadByURLAndTime(
 
 int DownloadManagerImpl::RemoveDownloads(const DownloadRemover& remover) {
   int count = 0;
-  DownloadMap::const_iterator it = downloads_.begin();
+  auto it = downloads_.begin();
   while (it != downloads_.end()) {
-    DownloadItemImpl* download = it->second;
+    DownloadItemImpl* download = it->second.get();
 
     // Increment done here to protect against invalidation below.
     ++it;
@@ -697,7 +692,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     bool opened) {
   if (base::ContainsKey(downloads_, id)) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   DCHECK(!base::ContainsKey(downloads_by_guid_, guid));
   DownloadItemImpl* item = item_factory_->CreatePersistedItem(
@@ -706,7 +701,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       start_time, end_time, etag, last_modified, received_bytes, total_bytes,
       hash, state, danger_type, interrupt_reason, opened,
       net::NetLogWithSource::Make(net_log_, net::NetLogSourceType::DOWNLOAD));
-  downloads_[id] = item;
+  downloads_[id] = base::WrapUnique(item);
   downloads_by_guid_[guid] = item;
   for (auto& observer : observers_)
     observer.OnDownloadCreated(this, item);
@@ -739,8 +734,9 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() const {
 }
 
 DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
-  return base::ContainsKey(downloads_, download_id) ? downloads_[download_id]
-                                                    : nullptr;
+  return base::ContainsKey(downloads_, download_id)
+             ? downloads_[download_id].get()
+             : nullptr;
 }
 
 DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
@@ -751,14 +747,14 @@ DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
 
 void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
   for (const auto& it : downloads_) {
-    downloads->push_back(it.second);
+    downloads->push_back(it.second.get());
   }
 }
 
 void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   int num_unopened = 0;
   for (const auto& it : downloads_) {
-    DownloadItemImpl* item = it.second;
+    DownloadItemImpl* item = it.second.get();
     if ((item->GetState() == DownloadItem::COMPLETE) &&
         !item->GetOpened())
       ++num_unopened;

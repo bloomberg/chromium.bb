@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_CONTEXT_H_
 
+#include <map>
 #include <memory>
-#include <set>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -70,7 +70,9 @@ class CONTENT_EXPORT BackgroundSyncContext
   // The services are owned by this. They're either deleted
   // during ShutdownOnIO or when the channel is closed via
   // ServiceHadConnectionError. Only accessed on the IO thread.
-  std::set<BackgroundSyncServiceImpl*> services_;
+  std::map<BackgroundSyncServiceImpl*,
+           std::unique_ptr<BackgroundSyncServiceImpl>>
+      services_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncContext);
 };

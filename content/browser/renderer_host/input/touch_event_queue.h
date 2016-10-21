@@ -10,6 +10,7 @@
 
 #include <deque>
 #include <list>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -183,8 +184,7 @@ class CONTENT_EXPORT TouchEventQueue {
   // Handles touch event forwarding and ack'ed event dispatch.
   TouchEventQueueClient* client_;
 
-  typedef std::list<CoalescedWebTouchEvent*> TouchQueue;
-  TouchQueue touch_queue_;
+  std::list<std::unique_ptr<CoalescedWebTouchEvent>> touch_queue_;
 
   // Position of the first touch in the most recent sequence forwarded to the
   // client.

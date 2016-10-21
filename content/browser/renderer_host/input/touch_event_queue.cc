@@ -8,8 +8,8 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/common/input/web_touch_event_traits.h"
@@ -261,7 +261,6 @@ class TouchEventQueue::TouchTimeoutHandler {
     return pending_ack_state_ != PENDING_ACK_NONE;
   }
 
-
   TouchEventQueue* touch_queue_;
 
   // How long to wait on a touch ack before cancelling the touch sequence.
@@ -451,8 +450,6 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
 }
 
 TouchEventQueue::~TouchEventQueue() {
-  if (!touch_queue_.empty())
-    base::STLDeleteElements(&touch_queue_);
 }
 
 void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
@@ -475,7 +472,8 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
 
     // There is no touch event in the queue. Forward it to the renderer
     // immediately.
-    touch_queue_.push_back(new CoalescedWebTouchEvent(event, false));
+    touch_queue_.push_back(
+        base::MakeUnique<CoalescedWebTouchEvent>(event, false));
     ForwardNextEventToRenderer();
     return;
   }
@@ -483,11 +481,12 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
   // If the last queued touch-event was a touch-move, and the current event is
   // also a touch-move, then the events can be coalesced into a single event.
   if (touch_queue_.size() > 1) {
-    CoalescedWebTouchEvent* last_event = touch_queue_.back();
+    CoalescedWebTouchEvent* last_event = touch_queue_.back().get();
     if (last_event->CoalesceEventIfPossible(event))
       return;
   }
-  touch_queue_.push_back(new CoalescedWebTouchEvent(event, false));
+  touch_queue_.push_back(
+      base::MakeUnique<CoalescedWebTouchEvent>(event, false));
 }
 
 void TouchEventQueue::PrependTouchScrollNotification() {
@@ -513,7 +512,8 @@ void TouchEventQueue::PrependTouchScrollNotification() {
 
     auto it = touch_queue_.begin();
     DCHECK(it != touch_queue_.end());
-    touch_queue_.insert(++it, new CoalescedWebTouchEvent(touch, false));
+    touch_queue_.insert(++it,
+                        base::MakeUnique<CoalescedWebTouchEvent>(touch, false));
   }
 }
 
@@ -660,7 +660,8 @@ void TouchEventQueue::FlushPendingAsyncTouchmove() {
   std::unique_ptr<TouchEventWithLatencyInfo> touch =
       std::move(pending_async_touchmove_);
   touch->event.dispatchType = WebInputEvent::EventNonBlocking;
-  touch_queue_.push_front(new CoalescedWebTouchEvent(*touch, true));
+  touch_queue_.push_front(
+      base::MakeUnique<CoalescedWebTouchEvent>(*touch, true));
   SendTouchEventImmediately(touch.get());
 }
 
@@ -770,7 +771,8 @@ void TouchEventQueue::AckTouchEventToClient(
     NOTREACHED() << "Too many acks";
     return;
   }
-  std::unique_ptr<CoalescedWebTouchEvent> acked_event(touch_queue_.front());
+  std::unique_ptr<CoalescedWebTouchEvent> acked_event =
+      std::move(touch_queue_.front());
   DCHECK(acked_event);
 
   UpdateTouchConsumerStates(acked_event->coalesced_event().event, ack_result);

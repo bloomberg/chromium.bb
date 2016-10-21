@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MANIFEST_MANIFEST_MANAGER_HOST_H_
 #define CONTENT_BROWSER_MANIFEST_MANIFEST_MANAGER_HOST_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/id_map.h"
 #include "base/macros.h"
@@ -38,7 +40,6 @@ class ManifestManagerHost : public WebContentsObserver {
 
  private:
   using GetCallbackMap = IDMap<GetManifestCallback, IDMapOwnPointer>;
-  using FrameGetCallbackMap = base::hash_map<RenderFrameHost*, GetCallbackMap*>;
 
   void OnRequestManifestResponse(
       RenderFrameHost*, int request_id, const GURL&, const Manifest&);
@@ -46,7 +47,8 @@ class ManifestManagerHost : public WebContentsObserver {
   // Returns the CallbackMap associated with the given RenderFrameHost, or null.
   GetCallbackMap* GetCallbackMapForFrame(RenderFrameHost*);
 
-  FrameGetCallbackMap pending_get_callbacks_;
+  base::hash_map<RenderFrameHost*, std::unique_ptr<GetCallbackMap>>
+      pending_get_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManagerHost);
 };

@@ -4,7 +4,7 @@
 
 #include "content/browser/devtools/protocol/tethering_handler.h"
 
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -247,8 +247,7 @@ class TetheringHandler::TetheringImpl {
   base::WeakPtr<TetheringHandler> handler_;
   CreateServerSocketCallback socket_callback_;
 
-  typedef std::map<uint16_t, BoundSocket*> BoundSockets;
-  BoundSockets bound_sockets_;
+  std::map<uint16_t, std::unique_ptr<BoundSocket>> bound_sockets_;
 };
 
 TetheringHandler::TetheringImpl::TetheringImpl(
@@ -258,9 +257,7 @@ TetheringHandler::TetheringImpl::TetheringImpl(
       socket_callback_(socket_callback) {
 }
 
-TetheringHandler::TetheringImpl::~TetheringImpl() {
-  base::STLDeleteValues(&bound_sockets_);
-}
+TetheringHandler::TetheringImpl::~TetheringImpl() = default;
 
 void TetheringHandler::TetheringImpl::Bind(DevToolsCommandId command_id,
                                            uint16_t port) {
@@ -271,14 +268,14 @@ void TetheringHandler::TetheringImpl::Bind(DevToolsCommandId command_id,
 
   BoundSocket::AcceptedCallback callback = base::Bind(
       &TetheringHandler::TetheringImpl::Accepted, base::Unretained(this));
-  std::unique_ptr<BoundSocket> bound_socket(
-      new BoundSocket(callback, socket_callback_));
+  std::unique_ptr<BoundSocket> bound_socket =
+      base::MakeUnique<BoundSocket>(callback, socket_callback_);
   if (!bound_socket->Listen(port)) {
     SendInternalError(command_id, "Could not bind port");
     return;
   }
 
-  bound_sockets_[port] = bound_socket.release();
+  bound_sockets_[port] = std::move(bound_socket);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -287,13 +284,12 @@ void TetheringHandler::TetheringImpl::Bind(DevToolsCommandId command_id,
 
 void TetheringHandler::TetheringImpl::Unbind(DevToolsCommandId command_id,
                                              uint16_t port) {
-  BoundSockets::iterator it = bound_sockets_.find(port);
+  auto it = bound_sockets_.find(port);
   if (it == bound_sockets_.end()) {
     SendInternalError(command_id, "Port is not bound");
     return;
   }
 
-  delete it->second;
   bound_sockets_.erase(it);
   BrowserThread::PostTask(
       BrowserThread::UI,

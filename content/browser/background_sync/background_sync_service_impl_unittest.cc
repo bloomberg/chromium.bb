@@ -186,7 +186,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     background_sync_context_->CreateService(std::move(service_request));
     base::RunLoop().RunUntilIdle();
 
-    service_impl_ = *background_sync_context_->services_.begin();
+    service_impl_ = background_sync_context_->services_.begin()->first;
     ASSERT_TRUE(service_impl_);
   }
 

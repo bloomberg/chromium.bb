@@ -278,9 +278,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   std::unique_ptr<FirstSessionDescription> first_local_description_;
   std::unique_ptr<FirstSessionDescription> first_remote_description_;
 
-  typedef std::map<webrtc::MediaStreamInterface*,
-      content::RemoteMediaStreamImpl*> RemoteStreamMap;
-  RemoteStreamMap remote_streams_;
+  std::map<webrtc::MediaStreamInterface*,
+           std::unique_ptr<content::RemoteMediaStreamImpl>>
+      remote_streams_;
   scoped_refptr<webrtc::UMAObserver> uma_observer_;
   base::TimeTicks ice_connection_checking_start_;
 

@@ -4,7 +4,7 @@
 
 #include "content/browser/appcache/appcache_backend_impl.h"
 
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -18,7 +18,7 @@ AppCacheBackendImpl::AppCacheBackendImpl()
 }
 
 AppCacheBackendImpl::~AppCacheBackendImpl() {
-  base::STLDeleteValues(&hosts_);
+  hosts_.clear();
   if (service_)
     service_->UnregisterBackend(this);
 }
@@ -37,19 +37,12 @@ bool AppCacheBackendImpl::RegisterHost(int id) {
   if (GetHost(id))
     return false;
 
-  hosts_.insert(
-      HostMap::value_type(id, new AppCacheHost(id, frontend_, service_)));
+  hosts_[id] = base::MakeUnique<AppCacheHost>(id, frontend_, service_);
   return true;
 }
 
 bool AppCacheBackendImpl::UnregisterHost(int id) {
-  HostMap::iterator found = hosts_.find(id);
-  if (found == hosts_.end())
-    return false;
-
-  delete found->second;
-  hosts_.erase(found);
-  return true;
+  return hosts_.erase(id) > 0;
 }
 
 bool AppCacheBackendImpl::SetSpawningHostId(
@@ -145,35 +138,32 @@ void AppCacheBackendImpl::GetResourceList(
 
 std::unique_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(
     int host_id) {
-  HostMap::iterator found = hosts_.find(host_id);
+  auto found = hosts_.find(host_id);
   if (found == hosts_.end()) {
     NOTREACHED();
     return std::unique_ptr<AppCacheHost>();
   }
 
-  AppCacheHost* transferree = found->second;
+  std::unique_ptr<AppCacheHost> transferree = std::move(found->second);
 
   // Put a new empty host in its place.
-  found->second = new AppCacheHost(host_id, frontend_, service_);
+  found->second = base::MakeUnique<AppCacheHost>(host_id, frontend_, service_);
 
   // We give up ownership.
   transferree->PrepareForTransfer();
-  return std::unique_ptr<AppCacheHost>(transferree);
+  return transferree;
 }
 
 void AppCacheBackendImpl::TransferHostIn(int new_host_id,
                                          std::unique_ptr<AppCacheHost> host) {
-  HostMap::iterator found = hosts_.find(new_host_id);
+  auto found = hosts_.find(new_host_id);
   if (found == hosts_.end()) {
     NOTREACHED();
     return;
   }
 
-  delete found->second;
-
-  // We take onwership.
   host->CompleteTransfer(new_host_id, frontend_);
-  found->second = host.release();
+  found->second = std::move(host);
 }
 
 }  // namespace content

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -66,19 +66,19 @@ void SaveFileManager::Shutdown() {
 // Stop file thread operations.
 void SaveFileManager::OnShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  base::STLDeleteValues(&save_file_map_);
+  save_file_map_.clear();
 }
 
 SaveFile* SaveFileManager::LookupSaveFile(SaveItemId save_item_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  SaveFileMap::iterator it = save_file_map_.find(save_item_id);
-  return it == save_file_map_.end() ? nullptr : it->second;
+  auto it = save_file_map_.find(save_item_id);
+  return it == save_file_map_.end() ? nullptr : it->second.get();
 }
 
 // Look up a SavePackage according to a save id.
 SavePackage* SaveFileManager::LookupPackage(SaveItemId save_item_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SavePackageMap::iterator it = packages_.find(save_item_id);
+  auto it = packages_.find(save_item_id);
   if (it != packages_.end())
     return it->second;
   return nullptr;
@@ -133,7 +133,7 @@ void SaveFileManager::RemoveSaveFile(SaveItemId save_item_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // A save page job (SavePackage) can only have one manager,
   // so remove it if it exists.
-  SavePackageMap::iterator it = packages_.find(save_item_id);
+  auto it = packages_.find(save_item_id);
   if (it != packages_.end())
     packages_.erase(it);
 }
@@ -182,14 +182,14 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(info);
   // No need to calculate hash.
-  SaveFile* save_file = new SaveFile(info, false);
+  std::unique_ptr<SaveFile> save_file = base::MakeUnique<SaveFile>(info, false);
 
   // TODO(phajdan.jr): We should check the return value and handle errors here.
   save_file->Initialize();
+  info->path = save_file->FullPath();
 
   DCHECK(!LookupSaveFile(info->save_item_id));
-  save_file_map_[info->save_item_id] = save_file;
-  info->path = save_file->FullPath();
+  save_file_map_[info->save_item_id] = std::move(save_file);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -362,9 +362,9 @@ void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
 // won't exist in our map.
 void SaveFileManager::CancelSave(SaveItemId save_item_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  SaveFileMap::iterator it = save_file_map_.find(save_item_id);
+  auto it = save_file_map_.find(save_item_id);
   if (it != save_file_map_.end()) {
-    SaveFile* save_file = it->second;
+    std::unique_ptr<SaveFile> save_file = std::move(it->second);
 
     if (!save_file->InProgress()) {
       // We've won a race with the UI thread--we finished the file before
@@ -386,7 +386,6 @@ void SaveFileManager::CancelSave(SaveItemId save_item_id) {
     // Whatever the save file is complete or not, just delete it.  This
     // will delete the underlying file if InProgress() is true.
     save_file_map_.erase(it);
-    delete save_file;
   }
 }
 
@@ -412,12 +411,11 @@ void SaveFileManager::RenameAllFiles(const FinalNamesMap& final_names,
     SaveItemId save_item_id = i.first;
     const base::FilePath& final_name = i.second;
 
-    SaveFileMap::iterator it = save_file_map_.find(save_item_id);
+    auto it = save_file_map_.find(save_item_id);
     if (it != save_file_map_.end()) {
-      SaveFile* save_file = it->second;
+      SaveFile* save_file = it->second.get();
       DCHECK(!save_file->InProgress());
       save_file->Rename(final_name);
-      delete save_file;
       save_file_map_.erase(it);
     }
   }
@@ -445,12 +443,11 @@ void SaveFileManager::RemoveSavedFileFromFileMap(
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   for (const SaveItemId save_item_id : save_item_ids) {
-    SaveFileMap::iterator it = save_file_map_.find(save_item_id);
+    auto it = save_file_map_.find(save_item_id);
     if (it != save_file_map_.end()) {
-      SaveFile* save_file = it->second;
+      SaveFile* save_file = it->second.get();
       DCHECK(!save_file->InProgress());
       base::DeleteFile(save_file->FullPath(), false);
-      delete save_file;
       save_file_map_.erase(it);
     }
   }

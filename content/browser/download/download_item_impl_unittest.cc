@@ -7,14 +7,16 @@
 #include <stdint.h>
 
 #include <iterator>
+#include <map>
+#include <memory>
 #include <queue>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
@@ -254,7 +256,6 @@ class DownloadItemTest : public testing::Test {
 
   ~DownloadItemTest() {
     RunAllPendingInMessageLoops();
-    base::STLDeleteElements(&allocated_downloads_);
   }
 
   DownloadItemImpl* CreateDownloadItemWithCreateInfo(
@@ -262,7 +263,7 @@ class DownloadItemTest : public testing::Test {
     DownloadItemImpl* download =
         new DownloadItemImpl(&delegate_, next_download_id_++, *(info.get()),
                              net::NetLogWithSource());
-    allocated_downloads_.insert(download);
+    allocated_downloads_[download] = base::WrapUnique(download);
     return download;
   }
 
@@ -274,7 +275,7 @@ class DownloadItemTest : public testing::Test {
     DownloadItemImpl* download =
         new DownloadItemImpl(&delegate_, create_info_->download_id,
                              *create_info_, net::NetLogWithSource());
-    allocated_downloads_.insert(download);
+    allocated_downloads_[download] = base::WrapUnique(download);
     return download;
   }
 
@@ -376,7 +377,6 @@ class DownloadItemTest : public testing::Test {
   // Destroy a previously created download item.
   void DestroyDownloadItem(DownloadItem* item) {
     allocated_downloads_.erase(item);
-    delete item;
   }
 
   void RunAllPendingInMessageLoops() { base::RunLoop().RunUntilIdle(); }
@@ -397,7 +397,7 @@ class DownloadItemTest : public testing::Test {
  private:
   TestBrowserThreadBundle thread_bundle_;
   StrictMock<MockDelegate> delegate_;
-  std::set<DownloadItem*> allocated_downloads_;
+  std::map<DownloadItem*, std::unique_ptr<DownloadItem>> allocated_downloads_;
   std::unique_ptr<DownloadCreateInfo> create_info_;
   uint32_t next_download_id_ = DownloadItem::kInvalidId + 1;
   TestBrowserContext browser_context_;

@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
@@ -46,8 +46,6 @@ MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client,
 }
 
 MouseWheelEventQueue::~MouseWheelEventQueue() {
-  if (!wheel_queue_.empty())
-    base::STLDeleteElements(&wheel_queue_);
 }
 
 void MouseWheelEventQueue::QueueEvent(
@@ -55,7 +53,7 @@ void MouseWheelEventQueue::QueueEvent(
   TRACE_EVENT0("input", "MouseWheelEventQueue::QueueEvent");
 
   if (event_sent_for_gesture_ack_ && !wheel_queue_.empty()) {
-    QueuedWebMouseWheelEvent* last_event = wheel_queue_.back();
+    QueuedWebMouseWheelEvent* last_event = wheel_queue_.back().get();
     if (last_event->CanCoalesceWith(event)) {
       last_event->CoalesceWith(event);
       TRACE_EVENT_INSTANT2("input", "MouseWheelEventQueue::CoalescedWheelEvent",
@@ -66,7 +64,7 @@ void MouseWheelEventQueue::QueueEvent(
     }
   }
 
-  wheel_queue_.push_back(new QueuedWebMouseWheelEvent(event));
+  wheel_queue_.push_back(base::MakeUnique<QueuedWebMouseWheelEvent>(event));
   TryForwardNextEventToRenderer();
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize", wheel_queue_.size());
 }
@@ -251,7 +249,7 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
   if (wheel_queue_.empty() || event_sent_for_gesture_ack_)
     return;
 
-  event_sent_for_gesture_ack_.reset(wheel_queue_.front());
+  event_sent_for_gesture_ack_ = std::move(wheel_queue_.front());
   wheel_queue_.pop_front();
 
   client_->SendMouseWheelEventImmediately(*event_sent_for_gesture_ack_);
