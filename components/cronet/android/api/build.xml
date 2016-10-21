@@ -2,7 +2,7 @@
   <target name="doc" description="generate documentation">
       <javadoc destdir="${doc.dir}"
                overview="${overview}"
-               bootclasspath="../../../../third_party/android_tools/sdk/platforms/android-23/android.jar:../../../../third_party/android_tools/sdk/extras/android/support/annotations/android-support-annotations.jar:${lib.java.dir}/cronet_javadoc_classpath.jar"
+               bootclasspath="../../../../third_party/android_tools/sdk/platforms/android-24/android.jar:../../../../third_party/android_tools/sdk/extras/android/support/annotations/android-support-annotations.jar:${lib.java.dir}/cronet_javadoc_classpath.jar"
                docletpath="../../../../buildtools/android/doclava/jsilver.jar:../../../../buildtools/android/doclava/doclava.jar"
                >
         <fileset dir="${source.dir}">
