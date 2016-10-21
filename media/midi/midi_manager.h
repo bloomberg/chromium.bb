@@ -40,8 +40,10 @@ class MIDI_EXPORT MidiManagerClient {
 
   // SetInputPortState() and SetOutputPortState() are called to notify a known
   // device gets disconnected, or connected again.
-  virtual void SetInputPortState(uint32_t port_index, MidiPortState state) = 0;
-  virtual void SetOutputPortState(uint32_t port_index, MidiPortState state) = 0;
+  virtual void SetInputPortState(uint32_t port_index,
+                                 mojom::PortState state) = 0;
+  virtual void SetOutputPortState(uint32_t port_index,
+                                  mojom::PortState state) = 0;
 
   // CompleteStartSession() is called when platform dependent preparation is
   // finished.
@@ -145,8 +147,8 @@ class MIDI_EXPORT MidiManager {
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
-  void SetInputPortState(uint32_t port_index, MidiPortState state);
-  void SetOutputPortState(uint32_t port_index, MidiPortState state);
+  void SetInputPortState(uint32_t port_index, mojom::PortState state);
+  void SetOutputPortState(uint32_t port_index, mojom::PortState state);
 
   // Dispatches to all clients.
   // TODO(toyoshim): Fix the mac implementation to use

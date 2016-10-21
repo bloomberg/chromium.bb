@@ -17,6 +17,7 @@
 #include "media/midi/usb_midi_device_factory_android.h"
 
 using base::android::JavaParamRef;
+using midi::mojom::PortState;
 using midi::mojom::Result;
 
 namespace midi {
@@ -71,11 +72,11 @@ void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,
     return;
   }
   DCHECK_EQ(output_ports().size(), all_output_ports_.size());
-  if (output_ports()[port_index].state == MIDI_PORT_CONNECTED) {
+  if (output_ports()[port_index].state == PortState::CONNECTED) {
     // We treat send call as implicit open.
     // TODO(yhirano): Implement explicit open operation from the renderer.
     if (all_output_ports_[port_index]->Open()) {
-      SetOutputPortState(port_index, MIDI_PORT_OPENED);
+      SetOutputPortState(port_index, PortState::OPENED);
     } else {
       // We cannot open the port. It's useless to send data to such a port.
       return;
@@ -133,12 +134,12 @@ void MidiManagerAndroid::OnDetached(JNIEnv* env,
       for (auto* port : device->input_ports()) {
         DCHECK(input_port_to_index_.end() != input_port_to_index_.find(port));
         size_t index = input_port_to_index_[port];
-        SetInputPortState(index, MIDI_PORT_DISCONNECTED);
+        SetInputPortState(index, PortState::DISCONNECTED);
       }
       for (auto* port : device->output_ports()) {
         DCHECK(output_port_to_index_.end() != output_port_to_index_.find(port));
         size_t index = output_port_to_index_[port];
-        SetOutputPortState(index, MIDI_PORT_DISCONNECTED);
+        SetOutputPortState(index, PortState::DISCONNECTED);
       }
     }
   }
@@ -149,7 +150,7 @@ void MidiManagerAndroid::AddDevice(std::unique_ptr<MidiDeviceAndroid> device) {
     // We implicitly open input ports here, because there are no signal
     // from the renderer when to open.
     // TODO(yhirano): Implement open operation in Blink.
-    MidiPortState state = port->Open() ? MIDI_PORT_OPENED : MIDI_PORT_CONNECTED;
+    PortState state = port->Open() ? PortState::OPENED : PortState::CONNECTED;
 
     const size_t index = all_input_ports_.size();
     all_input_ports_.push_back(port);
@@ -177,7 +178,7 @@ void MidiManagerAndroid::AddDevice(std::unique_ptr<MidiDeviceAndroid> device) {
     output_port_to_index_.insert(std::make_pair(port, index));
     AddOutputPort(
         MidiPortInfo(id, device->GetManufacturer(), device->GetProductName(),
-                     device->GetDeviceVersion(), MIDI_PORT_CONNECTED));
+                     device->GetDeviceVersion(), PortState::CONNECTED));
   }
   devices_.push_back(device.release());
 }

@@ -22,6 +22,15 @@ enum Result {
   MAX = INITIALIZATION_ERROR,
 };
 
-// TODO(toyoshim): MidiPortState, MidiPortInfo, and MidiService should be
+enum PortState {
+  DISCONNECTED,
+  CONNECTED,
+  OPENED,
+  // TODO(toyosim): Remove |LAST| once IPC is replaced with Mojo.
+  // http://crbug.com/582327
+  LAST = OPENED,
+};
+
+// TODO(toyoshim): MidiPortInfo, and MidiService should be
 // declared here.
 // http://crbug.com/582327

@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
+#include "media/midi/midi_service.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "platform/heap/Handle.h"
@@ -72,8 +73,8 @@ class MIDIPort : public EventTargetWithInlineData,
   ScriptPromise close(ScriptState*);
 
   MIDIAccess* midiAccess() const { return m_access; }
-  MIDIAccessor::MIDIPortState getState() const { return m_state; }
-  void setState(MIDIAccessor::MIDIPortState);
+  midi::mojom::PortState getState() const { return m_state; }
+  void setState(midi::mojom::PortState);
   ConnectionState getConnection() const { return m_connection; }
 
   DECLARE_VIRTUAL_TRACE();
@@ -101,7 +102,7 @@ class MIDIPort : public EventTargetWithInlineData,
            const String& name,
            TypeCode,
            const String& version,
-           MIDIAccessor::MIDIPortState);
+           midi::mojom::PortState);
 
   void open();
 
@@ -109,7 +110,7 @@ class MIDIPort : public EventTargetWithInlineData,
   ScriptPromise accept(ScriptState*);
   ScriptPromise reject(ScriptState*, ExceptionCode, const String& message);
 
-  void setStates(MIDIAccessor::MIDIPortState, ConnectionState);
+  void setStates(midi::mojom::PortState, ConnectionState);
 
   String m_id;
   String m_manufacturer;
@@ -117,7 +118,7 @@ class MIDIPort : public EventTargetWithInlineData,
   TypeCode m_type;
   String m_version;
   Member<MIDIAccess> m_access;
-  MIDIAccessor::MIDIPortState m_state;
+  midi::mojom::PortState m_state;
   ConnectionState m_connection;
 };
 

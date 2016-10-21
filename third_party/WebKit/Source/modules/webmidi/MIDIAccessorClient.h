@@ -31,6 +31,7 @@
 #ifndef MIDIAccessorClient_h
 #define MIDIAccessorClient_h
 
+#include "media/midi/midi_service.mojom-blink.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "wtf/Forward.h"
 
@@ -42,16 +43,16 @@ class MIDIAccessorClient {
                                const String& manufacturer,
                                const String& name,
                                const String& version,
-                               MIDIAccessor::MIDIPortState) = 0;
+                               midi::mojom::PortState) = 0;
   virtual void didAddOutputPort(const String& id,
                                 const String& manufacturer,
                                 const String& name,
                                 const String& version,
-                                MIDIAccessor::MIDIPortState) = 0;
+                                midi::mojom::PortState) = 0;
   virtual void didSetInputPortState(unsigned portIndex,
-                                    MIDIAccessor::MIDIPortState) = 0;
+                                    midi::mojom::PortState) = 0;
   virtual void didSetOutputPortState(unsigned portIndex,
-                                     MIDIAccessor::MIDIPortState) = 0;
+                                     midi::mojom::PortState) = 0;
 
   virtual void didStartSession(midi::mojom::Result) = 0;
   virtual void didReceiveMIDIData(unsigned portIndex,

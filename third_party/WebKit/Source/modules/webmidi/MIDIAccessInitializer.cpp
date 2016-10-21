@@ -22,8 +22,7 @@
 
 namespace blink {
 
-using PortState = WebMIDIAccessorClient::MIDIPortState;
-
+using midi::mojom::PortState;
 using midi::mojom::Result;
 using mojom::blink::PermissionStatus;
 

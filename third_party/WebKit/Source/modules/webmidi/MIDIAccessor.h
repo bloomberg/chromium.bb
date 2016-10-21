@@ -31,6 +31,7 @@
 #ifndef MIDIAccessor_h
 #define MIDIAccessor_h
 
+#include "media/midi/midi_service.mojom-blink.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 #include "wtf/Allocator.h"
@@ -63,14 +64,16 @@ class MIDIAccessor final : public WebMIDIAccessorClient {
                        const WebString& manufacturer,
                        const WebString& name,
                        const WebString& version,
-                       MIDIPortState) override;
+                       midi::mojom::PortState) override;
   void didAddOutputPort(const WebString& id,
                         const WebString& manufacturer,
                         const WebString& name,
                         const WebString& version,
-                        MIDIPortState) override;
-  void didSetInputPortState(unsigned portIndex, MIDIPortState) override;
-  void didSetOutputPortState(unsigned portIndex, MIDIPortState) override;
+                        midi::mojom::PortState) override;
+  void didSetInputPortState(unsigned portIndex,
+                            midi::mojom::PortState) override;
+  void didSetOutputPortState(unsigned portIndex,
+                             midi::mojom::PortState) override;
   void didStartSession(midi::mojom::Result) override;
   void didReceiveMIDIData(unsigned portIndex,
                           const unsigned char* data,

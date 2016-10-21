@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
+#include "media/midi/midi_service.mojom.h"
 
 namespace midi {
 
@@ -24,9 +25,9 @@ class MidiServiceWinDelegate {
   virtual void OnAddInputPort(MidiPortInfo info) = 0;
   virtual void OnAddOutputPort(MidiPortInfo info) = 0;
   virtual void OnSetInputPortState(uint32_t port_index,
-                                   MidiPortState state) = 0;
+                                   mojom::PortState state) = 0;
   virtual void OnSetOutputPortState(uint32_t port_index,
-                                    MidiPortState state) = 0;
+                                    mojom::PortState state) = 0;
   virtual void OnReceiveMidiData(uint32_t port_index,
                                  const std::vector<uint8_t>& data,
                                  base::TimeTicks time) = 0;
@@ -60,8 +61,8 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
   void OnCompleteInitialization(mojom::Result result) final;
   void OnAddInputPort(MidiPortInfo info) final;
   void OnAddOutputPort(MidiPortInfo info) final;
-  void OnSetInputPortState(uint32_t port_index, MidiPortState state) final;
-  void OnSetOutputPortState(uint32_t port_index, MidiPortState state) final;
+  void OnSetInputPortState(uint32_t port_index, mojom::PortState state) final;
+  void OnSetOutputPortState(uint32_t port_index, mojom::PortState state) final;
   void OnReceiveMidiData(uint32_t port_index,
                          const std::vector<uint8_t>& data,
                          base::TimeTicks time) final;

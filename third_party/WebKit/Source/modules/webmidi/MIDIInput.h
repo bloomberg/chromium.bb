@@ -31,6 +31,7 @@
 #ifndef MIDIInput_h
 #define MIDIInput_h
 
+#include "media/midi/midi_service.mojom-blink.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIPort.h"
@@ -48,7 +49,7 @@ class MIDIInput final : public MIDIPort {
                            const String& manufacturer,
                            const String& name,
                            const String& version,
-                           MIDIAccessor::MIDIPortState);
+                           midi::mojom::PortState);
   ~MIDIInput() override {}
 
   EventListener* onmidimessage();
@@ -78,7 +79,7 @@ class MIDIInput final : public MIDIPort {
             const String& manufacturer,
             const String& name,
             const String& version,
-            MIDIAccessor::MIDIPortState);
+            midi::mojom::PortState);
 };
 
 }  // namespace blink

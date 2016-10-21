@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "media/midi/midi_service.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
@@ -31,14 +32,14 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
     String name;
     MIDIPort::TypeCode type;
     String version;
-    MIDIAccessor::MIDIPortState state;
+    midi::mojom::PortState state;
 
     PortDescriptor(const String& id,
                    const String& manufacturer,
                    const String& name,
                    MIDIPort::TypeCode type,
                    const String& version,
-                   MIDIAccessor::MIDIPortState state)
+                   midi::mojom::PortState state)
         : id(id),
           manufacturer(manufacturer),
           name(name),
@@ -67,16 +68,16 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
                        const String& manufacturer,
                        const String& name,
                        const String& version,
-                       MIDIAccessor::MIDIPortState) override;
+                       midi::mojom::PortState) override;
   void didAddOutputPort(const String& id,
                         const String& manufacturer,
                         const String& name,
                         const String& version,
-                        MIDIAccessor::MIDIPortState) override;
+                        midi::mojom::PortState) override;
   void didSetInputPortState(unsigned portIndex,
-                            MIDIAccessor::MIDIPortState) override;
+                            midi::mojom::PortState) override;
   void didSetOutputPortState(unsigned portIndex,
-                             MIDIAccessor::MIDIPortState) override;
+                             midi::mojom::PortState) override;
   void didStartSession(midi::mojom::Result) override;
   void didReceiveMIDIData(unsigned portIndex,
                           const unsigned char* data,

@@ -45,7 +45,7 @@
 
 namespace blink {
 
-using PortState = MIDIAccessor::MIDIPortState;
+using midi::mojom::PortState;
 
 MIDIAccess::MIDIAccess(
     std::unique_ptr<MIDIAccessor> accessor,
@@ -97,7 +97,7 @@ MIDIInputMap* MIDIAccess::inputs() const {
   HashSet<String> ids;
   for (size_t i = 0; i < m_inputs.size(); ++i) {
     MIDIInput* input = m_inputs[i];
-    if (input->getState() != PortState::MIDIPortStateDisconnected) {
+    if (input->getState() != PortState::DISCONNECTED) {
       inputs.append(input);
       ids.add(input->id());
     }
@@ -114,7 +114,7 @@ MIDIOutputMap* MIDIAccess::outputs() const {
   HashSet<String> ids;
   for (size_t i = 0; i < m_outputs.size(); ++i) {
     MIDIOutput* output = m_outputs[i];
-    if (output->getState() != PortState::MIDIPortStateDisconnected) {
+    if (output->getState() != PortState::DISCONNECTED) {
       outputs.append(output);
       ids.add(output->id());
     }

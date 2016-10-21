@@ -24,6 +24,7 @@ namespace midi {
 
 namespace {
 
+using mojom::PortState;
 using mojom::Result;
 
 class FakeMidiManager : public MidiManager {
@@ -73,8 +74,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
   // MidiManagerClient implementation.
   void AddInputPort(const MidiPortInfo& info) override {}
   void AddOutputPort(const MidiPortInfo& info) override {}
-  void SetInputPortState(uint32_t port_index, MidiPortState state) override {}
-  void SetOutputPortState(uint32_t port_index, MidiPortState state) override {}
+  void SetInputPortState(uint32_t port_index, PortState state) override {}
+  void SetOutputPortState(uint32_t port_index, PortState state) override {}
 
   void CompleteStartSession(Result result) override {
     EXPECT_TRUE(wait_for_result_);

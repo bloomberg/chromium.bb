@@ -19,6 +19,8 @@
 namespace content {
 namespace {
 
+using midi::mojom::PortState;
+
 const uint8_t kNoteOn[] = {0x90, 0x3c, 0x7f};
 const int kRenderProcessId = 0;
 
@@ -90,7 +92,7 @@ class MidiHostTest : public testing::Test {
     const std::string manufacturer("yukatan");
     const std::string name("doki-doki-pi-pine");
     const std::string version("3.14159265359");
-    midi::MidiPortState state = midi::MIDI_PORT_CONNECTED;
+    PortState state = PortState::CONNECTED;
     midi::MidiPortInfo info(id, manufacturer, name, version, state);
 
     host_->AddOutputPort(info);

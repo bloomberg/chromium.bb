@@ -54,12 +54,13 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
     return io_task_runner_.get();
   }
 
-  static blink::WebMIDIAccessorClient::MIDIPortState ToBlinkState(
-      midi::MidiPortState state) {
+  static midi::mojom::PortState ToBlinkState(midi::mojom::PortState state) {
     // "open" status is separately managed by blink per MIDIAccess instance.
-    if (state == midi::MIDI_PORT_OPENED)
-      state = midi::MIDI_PORT_CONNECTED;
-    return static_cast<blink::WebMIDIAccessorClient::MIDIPortState>(state);
+    // TODO(toyoshim): Pass through the state as is, and have a logic to convert
+    // this state to JavaScript exposing state in Blink side.
+    if (state == midi::mojom::PortState::OPENED)
+      return midi::mojom::PortState::CONNECTED;
+    return state;
   }
 
  protected:
@@ -98,8 +99,8 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
   // These functions are called to notify the recipient that a device that is
   // notified via OnAddInputPort() or OnAddOutputPort() gets disconnected, or
   // connected again.
-  void OnSetInputPortState(uint32_t port, midi::MidiPortState state);
-  void OnSetOutputPortState(uint32_t port, midi::MidiPortState state);
+  void OnSetInputPortState(uint32_t port, midi::mojom::PortState state);
+  void OnSetOutputPortState(uint32_t port, midi::mojom::PortState state);
 
   // Called when the browser process has sent MIDI data containing one or
   // more messages.
@@ -117,9 +118,8 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   void HandleAddInputPort(midi::MidiPortInfo info);
   void HandleAddOutputPort(midi::MidiPortInfo info);
-  void HandleSetInputPortState(uint32_t port, midi::MidiPortState state);
-  void HandleSetOutputPortState(uint32_t port,
-                                midi::MidiPortState state);
+  void HandleSetInputPortState(uint32_t port, midi::mojom::PortState state);
+  void HandleSetOutputPortState(uint32_t port, midi::mojom::PortState state);
 
   void HandleDataReceived(uint32_t port,
                           const std::vector<uint8_t>& data,

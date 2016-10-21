@@ -1,6 +1,7 @@
 include_rules = [
     "+bindings",
     "+core",
+    "+media/midi/midi_service.mojom-blink.h",
     "-modules",
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",

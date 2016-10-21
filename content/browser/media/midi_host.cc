@@ -39,6 +39,7 @@ using midi::IsValidWebMIDIData;
 using midi::MidiPortInfo;
 using midi::kSysExByte;
 using midi::kEndOfSysExByte;
+using midi::mojom::PortState;
 using midi::mojom::Result;
 
 MidiHost::MidiHost(int renderer_process_id,
@@ -161,13 +162,11 @@ void MidiHost::AddOutputPort(const MidiPortInfo& info) {
   Send(new MidiMsg_AddOutputPort(info));
 }
 
-void MidiHost::SetInputPortState(uint32_t port,
-                                 midi::MidiPortState state) {
+void MidiHost::SetInputPortState(uint32_t port, PortState state) {
   Send(new MidiMsg_SetInputPortState(port, state));
 }
 
-void MidiHost::SetOutputPortState(uint32_t port,
-                                  midi::MidiPortState state) {
+void MidiHost::SetOutputPortState(uint32_t port, PortState state) {
   Send(new MidiMsg_SetOutputPortState(port, state));
 }
 

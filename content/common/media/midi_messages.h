@@ -23,8 +23,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MidiMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(midi::MidiPortState,
-                          midi::MIDI_PORT_STATE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(midi::mojom::PortState, midi::mojom::PortState::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(midi::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(id)
@@ -58,11 +57,11 @@ IPC_MESSAGE_CONTROL1(MidiMsg_AddOutputPort,
 
 IPC_MESSAGE_CONTROL2(MidiMsg_SetInputPortState,
                      uint32_t /* port */,
-                     midi::MidiPortState /* state */)
+                     midi::mojom::PortState /* state */)
 
 IPC_MESSAGE_CONTROL2(MidiMsg_SetOutputPortState,
                      uint32_t /* port */,
-                     midi::MidiPortState /* state */)
+                     midi::mojom::PortState /* state */)
 
 IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, midi::mojom::Result /* result */)
 

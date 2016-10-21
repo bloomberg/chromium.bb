@@ -35,9 +35,9 @@
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 
-namespace blink {
+using midi::mojom::PortState;
 
-using PortState = MIDIAccessor::MIDIPortState;
+namespace blink {
 
 MIDIPort::MIDIPort(MIDIAccess* access,
                    const String& id,
@@ -57,8 +57,7 @@ MIDIPort::MIDIPort(MIDIAccess* access,
       m_connection(ConnectionStateClosed) {
   DCHECK(access);
   DCHECK(type == TypeInput || type == TypeOutput);
-  DCHECK(state == PortState::MIDIPortStateDisconnected ||
-         state == PortState::MIDIPortStateConnected);
+  DCHECK(state == PortState::DISCONNECTED || state == PortState::CONNECTED);
   m_state = state;
 }
 
@@ -76,9 +75,12 @@ String MIDIPort::connection() const {
 
 String MIDIPort::state() const {
   switch (m_state) {
-    case PortState::MIDIPortStateDisconnected:
+    case PortState::DISCONNECTED:
       return "disconnected";
-    case PortState::MIDIPortStateConnected:
+    case PortState::CONNECTED:
+      return "connected";
+    case PortState::OPENED:
+      NOTREACHED();
       return "connected";
   }
   return emptyString();
@@ -110,21 +112,19 @@ ScriptPromise MIDIPort::close(ScriptState* scriptState) {
 
 void MIDIPort::setState(PortState state) {
   switch (state) {
-    case PortState::MIDIPortStateDisconnected:
+    case PortState::DISCONNECTED:
       switch (m_connection) {
         case ConnectionStateOpen:
         case ConnectionStatePending:
-          setStates(PortState::MIDIPortStateDisconnected,
-                    ConnectionStatePending);
+          setStates(PortState::DISCONNECTED, ConnectionStatePending);
           break;
         case ConnectionStateClosed:
           // Will do nothing.
-          setStates(PortState::MIDIPortStateDisconnected,
-                    ConnectionStateClosed);
+          setStates(PortState::DISCONNECTED, ConnectionStateClosed);
           break;
       }
       break;
-    case PortState::MIDIPortStateConnected:
+    case PortState::CONNECTED:
       switch (m_connection) {
         case ConnectionStateOpen:
           NOTREACHED();
@@ -132,13 +132,16 @@ void MIDIPort::setState(PortState state) {
         case ConnectionStatePending:
           // We do not use |setStates| in order not to dispatch events twice.
           // |open| calls |setStates|.
-          m_state = PortState::MIDIPortStateConnected;
+          m_state = PortState::CONNECTED;
           open();
           break;
         case ConnectionStateClosed:
-          setStates(PortState::MIDIPortStateConnected, ConnectionStateClosed);
+          setStates(PortState::CONNECTED, ConnectionStateClosed);
           break;
       }
+      break;
+    case PortState::OPENED:
+      NOTREACHED();
       break;
   }
 }
@@ -170,13 +173,16 @@ DEFINE_TRACE_WRAPPERS(MIDIPort) {
 
 void MIDIPort::open() {
   switch (m_state) {
-    case PortState::MIDIPortStateDisconnected:
+    case PortState::DISCONNECTED:
       setStates(m_state, ConnectionStatePending);
       break;
-    case PortState::MIDIPortStateConnected:
+    case PortState::CONNECTED:
       // TODO(toyoshim): Add blink API to perform a real open and close
       // operation.
       setStates(m_state, ConnectionStateOpen);
+      break;
+    case PortState::OPENED:
+      NOTREACHED();
       break;
   }
 }
@@ -195,8 +201,7 @@ ScriptPromise MIDIPort::reject(ScriptState* scriptState,
 }
 
 void MIDIPort::setStates(PortState state, ConnectionState connection) {
-  DCHECK(state != PortState::MIDIPortStateDisconnected ||
-         connection != ConnectionStateOpen);
+  DCHECK(state != PortState::DISCONNECTED || connection != ConnectionStateOpen);
   if (m_state == state && m_connection == connection)
     return;
   m_state = state;

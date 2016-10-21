@@ -31,4 +31,8 @@ blink_modules_sources("webmidi") {
     "NavigatorWebMIDI.cpp",
     "NavigatorWebMIDI.h",
   ]
+
+  deps = [
+    "//media/midi:mojo_blink_cpp_sources",
+  ]
 }

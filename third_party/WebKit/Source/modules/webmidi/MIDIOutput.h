@@ -49,7 +49,7 @@ class MIDIOutput final : public MIDIPort {
                             const String& manufacturer,
                             const String& name,
                             const String& version,
-                            MIDIAccessor::MIDIPortState);
+                            midi::mojom::PortState);
   ~MIDIOutput() override;
 
   void send(DOMUint8Array*, double timestamp, ExceptionState&);
@@ -68,7 +68,7 @@ class MIDIOutput final : public MIDIPort {
              const String& manufacturer,
              const String& name,
              const String& version,
-             MIDIAccessor::MIDIPortState);
+             midi::mojom::PortState);
 
   unsigned m_portIndex;
 };

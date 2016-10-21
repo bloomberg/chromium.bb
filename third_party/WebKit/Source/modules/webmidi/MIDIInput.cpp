@@ -36,7 +36,7 @@
 
 namespace blink {
 
-using PortState = MIDIAccessor::MIDIPortState;
+using midi::mojom::PortState;
 
 MIDIInput* MIDIInput::create(MIDIAccess* access,
                              const String& id,

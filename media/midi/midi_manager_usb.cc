@@ -14,6 +14,7 @@
 
 namespace midi {
 
+using mojom::PortState;
 using mojom::Result;
 
 MidiManagerUsb::MidiManagerUsb(std::unique_ptr<UsbMidiDevice::Factory> factory)
@@ -95,13 +96,13 @@ void MidiManagerUsb::OnDeviceDetached(size_t index) {
   UsbMidiDevice* device = devices_[index];
   for (size_t i = 0; i < output_streams_.size(); ++i) {
     if (output_streams_[i]->jack().device == device) {
-      SetOutputPortState(static_cast<uint32_t>(i), MIDI_PORT_DISCONNECTED);
+      SetOutputPortState(static_cast<uint32_t>(i), PortState::DISCONNECTED);
     }
   }
   const std::vector<UsbMidiJack>& input_jacks = input_stream_->jacks();
   for (size_t i = 0; i < input_jacks.size(); ++i) {
     if (input_jacks[i].device == device) {
-      SetInputPortState(static_cast<uint32_t>(i), MIDI_PORT_DISCONNECTED);
+      SetInputPortState(static_cast<uint32_t>(i), PortState::DISCONNECTED);
     }
   }
 }
@@ -156,12 +157,12 @@ bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
     if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
       output_streams_.push_back(new UsbMidiOutputStream(jacks[j]));
       AddOutputPort(MidiPortInfo(id, manufacturer, product_name, version,
-                                 MIDI_PORT_OPENED));
+                                 PortState::OPENED));
     } else {
       DCHECK_EQ(jacks[j].direction(), UsbMidiJack::DIRECTION_IN);
       input_stream_->Add(jacks[j]);
       AddInputPort(MidiPortInfo(id, manufacturer, product_name, version,
-                                MIDI_PORT_OPENED));
+                                PortState::OPENED));
     }
   }
   return true;

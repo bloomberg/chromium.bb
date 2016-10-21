@@ -15,6 +15,7 @@
 #include "ipc/ipc_logging.h"
 
 using base::AutoLock;
+using midi::mojom::PortState;
 using midi::mojom::Result;
 
 // The maximum number of bytes which we're allowed to send to the browser
@@ -165,16 +166,14 @@ void MidiMessageFilter::OnAddOutputPort(midi::MidiPortInfo info) {
       base::Bind(&MidiMessageFilter::HandleAddOutputPort, this, info));
 }
 
-void MidiMessageFilter::OnSetInputPortState(uint32_t port,
-                                            midi::MidiPortState state) {
+void MidiMessageFilter::OnSetInputPortState(uint32_t port, PortState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MidiMessageFilter::HandleSetInputPortState, this,
                             port, state));
 }
 
-void MidiMessageFilter::OnSetOutputPortState(uint32_t port,
-                                             midi::MidiPortState state) {
+void MidiMessageFilter::OnSetOutputPortState(uint32_t port, PortState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MidiMessageFilter::HandleSetOutputPortState, this,
@@ -212,21 +211,19 @@ void MidiMessageFilter::HandleClientAdded(Result result) {
     if (result == Result::OK) {
       // Add the client's input and output ports.
       for (const auto& info : inputs_) {
-        client->didAddInputPort(
-            base::UTF8ToUTF16(info.id),
-            base::UTF8ToUTF16(info.manufacturer),
-            base::UTF8ToUTF16(info.name),
-            base::UTF8ToUTF16(info.version),
-            ToBlinkState(info.state));
+        client->didAddInputPort(base::UTF8ToUTF16(info.id),
+                                base::UTF8ToUTF16(info.manufacturer),
+                                base::UTF8ToUTF16(info.name),
+                                base::UTF8ToUTF16(info.version),
+                                ToBlinkState(info.state));
       }
 
       for (const auto& info : outputs_) {
-        client->didAddOutputPort(
-            base::UTF8ToUTF16(info.id),
-            base::UTF8ToUTF16(info.manufacturer),
-            base::UTF8ToUTF16(info.name),
-            base::UTF8ToUTF16(info.version),
-            ToBlinkState(info.state));
+        client->didAddOutputPort(base::UTF8ToUTF16(info.id),
+                                 base::UTF8ToUTF16(info.manufacturer),
+                                 base::UTF8ToUTF16(info.name),
+                                 base::UTF8ToUTF16(info.version),
+                                 ToBlinkState(info.state));
       }
     }
     client->didStartSession(result);
@@ -241,8 +238,7 @@ void MidiMessageFilter::HandleAddInputPort(midi::MidiPortInfo info) {
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
   const base::string16 name = base::UTF8ToUTF16(info.name);
   const base::string16 version = base::UTF8ToUTF16(info.version);
-  const blink::WebMIDIAccessorClient::MIDIPortState state =
-      ToBlinkState(info.state);
+  const PortState state = ToBlinkState(info.state);
   for (auto* client : clients_)
     client->didAddInputPort(id, manufacturer, name, version, state);
 }
@@ -254,8 +250,7 @@ void MidiMessageFilter::HandleAddOutputPort(midi::MidiPortInfo info) {
   const base::string16 manufacturer = base::UTF8ToUTF16(info.manufacturer);
   const base::string16 name = base::UTF8ToUTF16(info.name);
   const base::string16 version = base::UTF8ToUTF16(info.version);
-  const blink::WebMIDIAccessorClient::MIDIPortState state =
-      ToBlinkState(info.state);
+  const PortState state = ToBlinkState(info.state);
   for (auto* client : clients_)
     client->didAddOutputPort(id, manufacturer, name, version, state);
 }
@@ -278,18 +273,16 @@ void MidiMessageFilter::HandleAckknowledgeSentData(size_t bytes_sent) {
     unacknowledged_bytes_sent_ -= bytes_sent;
 }
 
-void MidiMessageFilter::HandleSetInputPortState(
-    uint32_t port,
-    midi::MidiPortState state) {
+void MidiMessageFilter::HandleSetInputPortState(uint32_t port,
+                                                PortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   inputs_[port].state = state;
   for (auto* client : clients_)
     client->didSetInputPortState(port, ToBlinkState(state));
 }
 
-void MidiMessageFilter::HandleSetOutputPortState(
-    uint32_t port,
-    midi::MidiPortState state) {
+void MidiMessageFilter::HandleSetOutputPortState(uint32_t port,
+                                                 PortState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   outputs_[port].state = state;
   for (auto* client : clients_)

@@ -1388,6 +1388,7 @@ test("content_unittests") {
     "//media/blink",
     "//media/capture",
     "//media/midi:midi",
+    "//media/midi:mojo_cpp_sources",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings",
     "//net:extras",

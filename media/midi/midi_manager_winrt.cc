@@ -42,6 +42,7 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage::Streams;
 
 using base::win::ScopedComPtr;
+using mojom::PortState;
 using mojom::Result;
 
 // Helpers for printing HRESULTs.
@@ -649,7 +650,7 @@ class MidiManagerWinrt::MidiPortManager {
       return;
     }
 
-    SetPortState(port->index, MIDI_PORT_DISCONNECTED);
+    SetPortState(port->index, PortState::DISCONNECTED);
 
     RemovePortEventHandlers(port);
     port->handle = nullptr;
@@ -691,7 +692,7 @@ class MidiManagerWinrt::MidiPortManager {
       GetDriverInfoFromDeviceId(dev_id, &manufacturer, &driver_version);
 
       AddPort(MidiPortInfo(dev_id, manufacturer, port_names_[dev_id],
-                           driver_version, MIDI_PORT_OPENED));
+                           driver_version, PortState::OPENED));
 
       port = new MidiPort<InterfaceType>;
       port->index = static_cast<uint32_t>(port_ids_.size());
@@ -699,7 +700,7 @@ class MidiManagerWinrt::MidiPortManager {
       ports_[dev_id].reset(port);
       port_ids_.push_back(dev_id);
     } else {
-      SetPortState(port->index, MIDI_PORT_CONNECTED);
+      SetPortState(port->index, PortState::CONNECTED);
     }
 
     port->handle = handle;
@@ -724,7 +725,7 @@ class MidiManagerWinrt::MidiPortManager {
   virtual void AddPort(MidiPortInfo info) = 0;
 
   // Calls midi_manager_->Set{Input,Output}PortState.
-  virtual void SetPortState(uint32_t port_index, MidiPortState state) = 0;
+  virtual void SetPortState(uint32_t port_index, PortState state) = 0;
 
   // WeakPtrFactory has to be declared in derived class, use this method to
   // retrieve upcasted WeakPtr for posting tasks.
@@ -849,7 +850,7 @@ class MidiManagerWinrt::MidiInPortManager final
 
   void AddPort(MidiPortInfo info) final { midi_manager_->AddInputPort(info); }
 
-  void SetPortState(uint32_t port_index, MidiPortState state) final {
+  void SetPortState(uint32_t port_index, PortState state) final {
     midi_manager_->SetInputPortState(port_index, state);
   }
 
@@ -890,7 +891,7 @@ class MidiManagerWinrt::MidiOutPortManager final
   // MidiPortManager overrides:
   void AddPort(MidiPortInfo info) final { midi_manager_->AddOutputPort(info); }
 
-  void SetPortState(uint32_t port_index, MidiPortState state) final {
+  void SetPortState(uint32_t port_index, PortState state) final {
     midi_manager_->SetOutputPortState(port_index, state);
   }
 

@@ -6,13 +6,15 @@
 
 namespace midi {
 
+using mojom::PortState;
+
 MidiPortInfo::MidiPortInfo() {}
 
 MidiPortInfo::MidiPortInfo(const std::string& in_id,
                            const std::string& in_manufacturer,
                            const std::string& in_name,
                            const std::string& in_version,
-                           MidiPortState in_state)
+                           PortState in_state)
     : id(in_id),
       manufacturer(in_manufacturer),
       name(in_name),

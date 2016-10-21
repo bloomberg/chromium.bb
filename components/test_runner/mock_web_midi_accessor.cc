@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
 
+using midi::mojom::PortState;
 using midi::mojom::Result;
 
 namespace test_runner {
@@ -27,18 +28,12 @@ MockWebMIDIAccessor::~MockWebMIDIAccessor() {
 
 void MockWebMIDIAccessor::startSession() {
   // Add a mock input and output port.
-  blink::WebMIDIAccessorClient::MIDIPortState state =
-      blink::WebMIDIAccessorClient::MIDIPortStateConnected;
-  client_->didAddInputPort("MockInputID",
-                           "MockInputManufacturer",
-                           "MockInputName",
-                           "MockInputVersion",
-                           state);
-  client_->didAddOutputPort("MockOutputID",
-                            "MockOutputManufacturer",
-                            "MockOutputName",
-                            "MockOutputVersion",
-                            state);
+  client_->didAddInputPort("MockInputID", "MockInputManufacturer",
+                           "MockInputName", "MockInputVersion",
+                           PortState::CONNECTED);
+  client_->didAddOutputPort("MockOutputID", "MockOutputManufacturer",
+                            "MockOutputName", "MockOutputVersion",
+                            PortState::CONNECTED);
   interfaces_->GetDelegate()->PostTask(base::Bind(
       &MockWebMIDIAccessor::ReportStartedSession, weak_factory_.GetWeakPtr(),
       interfaces_->GetTestRunner()->midiAccessorResult()));
