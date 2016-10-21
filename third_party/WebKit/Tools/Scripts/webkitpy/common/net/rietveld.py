@@ -20,7 +20,7 @@ class Rietveld(object):
     def __init__(self, web):
         self.web = web
 
-    def latest_try_job_results(self, issue_number, builder_names=None, patchset_number=None):
+    def latest_try_jobs(self, issue_number, builder_names=None, patchset_number=None):
         """Returns a list of Build objects for builds on the latest patchset.
 
         Args:
@@ -30,8 +30,8 @@ class Rietveld(object):
             patchset_number: If given, a specific patchset will be used instead of the latest one.
 
         Returns:
-            A dict mapping Build objects to result dicts for the latest build
-            for each builder on the latest patchset.
+            A list of Build objects, where Build objects for completed jobs have a build number,
+            and Build objects for pending jobs have no build number.
         """
         try:
             if patchset_number:
@@ -40,18 +40,22 @@ class Rietveld(object):
                 url = self._latest_patchset_url(issue_number)
             patchset_data = self._get_json(url)
         except (urllib2.URLError, ValueError):
-            return {}
+            return []
 
-        def build(job):
-            return Build(builder_name=job['builder'], build_number=job['buildnumber'])
-
-        results = {build(job): job for job in patchset_data['try_job_results']}
+        builds = []
+        for result_dict in patchset_data['try_job_results']:
+            build = Build(result_dict['builder'], result_dict['buildnumber'])
+            # Normally, a value of -1 or 6 in the "result" field indicates the job is
+            # started or pending, and the "buildnumber" field is null.
+            if build.build_number and result_dict['result'] in (-1, 6):
+                _log.warning('Build %s has result %d, but unexpectedly has a build number.', build, result_dict['result'])
+                build.build_number = None
+            builds.append(build)
 
         if builder_names is not None:
-            results = {b: result for b, result in results.iteritems() if b.builder_name in builder_names}
+            builds = [b for b in builds if b.builder_name in builder_names]
 
-        latest_builds = self._filter_latest_builds(list(results))
-        return {b: result for b, result in results.iteritems() if b in latest_builds}
+        return self._filter_latest_builds(builds)
 
     def _filter_latest_builds(self, builds):
         """Filters out a collection of Build objects to include only the latest for each builder.
@@ -60,19 +64,17 @@ class Rietveld(object):
             jobs: A list of Build objects.
 
         Returns:
-            A list of Build objects that contains only the latest build for each builder.
+            A list of Build objects; only one Build object per builder name. If there are only
+            Builds with no build number, then one is kept; if there are Builds with build numbers,
+            then the one with the highest build number is kept.
         """
-        builder_to_highest_number = {}
+        builder_to_latest_build = {}
         for build in builds:
-            if build.build_number > builder_to_highest_number.get(build.builder_name, 0):
-                builder_to_highest_number[build.builder_name] = build.build_number
-
-        def is_latest_build(build):
-            if build.builder_name not in builder_to_highest_number:
-                return False
-            return builder_to_highest_number[build.builder_name] == build.build_number
-
-        return [b for b in builds if is_latest_build(b)]
+            if build.builder_name not in builder_to_latest_build:
+                builder_to_latest_build[build.builder_name] = build
+            elif build.build_number > builder_to_latest_build[build.builder_name].build_number:
+                builder_to_latest_build[build.builder_name] = build
+        return sorted(builder_to_latest_build.values())
 
     def changed_files(self, issue_number):
         """Lists the files included in a CL, or None if this can't be determined.

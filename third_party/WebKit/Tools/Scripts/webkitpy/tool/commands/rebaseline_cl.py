@@ -56,15 +56,12 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if not issue_number:
             return
 
-        builds = self.rietveld.latest_try_job_results(issue_number, self._try_bots())
+        builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
         if options.trigger_jobs:
             if self.trigger_jobs_for_missing_builds(builds):
                 _log.info('Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.')
                 return
         if not builds:
-            # TODO(qyearsley): Also check that there are *finished* builds.
-            # The current behavior would still proceed if there are queued
-            # or started builds.
             _log.info('No builds to download baselines from.')
 
         if args:
@@ -115,23 +112,36 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         return GitCL(self._tool)
 
     def trigger_jobs_for_missing_builds(self, builds):
-        """Returns True if jobs were triggered; False otherwise."""
+        """Triggers try jobs for any builders that have no builds started.
+
+        Args:
+          builds: A list of Build objects; if the build number of a Build is None,
+              then that indicates that the job is pending.
+
+        Returns:
+            True if there are pending jobs to wait for, including jobs just started.
+        """
         builders_with_builds = {b.builder_name for b in builds}
         builders_without_builds = set(self._try_bots()) - builders_with_builds
-        if not builders_without_builds:
-            return False
+        builders_with_pending_builds = {b.builder_name for b in builds if b.build_number is None}
 
-        _log.info('Triggering try jobs for:')
-        for builder in sorted(builders_without_builds):
-            _log.info('  %s', builder)
+        if builders_with_pending_builds:
+            _log.info('There are existing pending builds for:')
+            for builder in sorted(builders_with_pending_builds):
+                _log.info('  %s', builder)
 
-        # If the builders may be under different masters, then they cannot
-        # all be started in one invocation of git cl try without providing
-        # master names. Doing separate invocations is slower, but always works
-        # even when there are builders under different master names.
-        for builder in sorted(builders_without_builds):
-            self.git_cl().run(['try', '-b', builder])
-        return True
+        if builders_without_builds:
+            _log.info('Triggering try jobs for:')
+            for builder in sorted(builders_without_builds):
+                _log.info('  %s', builder)
+            # If the builders may be under different masters, then they cannot
+            # all be started in one invocation of git cl try without providing
+            # master names. Doing separate invocations is slower, but always works
+            # even when there are builders under different master names.
+            for builder in sorted(builders_without_builds):
+                self.git_cl().run(['try', '-b', builder])
+
+        return bool(builders_with_pending_builds or builders_without_builds)
 
     def _test_prefix_list(self, issue_number, only_changed_tests):
         """Returns a collection of test, builder and file extensions to get new baselines for.
@@ -163,7 +173,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def _builds_to_tests(self, issue_number):
         """Fetches a list of try bots, and for each, fetches tests with new baselines."""
         _log.debug('Getting results for Rietveld issue %d.', issue_number)
-        builds = self.rietveld.latest_try_job_results(issue_number, self._try_bots())
+        builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
         if not builds:
             _log.debug('No try job results for builders in: %r.', self._try_bots())
         return {build: self._tests_to_rebaseline(build) for build in builds}

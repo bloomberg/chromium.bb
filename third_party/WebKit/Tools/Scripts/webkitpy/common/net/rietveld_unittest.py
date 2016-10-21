@@ -22,7 +22,7 @@ class RietveldTest(LoggingTestCase):
                 'try_job_results': [
                     {
                         'builder': 'foo-builder',
-                        'buildnumber': 10,
+                        'buildnumber': None,
                         'result': -1
                     },
                     {
@@ -56,8 +56,8 @@ class RietveldTest(LoggingTestCase):
     def test_latest_try_jobs(self):
         rietveld = Rietveld(self.mock_web())
         self.assertEqual(
-            rietveld.latest_try_job_results(11112222, ('bar-builder', 'other-builder')),
-            {Build('bar-builder', 60): {'builder': 'bar-builder', 'buildnumber': 60, 'result': 0}})
+            rietveld.latest_try_jobs(11112222, ('bar-builder', 'other-builder')),
+            [Build('bar-builder', 60)])
 
     def test_latest_try_jobs_http_error(self):
         def raise_error(_):
@@ -65,23 +65,23 @@ class RietveldTest(LoggingTestCase):
         web = self.mock_web()
         web.get_binary = raise_error
         rietveld = Rietveld(web)
-        self.assertEqual(rietveld.latest_try_job_results(11112222, ('bar-builder',)), {})
+        self.assertEqual(rietveld.latest_try_jobs(11112222, ('bar-builder',)), [])
         self.assertLog(['ERROR: Request failed to URL: https://codereview.chromium.org/api/11112222\n'])
 
     def test_latest_try_jobs_non_json_response(self):
         rietveld = Rietveld(self.mock_web())
-        self.assertEqual(rietveld.latest_try_job_results(11113333, ('bar-builder',)), {})
+        self.assertEqual(rietveld.latest_try_jobs(11113333, ('bar-builder',)), [])
         self.assertLog(['ERROR: Invalid JSON: my non-JSON contents\n'])
 
     def test_latest_try_jobs_with_patchset(self):
         rietveld = Rietveld(self.mock_web())
         self.assertEqual(
-            rietveld.latest_try_job_results(11112222, ('bar-builder', 'other-builder'), patchset_number=2),
-            {Build('bar-builder', 50): {'builder': 'bar-builder', 'buildnumber': 50, 'result': 0}})
+            rietveld.latest_try_jobs(11112222, ('bar-builder', 'other-builder'), patchset_number=2),
+            [Build('bar-builder', 50)])
 
     def test_latest_try_jobs_no_relevant_builders(self):
         rietveld = Rietveld(self.mock_web())
-        self.assertEqual(rietveld.latest_try_job_results(11112222, ('foo', 'bar')), {})
+        self.assertEqual(rietveld.latest_try_jobs(11112222, ('foo', 'bar')), [])
 
     def test_changed_files(self):
         rietveld = Rietveld(self.mock_web())
@@ -103,7 +103,7 @@ class RietveldTest(LoggingTestCase):
         rietveld = Rietveld(self.mock_web())
         self.assertEqual(
             rietveld._filter_latest_builds([Build('foo', 5), Build('foo', 3), Build('bar', 5)]),
-            [Build('foo', 5), Build('bar', 5)])
+            [Build('bar', 5), Build('foo', 5)])
 
     def test_filter_latest_jobs_higher_build_last(self):
         rietveld = Rietveld(self.mock_web())
@@ -114,5 +114,5 @@ class RietveldTest(LoggingTestCase):
     def test_filter_latest_jobs_no_build_number(self):
         rietveld = Rietveld(self.mock_web())
         self.assertEqual(
-            rietveld._filter_latest_builds([Build('foo', 3), Build('bar')]),
-            [Build('foo', 3)])
+            rietveld._filter_latest_builds([Build('foo', 3), Build('bar'), Build('bar')]),
+            [Build('bar'), Build('foo', 3)])

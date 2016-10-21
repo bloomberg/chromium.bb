@@ -44,7 +44,7 @@ class W3CExpectationsLineAdder(object):
             return 1
 
         rietveld = Rietveld(self.host.web)
-        builds = rietveld.latest_try_job_results(issue_number, self.get_try_bots())
+        builds = rietveld.latest_try_jobs(issue_number, self.get_try_bots())
         _log.debug('Latest try jobs: %r', builds)
 
         if not builds:

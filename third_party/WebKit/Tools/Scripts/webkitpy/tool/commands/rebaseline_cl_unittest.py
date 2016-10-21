@@ -31,10 +31,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                     {
                         'builder': 'MOCK Try Win',
                         'buildnumber': 5000,
+                        'result': 0,
                     },
                     {
-                        'builder': 'MOCK Mac Try',
+                        'builder': 'MOCK Try Mac',
                         'buildnumber': 4000,
+                        'result': 0,
                     },
                 ],
                 'files': {
@@ -107,7 +109,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                         'option to download baselines for another existing CL.\n'])
 
     def test_execute_with_issue_number_from_branch(self):
-        git_cl = GitCL(MockExecutive2())
+        git_cl = GitCL(self.tool)
         git_cl.get_issue_number = lambda: '11112222'
         self.command.git_cl = lambda: git_cl
         self.command.execute(self.command_options(), [], self.tool)
@@ -176,3 +178,39 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                   '--builder', 'MOCK Try Win', '--test', 'fast/dom/prototype-taco.html', '--build-number', '5000']],
                 [['python', 'echo', 'optimize-baselines', '--suffixes', 'txt', 'fast/dom/prototype-taco.html']]
             ])
+
+    def test_trigger_jobs_for_missing_builds_empty_list(self):
+        # Passing in no builds implies that no try jobs were started.
+        self.assertTrue(self.command.trigger_jobs_for_missing_builds([]))
+        self.assertEqual(
+            self.tool.executive.calls,
+            [['git', 'cl', 'try', '-b', 'MOCK Try Linux'], ['git', 'cl', 'try', '-b', 'MOCK Try Win']])
+        self.assertLog([
+            'INFO: Triggering try jobs for:\n',
+            'INFO:   MOCK Try Linux\n',
+            'INFO:   MOCK Try Win\n',
+        ])
+
+    def test_trigger_jobs_for_missing_builds_started_and_successful(self):
+        # A build number of None implies that a job has been started but not finished yet.
+        self.assertTrue(self.command.trigger_jobs_for_missing_builds([
+            Build('MOCK Try Linux', None),
+            Build('MOCK Try Win', 123),
+        ]))
+        self.assertEqual(self.tool.executive.calls, [])
+        self.assertLog([
+            'INFO: There are existing pending builds for:\n',
+            'INFO:   MOCK Try Linux\n',
+        ])
+
+    def test_trigger_jobs_for_missing_builds_one_started(self):
+        self.assertTrue(self.command.trigger_jobs_for_missing_builds([
+            Build('MOCK Try Linux', None),
+        ]))
+        self.assertEqual(self.tool.executive.calls, [['git', 'cl', 'try', '-b', 'MOCK Try Win']])
+        self.assertLog([
+            'INFO: There are existing pending builds for:\n',
+            'INFO:   MOCK Try Linux\n',
+            'INFO: Triggering try jobs for:\n',
+            'INFO:   MOCK Try Win\n',
+        ])
