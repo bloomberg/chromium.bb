@@ -53,7 +53,7 @@
 static sk_sp<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(
     int fontconfigInterfaceId,
     int ttcIndex) {
-  SkAutoTUnref<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
+  sk_sp<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
   SkFontConfigInterface::FontIdentity fontIdentity;
   fontIdentity.fID = fontconfigInterfaceId;
   fontIdentity.fTTCIndex = ttcIndex;
