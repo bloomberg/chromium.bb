@@ -39,12 +39,12 @@ std::string ValueToString(const base::Value& value);
 
 // Returns a v8::Value result from compiling and running |source|, or an empty
 // local on failure.
-v8::Local<v8::Value> V8ValueFromScriptSource(v8::Isolate* isolate,
+v8::Local<v8::Value> V8ValueFromScriptSource(v8::Local<v8::Context> context,
                                              base::StringPiece source);
 
 // Returns a v8::Function parsed from the given |source|. EXPECTs the conversion
 // to succeed.
-v8::Local<v8::Function> FunctionFromString(v8::Isolate* isolate,
+v8::Local<v8::Function> FunctionFromString(v8::Local<v8::Context> context,
                                            base::StringPiece source);
 
 // Converts the given |value| to a base::Value and returns the result.

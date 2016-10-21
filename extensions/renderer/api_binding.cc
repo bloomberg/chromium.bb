@@ -9,9 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
 #include "extensions/common/extension_api.h"
-#include "extensions/renderer/argument_spec.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/arguments.h"
 #include "gin/per_context_data.h"
@@ -80,27 +78,72 @@ std::unique_ptr<base::Value> ParseArgument(
   return result;
 }
 
+// Parses the callback from |arguments| according to |callback_spec|. Since the
+// callback isn't converted into a base::Value, this is different from
+// ParseArgument() above.
+bool ParseCallback(gin::Arguments* arguments,
+                   const ArgumentSpec& callback_spec,
+                   std::string* error,
+                   v8::Local<v8::Function>* callback_out) {
+  v8::Local<v8::Value> value = arguments->PeekNext();
+  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
+    if (!callback_spec.optional()) {
+      *error = "Missing required argument: " + callback_spec.name();
+      return false;
+    }
+    arguments->Skip();
+    return true;
+  }
+
+  if (!value->IsFunction()) {
+    *error = "Argument is wrong type: " + callback_spec.name();
+    return false;
+  }
+
+  *callback_out = value.As<v8::Function>();
+  arguments->Skip();
+  return true;
+}
+
 // Parses |args| against |signature| and populates error with any errors.
 std::unique_ptr<base::ListValue> ParseArguments(
     const APISignature* signature,
     gin::Arguments* arguments,
     const ArgumentSpec::RefMap& type_refs,
+    v8::Local<v8::Function>* callback,
     std::string* error) {
   auto results = base::MakeUnique<base::ListValue>();
 
+  // TODO(devlin): This is how extension APIs have always determined if a
+  // function has a callback, but it seems a little silly. In the long run (once
+  // signatures are generated), it probably makes sense to indicate this
+  // differently.
+  bool signature_has_callback =
+      !signature->empty() &&
+      signature->back()->type() == ArgumentType::FUNCTION;
+
   v8::Local<v8::Context> context = arguments->isolate()->GetCurrentContext();
 
-  for (const auto& argument_spec : *signature) {
+  size_t end_size =
+      signature_has_callback ? signature->size() - 1 : signature->size();
+  for (size_t i = 0; i < end_size; ++i) {
     std::unique_ptr<base::Value> parsed =
-        ParseArgument(*argument_spec, context, arguments, type_refs, error);
+        ParseArgument(*signature->at(i), context, arguments, type_refs, error);
     if (!parsed)
       return nullptr;
     results->Append(std::move(parsed));
   }
 
+  v8::Local<v8::Function> callback_value;
+  if (signature_has_callback &&
+      !ParseCallback(arguments, *signature->back(), error, &callback_value)) {
+    return nullptr;
+  }
+
   if (!arguments->PeekNext().IsEmpty())
     return nullptr;  // Extra arguments aren't allowed.
 
+  *callback = callback_value;
   return results;
 }
 
@@ -186,12 +229,14 @@ void APIBinding::HandleCall(const std::string& name,
                             const APISignature* signature,
                             gin::Arguments* arguments) {
   std::string error;
-  v8::HandleScope handle_scope(arguments->isolate());
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
   std::unique_ptr<base::ListValue> parsed_arguments;
+  v8::Local<v8::Function> callback;
   {
-    v8::TryCatch try_catch(arguments->isolate());
-    parsed_arguments = ParseArguments(signature, arguments,
-                                      *type_refs_, &error);
+    v8::TryCatch try_catch(isolate);
+    parsed_arguments =
+        ParseArguments(signature, arguments, *type_refs_, &callback, &error);
     if (try_catch.HasCaught()) {
       DCHECK(!parsed_arguments);
       try_catch.ReThrow();
@@ -202,7 +247,11 @@ void APIBinding::HandleCall(const std::string& name,
     arguments->ThrowTypeError("Invalid invocation");
     return;
   }
-  method_callback_.Run(name, std::move(parsed_arguments));
+
+  // Since this is called synchronously from the JS entry point,
+  // GetCurrentContext() should always be correct.
+  method_callback_.Run(name, std::move(parsed_arguments), isolate,
+                       isolate->GetCurrentContext(), callback);
 }
 
 }  // namespace extensions

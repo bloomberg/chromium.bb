@@ -7,8 +7,10 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_test_util.h"
+#include "extensions/renderer/api_request_handler.h"
 #include "gin/converter.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
@@ -61,17 +63,63 @@ const char kFunctions[] =
     "      'prop2': {'type': 'string', 'optional': true}"
     "    }"
     "  }]"
+    "}, {"
+    "  'name': 'noArgs',"
+    "  'parameters': []"
+    "}, {"
+    "  'name': 'intAndCallback',"
+    "  'parameters': [{"
+    "    'name': 'int',"
+    "    'type': 'integer'"
+    "  }, {"
+    "    'name': 'callback',"
+    "    'type': 'function'"
+    "  }]"
+    "}, {"
+    "  'name': 'optionalIntAndCallback',"
+    "  'parameters': [{"
+    "    'name': 'int',"
+    "    'type': 'integer',"
+    "    'optional': true"
+    "  }, {"
+    "    'name': 'callback',"
+    "    'type': 'function'"
+    "  }]"
+    "}, {"
+    "  'name': 'optionalCallback',"
+    "  'parameters': [{"
+    "    'name': 'callback',"
+    "    'type': 'function',"
+    "    'optional': true"
+    "  }]"
     "}]";
 
 const char kError[] = "Uncaught TypeError: Invalid invocation";
+
+void RunJSFunction(v8::Local<v8::Function> function,
+                   v8::Local<v8::Context> context,
+                   int argc,
+                   v8::Local<v8::Value> argv[]) {
+  v8::MaybeLocal<v8::Value> result =
+      function->Call(context, context->Global(), argc, argv);
+  EXPECT_FALSE(result.IsEmpty());
+}
 
 }  // namespace
 
 class APIBindingTest : public gin::V8Test {
  public:
   void OnFunctionCall(const std::string& name,
-                      std::unique_ptr<base::ListValue> arguments) {
+                      std::unique_ptr<base::ListValue> arguments,
+                      v8::Isolate* isolate,
+                      v8::Local<v8::Context> context,
+                      v8::Local<v8::Function> callback) {
+    last_request_id_.clear();
     arguments_ = std::move(arguments);
+    if (!callback.IsEmpty()) {
+      last_request_id_ =
+          request_handler_->AddPendingRequest(isolate, callback, context);
+    }
   }
 
  protected:
@@ -82,9 +130,12 @@ class APIBindingTest : public gin::V8Test {
     holder_ = base::MakeUnique<gin::ContextHolder>(instance_->isolate());
     holder_->SetContext(
         v8::Local<v8::Context>::New(instance_->isolate(), context_));
+    request_handler_ = base::MakeUnique<APIRequestHandler>(
+        base::Bind(&RunJSFunction));
   }
 
   void TearDown() override {
+    request_handler_.reset();
     holder_.reset();
     gin::V8Test::TearDown();
   }
@@ -103,6 +154,9 @@ class APIBindingTest : public gin::V8Test {
     RunTest(object, script_source, false, std::string(), expected_error);
   }
 
+  const std::string& last_request_id() const { return last_request_id_; }
+  APIRequestHandler* request_handler() { return request_handler_.get(); }
+
  private:
   void RunTest(v8::Local<v8::Object> object,
                const std::string& script_source,
@@ -112,6 +166,8 @@ class APIBindingTest : public gin::V8Test {
 
   std::unique_ptr<base::ListValue> arguments_;
   std::unique_ptr<gin::ContextHolder> holder_;
+  std::unique_ptr<APIRequestHandler> request_handler_;
+  std::string last_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingTest);
 };
@@ -126,8 +182,10 @@ void APIBindingTest::RunTest(v8::Local<v8::Object> object,
       base::StringPrintf("(function(obj) { %s })", script_source.c_str());
   v8::Isolate* isolate = instance_->isolate();
 
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate, context_);
   v8::Local<v8::Function> func =
-      FunctionFromString(isolate, wrapped_script_source);
+      FunctionFromString(context, wrapped_script_source);
   ASSERT_FALSE(func.IsEmpty());
 
   v8::TryCatch try_catch(isolate);
@@ -196,6 +254,27 @@ TEST_F(APIBindingTest, Test) {
       binding_object,
       "obj.oneObject({ get prop1() { throw new Error('Badness'); } });",
       "Uncaught Error: Badness");
+
+  ExpectPass(binding_object, "obj.noArgs()", "[]");
+  ExpectFailure(binding_object, "obj.noArgs(0)", kError);
+  ExpectFailure(binding_object, "obj.noArgs('')", kError);
+  ExpectFailure(binding_object, "obj.noArgs(null)", kError);
+  ExpectFailure(binding_object, "obj.noArgs(undefined)", kError);
+
+  ExpectPass(binding_object, "obj.intAndCallback(1, function() {})", "[1]");
+  ExpectFailure(binding_object, "obj.intAndCallback(function() {})", kError);
+  ExpectFailure(binding_object, "obj.intAndCallback(1)", kError);
+
+  ExpectPass(binding_object, "obj.optionalIntAndCallback(1, function() {})",
+             "[1]");
+  ExpectPass(binding_object, "obj.optionalIntAndCallback(function() {})",
+             "[null]");
+  ExpectFailure(binding_object, "obj.optionalIntAndCallback(1)", kError);
+
+  ExpectPass(binding_object, "obj.optionalCallback(function() {})", "[]");
+  ExpectPass(binding_object, "obj.optionalCallback()", "[]");
+  ExpectPass(binding_object, "obj.optionalCallback(undefined)", "[]");
+  ExpectFailure(binding_object, "obj.optionalCallback(0)", kError);
 }
 
 TEST_F(APIBindingTest, TypeRefsTest) {
@@ -259,6 +338,62 @@ TEST_F(APIBindingTest, TypeRefsTest) {
   ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']");
   ExpectPass(binding_object, "obj.takesRefEnum('beta')", "['beta']");
   ExpectFailure(binding_object, "obj.takesRefEnum('gamma')", kError);
+}
+
+// TODO(devlin): Once we have an object that encompasses all these pieces (the
+// APIBinding, ArgumentSpec::RefMap, and APIRequestHandler), we should move this
+// test.
+TEST_F(APIBindingTest, Callbacks) {
+  const char kTestCall[] =
+      "obj.functionWithCallback('foo', function() {\n"
+      "  this.callbackArguments = Array.from(arguments);\n"
+      "});";
+
+  const char kFunctionSpec[] =
+      "[{"
+      "  'name': 'functionWithCallback',"
+      "  'parameters': [{"
+      "    'name': 'str',"
+      "    'type': 'string'"
+      "  }, {"
+      "    'name': 'callback',"
+      "    'type': 'function'"
+      "  }]"
+      "}]";
+
+  std::unique_ptr<base::ListValue> functions =
+      ListValueFromString(kFunctionSpec);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+  APIBinding binding(
+      "test", *functions, base::ListValue(),
+      base::Bind(&APIBindingTest::OnFunctionCall, base::Unretained(this)),
+      &refs);
+
+  v8::Isolate* isolate = instance_->isolate();
+
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate, context_);
+
+  v8::Local<v8::Object> binding_object =
+      binding.CreateInstance(context, isolate);
+
+  ExpectPass(binding_object, kTestCall, "['foo']");
+  ASSERT_FALSE(last_request_id().empty());
+  const char kResponseArgsJson[] = "['response',1,{'key':42}]";
+  std::unique_ptr<base::ListValue> expected_args =
+      ListValueFromString(kResponseArgsJson);
+  request_handler()->CompleteRequest(last_request_id(), *expected_args);
+
+  v8::Local<v8::Value> res;
+  ASSERT_TRUE(context->Global()
+                  ->Get(context, gin::StringToV8(isolate, "callbackArguments"))
+                  .ToLocal(&res));
+
+  std::unique_ptr<base::Value> out_val = V8ToBaseValue(res, context);
+  ASSERT_TRUE(out_val);
+  EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson), ValueToString(*out_val));
 }
 
 }  // namespace extensions

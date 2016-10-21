@@ -37,10 +37,16 @@ class APIBinding {
  public:
   // The callback to called when an API method is invoked with matching
   // arguments. This passes the name of the api method and the arguments it
-  // was passed.
+  // was passed, as well as the current isolate, context, and callback value.
+  // Note that the callback can be empty if none was passed.
   using APIMethodCallback =
-      base::Callback<void(const std::string&,
-                          std::unique_ptr<base::ListValue>)>;
+      base::Callback<void(const std::string& name,
+                          std::unique_ptr<base::ListValue> arguments,
+                          v8::Isolate*,
+                          v8::Local<v8::Context>,
+                          v8::Local<v8::Function>)>;
+
+  // The callback type for handling an API call.
   using HandlerCallback = base::Callback<void(gin::Arguments*)>;
 
   // The ArgumentSpec::RefMap is required to outlive this object.

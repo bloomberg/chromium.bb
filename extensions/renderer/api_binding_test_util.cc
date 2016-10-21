@@ -42,20 +42,21 @@ std::string ValueToString(const base::Value& value) {
   return json;
 }
 
-v8::Local<v8::Value> V8ValueFromScriptSource(v8::Isolate* isolate,
+v8::Local<v8::Value> V8ValueFromScriptSource(v8::Local<v8::Context> context,
                                              base::StringPiece source) {
-  v8::Local<v8::Script> script =
-      v8::Script::Compile(gin::StringToV8(isolate, source));
-  if (script.IsEmpty())
+  v8::MaybeLocal<v8::Script> maybe_script = v8::Script::Compile(
+      context, gin::StringToV8(context->GetIsolate(), source));
+  v8::Local<v8::Script> script;
+  if (!maybe_script.ToLocal(&script))
     return v8::Local<v8::Value>();
   return script->Run();
 }
 
-v8::Local<v8::Function> FunctionFromString(v8::Isolate* isolate,
+v8::Local<v8::Function> FunctionFromString(v8::Local<v8::Context> context,
                                            base::StringPiece source) {
-  v8::Local<v8::Value> value = V8ValueFromScriptSource(isolate, source);
+  v8::Local<v8::Value> value = V8ValueFromScriptSource(context, source);
   v8::Local<v8::Function> function;
-  EXPECT_TRUE(gin::ConvertFromV8(isolate, value, &function));
+  EXPECT_TRUE(gin::ConvertFromV8(context->GetIsolate(), value, &function));
   return function;
 }
 
