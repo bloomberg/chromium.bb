@@ -2833,7 +2833,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyFontVariantNumeric:
       return valueForFontVariantNumeric(style);
     case CSSPropertyZIndex:
-      if (style.hasAutoZIndex())
+      if (style.hasAutoZIndex() || !style.isStackingContext())
         return CSSIdentifierValue::create(CSSValueAuto);
       return CSSPrimitiveValue::create(style.zIndex(),
                                        CSSPrimitiveValue::UnitType::Integer);
