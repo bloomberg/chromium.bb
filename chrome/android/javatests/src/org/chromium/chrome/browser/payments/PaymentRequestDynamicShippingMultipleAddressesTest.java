@@ -26,10 +26,10 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
                 "Bart Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
                 "90210", "", "US", "", "bart@simpson.com", ""),
 
-        // Incomplete profile.
+        // Incomplete profile (missing street address).
         new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Homer Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "US", "", "homer@simpson.com", ""),
+                "Homer Simpson", "Acme Inc.", "", "California", "Los Angeles", "",
+                "90210", "", "US", "555 123-4567", "homer@simpson.com", ""),
 
         // Complete profile.
         new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
@@ -44,7 +44,12 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         // Incomplete profile.
         new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
                 "Marge Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "US", "", "marge@simpson.com", "")
+                "90210", "", "US", "", "marge@simpson.com", ""),
+
+        // Incomplete profile.
+        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                "Professor Frink", "Acme Inc.", "123 Main", "California", "", "",
+                "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
     };
 
     private AutofillProfile[] mProfilesToAdd;
@@ -82,11 +87,11 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
     @Feature({"Payments"})
     public void testShippingAddressSuggestionOrdering()
             throws InterruptedException, ExecutionException, TimeoutException {
-        // Create a bunch of profiles, some complete, some incomplete.  Values are set so that the
-        // profiles are ordered by frecency.
+        // Create two complete and two incomplete profiles. Values are set so that the profiles are
+        // ordered by frecency.
         mProfilesToAdd = new AutofillProfile[] {
-                AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[1], AUTOFILL_PROFILES[2],
-                AUTOFILL_PROFILES[3], AUTOFILL_PROFILES[4]};
+                AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[2], AUTOFILL_PROFILES[3],
+                AUTOFILL_PROFILES[4]};
         mCountsToSet = new int[] {20, 15, 10, 5, 1};
         mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
 
@@ -96,7 +101,56 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
         assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
         assertTrue(getShippingAddressSuggestionLabel(2).contains("Bart Simpson"));
-        assertTrue(getShippingAddressSuggestionLabel(3).contains("Homer Simpson"));
+        assertTrue(getShippingAddressSuggestionLabel(3).contains("Marge Simpson"));
+    }
+
+    /**
+     * Make sure that a maximum of four profiles are shown to the user.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testShippingAddressSuggestionLimit()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Create five profiles that can be suggested to the user.
+        mProfilesToAdd = new AutofillProfile[] {
+                AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[2], AUTOFILL_PROFILES[3],
+                AUTOFILL_PROFILES[4], AUTOFILL_PROFILES[5]};
+        mCountsToSet = new int[] {20, 15, 10, 5, 2, 1};
+        mDatesToSet = new int[] {5000, 5000, 5000, 5000, 2, 1};
+
+        triggerUIAndWait(mReadyForInput);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        // Only four profiles should be suggested to the user.
+        assertEquals(4, getNumberOfShippingAddressSuggestions());
+        assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
+        assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
+        assertTrue(getShippingAddressSuggestionLabel(2).contains("Bart Simpson"));
+        assertTrue(getShippingAddressSuggestionLabel(3).contains("Marge Simpson"));
+    }
+
+    /**
+     * Make sure that only profiles with a street address are suggested to the user.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testShippingAddressSuggestion_OnlyIncludeProfilesWithStreetAddress()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Create two complete profiles and two incomplete profiles, one of which has no street
+        // address.
+        mProfilesToAdd = new AutofillProfile[] {
+                AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[1], AUTOFILL_PROFILES[2],
+                AUTOFILL_PROFILES[3]};
+        mCountsToSet = new int[] {15, 10, 5, 1};
+        mDatesToSet = new int[] {5000, 5000, 5000, 1};
+
+        triggerUIAndWait(mReadyForInput);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        // Only 3 profiles should be suggested, the two complete ones and the incomplete one that
+        // has a street address.
+        assertEquals(3, getNumberOfShippingAddressSuggestions());
+        assertTrue(getShippingAddressSuggestionLabel(0).contains("Lisa Simpson"));
+        assertTrue(getShippingAddressSuggestionLabel(1).contains("Maggie Simpson"));
+        assertTrue(getShippingAddressSuggestionLabel(2).contains("Bart Simpson"));
     }
 
     /**

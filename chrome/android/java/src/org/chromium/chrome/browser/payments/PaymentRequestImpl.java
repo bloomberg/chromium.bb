@@ -288,8 +288,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 AutofillProfile profile = profiles.get(i);
                 mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
 
-                boolean isComplete = mAddressEditor.isProfileComplete(profile);
-                addresses.add(new AutofillAddress(profile, isComplete));
+                // Only suggest addresses that have a street address.
+                if (!TextUtils.isEmpty(profile.getStreetAddress())) {
+                    boolean isComplete = mAddressEditor.isProfileComplete(profile);
+                    addresses.add(new AutofillAddress(profile, isComplete));
+                }
             }
 
             // Suggest complete addresses first.
