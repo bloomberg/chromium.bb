@@ -916,6 +916,8 @@ crbug.com/370604 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 
+crbug.com/658311 virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Failure Pass ]
+
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Pass Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Pass Failure ]
