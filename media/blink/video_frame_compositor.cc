@@ -193,8 +193,10 @@ bool VideoFrameCompositor::ProcessNewFrame(
     bool repaint_duplicate_frame) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
 
-  if (!repaint_duplicate_frame && frame == current_frame_)
+  if (frame && current_frame_ && !repaint_duplicate_frame &&
+      frame->unique_id() == current_frame_->unique_id()) {
     return false;
+  }
 
   // Set the flag indicating that the current frame is unrendered, if we get a
   // subsequent PutCurrentFrame() call it will mark it as rendered.
