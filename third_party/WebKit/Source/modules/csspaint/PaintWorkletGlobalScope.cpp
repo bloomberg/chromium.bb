@@ -47,6 +47,8 @@ PaintWorkletGlobalScope::PaintWorkletGlobalScope(
 PaintWorkletGlobalScope::~PaintWorkletGlobalScope() {}
 
 void PaintWorkletGlobalScope::dispose() {
+  MainThreadDebugger::instance()->contextWillBeDestroyed(
+      scriptController()->getScriptState());
   // Explicitly clear the paint defininitions to break a reference cycle
   // between them and this global scope.
   m_paintDefinitions.clear();
