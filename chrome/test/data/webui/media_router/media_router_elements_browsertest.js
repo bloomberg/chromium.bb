@@ -116,7 +116,7 @@ TEST_F('MediaRouterElementsBrowserTest',
 });
 
 TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerFilter',
+    'DISABLED_MediaRouterContainerFilter',
     function() {
   media_router_container_filter.registerTests();
   mocha.run();
