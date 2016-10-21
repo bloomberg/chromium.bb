@@ -5,7 +5,7 @@
 #ifndef PerformanceObserver_h
 #define PerformanceObserver_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
@@ -42,6 +42,7 @@ class CORE_EXPORT PerformanceObserver final
   PerformanceEntryTypeMask filterOptions() const { return m_filterOptions; }
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   PerformanceObserver(ScriptState*,
@@ -51,7 +52,7 @@ class CORE_EXPORT PerformanceObserver final
   bool shouldBeSuspended() const;
 
   RefPtr<ScriptState> m_scriptState;
-  Member<PerformanceObserverCallback> m_callback;
+  TraceWrapperMember<PerformanceObserverCallback> m_callback;
   WeakMember<PerformanceBase> m_performance;
   PerformanceEntryVector m_performanceEntries;
   PerformanceEntryTypeMask m_filterOptions;

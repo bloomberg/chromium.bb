@@ -28,7 +28,7 @@ PerformanceObserver::PerformanceObserver(ScriptState* scriptState,
                                          PerformanceBase* performance,
                                          PerformanceObserverCallback* callback)
     : m_scriptState(scriptState),
-      m_callback(callback),
+      m_callback(this, callback),
       m_performance(performance),
       m_filterOptions(PerformanceEntry::Invalid),
       m_isRegistered(false) {}
@@ -97,6 +97,10 @@ DEFINE_TRACE(PerformanceObserver) {
   visitor->trace(m_callback);
   visitor->trace(m_performance);
   visitor->trace(m_performanceEntries);
+}
+
+DEFINE_TRACE_WRAPPERS(PerformanceObserver) {
+  visitor->traceWrappers(m_callback);
 }
 
 }  // namespace blink
