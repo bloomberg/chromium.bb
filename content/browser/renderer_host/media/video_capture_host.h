@@ -15,9 +15,6 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/video_capture.mojom.h"
-#include "content/public/browser/browser_associated_interface.h"
-#include "content/public/browser/browser_message_filter.h"
-#include "ipc/ipc_message.h"
 
 namespace content {
 class MediaStreamManager;
@@ -27,28 +24,19 @@ class MediaStreamManager;
 // stream) and a VideoCaptureController in the browser process (which provides
 // the stream from a video device). Every remote client is identified via a
 // unique |device_id|, and is paired with a single VideoCaptureController.
-//
-// This class is owned by RenderProcessHostImpl, and instantiated on UI thread,
-// but all other operations and method calls happen on IO thread.
 class CONTENT_EXPORT VideoCaptureHost
-    : public BrowserMessageFilter,
-      public VideoCaptureControllerEventHandler,
-      public BrowserAssociatedInterface<mojom::VideoCaptureHost>,
+    : public VideoCaptureControllerEventHandler,
       public mojom::VideoCaptureHost {
  public:
   explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
 
- private:
-  friend class BrowserThread;
-  friend class base::DeleteHelper<VideoCaptureHost>;
-  friend class VideoCaptureHostTest;
+  static void Create(MediaStreamManager* media_stream_manager,
+                     mojom::VideoCaptureHostRequest request);
 
   ~VideoCaptureHost() override;
 
-  // BrowserMessageFilter implementation.
-  void OnChannelClosing() override;
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+ private:
+  friend class VideoCaptureHostTest;
 
   // VideoCaptureControllerEventHandler implementation.
   void OnError(VideoCaptureControllerID id) override;
@@ -112,6 +100,8 @@ class CONTENT_EXPORT VideoCaptureHost
   // VideoCaptureObservers map, each one is used and should be valid between
   // Start() and the corresponding Stop().
   std::map<int32_t, mojom::VideoCaptureObserverPtr> device_id_to_observer_map_;
+
+  base::WeakPtrFactory<VideoCaptureHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHost);
 };

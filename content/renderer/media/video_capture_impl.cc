@@ -17,13 +17,14 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/child_process.h"
-#include "content/common/media/video_capture_messages.h"
+#include "content/public/child/child_thread.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 
@@ -48,37 +49,46 @@ class VideoCaptureImpl::ClientBuffer
   DISALLOW_COPY_AND_ASSIGN(ClientBuffer);
 };
 
-VideoCaptureImpl::ClientInfo::ClientInfo() {}
-VideoCaptureImpl::ClientInfo::ClientInfo(const ClientInfo& other) = default;
-VideoCaptureImpl::ClientInfo::~ClientInfo() {}
+// Information about a video capture client of ours.
+struct VideoCaptureImpl::ClientInfo {
+  ClientInfo() = default;
 
-VideoCaptureImpl::VideoCaptureImpl(
-    media::VideoCaptureSessionId session_id,
-    VideoCaptureMessageFilter* filter,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : message_filter_(filter),
-      device_id_(0),
+  ClientInfo(const ClientInfo& other) = default;
+
+  ~ClientInfo() = default;
+
+  media::VideoCaptureParams params;
+
+  VideoCaptureStateUpdateCB state_update_cb;
+
+  VideoCaptureDeliverFrameCB deliver_frame_cb;
+};
+
+VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
+    : device_id_(session_id),
       session_id_(session_id),
       video_capture_host_for_testing_(nullptr),
       observer_binding_(this),
       state_(VIDEO_CAPTURE_STATE_STOPPED),
-      io_task_runner_(std::move(io_task_runner)),
       weak_factory_(this) {
-  DCHECK(filter);
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&VideoCaptureMessageFilter::AddDelegate,
-                                       message_filter_, this));
+  io_thread_checker_.DetachFromThread();
+
+  if (ChildThread::Get()) {  // This will be null in unit tests.
+    mojom::VideoCaptureHostPtr temp_video_capture_host;
+    ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&temp_video_capture_host));
+    video_capture_host_info_ = temp_video_capture_host.PassInterface();
+  }
 }
 
 VideoCaptureImpl::~VideoCaptureImpl() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (state_ == VIDEO_CAPTURE_STATE_STARTED && GetVideoCaptureHost())
     GetVideoCaptureHost()->Stop(device_id_);
-  message_filter_->RemoveDelegate(this);
 }
 
 void VideoCaptureImpl::SuspendCapture(bool suspend) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (suspend)
     GetVideoCaptureHost()->Pause(device_id_);
   else
@@ -90,7 +100,8 @@ void VideoCaptureImpl::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureStateUpdateCB& state_update_cb,
     const VideoCaptureDeliverFrameCB& deliver_frame_cb) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DVLOG(1) << __func__ << " |device_id_| = " << device_id_;
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   ClientInfo client_info;
   client_info.params = params;
   client_info.state_update_cb = state_update_cb;
@@ -98,12 +109,9 @@ void VideoCaptureImpl::StartCapture(
 
   if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
     state_update_cb.Run(VIDEO_CAPTURE_STATE_ERROR);
-  } else if (clients_pending_on_filter_.count(client_id) ||
-             clients_pending_on_restart_.count(client_id) ||
+  } else if (clients_pending_on_restart_.count(client_id) ||
              clients_.count(client_id)) {
     DLOG(FATAL) << __func__ << " This client has already started.";
-  } else if (!device_id_) {
-    clients_pending_on_filter_[client_id] = client_info;
   } else {
     // Note: |state_| might not be started at this point. But we tell
     // client that we have started.
@@ -135,14 +143,12 @@ void VideoCaptureImpl::StartCapture(
 }
 
 void VideoCaptureImpl::StopCapture(int client_id) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   // A client ID can be in only one client list.
   // If this ID is in any client list, we can just remove it from
   // that client list and don't have to run the other following RemoveClient().
-  if (!RemoveClient(client_id, &clients_pending_on_filter_)) {
-    if (!RemoveClient(client_id, &clients_pending_on_restart_)) {
-      RemoveClient(client_id, &clients_);
-    }
+  if (!RemoveClient(client_id, &clients_pending_on_restart_)) {
+    RemoveClient(client_id, &clients_);
   }
 
   if (!clients_.empty())
@@ -154,13 +160,13 @@ void VideoCaptureImpl::StopCapture(int client_id) {
 }
 
 void VideoCaptureImpl::RequestRefreshFrame() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->RequestRefreshFrame(device_id_);
 }
 
 void VideoCaptureImpl::GetDeviceSupportedFormats(
     const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->GetDeviceSupportedFormats(
       device_id_, session_id_,
       base::Bind(&VideoCaptureImpl::OnDeviceSupportedFormats,
@@ -169,31 +175,16 @@ void VideoCaptureImpl::GetDeviceSupportedFormats(
 
 void VideoCaptureImpl::GetDeviceFormatsInUse(
     const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->GetDeviceFormatsInUse(
       device_id_, session_id_,
       base::Bind(&VideoCaptureImpl::OnDeviceFormatsInUse,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void VideoCaptureImpl::OnDelegateAdded(int32_t device_id) {
-  DVLOG(1) << __func__ << " " << device_id;
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-
-  device_id_ = device_id;
-  ClientInfoMap::iterator it = clients_pending_on_filter_.begin();
-  while (it != clients_pending_on_filter_.end()) {
-    const int client_id = it->first;
-    const ClientInfo client_info = it->second;
-    clients_pending_on_filter_.erase(it++);
-    StartCapture(client_id, client_info.params, client_info.state_update_cb,
-                 client_info.deliver_frame_cb);
-  }
-}
-
 void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
   DVLOG(1) << __func__ << " state: " << state;
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
 
   switch (state) {
     case mojom::VideoCaptureState::STARTED:
@@ -234,7 +225,7 @@ void VideoCaptureImpl::OnStateChanged(mojom::VideoCaptureState state) {
 void VideoCaptureImpl::OnBufferCreated(int32_t buffer_id,
                                        mojo::ScopedSharedBufferHandle handle) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(handle.is_valid());
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED)
@@ -266,7 +257,7 @@ void VideoCaptureImpl::OnBufferCreated(int32_t buffer_id,
 void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
                                      mojom::VideoFrameInfoPtr info) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(media::PIXEL_FORMAT_I420, info->pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, info->storage_type);
 
@@ -336,7 +327,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
 }
 
 void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
 
   const auto& cb_iter = client_buffers_.find(buffer_id);
   if (cb_iter != client_buffers_.end()) {
@@ -351,13 +342,13 @@ void VideoCaptureImpl::OnClientBufferFinished(
     const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
     const gpu::SyncToken& release_sync_token,
     double consumer_resource_utilization) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   GetVideoCaptureHost()->ReleaseBuffer(
       device_id_, buffer_id, release_sync_token, consumer_resource_utilization);
 }
 
 void VideoCaptureImpl::StopDevice() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (state_ != VIDEO_CAPTURE_STATE_STARTED)
     return;
   state_ = VIDEO_CAPTURE_STATE_STOPPING;
@@ -366,7 +357,7 @@ void VideoCaptureImpl::StopDevice() {
 }
 
 void VideoCaptureImpl::RestartCapture() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, VIDEO_CAPTURE_STATE_STOPPED);
 
   int width = 0;
@@ -386,8 +377,7 @@ void VideoCaptureImpl::RestartCapture() {
 }
 
 void VideoCaptureImpl::StartCaptureInternal() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(device_id_);
+  DCHECK(io_thread_checker_.CalledOnValidThread());
 
   GetVideoCaptureHost()->Start(device_id_, session_id_, params_,
                                observer_binding_.CreateInterfacePtrAndBind());
@@ -397,19 +387,19 @@ void VideoCaptureImpl::StartCaptureInternal() {
 void VideoCaptureImpl::OnDeviceSupportedFormats(
     const VideoCaptureDeviceFormatsCB& callback,
     const media::VideoCaptureFormats& supported_formats) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   callback.Run(supported_formats);
 }
 
 void VideoCaptureImpl::OnDeviceFormatsInUse(
     const VideoCaptureDeviceFormatsCB& callback,
     const media::VideoCaptureFormats& formats_in_use) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   callback.Run(formats_in_use);
 }
 
 bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
 
   const ClientInfoMap::iterator it = clients->find(client_id);
   if (it == clients->end())
@@ -421,18 +411,12 @@ bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
 }
 
 mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(io_thread_checker_.CalledOnValidThread());
   if (video_capture_host_for_testing_)
     return video_capture_host_for_testing_;
 
-  if (!video_capture_host_.get()) {
-    DCHECK(message_filter_->channel());
-    auto interface_support =
-        message_filter_->channel()->GetAssociatedInterfaceSupport();
-    if (!interface_support)
-      return nullptr;
-    interface_support->GetRemoteAssociatedInterface(&video_capture_host_);
-  }
+  if (!video_capture_host_.get())
+    video_capture_host_.Bind(std::move(video_capture_host_info_));
   return video_capture_host_.get();
 };
 

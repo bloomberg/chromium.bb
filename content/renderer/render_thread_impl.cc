@@ -111,7 +111,6 @@
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -697,7 +696,6 @@ void RenderThreadImpl::Init(
   AddFilter(db_message_filter_.get());
 
   vc_manager_.reset(new VideoCaptureImplManager());
-  AddFilter(vc_manager_->video_capture_message_filter());
 
   browser_plugin_manager_.reset(new BrowserPluginManager());
   AddObserver(browser_plugin_manager_.get());
@@ -949,7 +947,6 @@ void RenderThreadImpl::Shutdown() {
   // by the PC factory.  Once those tasks have been freed, the factory can be
   // deleted.
 #endif
-  RemoveFilter(vc_manager_->video_capture_message_filter());
   vc_manager_.reset();
 
   RemoveFilter(db_message_filter_.get());

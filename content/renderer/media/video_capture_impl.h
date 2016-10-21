@@ -16,39 +16,20 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/common/video_capture.mojom.h"
-#include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace content {
 
 // VideoCaptureImpl represents a capture device in renderer process. It provides
-// interfaces for clients to Start/Stop capture. It also communicates to clients
-// when buffer is ready, state of capture device is changed.
-//
-// VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter to receive
-// notification of the browser process being ready to communicate.
-//
-// VideoCaptureImpl is an IO thread only object. See the comments in
-// video_capture_impl_manager.cc for the lifetime of this object.
-// All methods must be called on the IO thread.
-//
-// This is an internal class used by VideoCaptureImplManager only. Do not access
-// this directly.
-class CONTENT_EXPORT VideoCaptureImpl
-    : public VideoCaptureMessageFilter::Delegate,
-      public mojom::VideoCaptureObserver {
+// an interface for clients to command the capture (Start, Stop, etc), and
+// communicates back to these clients e.g. the capture state or incoming
+// captured VideoFrames. VideoCaptureImpl is created in the main Renderer thread
+// but otherwise operates on |io_task_runner_|, which is usually the IO thread.
+class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
  public:
-  VideoCaptureImpl(
-      media::VideoCaptureSessionId session_id,
-      VideoCaptureMessageFilter* filter,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  explicit VideoCaptureImpl(media::VideoCaptureSessionId session_id);
   ~VideoCaptureImpl() override;
 
   // Stop/resume delivering video frames to clients, based on flag |suspend|.
@@ -93,24 +74,14 @@ class CONTENT_EXPORT VideoCaptureImpl
   // renderer.
   class ClientBuffer;
 
-  // Contains information for a video capture client. Including parameters
-  // for capturing and callbacks to the client.
-  struct ClientInfo {
-    ClientInfo();
-    ClientInfo(const ClientInfo& other);
-    ~ClientInfo();
-    media::VideoCaptureParams params;
-    VideoCaptureStateUpdateCB state_update_cb;
-    VideoCaptureDeliverFrameCB deliver_frame_cb;
-  };
+  // Contains information about a video capture client, including capture
+  //  parameters callbacks to the client.
+  struct ClientInfo;
   using ClientInfoMap = std::map<int, ClientInfo>;
 
   using BufferFinishedCallback =
       base::Callback<void(const gpu::SyncToken& sync_token,
                           double consumer_resource_utilization)>;
-
-  // VideoCaptureMessageFilter::Delegate interface implementation.
-  void OnDelegateAdded(int32_t device_id) override;
 
   // mojom::VideoCaptureObserver implementation.
   void OnStateChanged(mojom::VideoCaptureState state) override;
@@ -151,40 +122,40 @@ class CONTENT_EXPORT VideoCaptureImpl
       std::unique_ptr<gpu::SyncToken> release_sync_token,
       const BufferFinishedCallback& callback_to_io_thread);
 
-  const scoped_refptr<VideoCaptureMessageFilter> message_filter_;
-  int device_id_;
+  // |device_id_| and |session_id_| are different concepts, but we reuse the
+  // same numerical value, passed on construction.
+  const int device_id_;
   const int session_id_;
 
-  mojom::VideoCaptureHostAssociatedPtr video_capture_host_;
+  // |video_capture_host_| is an IO-thread InterfacePtr to a remote service
+  // implementation and is created by binding |video_capture_host_info_|,
+  // unless a |video_capture_host_for_testing_| has been injected.
+  mojom::VideoCaptureHostPtrInfo video_capture_host_info_;
+  mojom::VideoCaptureHostPtr video_capture_host_;
   mojom::VideoCaptureHost* video_capture_host_for_testing_;
 
   mojo::Binding<mojom::VideoCaptureObserver> observer_binding_;
 
   // Buffers available for sending to the client.
-  typedef std::map<int32_t, scoped_refptr<ClientBuffer>> ClientBufferMap;
+  using ClientBufferMap = std::map<int32_t, scoped_refptr<ClientBuffer>>;
   ClientBufferMap client_buffers_;
 
   ClientInfoMap clients_;
-  ClientInfoMap clients_pending_on_filter_;
   ClientInfoMap clients_pending_on_restart_;
 
-  // Member params_ represents the video format requested by the
-  // client to this class via StartCapture().
+  // Video format requested by the client to this class via StartCapture().
   media::VideoCaptureParams params_;
 
-  // The device's first captured frame reference time sent from browser process
-  // side.
+  // First captured frame reference time sent from browser process side.
   base::TimeTicks first_frame_ref_time_;
 
   VideoCaptureState state_;
 
-  // IO message loop reference for checking correct class operation.
-  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  base::ThreadChecker io_thread_checker_;
 
   // WeakPtrFactory pointing back to |this| object, for use with
   // media::VideoFrames constructed in OnBufferReceived() from buffers cached
   // in |client_buffers_|.
-  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoCaptureImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);

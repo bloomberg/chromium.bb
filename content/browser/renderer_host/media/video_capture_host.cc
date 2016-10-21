@@ -11,22 +11,28 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/video_capture_messages.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 VideoCaptureHost::VideoCaptureHost(MediaStreamManager* media_stream_manager)
-    : BrowserMessageFilter(VideoCaptureMsgStart),
-      BrowserAssociatedInterface(this, this),
-      media_stream_manager_(media_stream_manager) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    : media_stream_manager_(media_stream_manager),
+      weak_factory_(this) {
+  DVLOG(1) << __func__;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-VideoCaptureHost::~VideoCaptureHost() {}
+// static
+void VideoCaptureHost::Create(MediaStreamManager* media_stream_manager,
+                              mojom::VideoCaptureHostRequest request) {
+  DVLOG(1) << __func__;
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  mojo::MakeStrongBinding(
+      base::MakeUnique<VideoCaptureHost>(media_stream_manager),
+      std::move(request));
+}
 
-void VideoCaptureHost::OnChannelClosing() {
-  // Since the IPC sender is gone, close all requested VideoCaptureDevices.
+VideoCaptureHost::~VideoCaptureHost() {
   for (auto it = controllers_.begin(); it != controllers_.end(); ) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller) {
@@ -43,21 +49,13 @@ void VideoCaptureHost::OnChannelClosing() {
   }
 }
 
-void VideoCaptureHost::OnDestruct() const {
-  BrowserThread::DeleteOnIOThread::Destruct(this);
-}
-
-bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
-  NOTREACHED() << __func__ << " should not be receiving messages";
-  return true;
-}
-
 void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureHost::DoError, this, controller_id));
+      base::Bind(&VideoCaptureHost::DoError, weak_factory_.GetWeakPtr(),
+                 controller_id));
 }
 
 void VideoCaptureHost::OnBufferCreated(VideoCaptureControllerID controller_id,
@@ -114,7 +112,8 @@ void VideoCaptureHost::OnEnded(VideoCaptureControllerID controller_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoCaptureHost::DoEnded, this, controller_id));
+      base::Bind(&VideoCaptureHost::DoEnded, weak_factory_.GetWeakPtr(),
+                 controller_id));
 }
 
 void VideoCaptureHost::Start(int32_t device_id,
@@ -138,11 +137,9 @@ void VideoCaptureHost::Start(int32_t device_id,
 
   controllers_[controller_id] = base::WeakPtr<VideoCaptureController>();
   media_stream_manager_->video_capture_manager()->StartCaptureForClient(
-      session_id,
-      params,
-      controller_id,
-      this,
-      base::Bind(&VideoCaptureHost::OnControllerAdded, this, device_id));
+      session_id, params, controller_id, this,
+      base::Bind(&VideoCaptureHost::OnControllerAdded,
+                 weak_factory_.GetWeakPtr(), device_id));
 }
 
 void VideoCaptureHost::Stop(int32_t device_id) {

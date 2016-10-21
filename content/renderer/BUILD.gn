@@ -249,8 +249,6 @@ target(link_target_type, "renderer") {
     "media/video_capture_impl.h",
     "media/video_capture_impl_manager.cc",
     "media/video_capture_impl_manager.h",
-    "media/video_capture_message_filter.cc",
-    "media/video_capture_message_filter.h",
     "media/web_media_element_source_utils.cc",
     "media/web_media_element_source_utils.h",
     "media/webmediaplayer_ms.cc",

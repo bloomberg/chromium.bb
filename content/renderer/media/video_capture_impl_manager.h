@@ -23,7 +23,6 @@
 namespace content {
 
 class VideoCaptureImpl;
-class VideoCaptureMessageFilter;
 
 // TODO(hclam): This class should be renamed to VideoCaptureService.
 
@@ -97,14 +96,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // an individual session, please call Suspend(id) or Resume(id).
   void SuspendDevices(bool suspend);
 
-  VideoCaptureMessageFilter* video_capture_message_filter() const {
-    return filter_.get();
-  }
-
- protected:
   virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
-      media::VideoCaptureSessionId id,
-      VideoCaptureMessageFilter* filter) const;
+      media::VideoCaptureSessionId session_id) const;
 
  private:
   // Holds bookkeeping info for each VideoCaptureImpl shared by clients.
@@ -119,8 +112,6 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // This is an internal ID for identifying clients of VideoCaptureImpl.
   // The ID is global for the render process.
   int next_client_id_;
-
-  const scoped_refptr<VideoCaptureMessageFilter> filter_;
 
   // Hold a pointer to the Render Main message loop to check we operate on the
   // right thread.

@@ -1097,7 +1097,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(audio_renderer_host_.get());
   AddFilter(
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
-  AddFilter(new VideoCaptureHost(media_stream_manager));
   AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(), GetID()));
   AddFilter(new ClipboardMessageFilter(blob_storage_context));
@@ -1285,6 +1284,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
   registry->AddInterface(
       base::Bind(&URLLoaderFactoryImpl::Create, resource_message_filter_));
+
+  registry->AddInterface(
+      base::Bind(&VideoCaptureHost::Create,
+                 BrowserMainLoop::GetInstance()->media_stream_manager()));
 
   // This is to support usage of WebSockets in cases in which there is no
   // associated RenderFrame (e.g., Shared Workers).

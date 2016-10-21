@@ -217,7 +217,6 @@ source_set("common") {
     "media/midi_messages.h",
     "media/surface_view_manager_messages_android.h",
     "media/video_capture.h",
-    "media/video_capture_messages.h",
     "memory_messages.h",
     "message_port_messages.h",
     "navigation_gesture.h",

@@ -32,7 +32,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/video_capture_impl.h"
-#include "content/renderer/media/video_capture_message_filter.h"
 
 namespace content {
 
@@ -59,7 +58,6 @@ struct VideoCaptureImplManager::DeviceEntry {
 
 VideoCaptureImplManager::VideoCaptureImplManager()
     : next_client_id_(0),
-      filter_(new VideoCaptureMessageFilter()),
       render_main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       is_suspending_all_(false),
       weak_factory_(this) {}
@@ -78,6 +76,7 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
 
 base::Closure VideoCaptureImplManager::UseDevice(
     media::VideoCaptureSessionId id) {
+  DVLOG(1) << __func__ << " session id: " << id;
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -86,11 +85,9 @@ base::Closure VideoCaptureImplManager::UseDevice(
     devices_.push_back(DeviceEntry());
     it = devices_.end() - 1;
     it->session_id = id;
-    it->impl = CreateVideoCaptureImplForTesting(id, filter_.get());
-    if (!it->impl) {
-      it->impl.reset(new VideoCaptureImpl(
-          id, filter_.get(), ChildProcess::current()->io_task_runner()));
-    }
+    it->impl = CreateVideoCaptureImplForTesting(id);
+    if (!it->impl)
+      it->impl.reset(new VideoCaptureImpl(id));
   }
   ++it->client_count;
 
@@ -205,8 +202,7 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
 
 std::unique_ptr<VideoCaptureImpl>
 VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
-    media::VideoCaptureSessionId id,
-    VideoCaptureMessageFilter* filter) const {
+    media::VideoCaptureSessionId session_id) const {
   return std::unique_ptr<VideoCaptureImpl>();
 }
 

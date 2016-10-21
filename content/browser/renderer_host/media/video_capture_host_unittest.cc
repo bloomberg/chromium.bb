@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/video_capture_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
@@ -32,6 +31,7 @@
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,8 +112,7 @@ class VideoCaptureHostTest : public testing::Test,
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
     // Create a Host and connect it to a simulated IPC channel.
-    host_ = new VideoCaptureHost(media_stream_manager_.get());
-    host_->OnChannelConnected(base::GetCurrentProcId());
+    host_.reset(new VideoCaptureHost(media_stream_manager_.get()));
 
     OpenSession();
   }
@@ -123,9 +122,6 @@ class VideoCaptureHostTest : public testing::Test,
     EXPECT_TRUE(host_->controllers_.empty());
 
     CloseSession();
-
-    // Simulate closing the IPC sender.
-    host_->OnChannelClosing();
 
     // Release the reference to the mock object. The object will be destructed
     // on the current message loop.
@@ -312,7 +308,7 @@ class VideoCaptureHostTest : public testing::Test,
   int opened_session_id_;
   std::string opened_device_label_;
 
-  scoped_refptr<VideoCaptureHost> host_;
+  std::unique_ptr<VideoCaptureHost> host_;
   mojo::Binding<mojom::VideoCaptureObserver> observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);

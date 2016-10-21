@@ -22,7 +22,7 @@ using ::testing::WithArgs;
 
 namespace content {
 
-const int kSessionId = 1;
+const int kSessionId = 11;
 
 void RunEmptyFormatsCallback(const VideoCaptureDeviceFormatsCB& callback) {
   media::VideoCaptureFormats formats;
@@ -76,18 +76,13 @@ class MockMojoVideoCaptureHost : public mojom::VideoCaptureHost {
 
 // This class encapsulates a VideoCaptureImpl under test and the necessary
 // accessory classes, namely:
-// - a VideoCaptureMessageFilter;
 // - a MockMojoVideoCaptureHost, mimicking the RendererHost;
 // - a few callbacks that are bound when calling operations of VideoCaptureImpl
 //  and on which we set expectations.
 class VideoCaptureImplTest : public ::testing::Test {
  public:
   VideoCaptureImplTest()
-      : message_filter_(new VideoCaptureMessageFilter),
-        video_capture_impl_(
-            new VideoCaptureImpl(kSessionId,
-                                 message_filter_.get(),
-                                 base::ThreadTaskRunnerHandle::Get())) {
+      : video_capture_impl_(new VideoCaptureImpl(kSessionId)) {
     params_small_.requested_format = media::VideoCaptureFormat(
         gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
     params_large_.requested_format = media::VideoCaptureFormat(
@@ -95,7 +90,6 @@ class VideoCaptureImplTest : public ::testing::Test {
 
     video_capture_impl_->SetVideoCaptureHostForTesting(
         &mock_video_capture_host_);
-    video_capture_impl_->device_id_ = 2;
   }
 
  protected:
@@ -171,7 +165,6 @@ class VideoCaptureImplTest : public ::testing::Test {
 
   const base::MessageLoop message_loop_;
   const ChildProcess child_process_;
-  const scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   const std::unique_ptr<VideoCaptureImpl> video_capture_impl_;
   MockMojoVideoCaptureHost mock_video_capture_host_;
   media::VideoCaptureParams params_small_;

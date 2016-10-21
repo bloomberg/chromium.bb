@@ -12,11 +12,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/child/child_process.h"
-#include "content/common/media/video_capture_messages.h"
 #include "content/common/video_capture.mojom.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/media/video_capture_message_filter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,12 +48,9 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
                              public mojom::VideoCaptureHost {
  public:
   MockVideoCaptureImpl(media::VideoCaptureSessionId session_id,
-                       VideoCaptureMessageFilter* filter,
                        PauseResumeCallback* pause_callback,
                        base::Closure destruct_callback)
-      : VideoCaptureImpl(session_id,
-                         filter,
-                         ChildProcess::current()->io_task_runner()),
+      : VideoCaptureImpl(session_id),
         pause_callback_(pause_callback),
         destruct_callback_(destruct_callback) {}
 
@@ -99,24 +94,22 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
 class MockVideoCaptureImplManager : public VideoCaptureImplManager {
  public:
   MockVideoCaptureImplManager(PauseResumeCallback* pause_callback,
-                              base::Closure destruct_video_capture_callback)
+                              base::Closure stop_capture_callback)
       : pause_callback_(pause_callback),
-        destruct_video_capture_callback_(destruct_video_capture_callback) {}
+        stop_capture_callback_(stop_capture_callback) {}
   ~MockVideoCaptureImplManager() override {}
 
  private:
   std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
-      media::VideoCaptureSessionId id,
-      VideoCaptureMessageFilter* filter) const override {
+      media::VideoCaptureSessionId session_id) const override {
     auto video_capture_impl = base::MakeUnique<MockVideoCaptureImpl>(
-        id, filter, pause_callback_, destruct_video_capture_callback_);
-    video_capture_impl->SetVideoCaptureHostForTesting(
-        video_capture_impl.get());
+        session_id, pause_callback_, stop_capture_callback_);
+    video_capture_impl->SetVideoCaptureHostForTesting(video_capture_impl.get());
     return std::move(video_capture_impl);
   }
 
   PauseResumeCallback* const pause_callback_;
-  const base::Closure destruct_video_capture_callback_;
+  const base::Closure stop_capture_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImplManager);
 };
@@ -151,11 +144,6 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
           same_session_id ? 0 : static_cast<media::VideoCaptureSessionId>(i),
           params);
     }
-    child_process_.io_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureMessageFilter::OnFilterAdded,
-                   base::Unretained(manager_->video_capture_message_filter()),
-                   nullptr));
     run_loop.Run();
     return stop_callbacks;
   }
