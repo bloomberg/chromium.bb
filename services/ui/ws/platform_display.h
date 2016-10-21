@@ -89,9 +89,6 @@ class PlatformDisplay {
   // Returns true if a compositor frame has been submitted but not drawn yet.
   virtual bool IsFramePending() const = 0;
 
-  virtual void RequestCopyOfOutput(
-      std::unique_ptr<cc::CopyOutputRequest> output_request) = 0;
-
   virtual gfx::Rect GetBounds() const = 0;
 
   virtual bool IsPrimaryDisplay() const = 0;
@@ -136,8 +133,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
   bool IsFramePending() const override;
-  void RequestCopyOfOutput(
-      std::unique_ptr<cc::CopyOutputRequest> output_request) override;
   gfx::Rect GetBounds() const override;
   bool IsPrimaryDisplay() const override;
   void OnGpuChannelEstablished(

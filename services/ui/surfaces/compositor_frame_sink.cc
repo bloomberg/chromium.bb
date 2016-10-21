@@ -105,11 +105,6 @@ void CompositorFrameSink::SubmitCompositorFrame(
   factory_.SubmitCompositorFrame(local_frame_id_, std::move(frame), callback);
 }
 
-void CompositorFrameSink::RequestCopyOfOutput(
-    std::unique_ptr<cc::CopyOutputRequest> output_request) {
-  factory_.RequestCopyOfSurface(local_frame_id_, std::move(output_request));
-}
-
 void CompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   // TODO(fsamuel): Implement this.

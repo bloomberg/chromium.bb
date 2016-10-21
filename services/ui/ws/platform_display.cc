@@ -289,11 +289,6 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {
 
 void DefaultPlatformDisplay::OnActivationChanged(bool active) {}
 
-void DefaultPlatformDisplay::RequestCopyOfOutput(
-    std::unique_ptr<cc::CopyOutputRequest> output_request) {
-  frame_generator_->RequestCopyOfOutput(std::move(output_request));
-}
-
 ServerWindow* DefaultPlatformDisplay::GetRootWindow() {
   return delegate_->GetRootWindow();
 }

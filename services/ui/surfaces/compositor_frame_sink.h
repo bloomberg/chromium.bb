@@ -51,15 +51,6 @@ class CompositorFrameSink : public cc::SurfaceFactoryClient,
   // exposed outside of CompositorFrameSink.
   const cc::LocalFrameId& local_frame_id() const { return local_frame_id_; }
 
-  // This requests the display CompositorFrame be rendered and given to the
-  // callback within CopyOutputRequest.
-  void RequestCopyOfOutput(
-      std::unique_ptr<cc::CopyOutputRequest> output_request);
-
-  // TODO(fsamuel): Invent an async way to create a SurfaceNamespace
-  // A SurfaceNamespace can create CompositorFrameSinks where the client can
-  // make up the ID.
-
  private:
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;

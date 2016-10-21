@@ -63,8 +63,6 @@ class TestPlatformDisplay : public PlatformDisplay {
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
   bool IsFramePending() const override { return false; }
-  void RequestCopyOfOutput(
-      std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
   gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
   bool IsPrimaryDisplay() const override { return is_primary_; }
   void OnGpuChannelEstablished(

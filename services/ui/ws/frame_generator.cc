@@ -68,12 +68,6 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
   }
 }
 
-void FrameGenerator::RequestCopyOfOutput(
-    std::unique_ptr<cc::CopyOutputRequest> output_request) {
-  if (compositor_frame_sink_)
-    compositor_frame_sink_->RequestCopyOfOutput(std::move(output_request));
-}
-
 void FrameGenerator::WantToDraw() {
   if (draw_timer_.IsRunning() || frame_pending_)
     return;
