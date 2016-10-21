@@ -1037,6 +1037,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.ContentDetectorActivated">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User tapped on a phone number, address or email address, activating a
+    content detector and causing a content intent to be sent.
+  </description>
+</action>
+
 <action name="Android.DownloadManager.CheckForExternallyRemovedItems">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
