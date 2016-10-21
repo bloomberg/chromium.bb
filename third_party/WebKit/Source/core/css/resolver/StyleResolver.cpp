@@ -185,13 +185,10 @@ StyleResolver::StyleResolver(Document& document)
       m_printMediaType(false),
       m_styleSharingDepth(0) {
   FrameView* view = document.view();
-  if (view) {
-    m_medium = new MediaQueryEvaluator(&view->frame());
-    m_printMediaType =
-        equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
-  } else {
-    m_medium = new MediaQueryEvaluator("all");
-  }
+  DCHECK(view);
+  m_medium = new MediaQueryEvaluator(&view->frame());
+  m_printMediaType =
+      equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
 
   initWatchedSelectorRules();
 }

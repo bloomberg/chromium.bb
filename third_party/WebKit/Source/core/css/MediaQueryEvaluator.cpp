@@ -67,12 +67,8 @@ using EvalFunc = bool (*)(const MediaQueryExpValue&,
 using FunctionMap = HashMap<StringImpl*, EvalFunc>;
 static FunctionMap* gFunctionMap;
 
-MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)
-    : m_expectedResult(mediaFeatureResult) {}
-
-MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType,
-                                         bool mediaFeatureResult)
-    : m_mediaType(acceptedMediaType), m_expectedResult(mediaFeatureResult) {}
+MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType)
+    : m_mediaType(acceptedMediaType) {}
 
 MediaQueryEvaluator::MediaQueryEvaluator(LocalFrame* frame)
     : m_mediaValues(MediaValues::createDynamicIfFrameExists(frame)) {}
@@ -745,7 +741,7 @@ void MediaQueryEvaluator::init() {
 
 bool MediaQueryEvaluator::eval(const MediaQueryExp* expr) const {
   if (!m_mediaValues || !m_mediaValues->hasValues())
-    return m_expectedResult;
+    return true;
 
   DCHECK(gFunctionMap);
 
