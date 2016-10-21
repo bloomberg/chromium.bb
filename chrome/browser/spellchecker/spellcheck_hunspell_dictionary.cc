@@ -247,8 +247,8 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
   DCHECK(request_context_getter_);
 
   download_status_ = DOWNLOAD_IN_PROGRESS;
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnHunspellDictionaryDownloadBegin(language_));
+  for (Observer& observer : observers_)
+    observer.OnHunspellDictionaryDownloadBegin(language_);
 
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
@@ -360,9 +360,8 @@ void SpellcheckHunspellDictionary::SaveDictionaryDataComplete(
 
   if (dictionary_saved) {
     download_status_ = DOWNLOAD_NONE;
-    FOR_EACH_OBSERVER(Observer,
-                      observers_,
-                      OnHunspellDictionaryDownloadSuccess(language_));
+    for (Observer& observer : observers_)
+      observer.OnHunspellDictionaryDownloadSuccess(language_);
     Load();
   } else {
     InformListenersOfDownloadFailure();
@@ -371,13 +370,12 @@ void SpellcheckHunspellDictionary::SaveDictionaryDataComplete(
 }
 
 void SpellcheckHunspellDictionary::InformListenersOfInitialization() {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnHunspellDictionaryInitialized(language_));
+  for (Observer& observer : observers_)
+    observer.OnHunspellDictionaryInitialized(language_);
 }
 
 void SpellcheckHunspellDictionary::InformListenersOfDownloadFailure() {
   download_status_ = DOWNLOAD_FAILED;
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnHunspellDictionaryDownloadFailure(language_));
+  for (Observer& observer : observers_)
+    observer.OnHunspellDictionaryDownloadFailure(language_);
 }

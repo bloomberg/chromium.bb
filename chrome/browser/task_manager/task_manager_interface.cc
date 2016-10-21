@@ -115,29 +115,30 @@ TaskManagerInterface::~TaskManagerInterface() {
 }
 
 void TaskManagerInterface::NotifyObserversOnTaskAdded(TaskId id) {
-  FOR_EACH_OBSERVER(TaskManagerObserver, observers_, OnTaskAdded(id));
+  for (TaskManagerObserver& observer : observers_)
+    observer.OnTaskAdded(id);
 }
 
 void TaskManagerInterface::NotifyObserversOnTaskToBeRemoved(TaskId id) {
-  FOR_EACH_OBSERVER(TaskManagerObserver, observers_, OnTaskToBeRemoved(id));
+  for (TaskManagerObserver& observer : observers_)
+    observer.OnTaskToBeRemoved(id);
 }
 
 void TaskManagerInterface::NotifyObserversOnRefresh(
     const TaskIdList& task_ids) {
-  FOR_EACH_OBSERVER(TaskManagerObserver,
-                    observers_,
-                    OnTasksRefreshed(task_ids));
+  for (TaskManagerObserver& observer : observers_)
+    observer.OnTasksRefreshed(task_ids);
 }
 
 void TaskManagerInterface::NotifyObserversOnRefreshWithBackgroundCalculations(
       const TaskIdList& task_ids) {
-  FOR_EACH_OBSERVER(TaskManagerObserver,
-                    observers_,
-                    OnTasksRefreshedWithBackgroundCalculations(task_ids));
+  for (TaskManagerObserver& observer : observers_)
+    observer.OnTasksRefreshedWithBackgroundCalculations(task_ids);
 }
 
 void TaskManagerInterface::NotifyObserversOnTaskUnresponsive(TaskId id) {
-  FOR_EACH_OBSERVER(TaskManagerObserver, observers_, OnTaskUnresponsive(id));
+  for (TaskManagerObserver& observer : observers_)
+    observer.OnTaskUnresponsive(id);
 }
 
 base::TimeDelta TaskManagerInterface::GetCurrentRefreshTime() const {

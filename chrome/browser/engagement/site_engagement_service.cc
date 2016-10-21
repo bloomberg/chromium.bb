@@ -456,9 +456,8 @@ void SiteEngagementService::HandleMediaPlaying(
                            : SiteEngagementScore::GetVisibleMediaPoints());
 
   RecordMetrics();
-  FOR_EACH_OBSERVER(
-      SiteEngagementObserver, observer_list_,
-      OnEngagementIncreased(web_contents, url, GetScore(url)));
+  for (SiteEngagementObserver& observer : observer_list_)
+    observer.OnEngagementIncreased(web_contents, url, GetScore(url));
 }
 
 void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
@@ -470,9 +469,8 @@ void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
     AddPoints(url, SiteEngagementScore::GetNavigationPoints());
 
     RecordMetrics();
-    FOR_EACH_OBSERVER(
-        SiteEngagementObserver, observer_list_,
-        OnEngagementIncreased(web_contents, url, GetScore(url)));
+    for (SiteEngagementObserver& observer : observer_list_)
+      observer.OnEngagementIncreased(web_contents, url, GetScore(url));
   }
 }
 
@@ -484,9 +482,8 @@ void SiteEngagementService::HandleUserInput(
   AddPoints(url, SiteEngagementScore::GetUserInputPoints());
 
   RecordMetrics();
-  FOR_EACH_OBSERVER(
-      SiteEngagementObserver, observer_list_,
-      OnEngagementIncreased(web_contents, url, GetScore(url)));
+  for (SiteEngagementObserver& observer : observer_list_)
+    observer.OnEngagementIncreased(web_contents, url, GetScore(url));
 }
 
 bool SiteEngagementService::IsLastEngagementStale() const {

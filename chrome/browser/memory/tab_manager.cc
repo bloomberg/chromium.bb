@@ -490,15 +490,14 @@ int64_t TabManager::IdFromWebContents(WebContents* web_contents) {
 
 void TabManager::OnDiscardedStateChange(content::WebContents* contents,
                                         bool is_discarded) {
-  FOR_EACH_OBSERVER(TabManagerObserver, observers_,
-                    OnDiscardedStateChange(contents, is_discarded));
+  for (TabManagerObserver& observer : observers_)
+    observer.OnDiscardedStateChange(contents, is_discarded);
 }
 
 void TabManager::OnAutoDiscardableStateChange(content::WebContents* contents,
                                               bool is_auto_discardable) {
-  FOR_EACH_OBSERVER(
-      TabManagerObserver, observers_,
-      OnAutoDiscardableStateChange(contents, is_auto_discardable));
+  for (TabManagerObserver& observer : observers_)
+    observer.OnAutoDiscardableStateChange(contents, is_auto_discardable);
 }
 
 // static

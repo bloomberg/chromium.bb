@@ -317,20 +317,20 @@ void MessageCenterSettingsController::OnProfileAuthInfoChanged(
 void MessageCenterSettingsController::OnIconImageUpdated(
     const message_center::NotifierId& id,
     const gfx::Image& image) {
-  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver, observers_,
-                    UpdateIconImage(id, image));
+  for (message_center::NotifierSettingsObserver& observer : observers_)
+    observer.UpdateIconImage(id, image);
 }
 
 void MessageCenterSettingsController::OnNotifierEnabledChanged(
     const message_center::NotifierId& id,
     bool enabled) {
-  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver, observers_,
-                    NotifierEnabledChanged(id, enabled));
+  for (message_center::NotifierSettingsObserver& observer : observers_)
+    observer.NotifierEnabledChanged(id, enabled);
 }
 
 void MessageCenterSettingsController::DispatchNotifierGroupChanged() {
-  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver, observers_,
-                    NotifierGroupChanged());
+  for (message_center::NotifierSettingsObserver& observer : observers_)
+    observer.NotifierGroupChanged();
 }
 
 #if defined(OS_CHROMEOS)

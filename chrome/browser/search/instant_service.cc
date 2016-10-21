@@ -199,8 +199,8 @@ void InstantService::UpdateThemeInfo() {
   if (!theme_info_) {
     OnThemeChanged();
   } else {
-    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                      ThemeInfoChanged(*theme_info_));
+    for (InstantServiceObserver& observer : observers_)
+      observer.ThemeInfoChanged(*theme_info_);
   }
 #endif  // defined(ENABLE_THEMES)
 }
@@ -280,8 +280,8 @@ void InstantService::OnMostVisitedItemsReceived(
 }
 
 void InstantService::NotifyAboutMostVisitedItems() {
-  FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                    MostVisitedItemsChanged(most_visited_items_));
+  for (InstantServiceObserver& observer : observers_)
+    observer.MostVisitedItemsChanged(most_visited_items_);
 }
 
 #if defined(ENABLE_THEMES)
@@ -400,8 +400,8 @@ void InstantService::OnThemeChanged() {
         theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
 
-  FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
-                    ThemeInfoChanged(*theme_info_));
+  for (InstantServiceObserver& observer : observers_)
+    observer.ThemeInfoChanged(*theme_info_);
 }
 #endif  // defined(ENABLE_THEMES)
 
@@ -432,9 +432,8 @@ void InstantService::OnTemplateURLServiceChanged() {
 
   if (default_search_provider_changed || google_base_url_domain_changed) {
     ResetInstantSearchPrerenderer();
-    FOR_EACH_OBSERVER(
-        InstantServiceObserver, observers_,
-        DefaultSearchProviderChanged(google_base_url_domain_changed));
+    for (InstantServiceObserver& observer : observers_)
+      observer.DefaultSearchProviderChanged(google_base_url_domain_changed);
   }
 }
 

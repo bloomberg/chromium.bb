@@ -426,7 +426,8 @@ void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
 
   // Initialization is done, no need to delay tasks.
   need_dalay_mdns_tasks_ = false;
-  FOR_EACH_OBSERVER(Proxy, proxies_, OnNewMdnsReady());
+  for (Proxy& observer : proxies_)
+    observer.OnNewMdnsReady();
 }
 
 void ServiceDiscoveryClientMdns::ReportSuccess() {
@@ -438,7 +439,8 @@ void ServiceDiscoveryClientMdns::ReportSuccess() {
 void ServiceDiscoveryClientMdns::OnBeforeMdnsDestroy() {
   need_dalay_mdns_tasks_ = true;
   weak_ptr_factory_.InvalidateWeakPtrs();
-  FOR_EACH_OBSERVER(Proxy, proxies_, OnMdnsDestroy());
+  for (Proxy& observer : proxies_)
+    observer.OnMdnsDestroy();
 }
 
 void ServiceDiscoveryClientMdns::DestroyMdns() {

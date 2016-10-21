@@ -425,7 +425,8 @@ void SpellcheckCustomDictionary::OnLoaded(
   Apply(dictionary_change);
   Sync(dictionary_change);
   is_loaded_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnCustomDictionaryLoaded());
+  for (Observer& observer : observers_)
+    observer.OnCustomDictionaryLoaded();
   if (!result->is_valid_file) {
     // Save cleaned up data only after startup.
     fix_invalid_file_.Reset(
@@ -522,7 +523,6 @@ void SpellcheckCustomDictionary::Notify(const Change& dictionary_change) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsLoaded() || dictionary_change.empty())
     return;
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnCustomDictionaryChanged(dictionary_change));
+  for (Observer& observer : observers_)
+    observer.OnCustomDictionaryChanged(dictionary_change);
 }

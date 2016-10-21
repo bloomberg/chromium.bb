@@ -249,7 +249,8 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
   }
 
   if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingHit(resource));
+    for (Observer& observer : observer_list_)
+      observer.OnSafeBrowsingHit(resource);
   }
   AddToWhitelistUrlSet(resource, true /* A decision is now pending */);
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);

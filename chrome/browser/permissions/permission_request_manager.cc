@@ -503,7 +503,8 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
 }
 
 void PermissionRequestManager::NotifyBubbleAdded() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnBubbleAdded());
+  for (Observer& observer : observer_list_)
+    observer.OnBubbleAdded();
 }
 
 void PermissionRequestManager::DoAutoResponseForTesting() {

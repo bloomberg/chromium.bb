@@ -455,21 +455,24 @@ WebContents* PrerenderContents::CreateWebContents(
 
 void PrerenderContents::NotifyPrerenderStart() {
   DCHECK_EQ(FINAL_STATUS_MAX, final_status_);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStart(this));
+  for (Observer& observer : observer_list_)
+    observer.OnPrerenderStart(this);
 }
 
 void PrerenderContents::NotifyPrerenderStopLoading() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStopLoading(this));
+  for (Observer& observer : observer_list_)
+    observer.OnPrerenderStopLoading(this);
 }
 
 void PrerenderContents::NotifyPrerenderDomContentLoaded() {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnPrerenderDomContentLoaded(this));
+  for (Observer& observer : observer_list_)
+    observer.OnPrerenderDomContentLoaded(this);
 }
 
 void PrerenderContents::NotifyPrerenderStop() {
   DCHECK_NE(FINAL_STATUS_MAX, final_status_);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnPrerenderStop(this));
+  for (Observer& observer : observer_list_)
+    observer.OnPrerenderStop(this);
   observer_list_.Clear();
 }
 

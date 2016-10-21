@@ -787,7 +787,8 @@ void EnumerateModulesModel::AcknowledgeConflictNotification() {
 
   if (!conflict_notification_acknowledged_) {
     conflict_notification_acknowledged_ = true;
-    FOR_EACH_OBSERVER(Observer, observers_, OnConflictsAcknowledged());
+    for (Observer& observer : observers_)
+      observer.OnConflictsAcknowledged();
   }
 }
 
@@ -844,7 +845,8 @@ void EnumerateModulesModel::ScanNow(bool background_mode) {
   // observers that the scan is complete. At this point |enumerated_modules_| is
   // safe to access as no potentially racing blocking pool task can exist.
   if (!enumerated_modules_.empty()) {
-    FOR_EACH_OBSERVER(Observer, observers_, OnScanCompleted());
+    for (Observer& observer : observers_)
+      observer.OnScanCompleted();
     return;
   }
 
@@ -988,5 +990,6 @@ void EnumerateModulesModel::DoneScanning() {
                            confirmed_bad_modules_detected_);
 
   // Forward the callback to any registered observers.
-  FOR_EACH_OBSERVER(Observer, observers_, OnScanCompleted());
+  for (Observer& observer : observers_)
+    observer.OnScanCompleted();
 }

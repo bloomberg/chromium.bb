@@ -136,15 +136,15 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
 void KeepAliveRegistry::OnKeepAliveStateChanged(bool new_keeping_alive) {
   DVLOG(1) << "Notifying KeepAliveStateObservers: KeepingAlive changed to: "
            << new_keeping_alive;
-  FOR_EACH_OBSERVER(KeepAliveStateObserver, observers_,
-                    OnKeepAliveStateChanged(new_keeping_alive));
+  for (KeepAliveStateObserver& observer : observers_)
+    observer.OnKeepAliveStateChanged(new_keeping_alive);
 }
 
 void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
   DVLOG(1) << "Notifying KeepAliveStateObservers: Restart changed to: "
            << new_restart_allowed;
-  FOR_EACH_OBSERVER(KeepAliveStateObserver, observers_,
-                    OnKeepAliveRestartStateChanged(new_restart_allowed));
+  for (KeepAliveStateObserver& observer : observers_)
+    observer.OnKeepAliveRestartStateChanged(new_restart_allowed);
 }
 
 void KeepAliveRegistry::DecrementCount(KeepAliveOrigin origin,
