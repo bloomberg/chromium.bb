@@ -502,16 +502,26 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 	struct gbm_bo *bo;
 	uint32_t format;
 
-	if (ev->geometry.x != output->base.x ||
-	    ev->geometry.y != output->base.y ||
-	    buffer == NULL || b->gbm == NULL ||
-	    buffer->width != output->base.current_mode->width ||
-	    buffer->height != output->base.current_mode->height ||
-	    output->base.transform != viewport->buffer.transform ||
-	    ev->transform.enabled)
+	/* We use GBM to import buffers. */
+	if (b->gbm == NULL)
 		return NULL;
 
+	if (buffer == NULL)
+		return NULL;
+
+	/* Make sure our view is exactly compatible with the output. */
+	if (ev->geometry.x != output->base.x ||
+	    ev->geometry.y != output->base.y)
+		return NULL;
+	if (ev->transform.enabled)
+		return NULL;
 	if (ev->geometry.scissor_enabled)
+		return NULL;
+
+	if (buffer->width != output->base.current_mode->width ||
+	    buffer->height != output->base.current_mode->height)
+		return NULL;
+	if (viewport->buffer.transform != output->base.transform)
 		return NULL;
 
 	bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
@@ -950,32 +960,31 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 	uint32_t format;
 	wl_fixed_t sx1, sy1, sx2, sy2;
 
-	if (b->gbm == NULL)
-		return NULL;
-
-	if (viewport->buffer.transform != output->base.transform)
-		return NULL;
-
-	if (viewport->buffer.scale != output->base.current_scale)
-		return NULL;
-
 	if (b->sprites_are_broken)
 		return NULL;
 
+	/* Don't import buffers which span multiple outputs. */
 	if (ev->output_mask != (1u << output->base.id))
+		return NULL;
+
+	/* We can only import GBM buffers. */
+	if (b->gbm == NULL)
 		return NULL;
 
 	if (ev->surface->buffer_ref.buffer == NULL)
 		return NULL;
 	buffer_resource = ev->surface->buffer_ref.buffer->resource;
-
-	if (ev->alpha != 1.0f)
-		return NULL;
-
 	if (wl_shm_buffer_get(buffer_resource))
 		return NULL;
 
+	if (viewport->buffer.transform != output->base.transform)
+		return NULL;
+	if (viewport->buffer.scale != output->base.current_scale)
+		return NULL;
 	if (!drm_view_transform_supported(ev))
+		return NULL;
+
+	if (ev->alpha != 1.0f)
 		return NULL;
 
 	wl_list_for_each(s, &b->sprite_list, link) {
@@ -1114,23 +1123,20 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_shm_buffer *shmbuf;
 
-	if (ev->transform.enabled &&
-	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
-		return NULL;
-	if (b->gbm == NULL)
-		return NULL;
-	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
-		return NULL;
-	if (viewport->buffer.scale != output->base.current_scale)
-		return NULL;
-	if (output->cursor_view)
-		return NULL;
-	if (ev->output_mask != (1u << output->base.id))
-		return NULL;
 	if (b->cursors_are_broken)
 		return NULL;
-	if (ev->geometry.scissor_enabled)
+
+	if (output->cursor_view)
 		return NULL;
+
+	/* Don't import buffers which span multiple outputs. */
+	if (ev->output_mask != (1u << output->base.id))
+		return NULL;
+
+	/* We use GBM to import SHM buffers. */
+	if (b->gbm == NULL)
+		return NULL;
+
 	if (ev->surface->buffer_ref.buffer == NULL)
 		return NULL;
 	shmbuf = wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource);
@@ -1138,6 +1144,17 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 		return NULL;
 	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888)
 		return NULL;
+
+	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
+		return NULL;
+	if (ev->transform.enabled &&
+	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
+		return NULL;
+	if (viewport->buffer.scale != output->base.current_scale)
+		return NULL;
+	if (ev->geometry.scissor_enabled)
+		return NULL;
+
 	if (ev->surface->width > b->cursor_width ||
 	    ev->surface->height > b->cursor_height)
 		return NULL;
