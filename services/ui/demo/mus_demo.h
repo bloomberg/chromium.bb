@@ -61,6 +61,7 @@ class MusDemo : public service_manager::Service,
                                   bool janky) override;
   void OnWmNewDisplay(Window* window, const display::Display& display) override;
   void OnWmDisplayRemoved(ui::Window* window) override;
+  void OnWmDisplayModified(const display::Display& display) override;
   void OnWmPerformMoveLoop(Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

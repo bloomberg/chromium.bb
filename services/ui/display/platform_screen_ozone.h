@@ -16,6 +16,7 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/display/platform_screen.h"
+#include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -29,6 +30,7 @@ namespace display {
 class PlatformScreenOzone
     : public PlatformScreen,
       public ui::DisplayConfigurator::Observer,
+      public ui::DisplayConfigurator::StateController,
       public service_manager::InterfaceFactory<mojom::DisplayController>,
       public service_manager::InterfaceFactory<mojom::TestDisplayController>,
       public mojom::DisplayController,
@@ -45,6 +47,7 @@ class PlatformScreenOzone
 
   // mojom::TestDisplayController:
   void ToggleAddRemoveDisplay() override;
+  void ToggleDisplayResolution() override;
 
   // mojom::DisplayController:
   void SwapPrimaryDisplay() override;
@@ -56,13 +59,20 @@ class PlatformScreenOzone
   // TODO(kylechar): This struct is just temporary until we migrate
   // DisplayManager code out of ash so it can be used here.
   struct DisplayInfo {
+    DisplayInfo();
+    DisplayInfo(const DisplayInfo& other);
+    ~DisplayInfo();
+
     int64_t id = Display::kInvalidDisplayID;
-    // The display bounds in DIP.
-    gfx::Rect bounds;
-    // Display size in DDP.
-    gfx::Size pixel_size;
-    // The display device pixel scale factor, either 1 or 2.
-    float device_scale_factor = 1.0f;
+    // Information about display viewport.
+    ViewportMetrics metrics;
+    // Last insets received from WM.
+    gfx::Insets last_work_area_insets;
+
+    // Temporary hack to allow changing display resolution.
+    std::vector<gfx::Size> supported_sizes;
+    gfx::Size requested_size;
+
     // The display bounds have been modified and delegate should be updated.
     bool modified = false;
     // The display has been removed and delegate should be updated.
@@ -100,8 +110,9 @@ class PlatformScreenOzone
   // iterator if there is no display with that id.
   CachedDisplayIterator GetCachedDisplayIterator(int64_t display_id);
 
-  // Converts |snapshot| into a DisplayInfo.
-  DisplayInfo DisplayInfoFromSnapshot(const ui::DisplaySnapshot& snapshot);
+  // Converts |snapshot| into ViewportMetrics.
+  ViewportMetrics MetricsFromSnapshot(const ui::DisplaySnapshot& snapshot,
+                                      const gfx::Point& origin);
 
   // ui::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(
@@ -109,6 +120,13 @@ class PlatformScreenOzone
   void OnDisplayModeChangeFailed(
       const ui::DisplayConfigurator::DisplayStateList& displays,
       ui::MultipleDisplayState failed_new_state) override;
+
+  // ui::DisplayConfigurator::StateController:
+  ui::MultipleDisplayState GetStateForDisplayIds(
+      const ui::DisplayConfigurator::DisplayStateList& display_states)
+      const override;
+  bool GetResolutionForDisplayId(int64_t display_id,
+                                 gfx::Size* size) const override;
 
   // mojo::InterfaceFactory<mojom::DisplayController>:
   void Create(const service_manager::Identity& remote_identity,

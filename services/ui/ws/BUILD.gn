@@ -82,7 +82,6 @@ static_library("lib") {
     "user_id_tracker.cc",
     "user_id_tracker.h",
     "user_id_tracker_observer.h",
-    "viewport_metrics.h",
     "window_coordinate_conversions.cc",
     "window_coordinate_conversions.h",
     "window_finder.cc",

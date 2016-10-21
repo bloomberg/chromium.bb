@@ -82,7 +82,6 @@ class Display : public PlatformDisplayDelegate,
   // Schedules a paint for the specified region in the coordinates of |window|.
   void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
 
-  display::Display::Rotation GetRotation() const;
   gfx::Size GetSize() const;
 
   WindowServer* window_server() { return window_server_; }
@@ -145,6 +144,9 @@ class Display : public PlatformDisplayDelegate,
   void SetSize(const gfx::Size& size) override;
   void SetTitle(const mojo::String& title) override;
 
+  // Updates the root window, if necessary, for viewport metric changes.
+  void OnViewportMetricsChanged(const display::ViewportMetrics& new_metrics);
+
  private:
   friend class test::DisplayTestApi;
 
@@ -167,8 +169,6 @@ class Display : public PlatformDisplayDelegate,
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
-  void OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
-                                const ViewportMetrics& new_metrics) override;
 
   // FocusControllerDelegate:
   bool CanHaveActiveChildren(ServerWindow* window) const override;

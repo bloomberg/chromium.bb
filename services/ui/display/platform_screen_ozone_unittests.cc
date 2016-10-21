@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/ui/display/platform_screen.h"
 #include "services/ui/display/platform_screen_ozone.h"
+#include "services/ui/display/viewport_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -37,9 +38,7 @@ const int64_t kDefaultDisplayId = 1;
 // Holds info about the display state we want to test.
 struct DisplayState {
   int64_t id;
-  gfx::Rect bounds;
-  gfx::Size size;
-  float device_scale_factor;
+  ViewportMetrics metrics;
 };
 
 // Matchers that operate on DisplayState.
@@ -49,13 +48,13 @@ MATCHER_P(DisplayId, display_id, "") {
 }
 
 MATCHER_P(DisplaySize, size_string, "") {
-  *result_listener << "has size " << arg.bounds.size().ToString();
-  return arg.bounds.size().ToString() == size_string;
+  *result_listener << "has size " << arg.metrics.bounds.size().ToString();
+  return arg.metrics.bounds.size().ToString() == size_string;
 }
 
 MATCHER_P(DisplayOrigin, origin_string, "") {
-  *result_listener << "has origin " << arg.bounds.origin().ToString();
-  return arg.bounds.origin().ToString() == origin_string;
+  *result_listener << "has origin " << arg.metrics.bounds.origin().ToString();
+  return arg.metrics.bounds.origin().ToString() == origin_string;
 }
 
 // Make a DisplaySnapshot with specified id and size.
@@ -85,22 +84,16 @@ class TestPlatformScreenDelegate : public PlatformScreenDelegate {
   }
 
  private:
-  void OnDisplayAdded(int64_t id,
-                      const gfx::Rect& bounds,
-                      const gfx::Size& pixel_size,
-                      float device_scale_factor) override {
-    added_.push_back({id, bounds, pixel_size, device_scale_factor});
+  void OnDisplayAdded(int64_t id, const ViewportMetrics& metrics) override {
+    added_.push_back({id, metrics});
   }
 
   void OnDisplayRemoved(int64_t id) override {
-    removed_.push_back({id, gfx::Rect(), gfx::Size(), 1.0f});
+    removed_.push_back({id, ViewportMetrics()});
   }
 
-  void OnDisplayModified(int64_t id,
-                         const gfx::Rect& bounds,
-                         const gfx::Size& pixel_size,
-                         float device_scale_factor) override {
-    modified_.push_back({id, bounds, pixel_size, device_scale_factor});
+  void OnDisplayModified(int64_t id, const ViewportMetrics& metrics) override {
+    modified_.push_back({id, metrics});
   }
 
   std::vector<DisplayState> added_;

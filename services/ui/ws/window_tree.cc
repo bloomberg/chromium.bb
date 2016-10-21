@@ -219,6 +219,10 @@ void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
   }
 }
 
+void WindowTree::OnWmDisplayModified(const display::Display& display) {
+  window_manager_internal_->WmDisplayModified(display);
+}
+
 void WindowTree::NotifyChangeCompleted(
     uint32_t change_id,
     mojom::WindowManagerErrorCode error_code) {

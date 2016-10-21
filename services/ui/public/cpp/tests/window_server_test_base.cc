@@ -159,6 +159,12 @@ void WindowServerTestBase::OnWmDisplayRemoved(Window* window) {
     window_manager_delegate_->OnWmDisplayRemoved(window);
 }
 
+void WindowServerTestBase::OnWmDisplayModified(
+    const display::Display& display) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmDisplayModified(display);
+}
+
 void WindowServerTestBase::OnWmPerformMoveLoop(
     Window* window,
     mojom::MoveLoopSource source,

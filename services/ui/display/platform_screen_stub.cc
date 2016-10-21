@@ -18,8 +18,23 @@
 namespace display {
 namespace {
 
-const int64_t kDisplayId = 1;
-constexpr gfx::Size kDisplaySize(1024, 768);
+// Build a ViewportMetric for a 1024x768 display.
+ViewportMetrics DefaultViewportMetrics() {
+  ViewportMetrics metrics;
+
+  metrics.device_scale_factor = 1.0f;
+  if (Display::HasForceDeviceScaleFactor())
+    metrics.device_scale_factor = Display::GetForcedDeviceScaleFactor();
+
+  metrics.pixel_size = gfx::Size(1024, 768);
+  gfx::Size scaled_size = gfx::ScaleToRoundedSize(
+      metrics.pixel_size, 1.0f / metrics.device_scale_factor);
+
+  metrics.bounds = gfx::Rect(scaled_size);
+  metrics.work_area = gfx::Rect(scaled_size);
+
+  return metrics;
+}
 
 }  // namespace
 
@@ -28,19 +43,13 @@ std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
   return base::MakeUnique<PlatformScreenStub>();
 }
 
-PlatformScreenStub::PlatformScreenStub() : weak_ptr_factory_(this) {}
+PlatformScreenStub::PlatformScreenStub()
+    : weak_ptr_factory_(this) {}
 
 PlatformScreenStub::~PlatformScreenStub() {}
 
 void PlatformScreenStub::FixedSizeScreenConfiguration() {
-  float device_scale_factor = 1.0f;
-  if (Display::HasForceDeviceScaleFactor())
-    device_scale_factor = Display::GetForcedDeviceScaleFactor();
-
-  gfx::Size scaled_size =
-      gfx::ScaleToRoundedSize(kDisplaySize, 1.0f / device_scale_factor);
-  delegate_->OnDisplayAdded(kDisplayId, gfx::Rect(scaled_size), kDisplaySize,
-                            device_scale_factor);
+  delegate_->OnDisplayAdded(display_id_, display_metrics_);
 }
 
 void PlatformScreenStub::AddInterfaces(
@@ -49,13 +58,14 @@ void PlatformScreenStub::AddInterfaces(
 void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
+  display_metrics_ = DefaultViewportMetrics();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&PlatformScreenStub::FixedSizeScreenConfiguration,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PlatformScreenStub::RequestCloseDisplay(int64_t display_id) {
-  if (display_id == kDisplayId) {
+  if (display_id == display_id_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&PlatformScreenDelegate::OnDisplayRemoved,
                               base::Unretained(delegate_), display_id));
@@ -63,7 +73,7 @@ void PlatformScreenStub::RequestCloseDisplay(int64_t display_id) {
 }
 
 int64_t PlatformScreenStub::GetPrimaryDisplayId() const {
-  return kDisplayId;
+  return display_id_;
 }
 
 }  // namespace display

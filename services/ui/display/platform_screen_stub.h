@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "services/ui/display/platform_screen.h"
+#include "services/ui/display/viewport_metrics.h"
 
 namespace display {
 
@@ -29,6 +29,10 @@ class PlatformScreenStub : public PlatformScreen {
   void Init(PlatformScreenDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override;
   int64_t GetPrimaryDisplayId() const override;
+
+  // Sample display information.
+  int64_t display_id_ = 1;
+  ViewportMetrics display_metrics_;
 
   PlatformScreenDelegate* delegate_ = nullptr;
 

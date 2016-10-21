@@ -58,6 +58,7 @@ class RootWindowController {
   WmWindowMus* GetWindowByShellWindowId(int id);
 
   void SetWorkAreaInests(const gfx::Insets& insets);
+  void SetDisplay(const display::Display& display);
 
   WindowManager* window_manager() { return window_manager_; }
 

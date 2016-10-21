@@ -60,6 +60,10 @@ std::unique_ptr<DisplayListObserverLock> DisplayList::SuspendObserverUpdates() {
   return base::WrapUnique(new DisplayListObserverLock(this));
 }
 
+void DisplayList::UpdateDisplay(const display::Display& display) {
+  UpdateDisplay(display, GetTypeByDisplayId(display.id()));
+}
+
 void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
   auto iter = FindDisplayById(display.id());
   DCHECK(iter != displays_.end());
@@ -135,6 +139,14 @@ void DisplayList::IncrementObserverSuspendLockCount() {
 void DisplayList::DecrementObserverSuspendLockCount() {
   DCHECK_GT(observer_suspend_lock_count_, 0);
   observer_suspend_lock_count_--;
+}
+
+DisplayList::Type DisplayList::GetTypeByDisplayId(int64_t display_id) const {
+  if (primary_display_index_ == -1)
+    return Type::NOT_PRIMARY;
+  return (displays_[primary_display_index_].id() == display_id
+              ? Type::PRIMARY
+              : Type::NOT_PRIMARY);
 }
 
 }  // namespace display

@@ -12,4 +12,7 @@ interface TestDisplayController {
   // a second display is added. If there is more than one display then the last
   // display is removed. 
   ToggleAddRemoveDisplay();
+
+  // Toggles the primary display resolution size.
+  ToggleDisplayResolution();
 };

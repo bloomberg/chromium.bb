@@ -97,6 +97,10 @@ interface WindowManager {
   // this with the root.
   WmDisplayRemoved(int64 display_id);
 
+  // Called when a display is modified. The root of the specified display will
+  // be resized by the WindowServer after this.
+  WmDisplayModified(display.mojom.Display display);
+
   // When the WindowManager completes a request it must call back to
   // WindowManagerClient::WmResponse().
   WmSetBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds);

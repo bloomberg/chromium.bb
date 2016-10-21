@@ -161,6 +161,9 @@ class WindowTree : public mojom::WindowTree,
   // Invoked when a tree is about to be destroyed.
   void OnWindowDestroyingTreeImpl(WindowTree* tree);
 
+  // Sends updated display information.
+  void OnWmDisplayModified(const display::Display& display);
+
   // These functions are synchronous variants of those defined in the mojom. The
   // WindowTree implementations all call into these. See the mojom for details.
   bool SetCapture(const ClientWindowId& client_window_id);

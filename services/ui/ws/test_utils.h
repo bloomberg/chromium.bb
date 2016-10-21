@@ -285,11 +285,11 @@ class TestFrameGeneratorDelegate : public FrameGeneratorDelegate {
   // FrameGeneratorDelegate:
   ServerWindow* GetRootWindow() override;
   bool IsInHighContrastMode() override;
-  const ViewportMetrics& GetViewportMetrics() override;
+  const display::ViewportMetrics& GetViewportMetrics() const override;
 
  private:
   std::unique_ptr<ServerWindow> root_;
-  ViewportMetrics metrics_;
+  display::ViewportMetrics metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameGeneratorDelegate);
 };
@@ -332,6 +332,7 @@ class TestWindowManager : public mojom::WindowManager {
                          ui::mojom::WindowDataPtr root,
                          bool drawn) override {}
   void WmDisplayRemoved(int64_t display_id) override;
+  void WmDisplayModified(const display::Display& display) override {}
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    const gfx::Rect& bounds) override {}

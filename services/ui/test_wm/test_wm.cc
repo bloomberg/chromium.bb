@@ -90,6 +90,7 @@ class TestWM : public service_manager::Service,
         std::move(frame_decoration_values));
   }
   void OnWmDisplayRemoved(ui::Window* window) override { window->Destroy(); }
+  void OnWmDisplayModified(const display::Display& display) override {}
   void OnWmPerformMoveLoop(Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

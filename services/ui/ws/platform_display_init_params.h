@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
-#include "services/ui/ws/viewport_metrics.h"
+#include "services/ui/display/viewport_metrics.h"
 
 namespace ui {
 
@@ -23,9 +23,8 @@ struct PlatformDisplayInitParams {
 
   scoped_refptr<DisplayCompositor> display_compositor;
 
-  gfx::Rect display_bounds;
   int64_t display_id;
-  ViewportMetrics metrics;
+  display::ViewportMetrics metrics;
 };
 
 }  // namespace ws

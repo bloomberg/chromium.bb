@@ -146,15 +146,6 @@ void DefaultPlatformDisplay::SetCursorById(mojom::Cursor cursor_id) {
 #endif
 }
 
-float DefaultPlatformDisplay::GetDeviceScaleFactor() {
-  return metrics_.device_scale_factor;
-}
-
-display::Display::Rotation DefaultPlatformDisplay::GetRotation() {
-  // TODO(sky): implement me.
-  return display::Display::ROTATE_0;
-}
-
 void DefaultPlatformDisplay::UpdateTextInputState(
     const ui::TextInputState& state) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
@@ -185,20 +176,24 @@ void DefaultPlatformDisplay::OnGpuChannelEstablished(
   frame_generator_->OnGpuChannelEstablished(channel);
 }
 
-void DefaultPlatformDisplay::UpdateMetrics(const gfx::Rect& bounds,
-                                           const gfx::Size& pixel_size,
-                                           float device_scale_factor) {
-  // We don't care about the origin of the platform window, as that may not be
-  // related to the origin of the display in our screen space.
-  if (metrics_.bounds == bounds && metrics_.pixel_size == pixel_size &&
-      metrics_.device_scale_factor == device_scale_factor)
-    return;
+bool DefaultPlatformDisplay::UpdateViewportMetrics(
+    const display::ViewportMetrics& metrics) {
+  if (metrics_ == metrics)
+    return false;
 
-  ViewportMetrics old_metrics = metrics_;
-  metrics_.bounds = bounds;
-  metrics_.pixel_size = pixel_size;
-  metrics_.device_scale_factor = device_scale_factor;
-  delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
+  gfx::Rect bounds = platform_window_->GetBounds();
+  if (bounds.size() != metrics.pixel_size) {
+    bounds.set_size(metrics.pixel_size);
+    platform_window_->SetBounds(bounds);
+  }
+
+  metrics_ = metrics;
+  return true;
+}
+
+const display::ViewportMetrics& DefaultPlatformDisplay::GetViewportMetrics()
+    const {
+  return metrics_;
 }
 
 void DefaultPlatformDisplay::UpdateEventRootLocation(ui::LocatedEvent* event) {
@@ -208,12 +203,13 @@ void DefaultPlatformDisplay::UpdateEventRootLocation(ui::LocatedEvent* event) {
 }
 
 void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  // TODO(kylechar): We're updating the bounds assuming that the device scale
-  // factor is 1 here. The correct thing to do is let PlatformSreen know the
-  // display size has changed and let it update the display.
-  gfx::Size pixel_size = new_bounds.size();
-  gfx::Rect bounds = gfx::Rect(metrics_.bounds.origin(), pixel_size);
-  UpdateMetrics(bounds, pixel_size, metrics_.device_scale_factor);
+  // We only care if the window size has changed.
+  if (new_bounds.size() == metrics_.pixel_size)
+    return;
+
+  // TODO(kylechar): Maybe do something here. For CrOS we don't need to support
+  // PlatformWindow initiated resizes. For other platforms we need to do
+  // something but that isn't fully flushed out.
 }
 
 void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
@@ -295,10 +291,6 @@ ServerWindow* DefaultPlatformDisplay::GetRootWindow() {
 
 bool DefaultPlatformDisplay::IsInHighContrastMode() {
   return delegate_ ? delegate_->IsInHighContrastMode() : false;
-}
-
-const ViewportMetrics& DefaultPlatformDisplay::GetViewportMetrics() {
-  return metrics_;
 }
 
 }  // namespace ws

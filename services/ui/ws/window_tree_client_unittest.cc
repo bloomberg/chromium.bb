@@ -441,6 +441,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     NOTIMPLEMENTED();
   }
   void WmDisplayRemoved(int64_t display_id) override { NOTIMPLEMENTED(); }
+  void WmDisplayModified(const display::Display& display) override {
+    NOTIMPLEMENTED();
+  }
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
                    const gfx::Rect& bounds) override {

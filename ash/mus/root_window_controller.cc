@@ -126,18 +126,25 @@ WmWindowMus* RootWindowController::GetWindowByShellWindowId(int id) {
 }
 
 void RootWindowController::SetWorkAreaInests(const gfx::Insets& insets) {
+  gfx::Rect old_work_area = display_.work_area();
   display_.UpdateWorkAreaFromInsets(insets);
-  display::DisplayList* display_list =
-      window_manager_->screen()->display_list();
-  auto iter = display_list->FindDisplayById(display_.id());
-  DCHECK(iter != display_list->displays().end());
-  const display::DisplayList::Type display_type =
-      iter == display_list->GetPrimaryDisplayIterator()
-          ? display::DisplayList::Type::PRIMARY
-          : display::DisplayList::Type::NOT_PRIMARY;
-  display_list->UpdateDisplay(display_, display_type);
-  // TODO(kylechar): needs to push to DisplayController.
-  NOTIMPLEMENTED();
+
+  if (old_work_area == display_.work_area())
+    return;
+
+  window_manager_->screen()->display_list()->UpdateDisplay(display_);
+
+  // Push new display insets to service:ui if we have a connection.
+  auto* display_controller = window_manager_->GetDisplayController();
+  if (display_controller)
+    display_controller->SetDisplayWorkArea(display_.id(),
+                                           display_.bounds().size(), insets);
+}
+
+void RootWindowController::SetDisplay(const display::Display& display) {
+  DCHECK_EQ(display.id(), display_.id());
+  display_ = display;
+  window_manager_->screen()->display_list()->UpdateDisplay(display_);
 }
 
 gfx::Rect RootWindowController::CalculateDefaultBounds(

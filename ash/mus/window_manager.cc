@@ -24,6 +24,7 @@
 #include "ash/mus/window_manager_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/memory/ptr_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/event_matcher_util.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -53,6 +54,10 @@ void WindowManager::Init(
     const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
   DCHECK(!window_tree_client_);
   window_tree_client_ = std::move(window_tree_client);
+
+  // |connector_| will be null in some tests.
+  if (connector_)
+    connector_->ConnectToInterface("service:ui", &display_controller_);
 
   screen_ = base::MakeUnique<display::ScreenBase>();
 
@@ -134,6 +139,10 @@ void WindowManager::AddObserver(WindowManagerObserver* observer) {
 
 void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+display::mojom::DisplayController* WindowManager::GetDisplayController() {
+  return display_controller_ ? display_controller_.get() : nullptr;
 }
 
 RootWindowController* WindowManager::CreateRootWindowController(
@@ -331,6 +340,18 @@ void WindowManager::OnWmDisplayRemoved(ui::Window* window) {
   auto iter = FindRootWindowControllerByWindow(window);
   DCHECK(iter != root_window_controllers_.end());
   DestroyRootWindowController(iter->get());
+}
+
+void WindowManager::OnWmDisplayModified(const display::Display& display) {
+  for (auto& controller : root_window_controllers_) {
+    if (controller->display().id() == display.id()) {
+      controller->SetDisplay(display);
+      // The root window will be resized by the window server.
+      return;
+    }
+  }
+
+  NOTREACHED();
 }
 
 void WindowManager::OnWmPerformMoveLoop(

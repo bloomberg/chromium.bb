@@ -10,6 +10,8 @@ source_set("display") {
     "platform_screen.cc",
     "platform_screen.h",
     "platform_screen_delegate.h",
+    "viewport_metrics.cc",
+    "viewport_metrics.h",
   ]
 
   deps = [

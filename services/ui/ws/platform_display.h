@@ -79,10 +79,6 @@ class PlatformDisplay {
 
   virtual void SetCursorById(mojom::Cursor cursor) = 0;
 
-  virtual display::Display::Rotation GetRotation() = 0;
-
-  virtual float GetDeviceScaleFactor() = 0;
-
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
 
@@ -90,6 +86,13 @@ class PlatformDisplay {
   virtual bool IsFramePending() const = 0;
 
   virtual gfx::Rect GetBounds() const = 0;
+
+  // Updates the viewport metrics for the display, returning true if any
+  // metrics have changed.
+  virtual bool UpdateViewportMetrics(
+      const display::ViewportMetrics& metrics) = 0;
+
+  virtual const display::ViewportMetrics& GetViewportMetrics() const = 0;
 
   virtual bool IsPrimaryDisplay() const = 0;
 
@@ -128,21 +131,17 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void SetCapture() override;
   void ReleaseCapture() override;
   void SetCursorById(mojom::Cursor cursor) override;
-  float GetDeviceScaleFactor() override;
-  display::Display::Rotation GetRotation() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
   bool IsFramePending() const override;
   gfx::Rect GetBounds() const override;
+  bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
+  const display::ViewportMetrics& GetViewportMetrics() const override;
   bool IsPrimaryDisplay() const override;
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
 
  private:
-  void UpdateMetrics(const gfx::Rect& bounds,
-                     const gfx::Size& pixel_size,
-                     float device_scale_factor);
-
   // Update the root_location of located events to be relative to the origin
   // of this display. For example, if the origin of this display is (1800, 0)
   // and the location of the event is (100, 200) then the root_location will be
@@ -165,7 +164,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   // FrameGeneratorDelegate:
   ServerWindow* GetRootWindow() override;
   bool IsInHighContrastMode() override;
-  const ViewportMetrics& GetViewportMetrics() override;
 
   int64_t id_;
 
@@ -176,7 +174,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   PlatformDisplayDelegate* delegate_ = nullptr;
   std::unique_ptr<FrameGenerator> frame_generator_;
 
-  ViewportMetrics metrics_;
+  display::ViewportMetrics metrics_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultPlatformDisplay);

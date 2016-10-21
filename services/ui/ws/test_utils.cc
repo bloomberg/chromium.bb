@@ -54,22 +54,25 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetCursorById(mojom::Cursor cursor) override {
     *cursor_storage_ = cursor;
   }
-  display::Display::Rotation GetRotation() override {
-    return display::Display::Rotation::ROTATE_0;
-  }
-  float GetDeviceScaleFactor() override {
-    return display_metrics_.device_scale_factor;
-  }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
   void SetImeVisibility(bool visible) override {}
   bool IsFramePending() const override { return false; }
   gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
+  bool UpdateViewportMetrics(const display::ViewportMetrics& metrics) override {
+    if (display_metrics_ == metrics)
+      return false;
+    display_metrics_ = metrics;
+    return true;
+  }
+  const display::ViewportMetrics& GetViewportMetrics() const override {
+    return display_metrics_;
+  }
   bool IsPrimaryDisplay() const override { return is_primary_; }
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> host) override {}
 
  private:
-  ViewportMetrics display_metrics_;
+  display::ViewportMetrics display_metrics_;
 
   int64_t id_;
   bool is_primary_;
@@ -142,7 +145,8 @@ bool TestFrameGeneratorDelegate::IsInHighContrastMode() {
   return false;
 }
 
-const ViewportMetrics& TestFrameGeneratorDelegate::GetViewportMetrics() {
+const display::ViewportMetrics& TestFrameGeneratorDelegate::GetViewportMetrics()
+    const {
   return metrics_;
 }
 

@@ -6,7 +6,7 @@
 #define SERVICES_UI_WS_FRAME_GENERATOR_DELEGATE_H_
 
 #include "base/macros.h"
-#include "services/ui/ws/viewport_metrics.h"
+#include "services/ui/display/viewport_metrics.h"
 
 namespace ui {
 namespace ws {
@@ -20,7 +20,7 @@ class FrameGeneratorDelegate {
 
   virtual bool IsInHighContrastMode() = 0;
 
-  virtual const ViewportMetrics& GetViewportMetrics() = 0;
+  virtual const display::ViewportMetrics& GetViewportMetrics() const = 0;
 
  protected:
   virtual ~FrameGeneratorDelegate() {}

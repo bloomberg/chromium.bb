@@ -83,14 +83,10 @@ class DisplayManager : public UserIdTrackerObserver,
 
   // display::PlatformScreenDelegate:
   void OnDisplayAdded(int64_t id,
-                      const gfx::Rect& bounds,
-                      const gfx::Size& pixel_size,
-                      float scale_factor) override;
+                      const display::ViewportMetrics& metrics) override;
   void OnDisplayRemoved(int64_t id) override;
   void OnDisplayModified(int64_t id,
-                         const gfx::Rect& bounds,
-                         const gfx::Size& pixel_size,
-                         float scale_factor) override;
+                         const display::ViewportMetrics& metrics) override;
 
   WindowServer* window_server_;
   UserIdTracker* user_id_tracker_;

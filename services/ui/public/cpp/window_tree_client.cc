@@ -1273,6 +1273,11 @@ void WindowTreeClient::WmDisplayRemoved(int64_t display_id) {
   }
 }
 
+void WindowTreeClient::WmDisplayModified(const display::Display& display) {
+  DCHECK(window_manager_delegate_);
+  window_manager_delegate_->OnWmDisplayModified(display);
+}
+
 void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                        Id window_id,
                                        const gfx::Rect& transit_bounds) {

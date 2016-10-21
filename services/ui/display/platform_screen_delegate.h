@@ -15,30 +15,24 @@ class Size;
 namespace display {
 
 class PlatformScreen;
+struct ViewportMetrics;
 
 // The PlatformScreenDelegate will be informed of changes to the physical
 // and/or virtual displays by PlatformScreen.
 class PlatformScreenDelegate {
  public:
-  // Called when a display is added. |id| is the display id for the new display,
-  // |bounds| is the display origin and size in DIP, |pixel_size| is the size
-  // of the display in DDP and |device_scale_factor| is the output device pixel
-  // scale factor.
-  virtual void OnDisplayAdded(int64_t id,
-                              const gfx::Rect& bounds,
-                              const gfx::Size& pixel_size,
-                              float device_scale_factor) = 0;
+  // Called when a display is added. |id| is the display id of the new display
+  // and |metrics| contains display viewport information.
+  virtual void OnDisplayAdded(int64_t id, const ViewportMetrics& metrics) = 0;
 
-  // Called when a display is removed. |id| is the display id for the display
+  // Called when a display is removed. |id| is the display id of the display
   // that was removed.
   virtual void OnDisplayRemoved(int64_t id) = 0;
 
-  // Called when a display is modified. See OnDisplayAdded() for parameter
-  // information.
+  // Called when a display is modified. |id| is the display id of the modified
+  // display and |metrics| contains updated display viewport information.
   virtual void OnDisplayModified(int64_t id,
-                                 const gfx::Rect& bounds,
-                                 const gfx::Size& pixel_size,
-                                 float device_scale_factor) = 0;
+                                 const ViewportMetrics& metrics) = 0;
 
  protected:
   virtual ~PlatformScreenDelegate() {}

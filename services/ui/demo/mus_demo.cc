@@ -134,6 +134,8 @@ void MusDemo::OnWmDisplayRemoved(ui::Window* window) {
   window->Destroy();
 }
 
+void MusDemo::OnWmDisplayModified(const display::Display& display) {}
+
 void MusDemo::OnWmPerformMoveLoop(Window* window,
                                   mojom::MoveLoopSource source,
                                   const gfx::Point& cursor_location,
