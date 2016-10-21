@@ -338,8 +338,7 @@ public class BluetoothChooserDialog
     @VisibleForTesting
     @CalledByNative
     void addOrUpdateDevice(String deviceId, String deviceName) {
-        mItemChooserDialog.addOrUpdateItem(
-                new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
+        mItemChooserDialog.addOrUpdateItem(deviceId, deviceName);
     }
 
     @VisibleForTesting

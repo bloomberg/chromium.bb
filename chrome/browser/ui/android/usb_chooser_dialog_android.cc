@@ -211,10 +211,7 @@ void UsbChooserDialogAndroid::RemoveDeviceFromChooserDialog(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> device_guid =
       base::android::ConvertUTF8ToJavaString(env, device->guid());
-  base::android::ScopedJavaLocalRef<jstring> device_name =
-      base::android::ConvertUTF16ToJavaString(env, device->product_string());
-  Java_UsbChooserDialog_removeDevice(env, java_dialog_, device_guid,
-                                     device_name);
+  Java_UsbChooserDialog_removeDevice(env, java_dialog_, device_guid);
 }
 
 void UsbChooserDialogAndroid::OpenUrl(const std::string& url) {

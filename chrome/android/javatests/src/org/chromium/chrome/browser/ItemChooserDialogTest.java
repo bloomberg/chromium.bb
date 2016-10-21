@@ -133,8 +133,8 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         assertFalse(button.isEnabled());
         assertEquals(View.GONE, items.getVisibility());
 
-        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key", "key"));
-        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
 
         // Two items showing, the empty view should be no more and the button
         // should now be enabled.
@@ -153,7 +153,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         assertFalse(button.isEnabled());
 
         // Select the first item and verify it got selected.
-        selectItem(dialog, 1, "key", true);
+        selectItem(dialog, 1, "key1", true);
 
         mChooserDialog.dismiss();
     }
@@ -191,11 +191,11 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
 
-        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key", "key"));
-        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
 
         // Disable one item and try to select it.
-        mChooserDialog.setEnabled("key", false);
+        mChooserDialog.setEnabled("key1", false);
         selectItem(dialog, 1, "None", false);
         // The other is still selectable.
         selectItem(dialog, 2, "key2", true);
@@ -211,8 +211,8 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key1", "desc1"));
-        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key2", "desc2"));
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
 
         selectItem(dialog, 1, "key1", true);
         assertTrue(button.isEnabled());
@@ -233,17 +233,13 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        ItemChooserDialog.ItemChooserRow item1 =
-                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
-        ItemChooserDialog.ItemChooserRow item2 =
-                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
-        mChooserDialog.addOrUpdateItem(item1);
-        mChooserDialog.addOrUpdateItem(item2);
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
 
         selectItem(dialog, 1, "key1", true);
         assertTrue(button.isEnabled());
 
-        mChooserDialog.removeItemFromList(item1);
+        mChooserDialog.removeItemFromList("key1");
         assertFalse(button.isEnabled());
 
         mChooserDialog.dismiss();
@@ -257,27 +253,20 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         final Button button = (Button) dialog.findViewById(R.id.positive);
         ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
-        ItemChooserDialog.ItemChooserRow item1 =
-                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
-        ItemChooserDialog.ItemChooserRow item2 =
-                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
-        ItemChooserDialog.ItemChooserRow item3 =
-                new ItemChooserDialog.ItemChooserRow("key3", "desc3");
-
-        mChooserDialog.addOrUpdateItem(item1);
-        mChooserDialog.addOrUpdateItem(item2);
-        mChooserDialog.addOrUpdateItem(item3);
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
+        mChooserDialog.addOrUpdateItem("key3", "desc3");
 
         selectItem(dialog, 2, "key2", true);
         assertTrue(button.isEnabled());
 
         // Remove the item before the currently selected item.
-        mChooserDialog.removeItemFromList(item1);
+        mChooserDialog.removeItemFromList("key1");
         assertTrue(button.isEnabled());
         assertEquals("key2", itemAdapter.getSelectedItemKey());
 
         // Remove the item after the currently selected item.
-        mChooserDialog.removeItemFromList(item3);
+        mChooserDialog.removeItemFromList("key3");
         assertTrue(button.isEnabled());
         assertEquals("key2", itemAdapter.getSelectedItemKey());
 
@@ -292,22 +281,15 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         final Button button = (Button) dialog.findViewById(R.id.positive);
         ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
-        ItemChooserDialog.ItemChooserRow item1 =
-                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
-        ItemChooserDialog.ItemChooserRow item2 =
-                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
-        ItemChooserDialog.ItemChooserRow item3 =
-                new ItemChooserDialog.ItemChooserRow("key3", "desc3");
-
-        mChooserDialog.addOrUpdateItem(item1);
-        mChooserDialog.addOrUpdateItem(item2);
-        mChooserDialog.addOrUpdateItem(item3);
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
+        mChooserDialog.addOrUpdateItem("key3", "desc3");
 
         selectItem(dialog, 2, "key2", true);
         assertTrue(button.isEnabled());
 
         // Remove the selected item.
-        mChooserDialog.removeItemFromList(item2);
+        mChooserDialog.removeItemFromList("key2");
         assertFalse(button.isEnabled());
         assertEquals("", itemAdapter.getSelectedItemKey());
 
@@ -316,7 +298,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @LargeTest
     @UiThreadTest
-    public void testAddOrUpdateItemAndRemoveItemFromList() throws InterruptedException {
+    public void testUpdateItemAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
 
@@ -326,48 +308,84 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
         ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
-        ItemChooserDialog.ItemChooserRow nonExistentItem =
-                new ItemChooserDialog.ItemChooserRow("key", "key");
+        final String nonExistentKey = "key";
 
         // Initially the itemAdapter is empty.
         assertTrue(itemAdapter.isEmpty());
 
         // Try removing an item from an empty itemAdapter.
-        mChooserDialog.removeItemFromList(nonExistentItem);
+        mChooserDialog.removeItemFromList(nonExistentKey);
         assertTrue(itemAdapter.isEmpty());
 
         // Add item 1.
-        ItemChooserDialog.ItemChooserRow item1 =
-                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
-        mChooserDialog.addOrUpdateItem(item1);
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
         assertEquals(1, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1);
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
 
-        // Add item 1 with different description.
-        ItemChooserDialog.ItemChooserRow item1_again =
-                new ItemChooserDialog.ItemChooserRow("key1", "desc1_again");
-        mChooserDialog.addOrUpdateItem(item1_again);
+        // Update item 1 with different description.
+        mChooserDialog.addOrUpdateItem("key1", "desc2");
         assertEquals(1, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1_again);
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc2"));
+
+        mChooserDialog.setIdleState();
+
+        // Remove item 1.
+        mChooserDialog.removeItemFromList("key1");
+        assertTrue(itemAdapter.isEmpty());
+
+        // Listview should now be showing empty, with an empty view visible
+        // and the button should not be enabled.
+        // The chooser should show a status message at the bottom.
+        assertEquals(View.GONE, items.getVisibility());
+        assertEquals(View.VISIBLE, items.getEmptyView().getVisibility());
+        assertEquals("statusIdleNoneFound", statusView.getText().toString());
+        assertFalse(button.isEnabled());
+
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    @UiThreadTest
+    public void testAddItemAndRemoveItemFromList() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        TextViewWithClickableSpans statusView =
+                (TextViewWithClickableSpans) dialog.findViewById(R.id.status);
+        final ListView items = (ListView) dialog.findViewById(R.id.items);
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+        final String nonExistentKey = "key";
+
+        // Initially the itemAdapter is empty.
+        assertTrue(itemAdapter.isEmpty());
+
+        // Try removing an item from an empty itemAdapter.
+        mChooserDialog.removeItemFromList(nonExistentKey);
+        assertTrue(itemAdapter.isEmpty());
+
+        // Add item 1.
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
+        assertEquals(1, itemAdapter.getCount());
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
 
         // Add item 2.
-        ItemChooserDialog.ItemChooserRow item2 =
-                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
-        mChooserDialog.addOrUpdateItem(item2);
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
         assertEquals(2, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1_again);
-        assertEquals(itemAdapter.getItem(1), item2);
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
+        assertTrue(itemAdapter.getItem(1).hasSameContents("key2", "desc2"));
 
         mChooserDialog.setIdleState();
 
         // Try removing an item that doesn't exist.
-        mChooserDialog.removeItemFromList(nonExistentItem);
+        mChooserDialog.removeItemFromList(nonExistentKey);
         assertEquals(2, itemAdapter.getCount());
 
         // Remove item 2.
-        mChooserDialog.removeItemFromList(item2);
+        mChooserDialog.removeItemFromList("key2");
         assertEquals(1, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1_again);
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
 
         // The list should be visible with one item, it should not show
         // the empty view and the button should not be enabled.
@@ -378,7 +396,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         assertFalse(button.isEnabled());
 
         // Remove item 1.
-        mChooserDialog.removeItemFromList(item1_again);
+        mChooserDialog.removeItemFromList("key1");
         assertTrue(itemAdapter.isEmpty());
 
         // Listview should now be showing empty, with an empty view visible
@@ -401,52 +419,41 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
 
         // Add item 1.
-        ItemChooserDialog.ItemChooserRow item1 =
-                new ItemChooserDialog.ItemChooserRow("device_id_1", "same_device_name");
-        mChooserDialog.addOrUpdateItem(item1);
+        mChooserDialog.addOrUpdateItem("key1", "desc1");
         assertEquals(1, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1);
-
         // Add item 2.
-        ItemChooserDialog.ItemChooserRow item2 =
-                new ItemChooserDialog.ItemChooserRow("device_id_2", "different_device_name");
-        mChooserDialog.addOrUpdateItem(item2);
+        mChooserDialog.addOrUpdateItem("key2", "desc2");
         assertEquals(2, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1);
-        assertEquals(itemAdapter.getItem(1), item2);
-
-        // Add item 3.
-        ItemChooserDialog.ItemChooserRow item3 =
-                new ItemChooserDialog.ItemChooserRow("device_id_3", "same_device_name");
-        mChooserDialog.addOrUpdateItem(item3);
+        // Add item 3 with same description as item 1.
+        mChooserDialog.addOrUpdateItem("key3", "desc1");
         assertEquals(3, itemAdapter.getCount());
-        assertEquals(itemAdapter.getItem(0), item1);
-        assertEquals(itemAdapter.getItem(1), item2);
-        assertEquals(itemAdapter.getItem(2), item3);
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
+        assertTrue(itemAdapter.getItem(1).hasSameContents("key2", "desc2"));
+        assertTrue(itemAdapter.getItem(2).hasSameContents("key3", "desc1"));
 
         // Since two items have the same name, their display text should have their unique
         // keys appended.
-        assertEquals("same_device_name (device_id_1)", itemAdapter.getDisplayText(0));
-        assertEquals("different_device_name", itemAdapter.getDisplayText(1));
-        assertEquals("same_device_name (device_id_3)", itemAdapter.getDisplayText(2));
+        assertEquals("desc1 (key1)", itemAdapter.getDisplayText(0));
+        assertEquals("desc2", itemAdapter.getDisplayText(1));
+        assertEquals("desc1 (key3)", itemAdapter.getDisplayText(2));
 
         // Remove item 2.
-        mChooserDialog.removeItemFromList(item2);
+        mChooserDialog.removeItemFromList("key2");
         assertEquals(2, itemAdapter.getCount());
         // Make sure the remaining items are item 1 and item 3.
-        assertEquals(itemAdapter.getItem(0), item1);
-        assertEquals(itemAdapter.getItem(1), item3);
-        assertEquals("same_device_name (device_id_1)", itemAdapter.getDisplayText(0));
-        assertEquals("same_device_name (device_id_3)", itemAdapter.getDisplayText(1));
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key1", "desc1"));
+        assertTrue(itemAdapter.getItem(1).hasSameContents("key3", "desc1"));
+        assertEquals("desc1 (key1)", itemAdapter.getDisplayText(0));
+        assertEquals("desc1 (key3)", itemAdapter.getDisplayText(1));
 
         // Remove item 1.
-        mChooserDialog.removeItemFromList(item1);
+        mChooserDialog.removeItemFromList("key1");
         assertEquals(1, itemAdapter.getCount());
         // Make sure the remaining item is item 3.
-        assertEquals(itemAdapter.getItem(0), item3);
+        assertTrue(itemAdapter.getItem(0).hasSameContents("key3", "desc1"));
         // After removing item 1, item 3 is the only remaining item, so its display text
         // also changed to its original description.
-        assertEquals("same_device_name", itemAdapter.getDisplayText(0));
+        assertEquals("desc1", itemAdapter.getDisplayText(0));
 
         mChooserDialog.dismiss();
     }
