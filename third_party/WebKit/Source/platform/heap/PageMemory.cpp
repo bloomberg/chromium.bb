@@ -5,6 +5,7 @@
 #include "platform/heap/PageMemory.h"
 
 #include "platform/heap/Heap.h"
+#include "wtf/AddressSanitizer.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
 #include "wtf/allocator/PageAllocator.h"
@@ -21,6 +22,7 @@ bool MemoryRegion::commit() {
 }
 
 void MemoryRegion::decommit() {
+  ASAN_UNPOISON_MEMORY_REGION(m_base, m_size);
   WTF::decommitSystemPages(m_base, m_size);
   WTF::setSystemPagesInaccessible(m_base, m_size);
 }
