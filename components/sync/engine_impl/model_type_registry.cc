@@ -88,47 +88,36 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
   enabled_directory_types_.Clear();
 
   // Create new ones and add them to the appropriate containers.
-  for (ModelSafeRoutingInfo::const_iterator routing_iter = routing_info.begin();
-       routing_iter != routing_info.end(); ++routing_iter) {
-    ModelType type = routing_iter->first;
-    ModelSafeGroup group = routing_iter->second;
+  for (const auto& routing_kv : routing_info) {
+    ModelType type = routing_kv.first;
+    ModelSafeGroup group = routing_kv.second;
     if (group == GROUP_NON_BLOCKING)
       continue;
+
     std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>>::iterator
         worker_it = workers_map_.find(group);
     DCHECK(worker_it != workers_map_.end());
     scoped_refptr<ModelSafeWorker> worker = worker_it->second;
 
-    // DebugInfoEmitters are never deleted.  Use existing one if we have it.
-    DirectoryTypeDebugInfoEmitter* emitter = nullptr;
-    DirectoryTypeDebugInfoEmitterMap::iterator it =
-        directory_type_debug_info_emitter_map_.find(type);
-    if (it != directory_type_debug_info_emitter_map_.end()) {
-      emitter = it->second;
-    } else {
-      emitter = new DirectoryTypeDebugInfoEmitter(directory_, type,
-                                                  &type_debug_info_observers_);
-      directory_type_debug_info_emitter_map_.insert(
-          std::make_pair(type, emitter));
-      directory_type_debug_info_emitters_.push_back(emitter);
-    }
+    DirectoryTypeDebugInfoEmitter* emitter = GetOrCreateEmitter(type);
 
-    DirectoryCommitContributor* committer =
-        new DirectoryCommitContributor(directory_, type, emitter);
-    DirectoryUpdateHandler* updater =
-        new DirectoryUpdateHandler(directory_, type, worker, emitter);
+    auto updater = base::MakeUnique<DirectoryUpdateHandler>(directory_, type,
+                                                            worker, emitter);
+    bool updater_inserted =
+        update_handler_map_.insert(std::make_pair(type, updater.get())).second;
+    DCHECK(updater_inserted)
+        << "Attempt to override existing type handler in map";
+    directory_update_handlers_.push_back(std::move(updater));
 
-    // These containers take ownership of their contents.
-    directory_commit_contributors_.push_back(committer);
-    directory_update_handlers_.push_back(updater);
+    auto committer =
+        base::MakeUnique<DirectoryCommitContributor>(directory_, type, emitter);
+    bool committer_inserted =
+        commit_contributor_map_.insert(std::make_pair(type, committer.get()))
+            .second;
+    DCHECK(committer_inserted)
+        << "Attempt to override existing type handler in map";
+    directory_commit_contributors_.push_back(std::move(committer));
 
-    bool inserted1 =
-        update_handler_map_.insert(std::make_pair(type, updater)).second;
-    DCHECK(inserted1) << "Attempt to override existing type handler in map";
-
-    bool inserted2 =
-        commit_contributor_map_.insert(std::make_pair(type, committer)).second;
-    DCHECK(inserted2) << "Attempt to override existing type handler in map";
     enabled_directory_types_.Put(type);
   }
 
@@ -148,14 +137,13 @@ void ModelTypeRegistry::ConnectType(
   if (encrypted_types_.Has(type))
     cryptographer_copy = base::MakeUnique<Cryptographer>(*cryptographer_);
 
-  std::unique_ptr<ModelTypeWorker> worker(new ModelTypeWorker(
+  auto worker = base::MakeUnique<ModelTypeWorker>(
       type, activation_context->model_type_state, std::move(cryptographer_copy),
-      nudge_handler_, std::move(activation_context->type_processor)));
+      nudge_handler_, std::move(activation_context->type_processor));
 
   // Initialize Processor -> Worker communication channel.
-  std::unique_ptr<CommitQueue> commit_queue_proxy(new CommitQueueProxy(
-      worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
-                               base::ThreadTaskRunnerHandle::Get())));
+  auto commit_queue_proxy = base::MakeUnique<CommitQueueProxy>(
+      worker->AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
 
   type_processor->ConnectSync(std::move(commit_queue_proxy));
 
@@ -183,14 +171,11 @@ void ModelTypeRegistry::DisconnectType(ModelType type) {
   DCHECK_EQ(1U, updaters_erased);
   DCHECK_EQ(1U, committers_erased);
 
-  // Remove from the ScopedVector, deleting the worker in the process.
-  for (ScopedVector<ModelTypeWorker>::iterator it = model_type_workers_.begin();
-       it != model_type_workers_.end(); ++it) {
-    if ((*it)->GetModelType() == type) {
-      model_type_workers_.erase(it);
-      break;
-    }
-  }
+  model_type_workers_.erase(std::remove_if(
+      model_type_workers_.begin(), model_type_workers_.end(),
+      [type](const std::unique_ptr<ModelTypeWorker>& worker) -> bool {
+        return worker->GetModelType() == type;
+      }));
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
@@ -221,11 +206,6 @@ CommitContributorMap* ModelTypeRegistry::commit_contributor_map() {
   return &commit_contributor_map_;
 }
 
-DirectoryTypeDebugInfoEmitterMap*
-ModelTypeRegistry::directory_type_debug_info_emitter_map() {
-  return &directory_type_debug_info_emitter_map_;
-}
-
 void ModelTypeRegistry::RegisterDirectoryTypeDebugInfoObserver(
     TypeDebugInfoObserver* observer) {
   if (!type_debug_info_observers_.HasObserver(observer))
@@ -243,12 +223,10 @@ bool ModelTypeRegistry::HasDirectoryTypeDebugInfoObserver(
 }
 
 void ModelTypeRegistry::RequestEmitDebugInfo() {
-  for (DirectoryTypeDebugInfoEmitterMap::iterator it =
-           directory_type_debug_info_emitter_map_.begin();
-       it != directory_type_debug_info_emitter_map_.end(); ++it) {
-    it->second->EmitCommitCountersUpdate();
-    it->second->EmitUpdateCountersUpdate();
-    it->second->EmitStatusCountersUpdate();
+  for (const auto& kv : directory_type_debug_info_emitter_map_) {
+    kv.second->EmitCommitCountersUpdate();
+    kv.second->EmitUpdateCountersUpdate();
+    kv.second->EmitStatusCountersUpdate();
   }
 }
 
@@ -261,10 +239,9 @@ void ModelTypeRegistry::OnPassphraseRequired(
     const sync_pb::EncryptedData& pending_keys) {}
 
 void ModelTypeRegistry::OnPassphraseAccepted() {
-  for (ScopedVector<ModelTypeWorker>::iterator it = model_type_workers_.begin();
-       it != model_type_workers_.end(); ++it) {
-    if (encrypted_types_.Has((*it)->GetModelType())) {
-      (*it)->EncryptionAcceptedApplyUpdates();
+  for (const auto& worker : model_type_workers_) {
+    if (encrypted_types_.Has(worker->GetModelType())) {
+      worker->EncryptionAcceptedApplyUpdates();
     }
   }
 }
@@ -298,26 +275,39 @@ void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
 void ModelTypeRegistry::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {}
 
-ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
-  return enabled_directory_types_;
-}
-
 void ModelTypeRegistry::OnEncryptionStateChanged() {
-  for (ScopedVector<ModelTypeWorker>::iterator it = model_type_workers_.begin();
-       it != model_type_workers_.end(); ++it) {
-    if (encrypted_types_.Has((*it)->GetModelType())) {
-      (*it)->UpdateCryptographer(
+  for (const auto& worker : model_type_workers_) {
+    if (encrypted_types_.Has(worker->GetModelType())) {
+      worker->UpdateCryptographer(
           base::MakeUnique<Cryptographer>(*cryptographer_));
     }
   }
 }
 
+DirectoryTypeDebugInfoEmitter* ModelTypeRegistry::GetOrCreateEmitter(
+    ModelType type) {
+  DirectoryTypeDebugInfoEmitter* raw_emitter = nullptr;
+  auto it = directory_type_debug_info_emitter_map_.find(type);
+  if (it != directory_type_debug_info_emitter_map_.end()) {
+    raw_emitter = it->second.get();
+  } else {
+    auto emitter = base::MakeUnique<DirectoryTypeDebugInfoEmitter>(
+        directory_, type, &type_debug_info_observers_);
+    raw_emitter = emitter.get();
+    directory_type_debug_info_emitter_map_.insert(
+        std::make_pair(type, std::move(emitter)));
+  }
+  return raw_emitter;
+}
+
+ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
+  return enabled_directory_types_;
+}
+
 ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {
   ModelTypeSet enabled_non_blocking_types;
-  for (ScopedVector<ModelTypeWorker>::const_iterator it =
-           model_type_workers_.begin();
-       it != model_type_workers_.end(); ++it) {
-    enabled_non_blocking_types.Put((*it)->GetModelType());
+  for (const auto& worker : model_type_workers_) {
+    enabled_non_blocking_types.Put(worker->GetModelType());
   }
   return enabled_non_blocking_types;
 }

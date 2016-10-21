@@ -17,20 +17,20 @@ namespace {
 void NonPassiveApplyUpdates(ModelTypeSet gu_types,
                             StatusController* status_controller,
                             UpdateHandlerMap* update_handler_map) {
-  for (UpdateHandlerMap::iterator it = update_handler_map->begin();
-       it != update_handler_map->end(); ++it) {
-    if (gu_types.Has(it->first))
-      it->second->ApplyUpdates(status_controller);
+  for (const auto& kv : *update_handler_map) {
+    if (gu_types.Has(kv.first)) {
+      kv.second->ApplyUpdates(status_controller);
+    }
   }
 }
 
 void PassiveApplyUpdates(ModelTypeSet gu_types,
                          StatusController* status_controller,
                          UpdateHandlerMap* update_handler_map) {
-  for (UpdateHandlerMap::iterator it = update_handler_map->begin();
-       it != update_handler_map->end(); ++it) {
-    if (gu_types.Has(it->first))
-      it->second->PassiveApplyUpdates(status_controller);
+  for (const auto& kv : *update_handler_map) {
+    if (gu_types.Has(kv.first)) {
+      kv.second->PassiveApplyUpdates(status_controller);
+    }
   }
 }
 
