@@ -913,9 +913,6 @@ const char kDisableWebRtcHWEncodingVPx[] = "vpx";
 const char kDisableWebRtcHWEncodingH264[] = "h264";
 const char kDisableWebRtcHWEncodingNone[] = "none";
 
-// Enables H264 HW encode acceleration for WebRTC.
-const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
-
 // Enables Origin header in Stun messages for WebRTC.
 const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
 

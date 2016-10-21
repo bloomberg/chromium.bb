@@ -685,9 +685,6 @@ void ChromeContentBrowserClientExtensionsPart::
   DCHECK(profile);
   if (ProcessMap::Get(profile)->Contains(process->GetID())) {
     command_line->AppendSwitch(switches::kExtensionProcess);
-#if defined(ENABLE_WEBRTC)
-    command_line->AppendSwitch(::switches::kEnableWebRtcHWH264Encoding);
-#endif
   }
 }
 

@@ -48,15 +48,12 @@ void VEAToWebRTCCodecs(
     // Enable H264 HW encode for WebRTC when SW fallback is available, which is
     // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
     // removed when SW implementation is fully enabled.
-    // kEnableWebRtcHWH264Encoding flag is only enabled for extensions, and
-    // can be used without SW fallback.
     bool webrtc_h264_sw_enabled = false;
 #if BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
     webrtc_h264_sw_enabled =
         base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg);
 #endif  // BUILDFLAG(RTC_USE_H264) && !defined(MEDIA_DISABLE_FFMPEG)
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWH264Encoding) ||
-        webrtc_h264_sw_enabled ||
+    if (webrtc_h264_sw_enabled ||
         !IsCodecDisabledByCommandLine(cmd_line,
                                       switches::kDisableWebRtcHWEncodingH264)) {
       codecs->push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(

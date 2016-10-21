@@ -265,7 +265,6 @@ CONTENT_EXPORT extern const char kDisableWebRtcHWEncoding[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWEncodingVPx[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWEncodingH264[];
 CONTENT_EXPORT extern const char kDisableWebRtcHWEncodingNone[];
-CONTENT_EXPORT extern const char kEnableWebRtcHWH264Encoding[];
 CONTENT_EXPORT extern const char kEnableWebRtcStunOrigin[];
 CONTENT_EXPORT extern const char kEnforceWebRtcIPPermissionCheck[];
 CONTENT_EXPORT extern const char kForceWebRtcIPHandlingPolicy[];
