@@ -158,6 +158,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(gfx::Path* mask) const override;
+  base::string16 GetAccessibleWindowTitle() const override;
 
   // Overridden from views::BubbleDialogDelegateView.
   gfx::Rect GetAnchorRect() const override;

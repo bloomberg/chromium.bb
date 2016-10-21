@@ -427,6 +427,10 @@ void TrayBubbleView::GetWidgetHitTestMask(gfx::Path* mask) const {
   mask->addRect(gfx::RectToSkRect(GetBubbleFrameView()->GetContentsBounds()));
 }
 
+base::string16 TrayBubbleView::GetAccessibleWindowTitle() const {
+  return delegate_->GetAccessibleNameForBubble();
+}
+
 gfx::Size TrayBubbleView::GetPreferredSize() const {
   return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
 }
