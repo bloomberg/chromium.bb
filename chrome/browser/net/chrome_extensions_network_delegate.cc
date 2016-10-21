@@ -18,10 +18,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -164,6 +166,40 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  GURL url(request->url());
+
+  // Block top-level navigations to blob: or filesystem: URLs with extension
+  // origin from non-extension processes.  See https://crbug.com/645028.
+  //
+  // TODO(alexmos): This check is redundant with the one in
+  // ExtensionNavigationThrottle::WillStartRequest, which was introduced in
+  // M56. This check is reintroduced temporarily to tighten this blocking for
+  // apps with a "webview" permission on M55/54 (see https://crbug.com/656752).
+  // It will be removed after it's merged.  Unlike the check in
+  // ExtensionNavigationThrottle, this check is incompatible with PlzNavigate
+  // and is disabled for that mode.
+  bool is_nested_url = url.SchemeIsFileSystem() || url.SchemeIsBlob();
+  bool is_navigation =
+      info && content::IsResourceTypeFrame(info->GetResourceType());
+  url::Origin origin(url);
+  if (is_nested_url && is_navigation && info->IsMainFrame() &&
+      origin.scheme() == extensions::kExtensionScheme &&
+      !extension_info_map_->process_map().Contains(info->GetChildID()) &&
+      !content::IsBrowserSideNavigationEnabled()) {
+    // Relax this restriction for apps that use <webview>.  See
+    // https://crbug.com/652077.
+    const extensions::Extension* extension =
+        extension_info_map_->extensions().GetByID(origin.host());
+    bool has_webview_permission =
+        extension &&
+        extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kWebView);
+    if (!has_webview_permission)
+      return net::ERR_ABORTED;
+  }
+
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_, extension_info_map_.get(), request, callback, new_url);
 }
