@@ -12,7 +12,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface_id.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/surfaces/compositor_frame_sink.h"
+#include "services/ui/surfaces/display_compositor_frame_sink.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_surface.h"
@@ -45,7 +45,7 @@ FrameGenerator::~FrameGenerator() {
 void FrameGenerator::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   if (widget_ != gfx::kNullAcceleratedWidget) {
-    compositor_frame_sink_ = base::MakeUnique<surfaces::CompositorFrameSink>(
+    compositor_frame_sink_ = base::MakeUnique<DisplayCompositorFrameSink>(
         frame_sink_id_, base::ThreadTaskRunnerHandle::Get(), widget_,
         std::move(channel), display_compositor_);
   } else {
@@ -62,9 +62,9 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   widget_ = widget;
   if (gpu_channel_ && widget != gfx::kNullAcceleratedWidget) {
-    compositor_frame_sink_.reset(new surfaces::CompositorFrameSink(
+    compositor_frame_sink_ = base::MakeUnique<DisplayCompositorFrameSink>(
         frame_sink_id_, base::ThreadTaskRunnerHandle::Get(), widget_,
-        std::move(gpu_channel_), display_compositor_));
+        std::move(gpu_channel_), display_compositor_);
   }
 }
 

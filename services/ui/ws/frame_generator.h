@@ -31,11 +31,8 @@ class GpuChannelHost;
 
 namespace ui {
 
-namespace surfaces {
-class CompositorFrameSink;
-}
-
 class DisplayCompositor;
+class DisplayCompositorFrameSink;
 
 namespace ws {
 
@@ -118,7 +115,7 @@ class FrameGenerator : public ServerWindowObserver {
   cc::SurfaceSequenceGenerator surface_sequence_generator_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
-  std::unique_ptr<surfaces::CompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<DisplayCompositorFrameSink> compositor_frame_sink_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
   // The region that needs to be redrawn next time the compositor frame is

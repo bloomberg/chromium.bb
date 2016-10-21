@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/compositor_frame_sink.h"
+#include "services/ui/surfaces/display_compositor_frame_sink.h"
 
 #include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
@@ -23,9 +23,8 @@
 #endif
 
 namespace ui {
-namespace surfaces {
 
-CompositorFrameSink::CompositorFrameSink(
+DisplayCompositorFrameSink::DisplayCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gfx::AcceleratedWidget widget,
@@ -81,13 +80,13 @@ CompositorFrameSink::CompositorFrameSink(
   display_->SetVisible(true);
 }
 
-CompositorFrameSink::~CompositorFrameSink() {
+DisplayCompositorFrameSink::~DisplayCompositorFrameSink() {
   display_compositor_->manager()->UnregisterSurfaceFactoryClient(
       frame_sink_id_);
   display_compositor_->manager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-void CompositorFrameSink::SubmitCompositorFrame(
+void DisplayCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame,
     const base::Callback<void()>& callback) {
   gfx::Size frame_size =
@@ -105,33 +104,32 @@ void CompositorFrameSink::SubmitCompositorFrame(
   factory_.SubmitCompositorFrame(local_frame_id_, std::move(frame), callback);
 }
 
-void CompositorFrameSink::ReturnResources(
+void DisplayCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   // TODO(fsamuel): Implement this.
 }
 
-void CompositorFrameSink::SetBeginFrameSource(
+void DisplayCompositorFrameSink::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(fsamuel): Implement this.
 }
 
-void CompositorFrameSink::DisplayOutputSurfaceLost() {
+void DisplayCompositorFrameSink::DisplayOutputSurfaceLost() {
   // TODO(fsamuel): This looks like it would crash if a frame was in flight and
   // will be submitted.
   display_.reset();
 }
 
-void CompositorFrameSink::DisplayWillDrawAndSwap(
+void DisplayCompositorFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const cc::RenderPassList& render_passes) {
   // This notification is not relevant to our client outside of tests.
 }
 
-void CompositorFrameSink::DisplayDidDrawAndSwap() {
+void DisplayCompositorFrameSink::DisplayDidDrawAndSwap() {
   // This notification is not relevant to our client outside of tests. We
   // unblock the client from the DrawCallback when the surface is going to
   // be drawn.
 }
 
-}  // namespace surfaces
 }  // namespace ui

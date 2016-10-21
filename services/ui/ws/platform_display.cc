@@ -13,7 +13,6 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/display/platform_screen.h"
-#include "services/ui/surfaces/compositor_frame_sink.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/platform_display_init_params.h"
