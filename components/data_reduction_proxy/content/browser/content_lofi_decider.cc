@@ -8,6 +8,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/resource_request_info.h"
@@ -38,23 +39,13 @@ bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
 
 void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
     const net::URLRequest& request,
+    bool is_previews_disabled,
     net::HttpRequestHeaders* headers) const {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
 
   if (!request_info)
     return;
-
-  content::ResourceType resource_type = request_info->GetResourceType();
-
-  // The Lo-Fi and Lite Page directives should not be added for users in the
-  // Lo-Fi field trial "Control" group.
-  bool lofi_enabled_via_flag_or_field_trial =
-      params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
-
-  bool lite_page_via_flag_or_field_trial =
-      params::AreLitePagesEnabledViaFlags() ||
-      params::IsIncludedInLitePageFieldTrial();
 
   // Previews only operate on HTTP.
   if (!request.url().SchemeIs("http"))
@@ -64,14 +55,31 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
   if (headers->HasHeader(chrome_proxy_accept_transform_header()))
     return;
 
+  content::ResourceType resource_type = request_info->GetResourceType();
+
   if (resource_type == content::RESOURCE_TYPE_MEDIA) {
     headers->SetHeader(chrome_proxy_accept_transform_header(),
                        compressed_video_directive());
     return;
   }
 
-  // User is not using Lo-Fi or is part of the "Control" group.
-  if (!request_info->IsUsingLoFi() || !lofi_enabled_via_flag_or_field_trial)
+  // The Lo-Fi and Lite Page directives should not be added for users in the
+  // Lo-Fi field trial "Control" group.
+  bool lofi_enabled_via_flags_or_field_trial =
+      params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
+
+  bool lite_page_enabled_via_flags_or_field_trial =
+      (params::IsLoFiOnViaFlags() && params::AreLitePagesEnabledViaFlags()) ||
+      params::IsIncludedInLitePageFieldTrial();
+
+  // User does not have previews enabled.
+  if (!lofi_enabled_via_flags_or_field_trial &&
+      !lite_page_enabled_via_flags_or_field_trial) {
+    return;
+  }
+
+  // Previews has been disabled.
+  if (is_previews_disabled)
     return;
 
   // LoFi is not allowed on the main frame, stylesheet, script, font resource,
@@ -84,19 +92,24 @@ void ContentLoFiDecider::MaybeSetAcceptTransformHeader(
         resource_type == content::RESOURCE_TYPE_MEDIA ||
         resource_type == content::RESOURCE_TYPE_CSP_REPORT);
 
-  // If in the preview field trial or the preview flag is enabled, only add the
-  // "lite-page" directive on main frame requests. Do not add "empty-image"
+  // If in the lite page field trial or the lite page flag is enabled, only add
+  // the "lite-page" directive on main frame requests. Do not add "empty-image"
   // directives to other requests when Lite Page previews are enabled.
+  // Add the "if-heavy" qualifier to allow the server to provide a preview when
+  // the page is data heavy on if a preview was not otherwise triggered.
   std::string accept_transform_value;
-  if (lite_page_via_flag_or_field_trial) {
+  if (lite_page_enabled_via_flags_or_field_trial) {
     if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
       accept_transform_value = lite_page_directive();
-  } else if (resource_type_supports_empty_image) {
-    accept_transform_value = empty_image_directive();
+  } else if (lofi_enabled_via_flags_or_field_trial) {
+    if (resource_type_supports_empty_image)
+      accept_transform_value = empty_image_directive();
   }
-
   if (accept_transform_value.empty())
     return;
+
+  if (!request_info->IsUsingLoFi())
+    accept_transform_value += base::StringPrintf(";%s", if_heavy_qualifier());
 
   headers->SetHeader(chrome_proxy_accept_transform_header(),
                      accept_transform_value);

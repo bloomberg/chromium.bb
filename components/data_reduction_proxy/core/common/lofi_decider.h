@@ -31,9 +31,11 @@ class LoFiDecider {
   // respectively. If a slow page preview is not triggered, "lite-page;if-heavy"
   // and "empty-image;if-heavy" are added in the respective aforementioned cases
   // to request that the server transform the page if it determines it to be
-  // heavy.
+  // heavy. Previews-related transformation headers are never added if
+  // |is_previews_disabled| is true.
   virtual void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
+      bool is_previews_disabled,
       net::HttpRequestHeaders* headers) const = 0;
 
   // Returns true if |headers| contains the Chrome-Proxy-Accept-Transform

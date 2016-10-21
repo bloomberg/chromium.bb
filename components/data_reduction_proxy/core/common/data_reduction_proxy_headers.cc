@@ -43,6 +43,8 @@ const char kIdentityDirective[] = "identity";
 const char kChromeProxyLitePageIngoreBlacklistDirective[] =
     "exp=ignore_preview_blacklist";
 
+const char kIfHeavyQualifier[] = "if-heavy";
+
 const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
 const char kChromeProxyActionBypass[] = "bypass";
@@ -137,6 +139,10 @@ const char* identity_directive() {
 
 const char* chrome_proxy_lite_page_ignore_blacklist_directive() {
   return kChromeProxyLitePageIngoreBlacklistDirective;
+}
+
+const char* if_heavy_qualifier() {
+  return kIfHeavyQualifier;
 }
 
 bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers) {

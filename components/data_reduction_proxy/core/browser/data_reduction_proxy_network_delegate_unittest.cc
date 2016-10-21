@@ -103,6 +103,7 @@ class TestLoFiDecider : public LoFiDecider {
 
   void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
+      bool is_previews_disabled,
       net::HttpRequestHeaders* headers) const override {
     if (should_request_lofi_resource_) {
       headers->SetHeader(chrome_proxy_accept_transform_header(),

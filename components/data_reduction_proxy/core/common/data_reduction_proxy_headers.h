@@ -101,6 +101,12 @@ const char* chrome_proxy_lite_page_directive();
 // preview experiment to ignore the blacklist.
 const char* chrome_proxy_lite_page_ignore_blacklist_directive();
 
+// Requests a transformation only if the server determines that the page is
+// otherwise heavy (i.e., the associated page load ordinarily requires the
+// network to transfer of a lot of bytes). Added to a previews directive. E.g.,
+// "lite-page;if-heavy".
+const char* if_heavy_qualifier();
+
 // Returns true if the Chrome-Proxy-Content-Transform response header indicates
 // that an empty image has been provided.
 bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers);

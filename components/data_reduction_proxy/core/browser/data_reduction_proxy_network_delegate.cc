@@ -241,7 +241,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
   if (!data_reduction_proxy_io_data_->IsEnabled())
     return;
   data_reduction_proxy_io_data_->lofi_decider()->MaybeSetAcceptTransformHeader(
-      *request, headers);
+      *request, data_reduction_proxy_config_->lofi_off(), headers);
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
