@@ -358,7 +358,11 @@ group("both_gn_and_gyp") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/ozone",
+      "//ui/ozone:ozone_unittests",
+      "//ui/ozone/gl:ozone_gl_unittests",
+    ]
   }
 
   if (use_x11) {
@@ -741,10 +745,16 @@ group("gn_only") {
       "//mojo",
       "//services/navigation",
       "//services/ui/demo",
+      "//services/ui/demo:mus_demo_unittests",
+      "//services/ui/public/interfaces:ui_struct_traits_unittests",
       "//services/ui/ws:tests",
       "//ui/views/mus:views_mus_interactive_ui_tests",
       "//ui/views/mus:views_mus_unittests",
     ]
+
+    if (use_ozone) {
+      deps += [ "//services/ui/display:display_service_unittests" ]
+    }
   }
 
   if (is_linux && !is_chromeos && !is_chromecast) {
