@@ -2,8 +2,7 @@ AXWebArea
 ++AXGroup
 ++++AXRadioButton AXValue='0'
 ++++AXStaticText AXValue='Radio1'
-++++AXUnknown AXTitle='
-'
+++++AXUnknown AXTitle='<newline>'
 ++++AXRadioButton AXValue='0'
 ++++AXStaticText AXValue='Radio2'
 ++AXGroup

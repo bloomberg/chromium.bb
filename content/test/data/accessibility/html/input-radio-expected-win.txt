@@ -1,11 +1,8 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0><obj1>'
-++IA2_ROLE_FORM ia2_hypertext='<obj0>Radio1
-<obj3>Radio2'
+++IA2_ROLE_FORM ia2_hypertext='<obj0>Radio1<newline><obj3>Radio2'
 ++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE IA2_STATE_CHECKABLE checkable:true
 ++++ROLE_SYSTEM_STATICTEXT name='Radio1' ia2_hypertext='Radio1'
-++++ROLE_SYSTEM_WHITESPACE name='
-' ia2_hypertext='
-'
+++++ROLE_SYSTEM_WHITESPACE name='<newline>' ia2_hypertext='<newline>'
 ++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE IA2_STATE_CHECKABLE checkable:true
 ++++ROLE_SYSTEM_STATICTEXT name='Radio2' ia2_hypertext='Radio2'
 ++IA2_ROLE_FORM ia2_hypertext='<obj0><obj1>'

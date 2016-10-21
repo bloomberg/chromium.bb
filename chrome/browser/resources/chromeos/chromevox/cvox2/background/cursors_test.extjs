@@ -261,6 +261,7 @@ TEST_F('CursorsTest', 'WordRange', function() {
   ], this.RANGE);
 });
 
+
 TEST_F('CursorsTest', 'LineRange', function() {
   this.runCursorMovesOnDocument(this.simpleDoc, [
         [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
@@ -324,8 +325,7 @@ TEST_F('CursorsTest', 'IsInWebRange', function() {
 
 TEST_F('CursorsTest', 'DISABLED_SingleDocSelection', function() {
   this.runWithLoadedTree(function() {/*!
-    <span>start</span>
-    <a href="google.com">google home page</a>
+    <p><a href="google.com">google home page</a></p>
     <p>some more text</p>
     <p>end of text</p>
   */},

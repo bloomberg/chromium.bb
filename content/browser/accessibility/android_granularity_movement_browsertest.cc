@@ -149,7 +149,9 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
   GURL url("data:text/html,"
            "<body>"
            "<p>One, two, three!</p>"
+           "<p>"
            "<button aria-label='Seven, eight, nine!'>Four, five, six!</button>"
+           "</p>"
            "</body></html>");
   BrowserAccessibility* root = LoadUrlAndGetAccessibilityRoot(url);
   ASSERT_EQ(2U, root->PlatformChildCount());
@@ -175,7 +177,9 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
   GURL url("data:text/html,"
            "<body>"
            "<p>One, two, three!</p>"
+           "<p>"
            "<button aria-label='Seven, eight, nine!'>Four, five, six!</button>"
+           "</p>"
            "</body></html>");
   BrowserAccessibility* root = LoadUrlAndGetAccessibilityRoot(url);
   ASSERT_EQ(2U, root->PlatformChildCount());

@@ -197,12 +197,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  // Output the test path to help anyone who encounters a failure and needs
-  // to know where to look.
-  LOG(INFO) << "Testing: " << file_path.LossyDisplayName()
-            << (is_blink_pass_ ? " (internal Blink accessibility tree)"
-                : " (native accessibility tree for this platform)");
-
   std::string html_contents;
   base::FilePath expected_file;
   std::string expected_contents_raw;
@@ -228,6 +222,13 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     }
     base::ReadFileToString(expected_file, &expected_contents_raw);
   }
+
+  // Output the test path to help anyone who encounters a failure and needs
+  // to know where to look.
+  LOG(INFO) << "Testing: "
+            << file_path.NormalizePathSeparatorsTo('/').LossyDisplayName();
+  LOG(INFO) << "Expected output: "
+            << expected_file.NormalizePathSeparatorsTo('/').LossyDisplayName();
 
   // Tolerate Windows-style line endings (\r\n) in the expected file:
   // normalize by deleting all \r from the file (if any) to leave only \n.

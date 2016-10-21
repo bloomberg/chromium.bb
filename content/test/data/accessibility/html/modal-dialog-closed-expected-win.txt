@@ -1,9 +1,7 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-++IA2_ROLE_SECTION
-++++ROLE_SYSTEM_STATICTEXT name='Test that elements respawn in the accessibility tree after a modal dialog closes.'
+++ROLE_SYSTEM_STATICTEXT name='Test that elements respawn in the accessibility tree after a modal dialog closes.'
 ++IA2_ROLE_SECTION
 ++++ROLE_SYSTEM_COMBOBOX FOCUSABLE
 ++++++ROLE_SYSTEM_LIST
 ++++++++ROLE_SYSTEM_LISTITEM name='This should be in the tree.' FOCUSABLE
-++IA2_ROLE_SECTION
-++++IA2_ROLE_COLOR_CHOOSER FOCUSABLE
+++IA2_ROLE_COLOR_CHOOSER FOCUSABLE

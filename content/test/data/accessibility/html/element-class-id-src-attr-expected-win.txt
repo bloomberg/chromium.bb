@@ -1,5 +1,4 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++IA2_ROLE_HEADING name='Image' class:headerClass id:headerID
 ++++ROLE_SYSTEM_STATICTEXT name='Image'
-++IA2_ROLE_SECTION
-++++ROLE_SYSTEM_GRAPHIC name='ImageAlt' READONLY class:imageClass id:imageID src:greenbox.png
+++ROLE_SYSTEM_GRAPHIC name='ImageAlt' READONLY class:imageClass id:imageID src:greenbox.png

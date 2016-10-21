@@ -1,5 +1,4 @@
 AXWebArea
 ++AXHeading AXTitle='Image' AXValue='1'
 ++++AXStaticText AXValue='Image'
-++AXGroup
-++++AXImage AXDescription='ImageAlt'
+++AXImage AXDescription='ImageAlt'
