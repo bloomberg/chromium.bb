@@ -37,6 +37,7 @@ AppListPresenterImpl::AppListPresenterImpl(
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
+  Dismiss();
   presenter_delegate_.reset();
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.

@@ -60,7 +60,7 @@ class AppListPresenterDelegateFactoryMus
   std::unique_ptr<app_list::AppListPresenterDelegate> GetDelegate(
       app_list::AppListPresenter* presenter) override {
     return base::MakeUnique<AppListPresenterDelegateMus>(
-        view_delegate_factory_.get());
+        presenter, view_delegate_factory_.get());
   }
 
  private:

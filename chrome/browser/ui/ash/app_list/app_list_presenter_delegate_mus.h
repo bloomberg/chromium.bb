@@ -5,22 +5,25 @@
 #ifndef CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_MUS_H_
 #define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_MUS_H_
 
-#include "ui/app_list/presenter/app_list_presenter_delegate.h"
-
 #include "base/macros.h"
+#include "ui/app_list/presenter/app_list_presenter_delegate.h"
+#include "ui/views/pointer_watcher.h"
 
 namespace app_list {
+class AppListPresenter;
 class AppListView;
 class AppListViewDelegateFactory;
-}
+}  // namespace app_list
 
 // Mus+ash implementation of AppListPresetnerDelegate.
 // Responsible for laying out the app list UI as well as dismissing the app list
 // on in response to certain events (e.g. on mouse/touch gesture outside of the
 // app list bounds).
-class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate {
+class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate,
+                                    public views::PointerWatcher {
  public:
-  explicit AppListPresenterDelegateMus(
+  AppListPresenterDelegateMus(
+      app_list::AppListPresenter* presenter,
       app_list::AppListViewDelegateFactory* view_delegate_factory);
   ~AppListPresenterDelegateMus() override;
 
@@ -36,8 +39,13 @@ class AppListPresenterDelegateMus : public app_list::AppListPresenterDelegate {
       aura::Window* root_window) override;
 
  private:
-  // Whether the app list is visible (or in the process of being shown).
-  bool is_visible_ = false;
+  // views::PointerWatcher:
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              views::Widget* target) override;
+
+  // Not owned. Pointer is guaranteed to be valid while this object is alive.
+  app_list::AppListPresenter* presenter_;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListViewDelegateFactory* view_delegate_factory_;

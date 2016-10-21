@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_delegate_mus.h"
 
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
+#include "ui/views/mus/window_manager_connection.h"
 
 namespace {
 
@@ -36,10 +39,15 @@ gfx::Point GetCenterOfDisplay(int64_t display_id, int minimum_height) {
 }  // namespace
 
 AppListPresenterDelegateMus::AppListPresenterDelegateMus(
+    app_list::AppListPresenter* presenter,
     app_list::AppListViewDelegateFactory* view_delegate_factory)
-    : view_delegate_factory_(view_delegate_factory) {}
+    : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {}
 
-AppListPresenterDelegateMus::~AppListPresenterDelegateMus() {}
+AppListPresenterDelegateMus::~AppListPresenterDelegateMus() {
+  // Presenter is supposed to be dismissed when the delegate is destroyed. This
+  // means we don't have to worry about unregistering the PointerWatcher here.
+  DCHECK(!presenter_->GetTargetVisibility());
+}
 
 app_list::AppListViewDelegate* AppListPresenterDelegateMus::GetViewDelegate() {
   return view_delegate_factory_->GetDelegate();
@@ -66,24 +74,27 @@ void AppListPresenterDelegateMus::Init(app_list::AppListView* view,
       GetCenterOfDisplay(display_id, GetMinimumBoundsHeightForAppList(view)));
 
   // TODO(mfomitchev): Setup updating bounds on keyboard bounds change.
-  // TODO(mfomitchev): Setup dismissing on mouse/touch gesture anywhere outside
-  // the bounds of the app list.
   // TODO(mfomitchev): Setup dismissing on maximize (touch-view) mode start/end.
   // TODO(mfomitchev): Setup DnD.
   // TODO(mfomitchev): UpdateAutoHideState for shelf
 }
 
 void AppListPresenterDelegateMus::OnShown(int64_t display_id) {
-  is_visible_ = true;
+  views::WindowManagerConnection::Get()
+      ->pointer_watcher_event_router()
+      ->AddPointerWatcher(this, false);
+  DCHECK(presenter_->GetTargetVisibility());
 }
 
 void AppListPresenterDelegateMus::OnDismissed() {
-  DCHECK(is_visible_);
-  is_visible_ = false;
+  views::WindowManagerConnection::Get()
+      ->pointer_watcher_event_router()
+      ->RemovePointerWatcher(this);
+  DCHECK(!presenter_->GetTargetVisibility());
 }
 
 void AppListPresenterDelegateMus::UpdateBounds() {
-  if (!view_ || !is_visible_)
+  if (!view_ || !presenter_->GetTargetVisibility())
     return;
 
   view_->UpdateBounds();
@@ -94,4 +105,15 @@ gfx::Vector2d AppListPresenterDelegateMus::GetVisibilityAnimationOffset(
   // TODO(mfomitchev): Classic ash does different animation here depending on
   // shelf alignment. We should probably do that too.
   return gfx::Vector2d(0, kAnimationOffset);
+}
+
+void AppListPresenterDelegateMus::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    const gfx::Point& location_in_screen,
+    views::Widget* target) {
+  // Dismiss app list on a mouse click or touch outside of the app list window.
+  if ((event.type() == ui::ET_TOUCH_PRESSED ||
+       event.type() == ui::ET_POINTER_DOWN) &&
+      (!target || (view_ && (target != view_->GetWidget()))))
+    presenter_->Dismiss();
 }

@@ -53,7 +53,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // AppListPresenter:
   void Show(int64_t display_id) override;
-  void Dismiss() override;
+  void Dismiss() final;
   void ToggleAppList(int64_t display_id) override;
   bool IsVisible() const override;
   bool GetTargetVisibility() const override;
