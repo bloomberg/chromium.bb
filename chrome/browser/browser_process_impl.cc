@@ -226,22 +226,6 @@ BrowserProcessImpl::BrowserProcessImpl(
       net_log_path, GetNetCaptureModeFromCommandLine(command_line),
       command_line.GetCommandLineString(), chrome::GetChannelString()));
 
-#if defined(ENABLE_EXTENSIONS)
-  if (extensions::IsIsolateExtensionsEnabled()) {
-    // chrome-extension:// URLs are safe to request anywhere, but may only
-    // commit (including in iframes) in extension processes.
-    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
-        extensions::kExtensionScheme, true);
-    // TODO(nick): Kill off kExtensionResourceScheme.
-    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
-        extensions::kExtensionResourceScheme, false);
-  } else {
-    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-        extensions::kExtensionScheme);
-    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-        extensions::kExtensionResourceScheme);
-  }
-#endif
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
 
@@ -1050,6 +1034,26 @@ void BrowserProcessImpl::CreateLocalState() {
 }
 
 void BrowserProcessImpl::PreCreateThreads() {
+#if defined(ENABLE_EXTENSIONS)
+  // Register the chrome-extension scheme to reflect the extension process
+  // model. Controlled by a field trial, so we can't do this earlier.
+  base::FieldTrialList::FindFullName("SiteIsolationExtensions");
+  if (extensions::IsIsolateExtensionsEnabled()) {
+    // chrome-extension:// URLs are safe to request anywhere, but may only
+    // commit (including in iframes) in extension processes.
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
+        extensions::kExtensionScheme, true);
+    // TODO(nick): Kill off kExtensionResourceScheme.
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
+        extensions::kExtensionResourceScheme, false);
+  } else {
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+        extensions::kExtensionScheme);
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+        extensions::kExtensionResourceScheme);
+  }
+#endif
+
   io_thread_.reset(
       new IOThread(local_state(), policy_service(), net_log_.get(),
                    extension_event_router_forwarder()));
