@@ -295,6 +295,8 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 
+crbug.com/658287 fast/forms/relayout-shifts-inner-editor.html [ Crash Failure Pass ]
+
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/518929 [ Precise Debug ] http/tests/appcache/obsolete-error-events.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
