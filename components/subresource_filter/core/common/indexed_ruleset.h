@@ -123,25 +123,16 @@ class IndexedRulesetMatcher {
       const GURL& document_url,
       const url::Origin& parent_document_origin,
       proto::ActivationType activation_type) const;
-  // TODO(pkalinnikov): GetActivationTypesForDocument.
 
   // Returns whether the network request to |url| of |element_type| initiated by
   // |document_origin| is not allowed to proceed. Always returns false if the
   // |url| is not valid or |element_type| == ELEMENT_TYPE_UNSPECIFIED.
   bool ShouldDisallowResourceLoad(const GURL& url,
                                   const FirstPartyOrigin& first_party,
-                                  proto::ElementType element_type) const;
+                                  proto::ElementType element_type,
+                                  bool disable_generic_rules) const;
 
  private:
-  // Returns whether the network request matches a particular part of the index.
-  // |is_third_party| should reflect relation between |url| and |initiator|.
-  static bool IsMatch(const flat::UrlPatternIndex* index,
-                      const GURL& url,
-                      const url::Origin& initiator,
-                      proto::ElementType element_type,
-                      proto::ActivationType activation_type,
-                      bool is_third_party);
-
   const flat::IndexedRuleset* root_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedRulesetMatcher);

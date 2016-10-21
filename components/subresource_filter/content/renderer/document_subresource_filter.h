@@ -84,6 +84,11 @@ class DocumentSubresourceFilter
   // activation type.
   bool filtering_disabled_for_document_ = false;
 
+  // Indicates whether the document is subject to a whitelist rule with
+  // GENERICBLOCK activation type. Undefined if
+  // |filtering_disabled_for_document_|.
+  bool generic_blocking_rules_disabled_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DocumentSubresourceFilter);
 };
 

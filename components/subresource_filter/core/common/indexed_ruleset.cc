@@ -20,6 +20,8 @@ namespace subresource_filter {
 
 namespace {
 
+using FlatStringOffset = flatbuffers::Offset<flatbuffers::String>;
+
 // Checks whether a URL |rule| can be converted to its FlatBuffers equivalent,
 // and performs the actual conversion.
 class UrlRuleFlatBufferConverter {
@@ -43,11 +45,9 @@ class UrlRuleFlatBufferConverter {
       flatbuffers::FlatBufferBuilder* builder) const {
     DCHECK(is_convertible());
 
-    flatbuffers::Offset<
-        flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>>
-        domains_offset;
+    flatbuffers::Offset<flatbuffers::Vector<FlatStringOffset>> domains_offset;
     if (rule_.domains_size()) {
-      std::vector<flatbuffers::Offset<flatbuffers::String>> domains;
+      std::vector<FlatStringOffset> domains;
       domains.reserve(rule_.domains_size());
 
       std::string domain;
@@ -311,13 +311,17 @@ using FlatNGramIndex =
 // fewer domain components, i.e. the more specific a filter is, the higher the
 // priority.
 //
+// A rule whose domain list is empty or contains only negative domains is still
+// considered a "generic" rule. Therefore, if |disable_generic_rules| is set,
+// this function will always return false for such |domains| lists.
+//
 // TODO(pkalinnikov): Make it fast.
 bool DoesInitiatorMatchDomainList(
     const url::Origin& initiator,
-    const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>&
-        domains) {
+    const flatbuffers::Vector<FlatStringOffset>& domains,
+    bool disable_generic_rules) {
   if (!domains.size())
-    return true;
+    return !disable_generic_rules;
   // Unique |initiator| matches lists of exception domains only.
   if (initiator.unique()) {
     for (const flatbuffers::String* domain_filter : domains) {
@@ -325,7 +329,7 @@ bool DoesInitiatorMatchDomainList(
       if (domain_filter->Get(0) != '~')
         return false;
     }
-    return true;
+    return !disable_generic_rules;
   }
 
   size_t max_domain_length = 0;
@@ -354,7 +358,8 @@ bool DoesInitiatorMatchDomainList(
     is_positive = !is_negative;
   }
 
-  return max_domain_length ? is_positive : negatives_only;
+  return max_domain_length ? is_positive
+                           : negatives_only && !disable_generic_rules;
 }
 
 // Returns true iff the request to |url| of type |element_type| requested by
@@ -364,7 +369,8 @@ bool DoesRuleMetadataMatch(const flat::UrlRule& rule,
                            const url::Origin& initiator,
                            proto::ElementType element_type,
                            proto::ActivationType activation_type,
-                           bool is_third_party) {
+                           bool is_third_party,
+                           bool disable_generic_rules) {
   if (element_type != proto::ELEMENT_TYPE_UNSPECIFIED &&
       !(rule.element_types() & element_type)) {
     return false;
@@ -383,8 +389,9 @@ bool DoesRuleMetadataMatch(const flat::UrlRule& rule,
     return false;
   }
 
-  return !rule.domains() ||
-         DoesInitiatorMatchDomainList(initiator, *rule.domains());
+  return rule.domains() ? DoesInitiatorMatchDomainList(
+                              initiator, *rule.domains(), disable_generic_rules)
+                        : !disable_generic_rules;
 }
 
 bool MatchesAny(const FlatUrlRuleList* rules,
@@ -392,7 +399,8 @@ bool MatchesAny(const FlatUrlRuleList* rules,
                 const url::Origin& initiator,
                 proto::ElementType element_type,
                 proto::ActivationType activation_type,
-                bool is_third_party) {
+                bool is_third_party,
+                bool disable_generic_rules) {
   if (!rules)
     return false;
   for (const flat::UrlRule* rule : *rules) {
@@ -409,12 +417,55 @@ bool MatchesAny(const FlatUrlRuleList* rules,
     }
 
     if (DoesRuleMetadataMatch(*rule, initiator, element_type, activation_type,
-                              is_third_party)) {
+                              is_third_party, disable_generic_rules)) {
       return true;
     }
   }
 
   return false;
+}
+
+// Returns whether the network request matches a particular part of the index.
+// |is_third_party| should reflect the relation between |url| and |initiator|.
+bool IsMatch(const flat::UrlPatternIndex* index,
+             const GURL& url,
+             const url::Origin& initiator,
+             proto::ElementType element_type,
+             proto::ActivationType activation_type,
+             bool is_third_party,
+             bool disable_generic_rules) {
+  if (!index)
+    return false;
+  const FlatNGramIndex* hash_table = index->ngram_index();
+  const flat::NGramToRules* empty_slot = index->ngram_index_empty_slot();
+  DCHECK_NE(hash_table, nullptr);
+
+  NGramHashTableProber prober;
+
+  auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t>(
+      url.spec(), [](char) { return false; });
+  for (uint64_t ngram : ngrams) {
+    const size_t slot_index = prober.FindSlot(
+        ngram, base::strict_cast<size_t>(hash_table->size()),
+        [hash_table, empty_slot](NGram ngram, size_t slot_index) {
+          const flat::NGramToRules* entry = hash_table->Get(slot_index);
+          DCHECK_NE(entry, nullptr);
+          return entry == empty_slot || entry->ngram() == ngram;
+        });
+    DCHECK_LT(slot_index, hash_table->size());
+
+    const flat::NGramToRules* entry = hash_table->Get(slot_index);
+    if (entry == empty_slot)
+      continue;
+    if (MatchesAny(entry->rule_list(), url, initiator, element_type,
+                   activation_type, is_third_party, disable_generic_rules)) {
+      return true;
+    }
+  }
+
+  const FlatUrlRuleList* rules = index->fallback_rules();
+  return MatchesAny(rules, url, initiator, element_type, activation_type,
+                    is_third_party, disable_generic_rules);
 }
 
 }  // namespace
@@ -444,62 +495,24 @@ bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
   return IsMatch(
       root_->whitelist_index(), document_url, parent_document_origin,
       proto::ELEMENT_TYPE_UNSPECIFIED, activation_type,
-      FirstPartyOrigin::IsThirdParty(document_url, parent_document_origin));
+      FirstPartyOrigin::IsThirdParty(document_url, parent_document_origin),
+      false);
 }
 
 bool IndexedRulesetMatcher::ShouldDisallowResourceLoad(
     const GURL& url,
     const FirstPartyOrigin& first_party,
-    proto::ElementType element_type) const {
+    proto::ElementType element_type,
+    bool disable_generic_rules) const {
   if (!url.is_valid() || element_type == proto::ELEMENT_TYPE_UNSPECIFIED)
     return false;
   const bool is_third_party = first_party.IsThirdParty(url);
   return IsMatch(root_->blacklist_index(), url, first_party.origin(),
                  element_type, proto::ACTIVATION_TYPE_UNSPECIFIED,
-                 is_third_party) &&
+                 is_third_party, disable_generic_rules) &&
          !IsMatch(root_->whitelist_index(), url, first_party.origin(),
                   element_type, proto::ACTIVATION_TYPE_UNSPECIFIED,
-                  is_third_party);
-}
-
-bool IndexedRulesetMatcher::IsMatch(const flat::UrlPatternIndex* index,
-                                    const GURL& url,
-                                    const url::Origin& initiator,
-                                    proto::ElementType element_type,
-                                    proto::ActivationType activation_type,
-                                    bool is_third_party) {
-  if (!index)
-    return false;
-  const FlatNGramIndex* hash_table = index->ngram_index();
-  const flat::NGramToRules* empty_slot = index->ngram_index_empty_slot();
-  DCHECK_NE(hash_table, nullptr);
-
-  NGramHashTableProber prober;
-
-  auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t>(
-      url.spec(), [](char) { return false; });
-  for (uint64_t ngram : ngrams) {
-    const size_t slot_index = prober.FindSlot(
-        ngram, base::strict_cast<size_t>(hash_table->size()),
-        [hash_table, empty_slot](NGram ngram, size_t slot_index) {
-          const flat::NGramToRules* entry = hash_table->Get(slot_index);
-          DCHECK_NE(entry, nullptr);
-          return entry == empty_slot || entry->ngram() == ngram;
-        });
-    DCHECK_LT(slot_index, hash_table->size());
-
-    const flat::NGramToRules* entry = hash_table->Get(slot_index);
-    if (entry == empty_slot)
-      continue;
-    if (MatchesAny(entry->rule_list(), url, initiator, element_type,
-                   activation_type, is_third_party)) {
-      return true;
-    }
-  }
-
-  const FlatUrlRuleList* rules = index->fallback_rules();
-  return MatchesAny(rules, url, initiator, element_type, activation_type,
-                    is_third_party);
+                  is_third_party, disable_generic_rules);
 }
 
 }  // namespace subresource_filter

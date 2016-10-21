@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
@@ -32,6 +33,54 @@ url::Origin GetOrigin(const char* origin_string) {
   return origin_string ? url::Origin(GURL(origin_string)) : url::Origin();
 }
 
+class UrlRuleBuilder {
+ public:
+  explicit UrlRuleBuilder(const UrlPattern& url_pattern,
+                          bool is_whitelist = false)
+      : UrlRuleBuilder(url_pattern, kAnyParty, is_whitelist) {}
+
+  UrlRuleBuilder(const UrlPattern& url_pattern,
+                 proto::SourceType source_type,
+                 bool is_whitelist) {
+    rule_.set_semantics(is_whitelist ? proto::RULE_SEMANTICS_WHITELIST
+                                     : proto::RULE_SEMANTICS_BLACKLIST);
+
+    rule_.set_source_type(source_type);
+    rule_.set_element_types(proto::ELEMENT_TYPE_ALL);
+
+    rule_.set_url_pattern_type(url_pattern.type);
+    rule_.set_anchor_left(url_pattern.anchor_left);
+    rule_.set_anchor_right(url_pattern.anchor_right);
+    rule_.set_match_case(url_pattern.match_case);
+    rule_.set_url_pattern(url_pattern.url_pattern.as_string());
+  }
+
+  UrlRuleBuilder& AddDomain(std::string domain_pattern) {
+    DCHECK(!domain_pattern.empty());
+    auto* domain = rule_.add_domains();
+    if (domain_pattern[0] == '~') {
+      domain_pattern.erase(0, 1);
+      domain->set_exclude(true);
+    }
+    domain->set_domain(domain_pattern);
+    return *this;
+  }
+
+  UrlRuleBuilder& AddDomains(const std::vector<std::string>& domains) {
+    for (const std::string domain : domains)
+      AddDomain(domain);
+    return *this;
+  }
+
+  const proto::UrlRule& rule() const { return rule_; }
+  proto::UrlRule& rule() { return rule_; }
+
+ private:
+  proto::UrlRule rule_;
+
+  DISALLOW_COPY_AND_ASSIGN(UrlRuleBuilder);
+};
+
 }  // namespace
 
 class IndexedRulesetTest : public testing::Test {
@@ -39,15 +88,22 @@ class IndexedRulesetTest : public testing::Test {
   IndexedRulesetTest() = default;
 
  protected:
-  bool ShouldAllow(
-      const char* url,
-      const char* initiator = nullptr,
-      proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER) const {
+  bool ShouldAllow(const char* url,
+                   const char* initiator = nullptr,
+                   proto::ElementType element_type = proto::ELEMENT_TYPE_OTHER,
+                   bool disable_generic_rules = false) const {
     DCHECK_NE(matcher_.get(), nullptr);
     url::Origin origin = GetOrigin(initiator);
     FirstPartyOrigin first_party(origin);
-    return !matcher_->ShouldDisallowResourceLoad(GURL(url), first_party,
-                                                 element_type);
+    return !matcher_->ShouldDisallowResourceLoad(
+        GURL(url), first_party, element_type, disable_generic_rules);
+  }
+
+  bool ShouldAllow(const char* url,
+                   const char* initiator,
+                   bool disable_generic_rules) const {
+    return ShouldAllow(url, initiator, proto::ELEMENT_TYPE_OTHER,
+                       disable_generic_rules);
   }
 
   bool ShouldDeactivate(const char* document_url,
@@ -60,62 +116,26 @@ class IndexedRulesetTest : public testing::Test {
                                                        origin, activation_type);
   }
 
-  proto::UrlRule CreateRule(const UrlPattern& url_pattern,
-                            proto::SourceType source_type,
-                            bool is_whitelist) {
-    proto::UrlRule rule;
-    rule.set_semantics(is_whitelist ? proto::RULE_SEMANTICS_WHITELIST
-                                    : proto::RULE_SEMANTICS_BLACKLIST);
-
-    rule.set_source_type(source_type);
-    rule.set_element_types(proto::ELEMENT_TYPE_ALL);
-
-    rule.set_url_pattern_type(url_pattern.type);
-    rule.set_anchor_left(url_pattern.anchor_left);
-    rule.set_anchor_right(url_pattern.anchor_right);
-    rule.set_match_case(url_pattern.match_case);
-    rule.set_url_pattern(url_pattern.url_pattern.as_string());
-    return rule;
+  void AddUrlRule(const proto::UrlRule& rule) {
+    ASSERT_TRUE(indexer_.AddUrlRule(rule)) << "URL pattern: "
+                                           << rule.url_pattern();
   }
 
   void AddSimpleRule(const UrlPattern& url_pattern, bool is_whitelist) {
-    proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, is_whitelist);
-    EXPECT_TRUE(indexer_.AddUrlRule(rule));
+    AddUrlRule(UrlRuleBuilder(url_pattern, is_whitelist).rule());
   }
 
   void AddBlacklistRule(const UrlPattern& url_pattern,
                         proto::SourceType source_type = kAnyParty) {
-    indexer_.AddUrlRule(CreateRule(url_pattern, source_type, false));
-  }
-
-  void AddBlacklistRuleWithElementTypes(const UrlPattern& url_pattern,
-                                        int32_t element_types) {
-    proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, false);
-    rule.set_element_types(element_types);
-    EXPECT_TRUE(indexer_.AddUrlRule(rule));
+    AddUrlRule(UrlRuleBuilder(url_pattern, source_type, false).rule());
   }
 
   void AddWhitelistRuleWithActivationTypes(const UrlPattern& url_pattern,
                                            int32_t activation_types) {
-    proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, true);
-    rule.set_element_types(proto::ELEMENT_TYPE_UNSPECIFIED);
-    rule.set_activation_types(activation_types);
-    EXPECT_TRUE(indexer_.AddUrlRule(rule));
-  }
-
-  void AddBlacklistRule(const UrlPattern& url_pattern,
-                        const std::vector<std::string>& domains) {
-    proto::UrlRule rule = CreateRule(url_pattern, kAnyParty, false);
-
-    for (std::string domain_pattern : domains) {
-      auto* domain = rule.add_domains();
-      if (domain_pattern[0] == '~') {
-        domain_pattern.erase(0, 1);
-        domain->set_exclude(true);
-      }
-      domain->set_domain(domain_pattern);
-    }
-    EXPECT_TRUE(indexer_.AddUrlRule(rule));
+    UrlRuleBuilder builder(url_pattern, kAnyParty, true);
+    builder.rule().set_element_types(proto::ELEMENT_TYPE_UNSPECIFIED);
+    builder.rule().set_activation_types(activation_types);
+    AddUrlRule(builder.rule());
   }
 
   void Finish() {
@@ -428,8 +448,9 @@ TEST_F(IndexedRulesetTest, OneRuleWithDomainList) {
                                     << "; URL: " << test_case.url
                                     << "; Initiator: " << test_case.initiator);
 
-    AddBlacklistRule(UrlPattern(test_case.url_pattern, kSubstring),
-                     test_case.domains);
+    UrlRuleBuilder builder(UrlPattern(test_case.url_pattern, kSubstring));
+    builder.AddDomains(test_case.domains);
+    AddUrlRule(builder.rule());
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
@@ -482,8 +503,9 @@ TEST_F(IndexedRulesetTest, OneRuleWithElementTypes) {
                  << (int)test_case.element_types << "; URL: " << test_case.url
                  << "; ElementType: " << (int)test_case.element_type);
 
-    AddBlacklistRuleWithElementTypes(
-        UrlPattern(test_case.url_pattern, kSubstring), test_case.element_types);
+    UrlRuleBuilder builder(UrlPattern(test_case.url_pattern, kSubstring));
+    builder.rule().set_element_types(test_case.element_types);
+    AddUrlRule(builder.rule());
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
@@ -539,6 +561,70 @@ TEST_F(IndexedRulesetTest, OneRuleWithActivationTypes) {
               ShouldDeactivate(test_case.document_url, "http://xmpl.com/",
                                test_case.activation_type));
     Reset();
+  }
+}
+
+TEST_F(IndexedRulesetTest, MatchWithDisableGenericRules) {
+  // Generic rules.
+  ASSERT_NO_FATAL_FAILURE(
+      AddUrlRule(UrlRuleBuilder(UrlPattern("some_text", kSubstring)).rule()));
+  ASSERT_NO_FATAL_FAILURE(
+      AddUrlRule(UrlRuleBuilder(UrlPattern("another_text", kSubstring))
+                     .AddDomain("~example.com")
+                     .rule()));
+
+  // Domain specific rules.
+  ASSERT_NO_FATAL_FAILURE(
+      AddUrlRule(UrlRuleBuilder(UrlPattern("some_text", kSubstring))
+                     .AddDomain("example1.com")
+                     .rule()));
+  ASSERT_NO_FATAL_FAILURE(
+      AddUrlRule(UrlRuleBuilder(UrlPattern("more_text", kSubstring))
+                     .AddDomain("example.com")
+                     .AddDomain("~exclude.example.com")
+                     .rule()));
+  ASSERT_NO_FATAL_FAILURE(
+      AddUrlRule(UrlRuleBuilder(UrlPattern("last_text", kSubstring))
+                     .AddDomain("example1.com")
+                     .AddDomain("sub.example2.com")
+                     .rule()));
+
+  Finish();
+
+  const struct {
+    const char* url_pattern;
+    const char* initiator;
+    bool should_allow_with_disable_generic_rules;
+    bool should_allow_with_enable_all_rules;
+  } kTestCases[] = {
+      {"http://ex.com/some_text", "http://example.com", true, false},
+      {"http://ex.com/some_text", "http://example1.com", false, false},
+
+      {"http://ex.com/another_text", "http://example.com", true, true},
+      {"http://ex.com/another_text", "http://example1.com", true, false},
+
+      {"http://ex.com/more_text", "http://example.com", false, false},
+      {"http://ex.com/more_text", "http://exclude.example.com", true, true},
+      {"http://ex.com/more_text", "http://example1.com", true, true},
+
+      {"http://ex.com/last_text", "http://example.com", true, true},
+      {"http://ex.com/last_text", "http://example1.com", false, false},
+      {"http://ex.com/last_text", "http://example2.com", true, true},
+      {"http://ex.com/last_text", "http://sub.example2.com", false, false},
+  };
+
+  constexpr bool kDisableGenericRules = true;
+  constexpr bool kEnableAllRules = false;
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message() << "Url: " << test_case.url_pattern
+                                    << "; Initiator: " << test_case.initiator);
+
+    EXPECT_EQ(test_case.should_allow_with_disable_generic_rules,
+              ShouldAllow(test_case.url_pattern, test_case.initiator,
+                          kDisableGenericRules));
+    EXPECT_EQ(test_case.should_allow_with_enable_all_rules,
+              ShouldAllow(test_case.url_pattern, test_case.initiator,
+                          kEnableAllRules));
   }
 }
 
@@ -598,11 +684,12 @@ TEST_F(IndexedRulesetTest, BlacklistAndActivationType) {
 }
 
 TEST_F(IndexedRulesetTest, RuleWithUnsupportedOptions) {
-  auto rule = CreateRule(UrlPattern("exmpl"), proto::SOURCE_TYPE_ANY, false);
-  rule.set_activation_types(rule.activation_types() |
-                            (proto::ACTIVATION_TYPE_MAX << 1));
-  rule.set_element_types(rule.element_types() | (proto::ELEMENT_TYPE_MAX << 1));
-  EXPECT_FALSE(indexer_.AddUrlRule(rule));
+  UrlRuleBuilder builder(UrlPattern("exmpl"), proto::SOURCE_TYPE_ANY, false);
+  builder.rule().set_activation_types(builder.rule().activation_types() |
+                                      (proto::ACTIVATION_TYPE_MAX << 1));
+  builder.rule().set_element_types(builder.rule().element_types() |
+                                   (proto::ELEMENT_TYPE_MAX << 1));
+  EXPECT_FALSE(indexer_.AddUrlRule(builder.rule()));
 
   AddSimpleRule(UrlPattern("example.com", kSubstring), false);
   Finish();
