@@ -289,10 +289,6 @@ void SiteEngagementService::AfterStartupTask() {
 
 void SiteEngagementService::CleanupEngagementScores(
     bool update_last_engagement_time) const {
-  // This method should not be called with |update_last_engagement_time| = true
-  // if the last engagement time isn't stale.
-  DCHECK(!update_last_engagement_time || IsLastEngagementStale());
-
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   std::unique_ptr<ContentSettingsForOneType> engagement_settings =
@@ -304,25 +300,51 @@ void SiteEngagementService::CleanupEngagementScores(
   base::Time last_engagement_time = GetLastEngagementTime();
   base::Time rebase_time = now - GetMaxDecayPeriod();
   base::Time new_last_engagement_time;
+
+  // If |update_last_engagement_time| is true, we must have either:
+  //   a) last_engagement_time is in the future; OR
+  //   b) last_engagement_time < rebase_time < now
+  DCHECK(!update_last_engagement_time || last_engagement_time >= now ||
+         (last_engagement_time < rebase_time && rebase_time < now));
+
+  // Cap |last_engagement_time| at |now| if it is in the future. This ensures
+  // that we use sane offsets when a user has adjusted their clock backwards and
+  // have a mix of scores prior to and after |now|.
+  if (last_engagement_time > now)
+    last_engagement_time = now;
+
   for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
 
     if (origin.is_valid()) {
       SiteEngagementScore score = CreateEngagementScore(origin);
       if (update_last_engagement_time) {
-        // Work out the offset between this score's last engagement time and the
-        // last time the service recorded any engagement. Set the score's last
-        // engagement time to rebase_time - offset to preserve its state,
-        // relative to the rebase date. This ensures that the score will decay
-        // the next time it is used, but will not decay too much.
-        DCHECK_LE(score.last_engagement_time(), rebase_time);
-        base::TimeDelta offset =
-            last_engagement_time - score.last_engagement_time();
-        base::Time rebase_score_time = rebase_time - offset;
-        score.set_last_engagement_time(rebase_score_time);
-        if (rebase_score_time > new_last_engagement_time)
-          new_last_engagement_time = rebase_score_time;
+        // Catch cases of users moving their clocks, or a potential race where
+        // a score content setting is written out to prefs, but the updated
+        // |last_engagement_time| was not written, as both are lossy
+        // preferences. |rebase_time| is strictly in the past, so any score with
+        // a last updated time in the future is caught by this branch.
+        if (score.last_engagement_time() > rebase_time) {
+          score.set_last_engagement_time(now);
+        } else if (score.last_engagement_time() > last_engagement_time) {
+          // This score is newer than |last_engagement_time|, but older than
+          // |rebase_time|. It should still be rebased with no offset as we
+          // don't accurately know what the offset should be.
+          score.set_last_engagement_time(rebase_time);
+        } else {
+          // Work out the offset between this score's last engagement time and
+          // the last time the service recorded any engagement. Set the score's
+          // last engagement time to rebase_time - offset to preserve its state,
+          // relative to the rebase date. This ensures that the score will decay
+          // the next time it is used, but will not decay too much.
+          base::TimeDelta offset =
+              last_engagement_time - score.last_engagement_time();
+          base::Time rebase_score_time = rebase_time - offset;
+          score.set_last_engagement_time(rebase_score_time);
+        }
 
+        if (score.last_engagement_time() > new_last_engagement_time)
+          new_last_engagement_time = score.last_engagement_time();
         score.Commit();
       }
 
@@ -468,13 +490,15 @@ void SiteEngagementService::HandleUserInput(
 }
 
 bool SiteEngagementService::IsLastEngagementStale() const {
-  // This only happens when Chrome is first run and the user has never recorded
-  // any engagement.
+  // Only happens on first run when no engagement has ever been recorded.
   base::Time last_engagement_time = GetLastEngagementTime();
   if (last_engagement_time.is_null())
     return false;
 
-  return (clock_->Now() - last_engagement_time) >= GetStalePeriod();
+  // Stale is either too *far* back, or any amount *forward* in time. This could
+  // occur due to a changed clock, or extended non-use of the browser.
+  return (clock_->Now() - last_engagement_time) >= GetStalePeriod() ||
+         (clock_->Now() < last_engagement_time);
 }
 
 void SiteEngagementService::OnURLsDeleted(

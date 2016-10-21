@@ -1501,6 +1501,119 @@ TEST_F(SiteEngagementServiceTest, LastEngagementTime) {
   EXPECT_EQ(later_in_day, service->GetLastEngagementTime());
 }
 
+TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToNow) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
+  base::Time last_engagement_time;
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  GURL origin("http://www.google.com/");
+  service->AddPoints(origin, 1);
+  EXPECT_EQ(1, service->GetScore(origin));
+  EXPECT_EQ(current_day, service->GetLastEngagementTime());
+
+  // Send the clock back in time before the stale period and add engagement for
+  // a new origin. Ensure that the original origin has its last engagement time
+  // updated to now as a result.
+  base::Time before_stale_period =
+      clock->Now() - service->GetStalePeriod() - service->GetMaxDecayPeriod();
+  clock->SetNow(before_stale_period);
+
+  GURL origin1("http://maps.google.com/");
+  service->AddPoints(origin1, 1);
+
+  EXPECT_EQ(before_stale_period,
+            service->CreateEngagementScore(origin).last_engagement_time());
+  EXPECT_EQ(before_stale_period, service->GetLastEngagementTime());
+  EXPECT_EQ(1, service->GetScore(origin));
+  EXPECT_EQ(1, service->GetScore(origin1));
+
+  // Advance within a decay period and add points.
+  base::TimeDelta less_than_decay_period =
+      base::TimeDelta::FromHours(SiteEngagementScore::GetDecayPeriodInHours()) -
+      base::TimeDelta::FromSeconds(30);
+  base::Time origin1_last_updated = clock->Now() + less_than_decay_period;
+  clock->SetNow(origin1_last_updated);
+  service->AddPoints(origin, 1);
+  service->AddPoints(origin1, 5);
+  EXPECT_EQ(2, service->GetScore(origin));
+  EXPECT_EQ(6, service->GetScore(origin1));
+
+  clock->SetNow(clock->Now() + less_than_decay_period);
+  service->AddPoints(origin, 5);
+  EXPECT_EQ(7, service->GetScore(origin));
+
+  // Move forward to the max number of decays per score. This is within the
+  // stale period so no cleanup should be run.
+  for (int i = 0; i < SiteEngagementScore::GetMaxDecaysPerScore(); ++i) {
+    clock->SetNow(clock->Now() + less_than_decay_period);
+    service->AddPoints(origin, 5);
+    EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+  }
+  EXPECT_EQ(12, service->GetScore(origin));
+  EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+
+  // Move the clock back to precisely 1 decay period after origin1's last
+  // updated time. |last_engagement_time| is in the future, so AddPoints
+  // triggers a cleanup. Ensure that |last_engagement_time| is moved back
+  // appropriately, while origin1 is decayed correctly (once).
+  clock->SetNow(origin1_last_updated + less_than_decay_period +
+                base::TimeDelta::FromSeconds(30));
+  service->AddPoints(origin1, 1);
+
+  EXPECT_EQ(clock->Now(),
+            service->CreateEngagementScore(origin).last_engagement_time());
+  EXPECT_EQ(clock->Now(), service->GetLastEngagementTime());
+  EXPECT_EQ(12, service->GetScore(origin));
+  EXPECT_EQ(1, service->GetScore(origin1));
+}
+
+TEST_F(SiteEngagementServiceTest, CleanupMovesScoreBackToRebase) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  std::unique_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), base::WrapUnique(clock)));
+  base::Time last_engagement_time;
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  GURL origin("http://www.google.com/");
+  service->ResetScoreForURL(origin, 5);
+  service->AddPoints(origin, 5);
+  EXPECT_EQ(10, service->GetScore(origin));
+  EXPECT_EQ(current_day, service->GetLastEngagementTime());
+
+  // Send the clock back in time before the stale period and add engagement for
+  // a new origin.
+  base::Time before_stale_period =
+      clock->Now() - service->GetStalePeriod() - service->GetMaxDecayPeriod();
+  clock->SetNow(before_stale_period);
+
+  GURL origin1("http://maps.google.com/");
+  service->AddPoints(origin1, 1);
+
+  EXPECT_EQ(before_stale_period, service->GetLastEngagementTime());
+
+  // Set the clock such that |origin|'s last engagement time is between
+  // last_engagement_time and rebase_time.
+  clock->SetNow(current_day + service->GetStalePeriod() +
+                service->GetMaxDecayPeriod() -
+                base::TimeDelta::FromSeconds((30)));
+  base::Time rebased_time = clock->Now() - service->GetMaxDecayPeriod();
+  service->CleanupEngagementScores(true);
+
+  // Ensure that the original origin has its last engagement time updated to
+  // rebase_time, and it has decayed when we access the score.
+  EXPECT_EQ(rebased_time,
+            service->CreateEngagementScore(origin).last_engagement_time());
+  EXPECT_EQ(rebased_time, service->GetLastEngagementTime());
+  EXPECT_EQ(5, service->GetScore(origin));
+  EXPECT_EQ(0, service->GetScore(origin1));
+}
+
 TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   ASSERT_TRUE(service);
