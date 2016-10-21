@@ -642,41 +642,6 @@ test("content_browsertests") {
     "../test/webui_resource_browsertest.cc",
   ]
 
-  if (is_android || is_linux || is_mac || is_win) {
-    data = [
-      "$root_out_dir/content_shell.pak",
-      "data/",
-      "//media/test/data/",
-    ]
-
-    if (!is_android) {
-      data += [
-        "//net/tools/testserver/",
-        "//ppapi/tests/test_case.html",
-        "//ppapi/tests/test_page.css",
-        "//third_party/pyftpdlib/",
-        "//third_party/pywebsocket/",
-        "//third_party/tlslite/",
-      ]
-
-      if (is_mac) {
-        data += [ "$root_out_dir/Content Shell.app/" ]
-      }
-      if (is_win) {
-        if (symbol_level != 0) {
-          data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
-        }
-      }
-      if (is_linux) {
-        data += [ "//testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter" ]
-      }
-
-      if (is_win || is_linux || is_android) {
-        data += [ "//testing/buildbot/filters/site-per-process.content_browsertests.filter" ]
-      }
-    }
-  }
-
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   configs += [
@@ -749,6 +714,8 @@ test("content_browsertests") {
     "//ui/snapshot",
   ]
 
+  data = []
+
   data_deps = [
     "//third_party/mesa:osmesa",
   ]
@@ -766,6 +733,29 @@ test("content_browsertests") {
     }
   }
 
+  if (is_android || is_linux || is_mac || is_win) {
+    data += [
+      "$root_out_dir/content_shell.pak",
+      "data/",
+      "//media/test/data/",
+    ]
+  }
+
+  if (is_linux || is_mac || is_win) {
+    data += [
+      "//net/tools/testserver/",
+      "//ppapi/tests/test_case.html",
+      "//ppapi/tests/test_page.css",
+      "//third_party/pyftpdlib/",
+      "//third_party/pywebsocket/",
+      "//third_party/tlslite/",
+    ]
+  }
+
+  if (is_win || is_linux || is_android) {
+    data += [ "//testing/buildbot/filters/site-per-process.content_browsertests.filter" ]
+  }
+
   if (is_win) {
     sources += [ "../browser/accessibility/accessibility_win_browsertest.cc" ]
 
@@ -778,10 +768,15 @@ test("content_browsertests") {
     ]
 
     libs = [ "oleacc.lib" ]
+
+    if (symbol_level != 0) {
+      data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
+    }
   }
 
   if (is_linux) {
     sources += [ "../zygote/zygote_browsertest.cc" ]
+    data += [ "//testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter" ]
   }
 
   if (is_android) {
@@ -811,6 +806,7 @@ test("content_browsertests") {
   if (is_mac) {
     sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
     deps += [ "//content/shell:content_shell" ]
+    data += [ "$root_out_dir/Content Shell.app/" ]
   }
 
   if (is_chromeos) {
