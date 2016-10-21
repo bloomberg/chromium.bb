@@ -1244,4 +1244,64 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_NoValidImage) {
   run_loop.Run();
 }
 
+class MouseLockDelegate : public WebContentsDelegate {
+ public:
+  // WebContentsDelegate:
+  void RequestToLockMouse(WebContents* web_contents,
+                          bool user_gesture,
+                          bool last_unlocked_by_target) override {
+    request_to_lock_mouse_called_ = true;
+  }
+  bool request_to_lock_mouse_called_ = false;
+};
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       RenderWidgetDeletedWhileMouseLockPending) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  std::unique_ptr<MouseLockDelegate> delegate(new MouseLockDelegate());
+  shell()->web_contents()->SetDelegate(delegate.get());
+  ASSERT_TRUE(shell()->web_contents()->GetDelegate() == delegate.get());
+
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // Try to request pointer lock. WebContentsDelegate should get a notification.
+  ASSERT_TRUE(ExecuteScript(shell(),
+                            "window.domAutomationController.send(document.body."
+                            "requestPointerLock());"));
+  EXPECT_TRUE(delegate.get()->request_to_lock_mouse_called_);
+
+  // Make sure that the renderer didn't get the pointer lock, since the
+  // WebContentsDelegate didn't approve the notification.
+  bool locked = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(shell(),
+                                          "window.domAutomationController.send("
+                                          "document.pointerLockElement == "
+                                          "null);",
+                                          &locked));
+  EXPECT_TRUE(locked);
+
+  // Try to request the pointer lock again. Since there's a pending request in
+  // WebContentsDelelgate, the WebContents shouldn't ask again.
+  delegate.get()->request_to_lock_mouse_called_ = false;
+  ASSERT_TRUE(ExecuteScript(shell(),
+                            "window.domAutomationController.send(document.body."
+                            "requestPointerLock());"));
+  EXPECT_FALSE(delegate.get()->request_to_lock_mouse_called_);
+
+  // Force a cross-process navigation so that the RenderWidgetHost is deleted.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Make sure the WebContents cleaned up the previous pending request. A new
+  // request should be forwarded to the WebContentsDelegate.
+  delegate.get()->request_to_lock_mouse_called_ = false;
+  ASSERT_TRUE(ExecuteScript(shell(),
+                            "window.domAutomationController.send(document.body."
+                            "requestPointerLock());"));
+  EXPECT_TRUE(delegate.get()->request_to_lock_mouse_called_);
+}
+
 }  // namespace content
