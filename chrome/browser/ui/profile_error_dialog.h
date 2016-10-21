@@ -8,21 +8,20 @@
 #include <string>
 
 // Be very careful while modifying this enum. Do NOT remove any elements from
-// this enum. If you need to add one, add them to the end, right before
-// PROFILE_ERROR_END. PROFILE_ERROR_END should ALWAYS be the last element in
-// this enum. This is important because this enum is used to back a histogram,
-// and these are implicit assumptions made in terms of how enumerated
-// histograms are defined.
-enum ProfileErrorType {
-  PROFILE_ERROR_HISTORY,
-  PROFILE_ERROR_PREFERENCES,
-  PROFILE_ERROR_DB_AUTOFILL_WEB_DATA,
-  PROFILE_ERROR_DB_TOKEN_WEB_DATA,
-  PROFILE_ERROR_DB_WEB_DATA,
-  PROFILE_ERROR_DB_KEYWORD_WEB_DATA,
-  PROFILE_ERROR_CREATE_FAILURE_SPECIFIED,
-  PROFILE_ERROR_CREATE_FAILURE_ALL,
-  PROFILE_ERROR_END
+// this enum. If you need to add one, add them to the end, right before END.
+// END should ALWAYS be the last element in this enum. This is important because
+// this enum is used to back a histogram, and these are implicit assumptions
+// made in terms of how enumerated histograms are defined.
+enum class ProfileErrorType {
+  HISTORY,
+  PREFERENCES,
+  DB_AUTOFILL_WEB_DATA,
+  DB_TOKEN_WEB_DATA,
+  DB_WEB_DATA,
+  DB_KEYWORD_WEB_DATA,
+  CREATE_FAILURE_SPECIFIED,
+  CREATE_FAILURE_ALL,
+  END
 };
 
 // Shows an error dialog corresponding to the inability to open some portion of

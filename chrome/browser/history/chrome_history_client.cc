@@ -64,7 +64,7 @@ bool ChromeHistoryClient::CanAddURL(const GURL& url) {
 
 void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status,
                                              const std::string& diagnostics) {
-  ShowProfileErrorDialog(PROFILE_ERROR_HISTORY,
+  ShowProfileErrorDialog(ProfileErrorType::HISTORY,
                          SqlInitStatusToMessageId(init_status), diagnostics);
 }
 

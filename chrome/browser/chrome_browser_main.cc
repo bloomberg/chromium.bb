@@ -583,9 +583,9 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
     profile = GetFallbackStartupProfile();
 
   if (!profile) {
-    ProfileErrorType error_type = profile_dir_specified ?
-                                  PROFILE_ERROR_CREATE_FAILURE_SPECIFIED :
-                                  PROFILE_ERROR_CREATE_FAILURE_ALL;
+    ProfileErrorType error_type =
+        profile_dir_specified ? ProfileErrorType::CREATE_FAILURE_SPECIFIED
+                              : ProfileErrorType::CREATE_FAILURE_ALL;
 
     // TODO(lwchkg): What diagnostics do you want to include in the feedback
     // report when an error occurs?

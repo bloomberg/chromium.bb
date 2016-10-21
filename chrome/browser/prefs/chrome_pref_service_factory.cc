@@ -376,7 +376,7 @@ void HandleReadError(const base::FilePath& pref_filename,
     if (message_id) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&ShowProfileErrorDialog, PROFILE_ERROR_PREFERENCES,
+          base::Bind(&ShowProfileErrorDialog, ProfileErrorType::PREFERENCES,
                      message_id,
                      sql::GetCorruptFileDiagnosticsInfo(pref_filename)));
     }

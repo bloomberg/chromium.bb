@@ -34,21 +34,21 @@ ProfileErrorType ProfileErrorFromWebDataServiceWrapperError(
     WebDataServiceWrapper::ErrorType error_type) {
   switch (error_type) {
     case WebDataServiceWrapper::ERROR_LOADING_AUTOFILL:
-      return PROFILE_ERROR_DB_AUTOFILL_WEB_DATA;
+      return ProfileErrorType::DB_AUTOFILL_WEB_DATA;
 
     case WebDataServiceWrapper::ERROR_LOADING_KEYWORD:
-      return PROFILE_ERROR_DB_KEYWORD_WEB_DATA;
+      return ProfileErrorType::DB_KEYWORD_WEB_DATA;
 
     case WebDataServiceWrapper::ERROR_LOADING_TOKEN:
-      return PROFILE_ERROR_DB_TOKEN_WEB_DATA;
+      return ProfileErrorType::DB_TOKEN_WEB_DATA;
 
     case WebDataServiceWrapper::ERROR_LOADING_PASSWORD:
-      return PROFILE_ERROR_DB_WEB_DATA;
+      return ProfileErrorType::DB_WEB_DATA;
 
     default:
       NOTREACHED()
           << "Unknown WebDataServiceWrapper::ErrorType: " << error_type;
-      return PROFILE_ERROR_DB_WEB_DATA;
+      return ProfileErrorType::DB_WEB_DATA;
   }
 }
 
