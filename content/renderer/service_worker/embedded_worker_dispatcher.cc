@@ -77,7 +77,11 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
 void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerDispatcher::OnStopWorker");
   WorkerWrapper* wrapper = workers_.Lookup(embedded_worker_id);
-  DCHECK(wrapper);
+  // OnStopWorker is possible to be called twice.
+  if (!wrapper) {
+    LOG(WARNING) << "Got OnStopWorker for nonexistent worker";
+    return;
+  }
   // This should eventually call WorkerContextDestroyed. (We may need to post
   // a delayed task to forcibly abort the worker context if we find it
   // necessary)

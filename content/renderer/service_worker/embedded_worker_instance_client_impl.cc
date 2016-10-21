@@ -69,7 +69,11 @@ void EmbeddedWorkerInstanceClientImpl::StopWorker(
     const StopWorkerCallback& callback) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(embedded_worker_id_);
-  DCHECK(!stop_callback_);
+  // StopWorker is possible to be called twice.
+  if (stop_callback_) {
+    LOG(WARNING) << "Got StopWorker for stopping worker";
+    return;
+  }
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
   stop_callback_ = std::move(callback);
   dispatcher_->RecordStopWorkerTimer(embedded_worker_id_.value());
