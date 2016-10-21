@@ -251,6 +251,9 @@ struct CONTENT_EXPORT WebPreferences {
   float default_minimum_page_scale_factor;
   float default_maximum_page_scale_factor;
 
+  // Whether download UI should be hidden on this page.
+  bool hide_download_ui;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

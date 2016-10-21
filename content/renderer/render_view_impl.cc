@@ -1173,6 +1173,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAlwaysShowContextMenuOnTouch(
       prefs.always_show_context_menu_on_touch);
 
+  settings->setHideDownloadUI(prefs.hide_download_ui);
+
 #if defined(OS_MACOSX)
   settings->setDoubleTapToZoomEnabled(true);
   web_view->setMaximumLegibleScale(prefs.default_maximum_page_scale_factor);

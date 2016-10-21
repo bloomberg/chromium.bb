@@ -102,6 +102,7 @@ class WEB_EXPORT WebSettingsImpl final
   void setForcePreloadNoneForMediaElements(bool) override;
   void setForceZeroLayoutHeight(bool) override;
   void setFullscreenSupported(bool) override;
+  void setHideDownloadUI(bool) override;
   void setHistoryEntryRequiresUserGesture(bool) override;
   void setHyperlinkAuditingEnabled(bool) override;
   void setIgnoreMainFrameOverflowHiddenQuirk(bool) override;

@@ -418,6 +418,7 @@ class CONTENT_EXPORT WebContentsImpl
   void StopMediaSession() override;
   void OnPasswordInputShownOnHttp() override;
   void OnCreditCardInputShownOnHttp() override;
+  void SetIsOverlayContent(bool is_overlay_content) override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -567,6 +568,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsVirtualKeyboardRequested() override;
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
+  bool HideDownloadUI() const override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1434,6 +1436,9 @@ class CONTENT_EXPORT WebContentsImpl
 #if defined(OS_ANDROID)
   std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;
 #endif
+
+  // Whether this WebContents is for content overlay.
+  bool is_overlay_content_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

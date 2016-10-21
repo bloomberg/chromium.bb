@@ -722,6 +722,9 @@ class WebContents : public PageNavigator,
   // can adjust the UI if desired.
   virtual void OnCreditCardInputShownOnHttp() = 0;
 
+  // Sets whether the WebContents is for overlaying content on a page.
+  virtual void SetIsOverlayContent(bool is_overlay_content) = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       const base::android::JavaRef<jobject>& jweb_contents_android);

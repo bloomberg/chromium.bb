@@ -506,6 +506,10 @@ void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels) {
   m_settings->setMinimumAccelerated2dCanvasSize(numPixels);
 }
 
+void WebSettingsImpl::setHideDownloadUI(bool hide) {
+  m_settings->setHideDownloadUI(hide);
+}
+
 void WebSettingsImpl::setHistoryEntryRequiresUserGesture(bool enabled) {
   m_settings->setHistoryEntryRequiresUserGesture(enabled);
 }

@@ -36,6 +36,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaSource.h"
@@ -46,6 +47,7 @@
 #include "core/html/track/TextTrackList.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/api/LayoutSliderItem.h"
+#include "core/page/Page.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -659,6 +661,10 @@ MediaControlDownloadButtonElement::getOverflowStringName() {
 
 bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
   const KURL& url = mediaElement().currentSrc();
+
+  // Check page settings to see if download is disabled.
+  if (document().page() && document().page()->settings().hideDownloadUI())
+    return false;
 
   // URLs that lead to nowhere are ignored.
   if (url.isNull() || url.isEmpty())

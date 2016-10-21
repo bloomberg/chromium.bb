@@ -451,6 +451,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       virtual_keyboard_requested_(false),
       page_scale_factor_is_one_(true),
       mouse_lock_widget_(nullptr),
+      is_overlay_content_(false),
       loading_weak_factory_(this),
       weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
@@ -3820,6 +3821,10 @@ void WebContentsImpl::OnCreditCardInputShownOnHttp() {
   controller_.ssl_manager()->DidShowCreditCardInputOnHttp();
 }
 
+void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
+  is_overlay_content_ = is_overlay_content;
+}
+
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   for (auto& observer : observers_)
     observer.DidFirstVisuallyNonEmptyPaint();
@@ -4150,6 +4155,10 @@ double WebContentsImpl::GetPendingPageZoomLevel() {
   GURL url = pending_entry->GetURL();
   return HostZoomMap::GetForWebContents(this)->GetZoomLevelForHostAndScheme(
       url.scheme(), net::GetHostOrSpecFromURL(url));
+}
+
+bool WebContentsImpl::HideDownloadUI() const {
+  return is_overlay_content_;
 }
 
 bool WebContentsImpl::IsNeverVisible() {

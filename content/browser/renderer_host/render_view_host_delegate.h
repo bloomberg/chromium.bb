@@ -241,6 +241,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   virtual bool IsJavaScriptDialogShowing() const;
 
+  // Whether download UI should be hidden.
+  virtual bool HideDownloadUI() const;
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };
