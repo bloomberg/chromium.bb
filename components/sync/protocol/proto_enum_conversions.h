@@ -22,61 +22,61 @@ namespace syncer {
 // The returned strings (which don't have to be freed) are in ASCII.
 // The result of passing in an invalid enum value is undefined.
 
-const char* GetAppListItemTypeString(
+const char* ProtoEnumToString(
     sync_pb::AppListSpecifics::AppListItemType item_type);
 
-const char* GetBrowserTypeString(
+const char* ProtoEnumToString(
     sync_pb::SessionWindow::BrowserType browser_type);
 
-const char* GetPageTransitionString(
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::PageTransition page_transition);
 
-const char* GetPageTransitionRedirectTypeString(
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::PageTransitionRedirectType redirect_type);
 
-const char* GetWifiCredentialSecurityClassString(
+const char* ProtoEnumToString(
     sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
 
-const char* GetUpdatesSourceString(
+const char* ProtoEnumToString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 
-const char* GetUpdatesOriginString(sync_pb::SyncEnums::GetUpdatesOrigin origin);
+const char* ProtoEnumToString(sync_pb::SyncEnums::GetUpdatesOrigin origin);
 
-const char* GetReadingListEntryStatusString(
+const char* ProtoEnumToString(
     sync_pb::ReadingListSpecifics::ReadingListEntryStatus status);
 
-const char* GetResponseTypeString(
+const char* ProtoEnumToString(
     sync_pb::CommitResponse::ResponseType response_type);
 
-const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type);
+const char* ProtoEnumToString(sync_pb::SyncEnums::ErrorType error_type);
 
-const char* GetActionString(sync_pb::SyncEnums::Action action);
+const char* ProtoEnumToString(sync_pb::SyncEnums::Action action);
 
-const char* GetLaunchTypeString(sync_pb::AppSpecifics::LaunchType launch_type);
+const char* ProtoEnumToString(sync_pb::AppSpecifics::LaunchType launch_type);
 
-const char* GetWalletInfoTypeString(
+const char* ProtoEnumToString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type);
 
-const char* GetWalletMetadataTypeString(
+const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
 
-const char* GetWalletCardStatusString(
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 
-const char* GetWalletCardTypeString(
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type);
 
-const char* GetDeviceTypeString(sync_pb::SyncEnums::DeviceType device_type);
+const char* ProtoEnumToString(sync_pb::SyncEnums::DeviceType device_type);
 
-const char* GetFaviconTypeString(sync_pb::SessionTab::FaviconType favicon_type);
+const char* ProtoEnumToString(sync_pb::SessionTab::FaviconType favicon_type);
 
-const char* PassphraseTypeString(sync_pb::NigoriSpecifics::PassphraseType type);
+const char* ProtoEnumToString(sync_pb::NigoriSpecifics::PassphraseType type);
 
-const char* SingletonDebugEventTypeString(
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::SingletonDebugEventType type);
 
-const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state);
-const char* GetPasswordStateString(sync_pb::TabNavigation::PasswordState state);
+const char* ProtoEnumToString(sync_pb::TabNavigation::BlockedState state);
+const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state);
 
 }  // namespace syncer
 

@@ -18,7 +18,7 @@ namespace syncer {
   case enum_parent::enum_value:            \
     return #enum_value
 
-const char* GetAppListItemTypeString(
+const char* ProtoEnumToString(
     sync_pb::AppListSpecifics::AppListItemType item_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::AppListSpecifics, AppListItemType, TYPE_APP,
                      TYPE_URL);
@@ -32,7 +32,7 @@ const char* GetAppListItemTypeString(
   return "";
 }
 
-const char* GetBrowserTypeString(
+const char* ProtoEnumToString(
     sync_pb::SessionWindow::BrowserType browser_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SessionWindow, BrowserType, TYPE_TABBED,
                      TYPE_POPUP);
@@ -44,7 +44,7 @@ const char* GetBrowserTypeString(
   return "";
 }
 
-const char* GetPageTransitionString(
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::PageTransition page_transition) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransition, LINK,
                      KEYWORD_GENERATED);
@@ -65,7 +65,7 @@ const char* GetPageTransitionString(
   return "";
 }
 
-const char* GetPageTransitionRedirectTypeString(
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::PageTransitionRedirectType page_transition_qualifier) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransitionRedirectType,
                      CLIENT_REDIRECT, SERVER_REDIRECT);
@@ -77,7 +77,7 @@ const char* GetPageTransitionRedirectTypeString(
   return "";
 }
 
-const char* GetWifiCredentialSecurityClassString(
+const char* ProtoEnumToString(
     sync_pb::WifiCredentialSpecifics::SecurityClass security_class) {
   ASSERT_ENUM_BOUNDS(sync_pb::WifiCredentialSpecifics, SecurityClass,
                      SECURITY_CLASS_INVALID, SECURITY_CLASS_PSK);
@@ -90,7 +90,7 @@ const char* GetWifiCredentialSecurityClassString(
   NOTREACHED();
   return "";
 }
-const char* GetUpdatesSourceString(
+const char* ProtoEnumToString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source) {
   ASSERT_ENUM_BOUNDS(sync_pb::GetUpdatesCallerInfo, GetUpdatesSource, UNKNOWN,
                      PROGRAMMATIC);
@@ -113,8 +113,7 @@ const char* GetUpdatesSourceString(
   return "";
 }
 
-const char* GetUpdatesOriginString(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin) {
+const char* ProtoEnumToString(sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, GetUpdatesOrigin, UNKNOWN_ORIGIN,
                      PROGRAMMATIC);
   switch (origin) {
@@ -132,7 +131,7 @@ const char* GetUpdatesOriginString(
   return "";
 }
 
-const char* GetResponseTypeString(
+const char* ProtoEnumToString(
     sync_pb::CommitResponse::ResponseType response_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::CommitResponse, ResponseType, SUCCESS,
                      TRANSIENT_ERROR);
@@ -148,7 +147,7 @@ const char* GetResponseTypeString(
   return "";
 }
 
-const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type) {
+const char* ProtoEnumToString(sync_pb::SyncEnums::ErrorType error_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, ErrorType, SUCCESS, UNKNOWN);
   switch (error_type) {
     ENUM_CASE(sync_pb::SyncEnums, SUCCESS);
@@ -171,7 +170,7 @@ const char* GetErrorTypeString(sync_pb::SyncEnums::ErrorType error_type) {
   return "";
 }
 
-const char* GetActionString(sync_pb::SyncEnums::Action action) {
+const char* ProtoEnumToString(sync_pb::SyncEnums::Action action) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, Action, UPGRADE_CLIENT,
                      UNKNOWN_ACTION);
   switch (action) {
@@ -186,7 +185,7 @@ const char* GetActionString(sync_pb::SyncEnums::Action action) {
   return "";
 }
 
-const char* GetLaunchTypeString(sync_pb::AppSpecifics::LaunchType launch_type) {
+const char* ProtoEnumToString(sync_pb::AppSpecifics::LaunchType launch_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::AppSpecifics, LaunchType, PINNED, WINDOW);
   switch (launch_type) {
     ENUM_CASE(sync_pb::AppSpecifics, PINNED);
@@ -198,7 +197,7 @@ const char* GetLaunchTypeString(sync_pb::AppSpecifics::LaunchType launch_type) {
   return "";
 }
 
-const char* GetWalletInfoTypeString(
+const char* ProtoEnumToString(
     sync_pb::AutofillWalletSpecifics::WalletInfoType wallet_info_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::AutofillWalletSpecifics, WalletInfoType, UNKNOWN,
                      POSTAL_ADDRESS);
@@ -211,7 +210,7 @@ const char* GetWalletInfoTypeString(
   return "";
 }
 
-const char* GetWalletMetadataTypeString(
+const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMetadataSpecifics, Type, UNKNOWN, ADDRESS);
   switch (wallet_metadata_type) {
@@ -223,7 +222,7 @@ const char* GetWalletMetadataTypeString(
   return "";
 }
 
-const char* GetWalletCardStatusString(
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status) {
   switch (wallet_card_status) {
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, VALID);
@@ -233,7 +232,7 @@ const char* GetWalletCardStatusString(
   return "";
 }
 
-const char* GetWalletCardTypeString(
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type) {
   switch (wallet_card_type) {
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, UNKNOWN);
@@ -250,7 +249,7 @@ const char* GetWalletCardTypeString(
   return "";
 }
 
-const char* GetDeviceTypeString(sync_pb::SyncEnums::DeviceType device_type) {
+const char* ProtoEnumToString(sync_pb::SyncEnums::DeviceType device_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, DeviceType, TYPE_WIN, TYPE_TABLET);
   switch (device_type) {
     ENUM_CASE(sync_pb::SyncEnums, TYPE_WIN);
@@ -265,8 +264,7 @@ const char* GetDeviceTypeString(sync_pb::SyncEnums::DeviceType device_type) {
   return "";
 }
 
-const char* GetFaviconTypeString(
-    sync_pb::SessionTab::FaviconType favicon_type) {
+const char* ProtoEnumToString(sync_pb::SessionTab::FaviconType favicon_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SessionTab, FaviconType, TYPE_WEB_FAVICON,
                      TYPE_WEB_FAVICON);
   switch (favicon_type) { ENUM_CASE(sync_pb::SessionTab, TYPE_WEB_FAVICON); }
@@ -274,8 +272,7 @@ const char* GetFaviconTypeString(
   return "";
 }
 
-const char* PassphraseTypeString(
-    sync_pb::NigoriSpecifics::PassphraseType type) {
+const char* ProtoEnumToString(sync_pb::NigoriSpecifics::PassphraseType type) {
   ASSERT_ENUM_BOUNDS(sync_pb::NigoriSpecifics, PassphraseType,
                      IMPLICIT_PASSPHRASE, CUSTOM_PASSPHRASE);
   switch (type) {
@@ -288,7 +285,7 @@ const char* PassphraseTypeString(
   return "";
 }
 
-const char* SingletonDebugEventTypeString(
+const char* ProtoEnumToString(
     sync_pb::SyncEnums::SingletonDebugEventType type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, SingletonDebugEventType,
                      CONNECTION_STATUS_CHANGE, BOOTSTRAP_TOKEN_UPDATED);
@@ -311,7 +308,7 @@ const char* SingletonDebugEventTypeString(
   return "";
 }
 
-const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state) {
+const char* ProtoEnumToString(sync_pb::TabNavigation::BlockedState state) {
   ASSERT_ENUM_BOUNDS(sync_pb::TabNavigation, BlockedState, STATE_ALLOWED,
                      STATE_BLOCKED);
   switch (state) {
@@ -322,8 +319,7 @@ const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state) {
   return "";
 }
 
-const char* GetPasswordStateString(
-    sync_pb::TabNavigation::PasswordState state) {
+const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
   ASSERT_ENUM_BOUNDS(sync_pb::TabNavigation, PasswordState,
                      PASSWORD_STATE_UNKNOWN, HAS_PASSWORD_FIELD);
   switch (state) {
@@ -335,7 +331,7 @@ const char* GetPasswordStateString(
   return "";
 }
 
-const char* GetReadingListEntryStatusString(
+const char* ProtoEnumToString(
     sync_pb::ReadingListSpecifics::ReadingListEntryStatus status) {
   ASSERT_ENUM_BOUNDS(sync_pb::ReadingListSpecifics, ReadingListEntryStatus,
                      UNREAD, READ);

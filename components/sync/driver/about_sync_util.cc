@@ -424,7 +424,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     if (snapshot.legacy_updates_source() !=
         sync_pb::GetUpdatesCallerInfo::UNKNOWN) {
       session_source.SetValue(
-          GetUpdatesSourceString(snapshot.legacy_updates_source()));
+          ProtoEnumToString(snapshot.legacy_updates_source()));
     }
     get_key_result.SetValue(GetSyncerErrorString(
         snapshot.model_neutral_state().last_get_key_result));

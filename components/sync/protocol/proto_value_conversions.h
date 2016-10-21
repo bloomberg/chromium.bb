@@ -27,17 +27,14 @@ class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
-class CollapsedInfo;
 class DatatypeAssociationStats;
 class DebugEventInfo;
 class DebugInfo;
 class DeviceInfoSpecifics;
-class DeviceInformation;
 class DictionarySpecifics;
 class EncryptedData;
 class EntityMetadata;
 class EntitySpecifics;
-class EverythingDirective;
 class ExperimentsSpecifics;
 class ExtensionSettingSpecifics;
 class ExtensionSpecifics;
@@ -45,13 +42,11 @@ class FaviconImageSpecifics;
 class FaviconTrackingSpecifics;
 class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
-class KeystoreEncryptionFlagsSpecifics;
 class LinkedAppIconInfo;
 class ManagedUserSettingSpecifics;
 class ManagedUserSharedSettingSpecifics;
 class ManagedUserSpecifics;
 class ManagedUserWhitelistSpecifics;
-class Media;
 class NavigationRedirect;
 class NigoriSpecifics;
 class PasswordSpecifics;
@@ -66,13 +61,11 @@ class SessionHeader;
 class SessionSpecifics;
 class SessionTab;
 class SessionWindow;
-class SimpleCollapsedLayout;
 class SyncCycleCompletedEventInfo;
 class SyncEntity;
 class SyncedNotificationAppInfoSpecifics;
 class SyncedNotificationSpecifics;
 class TabNavigation;
-class Target;
 class ThemeSpecifics;
 class TimeRangeDirective;
 class TypedUrlSpecifics;
@@ -107,7 +100,7 @@ std::unique_ptr<base::DictionaryValue> AppListSpecificsToValue(
     const sync_pb::AppListSpecifics& proto);
 
 // Sub-protocols of AppSpecifics.
-std::unique_ptr<base::DictionaryValue> AppSettingsToValue(
+std::unique_ptr<base::DictionaryValue> AppNotificationSettingsToValue(
     const sync_pb::AppNotificationSettings& app_notification_settings);
 
 std::unique_ptr<base::DictionaryValue> LinkedAppIconInfoToValue(
@@ -139,11 +132,6 @@ std::unique_ptr<base::DictionaryValue> NavigationRedirectToValue(
 std::unique_ptr<base::DictionaryValue> PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
-// Sub-protocol of NigoriSpecifics.
-
-std::unique_ptr<base::DictionaryValue> DeviceInformationToValue(
-    const sync_pb::DeviceInformation& device_information);
-
 // Sub-protocol of HistoryDeleteDirectiveSpecifics.
 
 std::unique_ptr<base::DictionaryValue> GlobalIdDirectiveToValue(
@@ -153,9 +141,6 @@ std::unique_ptr<base::DictionaryValue> TimeRangeDirectiveToValue(
     const sync_pb::TimeRangeDirective& time_range_directive);
 
 // Sub-protocol of Experiments.
-
-std::unique_ptr<base::DictionaryValue> KeystoreEncryptionToValue(
-    const sync_pb::KeystoreEncryptionFlagsSpecifics& proto);
 
 std::unique_ptr<base::DictionaryValue> SessionSpecificsToValue(
     const sync_pb::SessionSpecifics& session_specifics);
@@ -235,9 +220,6 @@ std::unique_ptr<base::DictionaryValue> ManagedUserSharedSettingSpecificsToValue(
 std::unique_ptr<base::DictionaryValue> ManagedUserWhitelistSpecificsToValue(
     const sync_pb::ManagedUserWhitelistSpecifics&
         managed_user_whitelist_specifics);
-
-std::unique_ptr<base::DictionaryValue> MediaToValue(
-    const sync_pb::Media& media);
 
 std::unique_ptr<base::DictionaryValue> NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);

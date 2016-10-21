@@ -27,7 +27,7 @@ std::string ConfigureGetUpdatesRequestEvent::GetType() const {
 }
 
 std::string ConfigureGetUpdatesRequestEvent::GetDetails() const {
-  return base::StringPrintf("Reason: %s", GetUpdatesOriginString(origin_));
+  return base::StringPrintf("Reason: %s", ProtoEnumToString(origin_));
 }
 
 std::unique_ptr<base::DictionaryValue>

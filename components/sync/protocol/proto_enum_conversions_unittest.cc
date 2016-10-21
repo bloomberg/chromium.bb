@@ -15,70 +15,60 @@ namespace {
 class ProtoEnumConversionsTest : public testing::Test {};
 
 template <class T>
-void TestEnumStringFunction(const char* (*enum_string_fn)(T),
-                            int enum_min,
-                            int enum_max) {
+void TestEnumStringFunction(T enum_min, T enum_max) {
   for (int i = enum_min; i <= enum_max; ++i) {
-    const std::string& str = enum_string_fn(static_cast<T>(i));
+    const std::string& str = ProtoEnumToString(static_cast<T>(i));
     EXPECT_FALSE(str.empty());
   }
 }
 
 TEST_F(ProtoEnumConversionsTest, GetAppListItemTypeString) {
-  TestEnumStringFunction(GetAppListItemTypeString,
-                         sync_pb::AppListSpecifics::AppListItemType_MIN,
+  TestEnumStringFunction(sync_pb::AppListSpecifics::AppListItemType_MIN,
                          sync_pb::AppListSpecifics::AppListItemType_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetBrowserTypeString) {
-  TestEnumStringFunction(GetBrowserTypeString,
-                         sync_pb::SessionWindow::BrowserType_MIN,
+  TestEnumStringFunction(sync_pb::SessionWindow::BrowserType_MIN,
                          sync_pb::SessionWindow::BrowserType_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetPageTransitionString) {
-  TestEnumStringFunction(GetPageTransitionString,
-                         sync_pb::SyncEnums::PageTransition_MIN,
+  TestEnumStringFunction(sync_pb::SyncEnums::PageTransition_MIN,
                          sync_pb::SyncEnums::PageTransition_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetPageTransitionQualifierString) {
-  TestEnumStringFunction(GetPageTransitionRedirectTypeString,
-                         sync_pb::SyncEnums::PageTransitionRedirectType_MIN,
+  TestEnumStringFunction(sync_pb::SyncEnums::PageTransitionRedirectType_MIN,
                          sync_pb::SyncEnums::PageTransitionRedirectType_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetWifiCredentialSecurityClassString) {
-  TestEnumStringFunction(GetWifiCredentialSecurityClassString,
-                         sync_pb::WifiCredentialSpecifics::SecurityClass_MIN,
+  TestEnumStringFunction(sync_pb::WifiCredentialSpecifics::SecurityClass_MIN,
                          sync_pb::WifiCredentialSpecifics::SecurityClass_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
-  TestEnumStringFunction(GetUpdatesSourceString,
-                         sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MIN,
+  TestEnumStringFunction(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MIN,
                          sync_pb::GetUpdatesCallerInfo::PERIODIC);
-  TestEnumStringFunction(GetUpdatesSourceString,
-                         sync_pb::GetUpdatesCallerInfo::RETRY,
+  TestEnumStringFunction(sync_pb::GetUpdatesCallerInfo::RETRY,
                          sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetResponseTypeString) {
-  TestEnumStringFunction(GetResponseTypeString,
-                         sync_pb::CommitResponse::ResponseType_MIN,
+  TestEnumStringFunction(sync_pb::CommitResponse::ResponseType_MIN,
                          sync_pb::CommitResponse::ResponseType_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetErrorTypeString) {
   // We have a gap, so we need to do two ranges.
-  TestEnumStringFunction(GetErrorTypeString, sync_pb::SyncEnums::ErrorType_MIN,
+  TestEnumStringFunction(sync_pb::SyncEnums::ErrorType_MIN,
                          sync_pb::SyncEnums::MIGRATION_DONE);
-  TestEnumStringFunction(GetErrorTypeString, sync_pb::SyncEnums::UNKNOWN,
+  TestEnumStringFunction(sync_pb::SyncEnums::UNKNOWN,
                          sync_pb::SyncEnums::ErrorType_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetActionString) {
-  TestEnumStringFunction(GetActionString, sync_pb::SyncEnums::Action_MIN,
+  TestEnumStringFunction(sync_pb::SyncEnums::Action_MIN,
                          sync_pb::SyncEnums::Action_MAX);
 }
 

@@ -82,8 +82,7 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
   value->SetInteger("numHierarchyConflicts", num_hierarchy_conflicts_);
   value->SetInteger("numServerConflicts", num_server_conflicts_);
   value->SetInteger("numEntries", num_entries_);
-  value->SetString("legacySource",
-                   GetUpdatesSourceString(legacy_updates_source_));
+  value->SetString("legacySource", ProtoEnumToString(legacy_updates_source_));
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
 
   std::unique_ptr<base::DictionaryValue> counter_entries(
