@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/app/strings/grit/content_strings.h"
+#include "content/browser/accessibility/ax_platform_position.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
@@ -24,6 +25,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
+using content::AXPlatformPosition;
 using content::AXTreeIDRegistry;
 using content::AccessibilityMatchPredicate;
 using content::BrowserAccessibility;
@@ -94,13 +96,6 @@ NSString* const NSAccessibilityScrollToVisibleAction = @"AXScrollToVisible";
 // A mapping from an accessibility attribute to its method name.
 NSDictionary* attributeToMethodNameMap = nil;
 
-struct AXTextMarkerData {
-  AXTreeIDRegistry::AXTreeID tree_id;
-  int32_t node_id;
-  int offset;
-  ui::AXTextAffinity affinity;
-};
-
 // VoiceOver uses -1 to mean "no limit" for AXResultsLimit.
 const int kAXResultsLimitNoLimit = -1;
 
@@ -134,14 +129,16 @@ AXTextMarkerRef AXTextMarkerRangeCopyEndMarker(
 id CreateTextMarker(const BrowserAccessibility& object,
                     int offset,
                     ui::AXTextAffinity affinity) {
-  AXTextMarkerData marker_data;
-  marker_data.tree_id = object.manager() ? object.manager()->ax_tree_id() : -1;
-  marker_data.node_id = object.GetId();
-  marker_data.offset = offset;
-  marker_data.affinity = affinity;
+  if (!object.instance_active())
+    return nil;
+
+  const auto manager = object.manager();
+  DCHECK(manager);
+  auto marker_data = AXPlatformPosition::CreateTextPosition(
+      manager->ax_tree_id(), object.GetId(), offset, affinity);
   return (id)base::mac::CFTypeRefToNSObjectAutorelease(AXTextMarkerCreate(
-      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(&marker_data),
-      sizeof(marker_data)));
+      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(marker_data),
+      sizeof(*marker_data)));
 }
 
 id CreateTextMarkerRange(const BrowserAccessibility& start_object,
@@ -163,26 +160,20 @@ bool GetTextMarkerData(AXTextMarkerRef text_marker,
                        ui::AXTextAffinity* affinity) {
   DCHECK(text_marker);
   DCHECK(object && offset);
-  const auto* marker_data = reinterpret_cast<const AXTextMarkerData*>(
+  const auto* marker_data = reinterpret_cast<const AXPlatformPosition*>(
       AXTextMarkerGetBytePtr(text_marker));
   if (!marker_data)
     return false;
 
-  const BrowserAccessibilityManager* manager =
-      BrowserAccessibilityManager::FromID(marker_data->tree_id);
-  if (!manager)
-    return false;
-
-  *object = manager->GetFromID(marker_data->node_id);
+  *object = marker_data->GetAnchor();
   if (!*object)
     return false;
 
-  *offset = marker_data->offset;
+  *offset = marker_data->text_offset();
   if (*offset < 0)
     return false;
 
-  *affinity = marker_data->affinity;
-
+  *affinity = marker_data->affinity();
   return true;
 }
 

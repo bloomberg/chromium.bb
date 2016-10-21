@@ -162,6 +162,8 @@ source_set("browser") {
     "accessibility/accessibility_tree_formatter_win.cc",
     "accessibility/accessibility_ui.cc",
     "accessibility/accessibility_ui.h",
+    "accessibility/ax_platform_position.cc",
+    "accessibility/ax_platform_position.h",
     "accessibility/ax_tree_id_registry.cc",
     "accessibility/ax_tree_id_registry.h",
     "accessibility/browser_accessibility.cc",

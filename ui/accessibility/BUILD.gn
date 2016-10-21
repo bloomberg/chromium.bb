@@ -20,6 +20,9 @@ component("accessibility") {
     "ax_node.h",
     "ax_node_data.cc",
     "ax_node_data.h",
+    "ax_node_position.cc",
+    "ax_node_position.h",
+    "ax_position.h",
     "ax_relative_bounds.cc",
     "ax_relative_bounds.h",
     "ax_serializable_tree.cc",
@@ -122,6 +125,7 @@ static_library("test_support") {
 test("accessibility_unittests") {
   sources = [
     "ax_generated_tree_unittest.cc",
+    "ax_node_position_unittest.cc",
     "ax_text_utils_unittest.cc",
     "ax_tree_combiner_unittest.cc",
     "ax_tree_serializer_unittest.cc",
