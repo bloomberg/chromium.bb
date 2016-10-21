@@ -39,7 +39,6 @@ namespace blink {
 SpellCheckRequest::SpellCheckRequest(
     Range* checkingRange,
     const String& text,
-    TextCheckingProcessType processType,
     const Vector<uint32_t>& documentMarkersInRange,
     const Vector<unsigned>& documentMarkerOffsets,
     int requestNumber)
@@ -49,7 +48,6 @@ SpellCheckRequest::SpellCheckRequest(
           blink::rootEditableElement(*m_checkingRange->startContainer())),
       m_requestData(unrequestedTextCheckingSequence,
                     text,
-                    processType,
                     documentMarkersInRange,
                     documentMarkerOffsets),
       m_requestNumber(requestNumber) {
@@ -74,7 +72,6 @@ void SpellCheckRequest::dispose() {
 
 // static
 SpellCheckRequest* SpellCheckRequest::create(
-    TextCheckingProcessType processType,
     const EphemeralRange& checkingRange,
     int requestNumber) {
   if (checkingRange.isNull())
@@ -100,8 +97,8 @@ SpellCheckRequest* SpellCheckRequest::create(
     offsets[i] = markers[i]->startOffset();
   }
 
-  return new SpellCheckRequest(checkingRangeObject, text, processType, hashes,
-                               offsets, requestNumber);
+  return new SpellCheckRequest(checkingRangeObject, text, hashes, offsets,
+                               requestNumber);
 }
 
 const TextCheckingRequestData& SpellCheckRequest::data() const {

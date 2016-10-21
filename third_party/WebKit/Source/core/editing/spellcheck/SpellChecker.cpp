@@ -519,8 +519,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(
   // Check the full paragraph instead if the paragraph is short, which saves
   // the cost on sentence boundary finding.
   if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
-    SpellCheckRequest* request =
-        SpellCheckRequest::create(TextCheckingProcessBatch, paragraphRange, 0);
+    SpellCheckRequest* request = SpellCheckRequest::create(paragraphRange, 0);
     if (request)
       m_spellCheckRequester->requestCheckingFor(request);
     return;
@@ -536,8 +535,8 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(
                                     ? expandEndToSentenceBoundary(chunkRange)
                                     : expandRangeToSentenceBoundary(chunkRange);
 
-    SpellCheckRequest* request = SpellCheckRequest::create(
-        TextCheckingProcessBatch, checkRange, requestNum);
+    SpellCheckRequest* request =
+        SpellCheckRequest::create(checkRange, requestNum);
     if (request)
       m_spellCheckRequester->requestCheckingFor(request);
 
@@ -1004,7 +1003,7 @@ void SpellChecker::requestTextChecking(const Element& element) {
     return;
   const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
   m_spellCheckRequester->requestCheckingFor(
-      SpellCheckRequest::create(TextCheckingProcessBatch, rangeToCheck));
+      SpellCheckRequest::create(rangeToCheck));
 }
 
 DEFINE_TRACE(SpellChecker) {

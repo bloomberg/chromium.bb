@@ -39,11 +39,6 @@
 
 namespace blink {
 
-enum TextCheckingProcessType {
-  TextCheckingProcessBatch,
-  TextCheckingProcessIncremental
-};
-
 struct GrammarDetail {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   int location;
@@ -68,30 +63,24 @@ class TextCheckingRequestData final {
   DISALLOW_NEW();
   friend class SpellCheckRequest;  // For access to m_sequence.
  public:
-  TextCheckingRequestData()
-      : m_sequence(unrequestedTextCheckingSequence),
-        m_processType(TextCheckingProcessIncremental) {}
+  TextCheckingRequestData() : m_sequence(unrequestedTextCheckingSequence) {}
   TextCheckingRequestData(int sequence,
                           const String& text,
-                          TextCheckingProcessType processType,
                           const Vector<uint32_t>& markers,
                           const Vector<unsigned>& offsets)
       : m_sequence(sequence),
         m_text(text),
-        m_processType(processType),
         m_markers(markers),
         m_offsets(offsets) {}
 
   int sequence() const { return m_sequence; }
   String text() const { return m_text; }
-  TextCheckingProcessType processType() const { return m_processType; }
   const Vector<uint32_t>& markers() const { return m_markers; }
   const Vector<unsigned>& offsets() const { return m_offsets; }
 
  private:
   int m_sequence;
   String m_text;
-  TextCheckingProcessType m_processType;
   Vector<uint32_t> m_markers;
   Vector<unsigned> m_offsets;
 };

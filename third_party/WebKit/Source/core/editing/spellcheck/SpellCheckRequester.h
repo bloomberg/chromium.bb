@@ -45,8 +45,7 @@ class TextCheckerClient;
 
 class SpellCheckRequest final : public TextCheckingRequest {
  public:
-  static SpellCheckRequest* create(TextCheckingProcessType,
-                                   const EphemeralRange& checkingRange,
+  static SpellCheckRequest* create(const EphemeralRange& checkingRange,
                                    int requestNumber = 0);
 
   ~SpellCheckRequest() override;
@@ -69,7 +68,6 @@ class SpellCheckRequest final : public TextCheckingRequest {
  private:
   SpellCheckRequest(Range* checkingRange,
                     const String&,
-                    TextCheckingProcessType,
                     const Vector<uint32_t>& documentMarkersInRange,
                     const Vector<unsigned>& documentMarkerOffsets,
                     int requestNumber);
