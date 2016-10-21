@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/engine/events/configure_get_updates_request_event.h"
+#include "components/sync/engine_impl/events/configure_get_updates_request_event.h"
 
 #include "base/strings/stringprintf.h"
 #include "components/sync/protocol/proto_enum_conversions.h"

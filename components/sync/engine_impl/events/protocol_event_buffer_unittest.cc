@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
-#include "components/sync/engine/events/poll_get_updates_request_event.h"
 #include "components/sync/engine/events/protocol_event.h"
+#include "components/sync/engine_impl/events/poll_get_updates_request_event.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

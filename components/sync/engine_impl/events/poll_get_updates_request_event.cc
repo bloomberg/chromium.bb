@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/engine/events/poll_get_updates_request_event.h"
+#include "components/sync/engine_impl/events/poll_get_updates_request_event.h"
 
 #include "components/sync/protocol/proto_value_conversions.h"
 

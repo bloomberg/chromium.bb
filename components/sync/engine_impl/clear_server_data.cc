@@ -5,9 +5,9 @@
 #include "components/sync/engine_impl/clear_server_data.h"
 
 #include "base/trace_event/trace_event.h"
-#include "components/sync/engine/events/clear_server_data_request_event.h"
-#include "components/sync/engine/events/clear_server_data_response_event.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
+#include "components/sync/engine_impl/events/clear_server_data_request_event.h"
+#include "components/sync/engine_impl/events/clear_server_data_response_event.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 

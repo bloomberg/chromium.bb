@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
-#include "components/sync/engine/events/get_updates_response_event.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
+#include "components/sync/engine_impl/events/get_updates_response_event.h"
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"

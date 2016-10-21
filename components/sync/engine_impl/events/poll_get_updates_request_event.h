@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_ENGINE_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_EVENT_H_
-#define COMPONENTS_SYNC_ENGINE_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_EVENT_H_
+#ifndef COMPONENTS_SYNC_ENGINE_IMPL_EVENTS_POLL_GET_UPDATES_REQUEST_EVENT_H_
+#define COMPONENTS_SYNC_ENGINE_IMPL_EVENTS_POLL_GET_UPDATES_REQUEST_EVENT_H_
 
 #include <memory>
 #include <string>
@@ -11,19 +11,20 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
-// An event representing a configure GetUpdates request to the server.
-class ConfigureGetUpdatesRequestEvent : public ProtocolEvent {
+class NudgeTracker;
+
+// An event representing a poll request sent to the server.
+class PollGetUpdatesRequestEvent : public ProtocolEvent {
  public:
-  ConfigureGetUpdatesRequestEvent(
-      base::Time timestamp,
-      sync_pb::SyncEnums::GetUpdatesOrigin origin,
-      const sync_pb::ClientToServerMessage& request);
-  ~ConfigureGetUpdatesRequestEvent() override;
+  PollGetUpdatesRequestEvent(base::Time timestamp,
+                             const sync_pb::ClientToServerMessage& request);
+  ~PollGetUpdatesRequestEvent() override;
 
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
@@ -33,12 +34,11 @@ class ConfigureGetUpdatesRequestEvent : public ProtocolEvent {
 
  private:
   const base::Time timestamp_;
-  const sync_pb::SyncEnums::GetUpdatesOrigin origin_;
   const sync_pb::ClientToServerMessage request_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConfigureGetUpdatesRequestEvent);
+  DISALLOW_COPY_AND_ASSIGN(PollGetUpdatesRequestEvent);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_ENGINE_EVENTS_CONFIGURE_GET_UPDATES_REQUEST_EVENT_H_
+#endif  // COMPONENTS_SYNC_ENGINE_IMPL_EVENTS_POLL_GET_UPDATES_REQUEST_EVENT_H_
