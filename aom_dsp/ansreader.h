@@ -39,9 +39,15 @@ struct AnsDecoder {
 
 static INLINE unsigned refill_state(struct AnsDecoder *const ans,
                                     unsigned state) {
+#if ANS_REVERSE
+  while (state < L_BASE && ans->buf_offset < 0) {
+    state = state * IO_BASE + ans->buf[ans->buf_offset++];
+  }
+#else
   while (state < L_BASE && ans->buf_offset > 0) {
     state = state * IO_BASE + ans->buf[--ans->buf_offset];
   }
+#endif
   return state;
 }
 
@@ -106,6 +112,20 @@ static INLINE int ans_read_init(struct AnsDecoder *const ans,
                                 const uint8_t *const buf, int offset) {
   unsigned x;
   if (offset < 1) return 1;
+#if ANS_REVERSE
+  ans->buf = buf + offset;
+  ans->buf_offset = -offset;
+  x = buf[0];
+  if ((x & 0x80) == 0) {
+    if (offset < 2) return 1;
+    ans->buf_offset += 2;
+    ans->state = mem_get_be16(buf) & 0x7FFF;
+  } else {
+    if (offset < 3) return 1;
+    ans->buf_offset += 3;
+    ans->state = mem_get_be24(buf) & 0x7FFFFF;
+  }
+#else
   ans->buf = buf;
   x = buf[offset - 1];
   if ((x & 0x80) == 0) {
@@ -124,6 +144,7 @@ static INLINE int ans_read_init(struct AnsDecoder *const ans,
     // 110xxxxx implies this byte is a superframe marker
     return 1;
   }
+#endif  // ANS_REVERSE
 #if CONFIG_ACCOUNTING
   ans->accounting = NULL;
 #endif

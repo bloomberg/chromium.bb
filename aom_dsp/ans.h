@@ -23,6 +23,8 @@
 extern "C" {
 #endif  // __cplusplus
 
+#define ANS_REVERSE 0
+
 typedef uint8_t AnsP8;
 #define ANS_P8_PRECISION 256u
 #define ANS_P8_SHIFT 8

@@ -4554,5 +4554,9 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #else
   data += data_size;
 #endif
+#if CONFIG_ANS && ANS_REVERSE
+  // Avoid aliasing the superframe index
+  *data++ = 0;
+#endif
   *size = data - dst;
 }
