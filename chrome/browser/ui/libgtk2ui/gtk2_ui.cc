@@ -237,10 +237,6 @@ const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 
 #if GTK_MAJOR_VERSION == 3
 const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
-
-// The size of the rendered toolbar image.
-const int kToolbarImageWidth = 64;
-const int kToolbarImageHeight = 128;
 #endif  // GTK_MAJOR_VERSION == 3
 
 // Picks a button tint from a set of background colors. While
@@ -937,26 +933,26 @@ void Gtk2UI::BuildFrameColors() {
     // on the left and right sides. Also remove the bottom border for good
     // measure.
     SkBitmap bitmap;
-    bitmap.allocN32Pixels(kToolbarImageWidth, 40);
+    bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(0);
 
-    static GtkWidget* title = nullptr;
-    if (!title) {
-      title = gtk_header_bar_new();
-      gtk_widget_set_size_request(title, kToolbarImageWidth * 2, 48);
+    static GtkWidget* menu = nullptr;
+    if (!menu) {
+      menu = gtk_menu_bar_new();
+      gtk_widget_set_size_request(menu, 1, 1);
 
       GtkWidget* window = gtk_offscreen_window_new();
-      gtk_container_add(GTK_CONTAINER(window), title);
+      gtk_container_add(GTK_CONTAINER(window), menu);
 
       gtk_widget_show_all(window);
     }
 
     cairo_surface_t* surface = cairo_image_surface_create_for_data(
         static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
-        bitmap.width(), bitmap.height(), bitmap.width() * 4);
+        bitmap.width(), bitmap.height(),
+        cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, 1));
     cairo_t* cr = cairo_create(surface);
-    cairo_translate(cr, kToolbarImageWidth / -2, 0);
-    gtk_widget_draw(title, cr);
+    gtk_widget_draw(menu, cr);
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 
@@ -976,8 +972,7 @@ void Gtk2UI::BuildFrameColors() {
     }
 
     bitmap.lockPixels();
-    colors_[color_id] =
-        bitmap.getColor(bitmap.width() / 2, bitmap.height() - 1);
+    colors_[color_id] = bitmap.getColor(0, 0);
     bitmap.unlockPixels();
   };
 
