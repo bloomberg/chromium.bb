@@ -25,6 +25,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -289,6 +290,7 @@ int PermissionManager::RequestPermissions(
     bool user_gesture,
     const base::Callback<void(
         const std::vector<PermissionStatus>&)>& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (permissions.empty()) {
     callback.Run(std::vector<PermissionStatus>());
     return kNoPendingOperation;
@@ -353,6 +355,7 @@ void PermissionManager::OnPermissionsRequestResponseStatus(
 }
 
 void PermissionManager::CancelPermissionRequest(int request_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PendingRequest* pending_request = pending_requests_.Lookup(request_id);
   if (!pending_request)
     return;
@@ -376,6 +379,7 @@ void PermissionManager::CancelPermissionRequest(int request_id) {
 void PermissionManager::ResetPermission(PermissionType permission,
                                         const GURL& requesting_origin,
                                         const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PermissionContextBase* context = GetPermissionContext(permission);
   if (!context)
     return;
@@ -388,6 +392,7 @@ PermissionStatus PermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (IsConstantPermission(permission))
     return GetPermissionStatusForConstantPermission(permission);
 
@@ -402,6 +407,7 @@ PermissionStatus PermissionManager::GetPermissionStatus(
 void PermissionManager::RegisterPermissionUsage(PermissionType permission,
                                                 const GURL& requesting_origin,
                                                 const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // This is required because constant permissions don't have a
   // ContentSettingsType.
   if (IsConstantPermission(permission))
@@ -418,6 +424,7 @@ int PermissionManager::SubscribePermissionStatusChange(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const base::Callback<void(PermissionStatus)>& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 
@@ -441,6 +448,7 @@ int PermissionManager::SubscribePermissionStatusChange(
 }
 
 void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Whether |subscription_id| is known will be checked by the Remove() call.
   subscriptions_.Remove(subscription_id);
 
@@ -454,6 +462,7 @@ void PermissionManager::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::list<base::Closure> callbacks;
 
   for (SubscriptionsMap::iterator iter(&subscriptions_);
