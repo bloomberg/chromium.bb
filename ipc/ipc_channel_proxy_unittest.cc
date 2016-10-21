@@ -165,17 +165,18 @@ class MessageCountFilter : public IPC::MessageFilter {
   void OnChannelClosing() override {
     // We may or may not have gotten OnChannelError; if not, the last event has
     // to be OnChannelConnected.
+    EXPECT_NE(FILTER_REMOVED, last_filter_event_);
     if (last_filter_event_ != CHANNEL_ERROR)
       EXPECT_EQ(CHANNEL_CONNECTED, last_filter_event_);
     last_filter_event_ = CHANNEL_CLOSING;
   }
 
   void OnFilterRemoved() override {
-    // If the channel didn't get a chance to connect, we might see the
-    // OnFilterRemoved event with no other events preceding it. We still want
-    // OnFilterRemoved to be called to allow for deleting the Filter.
-    if (last_filter_event_ != NONE)
-      EXPECT_EQ(CHANNEL_CLOSING, last_filter_event_);
+    // A filter may be removed at any time, even before the channel is connected
+    // (and thus before OnFilterAdded is ever able to dispatch.) The only time
+    // we won't see OnFilterRemoved is immediately after OnFilterAdded, because
+    // OnChannelConnected is always the next event to fire after that.
+    EXPECT_NE(FILTER_ADDED, last_filter_event_);
     last_filter_event_ = FILTER_REMOVED;
   }
 
