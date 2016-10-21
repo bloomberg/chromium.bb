@@ -88,7 +88,6 @@ class MediaKeySession final
                                 const String& initDataType,
                                 const DOMArrayPiece& initData);
   ScriptPromise load(ScriptState*, const String& sessionId);
-
   ScriptPromise update(ScriptState*, const DOMArrayPiece& response);
   ScriptPromise close(ScriptState*);
   ScriptPromise remove(ScriptState*);
@@ -115,6 +114,18 @@ class MediaKeySession final
 
   void actionTimerFired(TimerBase*);
 
+  // The following perform the asynchronous part of the command referenced.
+  void generateRequestTask(ContentDecryptionModuleResult*,
+                           WebEncryptedMediaInitDataType,
+                           DOMArrayBuffer* initDataBuffer);
+  void finishGenerateRequest();
+  void loadTask(ContentDecryptionModuleResult*, const String& sessionId);
+  void finishLoad();
+  void updateTask(ContentDecryptionModuleResult*,
+                  DOMArrayBuffer* sanitizedResponse);
+  void closeTask(ContentDecryptionModuleResult*);
+  void removeTask(ContentDecryptionModuleResult*);
+
   // WebContentDecryptionModuleSession::Client
   void message(MessageType,
                const unsigned char* message,
@@ -123,12 +134,6 @@ class MediaKeySession final
   void expirationChanged(double updatedExpiryTimeInMS) override;
   void keysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>&,
                           bool hasAdditionalUsableKey) override;
-
-  // Called by NewSessionResult when the new session has been created.
-  void finishGenerateRequest();
-
-  // Called by LoadSessionResult when the session has been loaded.
-  void finishLoad();
 
   Member<GenericEventQueue> m_asyncEventQueue;
   std::unique_ptr<WebContentDecryptionModuleSession> m_session;

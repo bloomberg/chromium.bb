@@ -152,9 +152,7 @@ class MediaKeySession::PendingAction
 
   Type getType() const { return m_type; }
 
-  const Persistent<ContentDecryptionModuleResult> result() const {
-    return m_result;
-  }
+  ContentDecryptionModuleResult* result() const { return m_result; }
 
   DOMArrayBuffer* data() const {
     DCHECK(m_type == GenerateRequest || m_type == Update);
@@ -514,8 +512,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState,
       new NewSessionResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
-  // 10. Run the following steps asynchronously (documented in
-  //     actionTimerFired())
+  // 10. Run the following steps asynchronously (done in generateRequestTask())
   m_pendingActions.append(PendingAction::CreatePendingGenerateRequest(
       result, initDataType, initDataBuffer));
   DCHECK(!m_actionTimer.isActive());
@@ -523,6 +520,42 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState,
 
   // 11. Return promise.
   return promise;
+}
+
+void MediaKeySession::generateRequestTask(
+    ContentDecryptionModuleResult* result,
+    WebEncryptedMediaInitDataType initDataType,
+    DOMArrayBuffer* initDataBuffer) {
+  // NOTE: Continue step 10 of MediaKeySession::generateRequest().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // initializeNewSession() in Chromium will execute steps 10.1 to 10.9.
+  m_session->initializeNewSession(
+      initDataType, static_cast<unsigned char*>(initDataBuffer->data()),
+      initDataBuffer->byteLength(), m_sessionType, result->result());
+
+  // Remaining steps (10.10) executed in finishGenerateRequest(),
+  // called when |result| is resolved.
+}
+
+void MediaKeySession::finishGenerateRequest() {
+  // NOTE: Continue step 10.10 of MediaKeySession::generateRequest().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // 10.10.1 If any of the preceding steps failed, reject promise with a
+  //         new DOMException whose name is the appropriate error name.
+  //         (Done by CDM calling result.completeWithError() as appropriate.)
+  // 10.10.2 Set the sessionId attribute to session id.
+  DCHECK(!sessionId().isEmpty());
+
+  // 10.10.3 Let this object's callable be true.
+  m_isCallable = true;
+
+  // 10.10.4 Run the Queue a "message" Event algorithm on the session,
+  //         providing message type and message.
+  //         (Done by the CDM.)
+  // 10.10.5 Resolve promise.
+  //         (Done by NewSessionResultPromise.)
 }
 
 ScriptPromise MediaKeySession::load(ScriptState* scriptState,
@@ -574,8 +607,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState,
       new LoadSessionResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
-  // 8. Run the following steps asynchronously (documented in
-  //    actionTimerFired())
+  // 8. Run the following steps asynchronously (done in loadTask())
   m_pendingActions.append(
       PendingAction::CreatePendingLoadRequest(result, sessionId));
   DCHECK(!m_actionTimer.isActive());
@@ -583,6 +615,80 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState,
 
   // 9. Return promise.
   return promise;
+}
+
+void MediaKeySession::loadTask(ContentDecryptionModuleResult* result,
+                               const String& sessionId) {
+  // NOTE: Continue step 8 of MediaKeySession::load().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // 8.1 Let sanitized session ID be a validated and/or sanitized
+  //     version of sessionId. The user agent should thoroughly
+  //     validate the sessionId value before passing it to the CDM.
+  //     At a minimum, this should include checking that the length
+  //     and value (e.g. alphanumeric) are reasonable.
+  // 8.2 If the preceding step failed, or if sanitized session ID
+  //     is empty, reject promise with a newly created TypeError.
+  if (!isValidSessionId(sessionId)) {
+    result->completeWithError(WebContentDecryptionModuleExceptionTypeError, 0,
+                              "Invalid sessionId");
+    return;
+  }
+
+  // 8.3 If there is an unclosed session in the object's Document
+  //     whose sessionId attribute is sanitized session ID, reject
+  //     promise with a new DOMException whose name is
+  //     QuotaExceededError. In other words, do not create a session
+  //     if a non-closed session, regardless of type, already exists
+  //     for this sanitized session ID in this browsing context.
+  //     (Done in the CDM.)
+
+  // 8.4 Let expiration time be NaN.
+  //     (Done in the constructor.)
+  DCHECK(std::isnan(m_expiration));
+
+  // load() in Chromium will execute steps 8.5 through 8.8.
+  m_session->load(sessionId, result->result());
+
+  // Remaining step (8.9) executed in finishLoad(), called when |result|
+  // is resolved.
+}
+
+void MediaKeySession::finishLoad() {
+  // NOTE: Continue step 8.9 of MediaKeySession::load().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // 8.9.1 If any of the preceding steps failed, reject promise with a new
+  //       DOMException whose name is the appropriate error name.
+  //       (Done by CDM calling result.completeWithError() as appropriate.)
+
+  // 8.9.2 Set the sessionId attribute to sanitized session ID.
+  DCHECK(!sessionId().isEmpty());
+
+  // 8.9.3 Let this object's callable be true.
+  m_isCallable = true;
+
+  // 8.9.4 If the loaded session contains information about any keys (there
+  //       are known keys), run the update key statuses algorithm on the
+  //       session, providing each key's key ID along with the appropriate
+  //       MediaKeyStatus. Should additional processing be necessary to
+  //       determine with certainty the status of a key, use the non-"usable"
+  //       MediaKeyStatus value that corresponds to the reason for the
+  //       additional processing. Once the additional processing for one or
+  //       more keys has completed, run the update key statuses algorithm
+  //       again if any of the statuses has changed.
+  //       (Done by the CDM.)
+
+  // 8.9.5 Run the Update Expiration algorithm on the session,
+  //       providing expiration time.
+  //       (Done by the CDM.)
+
+  // 8.9.6 If message is not null, run the queue a "message" event algorithm
+  //       on the session, providing message type and message.
+  //       (Done by the CDM.)
+
+  // 8.9.7 Resolve promise with true.
+  //       (Done by LoadSessionResultPromise.)
 }
 
 ScriptPromise MediaKeySession::update(ScriptState* scriptState,
@@ -620,8 +726,7 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState,
   SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
-  // 6. Run the following steps asynchronously (documented in
-  //    actionTimerFired())
+  // 6. Run the following steps asynchronously (done in updateTask())
   m_pendingActions.append(
       PendingAction::CreatePendingUpdate(result, responseCopy));
   if (!m_actionTimer.isActive())
@@ -631,36 +736,58 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState,
   return promise;
 }
 
+void MediaKeySession::updateTask(ContentDecryptionModuleResult* result,
+                                 DOMArrayBuffer* sanitizedResponse) {
+  // NOTE: Continue step 6 of MediaKeySession::update().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // update() in Chromium will execute steps 6.1 through 6.8.
+  m_session->update(static_cast<unsigned char*>(sanitizedResponse->data()),
+                    sanitizedResponse->byteLength(), result->result());
+
+  // Last step (6.8.2 Resolve promise) will be done when |result| is resolved.
+}
+
 ScriptPromise MediaKeySession::close(ScriptState* scriptState) {
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
   // From https://w3c.github.io/encrypted-media/#close:
   // Indicates that the application no longer needs the session and the CDM
-  // should release any resources associated with this object and close it.
+  // should release any resources associated with the session and close it.
+  // Persisted data should not be released or cleared.
   // When this method is invoked, the user agent must run the following steps:
 
-  // 1. If this object's callable value is false, return a promise rejected
-  //    with a new DOMException whose name is "InvalidStateError".
-  if (!m_isCallable)
-    return CreateRejectedPromiseNotCallable(scriptState);
-
-  // 2. If the Session Close algorithm has been run on this object,
-  //    return a resolved promise.
+  // 1. Let session be the associated MediaKeySession object.
+  // 2. If session is closed, return a resolved promise.
   if (m_isClosed)
     return ScriptPromise::cast(scriptState, ScriptValue());
 
-  // 3. Let promise be a new promise.
+  // 3. If session's callable value is false, return a promise rejected with
+  //    an InvalidStateError.
+  if (!m_isCallable)
+    return CreateRejectedPromiseNotCallable(scriptState);
+
+  // 4. Let promise be a new promise.
   SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
-  // 4. Run the following steps asynchronously (documented in
-  //    actionTimerFired()).
+  // 4. Run the following steps in parallel (done in closeTask()).
   m_pendingActions.append(PendingAction::CreatePendingClose(result));
   if (!m_actionTimer.isActive())
     m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
   // 5. Return promise.
   return promise;
+}
+
+void MediaKeySession::closeTask(ContentDecryptionModuleResult* result) {
+  // NOTE: Continue step 4 of MediaKeySession::close().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // close() in Chromium will execute steps 5.1 through 5.3.
+  m_session->close(result->result());
+
+  // Last step (5.3.2 Resolve promise) will be done when |result| is resolved.
 }
 
 ScriptPromise MediaKeySession::remove(ScriptState* scriptState) {
@@ -694,14 +821,23 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState) {
   SimpleResultPromise* result = new SimpleResultPromise(scriptState, this);
   ScriptPromise promise = result->promise();
 
-  // 5. Run the following steps asynchronously (documented in
-  //    actionTimerFired()).
+  // 5. Run the following steps asynchronously (done in removeTask()).
   m_pendingActions.append(PendingAction::CreatePendingRemove(result));
   if (!m_actionTimer.isActive())
     m_actionTimer.startOneShot(0, BLINK_FROM_HERE);
 
   // 6. Return promise.
   return promise;
+}
+
+void MediaKeySession::removeTask(ContentDecryptionModuleResult* result) {
+  // NOTE: Continue step 5 of MediaKeySession::remove().
+  DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
+
+  // remove() in Chromium will execute steps 5.1 through 5.3.
+  m_session->remove(result->result());
+
+  // Last step (5.3.6 Resolve promise) will be done when |result| is resolved.
 }
 
 void MediaKeySession::actionTimerFired(TimerBase*) {
@@ -718,151 +854,27 @@ void MediaKeySession::actionTimerFired(TimerBase*) {
 
     switch (action->getType()) {
       case PendingAction::GenerateRequest:
-        // NOTE: Continue step 10 of MediaKeySession::generateRequest().
-        DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this
-                                           << ") GenerateRequest";
-
-        // initializeNewSession() in Chromium will execute steps 10.1 to 10.9.
-        m_session->initializeNewSession(
-            action->initDataType(),
-            static_cast<unsigned char*>(action->data()->data()),
-            action->data()->byteLength(), m_sessionType,
-            action->result()->result());
-
-        // Remaining steps (from 10.10) executed in finishGenerateRequest(),
-        // called when |result| is resolved.
+        generateRequestTask(action->result(), action->initDataType(),
+                            action->data());
         break;
 
       case PendingAction::Load:
-        // NOTE: Continue step 8 of MediaKeySession::load().
-        DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this
-                                           << ") Load";
-
-        // 8.1 Let sanitized session ID be a validated and/or sanitized
-        //     version of sessionId. The user agent should thoroughly
-        //     validate the sessionId value before passing it to the CDM.
-        //     At a minimum, this should include checking that the length
-        //     and value (e.g. alphanumeric) are reasonable.
-        // 8.2 If the preceding step failed, or if sanitized session ID
-        //     is empty, reject promise with a newly created TypeError.
-        if (!isValidSessionId(action->sessionId())) {
-          action->result()->completeWithError(
-              WebContentDecryptionModuleExceptionTypeError, 0,
-              "Invalid sessionId");
-          return;
-        }
-
-        // 8.3 If there is an unclosed session in the object's Document
-        //     whose sessionId attribute is sanitized session ID, reject
-        //     promise with a new DOMException whose name is
-        //     QuotaExceededError. In other words, do not create a session
-        //     if a non-closed session, regardless of type, already exists
-        //     for this sanitized session ID in this browsing context.
-        //     (Done in the CDM.)
-
-        // 8.4 Let expiration time be NaN.
-        //     (Done in the constructor.)
-        DCHECK(std::isnan(m_expiration));
-
-        // load() in Chromium will execute steps 8.5 through 8.8.
-        m_session->load(action->sessionId(), action->result()->result());
-
-        // Remaining steps (from 8.9) executed in finishLoad(), called
-        // when |result| is resolved.
+        loadTask(action->result(), action->sessionId());
         break;
 
       case PendingAction::Update:
-        // NOTE: Continue step 5 of MediaKeySession::update().
-        DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this
-                                           << ") Update";
-
-        // update() in Chromium will execute steps 5.1 through 5.8.
-        m_session->update(static_cast<unsigned char*>(action->data()->data()),
-                          action->data()->byteLength(),
-                          action->result()->result());
-
-        // Last step (5.9 Resolve promise) will be done when |result| is
-        // resolved.
+        updateTask(action->result(), action->data());
         break;
 
       case PendingAction::Close:
-        // NOTE: Continue step 4 of MediaKeySession::close().
-        DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this
-                                           << ") Close";
-
-        // close() in Chromium will execute steps 4.1 through 4.2.
-        m_session->close(action->result()->result());
-
-        // Last step (4.3 Resolve promise) will be done when |result| is
-        // resolved.
+        closeTask(action->result());
         break;
 
       case PendingAction::Remove:
-        // NOTE: Continue step 5 of MediaKeySession::remove().
-        DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this
-                                           << ") Remove";
-
-        // remove() in Chromium will execute steps 5.1 through 5.3.
-        m_session->remove(action->result()->result());
-
-        // Last step (5.3.3 Resolve promise) will be done when |result| is
-        // resolved.
+        removeTask(action->result());
         break;
     }
   }
-}
-
-void MediaKeySession::finishGenerateRequest() {
-  // 9.8 If any of the preceding steps failed, reject promise with a
-  //     new DOMException whose name is the appropriate error name.
-  //     (Done by CDM calling result.completeWithError() as appropriate.)
-
-  // 9.9 Set the sessionId attribute to session id.
-  DCHECK(!sessionId().isEmpty());
-
-  // 9.10 Let this object's callable be true.
-  m_isCallable = true;
-
-  // 9.11 Run the queue a "message" event algorithm on the session,
-  //      providing "license-request" and message.
-  //     (Done by the CDM.)
-
-  // 9.12 Resolve promise.
-  //      (Done by NewSessionResultPromise.)
-}
-
-void MediaKeySession::finishLoad() {
-  // 8.9 If any of the preceding steps failed, reject promise with a new
-  //     DOMException whose name is the appropriate error name.
-  //     (Done by CDM calling result.completeWithError() as appropriate.)
-
-  // 8.10 Set the sessionId attribute to sanitized session ID.
-  DCHECK(!sessionId().isEmpty());
-
-  // 8.11 Let this object's callable be true.
-  m_isCallable = true;
-
-  // 8.12 If the loaded session contains information about any keys (there
-  //      are known keys), run the update key statuses algorithm on the
-  //      session, providing each key's key ID along with the appropriate
-  //      MediaKeyStatus. Should additional processing be necessary to
-  //      determine with certainty the status of a key, use the non-"usable"
-  //      MediaKeyStatus value that corresponds to the reason for the
-  //      additional processing. Once the additional processing for one or
-  //      more keys has completed, run the update key statuses algorithm
-  //      again if any of the statuses has changed.
-  //      (Done by the CDM.)
-
-  // 8.13 Run the Update Expiration algorithm on the session,
-  //      providing expiration time.
-  //      (Done by the CDM.)
-
-  // 8.14 If message is not null, run the queue a "message" event algorithm
-  //      on the session, providing message type and message.
-  //      (Done by the CDM.)
-
-  // 8.15 Resolve promise with true.
-  //      (Done by LoadSessionResultPromise.)
 }
 
 // Queue a task to fire a simple event named keymessage at the new object.
