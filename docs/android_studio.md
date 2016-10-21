@@ -90,11 +90,15 @@ includes `R.java`).
 
 Gradle builds can be done from the command-line after importing the project into
 Android Studio (importing into the IDE causes the Gradle wrapper to be added).
+This wrapper can also be used to invoke gradle commands.
 
     cd $GRADLE_PROJECT_DIR && bash gradlew
 
 The resulting artifacts are not terribly useful. They are missing assets,
 resources, native libraries, etc.
+
+ * Use a [gradle daemon](https://docs.gradle.org/2.14.1/userguide/gradle_daemon.html) to speed up builds:
+    * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`, creating it if necessary.
 
 ## Status (as of Sept 21, 2016)
 
@@ -106,7 +110,7 @@ resources, native libraries, etc.
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
  * JUnit Test targets
- * Better support for instrumtation tests (they are treated as non-test .apks right now)
+ * Better support for instrumentation tests (they are treated as non-test .apks right now)
  * Make gradle aware of resources and assets
  * Make gradle aware of native code via pointing it at the location of our .so
  * Add a mode in which gradle is responsible for generating `R.java`
