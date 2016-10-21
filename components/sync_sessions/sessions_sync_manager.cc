@@ -210,9 +210,22 @@ void SessionsSyncManager::AssociateWindows(
   std::set<const SyncedWindowDelegate*> windows =
       synced_window_delegates_getter()->GetSyncedWindowDelegates();
 
+  if (option == RELOAD_TABS) {
+    UMA_HISTOGRAM_COUNTS("Sync.SessionWindows", windows.size());
+  }
+  if (windows.size() == 0) {
+    // Assume that the window hasn't loaded. Attempting to associate now would
+    // clobber any old windows, so just return.
+    LOG(ERROR) << "No windows present, see crbug.com/639009";
+    return;
+  }
   for (std::set<const SyncedWindowDelegate*>::const_iterator i =
            windows.begin();
        i != windows.end(); ++i) {
+    if (option == RELOAD_TABS) {
+      UMA_HISTOGRAM_COUNTS("Sync.SessionTabs", (*i)->GetTabCount());
+    }
+
     // Make sure the window has tabs and a viewable window. The viewable window
     // check is necessary because, for example, when a browser is closed the
     // destructor is not necessarily run immediately. This means its possible
