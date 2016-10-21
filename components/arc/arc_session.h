@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
 
 namespace arc {
@@ -41,7 +43,8 @@ class ArcSession {
   };
 
   // Creates a default instance of ArcSession.
-  static std::unique_ptr<ArcSession> Create();
+  static std::unique_ptr<ArcSession> Create(
+      const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   virtual ~ArcSession();
 
   // Starts and bootstraps a connection with the instance. The Observer's
@@ -52,6 +55,10 @@ class ArcSession {
   // Requests to stop the currently-running instance.
   // The completion is notified via OnStopped() of the Delegate.
   virtual void Stop() = 0;
+
+  // Called when Chrome is in shutdown state. This is called when the message
+  // loop is already stopped, and the instance will soon be deleted.
+  virtual void OnShutdown() = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

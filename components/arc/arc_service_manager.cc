@@ -51,7 +51,7 @@ ArcServiceManager::ArcServiceManager(
     arc_bridge_service_.reset(g_arc_bridge_service_for_testing);
     g_arc_bridge_service_for_testing = nullptr;
   } else {
-    arc_bridge_service_.reset(new ArcBridgeServiceImpl());
+    arc_bridge_service_.reset(new ArcBridgeServiceImpl(blocking_task_runner));
   }
 
   AddService(base::MakeUnique<ArcAudioBridge>(arc_bridge_service()));
@@ -107,6 +107,7 @@ void ArcServiceManager::Shutdown() {
   icon_loader_ = nullptr;
   activity_resolver_ = nullptr;
   services_.clear();
+  arc_bridge_service_->OnShutdown();
 }
 
 // static

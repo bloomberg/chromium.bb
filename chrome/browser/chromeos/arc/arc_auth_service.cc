@@ -651,7 +651,7 @@ void ArcAuthService::ShutdownBridge() {
   auth_account_callback_.Reset();
   android_management_checker_.reset();
   auth_code_fetcher_.reset();
-  arc_bridge_service()->Shutdown();
+  arc_bridge_service()->RequestStop();
   if (state_ != State::NOT_INITIALIZED)
     SetState(State::STOPPED);
   for (auto& observer : observer_list_)
@@ -706,7 +706,7 @@ void ArcAuthService::StopAndEnableArc() {
 
 void ArcAuthService::StartArc() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_bridge_service()->HandleStartup();
+  arc_bridge_service()->RequestStart();
   SetState(State::ACTIVE);
 }
 

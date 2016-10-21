@@ -103,11 +103,18 @@ class ArcBridgeService {
   // HandleStartup() should be called upon profile startup.  This will only
   // launch an instance if the instance is enabled.
   // This can only be called on the thread that this class was created on.
-  virtual void HandleStartup() = 0;
 
-  // Shutdown() should be called when the browser is shutting down. This can
-  // only be called on the thread that this class was created on.
-  virtual void Shutdown() = 0;
+  // Starts the ARC service, then it will connect the Mojo channel. When the
+  // bridge becomes ready, OnBridgeReady() is called.
+  virtual void RequestStart() = 0;
+
+  // Stops the ARC service.
+  virtual void RequestStop() = 0;
+
+  // OnShutdown() should be called when the browser is shutting down. This can
+  // only be called on the thread that this class was created on. We assume that
+  // when this function is called, MessageLoop is no longer exists.
+  virtual void OnShutdown() = 0;
 
   // Adds or removes observers. This can only be called on the thread that this
   // class was created on. RemoveObserver does nothing if |observer| is not in
@@ -244,9 +251,10 @@ class ArcBridgeService {
   friend class ArcBridgeTest;
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, StopMidStartup);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Shutdown);
 
   base::ObserverList<Observer> observer_list_;
 

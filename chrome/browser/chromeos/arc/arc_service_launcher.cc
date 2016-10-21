@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/arc/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/arc_wallpaper_service.h"
 #include "chrome/browser/chromeos/arc/gpu_arc_video_service_host.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -63,7 +62,6 @@ void ArcServiceLauncher::Initialize() {
 void ArcServiceLauncher::Shutdown() {
   DCHECK(arc_service_manager_);
   arc_service_manager_->Shutdown();
-  arc_service_manager_->arc_bridge_service()->Shutdown();
 }
 
 }  // namespace arc

@@ -28,9 +28,10 @@ namespace {
 constexpr int64_t kReconnectDelayInSeconds = 5;
 }  // namespace
 
-ArcBridgeServiceImpl::ArcBridgeServiceImpl()
+ArcBridgeServiceImpl::ArcBridgeServiceImpl(
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner)
     : session_started_(false),
-      factory_(base::Bind(ArcSession::Create)),
+      factory_(base::Bind(ArcSession::Create, blocking_task_runner)),
       weak_factory_(this) {
   DCHECK(!g_arc_bridge_service);
   g_arc_bridge_service = this;
@@ -44,7 +45,7 @@ ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
   g_arc_bridge_service = nullptr;
 }
 
-void ArcBridgeServiceImpl::HandleStartup() {
+void ArcBridgeServiceImpl::RequestStart() {
   DCHECK(CalledOnValidThread());
   if (session_started_)
     return;
@@ -53,7 +54,7 @@ void ArcBridgeServiceImpl::HandleStartup() {
   PrerequisitesChanged();
 }
 
-void ArcBridgeServiceImpl::Shutdown() {
+void ArcBridgeServiceImpl::RequestStop() {
   DCHECK(CalledOnValidThread());
   if (!session_started_)
     return;
@@ -62,12 +63,22 @@ void ArcBridgeServiceImpl::Shutdown() {
   PrerequisitesChanged();
 }
 
+void ArcBridgeServiceImpl::OnShutdown() {
+  DCHECK(CalledOnValidThread());
+  VLOG(1) << "OnShutdown";
+  if (!session_started_)
+    return;
+  session_started_ = false;
+  reconnect_ = false;
+  if (arc_session_)
+    arc_session_->OnShutdown();
+}
+
 void ArcBridgeServiceImpl::SetArcSessionFactoryForTesting(
     const ArcSessionFactory& factory) {
   DCHECK(!factory.is_null());
   factory_ = factory;
 }
-
 
 void ArcBridgeServiceImpl::DisableReconnectDelayForTesting() {
   use_delay_before_reconnecting_ = false;

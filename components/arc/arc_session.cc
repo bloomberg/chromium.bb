@@ -21,7 +21,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -132,7 +131,7 @@ class ArcSessionImpl : public ArcSession,
   // NOT_STARTED:
   //   Do nothing. Immediately transition to the STOPPED state.
   // CREATING_SOCKET:
-  //   The main task of the phase runs on WorkerPool thread. So, Stop() just
+  //   The main task of the phase runs on BlockingPool thread. So, Stop() just
   //   sets the flag and return. On the main task completion, a callback
   //   will run on the main (practically UI) thread, and the flag is checked
   //   at the beginning of them. This should work under the assumption that
@@ -145,7 +144,7 @@ class ArcSessionImpl : public ArcSession,
   //   SessionManager. Its completion will be notified via ArcInstanceStopped.
   //   Otherwise, it just turns into STOPPED state.
   // CONNECTING_MOJO:
-  //   The main task runs on WorkerPool thread, but it is blocking call.
+  //   The main task runs on BlockingPool thread, but it is blocking call.
   //   So, Stop() sends a request to cancel the blocking by closing the pipe
   //   whose read side is also polled. Then, in its callback, similar to
   //   STARTING_INSTANCE, a request to stop the ARC instance is sent to
@@ -166,7 +165,7 @@ class ArcSessionImpl : public ArcSession,
   //   STOPPED, then ArcInstanceStopped() is called. Do nothing in that case.
   // CONNECTING_MOJO:
   //   Similar to Stop() case above, ArcInstanceStopped() also notifies to
-  //   WorkerPool() thread to cancel it to unblock the thread. In
+  //   BlockingPool thread to cancel it to unblock the thread. In
   //   OnMojoConnected(), similar to OnInstanceStarted(), check if |state_| is
   //   STOPPED, then do nothing.
   // RUNNING:
@@ -199,12 +198,14 @@ class ArcSessionImpl : public ArcSession,
     STOPPED,
   };
 
-  ArcSessionImpl();
+  explicit ArcSessionImpl(
+      const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   ~ArcSessionImpl() override;
 
   // ArcSession overrides:
   void Start() override;
   void Stop() override;
+  void OnShutdown() override;
 
  private:
   // Creates the UNIX socket on a worker pool and then processes its file
@@ -231,6 +232,13 @@ class ArcSessionImpl : public ArcSession,
   // Completes the termination procedure.
   void OnStopped(ArcBridgeService::StopReason reason);
 
+  // Checks whether a function runs on the thread where the instance is
+  // created.
+  base::ThreadChecker thread_checker_;
+
+  // Task runner to run a blocking tasks.
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
   // The state of the session.
   State state_ = State::NOT_STARTED;
 
@@ -244,8 +252,6 @@ class ArcSessionImpl : public ArcSession,
   // Mojo endpoint.
   std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
 
-  base::ThreadChecker thread_checker_;
-
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionImpl> weak_factory_;
 
@@ -253,7 +259,9 @@ class ArcSessionImpl : public ArcSession,
   DISALLOW_COPY_AND_ASSIGN(ArcSessionImpl);
 };
 
-ArcSessionImpl::ArcSessionImpl() : weak_factory_(this) {
+ArcSessionImpl::ArcSessionImpl(
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner)
+    : blocking_task_runner_(blocking_task_runner), weak_factory_(this) {
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client == nullptr)
     return;
@@ -262,8 +270,7 @@ ArcSessionImpl::ArcSessionImpl() : weak_factory_(this) {
 
 ArcSessionImpl::~ArcSessionImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(hidehiko): CHECK if |state_| is in NOT_STARTED or STOPPED.
-  // Currently, specifically on shutdown, the state_ can be any value.
+  DCHECK(state_ == State::NOT_STARTED || state_ == State::STOPPED);
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client == nullptr)
     return;
@@ -278,7 +285,7 @@ void ArcSessionImpl::Start() {
 
   state_ = State::CREATING_SOCKET;
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&ArcSessionImpl::CreateSocket),
       base::Bind(&ArcSessionImpl::OnSocketCreated, weak_factory_.GetWeakPtr()));
 }
@@ -397,7 +404,7 @@ void ArcSessionImpl::OnInstanceStarted(base::ScopedFD socket_fd,
   }
 
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&ArcSessionImpl::ConnectMojo, base::Passed(&socket_fd),
                  base::Passed(&cancel_fd)),
       base::Bind(&ArcSessionImpl::OnMojoConnected, weak_factory_.GetWeakPtr()));
@@ -514,10 +521,9 @@ void ArcSessionImpl::Stop() {
       return;
 
     case State::CONNECTING_MOJO:
-      // Mojo connection is being waited on a WorkerPool thread.
+      // Mojo connection is being waited on a BlockingPool thread.
       // Request to cancel it. Following stopping procedure will run
       // in its callback.
-      DCHECK(accept_cancel_pipe_.get());
       accept_cancel_pipe_.reset();
       return;
 
@@ -551,7 +557,7 @@ void ArcSessionImpl::ArcInstanceStopped(bool clean) {
           << (clean ? "cleanly" : "uncleanly");
 
   // In case that crash happens during before the Mojo channel is connected,
-  // unlock the WorkerPool thread.
+  // unlock the BlockingPool thread.
   accept_cancel_pipe_.reset();
 
   ArcBridgeService::StopReason reason;
@@ -582,6 +588,31 @@ void ArcSessionImpl::OnStopped(ArcBridgeService::StopReason reason) {
     observer.OnStopped(reason);
 }
 
+void ArcSessionImpl::OnShutdown() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  stop_requested_ = true;
+  if (state_ == State::STOPPED)
+    return;
+
+  // Here, the message loop is already stopped, and the Chrome will be soon
+  // shutdown. Thus, it is not necessary to take care about restarting case.
+  // If ArcSession is waiting for mojo connection, cancels it. The BlockingPool
+  // will be joined later.
+  accept_cancel_pipe_.reset();
+
+  // Stops the ARC instance to let it graceful shutdown.
+  // Note that this may fail if ARC container is not actually running, but
+  // ignore an error as described below.
+  if (state_ == State::STARTING_INSTANCE ||
+      state_ == State::CONNECTING_MOJO || state_ == State::RUNNING)
+    StopArcInstance();
+
+  // Directly set to the STOPPED stateby OnStopped(). Note that calling
+  // StopArcInstance() may not work well. At least, because the UI thread is
+  // already stopped here, ArcInstanceStopped() callback cannot be invoked.
+  OnStopped(ArcBridgeService::StopReason::SHUTDOWN);
+}
+
 }  // namespace
 
 ArcSession::ArcSession() = default;
@@ -596,8 +627,9 @@ void ArcSession::RemoveObserver(Observer* observer) {
 }
 
 // static
-std::unique_ptr<ArcSession> ArcSession::Create() {
-  return base::MakeUnique<ArcSessionImpl>();
+std::unique_ptr<ArcSession> ArcSession::Create(
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
+  return base::MakeUnique<ArcSessionImpl>(blocking_task_runner);
 }
 
 }  // namespace arc

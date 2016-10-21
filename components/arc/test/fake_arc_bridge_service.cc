@@ -19,11 +19,15 @@ FakeArcBridgeService::~FakeArcBridgeService() {
   SetStopped();
 }
 
-void FakeArcBridgeService::HandleStartup() {
+void FakeArcBridgeService::RequestStart() {
   SetReady();
 }
 
-void FakeArcBridgeService::Shutdown() {
+void FakeArcBridgeService::RequestStop() {
+  SetStopped();
+}
+
+void FakeArcBridgeService::OnShutdown() {
   SetStopped();
 }
 

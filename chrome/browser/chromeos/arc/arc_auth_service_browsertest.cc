@@ -139,7 +139,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
             fake_session_manager_client));
 
     // Mock out ARC bridge.
-    auto service = base::MakeUnique<ArcBridgeServiceImpl>();
+    // Here inject FakeArcSession so blocking task runner is not needed.
+    auto service = base::MakeUnique<ArcBridgeServiceImpl>(nullptr);
     service->SetArcSessionFactoryForTesting(base::Bind(FakeArcSession::Create));
     ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
   }

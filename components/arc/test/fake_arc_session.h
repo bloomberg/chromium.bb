@@ -21,6 +21,7 @@ class FakeArcSession : public ArcSession {
   // ArcSession overrides:
   void Start() override;
   void Stop() override;
+  void OnShutdown() override;
 
   // To emulate unexpected stop, such as crash.
   void StopWithReason(ArcBridgeService::StopReason reason);

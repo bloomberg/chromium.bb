@@ -29,6 +29,10 @@ void FakeArcSession::Stop() {
   StopWithReason(ArcBridgeService::StopReason::SHUTDOWN);
 }
 
+void FakeArcSession::OnShutdown() {
+  StopWithReason(ArcBridgeService::StopReason::SHUTDOWN);
+}
+
 void FakeArcSession::StopWithReason(ArcBridgeService::StopReason reason) {
   for (auto& observer : observer_list_)
     observer.OnStopped(reason);

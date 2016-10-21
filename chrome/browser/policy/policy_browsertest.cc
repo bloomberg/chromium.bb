@@ -4190,7 +4190,8 @@ class ArcPolicyTest : public PolicyTest {
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client_));
 
-    auto service = base::MakeUnique<arc::ArcBridgeServiceImpl>();
+    // Inject FakeArcSession here so blocking task runner is not needed.
+    auto service = base::MakeUnique<arc::ArcBridgeServiceImpl>(nullptr);
     service->SetArcSessionFactoryForTesting(
         base::Bind(arc::FakeArcSession::Create));
     arc::ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));

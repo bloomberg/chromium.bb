@@ -75,7 +75,8 @@ class ArcBridgeTest : public testing::Test,
     state_ = ArcBridgeService::State::STOPPED;
     stop_reason_ = ArcBridgeService::StopReason::SHUTDOWN;
 
-    service_.reset(new ArcBridgeServiceImpl());
+    // We inject FakeArcSession here so we do not need task_runner.
+    service_.reset(new ArcBridgeServiceImpl(nullptr));
     service_->SetArcSessionFactoryForTesting(
         base::Bind(FakeArcSession::Create));
     service_->AddObserver(this);
@@ -101,25 +102,25 @@ TEST_F(ArcBridgeTest, Basic) {
   ASSERT_FALSE(ready());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 
-  service_->HandleStartup();
+  service_->RequestStart();
   ASSERT_EQ(ArcBridgeService::State::READY, state());
 
-  service_->Shutdown();
+  service_->RequestStop();
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
 // If the ArcBridgeService is shut down, it should be stopped, even
 // mid-startup.
-TEST_F(ArcBridgeTest, ShutdownMidStartup) {
+TEST_F(ArcBridgeTest, StopMidStartup) {
   ASSERT_FALSE(ready());
 
   service_->SetArcSessionFactoryForTesting(
       base::Bind(ArcBridgeTest::CreateSuspendedArcSession));
-  service_->HandleStartup();
+  service_->RequestStart();
   ASSERT_FALSE(service_->stopped());
   ASSERT_FALSE(service_->ready());
 
-  service_->Shutdown();
+  service_->RequestStop();
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
@@ -131,7 +132,7 @@ TEST_F(ArcBridgeTest, BootFailure) {
   service_->SetArcSessionFactoryForTesting(
       base::Bind(ArcBridgeTest::CreateBootFailureArcSession,
                  ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE));
-  service_->HandleStartup();
+  service_->RequestStart();
   EXPECT_EQ(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE, stop_reason_);
   ASSERT_TRUE(service_->stopped());
 }
@@ -140,7 +141,7 @@ TEST_F(ArcBridgeTest, BootFailure) {
 TEST_F(ArcBridgeTest, Restart) {
   ASSERT_FALSE(ready());
 
-  service_->HandleStartup();
+  service_->RequestStart();
   ASSERT_EQ(ArcBridgeService::State::READY, state());
 
   // Simulate a connection loss.
@@ -149,7 +150,7 @@ TEST_F(ArcBridgeTest, Restart) {
   arc_session()->StopWithReason(ArcBridgeService::StopReason::CRASH);
   ASSERT_TRUE(service_->ready());
 
-  service_->Shutdown();
+  service_->RequestStop();
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }
 
@@ -158,7 +159,7 @@ TEST_F(ArcBridgeTest, OnBridgeStopped) {
   ASSERT_FALSE(ready());
 
   service_->DisableReconnectDelayForTesting();
-  service_->HandleStartup();
+  service_->RequestStart();
   ASSERT_EQ(ArcBridgeService::State::READY, state());
 
   // Simulate boot failure.
@@ -174,8 +175,21 @@ TEST_F(ArcBridgeTest, OnBridgeStopped) {
   EXPECT_EQ(ArcBridgeService::StopReason::CRASH, stop_reason_);
   ASSERT_TRUE(service_->ready());
 
-  // Graceful shutdown.
-  service_->Shutdown();
+  // Graceful stop.
+  service_->RequestStop();
+  ASSERT_EQ(ArcBridgeService::StopReason::SHUTDOWN, stop_reason_);
+  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+}
+
+TEST_F(ArcBridgeTest, Shutdown) {
+  ASSERT_FALSE(ready());
+
+  service_->DisableReconnectDelayForTesting();
+  service_->RequestStart();
+  ASSERT_EQ(ArcBridgeService::State::READY, state());
+
+  // Simulate shutdown.
+  service_->OnShutdown();
   ASSERT_EQ(ArcBridgeService::StopReason::SHUTDOWN, stop_reason_);
   ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
 }

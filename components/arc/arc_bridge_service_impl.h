@@ -12,6 +12,8 @@
 #include "base/files/scoped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -31,12 +33,14 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // for testing purpose.
   using ArcSessionFactory = base::Callback<std::unique_ptr<ArcSession>()>;
 
-  ArcBridgeServiceImpl();
+  explicit ArcBridgeServiceImpl(
+      const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   ~ArcBridgeServiceImpl() override;
 
-  void HandleStartup() override;
-
-  void Shutdown() override;
+  // ArcBridgeService overrides:
+  void RequestStart() override;
+  void RequestStop() override;
+  void OnShutdown() override;
 
   // Inject a factory to create ArcSession instance for testing purpose.
   // |factory| must not be null.
