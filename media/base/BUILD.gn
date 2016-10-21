@@ -388,7 +388,7 @@ static_library("test_support") {
   ]
 }
 
-source_set("unittests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_block_fifo_unittest.cc",
@@ -433,7 +433,6 @@ source_set("unittests") {
     "null_video_sink_unittest.cc",
     "pipeline_impl_unittest.cc",
     "ranges_unittest.cc",
-    "run_all_unittests.cc",
     "seekable_buffer_unittest.cc",
     "serial_runner_unittest.cc",
     "silent_sink_suspender_unittest.cc",
@@ -461,7 +460,7 @@ source_set("unittests") {
     "//base/test:test_support",
     "//gpu/command_buffer/common",
     "//media",
-    "//media/base/android:anywhere_unittests",
+    "//media/base/android:anywhere_unit_tests",
     "//ppapi/features",
     "//skia",
     "//testing/gmock",
@@ -478,11 +477,30 @@ source_set("unittests") {
   }
 
   if (is_android) {
-    deps += [ "//ui/gl" ]
+    deps += [
+      "//media/base/android:unit_tests",
+      "//ui/gl",
+    ]
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources += [ "simd/convert_rgb_to_yuv_unittest.cc" ]
+  }
+}
+
+test("media_base_unittests") {
+  deps = [
+    ":unit_tests",
+    "//media/test:run_all_unittests",
+  ]
+
+  if (is_android) {
+    deps += [
+      # The test needs the java dependencies to add the java classes for their
+      # native counterparts to the test apk.
+      "//media/base/android:media_java",
+      "//ui/android:ui_java",
+    ]
   }
 }
 

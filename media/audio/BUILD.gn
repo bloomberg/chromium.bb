@@ -298,7 +298,7 @@ static_library("test_support") {
   configs += [ "//media:media_config" ]
 }
 
-source_set("unittests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_input_controller_unittest.cc",

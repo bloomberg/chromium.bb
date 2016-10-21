@@ -5,6 +5,24 @@
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media",
+    "//media/base:test_support",
+  ]
+
+  if (is_android) {
+    deps += [ "//ui/gl" ]
+  }
+}
+
 source_set("pipeline_integration_test_base") {
   testonly = true
 

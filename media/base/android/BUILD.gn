@@ -29,7 +29,7 @@ source_set("anywhere") {
 }
 
 # These should compile on non-android platforms too.
-source_set("anywhere_unittests") {
+source_set("anywhere_unit_tests") {
   testonly = true
   sources = [
     "media_codec_loop_unittest.cc",
@@ -99,7 +99,7 @@ if (is_android) {
     ]
   }
 
-  source_set("unittests") {
+  source_set("unit_tests") {
     testonly = true
     sources = [
       "media_drm_bridge_unittest.cc",

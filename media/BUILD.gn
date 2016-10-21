@@ -518,7 +518,9 @@ static_library("cdm_paths") {
   ]
 }
 
-test("media_unittests") {
+# TODO(xhwang): Move these into source_sets in respective subfolders.
+source_set("unit_tests") {
+  testonly = true
   sources = [
     "cdm/aes_decryptor_unittest.cc",
     "cdm/external_clear_key_test_helper.cc",
@@ -599,10 +601,7 @@ test("media_unittests") {
     "//gpu:test_support",
     "//gpu/command_buffer/common",
     "//media/audio:test_support",
-    "//media/audio:unittests",
     "//media/base:test_support",
-    "//media/base:unittests",
-    "//media/test:pipeline_integration_tests",
     "//ppapi/features",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
@@ -621,14 +620,9 @@ test("media_unittests") {
       "filters/decrypting_audio_decoder_unittest.cc",
       "filters/decrypting_video_decoder_unittest.cc",
     ]
-    deps += [
-      "//media/base/android:media_java",
-      "//media/base/android:unittests",
-      "//ui/android:ui_java",
-    ]
   }
   if (is_mac || is_ios) {
-    deps += [ "//media/base/mac:unittests" ]
+    deps += [ "//media/base/mac:unit_tests" ]
   }
 
   # If ExternalClearKey is built, we can test CdmAdapter.
@@ -706,15 +700,32 @@ test("media_unittests") {
     ]
   }
 
-  #      include_dirs += [
-  #        # Needed by media_drm_bridge.cc.
-  #        target_gen_dir,
-  #      ],
-
   configs += [ ":media_config" ]
 
   if (media_use_ffmpeg) {
-    deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.
+    # Direct dependency required to inherit config.
+    deps += [ "//third_party/ffmpeg" ]
+  }
+}
+
+# Contains tests for all targets in the "media" folder.
+# TODO(xhwang): Move mojo/capture/remoting tests here where applicable.
+test("media_unittests") {
+  deps = [
+    ":unit_tests",
+    "//media/audio:unit_tests",
+    "//media/base:unit_tests",
+    "//media/test:pipeline_integration_tests",
+    "//media/test:run_all_unittests",
+  ]
+
+  if (is_android) {
+    deps += [
+      # The test needs the java dependencies to add the java classes for their
+      # native counterparts to the test apk.
+      "//media/base/android:media_java",
+      "//ui/android:ui_java",
+    ]
   }
 }
 
@@ -736,7 +747,8 @@ test("media_perftests") {
     "//ui/gfx:test_support",
   ]
   if (media_use_ffmpeg) {
-    deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.
+    # Direct dependency required to inherit config.
+    deps += [ "//third_party/ffmpeg" ]
   }
 
   # This target should not require the Chrome executable to run.
@@ -750,14 +762,12 @@ test("media_perftests") {
 # For running the subset of media_unittests that might require audio hardware
 # separately on GPU bots. media_unittests includes these too.
 test("audio_unittests") {
-  sources = [
-    "base/run_all_unittests.cc",
-  ]
   deps = [
     ":test_support",
     "//base/test:test_support",
-    "//media/audio:unittests",
+    "//media/audio:unit_tests",
     "//media/base:test_support",
+    "//media/test:run_all_unittests",
     "//ui/gfx:test_support",
   ]
 }
@@ -822,10 +832,6 @@ component("shared_memory_support") {
 # http://crbug.com/570762
 if (media_use_ffmpeg && !is_android) {
   test("ffmpeg_regression_tests") {
-    sources = [
-      "base/run_all_unittests.cc",
-    ]
-
     configs += [ "//media:media_config" ]
 
     deps = [
@@ -836,6 +842,7 @@ if (media_use_ffmpeg && !is_android) {
       "//media/base:test_support",
       "//media/ffmpeg:ffmpeg_regression_tests",
       "//media/test:pipeline_integration_tests",
+      "//media/test:run_all_unittests",
       "//testing/gmock",
       "//testing/gtest",
       "//ui/gfx:test_support",
