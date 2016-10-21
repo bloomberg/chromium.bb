@@ -350,12 +350,14 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       // This function can be called before the focus manager has had a
       // chance to set the focused view. In which case we should get the
       // last focused view.
-      View* view_for_activation =
-          GetWidget()->GetFocusManager()->GetFocusedView() ?
-              GetWidget()->GetFocusManager()->GetFocusedView() :
-                  GetWidget()->GetFocusManager()->GetStoredFocusView();
+      views::FocusManager* focus_manager = GetWidget()->GetFocusManager();
+      View* view_for_activation = focus_manager->GetFocusedView()
+                                      ? focus_manager->GetFocusedView()
+                                      : focus_manager->GetStoredFocusView();
       if (!view_for_activation)
         view_for_activation = GetWidget()->GetRootView();
+      else if (view_for_activation == focus_manager->GetStoredFocusView())
+        focus_manager->RestoreFocusedView();
       activation_client->ActivateWindow(
           view_for_activation->GetWidget()->GetNativeView());
       // Refreshes the focus info to IMF in case that IMF cached the old info

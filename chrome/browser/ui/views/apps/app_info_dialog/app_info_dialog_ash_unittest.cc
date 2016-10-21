@@ -45,6 +45,7 @@ class AppInfoDialogAshTest : public ash::test::AshTestBase {
         widget_->GetNativeWindow(), extension_environment_.profile(),
         extension_environment_.MakePackagedApp(kTestExtensionId, true).get());
     widget_->GetContentsView()->AddChildView(dialog_);
+    widget_->Show();
   }
 
   void TearDown() override {

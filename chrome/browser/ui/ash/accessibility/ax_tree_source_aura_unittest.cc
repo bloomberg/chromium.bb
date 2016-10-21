@@ -55,8 +55,8 @@ class AXTreeSourceAuraTest : public ash::test::AshTestBase {
     AshTestBase::SetUp();
 
     widget_ = new Widget();
-    Widget::InitParams init_params(Widget::InitParams::TYPE_POPUP);
-    init_params.parent = CurrentContext();
+    Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    init_params.context = CurrentContext();
     widget_->Init(init_params);
 
     content_ = new View();

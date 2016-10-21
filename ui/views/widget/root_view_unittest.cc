@@ -44,6 +44,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(init_params);
+  widget.Show();
 
   bool got_key_event = false;
 
@@ -114,6 +115,7 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(init_params);
+  widget.Show();
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
 

@@ -1116,11 +1116,11 @@ bool NativeWidgetMus::IsVisible() const {
 }
 
 void NativeWidgetMus::Activate() {
+  if (!window_)
+    return;
+
   static_cast<aura::client::ActivationClient*>(focus_client_.get())
       ->ActivateWindow(content_);
-  // FocusControllerMus should have focused |window_| when |content_| is
-  // activated.
-  DCHECK(!window_ || window_->HasFocus());
 }
 
 void NativeWidgetMus::Deactivate() {

@@ -211,6 +211,7 @@ class ComboboxTest : public ViewsTestBase {
     View* container = new View();
     widget_->SetContentsView(container);
     container->AddChildView(combobox_);
+    widget_->Show();
 
     combobox_->RequestFocus();
     combobox_->SizeToPreferredSize();

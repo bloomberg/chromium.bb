@@ -589,6 +589,10 @@ if (!is_android) {
           "//ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
         ]
       }
+      if (use_aura) {
+        sources +=
+            [ "//ui/views/widget/native_widget_aura_interactive_uitest.cc" ]
+      }
       if (use_aura || is_mac) {
         # TODO(ekaramad): These tests are activated for aura and mac only. They
         # should be moved to 'interactive_ui_tests' sources for all platforms
@@ -2122,7 +2126,6 @@ test("browser_tests") {
           "../browser/ui/views/passwords/password_dialog_view_browsertest.cc",
           "../browser/ui/views/task_manager_view_browsertest.cc",
           "../browser/ui/views/toolbar/browser_actions_container_browsertest.cc",
-          "../browser/ui/views/toolbar/toolbar_view_browsertest.cc",
           "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
           "../browser/ui/views/web_dialog_view_browsertest.cc",
         ]

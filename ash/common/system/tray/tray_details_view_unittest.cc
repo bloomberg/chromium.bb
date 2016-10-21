@@ -171,6 +171,7 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
 
   // Transition back to default view, the default view of item 2 should have
   // focus.
+  tray->GetSystemBubble()->bubble_view()->set_can_activate(true);
   if (MaterialDesignController::IsSystemTrayMenuMaterial())
     FocusBackButton(test_item_2->detailed_view());
   else
