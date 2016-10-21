@@ -47,7 +47,7 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
         triggerUIAndWait(mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"---", "jane.jones"}, mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"", "---", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
@@ -62,12 +62,12 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
         triggerUIAndWait(mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"555-555-5555", "jon.doe@google.com"},
+        setTextInEditorAndWait(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"},
                 mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"555-555-5555", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"});
     }
 }

@@ -167,7 +167,7 @@ PassiveDocumentEventListeners status=experimental
 PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor
 PaymentRequest status=experimental
-PaymentRequestPayerName status=experimental
+PaymentRequestPayerName status=stable
 PerformanceObserver status=stable
 PermissionDelegation status=test
 Permissions status=stable

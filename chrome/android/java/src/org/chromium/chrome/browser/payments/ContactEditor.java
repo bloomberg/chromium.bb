@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
 import android.util.Patterns;
 
 import org.chromium.base.Callback;
@@ -24,8 +25,10 @@ import javax.annotation.Nullable;
  * Contact information editor.
  */
 public class ContactEditor extends EditorBase<AutofillContact> {
+    private final boolean mRequestPayerName;
     private final boolean mRequestPayerPhone;
     private final boolean mRequestPayerEmail;
+    private final Set<CharSequence> mPayerNames;
     private final Set<CharSequence> mPhoneNumbers;
     private final Set<CharSequence> mEmailAddresses;
     @Nullable private EditorFieldValidator mPhoneValidator;
@@ -34,13 +37,17 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     /**
      * Builds a contact information editor.
      *
+     * @param requestPayerName Whether to request the user's name.
      * @param requestPayerPhone Whether to request the user's phone number.
      * @param requestPayerEmail Whether to request the user's email address.
      */
-    public ContactEditor(boolean requestPayerPhone, boolean requestPayerEmail) {
-        assert requestPayerPhone || requestPayerEmail;
+    public ContactEditor(boolean requestPayerName,
+            boolean requestPayerPhone, boolean requestPayerEmail) {
+        assert requestPayerName || requestPayerPhone || requestPayerEmail;
+        mRequestPayerName = requestPayerName;
         mRequestPayerPhone = requestPayerPhone;
         mRequestPayerEmail = requestPayerEmail;
+        mPayerNames = new HashSet<>();
         mPhoneNumbers = new HashSet<>();
         mEmailAddresses = new HashSet<>();
     }
@@ -49,13 +56,25 @@ public class ContactEditor extends EditorBase<AutofillContact> {
      * Returns whether the following contact information can be sent to the merchant as-is without
      * editing first.
      *
+     * @param name  The payer name to check.
      * @param phone The phone number to check.
      * @param email The email address to check.
      * @return Whether the contact information is complete.
      */
-    public boolean isContactInformationComplete(@Nullable String phone, @Nullable String email) {
-        return (!mRequestPayerPhone || getPhoneValidator().isValid(phone))
+    public boolean isContactInformationComplete(
+            @Nullable String name, @Nullable String phone, @Nullable String email) {
+        return (!mRequestPayerName || !TextUtils.isEmpty(name))
+                && (!mRequestPayerPhone || getPhoneValidator().isValid(phone))
                 && (!mRequestPayerEmail || getEmailValidator().isValid(email));
+    }
+
+    /**
+     * Adds the given payer name to the autocomplete set, if it's valid.
+     *
+     * @param payerName The payer name to possibly add.
+     */
+    public void addPayerNameIfValid(@Nullable CharSequence payerName) {
+        if (!TextUtils.isEmpty(payerName)) mPayerNames.add(payerName);
     }
 
     /**
@@ -81,7 +100,15 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         super.edit(toEdit, callback);
 
         final AutofillContact contact = toEdit == null
-                ? new AutofillContact(new AutofillProfile(), null, null, false) : toEdit;
+                ? new AutofillContact(new AutofillProfile(), null, null, null, false) : toEdit;
+
+        final EditorFieldModel nameField = mRequestPayerName
+                ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
+                          mContext.getString(R.string.payments_name_field_in_contact_details),
+                          mPayerNames, null,
+                          mContext.getString(R.string.payments_field_required_validation_message),
+                          null, contact.getPayerName())
+                : null;
 
         final EditorFieldModel phoneField = mRequestPayerPhone
                 ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
@@ -104,6 +131,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         EditorModel editor = new EditorModel(
                 mContext.getString(toEdit == null ? R.string.payments_add_contact_details_label
                                                   : R.string.payments_edit_contact_details_label));
+        if (nameField != null) editor.addField(nameField);
         if (phoneField != null) editor.addField(phoneField);
         if (emailField != null) editor.addField(emailField);
 
@@ -117,8 +145,14 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         editor.setDoneCallback(new Runnable() {
             @Override
             public void run() {
+                String name = null;
                 String phone = null;
                 String email = null;
+
+                if (nameField != null) {
+                    name = nameField.getValue().toString();
+                    contact.getProfile().setFullName(name);
+                }
 
                 if (phoneField != null) {
                     phone = phoneField.getValue().toString();
@@ -131,7 +165,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                 }
 
                 String guid = PersonalDataManager.getInstance().setProfile(contact.getProfile());
-                contact.completeContact(guid, phone, email);
+                contact.completeContact(guid, name, phone, email);
                 callback.onResult(contact);
             }
         });

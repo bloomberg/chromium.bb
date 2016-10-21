@@ -18,22 +18,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for a merchant that requests a payer name, an email address and
- * a phone number and provides free shipping regardless of address.
+ * A payment integration test for a merchant that requests payer name.
  */
-public class PaymentRequestContactDetailsAndFreeShippingTest extends PaymentRequestTestBase {
-    public PaymentRequestContactDetailsAndFreeShippingTest() {
-        // This merchant requests an email address and a phone number and provides free shipping
-        // worldwide.
-        super("payment_request_contact_details_and_free_shipping_test.html");
+public class PaymentRequestNameTest extends PaymentRequestTestBase {
+    public PaymentRequestNameTest() {
+        // This merchant request a payer name.
+        super("payment_request_name_test.html");
     }
 
     @Override
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        // The user has a shipping address with a valid email address and a valid phone number on
-        // disk.
+        // The user has a valid payer name on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                 "US", "555-555-5555", "jon.doe@google.com", "en-US"));
@@ -42,10 +39,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest extends PaymentRequ
                 billingAddressId, "" /* serverId */));
     }
 
-    /**
-     * Submit the payer name, email address, phone number and shipping address to the merchant when
-     * the user clicks "Pay."
-     */
+    /** Provide the existing valid payer name to the merchant. */
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
@@ -53,15 +47,43 @@ public class PaymentRequestContactDetailsAndFreeShippingTest extends PaymentRequ
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "jon.doe@google.com", "555-555-5555",
-                "Jon Doe", "4111111111111111", "12", "2050", "visa", "123", "Google", "340 Main St",
-                "CA", "Los Angeles", "90291", "US", "en", "freeShippingOption"});
+        expectResultContains(new String[] {"Jon Doe"});
+    }
+
+    /** Attempt to add an invalid payer name and cancel the transaction. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddInvalidNameAndCancel()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {""}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+        clickAndWait(R.id.close_button, mDismissed);
+        expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    /** Add a new payer name and provide that to the merchant. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddNameAndPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Jane Jones"}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        expectResultContains(new String[] {"Jane Jones"});
     }
 
     /**
-     * Test that starting a payment request that requires an email address, a phone number and a
-     * shipping address results in the appropriate metric being logged in the
-     * PaymentRequest.RequestedInformation histogram.
+     * Test that starting a payment request that requires only the user's payer name results in
+     * the appropriate metric being logged in the PaymentRequest.RequestedInformation histogram.
      */
     @MediumTest
     @Feature({"Payments"})
@@ -72,9 +94,7 @@ public class PaymentRequestContactDetailsAndFreeShippingTest extends PaymentRequ
 
         // Make sure that only the appropriate enum value was logged.
         for (int i = 0; i < PaymentRequestMetrics.REQUESTED_INFORMATION_MAX; ++i) {
-            assertEquals((i == (PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL
-                    | PaymentRequestMetrics.REQUESTED_INFORMATION_PHONE
-                    | PaymentRequestMetrics.REQUESTED_INFORMATION_SHIPPING) ? 1 : 0),
+            assertEquals((i == PaymentRequestMetrics.REQUESTED_INFORMATION_EMAIL ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.RequestedInformation", i));
         }

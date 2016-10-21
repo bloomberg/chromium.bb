@@ -85,9 +85,11 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         assertEquals(4, getNumberOfContactDetailSuggestions());
-        assertEquals("555 123-4567\nlisa@simpson.com", getContactDetailsSuggestionLabel(0));
-        assertEquals("555 123-4567\nmaggie@simpson.com", getContactDetailsSuggestionLabel(1));
-        assertEquals("bart@simpson.com", getContactDetailsSuggestionLabel(2));
-        assertEquals("homer@simpson.com", getContactDetailsSuggestionLabel(3));
+        assertEquals("Lisa Simpson\n555 123-4567\nlisa@simpson.com",
+                getContactDetailsSuggestionLabel(0));
+        assertEquals("Maggie Simpson\n555 123-4567\nmaggie@simpson.com",
+                getContactDetailsSuggestionLabel(1));
+        assertEquals("Bart Simpson\nbart@simpson.com", getContactDetailsSuggestionLabel(2));
+        assertEquals("Homer Simpson\nhomer@simpson.com", getContactDetailsSuggestionLabel(3));
     }
 }

@@ -6,23 +6,21 @@
 
 /* global PaymentRequest:false */
 
-/**
- * Launches the PaymentRequest UI that requests contact details.
+/*
+ * Launches the PaymentRequest UI that requests payer name.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
     new PaymentRequest(
         [{supportedMethods: ['visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}},
-        {requestPayerName: true, requestPayerEmail: true,
-         requestPayerPhone: true})
+        {requestPayerName: true})
         .show()
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
                 print(
-                    resp.payerName + '<br>' + resp.payerEmail + '<br>' +
-                    resp.payerPhone + '<br>' + resp.methodName + '<br>' +
+                    resp.payerName + '<br>' + resp.methodName + '<br>' +
                     JSON.stringify(resp.details, undefined, 2));
               })
               .catch(function(error) {

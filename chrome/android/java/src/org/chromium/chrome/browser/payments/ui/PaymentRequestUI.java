@@ -312,8 +312,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param activity        The activity on top of which the UI should be displayed.
      * @param client          The consumer of the PaymentRequest UI.
      * @param requestShipping Whether the UI should show the shipping address and option selection.
-     * @param requestContact  Whether the UI should show the email address and phone number
-     *                        selection.
+     * @param requestContact  Whether the UI should show the payer name, email address and
+     *                        phone number selection.
      * @param canAddCards     Whether the UI should show the [+ADD CARD] button. This can be false,
      *                        for example, when the merchant does not accept credit cards, so
      *                        there's no point in adding cards within PaymentRequest UI.

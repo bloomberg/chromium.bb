@@ -8,8 +8,8 @@
 /* global toDictionary:false */
 
 /**
- * Launches the PaymentRequest UI that requests an email address and a phone
- * number and offers free shipping worldwide.
+ * Launches the PaymentRequest UI that request a payer name and offers free
+ * shipping worldwide.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   try {
@@ -23,15 +23,13 @@ function buy() {  // eslint-disable-line no-unused-vars
             selected: true
           }]
         },
-        {requestPayerName: true, requestPayerEmail: true,
-         requestPayerPhone: true, requestShipping: true});
+        {requestPayerName: true, requestShipping: true});
     request.show()
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
                 print(
-                    resp.payerName + '<br>' + resp.payerEmail + '<br>' +
-                    resp.payerPhone + '<br>' + resp.shippingOption + '<br>' +
+                    resp.payerName + '<br>' + resp.shippingOption + '<br>' +
                     JSON.stringify(
                         toDictionary(resp.shippingAddress), undefined, 2) +
                     '<br>' + resp.methodName + '<br>' +

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     public PaymentRequestContactDetailsTest() {
-        // The merchant requests both a phone number and an email address.
+        // The merchant requests a payer name, a phone number and an email address.
         super("payment_request_contact_details_test.html");
     }
 
@@ -31,7 +31,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        // The user has valid phone number and email address on disk.
+        // The user has valid payer name, phone number and email address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
                 "US", "555-555-5555", "jon.doe@google.com", "en-US"));
@@ -40,7 +40,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
                 billingAddressId, "" /* serverId */));
     }
 
-    /** Provide the existing valid phone number and email address to the merchant. */
+    /** Provide the existing valid payer name, phone number and email address to the merchant. */
     @MediumTest
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
@@ -48,10 +48,10 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"555-555-5555", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"});
     }
 
-    /** Attempt to add invalid phone number and email address and cancel the transaction. */
+    /** Attempt to add invalid contact information and cancel the transaction. */
     @MediumTest
     @Feature({"Payments"})
     public void testAddInvalidContactAndCancel()
@@ -59,14 +59,14 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"+++", "jane.jones"}, mEditorTextUpdate);
+        setTextInEditorAndWait(new String[] {"", "+++", "jane.jones"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    /** Add new phone number and email address and provide that to the merchant. */
+    /** Add new payer name, phone number and email address and provide that to the merchant. */
     @MediumTest
     @Feature({"Payments"})
     public void testAddContactAndPay()
@@ -74,13 +74,13 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         triggerUIAndWait(mReadyToPay);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInEditorAndWait(new String[] {"999-999-9999", "jane.jones@google.com"},
+        setTextInEditorAndWait(new String[] {"Jane Jones", "999-999-9999", "jane.jones@google.com"},
                 mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"999-999-9999", "jane.jones@google.com"});
+        expectResultContains(new String[] {"Jane Jones", "999-999-9999", "jane.jones@google.com"});
     }
 
     /** Quickly pressing on "add contact info" and then [X] should not crash. */
