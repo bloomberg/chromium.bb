@@ -620,9 +620,9 @@ const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
     {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED,
      switches::kEnableDefaultMediaSession, ""},
 #if defined(ENABLE_PLUGINS)
-    {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED_WITH_FLASH,
+    {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED_DUCK_FLASH,
      switches::kEnableDefaultMediaSession,
-     switches::kEnableDefaultMediaSessionWithFlash},
+     switches::kEnableDefaultMediaSessionDuckFlash},
 #endif  // defined(ENABLE_PLUGINS)
 };
 #endif  // !defined(OS_ANDROID)

@@ -15,6 +15,16 @@
 
 namespace content {
 
+namespace {
+
+bool ShouldDuckFlash() {
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+             switches::kEnableDefaultMediaSession) ==
+         switches::kEnableDefaultMediaSessionDuckFlash;
+}
+
+}  // anonymous namespace
+
 PepperPlaybackObserver::PepperPlaybackObserver(WebContentsImpl *contents)
     : contents_(contents) {}
 
@@ -46,21 +56,16 @@ void PepperPlaybackObserver::PepperInstanceDeleted(int32_t pp_instance) {
 void PepperPlaybackObserver::PepperStartsPlayback(int32_t pp_instance) {
   players_played_sound_map_[pp_instance] = true;
 
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kEnableDefaultMediaSession) !=
-      switches::kEnableDefaultMediaSessionWithFlash) {
-    return;
-  }
-
   if (players_map_.count(pp_instance))
     return;
 
   players_map_[pp_instance].reset(new PepperPlayerDelegate(
       contents_, pp_instance));
+
   MediaSession::Get(contents_)->AddPlayer(
-      players_map_[pp_instance].get(),
-      PepperPlayerDelegate::kPlayerId,
-      media::MediaContentType::Pepper);
+      players_map_[pp_instance].get(), PepperPlayerDelegate::kPlayerId,
+      ShouldDuckFlash() ? media::MediaContentType::Pepper
+                    : media::MediaContentType::Persistent);
 }
 
 void PepperPlaybackObserver::PepperStopsPlayback(int32_t pp_instance) {

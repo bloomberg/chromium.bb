@@ -15556,8 +15556,8 @@ read aloud to screenreader users to announce that a completion is available.">
         <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED" desc="Option for enabling the default MediaSession">
             Enabled
         </message>
-        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED_WITH_FLASH" desc="Option for enabling the default MediaSession with Flash">
-            Enabled (with Flash)
+        <message name="IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_ENABLED_DUCK_FLASH" desc="Option for enabling the default MediaSession with Flash">
+            Enabled (Flash ducks when losing audio focus, experimental)
         </message>
     </if>
   </messages>

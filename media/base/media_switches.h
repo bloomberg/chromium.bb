@@ -48,7 +48,7 @@ MEDIA_EXPORT extern const char kEnableDefaultMediaSession[];
 #endif  // !defined(OS_ANDROID) || defined(ENABLE_PLUGINS)
 
 #if defined(ENABLE_PLUGINS)
-MEDIA_EXPORT extern const char kEnableDefaultMediaSessionWithFlash[];
+MEDIA_EXPORT extern const char kEnableDefaultMediaSessionDuckFlash[];
 #endif  // defined(ENABLE_PLUGINS)
 
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
