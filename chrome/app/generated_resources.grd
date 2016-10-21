@@ -8658,13 +8658,7 @@ I don't think this site should be blocked!
           Out of bounds page reference, limit is <ph name="MAXIMUM_PAGE">$1<ex>1</ex></ph>
         </message>
         <message name="IDS_PRINT_PREVIEW_COPIES_INSTRUCTION" desc="Instruction shown when the user enters an invalid number of copies.">
-          Use a number to indicate how many copies to print (1 or more).
-        </message>
-        <message name="IDS_PRINT_PREVIEW_INCREMENT_TITLE" desc="Title shown when the user hovers mouse over the increment button. Also added for improved accessibility">
-          More copies
-        </message>
-        <message name="IDS_PRINT_PREVIEW_DECREMENT_TITLE" desc="Title shown when the user hovers mouse over the decrement button. Also added for improved accessibility">
-          Less copies
+          Use a number to indicate how many copies to print (1 to 999).
         </message>
         <message name="IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL" desc="ARIA label used by screen reader to explain the purpose of the page selection textbox">
           Print Specific Pages

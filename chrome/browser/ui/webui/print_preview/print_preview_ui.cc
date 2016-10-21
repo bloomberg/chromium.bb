@@ -260,10 +260,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_PAGE_RANGE_SYNTAX_INSTRUCTION);
   source->AddLocalizedString("copiesInstruction",
                              IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
-  source->AddLocalizedString("incrementTitle",
-                             IDS_PRINT_PREVIEW_INCREMENT_TITLE);
-  source->AddLocalizedString("decrementTitle",
-                             IDS_PRINT_PREVIEW_DECREMENT_TITLE);
   source->AddLocalizedString("printPagesLabel",
                              IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
   source->AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);

@@ -573,7 +573,7 @@ TEST_F('PrintPreviewWebUITest', 'CheckNumCopiesPrintPreset', function() {
   checkSectionVisible($('copies-settings'), true);
   expectEquals(
       printPresetOptions.copies,
-      parseInt($('copies-settings').querySelector('.copies').value));
+      parseInt($('copies-settings').querySelector('.user-value').value));
 
   this.waitForAnimationToEnd('other-options-collapsible');
 });

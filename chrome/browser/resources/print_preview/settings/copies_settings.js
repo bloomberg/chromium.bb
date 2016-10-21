@@ -32,7 +32,7 @@ cr.define('print_preview', function() {
     this.collateTicketItem_ = collateTicketItem;
 
     /**
-     * Timeout used to delay processing of the copies input.
+     * Timeout used to delay processing of the copies input in ms
      * @type {?number}
      * @private
      */
@@ -44,6 +44,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isEnabled_ = true;
+
+    /**
+     * The element for the user input value.
+     * @type {HTMLElement}
+     * @private
+     */
+    this.inputField_ = null;
   };
 
   /**
@@ -51,7 +58,7 @@ cr.define('print_preview', function() {
    * @type {number}
    * @private
    */
-  CopiesSettings.TEXTFIELD_DELAY_ = 250;
+  CopiesSettings.TEXTFIELD_DELAY_MS_ = 250;
 
   CopiesSettings.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
@@ -68,40 +75,30 @@ cr.define('print_preview', function() {
 
     /** @override */
     set isEnabled(isEnabled) {
-      this.getChildElement('input.copies').disabled = !isEnabled;
+      this.inputField_.disabled = !isEnabled;
       this.getChildElement('input.collate').disabled = !isEnabled;
       this.isEnabled_ = isEnabled;
       if (isEnabled) {
         this.updateState_();
-      } else {
-        this.getChildElement('button.increment').disabled = true;
-        this.getChildElement('button.decrement').disabled = true;
       }
     },
 
     /** @override */
     enterDocument: function() {
+      this.inputField_ = this.getChildElement('input.user-value');
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.getChildElement('input.copies'),
+          this.inputField_,
           'keydown',
           this.onTextfieldKeyDown_.bind(this));
       this.tracker.add(
-          this.getChildElement('input.copies'),
+          this.inputField_,
           'input',
           this.onTextfieldInput_.bind(this));
       this.tracker.add(
-          this.getChildElement('input.copies'),
+          this.inputField_,
           'blur',
           this.onTextfieldBlur_.bind(this));
-      this.tracker.add(
-          this.getChildElement('button.increment'),
-          'click',
-          this.onButtonClicked_.bind(this, 1));
-      this.tracker.add(
-          this.getChildElement('button.decrement'),
-          'click',
-          this.onButtonClicked_.bind(this, -1));
       this.tracker.add(
           this.getChildElement('input.collate'),
           'click',
@@ -122,29 +119,18 @@ cr.define('print_preview', function() {
      */
     updateState_: function() {
       if (this.isAvailable()) {
-        if (this.getChildElement('input.copies').value !=
-            this.copiesTicketItem_.getValue()) {
-          this.getChildElement('input.copies').value =
-              this.copiesTicketItem_.getValue();
-        }
+        if (this.inputField_.value != this.copiesTicketItem_.getValue())
+          this.inputField_.value = this.copiesTicketItem_.getValue();
 
         var currentValueGreaterThan1 = false;
         if (this.copiesTicketItem_.isValid()) {
-          this.getChildElement('input.copies').classList.remove('invalid');
+          this.inputField_.classList.remove('invalid');
           fadeOutElement(this.getChildElement('.hint'));
           var currentValue = this.copiesTicketItem_.getValueAsNumber();
-          var currentValueGreaterThan1 = currentValue > 1;
-          this.getChildElement('button.increment').disabled =
-              !this.isEnabled_ ||
-              !this.copiesTicketItem_.wouldValueBeValid(currentValue + 1);
-          this.getChildElement('button.decrement').disabled =
-              !this.isEnabled_ ||
-              !this.copiesTicketItem_.wouldValueBeValid(currentValue - 1);
+          currentValueGreaterThan1 = currentValue > 1;
         } else {
-          this.getChildElement('input.copies').classList.add('invalid');
+          this.inputField_.classList.add('invalid');
           fadeInElement(this.getChildElement('.hint'));
-          this.getChildElement('button.increment').disabled = true;
-          this.getChildElement('button.decrement').disabled = true;
         }
 
         if (!(this.getChildElement('.collate-container').hidden =
@@ -158,25 +144,12 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called whenever the increment/decrement buttons are clicked.
-     * @param {number} delta Must be 1 for an increment button click and -1 for
-     *     a decrement button click.
-     * @private
-     */
-    onButtonClicked_: function(delta) {
-      // Assumes text field has a valid number.
-      var newValue =
-          parseInt(this.getChildElement('input.copies').value, 10) + delta;
-      this.copiesTicketItem_.updateValue(newValue + '');
-    },
-
-    /**
      * Called after a timeout after user input into the textfield.
      * @private
      */
     onTextfieldTimeout_: function() {
       this.textfieldTimeout_ = null;
-      var copiesVal = this.getChildElement('input.copies').value;
+      var copiesVal = this.inputField_.value;
       if (copiesVal != '') {
         this.copiesTicketItem_.updateValue(copiesVal);
       }
@@ -188,12 +161,12 @@ cr.define('print_preview', function() {
      * @private
      */
     onTextfieldKeyDown_: function(event) {
-      if (event.keyCode == 13 /*enter*/) {
-        if (this.textfieldTimeout_) {
-          clearTimeout(this.textfieldTimeout_);
-        }
-        this.onTextfieldTimeout_();
-      }
+      if (event.keyCode != 'Enter')
+        return;
+
+      if (this.textfieldTimeout_)
+        clearTimeout(this.textfieldTimeout_);
+      this.onTextfieldTimeout_();
     },
 
     /**
@@ -206,7 +179,8 @@ cr.define('print_preview', function() {
         clearTimeout(this.textfieldTimeout_);
       }
       this.textfieldTimeout_ = setTimeout(
-          this.onTextfieldTimeout_.bind(this), CopiesSettings.TEXTFIELD_DELAY_);
+          this.onTextfieldTimeout_.bind(this),
+          CopiesSettings.TEXTFIELD_DELAY_MS_);
     },
 
     /**
@@ -215,7 +189,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onTextfieldBlur_: function() {
-      if (this.getChildElement('input.copies').value == '') {
+      if (this.inputField_.value == '') {
         // Do it asynchronously to avoid moving focus to Print button in
         // PrintHeader.onTicketChange_.
         setTimeout((function() {
