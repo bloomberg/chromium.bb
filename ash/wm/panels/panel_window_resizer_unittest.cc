@@ -9,6 +9,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
@@ -19,7 +20,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/i18n/rtl.h"
@@ -42,7 +42,6 @@ class PanelWindowResizerTest : public test::AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
     model_ = WmShell::Get()->shelf_model();
-    shelf_delegate_ = test::TestShelfDelegate::instance();
   }
 
   void TearDown() override { AshTestBase::TearDown(); }
@@ -61,7 +60,8 @@ class PanelWindowResizerTest : public test::AshTestBase {
     gfx::Rect bounds(origin, gfx::Size(101, 101));
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    shelf_delegate_->AddShelfItem(window);
+    test::TestShelfDelegate::instance()->AddShelfItem(
+        WmWindowAura::Get(window));
     return window;
   }
 
@@ -176,7 +176,6 @@ class PanelWindowResizerTest : public test::AshTestBase {
  private:
   std::unique_ptr<WindowResizer> resizer_;
   ShelfModel* model_;
-  test::TestShelfDelegate* shelf_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
 };

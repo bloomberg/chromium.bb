@@ -1041,6 +1041,7 @@ static_library("ash_shell_lib") {
     ":ash",
     ":ash_with_content",
     "//ash/common/strings",
+    "//ash/common/test:test_support",
     "//ash/public/cpp",
     "//ash/resources",
     "//ash/test:test_support_without_content",

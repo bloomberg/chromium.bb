@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
-#define ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
+#ifndef ASH_COMMON_TEST_TEST_SHELF_ITEM_DELEGATE_H_
+#define ASH_COMMON_TEST_TEST_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
+
+class WmWindow;
+
 namespace test {
 
 // Test implementation of ShelfItemDelegate.
 class TestShelfItemDelegate : public ShelfItemDelegate {
  public:
-  explicit TestShelfItemDelegate(aura::Window* window);
+  explicit TestShelfItemDelegate(WmWindow* window);
   ~TestShelfItemDelegate() override;
 
   void set_is_draggable(bool is_draggable) { is_draggable_ = is_draggable; }
@@ -35,7 +34,7 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   void Close() override;
 
  private:
-  aura::Window* window_;
+  WmWindow* window_;
 
   bool is_draggable_;
 
@@ -45,4 +44,4 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_TEST_SHELF_ITEM_DELEGATE_H_
+#endif  // ASH_COMMON_TEST_TEST_SHELF_ITEM_DELEGATE_H_

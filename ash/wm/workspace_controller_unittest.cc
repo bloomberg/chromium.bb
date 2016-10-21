@@ -11,6 +11,7 @@
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
@@ -19,7 +20,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -121,12 +121,9 @@ class WorkspaceControllerTest : public test::AshMDTestBase {
                                 const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         delegate, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    test::TestShelfDelegate* shelf_delegate =
-        test::TestShelfDelegate::instance();
-    shelf_delegate->AddShelfItem(window);
-    PanelLayoutManager* manager =
-        PanelLayoutManager::Get(WmWindowAura::Get(window));
-    manager->Relayout();
+    WmWindow* wm_window = WmWindowAura::Get(window);
+    test::TestShelfDelegate::instance()->AddShelfItem(wm_window);
+    PanelLayoutManager::Get(wm_window)->Relayout();
     return window;
   }
 

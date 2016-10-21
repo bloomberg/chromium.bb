@@ -13,6 +13,7 @@
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -25,7 +26,6 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_animator.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -249,12 +249,9 @@ class AcceleratorControllerTest : public test::AshTestBase {
   aura::Window* CreatePanel() {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, gfx::Rect(5, 5, 20, 20));
-    test::TestShelfDelegate* shelf_delegate =
-        test::TestShelfDelegate::instance();
-    shelf_delegate->AddShelfItem(window);
-    PanelLayoutManager* manager =
-        PanelLayoutManager::Get(WmWindowAura::Get(window));
-    manager->Relayout();
+    WmWindow* wm_window = WmWindowAura::Get(window);
+    test::TestShelfDelegate::instance()->AddShelfItem(wm_window);
+    PanelLayoutManager::Get(wm_window)->Relayout();
     return window;
   }
 

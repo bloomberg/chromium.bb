@@ -23,7 +23,10 @@
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/test/material_design_controller_test_api.h"
+#include "ash/common/test/test_shelf_delegate.h"
+#include "ash/common/test/test_shelf_item_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -33,8 +36,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
-#include "ash/test/test_shelf_item_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -165,23 +166,21 @@ class ShelfItemSelectionTracker : public TestShelfItemDelegate {
 };
 
 TEST_F(WmShelfObserverIconTest, AddRemove) {
-  TestShelfDelegate* shelf_delegate = TestShelfDelegate::instance();
-  ASSERT_TRUE(shelf_delegate);
-
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.context = CurrentContext();
+  views::Widget widget;
+  widget.Init(params);
 
-  std::unique_ptr<views::Widget> widget(new views::Widget());
-  widget->Init(params);
-  shelf_delegate->AddShelfItem(widget->GetNativeWindow());
+  TestShelfDelegate::instance()->AddShelfItem(
+      WmLookup::Get()->GetWindowForWidget(&widget));
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 
-  widget->Show();
-  widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
+  widget.Show();
+  widget.GetNativeWindow()->parent()->RemoveChild(widget.GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
@@ -198,24 +197,22 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   WmShelf* second_shelf = second_root->GetRootWindowController()->GetShelf();
   TestWmShelfObserver second_observer(second_shelf);
 
-  TestShelfDelegate* shelf_delegate = TestShelfDelegate::instance();
-  ASSERT_TRUE(shelf_delegate);
-
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.context = CurrentContext();
+  views::Widget widget;
+  widget.Init(params);
 
-  std::unique_ptr<views::Widget> widget(new views::Widget());
-  widget->Init(params);
-  shelf_delegate->AddShelfItem(widget->GetNativeWindow());
+  TestShelfDelegate::instance()->AddShelfItem(
+      WmLookup::Get()->GetWindowForWidget(&widget));
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
   observer()->Reset();
   second_observer.Reset();
 
-  widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
+  widget.GetNativeWindow()->parent()->RemoveChild(widget.GetNativeWindow());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());

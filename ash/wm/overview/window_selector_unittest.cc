@@ -12,6 +12,7 @@
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -36,7 +37,6 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -117,7 +117,6 @@ class WindowSelectorTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     shelf_view_test_.reset(new test::ShelfViewTestAPI(
         GetPrimaryShelf()->GetShelfViewForTesting()));
@@ -168,7 +167,8 @@ class WindowSelectorTest : public test::AshTestBase {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         nullptr, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
     window->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-    test::TestShelfDelegate::instance()->AddShelfItem(window);
+    test::TestShelfDelegate::instance()->AddShelfItem(
+        WmWindowAura::Get(window));
     shelf_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }

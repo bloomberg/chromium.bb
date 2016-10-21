@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/test_shelf_delegate.h"
+#include "ash/common/test/test_shelf_delegate.h"
 
 #include <utility>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/test/test_shelf_item_delegate.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/test/test_shelf_item_delegate.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "ui/aura/window.h"
+#include "base/memory/ptr_util.h"
 
 namespace ash {
 namespace test {
 
-TestShelfDelegate* TestShelfDelegate::instance_ = NULL;
+TestShelfDelegate* TestShelfDelegate::instance_ = nullptr;
 
 TestShelfDelegate::TestShelfDelegate(ShelfModel* model) : model_(model) {
   CHECK(!instance_);
@@ -25,25 +23,23 @@ TestShelfDelegate::TestShelfDelegate(ShelfModel* model) : model_(model) {
 }
 
 TestShelfDelegate::~TestShelfDelegate() {
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
-void TestShelfDelegate::AddShelfItem(aura::Window* window) {
+void TestShelfDelegate::AddShelfItem(WmWindow* window) {
   AddShelfItem(window, STATUS_CLOSED);
 }
 
-void TestShelfDelegate::AddShelfItem(aura::Window* window,
+void TestShelfDelegate::AddShelfItem(WmWindow* window,
                                      const std::string& app_id) {
   AddShelfItem(window, STATUS_CLOSED);
-  WmWindow* wm_window = WmWindowAura::Get(window);
-  ShelfID shelf_id = wm_window->GetIntProperty(WmWindowProperty::SHELF_ID);
+  ShelfID shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
   AddShelfIDToAppIDMapping(shelf_id, app_id);
 }
 
-void TestShelfDelegate::AddShelfItem(aura::Window* window,
-                                     ShelfItemStatus status) {
+void TestShelfDelegate::AddShelfItem(WmWindow* window, ShelfItemStatus status) {
   ShelfItem item;
-  if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
+  if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL)
     item.type = TYPE_APP_PANEL;
   else
     item.type = TYPE_PLATFORM_APP;
@@ -52,15 +48,13 @@ void TestShelfDelegate::AddShelfItem(aura::Window* window,
   model_->Add(item);
   window->AddObserver(this);
 
-  std::unique_ptr<ShelfItemDelegate> delegate(
-      new TestShelfItemDelegate(window));
-  model_->SetShelfItemDelegate(id, std::move(delegate));
-  WmWindowAura::Get(window)->SetIntProperty(WmWindowProperty::SHELF_ID, id);
+  model_->SetShelfItemDelegate(id,
+                               base::MakeUnique<TestShelfItemDelegate>(window));
+  window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
 }
 
-void TestShelfDelegate::RemoveShelfItemForWindow(aura::Window* window) {
-  WmWindow* wm_window = WmWindowAura::Get(window);
-  ShelfID shelf_id = wm_window->GetIntProperty(WmWindowProperty::SHELF_ID);
+void TestShelfDelegate::RemoveShelfItemForWindow(WmWindow* window) {
+  ShelfID shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
   if (shelf_id == 0)
     return;
   int index = model_->ItemIndexByID(shelf_id);
@@ -76,12 +70,12 @@ void TestShelfDelegate::RemoveShelfItemForWindow(aura::Window* window) {
   }
 }
 
-void TestShelfDelegate::OnWindowDestroying(aura::Window* window) {
+void TestShelfDelegate::OnWindowDestroying(WmWindow* window) {
   RemoveShelfItemForWindow(window);
 }
 
-void TestShelfDelegate::OnWindowHierarchyChanging(
-    const HierarchyChangeParams& params) {
+void TestShelfDelegate::OnWindowTreeChanging(WmWindow* window,
+                                             const TreeChangeParams& params) {
   // The window may be legitimately reparented while staying open if it moves
   // to another display or container. If the window does not have a new parent
   // then remove the shelf item.

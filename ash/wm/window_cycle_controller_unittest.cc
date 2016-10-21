@@ -13,6 +13,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -21,7 +22,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -84,7 +84,6 @@ class WindowCycleControllerTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    ASSERT_TRUE(test::TestShelfDelegate::instance());
 
     WindowCycleList::DisableInitialDelayForTesting();
 
@@ -97,7 +96,8 @@ class WindowCycleControllerTest : public test::AshTestBase {
     gfx::Rect rect(100, 100);
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, rect);
-    test::TestShelfDelegate::instance()->AddShelfItem(window);
+    test::TestShelfDelegate::instance()->AddShelfItem(
+        WmWindowAura::Get(window));
     shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }
