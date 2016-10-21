@@ -49,7 +49,11 @@ public class WebappRegistry {
     /** Represents a period of 13 weeks in milliseconds */
     static final long WEBAPP_UNOPENED_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(13L * 7L);
 
-    private static volatile WebappRegistry sInstance;
+    /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
+    private static class Holder {
+        // Not final for testing.
+        private static WebappRegistry sInstance = new WebappRegistry();
+    }
 
     private HashMap<String, WebappDataStorage> mStorages;
     private SharedPreferences mPreferences;
@@ -62,34 +66,37 @@ public class WebappRegistry {
         void onWebappDataStorageRetrieved(WebappDataStorage storage);
     }
 
-    /**
-     * Returns the singleton WebappRegistry instance. Creates the instance if necessary.
-     */
-    public static WebappRegistry getInstance() {
-        if (sInstance == null) sInstance = new WebappRegistry();
-        return sInstance;
+    private WebappRegistry() {
+        mPreferences = openSharedPreferences();
+        mStorages = new HashMap<>();
     }
 
     /**
-     * Warm up the WebappRegistry and a specific WebappDataStorage SharedPreferences. This static
-     * method can be called on any thread, so it must not initialize sInstance.
+     * Returns the singleton WebappRegistry instance. Creates the instance on first call.
+     */
+    public static WebappRegistry getInstance() {
+        return Holder.sInstance;
+    }
+
+    /**
+     * Warm up the WebappRegistry and a specific WebappDataStorage SharedPreferences.
      * @param id The web app id to warm up in addition to the WebappRegistry.
      */
     public static void warmUpSharedPrefsForId(String id) {
-        sInstance.initStorages(id, false);
+        getInstance().initStorages(id, false);
     }
 
     /**
-     * Warm up the WebappRegistry and all WebappDataStorage SharedPreferences. This static method
-     * can be called on any thread, so it must not initialize sInstance.
+     * Warm up the WebappRegistry and all WebappDataStorage SharedPreferences.
      */
     public static void warmUpSharedPrefs() {
-        sInstance.initStorages(null, false);
+        getInstance().initStorages(null, false);
     }
 
+    @VisibleForTesting
     public static void refreshSharedPrefsForTesting() {
-        sInstance = new WebappRegistry();
-        sInstance.initStorages(null, true);
+        Holder.sInstance = new WebappRegistry();
+        getInstance().initStorages(null, true);
     }
 
     /**
@@ -262,11 +269,6 @@ public class WebappRegistry {
     private static SharedPreferences openSharedPreferences() {
         return ContextUtils.getApplicationContext().getSharedPreferences(
                 REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
-    }
-
-    private WebappRegistry() {
-        mPreferences = openSharedPreferences();
-        mStorages = new HashMap<String, WebappDataStorage>();
     }
 
     private void initStorages(String idToInitialize, boolean replaceExisting) {

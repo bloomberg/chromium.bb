@@ -174,10 +174,6 @@ public class DeferredStartupHandler {
         mDeferredTasks.add(new Runnable() {
             @Override
             public void run() {
-                // Initialize the WebappRegistry if it's not already initialized. Must be done on
-                // the main thread.
-                WebappRegistry.getInstance();
-
                 // Punt all tasks that may block on disk off onto a background thread.
                 initAsyncDiskTask();
 
@@ -243,6 +239,11 @@ public class DeferredStartupHandler {
                 try {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
                     long asyncTaskStartTime = SystemClock.uptimeMillis();
+
+                    // Initialize the WebappRegistry if it's not already initialized. Must be in
+                    // async task due to shared preferences disk access on N.
+                    WebappRegistry.getInstance();
+
                     boolean crashDumpDisabled = CommandLine.getInstance().hasSwitch(
                             ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
                     if (!crashDumpDisabled) {
