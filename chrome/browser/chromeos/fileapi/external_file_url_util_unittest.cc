@@ -8,6 +8,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/drive/file_system_core_util.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +77,14 @@ TEST_F(ExternalFileURLUtilTest, FilePathToExternalFileURL) {
   EXPECT_EQ(url.virtual_path().AsUTF8Unsafe(),
             ExternalFileURLToVirtualPath(FileSystemURLToExternalFileURL(url))
                 .AsUTF8Unsafe());
+}
+
+TEST_F(ExternalFileURLUtilTest, VirtualPathToExternalFileURL) {
+  base::FilePath virtual_path(FILE_PATH_LITERAL("foo/bar012.txt"));
+  GURL result = VirtualPathToExternalFileURL(virtual_path);
+  EXPECT_TRUE(result.is_valid());
+  EXPECT_EQ(content::kExternalFileScheme, result.scheme());
+  EXPECT_EQ(virtual_path.value(), ExternalFileURLToVirtualPath(result).value());
 }
 
 }  // namespace chromeos

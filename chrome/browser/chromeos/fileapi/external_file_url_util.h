@@ -32,6 +32,9 @@ GURL FileSystemURLToExternalFileURL(
 // Converts a externalfile: URL back to a virtual path of FileSystemURL.
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url);
 
+// Converts a virtual path of FileSystemURL to an externalfile: URL.
+GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path);
+
 // Obtains external file URL (e.g. external:drive/root/sample.txt) from file
 // path (e.g. /special/drive-xxx/root/sample.txt), if the |path| points an
 // external location (drive, MTP, or FSP). Otherwise, it returns empty URL.

@@ -37,10 +37,7 @@ GURL FileSystemURLToExternalFileURL(
     return GURL();
   }
 
-  return GURL(base::StringPrintf(
-      "%s:%s",
-      content::kExternalFileScheme,
-      file_system_url.virtual_path().AsUTF8Unsafe().c_str()));
+  return VirtualPathToExternalFileURL(file_system_url.virtual_path());
 }
 
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {
@@ -49,6 +46,11 @@ base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {
   const std::string path_string =
       net::UnescapeURLComponent(url.GetContent(), net::UnescapeRule::NORMAL);
   return base::FilePath::FromUTF8Unsafe(path_string);
+}
+
+GURL VirtualPathToExternalFileURL(const base::FilePath& virtual_path) {
+  return GURL(base::StringPrintf("%s:%s", content::kExternalFileScheme,
+                                 virtual_path.AsUTF8Unsafe().c_str()));
 }
 
 GURL CreateExternalFileURLFromPath(Profile* profile,
