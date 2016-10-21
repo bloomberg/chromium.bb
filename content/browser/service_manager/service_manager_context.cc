@@ -225,9 +225,14 @@ ServiceManagerContext::ServiceManagerContext() {
       std::string contents = GetContentClient()->GetDataResource(
           kManifests[i].resource_id,
           ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
-      DCHECK(!contents.empty());
+      base::debug::Alias(&i);
+      CHECK(!contents.empty());
+
       std::unique_ptr<base::Value> manifest_value =
           base::JSONReader::Read(contents);
+      base::debug::Alias(&contents);
+      CHECK(manifest_value);
+
       std::unique_ptr<base::Value> overlay_value =
           GetContentClient()->browser()->GetServiceManifestOverlay(
               kManifests[i].name);
@@ -238,6 +243,7 @@ ServiceManagerContext::ServiceManagerContext() {
         CHECK(overlay_value->GetAsDictionary(&overlay_dictionary));
         MergeDictionary(manifest_dictionary, overlay_dictionary);
       }
+
       manifest_provider->AddManifestValue(kManifests[i].name,
                                           std::move(manifest_value));
     }
