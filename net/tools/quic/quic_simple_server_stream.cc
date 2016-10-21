@@ -175,9 +175,14 @@ void QuicSimpleServerStream::SendResponse() {
   int response_code;
   const SpdyHeaderBlock& response_headers = response->headers();
   if (!ParseHeaderStatusCode(response_headers, &response_code)) {
-    LOG(WARNING) << "Illegal (non-integer) response :status from cache: "
-                 << response_headers.GetHeader(":status") << " for request "
-                 << request_url;
+    auto status = response_headers.find(":status");
+    if (status == response_headers.end()) {
+      LOG(WARNING) << ":status not present in response from cache for request "
+                   << request_url;
+    } else {
+      LOG(WARNING) << "Illegal (non-integer) response :status from cache: "
+                   << status->second << " for request " << request_url;
+    }
     SendErrorResponse();
     return;
   }
