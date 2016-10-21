@@ -110,8 +110,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       m_contentsLayerId(0),
       m_scrollableArea(nullptr),
       m_renderingContext3d(0),
-      m_preferredRasterScale(1.0f),
-      m_hasPreferredRasterScale(false) {
+      m_hasPreferredRasterBounds(false) {
 #if ENABLE(ASSERT)
   if (m_client)
     m_client->verifyNotPainting();
@@ -151,16 +150,16 @@ void GraphicsLayer::setHasWillChangeTransformHint(bool hasWillChangeTransform) {
   m_layer->layer()->setHasWillChangeTransformHint(hasWillChangeTransform);
 }
 
-void GraphicsLayer::setPreferredRasterScale(float preferredRasterScale) {
-  m_preferredRasterScale = preferredRasterScale;
-  m_hasPreferredRasterScale = true;
-  m_layer->layer()->setPreferredRasterScale(preferredRasterScale);
+void GraphicsLayer::setPreferredRasterBounds(const IntSize& bounds) {
+  m_preferredRasterBounds = bounds;
+  m_hasPreferredRasterBounds = true;
+  m_layer->layer()->setPreferredRasterBounds(bounds);
 }
 
-void GraphicsLayer::clearPreferredRasterScale() {
-  m_preferredRasterScale = 1.0f;
-  m_hasPreferredRasterScale = false;
-  m_layer->layer()->clearPreferredRasterScale();
+void GraphicsLayer::clearPreferredRasterBounds() {
+  m_preferredRasterBounds = IntSize();
+  m_hasPreferredRasterBounds = false;
+  m_layer->layer()->clearPreferredRasterBounds();
 }
 
 void GraphicsLayer::setParent(GraphicsLayer* layer) {
@@ -687,8 +686,10 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
     json->setString("backfaceVisibility",
                     m_backfaceVisibility ? "visible" : "hidden");
 
-  if (m_hasPreferredRasterScale)
-    json->setDouble("preferredRasterScale", m_preferredRasterScale);
+  if (m_hasPreferredRasterBounds) {
+    json->setArray("preferredRasterBounds",
+                   sizeAsJSONArray(m_preferredRasterBounds));
+  }
 
   if (flags & LayerTreeIncludesDebugInfo)
     json->setString("client", pointerAsString(m_client));

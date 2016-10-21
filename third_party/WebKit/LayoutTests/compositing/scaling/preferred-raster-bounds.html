@@ -8,7 +8,7 @@ onload = function() {
     window.testRunner.dumpAsText();
   }
   if (window.internals)
-    window.internals.runtimeFlags.preferredImageRasterScaleEnabled = true;
+    window.internals.runtimeFlags.preferredImageRasterBoundsEnabled = true;
 
   var bgImg = new Image();
   bgImg.src = '../../paint/invalidation/resources/ducky.png';

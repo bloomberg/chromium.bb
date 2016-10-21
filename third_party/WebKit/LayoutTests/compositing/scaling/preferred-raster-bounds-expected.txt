@@ -11,7 +11,7 @@
       "position": [8, 8],
       "bounds": [310, 175],
       "drawsContent": true,
-      "preferredRasterScale": 1.57741940021515
+      "preferredRasterBounds": [489, 537]
     }
   ]
 }

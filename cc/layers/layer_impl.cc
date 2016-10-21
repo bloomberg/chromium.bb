@@ -79,8 +79,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       current_draw_mode_(DRAW_MODE_NONE),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
-      preferred_raster_scale_(1.0f),
-      has_preferred_raster_scale_(false),
+      has_preferred_raster_bounds_(false),
       scrolls_drawn_descendant_(false),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false) {
@@ -109,14 +108,15 @@ void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
   has_will_change_transform_hint_ = has_will_change;
 }
 
-void LayerImpl::SetPreferredRasterScale(float preferred_raster_scale) {
-  has_preferred_raster_scale_ = true;
-  preferred_raster_scale_ = preferred_raster_scale;
+void LayerImpl::SetPreferredRasterBounds(
+    const gfx::Size& preferred_raster_bounds) {
+  has_preferred_raster_bounds_ = true;
+  preferred_raster_bounds_ = preferred_raster_bounds;
 }
 
-void LayerImpl::ClearPreferredRasterScale() {
-  has_preferred_raster_scale_ = false;
-  preferred_raster_scale_ = 1.0f;
+void LayerImpl::ClearPreferredRasterBounds() {
+  has_preferred_raster_bounds_ = false;
+  preferred_raster_bounds_ = gfx::Size();
 }
 
 AnimationHost* LayerImpl::GetAnimationHost() const {

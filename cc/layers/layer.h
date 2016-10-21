@@ -478,14 +478,19 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.has_will_change_transform_hint;
   }
 
-  void SetPreferredRasterScale(float preferred_raster_scale);
-  bool has_preferred_raster_scale() {
-    return inputs_.has_preferred_raster_scale;
+  // The preferred raster bounds are the ideal resolution at which to raster the
+  // contents of this Layer's bitmap. This may not be the same size as the Layer
+  // bounds, in cases where the contents have an "intrinsic" size that differs.
+  // Consider for example an image with a given intrinsic size that is being
+  // scaled into a Layer of a different size.
+  void SetPreferredRasterBounds(const gfx::Size& preferred_Raster_bounds);
+  bool has_preferred_raster_bounds() const {
+    return inputs_.has_preferred_raster_bounds;
   }
-  float preferred_raster_scale() const {
-    return inputs_.preferred_raster_scale;
+  const gfx::Size& preferred_raster_bounds() const {
+    return inputs_.preferred_raster_bounds;
   }
-  void ClearPreferredRasterScale();
+  void ClearPreferredRasterBounds();
 
   AnimationHost* GetAnimationHost() const;
 
@@ -680,7 +685,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     Layer* clip_parent;
 
     bool has_will_change_transform_hint : 1;
-    bool has_preferred_raster_scale : 1;
+    bool has_preferred_raster_bounds : 1;
 
     bool hide_layer_and_subtree : 1;
 
@@ -689,7 +694,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     base::Closure did_scroll_callback;
     std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
 
-    float preferred_raster_scale;
+    gfx::Size preferred_raster_bounds;
   };
 
   Layer* parent_;

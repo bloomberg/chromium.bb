@@ -112,32 +112,34 @@ bool bleedAvoidanceIsClipping(BackgroundBleedAvoidance bleedAvoidance) {
 // if possible.
 // |srcRect| is the rect, in the space of the source image, to raster.
 // |destRect| is the rect, in the local layout space of |obj|, to raster.
-inline void updatePreferredRasterScaleFromImage(
+inline void updatePreferredRasterBoundsFromImage(
     const FloatRect srcRect,
     const FloatRect& destRect,
     const LayoutBoxModelObject& obj) {
-  if (!RuntimeEnabledFeatures::preferredImageRasterScaleEnabled())
+  if (!RuntimeEnabledFeatures::preferredImageRasterBoundsEnabled())
     return;
   // Not yet implemented for SPv2.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
   if (destRect.width() == 0.0f || destRect.height() == 0.0f)
     return;
-  float widthScale = srcRect.width() / destRect.width();
-  float heightScale = srcRect.height() / destRect.height();
-  float rasterScale = std::min(std::min(widthScale, heightScale), 10.0f);
   if (PaintLayer* paintLayer = obj.layer()) {
     if (paintLayer->compositingState() != PaintsIntoOwnBacking)
       return;
-    paintLayer->graphicsLayerBacking()->setPreferredRasterScale(rasterScale);
+    // TODO(chrishtr): ensure that this rounding does not ever lose any
+    // precision.
+    paintLayer->graphicsLayerBacking()->setPreferredRasterBounds(
+        roundedIntSize(srcRect.size()));
   }
 }
 
-inline void clearPreferredRasterScale(const LayoutBox& obj) {
+inline void clearPreferredRasterBounds(const LayoutBox& obj) {
+  if (!RuntimeEnabledFeatures::preferredImageRasterBoundsEnabled())
+    return;
   if (PaintLayer* paintLayer = obj.layer()) {
     if (paintLayer->compositingState() != PaintsIntoOwnBacking)
       return;
-    paintLayer->graphicsLayerBacking()->clearPreferredRasterScale();
+    paintLayer->graphicsLayerBacking()->clearPreferredRasterBounds();
   }
 }
 
@@ -177,7 +179,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  clearPreferredRasterScale(m_layoutBox);
+  clearPreferredRasterBounds(m_layoutBox);
 
   DrawingRecorder recorder(
       paintInfo.context, displayItemClient,
@@ -656,7 +658,7 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
   context.drawImageRRect(imageContext.image(), border, srcRect,
                          imageContext.compositeOp());
 
-  updatePreferredRasterScaleFromImage(srcRect, border.rect(), obj);
+  updatePreferredRasterBoundsFromImage(srcRect, border.rect(), obj);
 
   return true;
 }

@@ -447,10 +447,14 @@ class CC_EXPORT LayerImpl {
     return has_will_change_transform_hint_;
   }
 
-  void SetPreferredRasterScale(float raster_scale);
-  bool has_preferred_raster_scale() { return has_preferred_raster_scale_; }
-  float preferred_raster_scale() const { return preferred_raster_scale_; }
-  void ClearPreferredRasterScale();
+  void SetPreferredRasterBounds(const gfx::Size& preferred_raster_bounds);
+  bool has_preferred_raster_bounds() const {
+    return has_preferred_raster_bounds_;
+  }
+  const gfx::Size& preferred_raster_scale() const {
+    return preferred_raster_bounds_;
+  }
+  void ClearPreferredRasterBounds();
 
   AnimationHost* GetAnimationHost() const;
 
@@ -568,9 +572,9 @@ class CC_EXPORT LayerImpl {
       owned_debug_info_;
   base::trace_event::ConvertableToTraceFormat* debug_info_;
   std::unique_ptr<RenderSurfaceImpl> render_surface_;
-  float preferred_raster_scale_;
+  gfx::Size preferred_raster_bounds_;
 
-  bool has_preferred_raster_scale_ : 1;
+  bool has_preferred_raster_bounds_ : 1;
   bool scrolls_drawn_descendant_ : 1;
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;

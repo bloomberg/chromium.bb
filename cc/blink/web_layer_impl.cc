@@ -474,12 +474,12 @@ void WebLayerImpl::setHasWillChangeTransformHint(bool has_will_change) {
   layer_->SetHasWillChangeTransformHint(has_will_change);
 }
 
-void WebLayerImpl::setPreferredRasterScale(float raster_scale) {
-  layer_->SetPreferredRasterScale(raster_scale);
+void WebLayerImpl::setPreferredRasterBounds(const WebSize& bounds) {
+  layer_->SetPreferredRasterBounds(bounds);
 }
 
-void WebLayerImpl::clearPreferredRasterScale() {
-  layer_->ClearPreferredRasterScale();
+void WebLayerImpl::clearPreferredRasterBounds() {
+  layer_->ClearPreferredRasterBounds();
 }
 
 }  // namespace cc_blink

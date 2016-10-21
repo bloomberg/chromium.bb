@@ -67,10 +67,9 @@ Layer::Inputs::Inputs(int layer_id)
       scroll_parent(nullptr),
       clip_parent(nullptr),
       has_will_change_transform_hint(false),
-      has_preferred_raster_scale(false),
+      has_preferred_raster_bounds(false),
       hide_layer_and_subtree(false),
-      client(nullptr),
-      preferred_raster_scale(1.0) {}
+      client(nullptr) {}
 
 Layer::Inputs::~Inputs() {}
 
@@ -1184,10 +1183,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUpdateRect(inputs_.update_rect);
 
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
-  if (has_preferred_raster_scale())
-    layer->SetPreferredRasterScale(preferred_raster_scale());
+  if (has_preferred_raster_bounds())
+    layer->SetPreferredRasterBounds(preferred_raster_bounds());
   else
-    layer->ClearPreferredRasterScale();
+    layer->ClearPreferredRasterBounds();
   layer->SetNeedsPushProperties();
 
   // Reset any state that should be cleared for the next update.
@@ -1766,21 +1765,21 @@ void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   SetNeedsCommit();
 }
 
-void Layer::SetPreferredRasterScale(float preferred_raster_scale) {
-  if (inputs_.has_preferred_raster_scale &&
-      inputs_.preferred_raster_scale == preferred_raster_scale)
+void Layer::SetPreferredRasterBounds(const gfx::Size& preferred_raster_bounds) {
+  if (inputs_.has_preferred_raster_bounds &&
+      inputs_.preferred_raster_bounds == preferred_raster_bounds)
     return;
 
-  inputs_.has_preferred_raster_scale = true;
-  inputs_.preferred_raster_scale = preferred_raster_scale;
+  inputs_.has_preferred_raster_bounds = true;
+  inputs_.preferred_raster_bounds = preferred_raster_bounds;
   SetNeedsCommit();
 }
 
-void Layer::ClearPreferredRasterScale() {
-  if (!inputs_.has_preferred_raster_scale)
+void Layer::ClearPreferredRasterBounds() {
+  if (!inputs_.has_preferred_raster_bounds)
     return;
-  inputs_.has_preferred_raster_scale = false;
-  inputs_.preferred_raster_scale = 1.0f;
+  inputs_.has_preferred_raster_bounds = false;
+  inputs_.preferred_raster_bounds = gfx::Size();
   SetNeedsCommit();
 }
 
