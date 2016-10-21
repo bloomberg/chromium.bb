@@ -66,13 +66,24 @@ void DownloadStartingOnUIThread(
     const std::string& content_disposition,
     const std::string& mime_type,
     int64_t content_length) {
-  WebContents* web_contents = web_contents_getter.Run();
   AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromWebContents(web_contents);
+      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
   if (!client)
     return;
   client->NewDownload(url, user_agent, content_disposition, mime_type,
                       content_length);
+}
+
+void NewLoginRequestOnUIThread(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const std::string& realm,
+    const std::string& account,
+    const std::string& args) {
+  AwContentsClientBridgeBase* client =
+      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  if (!client)
+    return;
+  client->NewLoginRequest(realm, account, args);
 }
 
 }  // namespace
@@ -359,13 +370,11 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     // Check for x-auto-login header.
     HeaderData header_data;
     if (ParserHeaderInResponse(request, ALLOW_ANY_REALM, &header_data)) {
-      std::unique_ptr<AwContentsIoThreadClient> io_client =
-          AwContentsIoThreadClient::FromID(request_info->GetChildID(),
-                                           request_info->GetRenderFrameID());
-      if (io_client) {
-        io_client->NewLoginRequest(header_data.realm, header_data.account,
-                                   header_data.args);
-      }
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&NewLoginRequestOnUIThread,
+                     request_info->GetWebContentsGetterForRequest(),
+                     header_data.realm, header_data.account, header_data.args));
     }
   }
 }

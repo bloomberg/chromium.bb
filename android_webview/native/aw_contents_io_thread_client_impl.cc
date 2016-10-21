@@ -402,25 +402,6 @@ bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
                                                                java_object_);
 }
 
-void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
-                                                   const string& account,
-                                                   const string& args) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (java_object_.is_null())
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
-  ScopedJavaLocalRef<jstring> jargs = ConvertUTF8ToJavaString(env, args);
-
-  ScopedJavaLocalRef<jstring> jaccount;
-  if (!account.empty())
-    jaccount = ConvertUTF8ToJavaString(env, account);
-
-  Java_AwContentsIoThreadClient_newLoginRequest(env, java_object_, jrealm,
-                                                jaccount, jargs);
-}
-
 void AwContentsIoThreadClientImpl::OnReceivedError(
     const net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -54,6 +54,15 @@ AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromWebContents(
 }
 
 // static
+AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromWebContentsGetter(
+    const content::ResourceRequestInfo::WebContentsGetter&
+        web_contents_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* web_contents = web_contents_getter.Run();
+  return UserData::GetContents(web_contents);
+}
+
+// static
 AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromID(
     int render_process_id,
     int render_frame_id) {

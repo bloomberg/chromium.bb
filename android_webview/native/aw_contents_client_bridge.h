@@ -67,6 +67,10 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                    const std::string& mime_type,
                    int64_t content_length) override;
 
+  void NewLoginRequest(const std::string& realm,
+                       const std::string& account,
+                       const std::string& args) override;
+
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env,
                        const base::android::JavaRef<jobject>& obj,

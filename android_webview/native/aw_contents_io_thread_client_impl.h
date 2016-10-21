@@ -60,9 +60,6 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   bool ShouldBlockFileUrls() const override;
   bool ShouldAcceptThirdPartyCookies() const override;
   bool ShouldBlockNetworkLoads() const override;
-  void NewLoginRequest(const std::string& realm,
-                       const std::string& account,
-                       const std::string& args) override;
   void OnReceivedError(const net::URLRequest* request) override;
   void OnReceivedHttpError(
       const net::URLRequest* request,

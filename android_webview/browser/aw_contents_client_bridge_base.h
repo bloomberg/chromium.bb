@@ -10,6 +10,7 @@
 #include "base/supports_user_data.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/resource_request_info.h"
 
 class GURL;
 
@@ -37,6 +38,9 @@ class AwContentsClientBridgeBase {
                         AwContentsClientBridgeBase* handler);
   static AwContentsClientBridgeBase* FromWebContents(
       content::WebContents* web_contents);
+  static AwContentsClientBridgeBase* FromWebContentsGetter(
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter);
   static AwContentsClientBridgeBase* FromID(int render_process_id,
                                             int render_frame_id);
 
@@ -76,6 +80,13 @@ class AwContentsClientBridgeBase {
                            const std::string& content_disposition,
                            const std::string& mime_type,
                            int64_t content_length) = 0;
+
+  // Called when a new login request is detected. See the documentation for
+  // WebViewClient.onReceivedLoginRequest for arguments. Note that |account|
+  // may be empty.
+  virtual void NewLoginRequest(const std::string& realm,
+                               const std::string& account,
+                               const std::string& args) = 0;
 };
 
 }  // namespace android_webview

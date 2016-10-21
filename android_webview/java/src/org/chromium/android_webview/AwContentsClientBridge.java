@@ -258,6 +258,11 @@ public class AwContentsClientBridge {
                 url, userAgent, contentDisposition, mimeType, contentLength);
     }
 
+    @CalledByNative
+    public void newLoginRequest(String realm, String account, String args) {
+        mClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
+    }
+
     @CalledByNativeUnchecked
     private boolean shouldOverrideUrlLoading(
             String url, boolean hasUserGesture, boolean isRedirect, boolean isMainFrame) {

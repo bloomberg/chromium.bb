@@ -388,6 +388,26 @@ void AwContentsClientBridge::NewDownload(const GURL& url,
       jstring_mime_type, content_length);
 }
 
+void AwContentsClientBridge::NewLoginRequest(const std::string& realm,
+                                             const std::string& account,
+                                             const std::string& args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
+  ScopedJavaLocalRef<jstring> jargs = ConvertUTF8ToJavaString(env, args);
+
+  ScopedJavaLocalRef<jstring> jaccount;
+  if (!account.empty())
+    jaccount = ConvertUTF8ToJavaString(env, account);
+
+  Java_AwContentsClientBridge_newLoginRequest(env, obj, jrealm, jaccount,
+                                              jargs);
+}
+
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
                                              const JavaRef<jobject>&,
                                              int id,

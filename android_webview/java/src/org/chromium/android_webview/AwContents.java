@@ -472,11 +472,6 @@ public class AwContents implements SmartClipProvider,
         }
 
         @Override
-        public void newLoginRequest(String realm, String account, String args) {
-            mContentsClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
-        }
-
-        @Override
         public void onReceivedError(AwContentsClient.AwWebResourceRequest request,
                 AwContentsClient.AwWebResourceError error) {
             String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();

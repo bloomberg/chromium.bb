@@ -34,9 +34,6 @@ public abstract class AwContentsIoThreadClient {
     public abstract boolean shouldAcceptThirdPartyCookies();
 
     @CalledByNative
-    public abstract void newLoginRequest(String realm, String account, String args);
-
-    @CalledByNative
     public abstract AwContentsBackgroundThreadClient getBackgroundThreadClient();
 
     public abstract void onReceivedError(AwContentsClient.AwWebResourceRequest request,

@@ -98,13 +98,6 @@ class AwContentsIoThreadClient {
   // Retrieve the AcceptThirdPartyCookies setting value of this AwContents.
   virtual bool ShouldAcceptThirdPartyCookies() const = 0;
 
-  // Called when a new login request is detected. See the documentation for
-  // WebViewClient.onReceivedLoginRequest for arguments. Note that |account|
-  // may be empty.
-  virtual void NewLoginRequest(const std::string& realm,
-                               const std::string& account,
-                               const std::string& args) = 0;
-
   // Called when a resource loading error has occured (e.g. an I/O error,
   // host name lookup failure etc.)
   virtual void OnReceivedError(const net::URLRequest* request) = 0;

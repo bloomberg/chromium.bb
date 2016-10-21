@@ -83,9 +83,6 @@ public class AwServiceWorkerController {
         }
 
         @Override
-        public void newLoginRequest(String realm, String account, String args) {}
-
-        @Override
         public void onReceivedError(AwContentsClient.AwWebResourceRequest request,
                 AwContentsClient.AwWebResourceError error) {
             // TODO
