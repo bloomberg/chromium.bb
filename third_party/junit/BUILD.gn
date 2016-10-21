@@ -8,6 +8,7 @@ java_library("junit") {
   chromium_code = false
   testonly = true
   supports_android = true
+  proguard_configs = [ "//third_party/junit/proguard.flags" ]
   deps = [
     "//third_party/hamcrest:hamcrest_java",
   ]

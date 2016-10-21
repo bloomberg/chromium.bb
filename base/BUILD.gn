@@ -2359,12 +2359,16 @@ if (is_android) {
     deps = [
       ":base_java",
       "//testing/android/reporter:reporter_java",
+      "//third_party/android_support_test_runner:exposed_instrumentation_api_publish_java",
+      "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_core_java",
+      "//third_party/junit",
     ]
     java_files = [
       "test/android/javatests/src/org/chromium/base/test/BaseActivityInstrumentationTestCase.java",
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumInstrumentationTestRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseInstrumentationTestRunner.java",
+      "test/android/javatests/src/org/chromium/base/test/BaseJUnit4ClassRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseTestResult.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
       "test/android/javatests/src/org/chromium/base/test/util/CallbackHelper.java",
