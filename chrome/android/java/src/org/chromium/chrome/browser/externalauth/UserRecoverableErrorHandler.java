@@ -11,7 +11,7 @@ import android.content.Context;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.chrome.browser.metrics.LaunchMetrics.EnumeratedHistogramSample;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

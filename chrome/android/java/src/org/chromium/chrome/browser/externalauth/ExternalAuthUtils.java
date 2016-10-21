@@ -21,9 +21,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.metrics.LaunchMetrics.SparseHistogramSample;
+import org.chromium.chrome.browser.metrics.LaunchMetrics.TimesHistogramSample;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;

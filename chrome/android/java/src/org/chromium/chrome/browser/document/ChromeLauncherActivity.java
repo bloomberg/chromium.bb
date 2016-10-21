@@ -25,7 +25,6 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -43,6 +42,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.LightweightFirstRunActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
@@ -87,8 +87,8 @@ public class ChromeLauncherActivity extends Activity
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
 
-    private static final CachedMetrics.SparseHistogramSample sIntentFlagsHistogram =
-            new CachedMetrics.SparseHistogramSample("Launch.IntentFlags");
+    private static final LaunchMetrics.SparseHistogramSample sIntentFlagsHistogram =
+            new LaunchMetrics.SparseHistogramSample("Launch.IntentFlags");
 
     private IntentHandler mIntentHandler;
     private boolean mIsInLegacyMultiInstanceMode;

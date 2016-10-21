@@ -2322,7 +2322,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/library_loader/ModernLinker.java",
       "android/java/src/org/chromium/base/library_loader/NativeLibraryPreloader.java",
       "android/java/src/org/chromium/base/library_loader/ProcessInitException.java",
-      "android/java/src/org/chromium/base/metrics/CachedMetrics.java",
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
