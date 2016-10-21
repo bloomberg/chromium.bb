@@ -648,8 +648,7 @@ TEST_F('OutputE2ETest', 'ComplexDiv', function() {
     function(root) {
       var div = root.find({role: 'div'});
       var o = new Output().withSpeech(cursors.Range.fromNode(div));
-      assertEquals('ok|Button'
-                   , o.speechOutputForTest.string_);
+      assertEquals('ok', o.speechOutputForTest.string_);
   });
 });
 
