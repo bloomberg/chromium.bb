@@ -34,7 +34,7 @@ do
 done
 
 echo "deleting directories we don't care about ..."
-for d in layout layoutex data/xml
+for d in layoutex data/xml test
 do
   rm -rf "${treeroot}/source/${d}"
 done
