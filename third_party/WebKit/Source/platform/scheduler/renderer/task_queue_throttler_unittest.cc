@@ -51,7 +51,7 @@ class TaskQueueThrottlerTest : public testing::Test {
         mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
-    timer_queue_ = scheduler_->NewTimerTaskRunner("test_queue");
+    timer_queue_ = scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
   }
 
   void TearDown() override {
@@ -693,7 +693,7 @@ TEST_F(TaskQueueThrottlerTest, TwoQueuesTimeBudgetThrottling) {
   std::vector<base::TimeTicks> run_times;
 
   scoped_refptr<TaskQueue> second_queue =
-      scheduler_->NewTimerTaskRunner("test_queue");
+      scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
 
   TaskQueueThrottler::TimeBudgetPool* pool =
       task_queue_throttler_->CreateTimeBudgetPool("pool");

@@ -39,17 +39,17 @@ scoped_refptr<TaskQueue> FakeRendererScheduler::TimerTaskRunner() {
 }
 
 scoped_refptr<TaskQueue> FakeRendererScheduler::NewLoadingTaskRunner(
-    const char* name) {
+    TaskQueue::QueueType queue_type) {
   return nullptr;
 }
 
 scoped_refptr<TaskQueue> FakeRendererScheduler::NewTimerTaskRunner(
-    const char* name) {
+    TaskQueue::QueueType queue_type) {
   return nullptr;
 }
 
 scoped_refptr<TaskQueue> FakeRendererScheduler::NewUnthrottledTaskRunner(
-    const char* name) {
+    TaskQueue::QueueType queue_type) {
   return nullptr;
 }
 

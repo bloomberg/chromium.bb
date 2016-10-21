@@ -3300,7 +3300,7 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   // task runner.
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
   scoped_refptr<TaskQueue> unthrottled_task_runner =
-      scheduler_->NewUnthrottledTaskRunner("unthrottled_tq");
+      scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::UNTHROTTLED);
 
   size_t timer_count = 0;
   size_t unthrottled_count = 0;
@@ -3343,10 +3343,11 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   scheduler_->EnableVirtualTime();
 
   scoped_refptr<TaskQueue> loading_tq =
-      scheduler_->NewLoadingTaskRunner("test");
-  scoped_refptr<TaskQueue> timer_tq = scheduler_->NewTimerTaskRunner("test");
+      scheduler_->NewLoadingTaskRunner(TaskQueue::QueueType::TEST);
+  scoped_refptr<TaskQueue> timer_tq =
+      scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
   scoped_refptr<TaskQueue> unthrottled_tq =
-      scheduler_->NewUnthrottledTaskRunner("test");
+      scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST);
 
   EXPECT_EQ(scheduler_->DefaultTaskRunner()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
@@ -3362,11 +3363,14 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   EXPECT_EQ(unthrottled_tq->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 
-  EXPECT_EQ(scheduler_->NewLoadingTaskRunner("test")->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->NewLoadingTaskRunner(TaskQueue::QueueType::TEST)
+                ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->NewTimerTaskRunner("test")->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST)
+                ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->NewUnthrottledTaskRunner("test")->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->NewUnthrottledTaskRunner(TaskQueue::QueueType::TEST)
+                ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 }
 

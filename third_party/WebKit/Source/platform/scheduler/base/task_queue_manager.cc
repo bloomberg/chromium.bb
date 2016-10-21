@@ -112,7 +112,7 @@ void TaskQueueManager::UnregisterTimeDomain(TimeDomain* time_domain) {
 scoped_refptr<internal::TaskQueueImpl> TaskQueueManager::NewTaskQueue(
     const TaskQueue::Spec& spec) {
   TRACE_EVENT1(tracing_category_, "TaskQueueManager::NewTaskQueue",
-               "queue_name", spec.name);
+               "queue_name", TaskQueue::NameForQueueType(spec.type));
   DCHECK(main_thread_checker_.CalledOnValidThread());
   TimeDomain* time_domain =
       spec.time_domain ? spec.time_domain : real_time_domain_.get();

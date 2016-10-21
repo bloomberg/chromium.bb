@@ -54,12 +54,33 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     FIRST_QUEUE_PRIORITY = CONTROL_PRIORITY,
   };
 
+  enum class QueueType {
+    // Keep TaskQueue::NameForQueueType in sync.
+    // This enum is used for a histogram and it should not be re-numbered.
+    CONTROL = 0,
+    DEFAULT = 1,
+    DEFAULT_LOADING = 2,
+    DEFAULT_TIMER = 3,
+    UNTHROTTLED = 4,
+    FRAME_LOADING = 5,
+    FRAME_TIMER = 6,
+    FRAME_UNTHROTTLED = 7,
+    COMPOSITOR = 8,
+    IDLE = 9,
+    TEST = 10,
+
+    COUNT = 11
+  };
+
+  // Returns name of the given queue type. Returned string has application
+  // lifetime.
+  static const char* NameForQueueType(QueueType queue_type);
+
   // Options for constructing a TaskQueue. Once set the |name| and
   // |should_monitor_quiescence| are immutable.
   struct Spec {
-    // Note |name| must have application lifetime.
-    explicit Spec(const char* name)
-        : name(name),
+    explicit Spec(QueueType type)
+        : type(type),
           should_monitor_quiescence(false),
           time_domain(nullptr),
           should_notify_observers(true),
@@ -86,7 +107,7 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       return *this;
     }
 
-    const char* name;
+    QueueType type;
     bool should_monitor_quiescence;
     TimeDomain* time_domain;
     bool should_notify_observers;
@@ -114,6 +135,9 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // to run. If there are no such tasks, returns base::nullopt.
   // NOTE: this must be called on the thread this TaskQueue was created by.
   virtual base::Optional<base::TimeTicks> GetNextScheduledWakeUp() = 0;
+
+  // Can be called on any thread.
+  virtual QueueType GetQueueType() const = 0;
 
   // Can be called on any thread.
   virtual const char* GetName() const = 0;

@@ -24,10 +24,12 @@ SchedulerHelper::SchedulerHelper(
                                tracing_category,
                                disabled_by_default_tracing_category,
                                disabled_by_default_verbose_tracing_category)),
-      control_task_runner_(NewTaskQueue(
-          TaskQueue::Spec("control_tq").SetShouldNotifyObservers(false))),
-      default_task_runner_(NewTaskQueue(
-          TaskQueue::Spec("default_tq").SetShouldMonitorQuiescence(true))),
+      control_task_runner_(
+          NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::CONTROL)
+                           .SetShouldNotifyObservers(false))),
+      default_task_runner_(
+          NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::DEFAULT)
+                           .SetShouldMonitorQuiescence(true))),
       observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(

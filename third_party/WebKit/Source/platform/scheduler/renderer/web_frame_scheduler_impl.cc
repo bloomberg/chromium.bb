@@ -94,8 +94,8 @@ void WebFrameSchedulerImpl::setCrossOrigin(bool cross_origin) {
 blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_web_task_runner_) {
-    loading_task_queue_ =
-        renderer_scheduler_->NewLoadingTaskRunner("frame_loading_tq");
+    loading_task_queue_ = renderer_scheduler_->NewLoadingTaskRunner(
+        TaskQueue::QueueType::FRAME_LOADING);
     loading_task_queue_->SetBlameContext(blame_context_);
     loading_web_task_runner_.reset(new WebTaskRunnerImpl(loading_task_queue_));
   }
@@ -105,8 +105,8 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
 blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!timer_web_task_runner_) {
-    timer_task_queue_ =
-        renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
+    timer_task_queue_ = renderer_scheduler_->NewTimerTaskRunner(
+        TaskQueue::QueueType::FRAME_TIMER);
     timer_task_queue_->SetBlameContext(blame_context_);
 
     TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
@@ -128,8 +128,8 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
 blink::WebTaskRunner* WebFrameSchedulerImpl::unthrottledTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!unthrottled_web_task_runner_) {
-    unthrottled_task_queue_ =
-        renderer_scheduler_->NewUnthrottledTaskRunner("frame_unthrottled_tq");
+    unthrottled_task_queue_ = renderer_scheduler_->NewUnthrottledTaskRunner(
+        TaskQueue::QueueType::FRAME_UNTHROTTLED);
     unthrottled_task_queue_->SetBlameContext(blame_context_);
     unthrottled_web_task_runner_.reset(
         new WebTaskRunnerImpl(unthrottled_task_queue_));

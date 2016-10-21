@@ -78,6 +78,11 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return nullptr;
   };
 
+  QueueType GetQueueType() const override {
+    NOTREACHED();
+    return QueueType::DEFAULT;
+  }
+
   void SetQueuePriority(QueuePriority priority) override { NOTREACHED(); }
 
   QueuePriority GetQueuePriority() const override {

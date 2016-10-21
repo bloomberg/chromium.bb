@@ -48,8 +48,8 @@ class IdleTimeEstimatorTest : public testing::Test {
     manager_ = base::MakeUnique<TaskQueueManager>(
         main_task_runner_, "test.scheduler", "test.scheduler",
         "test.scheduler.debug");
-    compositor_task_runner_ =
-        manager_->NewTaskQueue(TaskQueue::Spec("compositor_tq"));
+    compositor_task_runner_ = manager_->NewTaskQueue(
+        TaskQueue::Spec(TaskQueue::QueueType::COMPOSITOR));
     estimator_.reset(new IdleTimeEstimatorForTest(
         compositor_task_runner_, test_time_source_.get(), 10, 50));
   }

@@ -142,6 +142,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool MaybeUpdateImmediateWorkQueues();
 
   const char* GetName() const override;
+  QueueType GetQueueType() const override;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -297,6 +298,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     return any_thread_;
   }
 
+  const QueueType type_;
   const char* name_;
   const char* disabled_by_default_tracing_category_;
   const char* disabled_by_default_verbose_tracing_category_;

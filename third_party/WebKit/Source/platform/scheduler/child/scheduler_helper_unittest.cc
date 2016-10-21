@@ -200,8 +200,8 @@ TEST_F(SchedulerHelperTest, OnUnregisterTaskQueue) {
   MockObserver observer;
   scheduler_helper_->SetObserver(&observer);
 
-  scoped_refptr<TaskQueue> task_queue =
-      scheduler_helper_->NewTaskQueue(TaskQueue::Spec("test_queue"));
+  scoped_refptr<TaskQueue> task_queue = scheduler_helper_->NewTaskQueue(
+      TaskQueue::Spec(TaskQueue::QueueType::TEST));
 
   EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
   task_queue->UnregisterTaskQueue();
@@ -214,7 +214,8 @@ TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
   scheduler_helper_->SetObserver(&observer);
 
   scoped_refptr<TaskQueue> task_queue = scheduler_helper_->NewTaskQueue(
-      TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
+      TaskQueue::Spec(TaskQueue::QueueType::TEST)
+          .SetShouldReportWhenExecutionBlocked(true));
   task_queue->SetQueueEnabled(false);
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
 

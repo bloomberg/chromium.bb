@@ -13,6 +13,39 @@
 namespace blink {
 namespace scheduler {
 
+// static
+const char* TaskQueue::NameForQueueType(TaskQueue::QueueType queue_type) {
+  switch (queue_type) {
+    case TaskQueue::QueueType::CONTROL:
+      return "control_tq";
+    case TaskQueue::QueueType::DEFAULT:
+      return "default_tq";
+    case TaskQueue::QueueType::DEFAULT_LOADING:
+      return "default_loading_tq";
+    case TaskQueue::QueueType::DEFAULT_TIMER:
+      return "default_timer_tq";
+    case TaskQueue::QueueType::UNTHROTTLED:
+      return "unthrottled_tq";
+    case TaskQueue::QueueType::FRAME_LOADING:
+      return "frame_loading_tq";
+    case TaskQueue::QueueType::FRAME_TIMER:
+      return "frame_timer_tq";
+    case TaskQueue::QueueType::FRAME_UNTHROTTLED:
+      return "frame_unthrottled_tq";
+    case TaskQueue::QueueType::COMPOSITOR:
+      return "compositor_tq";
+    case TaskQueue::QueueType::IDLE:
+      return "idle_tq";
+    case TaskQueue::QueueType::TEST:
+      return "test_tq";
+    case TaskQueue::QueueType::COUNT:
+      DCHECK(false);
+      return nullptr;
+  }
+  DCHECK(false);
+  return nullptr;
+}
+
 namespace internal {
 
 TaskQueueImpl::TaskQueueImpl(
@@ -23,7 +56,8 @@ TaskQueueImpl::TaskQueueImpl(
     const char* disabled_by_default_verbose_tracing_category)
     : thread_id_(base::PlatformThread::CurrentId()),
       any_thread_(task_queue_manager, time_domain),
-      name_(spec.name),
+      type_(spec.type),
+      name_(NameForQueueType(spec.type)),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
       disabled_by_default_verbose_tracing_category_(
@@ -426,6 +460,10 @@ void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
 
 const char* TaskQueueImpl::GetName() const {
   return name_;
+}
+
+TaskQueue::QueueType TaskQueueImpl::GetQueueType() const {
+  return type_;
 }
 
 void TaskQueueImpl::SetQueuePriority(QueuePriority priority) {

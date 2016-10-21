@@ -63,9 +63,10 @@ class TimeDomainTest : public testing::Test {
  public:
   void SetUp() final {
     time_domain_ = base::WrapUnique(CreateMockTimeDomain());
-    task_queue_ = make_scoped_refptr(new internal::TaskQueueImpl(
-        nullptr, time_domain_.get(), TaskQueue::Spec("test_queue"),
-        "test.category", "test.category"));
+    task_queue_ = make_scoped_refptr(
+        new internal::TaskQueueImpl(nullptr, time_domain_.get(),
+                                    TaskQueue::Spec(TaskQueue::QueueType::TEST),
+                                    "test.category", "test.category"));
   }
 
   void TearDown() final {
@@ -122,20 +123,20 @@ TEST_F(TimeDomainTest, ScheduleDelayedWorkSupersedesPreviousWakeup) {
 }
 
 TEST_F(TimeDomainTest, RequestWakeup_OnlyCalledForEarlierTasks) {
-  scoped_refptr<internal::TaskQueueImpl> task_queue2 =
-      make_scoped_refptr(new internal::TaskQueueImpl(
-          nullptr, time_domain_.get(), TaskQueue::Spec("test_queue2"),
-          "test.category", "test.category"));
+  scoped_refptr<internal::TaskQueueImpl> task_queue2 = make_scoped_refptr(
+      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
+                                  TaskQueue::Spec(TaskQueue::QueueType::TEST),
+                                  "test.category", "test.category"));
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue3 =
-      make_scoped_refptr(new internal::TaskQueueImpl(
-          nullptr, time_domain_.get(), TaskQueue::Spec("test_queue3"),
-          "test.category", "test.category"));
+  scoped_refptr<internal::TaskQueueImpl> task_queue3 = make_scoped_refptr(
+      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
+                                  TaskQueue::Spec(TaskQueue::QueueType::TEST),
+                                  "test.category", "test.category"));
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue4 =
-      make_scoped_refptr(new internal::TaskQueueImpl(
-          nullptr, time_domain_.get(), TaskQueue::Spec("test_queue4"),
-          "test.category", "test.category"));
+  scoped_refptr<internal::TaskQueueImpl> task_queue4 = make_scoped_refptr(
+      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
+                                  TaskQueue::Spec(TaskQueue::QueueType::TEST),
+                                  "test.category", "test.category"));
 
   base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
   base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(20);
@@ -165,10 +166,10 @@ TEST_F(TimeDomainTest, RequestWakeup_OnlyCalledForEarlierTasks) {
 }
 
 TEST_F(TimeDomainTest, UnregisterQueue) {
-  scoped_refptr<internal::TaskQueueImpl> task_queue2_ =
-      make_scoped_refptr(new internal::TaskQueueImpl(
-          nullptr, time_domain_.get(), TaskQueue::Spec("test_queue2"),
-          "test.category", "test.category"));
+  scoped_refptr<internal::TaskQueueImpl> task_queue2_ = make_scoped_refptr(
+      new internal::TaskQueueImpl(nullptr, time_domain_.get(),
+                                  TaskQueue::Spec(TaskQueue::QueueType::TEST),
+                                  "test.category", "test.category"));
 
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _)).Times(1);
   base::TimeTicks now = time_domain_->Now();

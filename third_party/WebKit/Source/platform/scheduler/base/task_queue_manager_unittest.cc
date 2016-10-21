@@ -90,7 +90,8 @@ class TaskQueueManagerTest : public testing::Test {
         "test.scheduler.debug");
 
     for (size_t i = 0; i < num_queues; i++)
-      runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
+      runners_.push_back(
+          manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
   }
 
   void Initialize(size_t num_queues) {
@@ -111,7 +112,8 @@ class TaskQueueManagerTest : public testing::Test {
         "test.scheduler", "test.scheduler", "test.scheduler.debug");
 
     for (size_t i = 0; i < num_queues; i++)
-      runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
+      runners_.push_back(
+          manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
   }
 
   void UpdateWorkQueues(LazyNow lazy_now) {
@@ -179,7 +181,8 @@ TEST_F(TaskQueueManagerTest,
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
   for (size_t i = 0; i < 3; i++)
-    runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
+    runners_.push_back(
+        manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
@@ -209,7 +212,8 @@ TEST_F(TaskQueueManagerTest, NowNotCalledForNestedTasks) {
       "test.scheduler", "test.scheduler", "test.scheduler.debug");
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
-  runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
+  runners_.push_back(
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)));
 
   std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
   for (int i = 0; i <= 6; ++i) {
@@ -973,12 +977,15 @@ TEST_F(TaskQueueManagerTest, DeleteTaskQueueManagerInsideATask) {
 TEST_F(TaskQueueManagerTest, GetAndClearSystemIsQuiescentBit) {
   Initialize(3u);
 
-  scoped_refptr<internal::TaskQueueImpl> queue0 = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue 0").SetShouldMonitorQuiescence(true));
-  scoped_refptr<internal::TaskQueueImpl> queue1 = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue 1").SetShouldMonitorQuiescence(true));
-  scoped_refptr<internal::TaskQueueImpl> queue2 = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue 2").SetShouldMonitorQuiescence(false));
+  scoped_refptr<internal::TaskQueueImpl> queue0 =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
+                                 .SetShouldMonitorQuiescence(true));
+  scoped_refptr<internal::TaskQueueImpl> queue1 =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
+                                 .SetShouldMonitorQuiescence(true));
+  scoped_refptr<internal::TaskQueueImpl> queue2 =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
+                                 .SetShouldMonitorQuiescence(false));
 
   EXPECT_TRUE(manager_->GetAndClearSystemIsQuiescentBit());
 
@@ -1201,11 +1208,11 @@ TEST_F(TaskQueueManagerTest, NewTaskQueues) {
   Initialize(1u);
 
   scoped_refptr<internal::TaskQueueImpl> queue1 =
-      manager_->NewTaskQueue(TaskQueue::Spec("foo"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
   scoped_refptr<internal::TaskQueueImpl> queue2 =
-      manager_->NewTaskQueue(TaskQueue::Spec("bar"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
   scoped_refptr<internal::TaskQueueImpl> queue3 =
-      manager_->NewTaskQueue(TaskQueue::Spec("baz"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
 
   ASSERT_NE(queue1, queue2);
   ASSERT_NE(queue1, queue3);
@@ -1224,11 +1231,11 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue) {
   Initialize(1u);
 
   scoped_refptr<internal::TaskQueueImpl> queue1 =
-      manager_->NewTaskQueue(TaskQueue::Spec("foo"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
   scoped_refptr<internal::TaskQueueImpl> queue2 =
-      manager_->NewTaskQueue(TaskQueue::Spec("bar"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
   scoped_refptr<internal::TaskQueueImpl> queue3 =
-      manager_->NewTaskQueue(TaskQueue::Spec("baz"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
 
   ASSERT_NE(queue1, queue2);
   ASSERT_NE(queue1, queue3);
@@ -1303,7 +1310,7 @@ TEST_F(TaskQueueManagerTest, OnUnregisterTaskQueue) {
   manager_->SetObserver(&observer);
 
   scoped_refptr<internal::TaskQueueImpl> task_queue =
-      manager_->NewTaskQueue(TaskQueue::Spec("test_queue"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
 
   EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
   task_queue->UnregisterTaskQueue();
@@ -1317,8 +1324,9 @@ TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
   MockObserver observer;
   manager_->SetObserver(&observer);
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
+  scoped_refptr<internal::TaskQueueImpl> task_queue =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
+                                 .SetShouldReportWhenExecutionBlocked(true));
   task_queue->SetQueueEnabled(false);
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
 
@@ -1339,8 +1347,9 @@ TEST_F(TaskQueueManagerTest, ExecutedNonBlockedTask) {
   MockObserver observer;
   manager_->SetObserver(&observer);
 
-  scoped_refptr<internal::TaskQueueImpl> task_queue = manager_->NewTaskQueue(
-      TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
+  scoped_refptr<internal::TaskQueueImpl> task_queue =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
+                                 .SetShouldReportWhenExecutionBlocked(true));
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(0);
@@ -1359,7 +1368,7 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
   // We retain a reference to the task queue even when the manager has deleted
   // its reference.
   scoped_refptr<internal::TaskQueueImpl> task_queue =
-      manager_->NewTaskQueue(TaskQueue::Spec("test_queue"));
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
 
   std::vector<bool> log;
   std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;

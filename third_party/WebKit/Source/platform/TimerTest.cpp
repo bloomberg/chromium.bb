@@ -487,7 +487,8 @@ class TimerForTest : public TaskRunnerTimer<TimerFiredClass> {
 
 TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
   scoped_refptr<scheduler::TaskQueue> taskRunner(
-      m_platform.rendererScheduler()->NewTimerTaskRunner("test"));
+      m_platform.rendererScheduler()->NewTimerTaskRunner(
+          scheduler::TaskQueue::QueueType::TEST));
   scheduler::WebTaskRunnerImpl webTaskRunner(taskRunner);
   TimerForTest<TimerTest> timer(&webTaskRunner, this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);

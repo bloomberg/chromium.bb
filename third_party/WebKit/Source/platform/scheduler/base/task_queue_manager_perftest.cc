@@ -86,12 +86,8 @@ class TaskQueueManagerPerfTest : public testing::Test {
     manager_->RegisterTimeDomain(virtual_time_domain_.get());
 
     for (size_t i = 0; i < num_queues; i++) {
-      queue_names_.push_back(base::StringPrintf("test_%zu", i));
-    }
-
-    for (size_t i = 0; i < num_queues; i++) {
       queues_.push_back(manager_->NewTaskQueue(
-          TaskQueue::Spec(queue_names_[i].c_str())
+          TaskQueue::Spec(TaskQueue::QueueType::TEST)
               .SetTimeDomain(virtual_time_domain_.get())));
     }
   }
@@ -165,7 +161,6 @@ class TaskQueueManagerPerfTest : public testing::Test {
   std::unique_ptr<TaskQueueManager> manager_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
-  std::vector<std::string> queue_names_;
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
   // TODO(alexclarke): parameterize so we can measure with and without a
   // TaskTimeObserver.
