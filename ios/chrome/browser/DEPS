@@ -53,6 +53,7 @@ include_rules = [
   "+components/rlz",
   "+components/search",
   "+components/search_engines",
+  "+components/search_provider_logos",
   "+components/security_interstitials",
   "+components/security_state",
   "+components/sessions",
@@ -101,6 +102,7 @@ include_rules = [
   # Only parts of skia are compiled on iOS, so we explicitly list the
   # files that can be included to avoid bringing in more code.
   "+skia/ext/skia_utils_ios.h",
+  "+third_party/skia/include/core/SkBitmap.h",
 
   # Strings and resources.
   "+components/grit",

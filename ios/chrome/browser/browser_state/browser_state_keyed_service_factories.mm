@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/google/google_logo_service_factory.h"
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
@@ -86,6 +87,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSChromePasswordManagerSettingMigratorServiceFactory::GetInstance();
   IOSChromePasswordStoreFactory::GetInstance();
   IOSChromeProfileInvalidationProviderFactory::GetInstance();
+  GoogleLogoServiceFactory::GetInstance();
   OAuth2TokenServiceFactory::GetInstance();
   SigninClientFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
