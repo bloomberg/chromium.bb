@@ -520,9 +520,9 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
 void VideoCaptureManager::OnDeviceStarted(
     int serial_id,
     std::unique_ptr<VideoCaptureDevice> device) {
+  DVLOG(3) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(serial_id, device_start_queue_.begin()->serial_id());
-  DVLOG(3) << __func__;
   if (device_start_queue_.front().abort_start()) {
     // |device| can be null if creation failed in
     // DoStartDeviceCaptureOnDeviceThread.
@@ -549,14 +549,14 @@ void VideoCaptureManager::OnDeviceStarted(
       MaybePostDesktopCaptureWindowId(session_id);
     }
 
-    auto request = photo_request_queue_.begin();
-    while(request != photo_request_queue_.end()) {
+    auto it = photo_request_queue_.begin();
+    while (it != photo_request_queue_.end()) {
+      auto request = it++;
       DeviceEntry* maybe_entry = GetDeviceEntryBySessionId(request->first);
       if (maybe_entry && maybe_entry->video_capture_device()) {
         request->second.Run(maybe_entry->video_capture_device());
         photo_request_queue_.erase(request);
       }
-      ++request;
     }
   }
 
