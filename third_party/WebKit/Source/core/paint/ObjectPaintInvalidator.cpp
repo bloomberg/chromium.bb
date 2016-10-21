@@ -373,48 +373,6 @@ void ObjectPaintInvalidator::slowSetPaintingLayerNeedsRepaint() {
     paintingLayer->setNeedsRepaint();
 }
 
-bool ObjectPaintInvalidatorWithContext::incrementallyInvalidatePaint() {
-  const LayoutRect& oldBounds = m_context.oldBounds;
-  const LayoutRect& newBounds = m_context.newBounds;
-
-  DCHECK(oldBounds.location() == newBounds.location());
-
-  LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
-  LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
-  if (!deltaRight && !deltaBottom)
-    return false;
-
-  if (deltaRight > 0) {
-    LayoutRect invalidationRect(oldBounds.maxX(), newBounds.y(), deltaRight,
-                                newBounds.height());
-    invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                  invalidationRect,
-                                  PaintInvalidationIncremental);
-  } else if (deltaRight < 0) {
-    LayoutRect invalidationRect(newBounds.maxX(), oldBounds.y(), -deltaRight,
-                                oldBounds.height());
-    invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                  invalidationRect,
-                                  PaintInvalidationIncremental);
-  }
-
-  if (deltaBottom > 0) {
-    LayoutRect invalidationRect(newBounds.x(), oldBounds.maxY(),
-                                newBounds.width(), deltaBottom);
-    invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                  invalidationRect,
-                                  PaintInvalidationIncremental);
-  } else if (deltaBottom < 0) {
-    LayoutRect invalidationRect(oldBounds.x(), newBounds.maxY(),
-                                oldBounds.width(), -deltaBottom);
-    invalidatePaintUsingContainer(*m_context.paintInvalidationContainer,
-                                  invalidationRect,
-                                  PaintInvalidationIncremental);
-  }
-
-  return true;
-}
-
 void ObjectPaintInvalidatorWithContext::fullyInvalidatePaint(
     PaintInvalidationReason reason,
     const LayoutRect& oldBounds,
@@ -541,8 +499,10 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
   // selection rect regardless.
   invalidateSelectionIfNeeded(reason);
 
-  if (reason == PaintInvalidationIncremental && !incrementallyInvalidatePaint())
-    reason = PaintInvalidationNone;
+  if (reason == PaintInvalidationIncremental) {
+    reason = m_context.oldBounds == m_context.newBounds ? PaintInvalidationNone
+                                                        : PaintInvalidationFull;
+  }
 
   switch (reason) {
     case PaintInvalidationNone:
@@ -558,8 +518,6 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
         break;
       }
       return PaintInvalidationNone;
-    case PaintInvalidationIncremental:
-      break;
     case PaintInvalidationDelayedFull:
       return PaintInvalidationDelayedFull;
     default:

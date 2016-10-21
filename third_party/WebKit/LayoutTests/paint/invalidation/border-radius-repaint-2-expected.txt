@@ -29,13 +29,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [137, 139, 607, 553],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [137, 144, 607, 548],
-          "reason": "incremental"
+          "rect": [137, 88, 607, 604],
+          "reason": "border box change"
         }
       ]
     }
@@ -59,7 +54,7 @@
     },
     {
       "object": "LayoutBlockFlow DIV",
-      "reason": "incremental"
+      "reason": "border box change"
     }
   ]
 }

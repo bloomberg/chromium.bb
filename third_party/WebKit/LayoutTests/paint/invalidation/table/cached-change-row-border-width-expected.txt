@@ -22,11 +22,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 110, 60, 1],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableRow TR id='row'",
           "rect": [10, 10, 56, 50],
           "reason": "style change"
@@ -39,11 +34,6 @@
         {
           "object": "LayoutTable TABLE",
           "rect": [62, 8, 6, 103],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [64, 8, 4, 103],
           "reason": "incremental"
         }
       ]

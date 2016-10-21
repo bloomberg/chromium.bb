@@ -9,12 +9,12 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 8, 32, 48],
-          "reason": "selection"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 40, 32, 16],
-          "reason": "incremental"
+          "rect": [8, 8, 32, 48],
+          "reason": "selection"
         }
       ]
     }
@@ -46,15 +46,15 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'xx'",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'y'",
-      "reason": "incremental"
+      "reason": "full"
     }
   ]
 }

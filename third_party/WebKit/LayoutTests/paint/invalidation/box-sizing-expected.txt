@@ -18,17 +18,7 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
-          "rect": [0, 100, 440, 40],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
           "rect": [380, 0, 60, 140],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
-          "rect": [400, 0, 40, 140],
           "reason": "incremental"
         }
       ]

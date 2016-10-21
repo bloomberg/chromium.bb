@@ -17,11 +17,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 110, 113, 2],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 59, 60, 53],
           "reason": "bounds change"
@@ -59,11 +54,6 @@
         {
           "object": "LayoutTable TABLE",
           "rect": [116, 8, 5, 104],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [117, 8, 4, 104],
           "reason": "incremental"
         }
       ]

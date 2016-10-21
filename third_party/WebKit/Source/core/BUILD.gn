@@ -1219,6 +1219,7 @@ source_set("unit_tests") {
     "page/WindowFeaturesTest.cpp",
     "page/scrolling/ScrollStateTest.cpp",
     "page/scrolling/SnapCoordinatorTest.cpp",
+    "paint/BoxPaintInvalidatorTest.cpp",
     "paint/FirstMeaningfulPaintDetectorTest.cpp",
     "paint/HTMLCanvasPainterTest.cpp",
     "paint/LayerClipRecorderTest.cpp",

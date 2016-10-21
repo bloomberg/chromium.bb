@@ -25,12 +25,12 @@ lorem ipsumlorem ipsumlorem ipsum
         {
           "object": "LayoutText #text",
           "rect": [0, 80, 42, 36],
-          "reason": "selection"
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 80, 3, 36],
-          "reason": "incremental"
+          "rect": [0, 80, 42, 36],
+          "reason": "selection"
         }
       ]
     }
@@ -58,15 +58,15 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'lorem'",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'ipsum'",
-      "reason": "incremental"
+      "reason": "full"
     }
   ]
 }
@@ -96,22 +96,22 @@ lorem ipsumlorem ipsumlorem ipsum
         {
           "object": "LayoutText #text",
           "rect": [0, 80, 44, 36],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 80, 44, 36],
           "reason": "selection"
         },
         {
           "object": "LayoutText #text",
           "rect": [0, 160, 42, 36],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 160, 42, 36],
           "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [39, 80, 5, 36],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [39, 160, 3, 36],
-          "reason": "incremental"
         }
       ]
     }
@@ -139,15 +139,15 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'lorem'",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'ipsum'",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='item2' class='item'",
@@ -171,15 +171,15 @@ lorem ipsumlorem ipsumlorem ipsum
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'lorem'",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'ipsum'",
-      "reason": "incremental"
+      "reason": "full"
     }
   ]
 }

@@ -107,11 +107,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [83, 268, 26, 76],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 210, 14, 20],
           "reason": "forced by layout"

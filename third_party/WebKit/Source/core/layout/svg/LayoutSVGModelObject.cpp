@@ -36,7 +36,6 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/SVGModelObjectPaintInvalidator.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace blink {
@@ -96,12 +95,6 @@ FloatRect LayoutSVGModelObject::localBoundingBoxRectForAccessibility() const {
 void LayoutSVGModelObject::willBeDestroyed() {
   SVGResourcesCache::clientDestroyed(this);
   LayoutObject::willBeDestroyed();
-}
-
-PaintInvalidationReason LayoutSVGModelObject::invalidatePaintIfNeeded(
-    const PaintInvalidatorContext& context) const {
-  return SVGModelObjectPaintInvalidator(*this, context)
-      .invalidatePaintIfNeeded();
 }
 
 void LayoutSVGModelObject::computeLayerHitTestRects(

@@ -516,11 +516,14 @@ void GraphicsLayer::resetTrackedRasterInvalidations() {
 }
 
 bool GraphicsLayer::hasTrackedRasterInvalidations() const {
-  RasterInvalidationTracking* tracking =
-      rasterInvalidationTrackingMap().find(this);
-  if (tracking)
+  if (auto* tracking = getRasterInvalidationTracking())
     return !tracking->trackedRasterInvalidations.isEmpty();
   return false;
+}
+
+const RasterInvalidationTracking* GraphicsLayer::getRasterInvalidationTracking()
+    const {
+  return rasterInvalidationTrackingMap().find(this);
 }
 
 void GraphicsLayer::trackRasterInvalidation(const DisplayItemClient& client,

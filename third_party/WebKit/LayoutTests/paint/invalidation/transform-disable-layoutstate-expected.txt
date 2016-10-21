@@ -15,11 +15,6 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [58, 256, 500, 45],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [58, 156, 500, 45],
-          "reason": "incremental"
         }
       ]
     }

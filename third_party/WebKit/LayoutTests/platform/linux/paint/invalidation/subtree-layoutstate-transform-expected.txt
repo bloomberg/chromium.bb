@@ -13,12 +13,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [128, 48, 100, 200],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [78, 48, 50, 100],
+          "rect": [78, 48, 150, 200],
           "reason": "incremental"
         }
       ]

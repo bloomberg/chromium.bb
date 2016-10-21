@@ -8,23 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target1'",
-          "rect": [80, 0, 120, 100],
-          "reason": "incremental"
+          "rect": [0, 0, 200, 100],
+          "reason": "border box change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target2'",
-          "rect": [0, 275, 100, 125],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target1'",
-          "rect": [100, 0, 100, 100],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target2'",
-          "rect": [0, 300, 100, 100],
-          "reason": "incremental"
+          "rect": [0, 200, 100, 200],
+          "reason": "border box change"
         }
       ]
     }
@@ -32,11 +22,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target1'",
-      "reason": "incremental"
+      "reason": "border box change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target2'",
-      "reason": "incremental"
+      "reason": "border box change"
     }
   ]
 }

@@ -17,11 +17,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 572, 418, 18],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [14, 242, 406, 126],
           "reason": "forced by layout"

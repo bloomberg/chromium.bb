@@ -12,11 +12,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 160, 114, 1],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableSection TBODY id='tbody'",
           "rect": [10, 10, 110, 100],
           "reason": "style change"
@@ -79,11 +74,6 @@
         {
           "object": "LayoutTable TABLE",
           "rect": [115, 8, 7, 153],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [117, 8, 5, 153],
           "reason": "incremental"
         }
       ]

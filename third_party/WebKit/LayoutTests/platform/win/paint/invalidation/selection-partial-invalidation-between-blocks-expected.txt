@@ -9,22 +9,22 @@
         {
           "object": "LayoutText #text",
           "rect": [11, 33, 79, 17],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 33, 79, 17],
           "reason": "selection"
         },
         {
           "object": "LayoutText #text",
           "rect": [11, 11, 61, 17],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 11, 61, 17],
           "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [85, 33, 5, 17],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [67, 11, 5, 17],
-          "reason": "incremental"
         }
       ]
     }
@@ -56,11 +56,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'First cell'",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "LayoutTableCell TD id='secondCell'",
@@ -76,11 +76,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "incremental"
+      "reason": "full"
     },
     {
       "object": "InlineTextBox 'Second cell'",
-      "reason": "incremental"
+      "reason": "full"
     }
   ]
 }

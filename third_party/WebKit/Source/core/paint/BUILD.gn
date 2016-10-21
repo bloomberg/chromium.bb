@@ -143,8 +143,6 @@ blink_core_sources("paint") {
     "SVGInlineTextBoxPainter.h",
     "SVGMaskPainter.cpp",
     "SVGMaskPainter.h",
-    "SVGModelObjectPaintInvalidator.cpp",
-    "SVGModelObjectPaintInvalidator.h",
     "SVGPaintContext.cpp",
     "SVGPaintContext.h",
     "SVGRootInlineBoxPainter.cpp",

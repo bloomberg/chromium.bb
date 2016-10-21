@@ -30,77 +30,66 @@ void BoxPaintInvalidator::boxWillBeDestroyed(const LayoutBox& box) {
   previousBoxSizesMap().remove(&box);
 }
 
+static LayoutRect computeRightDelta(const LayoutPoint& location,
+                                    const LayoutSize& oldSize,
+                                    const LayoutSize& newSize,
+                                    int extraWidth) {
+  LayoutUnit delta = newSize.width() - oldSize.width();
+  if (delta > 0) {
+    return LayoutRect(location.x() + oldSize.width() - extraWidth, location.y(),
+                      delta + extraWidth, newSize.height());
+  }
+  if (delta < 0) {
+    return LayoutRect(location.x() + newSize.width() - extraWidth, location.y(),
+                      -delta + extraWidth, oldSize.height());
+  }
+  return LayoutRect();
+}
+
+static LayoutRect computeBottomDelta(const LayoutPoint& location,
+                                     const LayoutSize& oldSize,
+                                     const LayoutSize& newSize,
+                                     int extraHeight) {
+  LayoutUnit delta = newSize.height() - oldSize.height();
+  if (delta > 0) {
+    return LayoutRect(location.x(),
+                      location.y() + oldSize.height() - extraHeight,
+                      newSize.width(), delta + extraHeight);
+  }
+  if (delta < 0) {
+    return LayoutRect(location.x(),
+                      location.y() + newSize.height() - extraHeight,
+                      oldSize.width(), -delta + extraHeight);
+  }
+  return LayoutRect();
+}
+
 bool BoxPaintInvalidator::incrementallyInvalidatePaint() {
-  bool result = ObjectPaintInvalidatorWithContext(m_box, m_context)
-                    .incrementallyInvalidatePaint();
+  DCHECK(m_context.oldBounds.location() == m_context.newBounds.location());
+  LayoutRect rightDelta = computeRightDelta(m_context.newBounds.location(),
+                                            m_context.oldBounds.size(),
+                                            m_context.newBounds.size(), 0);
+  LayoutRect bottomDelta = computeBottomDelta(m_context.newBounds.location(),
+                                              m_context.oldBounds.size(),
+                                              m_context.newBounds.size(), 0);
 
-  bool hasBoxDecorations = m_box.styleRef().hasBoxDecorations();
-  if (!m_box.styleRef().hasBackground() && !hasBoxDecorations)
-    return result;
-
-  const LayoutRect& oldBounds = m_context.oldBounds;
-  const LayoutRect& newBounds = m_context.newBounds;
-
-  LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
-  LayoutSize newBorderBoxSize = m_box.size();
-
-  // If border m_box size didn't change,
-  // ObjectPaintInvalidatorWithContext::incrementallyInvalidatePaint() is good.
-  if (oldBorderBoxSize == newBorderBoxSize)
-    return result;
-
-  // If size of the paint invalidation rect equals to size of border box,
-  // ObjectPaintInvalidatorWithContext::incrementallyInvalidatePaint()
-  // is good for boxes having background without box decorations.
-  DCHECK(
-      oldBounds.location() ==
-      newBounds.location());  // Otherwise we won't do incremental invalidation.
-  if (!hasBoxDecorations && m_context.newLocation == newBounds.location() &&
-      oldBorderBoxSize == oldBounds.size() &&
-      newBorderBoxSize == newBounds.size())
-    return result;
-
-  // Invalidate the right delta part and the right border of the old or new
-  // m_box which has smaller width.
-  if (LayoutUnit deltaWidth =
-          (oldBorderBoxSize.width() - newBorderBoxSize.width()).abs()) {
-    LayoutUnit smallerWidth =
-        std::min(oldBorderBoxSize.width(), newBorderBoxSize.width());
-    LayoutUnit borderTopRightRadiusWidth = valueForLength(
-        m_box.styleRef().borderTopRightRadius().width(), smallerWidth);
-    LayoutUnit borderBottomRightRadiusWidth = valueForLength(
-        m_box.styleRef().borderBottomRightRadius().width(), smallerWidth);
-    LayoutUnit borderWidth = std::max(
-        LayoutUnit(m_box.borderRight()),
-        std::max(borderTopRightRadiusWidth, borderBottomRightRadiusWidth));
-    LayoutRect rightDeltaRect(
-        m_context.newLocation.x() + smallerWidth - borderWidth,
-        m_context.newLocation.y(), deltaWidth + borderWidth,
-        std::max(oldBorderBoxSize.height(), newBorderBoxSize.height()));
-    invalidatePaintRectClippedByOldAndNewBounds(rightDeltaRect);
+  if (m_box.styleRef().hasBorder() || m_box.styleRef().hasBackground()) {
+    LayoutSize oldBorderBoxSize =
+        computePreviousBorderBoxSize(m_context.oldBounds.size());
+    LayoutSize newBorderBoxSize = m_box.size();
+    DCHECK(m_context.oldLocation == m_context.newLocation);
+    rightDelta.unite(computeRightDelta(m_context.newLocation, oldBorderBoxSize,
+                                       newBorderBoxSize, m_box.borderRight()));
+    bottomDelta.unite(computeBottomDelta(m_context.newLocation,
+                                         oldBorderBoxSize, newBorderBoxSize,
+                                         m_box.borderBottom()));
   }
 
-  // Invalidate the bottom delta part and the bottom border of the old or new
-  // m_box which has smaller height.
-  if (LayoutUnit deltaHeight =
-          (oldBorderBoxSize.height() - newBorderBoxSize.height()).abs()) {
-    LayoutUnit smallerHeight =
-        std::min(oldBorderBoxSize.height(), newBorderBoxSize.height());
-    LayoutUnit borderBottomLeftRadiusHeight = valueForLength(
-        m_box.styleRef().borderBottomLeftRadius().height(), smallerHeight);
-    LayoutUnit borderBottomRightRadiusHeight = valueForLength(
-        m_box.styleRef().borderBottomRightRadius().height(), smallerHeight);
-    LayoutUnit borderHeight = std::max(
-        LayoutUnit(m_box.borderBottom()),
-        std::max(borderBottomLeftRadiusHeight, borderBottomRightRadiusHeight));
-    LayoutRect bottomDeltaRect(
-        m_context.newLocation.x(),
-        m_context.newLocation.y() + smallerHeight - borderHeight,
-        std::max(oldBorderBoxSize.width(), newBorderBoxSize.width()),
-        deltaHeight + borderHeight);
-    invalidatePaintRectClippedByOldAndNewBounds(bottomDeltaRect);
-  }
+  if (rightDelta.isEmpty() && bottomDelta.isEmpty())
+    return false;
 
+  invalidatePaintRectClippedByOldAndNewBounds(rightDelta);
+  invalidatePaintRectClippedByOldAndNewBounds(bottomDelta);
   return true;
 }
 
@@ -190,9 +179,6 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   }
 
   if (!style.hasBackground() && !style.hasBoxDecorations()) {
-    // We could let incremental invalidation cover non-composited scrollbars,
-    // but just do a full invalidation because incremental invalidation will go
-    // away with slimming paint.
     if (reason == PaintInvalidationIncremental &&
         m_context.oldBounds != m_context.newBounds &&
         m_box.hasNonCompositedScrollbars())
@@ -221,16 +207,8 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
       style.hasFilterInducingProperty() || style.resize() != RESIZE_NONE)
     return PaintInvalidationBorderBoxChange;
 
-  if (style.hasBorderRadius()) {
-    // If a border-radius exists and width/height is smaller than radius
-    // width/height, we need to fully invalidate to cover the changed radius.
-    FloatRoundedRect oldRoundedRect = style.getRoundedBorderFor(
-        LayoutRect(LayoutPoint(0, 0), oldBorderBoxSize));
-    FloatRoundedRect newRoundedRect = style.getRoundedBorderFor(
-        LayoutRect(LayoutPoint(0, 0), newBorderBoxSize));
-    if (oldRoundedRect.getRadii() != newRoundedRect.getRadii())
-      return PaintInvalidationBorderBoxChange;
-  }
+  if (style.hasBorderRadius())
+    return PaintInvalidationBorderBoxChange;
 
   if (oldBorderBoxSize.width() != newBorderBoxSize.width() &&
       m_box.mustInvalidateBackgroundOrBorderPaintOnWidthChange())
@@ -251,9 +229,9 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded() {
     } else {
       reason = PaintInvalidationNone;
     }
-    // Though we have done our own version of incremental invalidation, we still
-    // need to call ObjectPaintInvalidator with PaintInvalidationNone to do any
-    // other required operations.
+    // Though we have done incremental invalidation, we still need to call
+    // ObjectPaintInvalidator with PaintInvalidationNone to do any other
+    // required operations.
     reason = std::max(
         reason,
         ObjectPaintInvalidatorWithContext(m_box, m_context)

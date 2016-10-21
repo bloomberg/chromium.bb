@@ -12,11 +12,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 60, 114, 2],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD id='foo'",
           "rect": [8, 8, 60, 54],
           "reason": "style change"
@@ -34,11 +29,6 @@
         {
           "object": "LayoutTable TABLE",
           "rect": [116, 8, 6, 54],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [117, 8, 5, 54],
           "reason": "incremental"
         }
       ]

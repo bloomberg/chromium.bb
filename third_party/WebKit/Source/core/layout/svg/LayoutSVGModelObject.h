@@ -83,9 +83,6 @@ class LayoutSVGModelObject : public LayoutObject {
                             const LayoutRect& containerRect) const final;
   void willBeDestroyed() override;
 
-  PaintInvalidationReason invalidatePaintIfNeeded(
-      const PaintInvalidatorContext&) const final;
-
  private:
   // LayoutSVGModelObject subclasses should use element() instead.
   void node() const = delete;

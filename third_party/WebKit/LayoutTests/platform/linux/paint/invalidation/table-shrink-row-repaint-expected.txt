@@ -22,11 +22,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutTableCell TD id='resizeMe'",
-          "rect": [8, 122, 769, 200],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 982, 769, 60],
           "reason": "bounds change"

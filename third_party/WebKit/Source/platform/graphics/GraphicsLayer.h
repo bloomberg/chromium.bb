@@ -62,6 +62,7 @@ class Image;
 class JSONObject;
 class LinkHighlight;
 class PaintController;
+struct RasterInvalidationTracking;
 class ScrollableArea;
 class WebLayer;
 
@@ -230,6 +231,7 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
 
   void resetTrackedRasterInvalidations();
   bool hasTrackedRasterInvalidations() const;
+  const RasterInvalidationTracking* getRasterInvalidationTracking() const;
   void trackRasterInvalidation(const DisplayItemClient&,
                                const IntRect&,
                                PaintInvalidationReason);
