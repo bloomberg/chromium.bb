@@ -7807,6 +7807,21 @@ TEST_F(URLRequestTestHTTP, NetworkAccessedClearOnLoadOnlyFromCache) {
   EXPECT_FALSE(req->response_info().network_accessed);
 }
 
+// Test that a single job with a throttled priority completes
+// correctly in the absence of contention.
+TEST_F(URLRequestTestHTTP, ThrottledPriority) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  TestDelegate d;
+  GURL test_url(http_test_server()->GetURL("/"));
+  std::unique_ptr<URLRequest> req(
+      default_context_.CreateRequest(test_url, THROTTLED, &d));
+  req->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(req->status().is_success());
+}
+
 TEST_F(URLRequestTestHTTP, RawBodyBytesNoContentEncoding) {
   ASSERT_TRUE(http_test_server()->Start());
 

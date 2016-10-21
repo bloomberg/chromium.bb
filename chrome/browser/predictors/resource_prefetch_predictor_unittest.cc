@@ -440,6 +440,16 @@ void ResourcePrefetchPredictorTest::InitializeSampleData() {
   }
 }
 
+// Confirm that there's been no shift in the
+// ResourceData_Priority/net::RequestPriority equivalence.
+static_assert(static_cast<int>(net::MINIMUM_PRIORITY) ==
+              static_cast<int>(
+                  ResourceData_Priority_REQUEST_PRIORITY_THROTTLED),
+              "Database/Net priority mismatch: Minimum");
+static_assert(static_cast<int>(net::MAXIMUM_PRIORITY) ==
+              static_cast<int>(ResourceData_Priority_REQUEST_PRIORITY_HIGHEST),
+              "Database/Net priority mismatch: Maximum");
+
 // Tests that the predictor initializes correctly without any data.
 TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeEmpty) {
   EXPECT_TRUE(predictor_->url_table_cache_->empty());

@@ -40,11 +40,12 @@ message ResourceData {
 
   // Mirrors net::RequestPriority
   enum Priority {
-    REQUEST_PRIORITY_IDLE = 0;
-    REQUEST_PRIORITY_LOWEST = 1;
-    REQUEST_PRIORITY_LOW = 2;
-    REQUEST_PRIORITY_MEDIUM = 3;
-    REQUEST_PRIORITY_HIGHEST = 4;
+    REQUEST_PRIORITY_THROTTLED = 0;
+    REQUEST_PRIORITY_IDLE = 1;
+    REQUEST_PRIORITY_LOWEST = 2;
+    REQUEST_PRIORITY_LOW = 3;
+    REQUEST_PRIORITY_MEDIUM = 4;
+    REQUEST_PRIORITY_HIGHEST = 5;
   }
 
   optional string resource_url = 1;

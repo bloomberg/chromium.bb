@@ -139,7 +139,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 4;
+  static constexpr int kDatabaseVersion = 5;
 
   static bool DropTablesIfOutdated(sql::Connection* db);
   static int GetDatabaseVersion(sql::Connection* db);

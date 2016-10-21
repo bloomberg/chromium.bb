@@ -109,7 +109,7 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
 
   // Construct the request.
   std::unique_ptr<net::URLRequest> new_request = request_context->CreateRequest(
-      for_request.url(), net::MINIMUM_PRIORITY, nullptr);
+      for_request.url(), net::IDLE, nullptr);
 
   new_request->set_method(for_request.method());
   new_request->set_first_party_for_cookies(
