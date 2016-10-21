@@ -5,21 +5,21 @@
 var vrShellUi = (function() {
   'use strict';
 
-  var scene = new ui.Scene();
-  var state;
+  let scene = new ui.Scene();
+  let sceneManager;
 
   class DomUiElement {
     constructor(domId) {
-      var domElement = document.querySelector(domId);
-      var style = window.getComputedStyle(domElement);
+      let domElement = document.querySelector(domId);
+      let style = window.getComputedStyle(domElement);
 
       // Pull copy rectangle from DOM element properties.
-      var pixelX = domElement.offsetLeft;
-      var pixelY = domElement.offsetTop;
-      var pixelWidth = parseInt(style.getPropertyValue('width'));
-      var pixelHeight = parseInt(style.getPropertyValue('height'));
+      let pixelX = domElement.offsetLeft;
+      let pixelY = domElement.offsetTop;
+      let pixelWidth = parseInt(style.getPropertyValue('width'));
+      let pixelHeight = parseInt(style.getPropertyValue('height'));
 
-      var element = new api.UiElement(pixelX, pixelY, pixelWidth, pixelHeight);
+      let element = new api.UiElement(pixelX, pixelY, pixelWidth, pixelHeight);
       element.setSize(pixelWidth / 1000, pixelHeight / 1000);
 
       this.uiElementId = scene.addElement(element);
@@ -32,18 +32,18 @@ var vrShellUi = (function() {
     constructor(domId, callback) {
       super(domId);
 
-      var button = this.domElement.querySelector('.button');
+      let button = this.domElement.querySelector('.button');
       button.addEventListener('mouseenter', this.onMouseEnter.bind(this));
       button.addEventListener('mouseleave', this.onMouseLeave.bind(this));
       button.addEventListener('click', callback);
     }
 
     configure(buttonOpacity, captionOpacity, distanceForward) {
-      var button = this.domElement.querySelector('.button');
-      var caption = this.domElement.querySelector('.caption');
+      let button = this.domElement.querySelector('.button');
+      let caption = this.domElement.querySelector('.caption');
       button.style.opacity = buttonOpacity;
       caption.style.opacity = captionOpacity;
-      var anim = new api.Animation(this.uiElementId, 150);
+      let anim = new api.Animation(this.uiElementId, 150);
       anim.setTranslation(0, 0, distanceForward);
       if (this.uiAnimationId >= 0) {
         scene.removeAnimation(this.uiAnimationId);
@@ -64,7 +64,7 @@ var vrShellUi = (function() {
   class Controls {
     constructor() {
       this.buttons = [];
-      var descriptors = [
+      let descriptors = [
           ['#back', function() {
             api.doAction(api.Action.HISTORY_BACK);
           }],
@@ -76,25 +76,25 @@ var vrShellUi = (function() {
           }],
       ];
 
-      var spacing = 0.3;
-      var startPosition = -spacing * (descriptors.length / 2.0 - 0.5);
+      /** @const */ var BUTTON_SPACING = 0.3;
 
-      for (var i = 0; i < descriptors.length; i++) {
+      let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
+      for (let i = 0; i < descriptors.length; i++) {
         // Use an invisible parent to simplify Z-axis movement on hover.
-        var position = new api.UiElement(0, 0, 0, 0);
+        let position = new api.UiElement(0, 0, 0, 0);
         position.setParentId(api.getContentElementId());
         position.setVisible(false);
         position.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
         position.setTranslation(
-            startPosition + i * spacing, -0.3, 0.3);
-        var id = scene.addElement(position);
+            startPosition + i * BUTTON_SPACING, -0.3, 0.3);
+        let id = scene.addElement(position);
 
-        var domId = descriptors[i][0];
-        var callback = descriptors[i][1];
-        var element = new RoundButton(domId, callback);
+        let domId = descriptors[i][0];
+        let callback = descriptors[i][1];
+        let element = new RoundButton(domId, callback);
         this.buttons.push(element);
 
-        var update = new api.UiElementUpdate();
+        let update = new api.UiElementUpdate();
         update.setParentId(id);
         update.setVisible(false);
         update.setScale(2.2, 2.2, 1);
@@ -103,24 +103,104 @@ var vrShellUi = (function() {
     }
 
     show(visible) {
-      for (var i = 0; i < this.buttons.length; i++) {
-        var update = new api.UiElementUpdate();
+      for (let i = 0; i < this.buttons.length; i++) {
+        let update = new api.UiElementUpdate();
         update.setVisible(visible);
         scene.updateElement(this.buttons[i].uiElementId, update);
       }
     }
   };
 
-  class UiState {
+  class SecureOriginWarnings {
     constructor() {
-      this.mode = api.Mode.UNKNOWN;
-      this.controls = new Controls();
+      /** @const */ var DISTANCE = 0.7;
+      /** @const */ var ANGLE_UP = 16.3 * Math.PI / 180.0;
+
+      // Permanent WebVR security warning. This warning is shown near the top of
+      // the field of view.
+      this.webVrSecureWarning = new DomUiElement('#webvr-not-secure-permanent');
+      let update = new api.UiElementUpdate();
+      update.setScale(DISTANCE, DISTANCE, 1);
+      update.setTranslation(0, DISTANCE * Math.sin(ANGLE_UP),
+          -DISTANCE * Math.cos(ANGLE_UP));
+      update.setRotation(1.0, 0.0, 0.0, ANGLE_UP);
+      update.setHitTestable(false);
+      update.setVisible(false);
+      update.setLockToFieldOfView(true);
+      scene.updateElement(this.webVrSecureWarning.uiElementId, update);
+
+      // Temporary WebVR security warning. This warning is shown in the center
+      // of the field of view, for a limited period of time.
+      this.transientWarning = new DomUiElement(
+          '#webvr-not-secure-transient');
+      update = new api.UiElementUpdate();
+      update.setScale(DISTANCE, DISTANCE, 1);
+      update.setTranslation(0, 0, -DISTANCE);
+      update.setHitTestable(false);
+      update.setVisible(false);
+      update.setLockToFieldOfView(true);
+      scene.updateElement(this.transientWarning.uiElementId, update);
+    }
+
+    show(visible) {
+      this.enabled = visible;
+      this.updateState();
+    }
+
+    setSecureOrigin(secure) {
+      this.isSecureOrigin = secure;
+      this.updateState();
+    }
+
+    updateState() {
+      /** @const */ var TRANSIENT_TIMEOUT_MS = 30000;
+
+      let visible = (this.enabled && !this.isSecureOrigin);
+      if (this.secureOriginTimer) {
+        clearInterval(this.secureOriginTimer);
+        this.secureOriginTimer = null;
+      }
+      if (visible) {
+        this.secureOriginTimer = setTimeout(
+            this.onTransientTimer.bind(this), TRANSIENT_TIMEOUT_MS);
+      }
+      this.showOrHideWarnings(visible);
+    }
+
+    showOrHideWarnings(visible) {
+      let update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      scene.updateElement(this.webVrSecureWarning.uiElementId, update);
+      update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      scene.updateElement(this.transientWarning.uiElementId, update);
+    }
+
+    onTransientTimer() {
+      let update = new api.UiElementUpdate();
+      update.setVisible(false);
+      scene.updateElement(this.transientWarning.uiElementId, update);
+      this.secureOriginTimer = null;
       scene.flush();
     }
 
+  };
+
+  class SceneManager {
+    constructor() {
+      this.mode = api.Mode.UNKNOWN;
+      this.controls = new Controls();
+      this.secureOriginWarnings = new SecureOriginWarnings();
+    }
+
     setMode(mode) {
+      this.mode = mode;
       this.controls.show(mode == api.Mode.STANDARD);
-      scene.flush();
+      this.secureOriginWarnings.show(mode == api.Mode.WEB_VR);
+    }
+
+    setSecureOrigin(secure) {
+      this.secureOriginWarnings.setSecureOrigin(secure);
     }
   };
 
@@ -131,15 +211,20 @@ var vrShellUi = (function() {
       document.body.parentNode.style.backgroundColor = 'rgba(255,255,255,0)';
     }, 100);
 
-    state = new UiState();
+    sceneManager = new SceneManager();
+    scene.flush();
 
     api.domLoaded();
   }
 
   function command(dict) {
     if ('mode' in dict) {
-      state.setMode(dict['mode']);
+      sceneManager.setMode(dict['mode']);
     }
+    if ('secureOrigin' in dict) {
+      sceneManager.setSecureOrigin(dict['secureOrigin']);
+    }
+    scene.flush();
   }
 
   return {
