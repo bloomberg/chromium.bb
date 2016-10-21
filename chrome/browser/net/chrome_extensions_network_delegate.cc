@@ -10,12 +10,16 @@
 #include "net/base/net_errors.h"
 
 #if defined(ENABLE_EXTENSIONS)
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -196,8 +200,25 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
         extension &&
         extension->permissions_data()->HasAPIPermission(
             extensions::APIPermission::kWebView);
-    if (!has_webview_permission)
+    // Check whether the request is coming from a <webview> guest process via
+    // ChildProcessSecurityPolicy.  A guest process should have already been
+    // granted permission to request |origin| when its WebContents was created.
+    // See https://crbug.com/656752.
+    auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
+    bool from_guest =
+        policy->HasSpecificPermissionForOrigin(info->GetChildID(), origin);
+    if (!has_webview_permission || !from_guest) {
+      // TODO(alexmos): Temporary instrumentation to find any regressions for
+      // this blocking.  Remove after verifying that this is not breaking any
+      // legitimate use cases.
+      char origin_copy[256];
+      base::strlcpy(origin_copy, origin.Serialize().c_str(),
+                    arraysize(origin_copy));
+      base::debug::Alias(&origin_copy);
+      base::debug::Alias(&from_guest);
+      base::debug::DumpWithoutCrashing();
       return net::ERR_ABORTED;
+    }
   }
 
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(

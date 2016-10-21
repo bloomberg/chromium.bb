@@ -199,6 +199,15 @@ class ChildProcessSecurityPolicy {
   // Does not affect cookies attached to or set by network requests.
   // Only might return false if the --site-per-process flag is used.
   virtual bool CanAccessDataForOrigin(int child_id, const GURL& gurl) = 0;
+
+  // Returns true if GrantOrigin was called earlier with the same parameters.
+  //
+  // TODO(alexmos): This currently exists to support checking whether a
+  // <webview> guest process has permission to request blob URLs in its
+  // embedder's origin on the IO thread.  This should be removed once that
+  // check is superseded by a UI thread check.  See https://crbug.com/656752.
+  virtual bool HasSpecificPermissionForOrigin(int child_id,
+                                              const url::Origin& origin) = 0;
 };
 
 }  // namespace content

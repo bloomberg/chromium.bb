@@ -9,26 +9,34 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/background_page_watcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -860,6 +868,105 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     EXPECT_EQ(3 + i,
               pm->GetRenderFrameHostsForExtension(extension->id()).size());
     EXPECT_EQ(3 + i, pm->GetAllFrames().size());
+  }
+}
+
+// Test that navigations to blob: and filesystem: URLs with extension origins
+// are disallowed in an unprivileged, non-guest web process when the extension
+// origin corresponds to a Chrome app with the "webview" permission.  See
+// https://crbug.com/656752.  These requests should still be allowed inside
+// actual <webview> guest processes created by a Chrome app; this is checked in
+// WebViewTest.Shim_TestBlobURL.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       NestedURLNavigationsToAppBlocked) {
+  // TODO(alexmos):  Re-enable this test for PlzNavigate after tightening
+  // nested URL blocking for apps with the "webview" permission in
+  // ExtensionNavigationThrottle and removing the corresponding check from
+  // ChromeExtensionsNetworkDelegate.  The latter is incompatible with
+  // PlzNavigate.
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
+  // Disabling web security is necessary to test the browser enforcement;
+  // without it, the loads in this test would be blocked by
+  // SecurityOrigin::canDisplay() as invalid local resource loads.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kWebKitWebSecurityEnabled, false);
+
+  // Load a simple app that has the "webview" permission.  The app will also
+  // open a <webview> when it's loaded.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::FilePath dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  dir = dir.AppendASCII("extensions")
+            .AppendASCII("platform_apps")
+            .AppendASCII("web_view")
+            .AppendASCII("simple");
+  const Extension* app = LoadAndLaunchApp(dir);
+  EXPECT_TRUE(app->permissions_data()->HasAPIPermission(
+      extensions::APIPermission::kWebView));
+
+  auto app_windows = AppWindowRegistry::Get(browser()->profile())
+                         ->GetAppWindowsForApp(app->id());
+  EXPECT_EQ(1u, app_windows.size());
+  content::WebContents* app_tab = (*app_windows.begin())->web_contents();
+  content::RenderFrameHost* app_rfh = app_tab->GetMainFrame();
+  url::Origin app_origin(app_rfh->GetLastCommittedOrigin());
+  EXPECT_EQ(url::Origin(app->url()), app_rfh->GetLastCommittedOrigin());
+
+  // Wait for the app's guest WebContents to load.
+  guest_view::TestGuestViewManager* guest_manager =
+      static_cast<guest_view::TestGuestViewManager*>(
+          guest_view::TestGuestViewManager::FromBrowserContext(
+              browser()->profile()));
+  content::WebContents* guest = guest_manager->WaitForSingleGuestCreated();
+
+  // There should be two extension frames in ProcessManager: the app's main
+  // page and the background page.
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(2u, pm->GetAllFrames().size());
+  EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(app->id()).size());
+
+  // Create valid blob and filesystem URLs in the app's origin.
+  GURL blob_url(CreateBlobURL(app_rfh, "foo"));
+  EXPECT_EQ(app_origin, url::Origin(blob_url));
+  GURL filesystem_url(CreateFileSystemURL(app_rfh, "foo"));
+  EXPECT_EQ(app_origin, url::Origin(filesystem_url));
+
+  // Create a new tab, unrelated to the app, and navigate it to a web URL.
+  chrome::NewTab(browser());
+  content::WebContents* web_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL web_url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), web_url);
+  EXPECT_NE(web_tab, app_tab);
+  EXPECT_NE(web_tab->GetMainFrame()->GetProcess(), app_rfh->GetProcess());
+
+  // The web process shouldn't have permission to request URLs in the app's
+  // origin, but the guest process should.
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_FALSE(policy->HasSpecificPermissionForOrigin(
+      web_tab->GetRenderProcessHost()->GetID(), app_origin));
+  EXPECT_TRUE(policy->HasSpecificPermissionForOrigin(
+      guest->GetRenderProcessHost()->GetID(), app_origin));
+
+  // Try navigating the web tab to each nested URL with the app's origin.  This
+  // should be blocked.
+  GURL nested_urls[] = {blob_url, filesystem_url};
+  for (size_t i = 0; i < arraysize(nested_urls); i++) {
+    content::TestNavigationObserver observer(web_tab);
+    EXPECT_TRUE(ExecuteScript(
+        web_tab, "location.href = '" + nested_urls[i].spec() + "';"));
+    observer.Wait();
+    EXPECT_NE(nested_urls[i], web_tab->GetLastCommittedURL());
+    EXPECT_FALSE(app_origin.IsSameOriginWith(
+        web_tab->GetMainFrame()->GetLastCommittedOrigin()));
+    EXPECT_NE("foo", GetTextContent(web_tab->GetMainFrame()));
+    EXPECT_NE(web_tab->GetMainFrame()->GetProcess(), app_rfh->GetProcess());
+
+    EXPECT_EQ(2u, pm->GetAllFrames().size());
+    EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(app->id()).size());
   }
 }
 

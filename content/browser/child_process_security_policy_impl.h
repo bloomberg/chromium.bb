@@ -83,6 +83,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool HasWebUIBindings(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
+  bool HasSpecificPermissionForOrigin(int child_id,
+                                      const url::Origin& origin) override;
 
   // Returns if |child_id| can read all of the |files|.
   bool CanReadAllFiles(int child_id, const std::vector<base::FilePath>& files);
