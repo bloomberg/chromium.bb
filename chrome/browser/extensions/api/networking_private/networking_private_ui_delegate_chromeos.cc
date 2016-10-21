@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "ui/chromeos/network/network_connect.h"
 
 namespace chromeos {
 namespace extensions {
@@ -22,7 +22,7 @@ void NetworkingPrivateUIDelegateChromeOS::ShowAccountDetails(
           guid);
   if (!network || network->path().empty())
     return;
-  ui::NetworkConnect::Get()->ShowMobileSetup(network->path());
+  chromeos::NetworkConnect::Get()->ShowMobileSetup(network->path());
 }
 
 bool NetworkingPrivateUIDelegateChromeOS::HandleConnectFailed(
@@ -33,8 +33,8 @@ bool NetworkingPrivateUIDelegateChromeOS::HandleConnectFailed(
           guid);
   if (!network || network->path().empty())
     return false;
-  return ui::NetworkConnect::Get()->MaybeShowConfigureUI(network->path(),
-                                                         error);
+  return chromeos::NetworkConnect::Get()->MaybeShowConfigureUI(network->path(),
+                                                               error);
 }
 
 }  // namespace extensions

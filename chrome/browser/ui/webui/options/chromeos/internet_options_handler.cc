@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/onc/onc_constants.h"
@@ -37,7 +38,6 @@
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/network/network_connect.h"
 
 namespace chromeos {
 namespace options {
@@ -149,7 +149,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
   }
   std::string service_path = ServicePathFromGuid(guid);
   if (!service_path.empty())
-    ui::NetworkConnect::Get()->ShowMobileSetup(service_path);
+    NetworkConnect::Get()->ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::SimOperationCallback(const base::ListValue* args) {

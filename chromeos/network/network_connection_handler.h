@@ -99,6 +99,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Trying to configure an unmanged network but policy prohibits that
   static const char kErrorUnmanagedNetwork[];
 
+  // Network activation failed.
+  static const char kErrorActivateFailed[];
+
   ~NetworkConnectionHandler() override;
 
   void AddObserver(NetworkConnectionObserver* observer);

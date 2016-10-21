@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_connect.h"
+#include "chromeos/network/network_connect.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
@@ -22,26 +20,9 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_state_notifier.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/notification.h"
 
-using chromeos::DeviceState;
-using chromeos::NetworkConfigurationHandler;
-using chromeos::NetworkConfigurationObserver;
-using chromeos::NetworkConnectionHandler;
-using chromeos::NetworkHandler;
-using chromeos::NetworkProfile;
-using chromeos::NetworkProfileHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
-using chromeos::NetworkTypePattern;
-
-namespace ui {
+namespace chromeos {
 
 namespace {
 
@@ -67,7 +48,7 @@ class NetworkConnectImpl : public NetworkConnect {
   void ConnectToNetwork(const std::string& service_path) override;
   bool MaybeShowConfigureUI(const std::string& service_path,
                             const std::string& connect_error) override;
-  void SetTechnologyEnabled(const chromeos::NetworkTypePattern& technology,
+  void SetTechnologyEnabled(const NetworkTypePattern& technology,
                             bool enabled_state) override;
   void ActivateCellular(const std::string& service_path) override;
   void ShowMobileSetup(const std::string& service_path) override;
@@ -78,9 +59,6 @@ class NetworkConnectImpl : public NetworkConnect {
                                      bool shared) override;
   void CreateConfiguration(base::DictionaryValue* shill_properties,
                            bool shared) override;
-  base::string16 GetShillErrorString(const std::string& error,
-                                     const std::string& service_path) override;
-  void ShowNetworkSettingsForPath(const std::string& service_path) override;
 
  private:
   void HandleUnconfiguredNetwork(const std::string& service_path);
@@ -117,21 +95,19 @@ class NetworkConnectImpl : public NetworkConnect {
   void ConfigureSetProfileSucceeded(
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> properties_to_set);
+  void ShowNetworkConnectError(const std::string& error_name,
+                               const std::string& service_path);
 
   Delegate* delegate_;
-  std::unique_ptr<NetworkStateNotifier> network_state_notifier_;
   base::WeakPtrFactory<NetworkConnectImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectImpl);
 };
 
 NetworkConnectImpl::NetworkConnectImpl(Delegate* delegate)
-    : delegate_(delegate), weak_factory_(this) {
-  network_state_notifier_.reset(new NetworkStateNotifier(this));
-}
+    : delegate_(delegate), weak_factory_(this) {}
 
-NetworkConnectImpl::~NetworkConnectImpl() {
-}
+NetworkConnectImpl::~NetworkConnectImpl() {}
 
 void NetworkConnectImpl::HandleUnconfiguredNetwork(
     const std::string& service_path) {
@@ -171,9 +147,8 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
       return;
     }
     // No special configure or setup for |network|, show the settings UI.
-    if (chromeos::LoginState::Get()->IsUserLoggedIn()) {
-      ShowNetworkSettingsForPath(service_path);
-    }
+    if (LoginState::Get()->IsUserLoggedIn())
+      delegate_->ShowNetworkSettings(network->guid());
     return;
   }
   NOTREACHED();
@@ -189,7 +164,7 @@ bool NetworkConnectImpl::GetNetworkProfilePath(bool shared,
     return true;
   }
 
-  if (!chromeos::LoginState::Get()->UserHasNetworkProfile()) {
+  if (!LoginState::Get()->UserHasNetworkProfile()) {
     NET_LOG_ERROR("User profile specified before login", "");
     return false;
   }
@@ -269,8 +244,8 @@ void NetworkConnectImpl::OnActivateFailed(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to activate network", service_path);
-  network_state_notifier_->ShowNetworkConnectError(kErrorActivateFailed,
-                                                   service_path);
+  ShowNetworkConnectError(NetworkConnectionHandler::kErrorActivateFailed,
+                          service_path);
 }
 
 void NetworkConnectImpl::OnActivateSucceeded(const std::string& service_path) {
@@ -281,8 +256,7 @@ void NetworkConnectImpl::OnConfigureFailed(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to configure network", "");
-  network_state_notifier_->ShowNetworkConnectError(
-      NetworkConnectionHandler::kErrorConfigureFailed, "");
+  ShowNetworkConnectError(NetworkConnectionHandler::kErrorConfigureFailed, "");
 }
 
 void NetworkConnectImpl::OnConfigureSucceeded(bool connect_on_configure,
@@ -302,8 +276,8 @@ void NetworkConnectImpl::CallCreateConfiguration(
     bool connect_on_configure) {
   std::string profile_path;
   if (!GetNetworkProfilePath(shared, &profile_path)) {
-    network_state_notifier_->ShowNetworkConnectError(
-        NetworkConnectionHandler::kErrorConfigureFailed, "");
+    ShowNetworkConnectError(NetworkConnectionHandler::kErrorConfigureFailed,
+                            "");
     return;
   }
   shill_properties->SetStringWithoutPathExpansion(shill::kProfileProperty,
@@ -324,8 +298,8 @@ void NetworkConnectImpl::SetPropertiesFailed(
     const std::string& config_error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR(desc + ": Failed: " + config_error_name, service_path);
-  network_state_notifier_->ShowNetworkConnectError(
-      NetworkConnectionHandler::kErrorConfigureFailed, service_path);
+  ShowNetworkConnectError(NetworkConnectionHandler::kErrorConfigureFailed,
+                          service_path);
 }
 
 void NetworkConnectImpl::SetPropertiesToClear(
@@ -373,6 +347,18 @@ void NetworkConnectImpl::ConfigureSetProfileSucceeded(
                  weak_factory_.GetWeakPtr(), "SetProperties", service_path));
 }
 
+void NetworkConnectImpl::ShowNetworkConnectError(
+    const std::string& error_name,
+    const std::string& service_path) {
+  std::string guid;
+  if (!service_path.empty()) {
+    const NetworkState* network = GetNetworkState(service_path);
+    if (network)
+      guid = network->guid();
+  }
+  delegate_->ShowNetworkConnectError(error_name, guid);
+}
+
 // Public methods
 
 void NetworkConnectImpl::ConnectToNetwork(const std::string& service_path) {
@@ -416,7 +402,7 @@ void NetworkConnectImpl::SetTechnologyEnabled(
   if (enabled) {
     // User requested to disable the technology.
     handler->SetTechnologyEnabled(technology, false,
-                                  chromeos::network_handler::ErrorCallback());
+                                  network_handler::ErrorCallback());
     return;
   }
   // If we're dealing with a mobile network, then handle SIM lock here.
@@ -447,7 +433,7 @@ void NetworkConnectImpl::SetTechnologyEnabled(
     }
   }
   handler->SetTechnologyEnabled(technology, true,
-                                chromeos::network_handler::ErrorCallback());
+                                network_handler::ErrorCallback());
 }
 
 void NetworkConnectImpl::ActivateCellular(const std::string& service_path) {
@@ -494,7 +480,7 @@ void NetworkConnectImpl::ShowMobileSetup(const std::string& service_path) {
   if (cellular->activation_state() != shill::kActivationStateActivated &&
       cellular->activation_type() == shill::kActivationTypeNonCellular &&
       !handler->DefaultNetwork()) {
-    network_state_notifier_->ShowMobileActivationError(service_path);
+    delegate_->ShowMobileActivationError(cellular->guid());
     return;
   }
   delegate_->ShowMobileSetupDialog(service_path);
@@ -511,8 +497,8 @@ void NetworkConnectImpl::ConfigureNetworkAndConnect(
 
   std::string profile_path;
   if (!GetNetworkProfilePath(shared, &profile_path)) {
-    network_state_notifier_->ShowNetworkConnectError(
-        NetworkConnectionHandler::kErrorConfigureFailed, service_path);
+    ShowNetworkConnectError(NetworkConnectionHandler::kErrorConfigureFailed,
+                            service_path);
     return;
   }
   NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
@@ -539,97 +525,7 @@ void NetworkConnectImpl::CreateConfiguration(base::DictionaryValue* properties,
   CallCreateConfiguration(properties, shared, false /* connect_on_configure */);
 }
 
-base::string16 NetworkConnectImpl::GetShillErrorString(
-    const std::string& error,
-    const std::string& service_path) {
-  if (error.empty())
-    return base::string16();
-  if (error == shill::kErrorOutOfRange)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
-  if (error == shill::kErrorPinMissing)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING);
-  if (error == shill::kErrorDhcpFailed)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED);
-  if (error == shill::kErrorConnectFailed)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
-  if (error == shill::kErrorBadPassphrase)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE);
-  if (error == shill::kErrorBadWEPKey)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY);
-  if (error == shill::kErrorActivationFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
-  }
-  if (error == shill::kErrorNeedEvdo)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO);
-  if (error == shill::kErrorNeedHomeNetwork) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK);
-  }
-  if (error == shill::kErrorOtaspFailed)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
-  if (error == shill::kErrorAaaFailed)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
-  if (error == shill::kErrorInternal)
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_INTERNAL);
-  if (error == shill::kErrorDNSLookupFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED);
-  }
-  if (error == shill::kErrorHTTPGetFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED);
-  }
-  if (error == shill::kErrorIpsecPskAuthFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
-  }
-  if (error == shill::kErrorIpsecCertAuthFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
-  }
-  if (error == shill::kErrorEapAuthenticationFailed) {
-    const NetworkState* network = GetNetworkState(service_path);
-    // TLS always requires a client certificate, so show a cert auth
-    // failed message for TLS. Other EAP methods do not generally require
-    // a client certicate.
-    if (network && network->eap_method() == shill::kEapMethodTLS) {
-      return l10n_util::GetStringUTF16(
-          IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
-    } else {
-      return l10n_util::GetStringUTF16(
-          IDS_CHROMEOS_NETWORK_ERROR_EAP_AUTH_FAILED);
-    }
-  }
-  if (error == shill::kErrorEapLocalTlsFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_EAP_LOCAL_TLS_FAILED);
-  }
-  if (error == shill::kErrorEapRemoteTlsFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_EAP_REMOTE_TLS_FAILED);
-  }
-  if (error == shill::kErrorPppAuthFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
-  }
-
-  if (base::ToLowerASCII(error) == base::ToLowerASCII(shill::kUnknownString)) {
-    return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
-  }
-  return l10n_util::GetStringFUTF16(IDS_NETWORK_UNRECOGNIZED_ERROR,
-                                    base::UTF8ToUTF16(error));
-}
-
-void NetworkConnectImpl::ShowNetworkSettingsForPath(
-    const std::string& service_path) {
-  const NetworkState* network = GetNetworkState(service_path);
-  delegate_->ShowNetworkSettings(network ? network->guid() : "");
-}
-
 }  // namespace
-
-const char NetworkConnect::kErrorActivateFailed[] = "activate-failed";
 
 static NetworkConnect* g_network_connect = NULL;
 
@@ -652,10 +548,8 @@ NetworkConnect* NetworkConnect::Get() {
   return g_network_connect;
 }
 
-NetworkConnect::NetworkConnect() {
-}
+NetworkConnect::NetworkConnect() {}
 
-NetworkConnect::~NetworkConnect() {
-}
+NetworkConnect::~NetworkConnect() {}
 
-}  // namespace ui
+}  // namespace chromeos

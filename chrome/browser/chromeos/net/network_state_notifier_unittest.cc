@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_state_notifier.h"
+#include "chrome/browser/chromeos/net/network_state_notifier.h"
+
+#include <memory>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -10,23 +12,20 @@
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/message_center/message_center.h"
 
-using chromeos::DBusThreadManager;
-using chromeos::ShillDeviceClient;
-using chromeos::ShillServiceClient;
-
-namespace ui {
+namespace chromeos {
 namespace test {
 
 class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
  public:
-  NetworkConnectTestDelegate() {}
+  NetworkConnectTestDelegate()
+      : network_state_notifier_(new NetworkStateNotifier()) {}
   ~NetworkConnectTestDelegate() override {}
 
   // NetworkConnect::Delegate
@@ -37,8 +36,15 @@ class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
   }
   void ShowMobileSimDialog() override {}
   void ShowMobileSetupDialog(const std::string& service_path) override {}
+  void ShowNetworkConnectError(const std::string& error_name,
+                               const std::string& network_id) override {
+    network_state_notifier_->ShowNetworkConnectError(error_name, network_id);
+  }
+  void ShowMobileActivationError(const std::string& network_id) override {}
 
  private:
+  std::unique_ptr<NetworkStateNotifier> network_state_notifier_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectTestDelegate);
 };
 
@@ -50,9 +56,9 @@ class NetworkStateNotifierTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     DBusThreadManager::Initialize();
-    chromeos::LoginState::Initialize();
+    LoginState::Initialize();
     SetupDefaultShillState();
-    chromeos::NetworkHandler::Initialize();
+    NetworkHandler::Initialize();
     message_center::MessageCenter::Initialize();
     base::RunLoop().RunUntilIdle();
     network_connect_delegate_.reset(new NetworkConnectTestDelegate);
@@ -63,8 +69,8 @@ class NetworkStateNotifierTest : public testing::Test {
     NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
     message_center::MessageCenter::Shutdown();
-    chromeos::LoginState::Shutdown();
-    chromeos::NetworkHandler::Shutdown();
+    LoginState::Shutdown();
+    NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     testing::Test::TearDown();
   }
@@ -106,7 +112,7 @@ class NetworkStateNotifierTest : public testing::Test {
 
 TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
   NetworkConnect::Get()->ConnectToNetwork("wifi1");
-    base::RunLoop().RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Failure should spawn a notification.
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -115,4 +121,4 @@ TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace chromeos

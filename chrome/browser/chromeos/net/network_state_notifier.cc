@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_state_notifier.h"
+#include "chrome/browser/chromeos/net/network_state_notifier.h"
 
+#include "ash/common/system/system_notifier.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/net/shill_error.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
@@ -18,17 +22,11 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
-#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
-using chromeos::NetworkConnectionHandler;
-using chromeos::NetworkHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
-using chromeos::NetworkTypePattern;
+namespace chromeos {
 
 namespace {
 
@@ -53,7 +51,7 @@ base::string16 GetConnectErrorString(const std::string& error_name) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED);
   }
-  if (error_name == ui::NetworkConnect::kErrorActivateFailed) {
+  if (error_name == NetworkConnectionHandler::kErrorActivateFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
   }
@@ -82,16 +80,10 @@ void ShowErrorNotification(const std::string& service_path,
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
           notification_id, title, message, icon,
-          ui::NetworkStateNotifier::kNotifierNetworkError, callback));
+          ash::system_notifier::kNotifierNetworkError, callback));
 }
 
 }  // namespace
-
-namespace ui {
-
-const char NetworkStateNotifier::kNotifierNetwork[] = "ui.chromeos.network";
-const char NetworkStateNotifier::kNotifierNetworkError[] =
-    "ui.chromeos.network.error";
 
 const char NetworkStateNotifier::kNetworkConnectNotificationId[] =
     "chrome://settings/internet/connect";
@@ -100,10 +92,8 @@ const char NetworkStateNotifier::kNetworkActivateNotificationId[] =
 const char NetworkStateNotifier::kNetworkOutOfCreditsNotificationId[] =
     "chrome://settings/internet/out-of-credits";
 
-NetworkStateNotifier::NetworkStateNotifier(NetworkConnect* network_connect)
-    : network_connect_(network_connect),
-      did_show_out_of_credits_(false),
-      weak_ptr_factory_(this) {
+NetworkStateNotifier::NetworkStateNotifier()
+    : did_show_out_of_credits_(false), weak_ptr_factory_(this) {
   if (!NetworkHandler::IsInitialized())
     return;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
@@ -234,8 +224,8 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
     ShowErrorNotification(
         cellular->path(), kNetworkOutOfCreditsNotificationId, cellular->type(),
         l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE), error_msg,
-        base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
-                   weak_ptr_factory_.GetWeakPtr(), cellular->path()));
+        base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                   weak_ptr_factory_.GetWeakPtr(), cellular->guid()));
   }
 }
 
@@ -267,9 +257,9 @@ void NetworkStateNotifier::UpdateCellularActivating(
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
                                      base::UTF8ToUTF16((cellular->name()))),
-          icon, kNotifierNetwork,
-          base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
-                     weak_ptr_factory_.GetWeakPtr(), cellular->path())));
+          icon, ash::system_notifier::kNotifierNetwork,
+          base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                     weak_ptr_factory_.GetWeakPtr(), cellular->guid())));
 }
 
 void NetworkStateNotifier::ShowNetworkConnectError(
@@ -307,9 +297,9 @@ void NetworkStateNotifier::ShowMobileActivationError(
                                      base::UTF8ToUTF16(cellular->name())),
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR),
-          kNotifierNetworkError,
-          base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
-                     weak_ptr_factory_.GetWeakPtr(), service_path)));
+          ash::system_notifier::kNotifierNetworkError,
+          base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                     weak_ptr_factory_.GetWeakPtr(), cellular->guid())));
 }
 
 void NetworkStateNotifier::RemoveConnectNotification() {
@@ -327,8 +317,8 @@ void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
     const base::DictionaryValue& shill_properties) {
   std::string state;
   shill_properties.GetStringWithoutPathExpansion(shill::kStateProperty, &state);
-  if (chromeos::NetworkState::StateIsConnected(state) ||
-      chromeos::NetworkState::StateIsConnecting(state)) {
+  if (NetworkState::StateIsConnected(state) ||
+      NetworkState::StateIsConnecting(state)) {
     // Network is no longer in an error state. This can happen if an
     // unexpected idle state transition occurs, see crbug.com/333955.
     return;
@@ -353,25 +343,28 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   NET_LOG(DEBUG) << "Notify: " << service_path
                  << ": Connect error: " << error_name << ": "
                  << base::UTF16ToUTF8(error);
+
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkState(
+          service_path);
+  std::string guid = network ? network->guid() : "";
+
   if (error.empty()) {
     std::string shill_error;
     shill_properties.GetStringWithoutPathExpansion(shill::kErrorProperty,
                                                    &shill_error);
-    if (!chromeos::NetworkState::ErrorIsValid(shill_error)) {
+    if (!NetworkState::ErrorIsValid(shill_error)) {
       shill_properties.GetStringWithoutPathExpansion(
           shill::kPreviousErrorProperty, &shill_error);
       NET_LOG(DEBUG) << "Notify: " << service_path
                      << ": Service.PreviousError: " << shill_error;
-      if (!chromeos::NetworkState::ErrorIsValid(shill_error))
+      if (!NetworkState::ErrorIsValid(shill_error))
         shill_error.clear();
     } else {
       NET_LOG(DEBUG) << "Notify: " << service_path
                      << ": Service.Error: " << shill_error;
     }
 
-    const NetworkState* network =
-        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-            service_path);
     if (network) {
       // Always log last_error, but only use it if shill_error is empty.
       // TODO(stevenjb): This shouldn't ever be necessary, but is kept here as
@@ -388,8 +381,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
                      << ": Ignoring error: " << error_name;
       return;
     }
-
-    error = network_connect_->GetShillErrorString(shill_error, service_path);
+    error = shill_error::GetShillErrorString(shill_error, guid);
     if (error.empty()) {
       if (error_name == NetworkConnectionHandler::kErrorConnectFailed &&
           network && !network->connectable()) {
@@ -404,9 +396,8 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   NET_LOG(ERROR) << "Notify: " << service_path
                  << ": Connect error: " + base::UTF16ToUTF8(error);
 
-  std::string network_name =
-      chromeos::shill_property_util::GetNameFromProperties(service_path,
-                                                           shill_properties);
+  std::string network_name = shill_property_util::GetNameFromProperties(
+      service_path, shill_properties);
   std::string network_error_details;
   shill_properties.GetStringWithoutPathExpansion(shill::kErrorDetailsProperty,
                                                  &network_error_details);
@@ -434,8 +425,8 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   ShowErrorNotification(
       service_path, kNetworkConnectNotificationId, network_type,
       l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE), error_msg,
-      base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
-                 weak_ptr_factory_.GetWeakPtr(), service_path));
+      base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                 weak_ptr_factory_.GetWeakPtr(), guid));
 }
 
 void NetworkStateNotifier::ShowVpnDisconnectedNotification(
@@ -445,13 +436,14 @@ void NetworkStateNotifier::ShowVpnDisconnectedNotification(
   ShowErrorNotification(
       vpn->path(), kNetworkConnectNotificationId, shill::kTypeVPN,
       l10n_util::GetStringUTF16(IDS_NETWORK_VPN_CONNECTION_LOST_TITLE),
-      error_msg, base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
-                            weak_ptr_factory_.GetWeakPtr(), vpn->path()));
+      error_msg, base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+                            weak_ptr_factory_.GetWeakPtr(), vpn->guid()));
 }
 
-void NetworkStateNotifier::ShowNetworkSettingsForPath(
-    const std::string& service_path) {
-  network_connect_->ShowNetworkSettingsForPath(service_path);
+void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
+  if (!SystemTrayClient::Get())
+    return;
+  SystemTrayClient::Get()->ShowNetworkSettings(network_id);
 }
 
-}  // namespace ui
+}  // namespace chromeos

@@ -275,6 +275,8 @@
       'network/network_configuration_handler.cc',
       'network/network_configuration_handler.h',
       'network/network_configuration_observer.h',
+      'network/network_connect.cc',
+      'network/network_connect.h',
       'network/network_connection_handler.cc',
       'network/network_connection_handler.h',
       'network/network_connection_observer.cc',

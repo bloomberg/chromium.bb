@@ -117,6 +117,7 @@ const char NetworkConnectionHandler::kErrorCertLoadTimeout[] =
     "cert-load-timeout";
 const char NetworkConnectionHandler::kErrorUnmanagedNetwork[] =
     "unmanaged-network";
+const char NetworkConnectionHandler::kErrorActivateFailed[] = "activate-failed";
 
 struct NetworkConnectionHandler::ConnectRequest {
   ConnectRequest(const std::string& service_path,

@@ -32,10 +32,10 @@
 #include "ash/mus/network_connect_delegate_mus.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
-#include "ui/chromeos/network/network_connect.h"
 #endif
 
 namespace ash {
@@ -109,7 +109,7 @@ void WindowManagerApplication::InitializeComponents() {
       chromeos::DBusThreadManager::Get()->IsUsingFakes());
   chromeos::NetworkHandler::Initialize();
   network_connect_delegate_.reset(new NetworkConnectDelegateMus());
-  ui::NetworkConnect::Initialize(network_connect_delegate_.get());
+  chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
   PowerStatus::Initialize();
@@ -120,7 +120,7 @@ void WindowManagerApplication::ShutdownComponents() {
 #if defined(OS_CHROMEOS)
   PowerStatus::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
-  ui::NetworkConnect::Shutdown();
+  chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
   chromeos::NetworkHandler::Shutdown();
   bluez::BluezDBusManager::Shutdown();

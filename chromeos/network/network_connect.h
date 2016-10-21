@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_NETWORK_NETWORK_CONNECT_H
-#define UI_CHROMEOS_NETWORK_NETWORK_CONNECT_H
+#ifndef CHROMEOS_NETWORK_NETWORK_CONNECT_H_
+#define CHROMEOS_NETWORK_NETWORK_CONNECT_H_
 
 #include <string>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/chromeos/ui_chromeos_export.h"
+#include "chromeos/chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace chromeos {
+
 class NetworkTypePattern;
-}
 
-namespace ui {
-
-class UI_CHROMEOS_EXPORT NetworkConnect {
+// NetworkConnect is a state machine designed to handle the complex UI flows
+// associated with connecting to a network (and related tasks). Any showing
+// of UI is handled by the NetworkConnect::Delegate implementation.
+class CHROMEOS_EXPORT NetworkConnect {
  public:
-  class Delegate {
+  class CHROMEOS_EXPORT Delegate {
    public:
     // Shows UI to configure or activate the network specified by |network_id|,
     // which may include showing Payment or Portal UI when appropriate.
@@ -43,6 +44,14 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
     // Shows UI to setup a mobile network.
     virtual void ShowMobileSetupDialog(const std::string& network_id) = 0;
 
+    // Shows an error notification. |error_name| is an error defined in
+    // NetworkConnectionHandler. |network_id| may be empty.
+    virtual void ShowNetworkConnectError(const std::string& error_name,
+                                         const std::string& network_id) = 0;
+
+    // Shows an error notification during mobile activation.
+    virtual void ShowMobileActivationError(const std::string& network_id) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -56,8 +65,6 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
 
   // Returns the global NetworkConnect object if initialized or NULL.
   static NetworkConnect* Get();
-
-  static const char kErrorActivateFailed[];
 
   virtual ~NetworkConnect();
 
@@ -102,15 +109,6 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
   virtual void CreateConfiguration(base::DictionaryValue* shill_properties,
                                    bool shared) = 0;
 
-  // Returns the localized string for shill error string |error|.
-  virtual base::string16 GetShillErrorString(
-      const std::string& error,
-      const std::string& service_path) = 0;
-
-  // Shows the settings for the network specified by |service_path|. If empty,
-  // or no matching network exists, shows the general internet settings page.
-  virtual void ShowNetworkSettingsForPath(const std::string& service_path) = 0;
-
  protected:
   NetworkConnect();
 
@@ -118,6 +116,6 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
   DISALLOW_COPY_AND_ASSIGN(NetworkConnect);
 };
 
-}  // ui
+}  // namespace chromeos
 
-#endif  // UI_CHROMEOS_NETWORK_NETWORK_CONNECT_H
+#endif  // CHROMEOS_NETWORK_NETWORK_CONNECT_H_

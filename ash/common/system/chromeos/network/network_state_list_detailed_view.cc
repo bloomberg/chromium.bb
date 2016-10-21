@@ -38,6 +38,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
@@ -47,7 +48,6 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/chromeos/network/network_info.h"
@@ -467,7 +467,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_CONNECT_TO_VPN
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-    ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
+    chromeos::NetworkConnect::Get()->ConnectToNetwork(service_path);
   }
   owner()->system_tray()->CloseSystemBubble();
 }
@@ -941,8 +941,8 @@ void NetworkStateListDetailedView::CallRequestScan() {
 void NetworkStateListDetailedView::ToggleMobile() {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::Mobile());
-  ui::NetworkConnect::Get()->SetTechnologyEnabled(NetworkTypePattern::Mobile(),
-                                                  !enabled);
+  chromeos::NetworkConnect::Get()->SetTechnologyEnabled(
+      NetworkTypePattern::Mobile(), !enabled);
 }
 
 views::View* NetworkStateListDetailedView::CreateViewForNetwork(

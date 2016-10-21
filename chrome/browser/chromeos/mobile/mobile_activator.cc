@@ -28,6 +28,7 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -37,7 +38,6 @@
 #include "components/ssl_config/ssl_config_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/chromeos/network/network_connect.h"
 
 using content::BrowserThread;
 
@@ -625,7 +625,7 @@ void MobileActivator::ContinueConnecting() {
     LOG(WARNING) << "Connect failed, will try again in a little bit.";
     if (network) {
       VLOG(1) << "Connecting to: " << network->path();
-      ui::NetworkConnect::Get()->ConnectToNetwork(network->path());
+      NetworkConnect::Get()->ConnectToNetwork(network->path());
     }
   }
 }

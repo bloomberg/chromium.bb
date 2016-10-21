@@ -43,5 +43,19 @@ void NetworkConnectDelegateMus::ShowMobileSetupDialog(
   NOTIMPLEMENTED();
 }
 
+void NetworkConnectDelegateMus::ShowNetworkConnectError(
+    const std::string& error_name,
+    const std::string& network_id) {
+  // TODO(mash): http://crbug.com/644355
+  LOG(ERROR) << "Network Connect Error: " << error_name
+             << " For: " << network_id;
+}
+
+void NetworkConnectDelegateMus::ShowMobileActivationError(
+    const std::string& network_id) {
+  // TODO(mash): http://crbug.com/644355
+  LOG(ERROR) << "Mobile Activation Error For: " << network_id;
+}
+
 }  // namespace mus
 }  // namespace ash

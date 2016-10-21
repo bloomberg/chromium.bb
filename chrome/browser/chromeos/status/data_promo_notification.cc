@@ -4,13 +4,16 @@
 
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
+#include "ash/common/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/chromeos/net/network_state_notifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -21,6 +24,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -32,8 +36,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
-#include "ui/chromeos/network/network_state_notifier.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -162,7 +164,7 @@ const chromeos::MobileConfig::CarrierDeal* GetCarrierDeal(
   return deal;
 }
 
-void NotificationClicked(const std::string& service_path,
+void NotificationClicked(const std::string& network_id,
                          const std::string& info_url) {
   if (!info_url.empty()) {
     chrome::ScopedTabbedBrowserDisplayer displayer(
@@ -171,7 +173,7 @@ void NotificationClicked(const std::string& service_path,
     if (info_url == kDataSaverExtensionUrl)
       content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));
   } else {
-    ui::NetworkConnect::Get()->ShowNetworkSettingsForPath(service_path);
+    SystemTrayClient::Get()->ShowNetworkSettings(network_id);
   }
 }
 
@@ -268,8 +270,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
           kDataPromoNotificationId, base::string16() /* title */, message, icon,
-          ui::NetworkStateNotifier::kNotifierNetwork,
-          base::Bind(&NotificationClicked, default_network->path(), info_url)));
+          ash::system_notifier::kNotifierNetwork,
+          base::Bind(&NotificationClicked, default_network->guid(), info_url)));
 
   SetShow3gPromoNotification(false);
   if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
@@ -305,7 +307,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(
           kDataSaverNotificationId, title, message, icon,
-          ui::NetworkStateNotifier::kNotifierNetwork,
+          ash::system_notifier::kNotifierNetwork,
           base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)));
   content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));
 

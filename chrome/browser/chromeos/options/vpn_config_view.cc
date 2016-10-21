@@ -13,11 +13,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
+#include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -26,7 +28,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -379,8 +380,7 @@ bool VPNConfigView::Login() {
                                                 false);
     }
 
-    ui::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
-                                                             shared);
+    NetworkConnect::Get()->CreateConfigurationAndConnect(&properties, shared);
   } else {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
@@ -392,8 +392,8 @@ bool VPNConfigView::Login() {
     }
     base::DictionaryValue properties;
     SetConfigProperties(&properties);
-    ui::NetworkConnect::Get()->ConfigureNetworkAndConnect(
-        service_path_, properties, false /* not shared */);
+    NetworkConnect::Get()->ConfigureNetworkAndConnect(service_path_, properties,
+                                                      false /* not shared */);
   }
   return true;  // Close dialog.
 }
@@ -1004,8 +1004,8 @@ void VPNConfigView::UpdateErrorLabel() {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (vpn && vpn->connection_state() == shill::kStateFailure)
-      error_msg = ui::NetworkConnect::Get()->GetShillErrorString(
-          vpn->last_error(), vpn->path());
+      error_msg =
+          shill_error::GetShillErrorString(vpn->last_error(), vpn->guid());
   }
   if (!error_msg.empty()) {
     error_label_->SetText(error_msg);

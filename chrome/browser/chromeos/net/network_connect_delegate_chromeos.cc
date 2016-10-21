@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
+#include "chrome/browser/chromeos/net/network_connect_delegate_chromeos.h"
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
+#include "chrome/browser/chromeos/net/network_state_notifier.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
@@ -29,7 +30,8 @@ gfx::NativeWindow GetNativeWindow() {
 
 namespace chromeos {
 
-NetworkConnectDelegateChromeOS::NetworkConnectDelegateChromeOS() {}
+NetworkConnectDelegateChromeOS::NetworkConnectDelegateChromeOS()
+    : network_state_notifier_(new NetworkStateNotifier()) {}
 
 NetworkConnectDelegateChromeOS::~NetworkConnectDelegateChromeOS() {}
 
@@ -66,6 +68,17 @@ void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
   if (!IsUIAvailable())
     return;
   MobileSetupDialog::ShowByNetworkId(network_id);
+}
+
+void NetworkConnectDelegateChromeOS::ShowNetworkConnectError(
+    const std::string& error_name,
+    const std::string& network_id) {
+  network_state_notifier_->ShowNetworkConnectError(error_name, network_id);
+}
+
+void NetworkConnectDelegateChromeOS::ShowMobileActivationError(
+    const std::string& network_id) {
+  network_state_notifier_->ShowMobileActivationError(network_id);
 }
 
 }  // namespace chromeos

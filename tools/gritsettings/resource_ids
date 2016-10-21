@@ -112,7 +112,7 @@
     "messages": [12200],
   },
   "content/app/strings/content_strings.grd": {
-    "messages": [19300],
+    "messages": [19400],
   },
   "components/policy/resources/policy_templates.grd": {
     "structures": [20100],

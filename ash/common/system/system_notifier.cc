@@ -6,10 +6,6 @@
 
 #include "base/logging.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/chromeos/network/network_state_notifier.h"
-#endif
-
 namespace ash {
 namespace system_notifier {
 
@@ -25,7 +21,7 @@ const char* kAlwaysShownSystemNotifierIds[] = {
     kNotifierDeprecatedAccelerator, kNotifierBattery, kNotifierDisplay,
     kNotifierDisplayError,
 #if defined(OS_CHROMEOS)
-    ui::NetworkStateNotifier::kNotifierNetworkError,
+    kNotifierNetworkError,
 #endif
     kNotifierPower,
     // Note: Order doesn't matter here, so keep this in alphabetic order, don't
@@ -41,7 +37,7 @@ const char* kAshSystemNotifiers[] = {
 #endif
     kNotifierLocale, kNotifierMultiProfileFirstRun,
 #if defined(OS_CHROMEOS)
-    ui::NetworkStateNotifier::kNotifierNetwork,
+    kNotifierNetwork,
 #endif
     kNotifierNetworkPortalDetector, kNotifierScreenshot, kNotifierScreenCapture,
     kNotifierScreenShare, kNotifierSessionLengthTimeout,
@@ -75,6 +71,8 @@ const char kNotifierDualRole[] = "ash.dual-role";
 const char kNotifierHats[] = "ash.hats";
 const char kNotifierLocale[] = "ash.locale";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
+const char kNotifierNetwork[] = "ash.network";
+const char kNotifierNetworkError[] = "ash.network.error";
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
 const char kNotifierPower[] = "ash.power";
 const char kNotifierQuickUnlock[] = "ash.quickunlock";

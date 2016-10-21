@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
+#include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,6 +21,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -30,7 +32,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_connect.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -592,8 +593,8 @@ void WifiConfigView::UpdateErrorLabel() {
   if (error_msg.empty() && !service_path_.empty()) {
     const NetworkState* network = GetNetworkState();
     if (network && network->connection_state() == shill::kStateFailure) {
-      error_msg = ui::NetworkConnect::Get()->GetShillErrorString(
-          network->last_error(), network->path());
+      error_msg = shill_error::GetShillErrorString(network->last_error(),
+                                                   network->guid());
     }
   }
   if (!error_msg.empty()) {
@@ -710,8 +711,8 @@ bool WifiConfigView::Login() {
         shill::kSecurityClassProperty, security_class);
 
     // Configure and connect to network.
-    ui::NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
-                                                             share_network);
+    NetworkConnect::Get()->CreateConfigurationAndConnect(&properties,
+                                                         share_network);
   } else {
     if (!network) {
       // Shill no longer knows about this network (edge case).
@@ -737,10 +738,9 @@ bool WifiConfigView::Login() {
       properties.SetStringWithoutPathExpansion(shill::kTypeProperty,
                                                shill::kTypeEthernetEap);
       share_network = false;
-      ui::NetworkConnect::Get()->CreateConfiguration(&properties,
-                                                     share_network);
+      NetworkConnect::Get()->CreateConfiguration(&properties, share_network);
     } else {
-      ui::NetworkConnect::Get()->ConfigureNetworkAndConnect(
+      NetworkConnect::Get()->ConfigureNetworkAndConnect(
           service_path_, properties, share_network);
     }
   }

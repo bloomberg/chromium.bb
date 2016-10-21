@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
-#define UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_STATE_NOTIFIER_H_
+#define CHROME_BROWSER_CHROMEOS_NET_NETWORK_STATE_NOTIFIER_H_
 
 #include <memory>
 #include <set>
@@ -15,19 +15,14 @@
 #include "base/time/time.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "ui/chromeos/ui_chromeos_export.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace chromeos {
+
 class NetworkState;
-}
-
-namespace ui {
-
-class NetworkConnect;
 
 // This class provides user notifications in the following cases:
 // 1. ShowNetworkConnectError() gets called after any user initiated connect
@@ -38,11 +33,10 @@ class NetworkConnect;
 //    Cellular network is out of credits.
 // 3. Generates a notification when VPN is disconnected not as a result of
 //    user's action.
-class UI_CHROMEOS_EXPORT NetworkStateNotifier
-    : public chromeos::NetworkConnectionObserver,
-      public chromeos::NetworkStateHandlerObserver {
+class NetworkStateNotifier : public NetworkConnectionObserver,
+                             public NetworkStateHandlerObserver {
  public:
-  explicit NetworkStateNotifier(NetworkConnect* network_connect);
+  NetworkStateNotifier();
   ~NetworkStateNotifier() override;
 
   // NetworkConnectionObserver
@@ -53,10 +47,9 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   void DisconnectRequested(const std::string& service_path) override;
 
   // NetworkStateHandlerObserver
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
-  void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
+  void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
+  void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // Show a connection error notification. If |error_name| matches an error
   // defined in NetworkConnectionHandler for connect, configure, or activation
@@ -68,8 +61,6 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   // Show a mobile activation error notification.
   void ShowMobileActivationError(const std::string& service_path);
 
-  static const char kNotifierNetwork[];
-  static const char kNotifierNetworkError[];
   static const char kNetworkConnectNotificationId[];
   static const char kNetworkActivateNotificationId[];
   static const char kNetworkOutOfCreditsNotificationId[];
@@ -88,23 +79,22 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
       const std::string& error_name,
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
-  void ShowVpnDisconnectedNotification(const chromeos::NetworkState* vpn);
+  void ShowVpnDisconnectedNotification(const NetworkState* vpn);
 
   // Removes any existing connect notifications.
   void RemoveConnectNotification();
 
   // Returns true if the default network changed.
-  bool UpdateDefaultNetwork(const chromeos::NetworkState* network);
+  bool UpdateDefaultNetwork(const NetworkState* network);
 
   // Helper methods to update state and check for notifications.
-  void UpdateVpnConnectionState(const chromeos::NetworkState* vpn);
-  void UpdateCellularOutOfCredits(const chromeos::NetworkState* cellular);
-  void UpdateCellularActivating(const chromeos::NetworkState* cellular);
+  void UpdateVpnConnectionState(const NetworkState* vpn);
+  void UpdateCellularOutOfCredits(const NetworkState* cellular);
+  void UpdateCellularActivating(const NetworkState* cellular);
 
-  // Invokes network_connect_->ShowNetworkSettingsForPath from a callback.
-  void ShowNetworkSettingsForPath(const std::string& service_path);
+  // Shows the network settings for |network_id|.
+  void ShowNetworkSettings(const std::string& network_id);
 
-  NetworkConnect* network_connect_;  // unowned
   std::string last_default_network_;
   bool did_show_out_of_credits_;
   base::Time out_of_credits_notify_time_;
@@ -115,6 +105,6 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
-}  // namespace ui
+}  // namespace chromeos
 
-#endif  // UI_CHROMEOS_NETWORK_NETWORK_STATE_NOTIFIER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_NET_NETWORK_STATE_NOTIFIER_H_
