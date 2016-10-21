@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojo_interfaces") {
   sources = [
     "credential_manager.mojom",
   ]

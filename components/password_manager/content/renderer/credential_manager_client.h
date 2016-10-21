@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/password_manager/content/public/interfaces/credential_manager.mojom.h"
+#include "components/password_manager/content/common/credential_manager.mojom.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"

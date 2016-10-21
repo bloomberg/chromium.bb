@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/content/public/cpp/credential_manager_struct_traits.h"
+#include "components/password_manager/content/common/credential_manager_struct_traits.h"
 
 #include "url/mojo/origin_struct_traits.h"
 #include "url/mojo/url_gurl_struct_traits.h"

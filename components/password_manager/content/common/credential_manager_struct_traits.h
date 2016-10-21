@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_PUBLIC_CPP_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
-#define COMPONENTS_PASSWORD_MANAGER_CONTENT_PUBLIC_CPP_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
+#define COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
 
 #include "base/strings/string16.h"
-#include "components/password_manager/content/public/interfaces/credential_manager.mojom.h"
+#include "components/password_manager/content/common/credential_manager.mojom.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
@@ -57,4 +57,4 @@ struct StructTraits<password_manager::mojom::CredentialInfoDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_PUBLIC_CPP_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_COMMON_CREDENTIAL_MANAGER_STRUCT_TRAITS_H_
