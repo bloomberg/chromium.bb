@@ -578,6 +578,23 @@
     ]
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_PACKAGE_REPO[build]/scripts/slave/chromium/archive_layout_test_retry_summary.py",
+      "--retry-summary-json",
+      "{\"failures\": [\"bad/failing0.html\", \"bad/failing1.html\", \"bad/failing10.html\", \"bad/failing100.html\", \"bad/failing101.html\", \"bad/failing102.html\", \"bad/failing103.html\", \"bad/failing104.html\", \"bad/failing105.html\", \"bad/failing106.html\", \"bad/failing107.html\", \"bad/failing108.html\", \"bad/failing109.html\", \"bad/failing11.html\", \"bad/failing110.html\", \"bad/failing111.html\", \"bad/failing112.html\", \"bad/failing113.html\", \"bad/failing114.html\", \"bad/failing115.html\", \"bad/failing116.html\", \"bad/failing117.html\", \"bad/failing118.html\", \"bad/failing119.html\", \"bad/failing12.html\", \"bad/failing120.html\", \"bad/failing121.html\", \"bad/failing122.html\", \"bad/failing123.html\", \"bad/failing124.html\", \"bad/failing13.html\", \"bad/failing14.html\", \"bad/failing15.html\", \"bad/failing16.html\", \"bad/failing17.html\", \"bad/failing18.html\", \"bad/failing19.html\", \"bad/failing2.html\", \"bad/failing20.html\", \"bad/failing21.html\", \"bad/failing22.html\", \"bad/failing23.html\", \"bad/failing24.html\", \"bad/failing25.html\", \"bad/failing26.html\", \"bad/failing27.html\", \"bad/failing28.html\", \"bad/failing29.html\", \"bad/failing3.html\", \"bad/failing30.html\", \"bad/failing31.html\", \"bad/failing32.html\", \"bad/failing33.html\", \"bad/failing34.html\", \"bad/failing35.html\", \"bad/failing36.html\", \"bad/failing37.html\", \"bad/failing38.html\", \"bad/failing39.html\", \"bad/failing4.html\", \"bad/failing40.html\", \"bad/failing41.html\", \"bad/failing42.html\", \"bad/failing43.html\", \"bad/failing44.html\", \"bad/failing45.html\", \"bad/failing46.html\", \"bad/failing47.html\", \"bad/failing48.html\", \"bad/failing49.html\", \"bad/failing5.html\", \"bad/failing50.html\", \"bad/failing51.html\", \"bad/failing52.html\", \"bad/failing53.html\", \"bad/failing54.html\", \"bad/failing55.html\", \"bad/failing56.html\", \"bad/failing57.html\", \"bad/failing58.html\", \"bad/failing59.html\", \"bad/failing6.html\", \"bad/failing60.html\", \"bad/failing61.html\", \"bad/failing62.html\", \"bad/failing63.html\", \"bad/failing64.html\", \"bad/failing65.html\", \"bad/failing66.html\", \"bad/failing67.html\", \"bad/failing68.html\", \"bad/failing69.html\", \"bad/failing7.html\", \"bad/failing70.html\", \"bad/failing71.html\", \"bad/failing72.html\", \"bad/failing73.html\", \"bad/failing74.html\", \"bad/failing75.html\", \"bad/failing76.html\", \"bad/failing77.html\", \"bad/failing78.html\", \"bad/failing79.html\", \"bad/failing8.html\", \"bad/failing80.html\", \"bad/failing81.html\", \"bad/failing82.html\", \"bad/failing83.html\", \"bad/failing84.html\", \"bad/failing85.html\", \"bad/failing86.html\", \"bad/failing87.html\", \"bad/failing88.html\", \"bad/failing89.html\", \"bad/failing9.html\", \"bad/failing90.html\", \"bad/failing91.html\", \"bad/failing92.html\", \"bad/failing93.html\", \"bad/failing94.html\", \"bad/failing95.html\", \"bad/failing96.html\", \"bad/failing97.html\", \"bad/failing98.html\", \"bad/failing99.html\", \"bad/totally-bad-probably.html\", \"tricky/totally-maybe-not-awesome.html\"], \"ignored\": []}",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "V8-Blink Linux 64",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives"
+    ],
+    "cwd": "[BUILDER_CACHE]/V8_Blink_Linux_64",
+    "name": "archive_retry_summary"
+  },
+  {
     "name": "$result",
     "reason": "1 out of 1 aggregated steps failed. Failures: Step('webkit_tests (retry summary)') failed with return_code 1",
     "recipe_result": null,

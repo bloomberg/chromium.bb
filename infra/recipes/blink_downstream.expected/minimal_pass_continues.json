@@ -578,6 +578,23 @@
     ]
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_PACKAGE_REPO[build]/scripts/slave/chromium/archive_layout_test_retry_summary.py",
+      "--retry-summary-json",
+      "{\"failures\": [\"bad/totally-bad-probably.html\", \"tricky/totally-maybe-not-awesome.html\"], \"ignored\": []}",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "V8-Blink Linux 64",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives"
+    ],
+    "cwd": "[BUILDER_CACHE]/V8_Blink_Linux_64",
+    "name": "archive_retry_summary"
+  },
+  {
     "name": "$result",
     "reason": "1 out of 1 aggregated steps failed. Failures: Step('webkit_tests (retry summary)') failed with return_code 1",
     "recipe_result": null,
