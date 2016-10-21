@@ -23,6 +23,7 @@
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -34,6 +35,7 @@ using android_webview::AwContentsIoThreadClient;
 using android_webview::AwContentsClientBridgeBase;
 using content::BrowserThread;
 using content::ResourceType;
+using content::WebContents;
 using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
@@ -57,15 +59,16 @@ void SetCacheControlFlag(
 // Called when ResourceDispathcerHost detects a download request.
 // The download is already cancelled when this is called, since
 // relevant for DownloadListener is already extracted.
-void DownloadStartingOnUIThread(int render_process_id,
-                                int render_frame_id,
-                                const GURL& url,
-                                const std::string& user_agent,
-                                const std::string& content_disposition,
-                                const std::string& mime_type,
-                                int64_t content_length) {
+void DownloadStartingOnUIThread(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const GURL& url,
+    const std::string& user_agent,
+    const std::string& content_disposition,
+    const std::string& mime_type,
+    int64_t content_length) {
+  WebContents* web_contents = web_contents_getter.Run();
   AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(render_process_id, render_frame_id);
+      AwContentsClientBridgeBase::FromWebContents(web_contents);
   if (!client)
     return;
   client->NewDownload(url, user_agent, content_disposition, mime_type,
@@ -319,9 +322,9 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadStartingOnUIThread, request_info->GetChildID(),
-                 request_info->GetRenderFrameID(), url, user_agent,
-                 content_disposition, mime_type, content_length));
+      base::Bind(&DownloadStartingOnUIThread,
+                 request_info->GetWebContentsGetterForRequest(), url,
+                 user_agent, content_disposition, mime_type, content_length));
 }
 
 content::ResourceDispatcherHostLoginDelegate*
