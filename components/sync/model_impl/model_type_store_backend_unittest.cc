@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+
+using sync_pb::ModelTypeStoreSchemaDescriptor;
 
 namespace syncer {
 
@@ -48,6 +51,28 @@ class ModelTypeStoreBackendTest : public testing::Test {
 
   std::string GetBackendPath(scoped_refptr<ModelTypeStoreBackend> backend) {
     return backend->path_;
+  }
+
+  ModelTypeStore::Result Migrate(scoped_refptr<ModelTypeStoreBackend> backend,
+                                 int64_t current_version,
+                                 int64_t desired_version) {
+    return backend->Migrate(current_version, desired_version);
+  }
+
+  bool Migrate0To1(scoped_refptr<ModelTypeStoreBackend> backend) {
+    return backend->Migrate0To1();
+  }
+
+  int64_t GetStoreVersion(scoped_refptr<ModelTypeStoreBackend> backend) {
+    return backend->GetStoreVersion();
+  }
+
+  int64_t LatestVersion() {
+    return ModelTypeStoreBackend::kLatestSchemaVersion;
+  }
+
+  const char* SchemaId() {
+    return ModelTypeStoreBackend::kDBSchemaDescriptorRecordId;
   }
 };
 
@@ -188,6 +213,35 @@ TEST_F(ModelTypeStoreBackendTest, TwoDifferentBackendTest) {
   backend_second = nullptr;
   ASSERT_FALSE(backend_second.get());
   ASSERT_FALSE(BackendExistsForPath("/test_db2"));
+}
+
+// Test that initializing the database migrates it to the latest schema version.
+TEST_F(ModelTypeStoreBackendTest, MigrateNoSchemaVersionToLatestVersionTest) {
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+
+  ASSERT_EQ(LatestVersion(), GetStoreVersion(backend));
+}
+
+// Test that the 0 to 1 migration succeeds and sets the schema version to 1.
+TEST_F(ModelTypeStoreBackendTest, Migrate0To1Test) {
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+
+  std::unique_ptr<leveldb::WriteBatch> write_batch(new leveldb::WriteBatch());
+  write_batch->Delete(SchemaId());
+  ModelTypeStore::Result result =
+      backend->WriteModifications(std::move(write_batch));
+  ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+
+  ASSERT_TRUE(Migrate0To1(backend));
+  ASSERT_EQ(1, GetStoreVersion(backend));
+}
+
+// Test that migration to an unknown version fails
+TEST_F(ModelTypeStoreBackendTest, MigrateWithHigherExistingVersionFails) {
+  scoped_refptr<ModelTypeStoreBackend> backend = GetOrCreateBackend();
+
+  ASSERT_EQ(Migrate(backend, LatestVersion() + 1, LatestVersion()),
+            ModelTypeStore::Result::SCHEMA_VERSION_TOO_HIGH);
 }
 
 }  // namespace syncer

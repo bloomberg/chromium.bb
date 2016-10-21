@@ -51,6 +51,7 @@ class ModelTypeStore {
   enum class Result {
     SUCCESS,
     UNSPECIFIED_ERROR,
+    SCHEMA_VERSION_TOO_HIGH,
   };
 
   // Output of read operations is passed back as list of Record structures.

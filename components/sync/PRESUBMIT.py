@@ -25,6 +25,12 @@ GRANDFATHERED_MODEL_TYPES = [
   'PROXY_TABS',  # Doesn't have a root tag or notification type.
   'NIGORI']  # Model type string is 'encryption keys'.
 
+# Root tags are used as prefixes when creating storage keys, so certain strings
+# are blacklisted in order to prevent prefix collision.
+BLACKLISTED_ROOT_TAGS = [
+  '_mts_schema_descriptor'
+]
+
 # Number of distinct fields in a map entry; used to create
 # sets that check for uniqueness.
 MAP_ENTRY_FIELD_COUNT = 6
@@ -113,6 +119,7 @@ def CheckModelTypeInfoMap(input_api, output_api, model_type_file):
     entry_problems.extend(
       CheckNotificationTypeMatchesProtoMessageName(
         output_api, map_entry, proto_field_definitions))
+    entry_problems.extend(CheckRootTagNotInBlackList(output_api, map_entry))
 
     if map_entry.model_type not in GRANDFATHERED_MODEL_TYPES:
       entry_problems.extend(
@@ -341,6 +348,20 @@ def CheckRootTagMatchesModelType(output_api, map_entry):
         output_api,'root tag "%s" does not match model type. It should'
         'be "%s"' % (map_entry.root_tag, expected_root_tag),
         map_entry.affected_lines)]
+  return []
+
+def CheckRootTagNotInBlackList(output_api, map_entry):
+  """ Checks that map_entry's root isn't a blacklisted string.
+  Args:
+    output_api: presubmit_support OutputAPI instance
+    map_entry: ModelTypeEnumEntry object to check
+  Returns:
+    A list of PresubmitError objects for each violation
+  """
+  if map_entry.root_tag in BLACKLISTED_ROOT_TAGS:
+    return [FormatPresubmitError(
+        output_api,'root tag "%s" is a blacklisted root tag'
+        % (map_entry.root_tag), map_entry.affected_lines)]
   return []
 
 

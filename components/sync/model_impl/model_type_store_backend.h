@@ -67,6 +67,9 @@ class ModelTypeStoreBackend
   friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
   friend class ModelTypeStoreBackendTest;
 
+  static const int64_t kLatestSchemaVersion;
+  static const char kDBSchemaDescriptorRecordId[];
+
   explicit ModelTypeStoreBackend(const std::string& path);
   ~ModelTypeStoreBackend();
 
@@ -96,6 +99,20 @@ class ModelTypeStoreBackend
   // with in-memory or faulty environment.
   ModelTypeStore::Result Init(const std::string& path,
                               std::unique_ptr<leveldb::Env> env);
+
+  // Attempts to read and return the database's version.
+  // If there is not a schema descriptor present, the value returned is 0.
+  // If an error occurs, the value returned is kInvalidSchemaVersion(-1).
+  int64_t GetStoreVersion();
+
+  // Migrate the db schema from |current_version| to |desired_version|,
+  // returning true on success.
+  ModelTypeStore::Result Migrate(int64_t current_version,
+                                 int64_t desired_version);
+
+  // Migrates from no version record at all (version 0) to version 1 of
+  // the schema, returning true on success.
+  bool Migrate0To1();
 
   // Macro wrapped mutex to guard against concurrent calls in debug builds.
   DFAKE_MUTEX(push_pop_);

@@ -8,7 +8,8 @@ import sys
 import unittest
 import PRESUBMIT
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(
+  os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from PRESUBMIT_test_mocks import MockOutputApi, MockChange
 
 class MockInputApi(object):
@@ -63,6 +64,7 @@ MOCK_PROTOFILE_CONTENTS = ('\n'
   'optional AutofillSpecifics autofill = 123;\n'
   'optional AppSpecifics app = 456;\n'
   'optional AppSettingSpecifics app_setting = 789;\n'
+  'optional ExtensionSettingSpecifics extension_setting = 910;\n'
   '//comment\n'
   '}\n')
 
@@ -124,6 +126,14 @@ class ModelTypeInfoChangeTest(unittest.TestCase):
       'sync_pb::EntitySpecifics::kAppSettingFieldNumber, 13},\n')
     self.assertEqual(6, len(results))
     self.assertTrue('APP_SETTINGS' in results[0].message)
+
+  def testBlacklistedRootTag(self):
+    results = self._testChange('{EXTENSION_SETTING, "EXTENSION_SETTING",\n'
+      '"_mts_schema_descriptor","Extension Setting",\n'
+      'sync_pb::EntitySpecifics::kExtensionSettingFieldNumber, 6},')
+    self.assertEqual(2, len(results))
+    self.assertTrue('_mts_schema_descriptor' in results[0].message)
+    self.assertTrue("blacklist" in results[0].message)
 
   def _testChange(self, modeltype_literal):
     mock_input_api = MockInputApi()
