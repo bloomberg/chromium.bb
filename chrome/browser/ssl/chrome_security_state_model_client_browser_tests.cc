@@ -1162,14 +1162,26 @@ class ConsoleWebContentsDelegate : public Browser {
 };
 
 // Checks that |delegate| has observed exactly one console message for
-// HTTP_SHOW_WARNING. This does not check for the exact string (for fear
-// of being too brittle) but rather just a keyword ("not secure").
+// HTTP_SHOW_WARNING. To avoid brittleness, this just looks for keywords
+// in the string rather than the exact text.
 void CheckForOneHttpWarningConsoleMessage(
     ConsoleWebContentsDelegate* delegate) {
   const std::vector<base::string16>& messages = delegate->console_messages();
   ASSERT_EQ(1u, messages.size());
   EXPECT_NE(base::string16::npos,
-            messages[0].find(base::ASCIIToUTF16("not secure")));
+            messages[0].find(base::ASCIIToUTF16("warning has been added")));
+}
+
+// Checks that |delegate| has observed exactly one console message for
+// NONE that will be HTTP_SHOW_WARNING in future. To avoid brittleness,
+// this just looks for keywords in the string rather than the exact
+// text.
+void CheckForOneFutureHttpWarningConsoleMessage(
+    ConsoleWebContentsDelegate* delegate) {
+  const std::vector<base::string16>& messages = delegate->console_messages();
+  ASSERT_EQ(1u, messages.size());
+  EXPECT_NE(base::string16::npos,
+            messages[0].find(base::ASCIIToUTF16("warning will be added")));
 }
 
 // Tests that console messages are printed upon a call to
@@ -1241,6 +1253,80 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
             security_info.security_level);
 
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
+}
+
+// Tests that console messages are printed upon a call to
+// GetSecurityInfo() on a NONE page that will be marked
+// HTTP_SHOW_WARNING in future, exactly once per main-frame navigation.
+IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
+  ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
+      Browser::CreateParams(browser()->profile()));
+  content::WebContents* original_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents =
+      content::WebContents::Create(content::WebContents::CreateParams(
+          original_contents->GetBrowserContext()));
+  ASSERT_TRUE(contents);
+  contents->SetDelegate(delegate);
+  delegate->tab_strip_model()->AppendWebContents(contents, true);
+  int index = delegate->tab_strip_model()->GetIndexOfWebContents(contents);
+  delegate->tab_strip_model()->ActivateTabAt(index, true);
+  ASSERT_EQ(contents, delegate->tab_strip_model()->GetActiveWebContents());
+
+  // Navigate to an HTTP page. Use a non-local hostname so that is it
+  // not considered secure.
+  GURL http_url =
+      GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html");
+  ui_test_utils::NavigateToURL(delegate, http_url);
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(http_url, entry->GetURL());
+  EXPECT_TRUE(delegate->console_messages().empty());
+
+  // Trigger the a state that will be marked as HTTP_SHOW_WARNING in future.
+  base::RunLoop first_message;
+  delegate->set_console_message_callback(first_message.QuitClosure());
+  contents->OnPasswordInputShownOnHttp();
+  first_message.Run();
+
+  // Check that the correct state was actually triggered.
+  ChromeSecurityStateModelClient* client =
+      ChromeSecurityStateModelClient::FromWebContents(contents);
+  ASSERT_TRUE(client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
+            security_info.security_level);
+  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
+
+  // Check that the expected console message is present.
+  ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
+  delegate->ClearConsoleMessages();
+
+  // Two subsequent triggers of VisibleSSLStateChanged -- one on the
+  // same navigation and one on another navigation -- should only result
+  // in one additional console message.
+  contents->OnCreditCardInputShownOnHttp();
+  GURL second_http_url =
+      GetURLWithNonLocalHostname(embedded_test_server(), "/title2.html");
+  ui_test_utils::NavigateToURL(delegate, second_http_url);
+  entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(second_http_url, entry->GetURL());
+
+  base::RunLoop second_message;
+  delegate->set_console_message_callback(second_message.QuitClosure());
+  contents->OnPasswordInputShownOnHttp();
+  second_message.Run();
+
+  client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
+            security_info.security_level);
+  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
+
+  ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
 }
 
 // Tests that additional HTTP_SHOW_WARNING console messages are not
