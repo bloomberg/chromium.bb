@@ -163,6 +163,21 @@ var api = (function() {
     setVisible(visible) {
       this.visible = !!visible;
     }
+
+    /**
+     * Hit-testable implies that the reticle will hit the element, if visible.
+     */
+    setHitTestable(testable) {
+      this.hitTestable = !!testable;
+    }
+
+    /**
+     * Causes an element to be rendered relative to the field of view, rather
+     * than the scene.  Elements locked in this way should not have a parent.
+     */
+    setLockToFieldOfView(locked) {
+      this.lockToFov = !!locked;
+    }
   };
 
   /**

@@ -191,6 +191,8 @@ TEST(UiScene, AddUiElementFromDictionary) {
   dict.SetInteger("id", 10);
   dict.SetInteger("parentId", 11);
   dict.SetBoolean("visible", false);
+  dict.SetBoolean("hitTestable", false);
+  dict.SetBoolean("lockToFov", true);
 
   std::unique_ptr<base::DictionaryValue> copy_rect(new base::DictionaryValue);
   copy_rect->SetInteger("x", 100);
@@ -233,6 +235,8 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_EQ(element->id, 10);
   EXPECT_EQ(element->parent_id, 11);
   EXPECT_EQ(element->visible, false);
+  EXPECT_EQ(element->hit_testable, false);
+  EXPECT_EQ(element->lock_to_fov, true);
 
   EXPECT_EQ(element->copy_rect.x, 100);
   EXPECT_EQ(element->copy_rect.y, 101);

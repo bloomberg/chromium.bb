@@ -376,6 +376,8 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   }
 
   dict.GetBoolean("visible", &element->visible);
+  dict.GetBoolean("hitTestable", &element->hit_testable);
+  dict.GetBoolean("lockToFov", &element->lock_to_fov);
   ParseRecti(dict, "copyRect", &element->copy_rect);
   Parse2DVec3f(dict, "size", &element->size);
   ParseVec3f(dict, "scale", &element->scale);

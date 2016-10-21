@@ -326,7 +326,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
 
   for (std::size_t i = 0; i < scene_->GetUiElements().size(); ++i) {
     const ContentRectangle* plane = scene_->GetUiElements()[i].get();
-    if (!plane->visible) {
+    if (!plane->visible || !plane->hit_testable) {
       continue;
     }
     float distance_to_plane = plane->GetRayDistance(kOrigin, eye_to_target);
@@ -456,12 +456,6 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose) {
 
   UpdateController(GetForwardVector(head_pose));
 
-  // Everything should be positioned now, ready for drawing.
-  gvr::Mat4f left_eye_view_matrix =
-    MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE), head_pose);
-  gvr::Mat4f right_eye_view_matrix =
-      MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE), head_pose);
-
   // Use culling to remove back faces.
   glEnable(GL_CULL_FACE);
 
@@ -473,14 +467,18 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose) {
 
   buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
                                            buffer_viewport_.get());
-  DrawEye(left_eye_view_matrix, *buffer_viewport_);
+  DrawEye(GVR_LEFT_EYE, head_pose, *buffer_viewport_);
   buffer_viewport_list_->GetBufferViewport(GVR_RIGHT_EYE,
                                            buffer_viewport_.get());
-  DrawEye(right_eye_view_matrix, *buffer_viewport_);
+  DrawEye(GVR_RIGHT_EYE, head_pose, *buffer_viewport_);
 }
 
-void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
+void VrShell::DrawEye(gvr::Eye eye,
+                      const gvr::Mat4f& head_pose,
                       const gvr::BufferViewport& params) {
+  gvr::Mat4f eye_matrix = gvr_api_->GetEyeFromHeadMatrix(eye);
+  gvr::Mat4f view_matrix = MatrixMul(eye_matrix, head_pose);
+
   gvr::Recti pixel_rect =
       CalculatePixelSpaceRect(render_size_, params.GetSourceUv());
   glViewport(pixel_rect.left, pixel_rect.bottom,
@@ -490,15 +488,18 @@ void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
             pixel_rect.right - pixel_rect.left,
             pixel_rect.top - pixel_rect.bottom);
 
-  gvr::Mat4f render_matrix = MatrixMul(
+  const gvr::Mat4f fov_render_matrix = MatrixMul(
+      PerspectiveMatrixFromView(params.GetSourceFov(), kZNear, kZFar),
+      eye_matrix);
+  const gvr::Mat4f world_render_matrix = MatrixMul(
       PerspectiveMatrixFromView(params.GetSourceFov(), kZNear, kZFar),
       view_matrix);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // TODO(mthiesse): Draw order for transparency.
-  DrawUI(render_matrix);
-  DrawCursor(render_matrix);
+  DrawUI(world_render_matrix, fov_render_matrix);
+  DrawCursor(world_render_matrix);
 }
 
 bool VrShell::IsUiTextureReady() {
@@ -514,7 +515,8 @@ Rectf VrShell::MakeUiGlCopyRect(Recti pixel_rect) {
       static_cast<float>(pixel_rect.height) / ui_tex_height_});
 }
 
-void VrShell::DrawUI(const gvr::Mat4f& render_matrix) {
+void VrShell::DrawUI(const gvr::Mat4f& world_matrix,
+                     const gvr::Mat4f& fov_matrix) {
   for (const auto& rect : scene_->GetUiElements()) {
     if (!rect->visible) {
       continue;
@@ -535,7 +537,9 @@ void VrShell::DrawUI(const gvr::Mat4f& render_matrix) {
       texture_handle = ui_texture_id_;
     }
 
-    gvr::Mat4f transform = MatrixMul(render_matrix, rect->transform.to_world);
+    const gvr::Mat4f& view_matrix =
+        rect->lock_to_fov ? fov_matrix : world_matrix;
+    gvr::Mat4f transform = MatrixMul(view_matrix, rect->transform.to_world);
     vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
         texture_handle, transform, copy_rect);
   }

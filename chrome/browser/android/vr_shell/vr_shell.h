@@ -120,9 +120,11 @@ class VrShell : public device::GvrDelegate {
   // initialized by checking IsUiTextureReady() first.
   Rectf MakeUiGlCopyRect(Recti pixel_rect);
   void DrawVrShell(const gvr::Mat4f& head_pose);
-  void DrawEye(const gvr::Mat4f& view_matrix,
+  void DrawEye(gvr::Eye eye,
+               const gvr::Mat4f& head_pose,
                const gvr::BufferViewport& params);
-  void DrawUI(const gvr::Mat4f& render_matrix);
+  void DrawUI(const gvr::Mat4f& world_matrix,
+              const gvr::Mat4f& fov_matrix);
   void DrawCursor(const gvr::Mat4f& render_matrix);
   void DrawWebVr();
   void DrawWebVrOverlay(int64_t present_time_nanos);
