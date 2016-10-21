@@ -575,8 +575,7 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   Profile* profile = shelf_->browser()->profile();
   if (!model_.IsMalicious() && model_.ShouldAllowDownloadFeedback() &&
       !profile->IsOffTheRecord()) {
-    if (!profile->GetPrefs()->HasPrefPath(
-            safe_browsing::GetExtendedReportingPrefName())) {
+    if (!safe_browsing::ExtendedReportingPrefExists(*profile->GetPrefs())) {
       // Show dialog, because the dialog hasn't been shown before.
       DownloadFeedbackDialogView::Show(
           shelf_->get_parent()->GetNativeWindow(), profile,

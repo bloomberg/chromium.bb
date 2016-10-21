@@ -518,8 +518,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   }
 
   void SetExtendedReportingPreference(bool is_extended_reporting) {
-    profile_->GetPrefs()->SetBoolean(GetExtendedReportingPrefName(),
-                                     is_extended_reporting);
+    SetExtendedReportingPref(profile_->GetPrefs(), is_extended_reporting);
   }
 
   // Check scenarios where we should/shouldn't send a report for

@@ -15,6 +15,10 @@ extern const char kSafeBrowsingExtendedReportingEnabled[];
 
 namespace safe_browsing {
 
+// Returns whether the currently active Safe Browsing Extended Reporting
+// preference exists (eg: has been set before).
+bool ExtendedReportingPrefExists(const PrefService& prefs);
+
 // Returns the name of the Safe Browsing Extended Reporting pref that is
 // currently in effect. The specific pref in-use may change through experiments.
 const char* GetExtendedReportingPrefName();
@@ -26,6 +30,10 @@ bool IsExtendedReportingEnabled(const PrefService& prefs);
 
 // Updates UMA metrics about Safe Browsing Extended Reporting states.
 void RecordExtendedReportingMetrics(const PrefService& prefs);
+
+// Sets the currently active Safe Browsing Extended Reporting preference to the
+// specified value.
+void SetExtendedReportingPref(PrefService* prefs, bool value);
 
 }  // namespace safe_browsing
 

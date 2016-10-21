@@ -268,8 +268,8 @@ class IncidentReportingServiceTest : public testing::Test {
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
                       safe_browsing_opt_in != SAFE_BROWSING_OPT_OUT);
-    prefs->SetBoolean(safe_browsing::GetExtendedReportingPrefName(),
-                      safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
+    safe_browsing::SetExtendedReportingPref(
+        prefs.get(), safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
     if (incidents_sent)
       prefs->Set(prefs::kSafeBrowsingIncidentsSent, *incidents_sent);
 
@@ -815,8 +815,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
 
-  profile->GetPrefs()->SetBoolean(safe_browsing::GetExtendedReportingPrefName(),
-                                  true);
+  safe_browsing::SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Add a variation on the incident to the service.
   instance_->GetIncidentReceiver()->AddIncidentForProfile(

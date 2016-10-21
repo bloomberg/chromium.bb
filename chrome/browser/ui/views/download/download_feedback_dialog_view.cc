@@ -46,8 +46,7 @@ void DownloadFeedbackDialogView::Show(
     content::PageNavigator* navigator,
     const UserDecisionCallback& callback) {
   // This dialog should only be shown if it hasn't been shown before.
-  DCHECK(!profile->GetPrefs()->HasPrefPath(
-      safe_browsing::GetExtendedReportingPrefName()));
+  DCHECK(!safe_browsing::ExtendedReportingPrefExists(*profile->GetPrefs()));
 
   // Only one dialog should be shown at a time, so check to see if another one
   // is open. If another one is open, treat this parallel call as if reporting
@@ -102,8 +101,7 @@ base::string16 DownloadFeedbackDialogView::GetDialogButtonLabel(
 }
 
 bool DownloadFeedbackDialogView::OnButtonClicked(bool accepted) {
-  profile_->GetPrefs()->SetBoolean(
-      safe_browsing::GetExtendedReportingPrefName(), accepted);
+  safe_browsing::SetExtendedReportingPref(profile_->GetPrefs(), accepted);
   DialogStatusData* data =
      static_cast<DialogStatusData*>(profile_->GetUserData(kDialogStatusKey));
   DCHECK(data);

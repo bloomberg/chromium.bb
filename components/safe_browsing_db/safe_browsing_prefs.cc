@@ -16,6 +16,10 @@ const char kSafeBrowsingExtendedReportingEnabled[] =
 
 namespace safe_browsing {
 
+bool ExtendedReportingPrefExists(const PrefService& prefs) {
+  return prefs.HasPrefPath(GetExtendedReportingPrefName());
+}
+
 const char* GetExtendedReportingPrefName() {
   return prefs::kSafeBrowsingExtendedReportingEnabled;
 }
@@ -27,6 +31,10 @@ bool IsExtendedReportingEnabled(const PrefService& prefs) {
 void RecordExtendedReportingMetrics(const PrefService& prefs) {
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Extended",
                         IsExtendedReportingEnabled(prefs));
+}
+
+void SetExtendedReportingPref(PrefService* prefs, bool value) {
+  prefs->SetBoolean(GetExtendedReportingPrefName(), value);
 }
 
 }  // namespace safe_browsing

@@ -151,8 +151,8 @@ class ExtensionDataCollectionTest : public testing::Test {
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
                       safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);
-    prefs->SetBoolean(GetExtendedReportingPrefName(),
-                      safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);
+    safe_browsing::SetExtendedReportingPref(
+        prefs.get(), safe_browsing_opt_in == SAFE_BROWSING_OPT_IN);
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
         profile_name, std::move(prefs),
         base::UTF8ToUTF16(profile_name),  // user_name

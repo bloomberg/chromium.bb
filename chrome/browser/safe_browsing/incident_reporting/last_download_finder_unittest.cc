@@ -199,8 +199,8 @@ class LastDownloadFinderTest : public testing::Test {
     chrome::RegisterUserProfilePrefs(prefs->registry());
     prefs->SetBoolean(prefs::kSafeBrowsingEnabled,
                       safe_browsing_opt_in != SAFE_BROWSING_OPT_OUT);
-    prefs->SetBoolean(GetExtendedReportingPrefName(),
-                      safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
+    SetExtendedReportingPref(prefs.get(),
+                             safe_browsing_opt_in == EXTENDED_REPORTING_OPT_IN);
 
     TestingProfile* profile = profile_manager_->CreateTestingProfile(
         profile_name, std::move(prefs),
