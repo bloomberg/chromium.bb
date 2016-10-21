@@ -92,6 +92,12 @@ public class SignInPromo extends ChildNode implements StatusCardViewHolder.DataS
     }
 
     @Override
+    public int getDismissSiblingPosDelta(int position) {
+        checkIndex(position);
+        return 0;
+    }
+
+    @Override
     @StringRes
     public int getHeader() {
         return R.string.snippets_disabled_generic_prompt;

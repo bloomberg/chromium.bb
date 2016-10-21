@@ -38,4 +38,16 @@ interface TreeNode {
      * an article.
      */
     SnippetArticle getSuggestionAt(int position);
+
+    /**
+     * The dismiss sibling is an item that should be dismissed at the same time as the provided
+     * one. For example, if we want to dismiss a status card that has a More button attached, the
+     * button is the card's dismiss sibling. This function returns the adapter position delta to
+     * apply to get to the sibling from the provided item. For the previous example, it would return
+     * {@code +1}, as the button comes right after the status card.
+     *
+     * @return a position delta to apply to the position of the provided item to get the adapter
+     * position of the item to animate. Returns {@code 0} if there is no dismiss sibling.
+     */
+    int getDismissSiblingPosDelta(int position);
 }

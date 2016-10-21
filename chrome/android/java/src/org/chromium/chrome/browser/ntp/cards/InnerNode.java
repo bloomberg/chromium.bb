@@ -18,7 +18,7 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
 
     protected abstract List<TreeNode> getChildren();
 
-    int getChildIndexForPosition(int position) {
+    private int getChildIndexForPosition(int position) {
         List<TreeNode> children = getChildren();
         int numItems = 0;
         int numChildren = children.size();
@@ -40,6 +40,13 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
 
     int getStartingOffsetForChild(TreeNode child) {
         return getStartingOffsetForChildIndex(getChildren().indexOf(child));
+    }
+
+    /**
+     * Returns the child whose subtree contains the item at the given position.
+     */
+    TreeNode getChildForPosition(int position) {
+        return getChildren().get(getChildIndexForPosition(position));
     }
 
     @Override
@@ -70,6 +77,13 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
     public SnippetArticle getSuggestionAt(int position) {
         int index = getChildIndexForPosition(position);
         return getChildren().get(index).getSuggestionAt(
+                position - getStartingOffsetForChildIndex(index));
+    }
+
+    @Override
+    public int getDismissSiblingPosDelta(int position) {
+        int index = getChildIndexForPosition(position);
+        return getChildren().get(index).getDismissSiblingPosDelta(
                 position - getStartingOffsetForChildIndex(index));
     }
 

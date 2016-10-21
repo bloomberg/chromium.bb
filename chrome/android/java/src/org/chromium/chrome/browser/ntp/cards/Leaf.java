@@ -35,6 +35,11 @@ public abstract class Leaf implements TreeNode {
         return null;
     }
 
+    @Override
+    public int getDismissSiblingPosDelta(int position) {
+        return 0;
+    }
+
     /**
      * Display the data for this item.
      * @param holder The view holder that should be updated.

@@ -530,11 +530,7 @@ public class NewTabPageAdapter
      */
     public ViewHolder getDismissSibling(ViewHolder viewHolder) {
         int swipePos = viewHolder.getAdapterPosition();
-        SuggestionsSection section = getSuggestionsSection(swipePos);
-        if (section == null) return null;
-
-        int siblingPosDelta =
-                section.getDismissSiblingPosDelta(swipePos - getChildPositionOffset(section));
+        int siblingPosDelta = mRoot.getDismissSiblingPosDelta(swipePos);
         if (siblingPosDelta == 0) return null;
 
         return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
@@ -551,7 +547,7 @@ public class NewTabPageAdapter
      */
     @VisibleForTesting
     SuggestionsSection getSuggestionsSection(int itemPosition) {
-        TreeNode child = mChildren.get(mRoot.getChildIndexForPosition(itemPosition));
+        TreeNode child = mRoot.getChildForPosition(itemPosition);
         if (!(child instanceof SuggestionsSection)) return null;
         return (SuggestionsSection) child;
     }
