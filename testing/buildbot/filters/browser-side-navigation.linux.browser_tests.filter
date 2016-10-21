@@ -53,11 +53,6 @@
 -WebNavigationApiTest.RequestOpenTab
 -WebNavigationApiTest.SrcDoc
 -WebNavigationApiTest.UserAction
--WebViewTests/WebViewTest.Shim_TestInlineScriptFromAccessibleResources/*
--WebViewTests/WebViewTest.Shim_TestMailtoLink/*
--WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/*
--WebViewTests/WebViewTest.Shim_TestNestedSubframes/*
--WebViewTests/WebViewTest.Shim_TestWebViewInsideFrame/*
 
 # Errors related to forms submission.
 -PhishingDOMFeatureExtractorTest.SubFrames
