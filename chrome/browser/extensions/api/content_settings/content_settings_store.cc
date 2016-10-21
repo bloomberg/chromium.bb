@@ -116,10 +116,9 @@ void ContentSettingsStore::SetExtensionContentSetting(
     }
   }
 
-  // Send notification that content settings changed.
-  // TODO(markusheintz): Notifications should only be sent if the set content
-  // setting is effective and not hidden by another setting of another
-  // extension installed more recently.
+  // Send notification that content settings changed. (Note: This is responsible
+  // for updating the pref store, so cannot be skipped even if the setting would
+  // be masked by another extension.)
   NotifyOfContentSettingChanged(ext_id,
                                 scope != kExtensionPrefsScopeRegular);
 }
@@ -320,6 +319,14 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     dict->GetString(keys::kContentSettingsTypeKey, &content_settings_type_str);
     ContentSettingsType content_settings_type =
         helpers::StringToContentSettingsType(content_settings_type_str);
+    if (content_settings_type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+        content_settings_type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
+      // Fullscreen and mouselock are deprecated. Skip over settings of these
+      // types, effectively deleting them from the in-memory model. This will
+      // implicitly delete these old settings from the pref store when it is
+      // written back.
+      continue;
+    }
     DCHECK_NE(CONTENT_SETTINGS_TYPE_DEFAULT, content_settings_type);
 
     std::string resource_identifier;
