@@ -49,10 +49,6 @@
   const PULL_AGAIN = 0b1000;
   const EXTERNALLY_CONTROLLED = 0b10000;
 
-  const readableStreamControllerCancel =
-      v8.createPrivateSymbol('[[InternalCancel]]');
-  const readableStreamControllerPull = v8.createPrivateSymbol('[[InternalPull]]');
-
   const undefined = global.undefined;
   const Infinity = global.Infinity;
 
