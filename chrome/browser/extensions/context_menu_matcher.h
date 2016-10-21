@@ -79,9 +79,8 @@ class ContextMenuMatcher {
       bool* can_cross_incognito,
       MenuItem::List* items);
 
-  MenuItem::List GetRelevantExtensionItems(
-      const MenuItem::List& items,
-      bool can_cross_incognito);
+  MenuItem::List GetRelevantExtensionItems(const MenuItem::OwnedList& items,
+                                           bool can_cross_incognito);
 
   // Used for recursively adding submenus of extension items.
   void RecursivelyAppendExtensionItems(const MenuItem::List& items,

@@ -80,10 +80,11 @@ class MenuBuilder {
     id.uid = ++cur_id_;
     menu_manager_->AddContextItem(
         extension_.get(),
-        new MenuItem(id, kTestExtensionItemLabel,
-                     false,  // check`ed
-                     true,   // enabled
-                     MenuItem::NORMAL, MenuItem::ContextList(context)));
+        base::MakeUnique<MenuItem>(id, kTestExtensionItemLabel,
+                                   false,  // check`ed
+                                   true,   // enabled
+                                   MenuItem::NORMAL,
+                                   MenuItem::ContextList(context)));
   }
 
  private:

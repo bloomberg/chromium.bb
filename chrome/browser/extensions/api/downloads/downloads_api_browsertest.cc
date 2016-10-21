@@ -15,8 +15,8 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
@@ -95,10 +95,9 @@ class DownloadsEventsListener : public content::NotificationObserver {
     registrar_.Remove(this,
                       extensions::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
                       content::NotificationService::AllSources());
-    base::STLDeleteElements(&events_);
   }
 
-  void ClearEvents() { base::STLDeleteElements(&events_); }
+  void ClearEvents() { events_.clear(); }
 
   class Event {
    public:
@@ -186,7 +185,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
           Event* new_event = new Event(
               dns->profile, dns->event_name,
               *content::Details<std::string>(details).ptr(), base::Time::Now());
-          events_.push_back(new_event);
+          events_.push_back(base::WrapUnique(new_event));
           if (waiting_ &&
               waiting_for_.get() &&
               new_event->Satisfies(*waiting_for_)) {
@@ -204,9 +203,8 @@ class DownloadsEventsListener : public content::NotificationObserver {
                const std::string& event_name,
                const std::string& json_args) {
     waiting_for_.reset(new Event(profile, event_name, json_args, base::Time()));
-    for (std::deque<Event*>::const_iterator iter = events_.begin();
-         iter != events_.end(); ++iter) {
-      if ((*iter)->Satisfies(*waiting_for_)) {
+    for (const auto& event : events_) {
+      if (event->Satisfies(*waiting_for_)) {
         return true;
       }
     }
@@ -217,10 +215,9 @@ class DownloadsEventsListener : public content::NotificationObserver {
       // Print the events that were caught since the last WaitFor() call to help
       // find the erroneous event.
       // TODO(benjhayden) Fuzzy-match and highlight the erroneous event.
-      for (std::deque<Event*>::const_iterator iter = events_.begin();
-          iter != events_.end(); ++iter) {
-        if ((*iter)->caught() > last_wait_) {
-          LOG(INFO) << "Caught " << (*iter)->Debug();
+      for (const auto& event : events_) {
+        if (event->caught() > last_wait_) {
+          LOG(INFO) << "Caught " << event->Debug();
         }
       }
       if (waiting_for_.get()) {
@@ -238,7 +235,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
   base::Time last_wait_;
   std::unique_ptr<Event> waiting_for_;
   content::NotificationRegistrar registrar_;
-  std::deque<Event*> events_;
+  std::deque<std::unique_ptr<Event>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsEventsListener);
 };

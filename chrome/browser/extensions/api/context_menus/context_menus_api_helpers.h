@@ -148,9 +148,9 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
     MenuItem* parent = GetParent(*parent_id, menu_manager, error);
     if (!parent)
       return false;
-    success = menu_manager->AddChildItem(parent->id(), item.release());
+    success = menu_manager->AddChildItem(parent->id(), std::move(item));
   } else {
-    success = menu_manager->AddContextItem(extension, item.release());
+    success = menu_manager->AddContextItem(extension, std::move(item));
   }
 
   if (!success)

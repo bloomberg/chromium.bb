@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -310,9 +310,7 @@ void ExtensionSpecialStoragePolicy::NotifyCleared() {
 
 ExtensionSpecialStoragePolicy::SpecialCollection::SpecialCollection() {}
 
-ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {
-  base::STLDeleteValues(&cached_results_);
-}
+ExtensionSpecialStoragePolicy::SpecialCollection::~SpecialCollection() {}
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
     const GURL& origin) {
@@ -333,18 +331,17 @@ bool ExtensionSpecialStoragePolicy::SpecialCollection::GrantsCapabilitiesTo(
 const extensions::ExtensionSet*
 ExtensionSpecialStoragePolicy::SpecialCollection::ExtensionsContaining(
     const GURL& origin) {
-  CachedResults::const_iterator found = cached_results_.find(origin);
-  if (found != cached_results_.end())
-    return found->second;
+  std::unique_ptr<extensions::ExtensionSet>& result = cached_results_[origin];
+  if (result)
+    return result.get();
 
-  extensions::ExtensionSet* result = new extensions::ExtensionSet();
-  for (extensions::ExtensionSet::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    if ((*iter)->OverlapsWithOrigin(origin))
-      result->Insert(*iter);
+  result = base::MakeUnique<extensions::ExtensionSet>();
+  for (auto& extension : extensions_) {
+    if (extension->OverlapsWithOrigin(origin))
+      result->Insert(extension);
   }
-  cached_results_[origin] = result;
-  return result;
+
+  return result.get();
 }
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::ContainsExtension(
@@ -370,5 +367,5 @@ void ExtensionSpecialStoragePolicy::SpecialCollection::Clear() {
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::ClearCache() {
-  base::STLDeleteValues(&cached_results_);
+  cached_results_.clear();
 }

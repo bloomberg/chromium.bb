@@ -70,23 +70,23 @@ void SetIdKeyValue(base::DictionaryValue* properties,
     properties->SetInteger(key, id.uid);
 }
 
-MenuItem::List MenuItemsFromValue(const std::string& extension_id,
-                                  base::Value* value) {
-  MenuItem::List items;
+MenuItem::OwnedList MenuItemsFromValue(const std::string& extension_id,
+                                       base::Value* value) {
+  MenuItem::OwnedList items;
 
-  base::ListValue* list = NULL;
+  base::ListValue* list = nullptr;
   if (!value || !value->GetAsList(&list))
     return items;
 
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = nullptr;
     if (!list->GetDictionary(i, &dict))
       continue;
-    MenuItem* item = MenuItem::Populate(
-        extension_id, *dict, NULL);
+    std::unique_ptr<MenuItem> item =
+        MenuItem::Populate(extension_id, *dict, nullptr);
     if (!item)
       continue;
-    items.push_back(item);
+    items.push_back(std::move(item));
   }
   return items;
 }
@@ -104,7 +104,7 @@ bool GetStringList(const base::DictionaryValue& dict,
   if (!dict.HasKey(key))
     return true;
 
-  const base::ListValue* list = NULL;
+  const base::ListValue* list = nullptr;
   if (!dict.GetListWithoutPathExpansion(key, &list))
     return false;
 
@@ -134,41 +134,40 @@ MenuItem::MenuItem(const Id& id,
       contexts_(contexts) {}
 
 MenuItem::~MenuItem() {
-  base::STLDeleteElements(&children_);
 }
 
-MenuItem* MenuItem::ReleaseChild(const Id& child_id,
-                                 bool recursive) {
-  for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
-    MenuItem* child = NULL;
+std::unique_ptr<MenuItem> MenuItem::ReleaseChild(const Id& child_id,
+                                                 bool recursive) {
+  for (auto i = children_.begin(); i != children_.end(); ++i) {
+    std::unique_ptr<MenuItem> child;
     if ((*i)->id() == child_id) {
-      child = *i;
+      child = std::move(*i);
       children_.erase(i);
       return child;
-    } else if (recursive) {
+    }
+    if (recursive) {
       child = (*i)->ReleaseChild(child_id, recursive);
       if (child)
         return child;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void MenuItem::GetFlattenedSubtree(MenuItem::List* list) {
   list->push_back(this);
-  for (List::iterator i = children_.begin(); i != children_.end(); ++i)
-    (*i)->GetFlattenedSubtree(list);
+  for (const auto& child : children_)
+    child->GetFlattenedSubtree(list);
 }
 
 std::set<MenuItem::Id> MenuItem::RemoveAllDescendants() {
   std::set<Id> result;
-  for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
-    MenuItem* child = *i;
+  for (const auto& child : children_) {
     result.insert(child->id());
     std::set<Id> removed = child->RemoveAllDescendants();
     result.insert(removed.begin(), removed.end());
   }
-  base::STLDeleteElements(&children_);
+  children_.clear();
   return result;
 }
 
@@ -192,9 +191,9 @@ bool MenuItem::SetChecked(bool checked) {
   return true;
 }
 
-void MenuItem::AddChild(MenuItem* item) {
+void MenuItem::AddChild(std::unique_ptr<MenuItem> item) {
   item->parent_id_.reset(new Id(id_));
-  children_.push_back(item);
+  children_.push_back(std::move(item));
 }
 
 std::unique_ptr<base::DictionaryValue> MenuItem::ToValue() const {
@@ -222,64 +221,64 @@ std::unique_ptr<base::DictionaryValue> MenuItem::ToValue() const {
 }
 
 // static
-MenuItem* MenuItem::Populate(const std::string& extension_id,
-                             const base::DictionaryValue& value,
-                             std::string* error) {
+std::unique_ptr<MenuItem> MenuItem::Populate(const std::string& extension_id,
+                                             const base::DictionaryValue& value,
+                                             std::string* error) {
   bool incognito = false;
   if (!value.GetBoolean(kIncognitoKey, &incognito))
-    return NULL;
+    return nullptr;
   Id id(incognito, MenuItem::ExtensionKey(extension_id));
   if (!value.GetString(kStringUIDKey, &id.string_uid))
-    return NULL;
+    return nullptr;
   int type_int;
   Type type = NORMAL;
   if (!value.GetInteger(kTypeKey, &type_int))
-    return NULL;
+    return nullptr;
   type = static_cast<Type>(type_int);
   std::string title;
   if (type != SEPARATOR && !value.GetString(kTitleKey, &title))
-    return NULL;
+    return nullptr;
   bool checked = false;
   if ((type == CHECKBOX || type == RADIO) &&
       !value.GetBoolean(kCheckedKey, &checked)) {
-    return NULL;
+    return nullptr;
   }
   bool enabled = true;
   if (!value.GetBoolean(kEnabledKey, &enabled))
-    return NULL;
+    return nullptr;
   ContextList contexts;
-  const base::Value* contexts_value = NULL;
+  const base::Value* contexts_value = nullptr;
   if (!value.Get(kContextsKey, &contexts_value))
-    return NULL;
+    return nullptr;
   if (!contexts.Populate(*contexts_value))
-    return NULL;
+    return nullptr;
 
-  std::unique_ptr<MenuItem> result(
-      new MenuItem(id, title, checked, enabled, type, contexts));
+  std::unique_ptr<MenuItem> result =
+      base::MakeUnique<MenuItem>(id, title, checked, enabled, type, contexts);
 
   std::vector<std::string> document_url_patterns;
   if (!GetStringList(value, kDocumentURLPatternsKey, &document_url_patterns))
-    return NULL;
+    return nullptr;
   std::vector<std::string> target_url_patterns;
   if (!GetStringList(value, kTargetURLPatternsKey, &target_url_patterns))
-    return NULL;
+    return nullptr;
 
   if (!result->PopulateURLPatterns(&document_url_patterns,
                                    &target_url_patterns,
                                    error)) {
-    return NULL;
+    return nullptr;
   }
 
   // parent_id is filled in from the value, but it might not be valid. It's left
   // to be validated upon being added (via AddChildItem) to the menu manager.
-  std::unique_ptr<Id> parent_id(
-      new Id(incognito, MenuItem::ExtensionKey(extension_id)));
+  std::unique_ptr<Id> parent_id =
+      base::MakeUnique<Id>(incognito, MenuItem::ExtensionKey(extension_id));
   if (value.HasKey(kParentUIDKey)) {
     if (!value.GetString(kParentUIDKey, &parent_id->string_uid))
-      return NULL;
+      return nullptr;
     result->parent_id_.swap(parent_id);
   }
-  return result.release();
+  return result;
 }
 
 bool MenuItem::PopulateURLPatterns(
@@ -318,10 +317,6 @@ MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
 }
 
 MenuManager::~MenuManager() {
-  MenuItemMap::iterator i;
-  for (i = context_items_.begin(); i != context_items_.end(); ++i) {
-    base::STLDeleteElements(&(i->second));
-  }
 }
 
 // static
@@ -331,23 +326,24 @@ MenuManager* MenuManager::Get(content::BrowserContext* context) {
 
 std::set<MenuItem::ExtensionKey> MenuManager::ExtensionIds() {
   std::set<MenuItem::ExtensionKey> id_set;
-  for (MenuItemMap::const_iterator i = context_items_.begin();
-       i != context_items_.end(); ++i) {
+  for (auto i = context_items_.begin(); i != context_items_.end(); ++i) {
     id_set.insert(i->first);
   }
   return id_set;
 }
 
-const MenuItem::List* MenuManager::MenuItems(
+const MenuItem::OwnedList* MenuManager::MenuItems(
     const MenuItem::ExtensionKey& key) {
-  MenuItemMap::iterator i = context_items_.find(key);
+  auto i = context_items_.find(key);
   if (i != context_items_.end()) {
-    return &(i->second);
+    return &i->second;
   }
-  return NULL;
+  return nullptr;
 }
 
-bool MenuManager::AddContextItem(const Extension* extension, MenuItem* item) {
+bool MenuManager::AddContextItem(const Extension* extension,
+                                 std::unique_ptr<MenuItem> item) {
+  MenuItem* item_ptr = item.get();
   const MenuItem::ExtensionKey& key = item->id().extension_key;
 
   // The item must have a non-empty key, and not have already been added.
@@ -357,12 +353,12 @@ bool MenuManager::AddContextItem(const Extension* extension, MenuItem* item) {
   DCHECK_EQ(extension->id(), key.extension_id);
 
   bool first_item = !base::ContainsKey(context_items_, key);
-  context_items_[key].push_back(item);
-  items_by_id_[item->id()] = item;
+  context_items_[key].push_back(std::move(item));
+  items_by_id_[item_ptr->id()] = item_ptr;
 
-  if (item->type() == MenuItem::RADIO) {
-    if (item->checked())
-      RadioItemSelected(item);
+  if (item_ptr->type() == MenuItem::RADIO) {
+    if (item_ptr->checked())
+      RadioItemSelected(item_ptr);
     else
       SanitizeRadioList(context_items_[key]);
   }
@@ -375,26 +371,27 @@ bool MenuManager::AddContextItem(const Extension* extension, MenuItem* item) {
 }
 
 bool MenuManager::AddChildItem(const MenuItem::Id& parent_id,
-                               MenuItem* child) {
+                               std::unique_ptr<MenuItem> child) {
   MenuItem* parent = GetItemById(parent_id);
   if (!parent || parent->type() != MenuItem::NORMAL ||
       parent->incognito() != child->incognito() ||
       parent->extension_id() != child->extension_id() ||
       base::ContainsKey(items_by_id_, child->id()))
     return false;
-  parent->AddChild(child);
-  items_by_id_[child->id()] = child;
+  MenuItem* child_ptr = child.get();
+  parent->AddChild(std::move(child));
+  items_by_id_[child_ptr->id()] = child_ptr;
 
-  if (child->type() == MenuItem::RADIO)
+  if (child_ptr->type() == MenuItem::RADIO)
     SanitizeRadioList(parent->children());
   return true;
 }
 
 bool MenuManager::DescendantOf(MenuItem* item,
                                const MenuItem::Id& ancestor_id) {
-  // Work our way up the tree until we find the ancestor or NULL.
+  // Work our way up the tree until we find the ancestor or null.
   MenuItem::Id* id = item->parent_id();
-  while (id != NULL) {
+  while (id != nullptr) {
     DCHECK(*id != item->id());  // Catch circular graphs.
     if (*id == ancestor_id)
       return true;
@@ -410,52 +407,57 @@ bool MenuManager::DescendantOf(MenuItem* item,
 
 bool MenuManager::ChangeParent(const MenuItem::Id& child_id,
                                const MenuItem::Id* parent_id) {
-  MenuItem* child = GetItemById(child_id);
-  MenuItem* new_parent = parent_id ? GetItemById(*parent_id) : NULL;
-  if ((parent_id && (child_id == *parent_id)) || !child ||
-      (!new_parent && parent_id != NULL) ||
+  MenuItem* child_ptr = GetItemById(child_id);
+  std::unique_ptr<MenuItem> child;
+
+  MenuItem* new_parent = parent_id ? GetItemById(*parent_id) : nullptr;
+  if ((parent_id && (child_id == *parent_id)) || !child_ptr ||
+      (!new_parent && parent_id != nullptr) ||
       (new_parent && (DescendantOf(new_parent, child_id) ||
-                      child->incognito() != new_parent->incognito() ||
-                      child->extension_id() != new_parent->extension_id())))
+                      child_ptr->incognito() != new_parent->incognito() ||
+                      child_ptr->extension_id() != new_parent->extension_id())))
     return false;
 
-  MenuItem::Id* old_parent_id = child->parent_id();
-  if (old_parent_id != NULL) {
+  MenuItem::Id* old_parent_id = child_ptr->parent_id();
+  if (old_parent_id != nullptr) {
     MenuItem* old_parent = GetItemById(*old_parent_id);
     if (!old_parent) {
       NOTREACHED();
       return false;
     }
-    MenuItem* taken =
-      old_parent->ReleaseChild(child_id, false /* non-recursive search*/);
-    DCHECK(taken == child);
+    child = old_parent->ReleaseChild(child_id, false /* non-recursive search*/);
+    DCHECK(child.get() == child_ptr);
     SanitizeRadioList(old_parent->children());
   } else {
     // This is a top-level item, so we need to pull it out of our list of
     // top-level items.
-    const MenuItem::ExtensionKey& child_key = child->id().extension_key;
-    MenuItemMap::iterator i = context_items_.find(child_key);
+    const MenuItem::ExtensionKey& child_key = child_ptr->id().extension_key;
+    auto i = context_items_.find(child_key);
     if (i == context_items_.end()) {
       NOTREACHED();
       return false;
     }
-    MenuItem::List& list = i->second;
-    MenuItem::List::iterator j = std::find(list.begin(), list.end(), child);
+    MenuItem::OwnedList& list = i->second;
+    auto j = std::find_if(list.begin(), list.end(),
+                          [child_ptr](const std::unique_ptr<MenuItem>& item) {
+                            return item.get() == child_ptr;
+                          });
     if (j == list.end()) {
       NOTREACHED();
       return false;
     }
+    child = std::move(*j);
     list.erase(j);
     SanitizeRadioList(list);
   }
 
   if (new_parent) {
-    new_parent->AddChild(child);
+    new_parent->AddChild(std::move(child));
     SanitizeRadioList(new_parent->children());
   } else {
-    const MenuItem::ExtensionKey& child_key = child->id().extension_key;
-    context_items_[child_key].push_back(child);
-    child->parent_id_.reset(NULL);
+    const MenuItem::ExtensionKey& child_key = child_ptr->id().extension_key;
+    context_items_[child_key].push_back(std::move(child));
+    child_ptr->parent_id_.reset(nullptr);
     SanitizeRadioList(context_items_[child_key]);
   }
   return true;
@@ -468,7 +470,7 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
   MenuItem* menu_item = GetItemById(id);
   DCHECK(menu_item);
   const MenuItem::ExtensionKey extension_key = id.extension_key;
-  MenuItemMap::iterator i = context_items_.find(extension_key);
+  auto i = context_items_.find(extension_key);
   if (i == context_items_.end()) {
     NOTREACHED();
     return false;
@@ -476,14 +478,12 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
 
   bool result = false;
   std::set<MenuItem::Id> items_removed;
-  MenuItem::List& list = i->second;
-  MenuItem::List::iterator j;
-  for (j = list.begin(); j < list.end(); ++j) {
+  MenuItem::OwnedList& list = i->second;
+  for (auto j = list.begin(); j < list.end(); ++j) {
     // See if the current top-level item is a match.
     if ((*j)->id() == id) {
       items_removed = (*j)->RemoveAllDescendants();
       items_removed.insert(id);
-      delete *j;
       list.erase(j);
       result = true;
       SanitizeRadioList(list);
@@ -491,12 +491,12 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
     } else {
       // See if the item to remove was found as a descendant of the current
       // top-level item.
-      MenuItem* child = (*j)->ReleaseChild(id, true /* recursive */);
+      std::unique_ptr<MenuItem> child =
+          (*j)->ReleaseChild(id, true /* recursive */);
       if (child) {
         items_removed = child->RemoveAllDescendants();
         items_removed.insert(id);
         SanitizeRadioList(GetItemById(*child->parent_id())->children());
-        delete child;
         result = true;
         break;
       }
@@ -505,10 +505,8 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
   DCHECK(result);  // The check at the very top should have prevented this.
 
   // Clear entries from the items_by_id_ map.
-  std::set<MenuItem::Id>::iterator removed_iter;
-  for (removed_iter = items_removed.begin();
-       removed_iter != items_removed.end();
-       ++removed_iter) {
+  for (auto removed_iter = items_removed.begin();
+       removed_iter != items_removed.end(); ++removed_iter) {
     items_by_id_.erase(*removed_iter);
   }
 
@@ -526,44 +524,34 @@ void MenuManager::RemoveAllContextItems(
     return;
 
   // We use the |extension_id| from the stored ExtensionKey, since the provided
-  // |extension_key| may leave it empty (if matching solely basted on the
+  // |extension_key| may leave it empty (if matching solely based on the
   // webview IDs).
   // TODO(paulmeyer): We can get rid of this hack if/when we reliably track
   // extension IDs at WebView cleanup.
   std::string extension_id = it->first.extension_id;
-  MenuItem::List& context_items_for_key = it->second;
-  MenuItem::List::iterator i;
-  for (i = context_items_for_key.begin();
-       i != context_items_for_key.end();
-       ++i) {
-    MenuItem* item = *i;
+  MenuItem::OwnedList& context_items_for_key = it->second;
+  for (const auto& item : context_items_for_key) {
     items_by_id_.erase(item->id());
 
     // Remove descendants from this item and erase them from the lookup cache.
     std::set<MenuItem::Id> removed_ids = item->RemoveAllDescendants();
-    std::set<MenuItem::Id>::const_iterator j;
-    for (j = removed_ids.begin(); j != removed_ids.end(); ++j) {
+    for (auto j = removed_ids.begin(); j != removed_ids.end(); ++j) {
       items_by_id_.erase(*j);
     }
   }
-  base::STLDeleteElements(&context_items_for_key);
   context_items_.erase(extension_key);
   icon_manager_.RemoveIcon(extension_id);
 }
 
 MenuItem* MenuManager::GetItemById(const MenuItem::Id& id) const {
-  std::map<MenuItem::Id, MenuItem*>::const_iterator i =
-      items_by_id_.find(id);
-  if (i != items_by_id_.end())
-    return i->second;
-  else
-    return NULL;
+  auto i = items_by_id_.find(id);
+  return i != items_by_id_.end() ? i->second : nullptr;
 }
 
 void MenuManager::RadioItemSelected(MenuItem* item) {
   // If this is a child item, we need to get a handle to the list from its
   // parent. Otherwise get a handle to the top-level list.
-  const MenuItem::List* list = NULL;
+  const MenuItem::OwnedList* list = nullptr;
   if (item->parent_id()) {
     MenuItem* parent = GetItemById(*item->parent_id());
     if (!parent) {
@@ -581,10 +569,10 @@ void MenuManager::RadioItemSelected(MenuItem* item) {
   }
 
   // Find where |item| is in the list.
-  MenuItem::List::const_iterator item_location;
+  MenuItem::OwnedList::const_iterator item_location;
   for (item_location = list->begin(); item_location != list->end();
        ++item_location) {
-    if (*item_location == item)
+    if (item_location->get() == item)
       break;
   }
   if (item_location == list->end()) {
@@ -593,7 +581,7 @@ void MenuManager::RadioItemSelected(MenuItem* item) {
   }
 
   // Iterate backwards from |item| and uncheck any adjacent radio items.
-  MenuItem::List::const_iterator i;
+  MenuItem::OwnedList::const_iterator i;
   if (item_location != list->begin()) {
     i = item_location;
     do {
@@ -683,7 +671,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   // Add the tab info to the argument list.
   // No tab info in a platform app.
   if (!extension || !extension->is_platform_app()) {
-    // Note: web_contents are NULL in unit tests :(
+    // Note: web_contents are null in unit tests :(
     if (web_contents) {
       int frame_id = ExtensionApiFrameIdMap::GetFrameId(render_frame_host);
       if (frame_id != ExtensionApiFrameIdMap::kInvalidFrameId)
@@ -712,7 +700,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
       WriteToStorage(extension, item->id().extension_key);
   }
 
-  // Note: web_contents are NULL in unit tests :(
+  // Note: web_contents are null in unit tests :(
   if (web_contents && TabHelper::FromWebContents(web_contents)) {
     TabHelper::FromWebContents(web_contents)
         ->active_tab_permission_granter()
@@ -749,8 +737,8 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   }
 }
 
-void MenuManager::SanitizeRadioList(const MenuItem::List& item_list) {
-  MenuItem::List::const_iterator i = item_list.begin();
+void MenuManager::SanitizeRadioList(const MenuItem::OwnedList& item_list) {
+  auto i = item_list.begin();
   while (i != item_list.end()) {
     if ((*i)->type() != MenuItem::RADIO) {
       ++i;
@@ -760,8 +748,8 @@ void MenuManager::SanitizeRadioList(const MenuItem::List& item_list) {
     // Uncheck any checked radio items in the run, and at the end reset
     // the appropriate one to checked. If no check radio items were found,
     // then check the first radio item in the run.
-    MenuItem::List::const_iterator last_checked = item_list.end();
-    MenuItem::List::const_iterator radio_run_iter;
+    MenuItem::OwnedList::const_iterator last_checked = item_list.end();
+    MenuItem::OwnedList::const_iterator radio_run_iter;
     for (radio_run_iter = i; radio_run_iter != item_list.end();
         ++radio_run_iter) {
       if ((*radio_run_iter)->type() != MenuItem::RADIO) {
@@ -793,8 +781,7 @@ bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
   if (menu_item->parent_id()) {
     SanitizeRadioList(GetItemById(*menu_item->parent_id())->children());
   } else {
-    MenuItemMap::iterator i =
-        context_items_.find(menu_item->id().extension_key);
+    auto i = context_items_.find(menu_item->id().extension_key);
     if (i == context_items_.end()) {
       NOTREACHED();
       return false;
@@ -812,11 +799,10 @@ void MenuManager::WriteToStorage(const Extension* extension,
   // <webview> menu items are transient and not stored in storage.
   if (extension_key.webview_instance_id)
     return;
-  const MenuItem::List* top_items = MenuItems(extension_key);
+  const MenuItem::OwnedList* top_items = MenuItems(extension_key);
   MenuItem::List all_items;
   if (top_items) {
-    for (MenuItem::List::const_iterator i = top_items->begin();
-         i != top_items->end(); ++i) {
+    for (auto i = top_items->begin(); i != top_items->end(); ++i) {
       DCHECK(!(*i)->id().extension_key.webview_instance_id);
       (*i)->GetFlattenedSubtree(&all_items);
     }
@@ -836,10 +822,8 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
   if (!extension)
     return;
 
-  MenuItem::List items = MenuItemsFromValue(extension_id, value.get());
+  MenuItem::OwnedList items = MenuItemsFromValue(extension_id, value.get());
   for (size_t i = 0; i < items.size(); ++i) {
-    bool added = false;
-
     if (items[i]->parent_id()) {
       // Parent IDs are stored in the parent_id field for convenience, but
       // they have not yet been validated. Separate them out here.
@@ -847,13 +831,10 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
       // precede children, so we should already know about any parent items.
       std::unique_ptr<MenuItem::Id> parent_id;
       parent_id.swap(items[i]->parent_id_);
-      added = AddChildItem(*parent_id, items[i]);
+      AddChildItem(*parent_id, std::move(items[i]));
     } else {
-      added = AddContextItem(extension, items[i]);
+      AddContextItem(extension, std::move(items[i]));
     }
-
-    if (!added)
-      delete items[i];
   }
 }
 
@@ -899,18 +880,13 @@ const SkBitmap& MenuManager::GetIconForExtension(
 void MenuManager::RemoveAllIncognitoContextItems() {
   // Get all context menu items with "incognito" set to "split".
   std::set<MenuItem::Id> items_to_remove;
-  std::map<MenuItem::Id, MenuItem*>::const_iterator iter;
-  for (iter = items_by_id_.begin();
-       iter != items_by_id_.end();
-       ++iter) {
+  for (auto iter = items_by_id_.begin(); iter != items_by_id_.end(); ++iter) {
     if (iter->first.incognito)
       items_to_remove.insert(iter->first);
   }
 
-  std::set<MenuItem::Id>::iterator remove_iter;
-  for (remove_iter = items_to_remove.begin();
-       remove_iter != items_to_remove.end();
-       ++remove_iter)
+  for (auto remove_iter = items_to_remove.begin();
+       remove_iter != items_to_remove.end(); ++remove_iter)
     RemoveContextMenuItem(*remove_iter);
 }
 

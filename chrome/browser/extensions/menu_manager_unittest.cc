@@ -64,24 +64,25 @@ class MenuManagerTest : public testing::Test {
   }
 
   // Returns a test item.
-  MenuItem* CreateTestItem(Extension* extension, bool incognito = false) {
+  std::unique_ptr<MenuItem> CreateTestItem(Extension* extension,
+                                           bool incognito = false) {
     MenuItem::Type type = MenuItem::NORMAL;
     MenuItem::ContextList contexts(MenuItem::ALL);
     const MenuItem::ExtensionKey key(extension->id());
     MenuItem::Id id(incognito, key);
     id.uid = next_id_++;
-    return new MenuItem(id, "test", false, true, type, contexts);
+    return base::MakeUnique<MenuItem>(id, "test", false, true, type, contexts);
   }
 
   // Returns a test item with the given string ID.
-  MenuItem* CreateTestItemWithID(Extension* extension,
-                                 const std::string& string_id) {
+  std::unique_ptr<MenuItem> CreateTestItemWithID(Extension* extension,
+                                                 const std::string& string_id) {
     MenuItem::Type type = MenuItem::NORMAL;
     MenuItem::ContextList contexts(MenuItem::ALL);
     const MenuItem::ExtensionKey key(extension->id());
     MenuItem::Id id(false, key);
     id.string_uid = string_id;
-    return new MenuItem(id, "test", false, true, type, contexts);
+    return base::MakeUnique<MenuItem>(id, "test", false, true, type, contexts);
   }
 
   // Creates and returns a test Extension. The caller does *not* own the return
@@ -112,29 +113,33 @@ TEST_F(MenuManagerTest, AddGetRemoveItems) {
   Extension* extension = AddExtension("test");
 
   // Add a new item, make sure you can get it back.
-  MenuItem* item1 = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension);
   ASSERT_TRUE(item1 != NULL);
-  ASSERT_TRUE(manager_.AddContextItem(extension, item1));
-  ASSERT_EQ(item1, manager_.GetItemById(item1->id()));
-  const MenuItem::List* items = manager_.MenuItems(item1->id().extension_key);
+  MenuItem* item1_ptr = item1.get();
+  ASSERT_TRUE(manager_.AddContextItem(extension, std::move(item1)));
+  ASSERT_EQ(item1_ptr, manager_.GetItemById(item1_ptr->id()));
+  const MenuItem::OwnedList* items =
+      manager_.MenuItems(item1_ptr->id().extension_key);
   ASSERT_EQ(1u, items->size());
-  ASSERT_EQ(item1, items->at(0));
+  ASSERT_EQ(item1_ptr, items->at(0).get());
 
   // Add a second item, make sure it comes back too.
-  MenuItem* item2 = CreateTestItemWithID(extension, "id2");
-  ASSERT_TRUE(manager_.AddContextItem(extension, item2));
-  ASSERT_EQ(item2, manager_.GetItemById(item2->id()));
-  items = manager_.MenuItems(item2->id().extension_key);
+  std::unique_ptr<MenuItem> item2 = CreateTestItemWithID(extension, "id2");
+  MenuItem* item2_ptr = item2.get();
+  ASSERT_TRUE(manager_.AddContextItem(extension, std::move(item2)));
+  ASSERT_EQ(item2_ptr, manager_.GetItemById(item2_ptr->id()));
+  items = manager_.MenuItems(item2_ptr->id().extension_key);
   ASSERT_EQ(2u, items->size());
-  ASSERT_EQ(item1, items->at(0));
-  ASSERT_EQ(item2, items->at(1));
+  ASSERT_EQ(item1_ptr, items->at(0).get());
+  ASSERT_EQ(item2_ptr, items->at(1).get());
 
   // Try adding item 3, then removing it.
-  MenuItem* item3 = CreateTestItem(extension);
-  MenuItem::Id id3 = item3->id();
-  const MenuItem::ExtensionKey extension_key3(item3->id().extension_key);
-  ASSERT_TRUE(manager_.AddContextItem(extension, item3));
-  ASSERT_EQ(item3, manager_.GetItemById(id3));
+  std::unique_ptr<MenuItem> item3 = CreateTestItem(extension);
+  MenuItem* item3_ptr = item3.get();
+  MenuItem::Id id3 = item3_ptr->id();
+  const MenuItem::ExtensionKey extension_key3(item3_ptr->id().extension_key);
+  ASSERT_TRUE(manager_.AddContextItem(extension, std::move(item3)));
+  ASSERT_EQ(item3_ptr, manager_.GetItemById(id3));
   ASSERT_EQ(3u, manager_.MenuItems(extension_key3)->size());
   ASSERT_TRUE(manager_.RemoveContextMenuItem(id3));
   ASSERT_EQ(NULL, manager_.GetItemById(id3));
@@ -147,13 +152,14 @@ TEST_F(MenuManagerTest, AddGetRemoveItems) {
   ASSERT_FALSE(manager_.RemoveContextMenuItem(id));
 
   // Make sure adding an item with the same string ID returns false.
-  std::unique_ptr<MenuItem> item2too(CreateTestItemWithID(extension, "id2"));
-  ASSERT_FALSE(manager_.AddContextItem(extension, item2too.get()));
+  std::unique_ptr<MenuItem> item2too = CreateTestItemWithID(extension, "id2");
+  ASSERT_FALSE(manager_.AddContextItem(extension, std::move(item2too)));
 
   // But the same string ID should not collide with another extension.
   Extension* extension2 = AddExtension("test2");
-  MenuItem* item2other = CreateTestItemWithID(extension2, "id2");
-  ASSERT_TRUE(manager_.AddContextItem(extension2, item2other));
+  std::unique_ptr<MenuItem> item2other =
+      CreateTestItemWithID(extension2, "id2");
+  ASSERT_TRUE(manager_.AddContextItem(extension2, std::move(item2other)));
 }
 
 // Test adding/removing child items.
@@ -162,53 +168,57 @@ TEST_F(MenuManagerTest, ChildFunctions) {
   Extension* extension2 = AddExtension("2222");
   Extension* extension3 = AddExtension("3333");
 
-  MenuItem* item1 = CreateTestItem(extension1);
-  MenuItem* item2 = CreateTestItem(extension2);
-  MenuItem* item2_child = CreateTestItemWithID(extension2, "2child");
-  MenuItem* item2_grandchild = CreateTestItem(extension2);
-
-  // This third item we expect to fail inserting, so we use a scoped_ptr to make
-  // sure it gets deleted.
-  std::unique_ptr<MenuItem> item3(CreateTestItem(extension3));
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension1);
+  MenuItem* item1_ptr = item1.get();
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension2);
+  MenuItem* item2_ptr = item2.get();
+  std::unique_ptr<MenuItem> item2_child =
+      CreateTestItemWithID(extension2, "2child");
+  MenuItem* item2_child_ptr = item2_child.get();
+  std::unique_ptr<MenuItem> item2_grandchild = CreateTestItem(extension2);
+  std::unique_ptr<MenuItem> item3 = CreateTestItem(extension3);
 
   // Add in the first two items.
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
-  ASSERT_TRUE(manager_.AddContextItem(extension2, item2));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item1)));
+  ASSERT_TRUE(manager_.AddContextItem(extension2, std::move(item2)));
 
-  MenuItem::Id id1 = item1->id();
-  MenuItem::Id id2 = item2->id();
+  MenuItem::Id id1 = item1_ptr->id();
+  MenuItem::Id id2 = item2_ptr->id();
 
   // Try adding item3 as a child of item2 - this should fail because item3 has
   // a different extension id.
-  ASSERT_FALSE(manager_.AddChildItem(id2, item3.get()));
+  ASSERT_FALSE(manager_.AddChildItem(id2, std::move(item3)));
 
   // Add item2_child as a child of item2.
   MenuItem::Id id2_child = item2_child->id();
-  ASSERT_TRUE(manager_.AddChildItem(id2, item2_child));
-  ASSERT_EQ(1, item2->child_count());
-  ASSERT_EQ(0, item1->child_count());
-  ASSERT_EQ(item2_child, manager_.GetItemById(id2_child));
+  ASSERT_TRUE(manager_.AddChildItem(id2, std::move(item2_child)));
+  ASSERT_EQ(1, item2_ptr->child_count());
+  ASSERT_EQ(0, item1_ptr->child_count());
+  ASSERT_EQ(item2_child_ptr, manager_.GetItemById(id2_child));
 
-  ASSERT_EQ(1u, manager_.MenuItems(item1->id().extension_key)->size());
-  ASSERT_EQ(item1, manager_.MenuItems(item1->id().extension_key)->at(0));
+  ASSERT_EQ(1u, manager_.MenuItems(item1_ptr->id().extension_key)->size());
+  ASSERT_EQ(item1_ptr,
+            manager_.MenuItems(item1_ptr->id().extension_key)->at(0).get());
 
   // Add item2_grandchild as a child of item2_child, then remove it.
   MenuItem::Id id2_grandchild = item2_grandchild->id();
-  ASSERT_TRUE(manager_.AddChildItem(id2_child, item2_grandchild));
-  ASSERT_EQ(1, item2->child_count());
-  ASSERT_EQ(1, item2_child->child_count());
+  ASSERT_TRUE(manager_.AddChildItem(id2_child, std::move(item2_grandchild)));
+  ASSERT_EQ(1, item2_ptr->child_count());
+  ASSERT_EQ(1, item2_child_ptr->child_count());
   ASSERT_TRUE(manager_.RemoveContextMenuItem(id2_grandchild));
 
   // We should only get 1 thing back when asking for item2's extension id, since
   // it has a child item.
-  ASSERT_EQ(1u, manager_.MenuItems(item2->id().extension_key)->size());
-  ASSERT_EQ(item2, manager_.MenuItems(item2->id().extension_key)->at(0));
+  ASSERT_EQ(1u, manager_.MenuItems(item2_ptr->id().extension_key)->size());
+  ASSERT_EQ(item2_ptr,
+            manager_.MenuItems(item2_ptr->id().extension_key)->at(0).get());
 
   // Remove child2_item.
   ASSERT_TRUE(manager_.RemoveContextMenuItem(id2_child));
-  ASSERT_EQ(1u, manager_.MenuItems(item2->id().extension_key)->size());
-  ASSERT_EQ(item2, manager_.MenuItems(item2->id().extension_key)->at(0));
-  ASSERT_EQ(0, item2->child_count());
+  ASSERT_EQ(1u, manager_.MenuItems(item2_ptr->id().extension_key)->size());
+  ASSERT_EQ(item2_ptr,
+            manager_.MenuItems(item2_ptr->id().extension_key)->at(0).get());
+  ASSERT_EQ(0, item2_ptr->child_count());
 }
 
 TEST_F(MenuManagerTest, PopulateFromValue) {
@@ -277,12 +287,18 @@ TEST_F(MenuManagerTest, DeleteParent) {
   Extension* extension = AddExtension("1111");
 
   // Set up 5 items to add.
-  MenuItem* item1 = CreateTestItem(extension);
-  MenuItem* item2 = CreateTestItem(extension);
-  MenuItem* item3 = CreateTestItemWithID(extension, "id3");
-  MenuItem* item4 = CreateTestItemWithID(extension, "id4");
-  MenuItem* item5 = CreateTestItem(extension);
-  MenuItem* item6 = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> item3 = CreateTestItemWithID(extension, "id3");
+  std::unique_ptr<MenuItem> item4 = CreateTestItemWithID(extension, "id4");
+  std::unique_ptr<MenuItem> item5 = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> item6 = CreateTestItem(extension);
+  MenuItem* item1_ptr = item1.get();
+  MenuItem* item2_ptr = item2.get();
+  MenuItem* item3_ptr = item3.get();
+  MenuItem* item4_ptr = item4.get();
+  MenuItem* item5_ptr = item5.get();
+  MenuItem* item6_ptr = item6.get();
   MenuItem::Id item1_id = item1->id();
   MenuItem::Id item2_id = item2->id();
   MenuItem::Id item3_id = item3->id();
@@ -293,37 +309,37 @@ TEST_F(MenuManagerTest, DeleteParent) {
 
   // Add the items in the hierarchy
   // item1 -> item2 -> item3 -> item4 -> item5 -> item6.
-  ASSERT_TRUE(manager_.AddContextItem(extension, item1));
-  ASSERT_TRUE(manager_.AddChildItem(item1_id, item2));
-  ASSERT_TRUE(manager_.AddChildItem(item2_id, item3));
-  ASSERT_TRUE(manager_.AddChildItem(item3_id, item4));
-  ASSERT_TRUE(manager_.AddChildItem(item4_id, item5));
-  ASSERT_TRUE(manager_.AddChildItem(item5_id, item6));
-  ASSERT_EQ(item1, manager_.GetItemById(item1_id));
-  ASSERT_EQ(item2, manager_.GetItemById(item2_id));
-  ASSERT_EQ(item3, manager_.GetItemById(item3_id));
-  ASSERT_EQ(item4, manager_.GetItemById(item4_id));
-  ASSERT_EQ(item5, manager_.GetItemById(item5_id));
-  ASSERT_EQ(item6, manager_.GetItemById(item6_id));
+  ASSERT_TRUE(manager_.AddContextItem(extension, std::move(item1)));
+  ASSERT_TRUE(manager_.AddChildItem(item1_id, std::move(item2)));
+  ASSERT_TRUE(manager_.AddChildItem(item2_id, std::move(item3)));
+  ASSERT_TRUE(manager_.AddChildItem(item3_id, std::move(item4)));
+  ASSERT_TRUE(manager_.AddChildItem(item4_id, std::move(item5)));
+  ASSERT_TRUE(manager_.AddChildItem(item5_id, std::move(item6)));
+  ASSERT_EQ(item1_ptr, manager_.GetItemById(item1_id));
+  ASSERT_EQ(item2_ptr, manager_.GetItemById(item2_id));
+  ASSERT_EQ(item3_ptr, manager_.GetItemById(item3_id));
+  ASSERT_EQ(item4_ptr, manager_.GetItemById(item4_id));
+  ASSERT_EQ(item5_ptr, manager_.GetItemById(item5_id));
+  ASSERT_EQ(item6_ptr, manager_.GetItemById(item6_id));
   ASSERT_EQ(1u, manager_.MenuItems(key)->size());
   ASSERT_EQ(6u, manager_.items_by_id_.size());
 
   // Remove item6 (a leaf node).
   ASSERT_TRUE(manager_.RemoveContextMenuItem(item6_id));
-  ASSERT_EQ(item1, manager_.GetItemById(item1_id));
-  ASSERT_EQ(item2, manager_.GetItemById(item2_id));
-  ASSERT_EQ(item3, manager_.GetItemById(item3_id));
-  ASSERT_EQ(item4, manager_.GetItemById(item4_id));
-  ASSERT_EQ(item5, manager_.GetItemById(item5_id));
+  ASSERT_EQ(item1_ptr, manager_.GetItemById(item1_id));
+  ASSERT_EQ(item2_ptr, manager_.GetItemById(item2_id));
+  ASSERT_EQ(item3_ptr, manager_.GetItemById(item3_id));
+  ASSERT_EQ(item4_ptr, manager_.GetItemById(item4_id));
+  ASSERT_EQ(item5_ptr, manager_.GetItemById(item5_id));
   ASSERT_EQ(NULL, manager_.GetItemById(item6_id));
   ASSERT_EQ(1u, manager_.MenuItems(key)->size());
   ASSERT_EQ(5u, manager_.items_by_id_.size());
 
   // Remove item4 and make sure item5 is gone as well.
   ASSERT_TRUE(manager_.RemoveContextMenuItem(item4_id));
-  ASSERT_EQ(item1, manager_.GetItemById(item1_id));
-  ASSERT_EQ(item2, manager_.GetItemById(item2_id));
-  ASSERT_EQ(item3, manager_.GetItemById(item3_id));
+  ASSERT_EQ(item1_ptr, manager_.GetItemById(item1_id));
+  ASSERT_EQ(item2_ptr, manager_.GetItemById(item2_id));
+  ASSERT_EQ(item3_ptr, manager_.GetItemById(item3_id));
   ASSERT_EQ(NULL, manager_.GetItemById(item4_id));
   ASSERT_EQ(NULL, manager_.GetItemById(item5_id));
   ASSERT_EQ(1u, manager_.MenuItems(key)->size());
@@ -343,77 +359,82 @@ TEST_F(MenuManagerTest, ChangeParent) {
   Extension* extension1 = AddExtension("1111");
 
   // First create two items and add them both to the manager.
-  MenuItem* item1 = CreateTestItem(extension1);
-  MenuItem* item2 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension1);
+  MenuItem* item1_ptr = item1.get();
+  MenuItem* item2_ptr = item2.get();
 
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item2));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item1)));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item2)));
 
-  const MenuItem::List* items = manager_.MenuItems(item1->id().extension_key);
+  const MenuItem::OwnedList* items =
+      manager_.MenuItems(item1_ptr->id().extension_key);
   ASSERT_EQ(2u, items->size());
-  ASSERT_EQ(item1, items->at(0));
-  ASSERT_EQ(item2, items->at(1));
+  ASSERT_EQ(item1_ptr, items->at(0).get());
+  ASSERT_EQ(item2_ptr, items->at(1).get());
 
   // Now create a third item, initially add it as a child of item1, then move
   // it to be a child of item2.
-  MenuItem* item3 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item3 = CreateTestItem(extension1);
+  MenuItem* item3_ptr = item3.get();
 
-  ASSERT_TRUE(manager_.AddChildItem(item1->id(), item3));
-  ASSERT_EQ(1, item1->child_count());
-  ASSERT_EQ(item3, item1->children()[0]);
+  ASSERT_TRUE(manager_.AddChildItem(item1_ptr->id(), std::move(item3)));
+  ASSERT_EQ(1, item1_ptr->child_count());
+  ASSERT_EQ(item3_ptr, item1_ptr->children()[0].get());
 
-  ASSERT_TRUE(manager_.ChangeParent(item3->id(), &item2->id()));
-  ASSERT_EQ(0, item1->child_count());
-  ASSERT_EQ(1, item2->child_count());
-  ASSERT_EQ(item3, item2->children()[0]);
+  ASSERT_TRUE(manager_.ChangeParent(item3_ptr->id(), &item2_ptr->id()));
+  ASSERT_EQ(0, item1_ptr->child_count());
+  ASSERT_EQ(1, item2_ptr->child_count());
+  ASSERT_EQ(item3_ptr, item2_ptr->children()[0].get());
 
   // Move item2 to be a child of item1.
-  ASSERT_TRUE(manager_.ChangeParent(item2->id(), &item1->id()));
-  ASSERT_EQ(1, item1->child_count());
-  ASSERT_EQ(item2, item1->children()[0]);
-  ASSERT_EQ(1, item2->child_count());
-  ASSERT_EQ(item3, item2->children()[0]);
+  ASSERT_TRUE(manager_.ChangeParent(item2_ptr->id(), &item1_ptr->id()));
+  ASSERT_EQ(1, item1_ptr->child_count());
+  ASSERT_EQ(item2_ptr, item1_ptr->children()[0].get());
+  ASSERT_EQ(1, item2_ptr->child_count());
+  ASSERT_EQ(item3_ptr, item2_ptr->children()[0].get());
 
   // Since item2 was a top-level item but is no longer, we should only have 1
   // top-level item.
-  items = manager_.MenuItems(item1->id().extension_key);
+  items = manager_.MenuItems(item1_ptr->id().extension_key);
   ASSERT_EQ(1u, items->size());
-  ASSERT_EQ(item1, items->at(0));
+  ASSERT_EQ(item1_ptr, items->at(0).get());
 
   // Move item3 back to being a child of item1, so it's now a sibling of item2.
-  ASSERT_TRUE(manager_.ChangeParent(item3->id(), &item1->id()));
-  ASSERT_EQ(2, item1->child_count());
-  ASSERT_EQ(item2, item1->children()[0]);
-  ASSERT_EQ(item3, item1->children()[1]);
+  ASSERT_TRUE(manager_.ChangeParent(item3_ptr->id(), &item1_ptr->id()));
+  ASSERT_EQ(2, item1_ptr->child_count());
+  ASSERT_EQ(item2_ptr, item1_ptr->children()[0].get());
+  ASSERT_EQ(item3_ptr, item1_ptr->children()[1].get());
 
   // Try switching item3 to be the parent of item1 - this should fail.
-  ASSERT_FALSE(manager_.ChangeParent(item1->id(), &item3->id()));
-  ASSERT_EQ(0, item3->child_count());
-  ASSERT_EQ(2, item1->child_count());
-  ASSERT_EQ(item2, item1->children()[0]);
-  ASSERT_EQ(item3, item1->children()[1]);
-  items = manager_.MenuItems(item1->id().extension_key);
+  ASSERT_FALSE(manager_.ChangeParent(item1_ptr->id(), &item3_ptr->id()));
+  ASSERT_EQ(0, item3_ptr->child_count());
+  ASSERT_EQ(2, item1_ptr->child_count());
+  ASSERT_EQ(item2_ptr, item1_ptr->children()[0].get());
+  ASSERT_EQ(item3_ptr, item1_ptr->children()[1].get());
+  items = manager_.MenuItems(item1_ptr->id().extension_key);
   ASSERT_EQ(1u, items->size());
-  ASSERT_EQ(item1, items->at(0));
+  ASSERT_EQ(item1_ptr, items->at(0).get());
 
   // Move item2 to be a top-level item.
-  ASSERT_TRUE(manager_.ChangeParent(item2->id(), NULL));
-  items = manager_.MenuItems(item1->id().extension_key);
+  ASSERT_TRUE(manager_.ChangeParent(item2_ptr->id(), NULL));
+  items = manager_.MenuItems(item1_ptr->id().extension_key);
   ASSERT_EQ(2u, items->size());
-  ASSERT_EQ(item1, items->at(0));
-  ASSERT_EQ(item2, items->at(1));
-  ASSERT_EQ(1, item1->child_count());
-  ASSERT_EQ(item3, item1->children()[0]);
+  ASSERT_EQ(item1_ptr, items->at(0).get());
+  ASSERT_EQ(item2_ptr, items->at(1).get());
+  ASSERT_EQ(1, item1_ptr->child_count());
+  ASSERT_EQ(item3_ptr, item1_ptr->children()[0].get());
 
   // Make sure you can't move a node to be a child of another extension's item.
   Extension* extension2 = AddExtension("2222");
-  MenuItem* item4 = CreateTestItem(extension2);
-  ASSERT_TRUE(manager_.AddContextItem(extension2, item4));
-  ASSERT_FALSE(manager_.ChangeParent(item4->id(), &item1->id()));
-  ASSERT_FALSE(manager_.ChangeParent(item1->id(), &item4->id()));
+  std::unique_ptr<MenuItem> item4 = CreateTestItem(extension2);
+  MenuItem* item4_ptr = item4.get();
+  ASSERT_TRUE(manager_.AddContextItem(extension2, std::move(item4)));
+  ASSERT_FALSE(manager_.ChangeParent(item4_ptr->id(), &item1_ptr->id()));
+  ASSERT_FALSE(manager_.ChangeParent(item1_ptr->id(), &item4_ptr->id()));
 
-  // Make sure you can't make an item be it's own parent.
-  ASSERT_FALSE(manager_.ChangeParent(item1->id(), &item1->id()));
+  // Make sure you can't make an item be its own parent.
+  ASSERT_FALSE(manager_.ChangeParent(item1_ptr->id(), &item1_ptr->id()));
 }
 
 // Tests that we properly remove an extension's menu item when that extension is
@@ -427,18 +448,20 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   Extension* extension1 = AddExtension("1111");
 
   // Create an MenuItem and put it into the manager.
-  MenuItem* item1 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension1);
+  MenuItem* item1_ptr = item1.get();
   MenuItem::Id id1 = item1->id();
   ASSERT_EQ(extension1->id(), item1->extension_id());
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item1)));
   ASSERT_EQ(
       1u, manager_.MenuItems(MenuItem::ExtensionKey(extension1->id()))->size());
 
   // Create a menu item with a different extension id and add it to the manager.
   Extension* extension2 = AddExtension("2222");
-  MenuItem* item2 = CreateTestItem(extension2);
-  ASSERT_NE(item1->extension_id(), item2->extension_id());
-  ASSERT_TRUE(manager_.AddContextItem(extension2, item2));
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension2);
+  MenuItem* item2_ptr = item2.get();
+  ASSERT_NE(item1_ptr->extension_id(), item2->extension_id());
+  ASSERT_TRUE(manager_.AddContextItem(extension2, std::move(item2)));
 
   // Notify that the extension was unloaded, and make sure the right item is
   // gone.
@@ -450,7 +473,7 @@ TEST_F(MenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   ASSERT_EQ(
       1u, manager_.MenuItems(MenuItem::ExtensionKey(extension2->id()))->size());
   ASSERT_TRUE(manager_.GetItemById(id1) == NULL);
-  ASSERT_TRUE(manager_.GetItemById(item2->id()) != NULL);
+  ASSERT_TRUE(manager_.GetItemById(item2_ptr->id()) != NULL);
 }
 
 namespace {
@@ -497,17 +520,18 @@ TEST_F(MenuManagerTest, RemoveAll) {
 
   // Add 2 top-level and one child item for extension 1.
   Extension* extension1 = AddExtension("1111");
-  MenuItem* item1 = CreateTestItem(extension1);
-  MenuItem* item2 = CreateTestItem(extension1);
-  MenuItem* item3 = CreateTestItem(extension1);
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item2));
-  ASSERT_TRUE(manager_.AddChildItem(item1->id(), item3));
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item3 = CreateTestItem(extension1);
+  MenuItem* item1_ptr = item1.get();
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item1)));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item2)));
+  ASSERT_TRUE(manager_.AddChildItem(item1_ptr->id(), std::move(item3)));
 
   // Add one top-level item for extension 2.
   Extension* extension2 = AddExtension("2222");
-  MenuItem* item4 = CreateTestItem(extension2);
-  ASSERT_TRUE(manager_.AddContextItem(extension2, item4));
+  std::unique_ptr<MenuItem> item4 = CreateTestItem(extension2);
+  ASSERT_TRUE(manager_.AddContextItem(extension2, std::move(item4)));
 
   const MenuItem::ExtensionKey key1(extension1->id());
   const MenuItem::ExtensionKey key2(extension2->id());
@@ -528,18 +552,21 @@ TEST_F(MenuManagerTest, RemoveAll) {
 TEST_F(MenuManagerTest, RemoveOneByOne) {
   // Add 2 test items.
   Extension* extension1 = AddExtension("1111");
-  MenuItem* item1 = CreateTestItem(extension1);
-  MenuItem* item2 = CreateTestItem(extension1);
-  MenuItem* item3 = CreateTestItemWithID(extension1, "id3");
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item2));
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item3));
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item3 = CreateTestItemWithID(extension1, "id3");
+  MenuItem::Id item1_id = item1->id();
+  MenuItem::Id item2_id = item2->id();
+  MenuItem::Id item3_id = item3->id();
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item1)));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item2)));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item3)));
 
   ASSERT_FALSE(manager_.context_items_.empty());
 
-  manager_.RemoveContextMenuItem(item3->id());
-  manager_.RemoveContextMenuItem(item1->id());
-  manager_.RemoveContextMenuItem(item2->id());
+  manager_.RemoveContextMenuItem(item3_id);
+  manager_.RemoveContextMenuItem(item1_id);
+  manager_.RemoveContextMenuItem(item2_id);
 
   ASSERT_TRUE(manager_.context_items_.empty());
 }
@@ -558,12 +585,13 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   params.is_editable = false;
 
   Extension* extension = AddExtension("test");
-  MenuItem* parent = CreateTestItem(extension);
-  MenuItem* item = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> parent = CreateTestItem(extension);
+  std::unique_ptr<MenuItem> item = CreateTestItem(extension);
+  MenuItem* item_ptr = item.get();
   MenuItem::Id parent_id = parent->id();
   MenuItem::Id id = item->id();
-  ASSERT_TRUE(manager_.AddContextItem(extension, parent));
-  ASSERT_TRUE(manager_.AddChildItem(parent->id(), item));
+  ASSERT_TRUE(manager_.AddContextItem(extension, std::move(parent)));
+  ASSERT_TRUE(manager_.AddChildItem(parent_id, std::move(item)));
 
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToExtension method into event_args.
@@ -571,24 +599,18 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   {
     InSequence s;
     EXPECT_CALL(*mock_event_router,
-                DispatchEventToExtensionMock(item->extension_id(),
-                                             MenuManager::kOnContextMenus,
-                                             _,
-                                             &profile,
-                                             GURL(),
-                                             EventRouter::USER_GESTURE_ENABLED))
+                DispatchEventToExtensionMock(
+                    item_ptr->extension_id(), MenuManager::kOnContextMenus, _,
+                    &profile, GURL(), EventRouter::USER_GESTURE_ENABLED))
         .Times(1)
         .WillOnce(SaveArg<2>(&list));
-    EXPECT_CALL(*mock_event_router,
-              DispatchEventToExtensionMock(
-                  item->extension_id(),
-                  context_menus::OnClicked::kEventName,
-                  _,
-                  &profile,
-                  GURL(),
-                  EventRouter::USER_GESTURE_ENABLED))
-      .Times(1)
-      .WillOnce(DeleteArg<2>());
+    EXPECT_CALL(
+        *mock_event_router,
+        DispatchEventToExtensionMock(
+            item_ptr->extension_id(), context_menus::OnClicked::kEventName, _,
+            &profile, GURL(), EventRouter::USER_GESTURE_ENABLED))
+        .Times(1)
+        .WillOnce(DeleteArg<2>());
   }
   manager_.ExecuteCommand(&profile, nullptr /* web_contents */,
                           nullptr /* render_frame_host */, params, id);
@@ -627,91 +649,98 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
 TEST_F(MenuManagerTest, SanitizeRadioButtons) {
   Extension* extension = AddExtension("test");
 
-  // A single unchecked item should get checked
-  MenuItem* item1 = CreateTestItem(extension);
+  // A single unchecked item should get checked.
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension);
+  MenuItem* item1_ptr = item1.get();
 
-  item1->set_type(MenuItem::RADIO);
-  item1->SetChecked(false);
-  ASSERT_FALSE(item1->checked());
-  manager_.AddContextItem(extension, item1);
-  ASSERT_TRUE(item1->checked());
+  item1_ptr->set_type(MenuItem::RADIO);
+  item1_ptr->SetChecked(false);
+  ASSERT_FALSE(item1_ptr->checked());
+  manager_.AddContextItem(extension, std::move(item1));
+  ASSERT_TRUE(item1_ptr->checked());
 
   // In a run of two unchecked items, the first should get selected.
-  item1->SetChecked(false);
-  MenuItem* item2 = CreateTestItem(extension);
-  item2->set_type(MenuItem::RADIO);
-  item2->SetChecked(false);
-  ASSERT_FALSE(item1->checked());
-  ASSERT_FALSE(item2->checked());
-  manager_.AddContextItem(extension, item2);
-  ASSERT_TRUE(item1->checked());
-  ASSERT_FALSE(item2->checked());
+  item1_ptr->SetChecked(false);
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension);
+  MenuItem* item2_ptr = item2.get();
+  item2_ptr->set_type(MenuItem::RADIO);
+  item2_ptr->SetChecked(false);
+  ASSERT_FALSE(item1_ptr->checked());
+  ASSERT_FALSE(item2_ptr->checked());
+  manager_.AddContextItem(extension, std::move(item2));
+  ASSERT_TRUE(item1_ptr->checked());
+  ASSERT_FALSE(item2_ptr->checked());
 
   // If multiple items are checked, only the last item should get checked.
-  item1->SetChecked(true);
-  item2->SetChecked(true);
-  ASSERT_TRUE(item1->checked());
-  ASSERT_TRUE(item2->checked());
-  manager_.ItemUpdated(item1->id());
-  ASSERT_FALSE(item1->checked());
-  ASSERT_TRUE(item2->checked());
+  item1_ptr->SetChecked(true);
+  item2_ptr->SetChecked(true);
+  ASSERT_TRUE(item1_ptr->checked());
+  ASSERT_TRUE(item2_ptr->checked());
+  manager_.ItemUpdated(item1_ptr->id());
+  ASSERT_FALSE(item1_ptr->checked());
+  ASSERT_TRUE(item2_ptr->checked());
 
   // If the checked item is removed, the new first item should get checked.
-  item1->SetChecked(false);
-  item2->SetChecked(true);
-  ASSERT_FALSE(item1->checked());
-  ASSERT_TRUE(item2->checked());
-  manager_.RemoveContextMenuItem(item2->id());
-  item2 = NULL;
-  ASSERT_TRUE(item1->checked());
+  item1_ptr->SetChecked(false);
+  item2_ptr->SetChecked(true);
+  ASSERT_FALSE(item1_ptr->checked());
+  ASSERT_TRUE(item2_ptr->checked());
+  manager_.RemoveContextMenuItem(item2_ptr->id());
+  item2_ptr = NULL;
+  ASSERT_TRUE(item1_ptr->checked());
 
   // If a checked item is added to a run that already has a checked item,
   // then the new item should get checked.
-  item1->SetChecked(true);
-  MenuItem* new_item = CreateTestItem(extension);
-  new_item->set_type(MenuItem::RADIO);
-  new_item->SetChecked(true);
-  ASSERT_TRUE(item1->checked());
-  ASSERT_TRUE(new_item->checked());
-  manager_.AddContextItem(extension, new_item);
-  ASSERT_FALSE(item1->checked());
-  ASSERT_TRUE(new_item->checked());
+  item1_ptr->SetChecked(true);
+  std::unique_ptr<MenuItem> new_item = CreateTestItem(extension);
+  MenuItem* new_item_ptr = new_item.get();
+  new_item_ptr->set_type(MenuItem::RADIO);
+  new_item_ptr->SetChecked(true);
+  ASSERT_TRUE(item1_ptr->checked());
+  ASSERT_TRUE(new_item_ptr->checked());
+  manager_.AddContextItem(extension, std::move(new_item));
+  ASSERT_FALSE(item1_ptr->checked());
+  ASSERT_TRUE(new_item_ptr->checked());
+
   // Make sure that children are checked as well.
-  MenuItem* parent = CreateTestItem(extension);
-  manager_.AddContextItem(extension, parent);
-  MenuItem* child1 = CreateTestItem(extension);
-  child1->set_type(MenuItem::RADIO);
-  child1->SetChecked(false);
-  MenuItem* child2 = CreateTestItem(extension);
-  child2->set_type(MenuItem::RADIO);
-  child2->SetChecked(true);
-  ASSERT_FALSE(child1->checked());
-  ASSERT_TRUE(child2->checked());
+  std::unique_ptr<MenuItem> parent = CreateTestItem(extension);
+  MenuItem* parent_ptr = parent.get();
+  manager_.AddContextItem(extension, std::move(parent));
+  std::unique_ptr<MenuItem> child1 = CreateTestItem(extension);
+  MenuItem* child1_ptr = child1.get();
+  child1_ptr->set_type(MenuItem::RADIO);
+  child1_ptr->SetChecked(false);
+  std::unique_ptr<MenuItem> child2 = CreateTestItem(extension);
+  MenuItem* child2_ptr = child2.get();
+  child2_ptr->set_type(MenuItem::RADIO);
+  child2_ptr->SetChecked(true);
+  ASSERT_FALSE(child1_ptr->checked());
+  ASSERT_TRUE(child2_ptr->checked());
 
-  manager_.AddChildItem(parent->id(), child1);
-  ASSERT_TRUE(child1->checked());
+  manager_.AddChildItem(parent_ptr->id(), std::move(child1));
+  ASSERT_TRUE(child1_ptr->checked());
 
-  manager_.AddChildItem(parent->id(), child2);
-  ASSERT_FALSE(child1->checked());
-  ASSERT_TRUE(child2->checked());
+  manager_.AddChildItem(parent_ptr->id(), std::move(child2));
+  ASSERT_FALSE(child1_ptr->checked());
+  ASSERT_TRUE(child2_ptr->checked());
 
   // Removing the checked item from the children should cause the
   // remaining child to be checked.
-  manager_.RemoveContextMenuItem(child2->id());
-  child2 = NULL;
-  ASSERT_TRUE(child1->checked());
+  manager_.RemoveContextMenuItem(child2_ptr->id());
+  child2_ptr = NULL;
+  ASSERT_TRUE(child1_ptr->checked());
 
-  // This should NOT cause |new_item| to be deseleted because
-  // |parent| will be seperating the two runs of radio items.
-  manager_.ChangeParent(child1->id(), NULL);
-  ASSERT_TRUE(new_item->checked());
-  ASSERT_TRUE(child1->checked());
+  // This should NOT cause |new_item| to be deselected because
+  // |parent| will be separating the two runs of radio items.
+  manager_.ChangeParent(child1_ptr->id(), NULL);
+  ASSERT_TRUE(new_item_ptr->checked());
+  ASSERT_TRUE(child1_ptr->checked());
 
   // Removing |parent| should cause only |child1| to be selected.
-  manager_.RemoveContextMenuItem(parent->id());
-  parent = NULL;
-  ASSERT_FALSE(new_item->checked());
-  ASSERT_TRUE(child1->checked());
+  manager_.RemoveContextMenuItem(parent_ptr->id());
+  parent_ptr = NULL;
+  ASSERT_FALSE(new_item_ptr->checked());
+  ASSERT_TRUE(child1_ptr->checked());
 }
 
 // Tests the RemoveAllIncognitoContextItems functionality.
@@ -719,26 +748,28 @@ TEST_F(MenuManagerTest, RemoveAllIncognito) {
   Extension* extension1 = AddExtension("1111");
   // Add 2 top-level and one child item for extension 1
   // with incognito 'true'.
-  MenuItem* item1 = CreateTestItem(extension1, true);
-  MenuItem* item2 = CreateTestItem(extension1, true);
-  MenuItem* item3 = CreateTestItem(extension1, true);
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item2));
-  ASSERT_TRUE(manager_.AddChildItem(item1->id(), item3));
+  std::unique_ptr<MenuItem> item1 = CreateTestItem(extension1, true);
+  std::unique_ptr<MenuItem> item2 = CreateTestItem(extension1, true);
+  std::unique_ptr<MenuItem> item3 = CreateTestItem(extension1, true);
+  MenuItem::Id item1_id = item1->id();
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item1)));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item2)));
+  ASSERT_TRUE(manager_.AddChildItem(item1_id, std::move(item3)));
 
   // Add 2 top-level and one child item for extension 1
   // with incognito 'false'.
-  MenuItem* item4 = CreateTestItem(extension1);
-  MenuItem* item5 = CreateTestItem(extension1);
-  MenuItem* item6 = CreateTestItem(extension1);
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item4));
-  ASSERT_TRUE(manager_.AddContextItem(extension1, item5));
-  ASSERT_TRUE(manager_.AddChildItem(item4->id(), item6));
+  std::unique_ptr<MenuItem> item4 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item5 = CreateTestItem(extension1);
+  std::unique_ptr<MenuItem> item6 = CreateTestItem(extension1);
+  MenuItem::Id item4_id = item4->id();
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item4)));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, std::move(item5)));
+  ASSERT_TRUE(manager_.AddChildItem(item4_id, std::move(item6)));
 
   // Add one top-level item for extension 2.
   Extension* extension2 = AddExtension("2222");
-  MenuItem* item7 = CreateTestItem(extension2);
-  ASSERT_TRUE(manager_.AddContextItem(extension2, item7));
+  std::unique_ptr<MenuItem> item7 = CreateTestItem(extension2);
+  ASSERT_TRUE(manager_.AddContextItem(extension2, std::move(item7)));
 
   const MenuItem::ExtensionKey key1(extension1->id());
   const MenuItem::ExtensionKey key2(extension2->id());

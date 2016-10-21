@@ -614,8 +614,9 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
         menu_manager()->ExtensionIds();
     std::set<MenuItem::ExtensionKey>::iterator i;
     for (i = extension_ids.begin(); i != extension_ids.end(); ++i) {
-      const MenuItem::List* list = menu_manager()->MenuItems(*i);
-      result.insert(result.end(), list->begin(), list->end());
+      const MenuItem::OwnedList* list = menu_manager()->MenuItems(*i);
+      for (const auto& item : *list)
+        result.push_back(item.get());
     }
     return result;
   }

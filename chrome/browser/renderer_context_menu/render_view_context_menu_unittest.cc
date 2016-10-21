@@ -112,15 +112,16 @@ class RenderViewContextMenuTest : public testing::Test {
   }
 
   // Returns a test item.
-  MenuItem* CreateTestItem(const Extension* extension, int uid) {
+  std::unique_ptr<MenuItem> CreateTestItem(const Extension* extension,
+                                           int uid) {
     MenuItem::Type type = MenuItem::NORMAL;
     MenuItem::ContextList contexts(MenuItem::ALL);
     const MenuItem::ExtensionKey key(extension->id());
     bool incognito = false;
     MenuItem::Id id(incognito, key);
     id.uid = uid;
-    return new MenuItem(id, "Added by an extension", false, true, type,
-                        contexts);
+    return base::MakeUnique<MenuItem>(id, "Added by an extension", false, true,
+                                      type, contexts);
   }
 
  private:
@@ -340,10 +341,10 @@ TEST_F(RenderViewContextMenuExtensionsTest,
       base::DictionaryValue(), "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 
   // Create two items in two extensions with same title.
-  MenuItem* item1 = CreateTestItem(extension1, 1);
-  ASSERT_TRUE(menu_manager->AddContextItem(extension1, item1));
-  MenuItem* item2 = CreateTestItem(extension2, 2);
-  ASSERT_TRUE(menu_manager->AddContextItem(extension2, item2));
+  ASSERT_TRUE(
+      menu_manager->AddContextItem(extension1, CreateTestItem(extension1, 1)));
+  ASSERT_TRUE(
+      menu_manager->AddContextItem(extension2, CreateTestItem(extension2, 2)));
 
   std::unique_ptr<content::WebContents> web_contents = environment().MakeTab();
   std::unique_ptr<TestRenderViewContextMenu> menu(
