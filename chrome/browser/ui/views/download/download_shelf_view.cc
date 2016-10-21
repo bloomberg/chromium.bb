@@ -167,6 +167,23 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
   SchedulePaint();
 }
 
+void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
+  DCHECK(GetThemeProvider());
+
+  button->SetEnabledTextColors(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+  // For the normal theme, just use the default button bg color.
+  base::Optional<SkColor> bg_color;
+  if (!ThemeServiceFactory::GetForProfile(browser_->profile())
+          ->UsingDefaultTheme()) {
+    // For custom themes, we have to make up a background color for the
+    // button. Use a slight tint of the shelf background.
+    bg_color = color_utils::BlendTowardOppositeLuma(
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR), 0x10);
+  }
+  button->SetBgColorOverride(bg_color);
+}
+
 views::View* DownloadShelfView::GetDefaultFocusableChild() {
   if (!download_views_.empty())
     return download_views_.back();
@@ -310,23 +327,14 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
 }
 
 void DownloadShelfView::UpdateColorsFromTheme() {
-  if (show_all_view_ && close_button_ && GetThemeProvider()) {
-    const SkColor bg_color =
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
-    set_background(views::Background::CreateSolidBackground(bg_color));
-    show_all_view_->SetEnabledTextColors(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
-    if (ThemeServiceFactory::GetForProfile(browser_->profile())
-            ->UsingDefaultTheme()) {
-      // For the normal theme, just use the default button bg color.
-      show_all_view_->SetBgColorOverride(base::Optional<SkColor>());
-    } else {
-      // For custom themes, we have to make up a background color for the
-      // button. Use a slight tint of the shelf background.
-      show_all_view_->SetBgColorOverride(
-          color_utils::BlendTowardOppositeLuma(bg_color, 0x10));
-    }
-  }
+  if (!GetThemeProvider())
+    return;
+
+  if (show_all_view_)
+    ConfigureButtonForTheme(show_all_view_);
+
+  set_background(views::Background::CreateSolidBackground(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
 }
 
 void DownloadShelfView::OnThemeChanged() {

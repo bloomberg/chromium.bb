@@ -78,6 +78,8 @@ MdTextButton* MdTextButton::Create(ButtonListener* listener,
   return button;
 }
 
+MdTextButton::~MdTextButton() {}
+
 void MdTextButton::SetProminent(bool is_prominent) {
   if (is_prominent_ == is_prominent)
     return;
@@ -208,8 +210,6 @@ MdTextButton::MdTextButton(ButtonListener* listener)
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);
 }
-
-MdTextButton::~MdTextButton() {}
 
 void MdTextButton::UpdatePadding() {
   // Don't use font-based padding when there's no text visible.

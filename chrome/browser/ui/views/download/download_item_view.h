@@ -56,6 +56,7 @@ namespace views {
 class ImageButton;
 class Label;
 class LabelButton;
+class MdTextButton;
 }
 
 // Represents a single download item on the download shelf. Encompasses an icon,
@@ -282,8 +283,8 @@ class DownloadItemView : public views::InkDropHostView,
   base::RepeatingTimer progress_timer_;
 
   // Dangerous mode buttons.
-  views::LabelButton* save_button_;
-  views::LabelButton* discard_button_;
+  views::MdTextButton* save_button_;
+  views::MdTextButton* discard_button_;
 
   // The drop down button.
   DropDownButton* dropdown_button_;

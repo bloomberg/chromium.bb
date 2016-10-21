@@ -91,6 +91,9 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // it's removed.
   void RemoveDownloadView(views::View* view);
 
+  // Updates |button| according to the active theme.
+  void ConfigureButtonForTheme(views::MdTextButton* button);
+
  protected:
   // Implementation of DownloadShelf.
   void DoAddDownload(content::DownloadItem* download) override;

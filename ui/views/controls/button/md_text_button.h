@@ -24,6 +24,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static MdTextButton* Create(ButtonListener* listener,
                               const base::string16& text);
 
+  ~MdTextButton() override;
+
   // See |is_prominent_|.
   void SetProminent(bool is_prominent);
 
@@ -54,7 +56,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
  private:
   explicit MdTextButton(ButtonListener* listener);
-  ~MdTextButton() override;
 
   void UpdatePadding();
   void UpdateColors();
