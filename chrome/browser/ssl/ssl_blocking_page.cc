@@ -133,12 +133,25 @@ SSLBlockingPage* SSLBlockingPage::Create(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
+  // Override prefs for the SSLErrorUI.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile &&
+      !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed)) {
+    options_mask |= SSLErrorUI::HARD_OVERRIDE_DISABLED;
+  }
   bool overridable = IsOverridable(
       options_mask,
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (overridable)
+    options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+  else
+    options_mask &= ~SSLErrorUI::SOFT_OVERRIDE_ENABLED;
+
   std::unique_ptr<ChromeMetricsHelper> metrics_helper(
       CreateMetricsHelper(web_contents, cert_error, request_url, overridable));
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(overridable);
+
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered,
                              std::move(ssl_cert_reporter), overridable,
@@ -189,27 +202,21 @@ SSLBlockingPage::SSLBlockingPage(
       ssl_info_(ssl_info),
       overridable_(overridable),
       expired_but_previously_allowed_(
-          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0) {
-  // Override prefs for the SSLErrorUI.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile &&
-      !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed)) {
-    options_mask |= SSLErrorUI::HARD_OVERRIDE_DISABLED;
-  }
-  if (overridable_)
-    options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
-  else
-    options_mask &= ~SSLErrorUI::SOFT_OVERRIDE_ENABLED;
-
-  cert_report_helper_.reset(new CertReportHelper(
-      std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
-      certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
-      controller()->metrics_helper()));
-
-  ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
-                                     options_mask, time_triggered,
-                                     controller()));
+          (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
+      cert_report_helper_(new CertReportHelper(
+          std::move(ssl_cert_reporter),
+          web_contents,
+          request_url,
+          ssl_info,
+          certificate_reporting::ErrorReport::INTERSTITIAL_SSL,
+          overridable_,
+          controller()->metrics_helper())),
+      ssl_error_ui_(new SSLErrorUI(request_url,
+                                   cert_error,
+                                   ssl_info,
+                                   options_mask,
+                                   time_triggered,
+                                   controller())) {
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
 }

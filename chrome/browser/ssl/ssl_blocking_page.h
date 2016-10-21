@@ -116,8 +116,8 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // expired.
   const bool expired_but_previously_allowed_;
 
-  std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
-  std::unique_ptr<CertReportHelper> cert_report_helper_;
+  const std::unique_ptr<CertReportHelper> cert_report_helper_;
+  const std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };
