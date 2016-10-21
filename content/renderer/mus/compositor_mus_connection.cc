@@ -45,13 +45,14 @@ CompositorMusConnection::CompositorMusConnection(
                             this, base::Passed(std::move(request))));
 }
 
-void CompositorMusConnection::AttachSurfaceOnMainThread(
+void CompositorMusConnection::AttachCompositorFrameSinkOnMainThread(
     std::unique_ptr<ui::WindowSurfaceBinding> surface_binding) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CompositorMusConnection::AttachSurfaceOnCompositorThread,
-                 this, base::Passed(std::move(surface_binding))));
+      base::Bind(
+          &CompositorMusConnection::AttachCompositorFrameSinkOnCompositorThread,
+          this, base::Passed(std::move(surface_binding))));
 }
 
 CompositorMusConnection::~CompositorMusConnection() {
@@ -60,13 +61,13 @@ CompositorMusConnection::~CompositorMusConnection() {
   DCHECK(!window_tree_client_);
 }
 
-void CompositorMusConnection::AttachSurfaceOnCompositorThread(
+void CompositorMusConnection::AttachCompositorFrameSinkOnCompositorThread(
     std::unique_ptr<ui::WindowSurfaceBinding> surface_binding) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   window_surface_binding_ = std::move(surface_binding);
   if (root_) {
-    root_->AttachSurface(ui::mojom::SurfaceType::DEFAULT,
-                         std::move(window_surface_binding_));
+    root_->AttachCompositorFrameSink(ui::mojom::SurfaceType::DEFAULT,
+                                     std::move(window_surface_binding_));
   }
 }
 
@@ -152,8 +153,8 @@ void CompositorMusConnection::OnEmbed(ui::Window* root) {
   root_ = root;
   root_->set_input_event_handler(this);
   if (window_surface_binding_) {
-    root->AttachSurface(ui::mojom::SurfaceType::DEFAULT,
-                        std::move(window_surface_binding_));
+    root->AttachCompositorFrameSink(ui::mojom::SurfaceType::DEFAULT,
+                                    std::move(window_surface_binding_));
   }
 }
 

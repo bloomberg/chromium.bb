@@ -68,7 +68,7 @@ void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceToSharedBitmap(
   resource.mailbox_holder.texture_target = 0;
   resource.is_software = true;
 
-  // Hold ref to |bitmap|, to keep it alive until the browser ReturnResources.
+  // Hold ref to |bitmap|, to keep it alive until the browser ReclaimResources.
   // It guarantees that the shared bitmap is not re-used or deleted.
   m_sharedBitmaps.add(m_nextResourceId, std::move(bitmap));
 }
@@ -126,7 +126,7 @@ void OffscreenCanvasFrameDispatcherImpl::
   resource.is_software = false;
 
   // Hold ref to |textureId| for the piece of GPU memory where the pixel data
-  // is uploaded to, to keep it alive until the browser ReturnResources.
+  // is uploaded to, to keep it alive until the browser ReclaimResources.
   m_cachedTextureIds.add(m_nextResourceId, textureId);
 }
 
@@ -140,7 +140,7 @@ void OffscreenCanvasFrameDispatcherImpl::
   resource.read_lock_fences_enabled = false;
   resource.is_software = false;
 
-  // Hold ref to |image|, to keep it alive until the browser ReturnResources.
+  // Hold ref to |image|, to keep it alive until the browser ReclaimResources.
   // It guarantees that the resource is not re-used or deleted.
   m_cachedImages.add(m_nextResourceId, std::move(image));
 }
@@ -311,10 +311,14 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       NOTREACHED();
   }
 
-  m_sink->SubmitCompositorFrame(std::move(frame), base::Closure());
+  m_sink->SubmitCompositorFrame(std::move(frame));
 }
 
-void OffscreenCanvasFrameDispatcherImpl::ReturnResources(
+void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck() {
+  // TODO(fsamuel): Implement this.
+}
+
+void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {
     m_cachedImages.remove(resource.id);

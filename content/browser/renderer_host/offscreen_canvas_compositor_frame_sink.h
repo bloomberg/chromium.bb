@@ -25,9 +25,7 @@ class OffscreenCanvasCompositorFrameSink
                      cc::mojom::MojoCompositorFrameSinkRequest request);
 
   // cc::mojom::MojoCompositorFrameSink implementation.
-  void SubmitCompositorFrame(
-      cc::CompositorFrame frame,
-      const SubmitCompositorFrameCallback& callback) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
 
   // cc::SurfaceFactoryClient implementation.
@@ -37,6 +35,8 @@ class OffscreenCanvasCompositorFrameSink
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
  private:
+  void DidReceiveCompositorFrameAck();
+
   cc::SurfaceId surface_id_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;

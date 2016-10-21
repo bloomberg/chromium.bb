@@ -12,11 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/window_surface.h"
 #include "services/ui/public/cpp/window_surface_client.h"
-#include "services/ui/public/interfaces/surface.mojom.h"
 
 namespace ui {
 class GLES2Context;
@@ -26,7 +27,7 @@ extern const char kBitmapUploaderForAcceleratedWidget[];
 
 // BitmapUploader is useful if you want to draw a bitmap or color in a
 // Window.
-class BitmapUploader : public WindowSurfaceClient {
+class BitmapUploader : public cc::CompositorFrameSinkClient {
  public:
   explicit BitmapUploader(Window* window);
   ~BitmapUploader() override;
@@ -57,15 +58,22 @@ class BitmapUploader : public WindowSurfaceClient {
 
   void SetIdNamespace(uint32_t id_namespace);
 
-  // WindowSurfaceClient implementation.
-  void OnResourcesReturned(WindowSurface* surface,
-                           const cc::ReturnedResourceArray& resources) override;
+  // cc::CompositorFrameSinkClient implementation.
+  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void SetTreeActivationCallback(const base::Closure& callback) override;
+  void DidReceiveCompositorFrameAck() override;
+  void DidLoseCompositorFrameSink() override;
+  void OnDraw(const gfx::Transform& transform,
+              const gfx::Rect& viewport,
+              bool resourceless_software_draw) override;
+  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
+  void SetExternalTilePriorityConstraints(
+      const gfx::Rect& viewport_rect,
+      const gfx::Transform& transform) override;
 
   Window* window_;
-  std::unique_ptr<WindowSurface> surface_;
-  // This may be null if there is an error contacting mus/initializing. We
-  // assume we'll be shutting down soon and do nothing in this case.
-  std::unique_ptr<GLES2Context> gles2_context_;
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
 
   uint32_t color_;
   int width_;

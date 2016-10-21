@@ -8,6 +8,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "services/ui/public/cpp/compositor_frame_sink.h"
+#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
 #include "ui/compositor/reflector.h"
@@ -38,9 +39,9 @@ void SurfaceContextFactory::CreateCompositorFrameSink(
   ui::Window* window = compositor->window();
   NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
   ui::mojom::SurfaceType surface_type = native_widget->surface_type();
-  auto compositor_frame_sink = base::MakeUnique<ui::CompositorFrameSink>(
-      gpu_service_->EstablishGpuChannelSync(),
-      window->RequestSurface(surface_type));
+  auto compositor_frame_sink = window->RequestCompositorFrameSink(
+      surface_type, make_scoped_refptr(new ui::ContextProvider(
+                        gpu_service_->EstablishGpuChannelSync())));
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 

@@ -33,9 +33,10 @@ class ServerWindowSurfaceManager {
 
   // Creates a new surface of the specified type, replacing the existing one of
   // the specified type.
-  void CreateSurface(mojom::SurfaceType surface_type,
-                     mojo::InterfaceRequest<mojom::Surface> request,
-                     mojom::SurfaceClientPtr client);
+  void CreateSurface(
+      mojom::SurfaceType surface_type,
+      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ServerWindow* window() { return window_; }
 

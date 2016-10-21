@@ -8,20 +8,16 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window_surface.h"
 
 namespace ui {
 
 CompositorFrameSink::CompositorFrameSink(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    scoped_refptr<cc::ContextProvider> context_provider,
     std::unique_ptr<ui::WindowSurface> surface)
-    : cc::CompositorFrameSink(
-          make_scoped_refptr(new ContextProvider(std::move(gpu_channel_host))),
-          nullptr),
-      surface_(std::move(surface)) {
-}
+    : cc::CompositorFrameSink(std::move(context_provider), nullptr),
+      surface_(std::move(surface)) {}
 
 CompositorFrameSink::~CompositorFrameSink() {}
 
@@ -49,18 +45,14 @@ void CompositorFrameSink::DetachFromClient() {
 }
 
 void CompositorFrameSink::SubmitCompositorFrame(cc::CompositorFrame frame) {
-  // CompositorFrameSink owns WindowSurface, and so if CompositorFrameSink is
-  // destroyed then SubmitCompositorFrame's callback will never get called.
-  // Thus, base::Unretained is safe here as |client_| is valid as long as |this|
-  // is.
-  surface_->SubmitCompositorFrame(
-      std::move(frame),
-      base::Bind(&cc::CompositorFrameSinkClient::DidReceiveCompositorFrameAck,
-                 base::Unretained(client_)));
+  surface_->SubmitCompositorFrame(std::move(frame));
 }
 
-void CompositorFrameSink::OnResourcesReturned(
-    ui::WindowSurface* surface,
+void CompositorFrameSink::DidReceiveCompositorFrameAck() {
+  client_->DidReceiveCompositorFrameAck();
+}
+
+void CompositorFrameSink::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   client_->ReclaimResources(resources);
 }

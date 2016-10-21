@@ -14,6 +14,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gles2_context.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
@@ -39,23 +40,22 @@ BitmapUploader::BitmapUploader(Window* window)
 }
 
 void BitmapUploader::Init(ui::GpuService* gpu_service) {
-  surface_ = window_->RequestSurface(mojom::SurfaceType::DEFAULT);
-  surface_->BindToThread();
-  surface_->set_client(this);
-
-  gles2_context_ = GLES2Context::CreateOffscreenContext(
-      gpu_service->EstablishGpuChannelSync(),
-      base::ThreadTaskRunnerHandle::Get());
+  compositor_frame_sink_ = window_->RequestCompositorFrameSink(
+      mojom::SurfaceType::DEFAULT,
+      new ContextProvider(gpu_service->EstablishGpuChannelSync()));
+  compositor_frame_sink_->BindToClient(this);
 }
 
-BitmapUploader::~BitmapUploader() {}
+BitmapUploader::~BitmapUploader() {
+  compositor_frame_sink_->DetachFromClient();
+}
 
 // Sets the color which is RGBA.
 void BitmapUploader::SetColor(uint32_t color) {
   if (color_ == color)
     return;
   color_ = color;
-  if (surface_)
+  if (compositor_frame_sink_)
     Upload();
 }
 
@@ -68,12 +68,12 @@ void BitmapUploader::SetBitmap(int width,
   height_ = height;
   bitmap_ = std::move(data);
   format_ = format;
-  if (surface_)
+  if (compositor_frame_sink_)
     Upload();
 }
 
 void BitmapUploader::Upload() {
-  if (!gles2_context_)
+  if (!compositor_frame_sink_ || !compositor_frame_sink_->context_provider())
     return;
 
   const gfx::Rect bounds(window_->bounds().size());
@@ -97,7 +97,8 @@ void BitmapUploader::Upload() {
               0 /* sorting_context_id */);
 
   if (bitmap_.get()) {
-    gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
+    gpu::gles2::GLES2Interface* gl =
+        compositor_frame_sink_->context_provider()->ContextGL();
     gfx::Size bitmap_size(width_, height_);
     GLuint texture_id = BindTextureForSize(bitmap_size);
     gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap_size.width(),
@@ -171,11 +172,12 @@ void BitmapUploader::Upload() {
   frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
   // TODO(rjkroege, fsamuel): We should throttle frames.
-  surface_->SubmitCompositorFrame(std::move(frame), base::Closure());
+  compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
 }
 
 uint32_t BitmapUploader::BindTextureForSize(const gfx::Size& size) {
-  gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
+  gpu::gles2::GLES2Interface* gl =
+      compositor_frame_sink_->context_provider()->ContextGL();
   // TODO(jamesr): Recycle textures.
   GLuint texture = 0u;
   gl->GenTextures(1, &texture);
@@ -186,10 +188,12 @@ uint32_t BitmapUploader::BindTextureForSize(const gfx::Size& size) {
   return texture;
 }
 
-void BitmapUploader::OnResourcesReturned(
-    WindowSurface* surface,
+void BitmapUploader::SetBeginFrameSource(cc::BeginFrameSource* source) {}
+
+void BitmapUploader::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
-  gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
+  gpu::gles2::GLES2Interface* gl =
+      compositor_frame_sink_->context_provider()->ContextGL();
   // TODO(jamesr): Recycle.
   for (size_t i = 0; i < resources.size(); ++i) {
     cc::ReturnedResource resource = std::move(resources[i]);
@@ -200,6 +204,34 @@ void BitmapUploader::OnResourcesReturned(
     resource_to_texture_id_map_.erase(resource.id);
     gl->DeleteTextures(1, &texture_id);
   }
+}
+
+void BitmapUploader::SetTreeActivationCallback(const base::Closure& callback) {
+  // TODO(fsamuel): Implement this.
+}
+
+void BitmapUploader::DidReceiveCompositorFrameAck() {
+  // TODO(fsamuel): Implement this.
+}
+
+void BitmapUploader::DidLoseCompositorFrameSink() {
+  // TODO(fsamuel): Implement this.
+}
+
+void BitmapUploader::OnDraw(const gfx::Transform& transform,
+                            const gfx::Rect& viewport,
+                            bool resourceless_software_draw) {
+  // TODO(fsamuel): Implement this.
+}
+
+void BitmapUploader::SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) {
+  // TODO(fsamuel): Implement this.
+}
+
+void BitmapUploader::SetExternalTilePriorityConstraints(
+    const gfx::Rect& viewport_rect,
+    const gfx::Transform& transform) {
+  // TODO(fsamuel): Implement this.
 }
 
 }  // namespace ui

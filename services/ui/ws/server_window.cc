@@ -83,9 +83,10 @@ bool ServerWindow::HasObserver(ServerWindowObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
-void ServerWindow::CreateSurface(mojom::SurfaceType surface_type,
-                                 mojo::InterfaceRequest<mojom::Surface> request,
-                                 mojom::SurfaceClientPtr client) {
+void ServerWindow::CreateSurface(
+    mojom::SurfaceType surface_type,
+    mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   GetOrCreateSurfaceManager()->CreateSurface(surface_type, std::move(request),
                                              std::move(client));
 }

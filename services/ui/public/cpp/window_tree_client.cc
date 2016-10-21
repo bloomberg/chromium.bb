@@ -352,8 +352,8 @@ void WindowTreeClient::RequestClose(Window* window) {
 void WindowTreeClient::AttachSurface(
     Id window_id,
     mojom::SurfaceType type,
-    mojo::InterfaceRequest<mojom::Surface> surface,
-    mojom::SurfaceClientPtr client) {
+    mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   DCHECK(tree_);
   tree_->AttachSurface(window_id, type, std::move(surface), std::move(client));
 }

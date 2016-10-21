@@ -27,9 +27,10 @@ void InitWindow(ServerWindow* window) {
   window->SetVisible(true);
   ServerWindowSurfaceManager* surface_manager =
       window->GetOrCreateSurfaceManager();
-  surface_manager->CreateSurface(mojom::SurfaceType::DEFAULT,
-                                 mojo::InterfaceRequest<mojom::Surface>(),
-                                 mojom::SurfaceClientPtr());
+  surface_manager->CreateSurface(
+      mojom::SurfaceType::DEFAULT,
+      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink>(),
+      cc::mojom::MojoCompositorFrameSinkClientPtr());
 }
 
 }  // namespace
@@ -114,8 +115,9 @@ TEST_F(FrameGeneratorTest, DrawWindowTree) {
   // Create the UNDERLAY Surface for the child window, and confirm that this
   // creates an extra SharedQuadState in the CompositorFrame.
   child_window.GetOrCreateSurfaceManager()->CreateSurface(
-      mojom::SurfaceType::UNDERLAY, mojo::InterfaceRequest<mojom::Surface>(),
-      mojom::SurfaceClientPtr());
+      mojom::SurfaceType::UNDERLAY,
+      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink>(),
+      cc::mojom::MojoCompositorFrameSinkClientPtr());
 
   render_pass = cc::RenderPass::Create();
   DrawWindowTree(render_pass.get());

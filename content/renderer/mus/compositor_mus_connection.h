@@ -50,7 +50,7 @@ class CONTENT_EXPORT CompositorMusConnection
 
   // Attaches the provided |surface_binding| with the ui::Window for the
   // renderer once it becomes available.
-  void AttachSurfaceOnMainThread(
+  void AttachCompositorFrameSinkOnMainThread(
       std::unique_ptr<ui::WindowSurfaceBinding> surface_binding);
 
  private:
@@ -59,7 +59,7 @@ class CONTENT_EXPORT CompositorMusConnection
 
   ~CompositorMusConnection() override;
 
-  void AttachSurfaceOnCompositorThread(
+  void AttachCompositorFrameSinkOnCompositorThread(
       std::unique_ptr<ui::WindowSurfaceBinding> surface_binding);
 
   void CreateWindowTreeClientOnCompositorThread(

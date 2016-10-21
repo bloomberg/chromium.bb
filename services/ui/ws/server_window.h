@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/surface.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_surface.h"
@@ -59,9 +58,10 @@ class ServerWindow {
   bool HasObserver(ServerWindowObserver* observer);
 
   // Creates a new surface of the specified type, replacing the existing.
-  void CreateSurface(mojom::SurfaceType surface_type,
-                     mojo::InterfaceRequest<mojom::Surface> request,
-                     mojom::SurfaceClientPtr client);
+  void CreateSurface(
+      mojom::SurfaceType surface_type,
+      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   const WindowId& id() const { return id_; }
 

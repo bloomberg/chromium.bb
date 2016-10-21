@@ -17,9 +17,8 @@ class WindowSurface;
 
 class WindowSurfaceClient {
  public:
-  virtual void OnResourcesReturned(
-      WindowSurface* surface,
-      const cc::ReturnedResourceArray& resources) = 0;
+  virtual void DidReceiveCompositorFrameAck() = 0;
+  virtual void ReclaimResources(const cc::ReturnedResourceArray& resources) = 0;
 
  protected:
   virtual ~WindowSurfaceClient() {}

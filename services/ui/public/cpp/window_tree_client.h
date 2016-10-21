@@ -128,10 +128,11 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   void RequestClose(Window* window);
 
-  void AttachSurface(Id window_id,
-                     mojom::SurfaceType type,
-                     mojo::InterfaceRequest<mojom::Surface> surface,
-                     mojom::SurfaceClientPtr client);
+  void AttachSurface(
+      Id window_id,
+      mojom::SurfaceType type,
+      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   void OnWindowSurfaceDetached(Id window_id,
                                const cc::SurfaceSequence& sequence);

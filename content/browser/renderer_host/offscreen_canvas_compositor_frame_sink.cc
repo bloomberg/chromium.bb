@@ -41,8 +41,7 @@ void OffscreenCanvasCompositorFrameSink::Create(
 }
 
 void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
-    cc::CompositorFrame frame,
-    const SubmitCompositorFrameCallback& callback) {
+    cc::CompositorFrame frame) {
   if (!surface_factory_) {
     cc::SurfaceManager* manager = GetSurfaceManager();
     surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
@@ -51,8 +50,11 @@ void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
 
     manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
   }
-  surface_factory_->SubmitCompositorFrame(surface_id_.local_frame_id(),
-                                          std::move(frame), callback);
+  surface_factory_->SubmitCompositorFrame(
+      surface_id_.local_frame_id(), std::move(frame),
+      base::Bind(
+          &OffscreenCanvasCompositorFrameSink::DidReceiveCompositorFrameAck,
+          base::Unretained(this)));
 }
 
 void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
@@ -62,7 +64,7 @@ void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
 
 void OffscreenCanvasCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  client_->ReturnResources(resources);
+  client_->ReclaimResources(resources);
 }
 
 void OffscreenCanvasCompositorFrameSink::WillDrawSurface(
@@ -71,5 +73,9 @@ void OffscreenCanvasCompositorFrameSink::WillDrawSurface(
 
 void OffscreenCanvasCompositorFrameSink::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {}
+
+void OffscreenCanvasCompositorFrameSink::DidReceiveCompositorFrameAck() {
+  client_->DidReceiveCompositorFrameAck();
+}
 
 }  // namespace content

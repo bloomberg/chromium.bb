@@ -12,7 +12,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/ui/public/cpp/compositor_frame_sink.h"
-#include "services/ui/public/interfaces/surface.mojom.h"
+#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace content {
@@ -33,7 +33,7 @@ void RenderWidgetMusConnection::Bind(
       render_thread->compositor_task_runner(), std::move(request),
       render_thread->input_handler_manager());
   if (window_surface_binding_) {
-    compositor_mus_connection_->AttachSurfaceOnMainThread(
+    compositor_mus_connection_->AttachCompositorFrameSinkOnMainThread(
         std::move(window_surface_binding_));
   }
 }
@@ -45,10 +45,10 @@ RenderWidgetMusConnection::CreateCompositorFrameSink(
   DCHECK(!window_surface_binding_);
 
   std::unique_ptr<cc::CompositorFrameSink> surface(new ui::CompositorFrameSink(
-      std::move(gpu_channel_host),
+      make_scoped_refptr(new ui::ContextProvider(std::move(gpu_channel_host))),
       ui::WindowSurface::Create(&window_surface_binding_)));
   if (compositor_mus_connection_) {
-    compositor_mus_connection_->AttachSurfaceOnMainThread(
+    compositor_mus_connection_->AttachCompositorFrameSinkOnMainThread(
         std::move(window_surface_binding_));
   }
   return surface;

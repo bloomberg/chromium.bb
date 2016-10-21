@@ -34,7 +34,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
                      bool isWebGLSoftwareRendering = false) override;
 
   // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  void DidReceiveCompositorFrameAck() override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
 
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {

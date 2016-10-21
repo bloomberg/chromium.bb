@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/output/compositor_frame_sink.h"
+#include "cc/output/context_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -22,7 +23,7 @@ namespace ui {
 class CompositorFrameSink : public cc::CompositorFrameSink,
                             public WindowSurfaceClient {
  public:
-  CompositorFrameSink(scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+  CompositorFrameSink(scoped_refptr<cc::ContextProvider> context_provider,
                       std::unique_ptr<WindowSurface> surface);
   ~CompositorFrameSink() override;
 
@@ -33,8 +34,8 @@ class CompositorFrameSink : public cc::CompositorFrameSink,
 
  private:
   // WindowSurfaceClient implementation:
-  void OnResourcesReturned(WindowSurface* surface,
-                           const cc::ReturnedResourceArray& resources) override;
+  void DidReceiveCompositorFrameAck() override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<WindowSurface> surface_;

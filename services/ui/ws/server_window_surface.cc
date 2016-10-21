@@ -20,8 +20,8 @@ namespace ws {
 ServerWindowSurface::ServerWindowSurface(
     ServerWindowSurfaceManager* manager,
     const cc::FrameSinkId& frame_sink_id,
-    mojo::InterfaceRequest<Surface> request,
-    mojom::SurfaceClientPtr client)
+    cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : frame_sink_id_(frame_sink_id),
       manager_(manager),
       surface_factory_(frame_sink_id_, manager_->GetSurfaceManager(), this),
@@ -43,9 +43,11 @@ ServerWindowSurface::~ServerWindowSurface() {
   surface_manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-void ServerWindowSurface::SubmitCompositorFrame(
-    cc::CompositorFrame frame,
-    const SubmitCompositorFrameCallback& callback) {
+void ServerWindowSurface::SetNeedsBeginFrame(bool needs_begin_frame) {
+  // TODO(fsamuel): Implement this.
+}
+
+void ServerWindowSurface::SubmitCompositorFrame(cc::CompositorFrame frame) {
   gfx::Size frame_size =
       frame.delegated_frame_data->render_pass_list[0]->output_rect.size();
   // If the size of the CompostiorFrame has changed then destroy the existing
@@ -57,8 +59,10 @@ void ServerWindowSurface::SubmitCompositorFrame(
     surface_factory_.Create(local_frame_id_);
   }
   may_contain_video_ = frame.metadata.may_contain_video;
-  surface_factory_.SubmitCompositorFrame(local_frame_id_, std::move(frame),
-                                         callback);
+  surface_factory_.SubmitCompositorFrame(
+      local_frame_id_, std::move(frame),
+      base::Bind(&ServerWindowSurface::DidReceiveCompositorFrameAck,
+                 base::Unretained(this)));
   last_submitted_frame_size_ = frame_size;
   window()->delegate()->OnScheduleWindowPaint(window());
 }
@@ -77,11 +81,17 @@ ServerWindow* ServerWindowSurface::window() {
   return manager_->window();
 }
 
+void ServerWindowSurface::DidReceiveCompositorFrameAck() {
+  if (!client_ || !base::MessageLoop::current())
+    return;
+  client_->DidReceiveCompositorFrameAck();
+}
+
 void ServerWindowSurface::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (!client_ || !base::MessageLoop::current())
     return;
-  client_->ReturnResources(mojo::Array<cc::ReturnedResource>::From(resources));
+  client_->ReclaimResources(resources);
 }
 
 void ServerWindowSurface::SetBeginFrameSource(

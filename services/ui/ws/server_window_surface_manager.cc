@@ -38,8 +38,8 @@ bool ServerWindowSurfaceManager::ShouldDraw() {
 
 void ServerWindowSurfaceManager::CreateSurface(
     mojom::SurfaceType surface_type,
-    mojo::InterfaceRequest<mojom::Surface> request,
-    mojom::SurfaceClientPtr client) {
+    mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()),
                                 static_cast<uint32_t>(surface_type));
   std::unique_ptr<ServerWindowSurface> surface(new ServerWindowSurface(

@@ -18,7 +18,6 @@ mojom("interfaces") {
     "gpu_service.mojom",
     "ime.mojom",
     "mus_constants.mojom",
-    "surface.mojom",
     "user_access_manager.mojom",
     "user_activity_monitor.mojom",
     "window_manager.mojom",

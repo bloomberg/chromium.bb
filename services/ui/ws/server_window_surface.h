@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -16,7 +17,6 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/surface.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
 
@@ -30,13 +30,13 @@ class ServerWindow;
 class ServerWindowSurfaceManager;
 
 // Server side representation of a WindowSurface.
-class ServerWindowSurface : public mojom::Surface,
+class ServerWindowSurface : public cc::mojom::MojoCompositorFrameSink,
                             public cc::SurfaceFactoryClient {
  public:
   ServerWindowSurface(ServerWindowSurfaceManager* manager,
                       const cc::FrameSinkId& frame_sink_id,
-                      mojo::InterfaceRequest<mojom::Surface> request,
-                      mojom::SurfaceClientPtr client);
+                      cc::mojom::MojoCompositorFrameSinkRequest request,
+                      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ~ServerWindowSurface() override;
 
@@ -46,10 +46,9 @@ class ServerWindowSurface : public mojom::Surface,
 
   bool may_contain_video() const { return may_contain_video_; }
 
-  // mojom::Surface:
-  void SubmitCompositorFrame(
-      cc::CompositorFrame frame,
-      const SubmitCompositorFrameCallback& callback) override;
+  // cc::mojom::MojoCompositorFrameSink:
+  void SetNeedsBeginFrame(bool needs_begin_frame) override;
+  void SubmitCompositorFrame(cc::CompositorFrame frame) override;
 
   // There is a 1-1 correspondence between FrameSinks and frame sources.
   // The FrameSinkId uniquely identifies the FrameSink, and since there is
@@ -74,6 +73,7 @@ class ServerWindowSurface : public mojom::Surface,
   ServerWindow* window();
 
  private:
+  void DidReceiveCompositorFrameAck();
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
@@ -90,8 +90,8 @@ class ServerWindowSurface : public mojom::Surface,
   cc::SurfaceIdAllocator surface_id_allocator_;
   cc::SurfaceFactory surface_factory_;
 
-  mojom::SurfaceClientPtr client_;
-  mojo::Binding<Surface> binding_;
+  cc::mojom::MojoCompositorFrameSinkClientPtr client_;
+  mojo::Binding<MojoCompositorFrameSink> binding_;
 
   bool may_contain_video_ = false;
 

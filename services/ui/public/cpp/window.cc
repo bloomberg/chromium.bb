@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "services/ui/common/transient_window_utils.h"
+#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/surface_id_handler.h"
 #include "services/ui/public/cpp/window_observer.h"
@@ -269,15 +270,18 @@ bool Window::IsDrawn() const {
   return parent_ ? parent_->IsDrawn() : parent_drawn_;
 }
 
-std::unique_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
+std::unique_ptr<CompositorFrameSink> Window::RequestCompositorFrameSink(
+    mojom::SurfaceType type,
+    scoped_refptr<cc::ContextProvider> context_provider) {
   std::unique_ptr<WindowSurfaceBinding> surface_binding;
   std::unique_ptr<WindowSurface> surface =
       WindowSurface::Create(&surface_binding);
-  AttachSurface(type, std::move(surface_binding));
-  return surface;
+  AttachCompositorFrameSink(type, std::move(surface_binding));
+  return base::MakeUnique<CompositorFrameSink>(std::move(context_provider),
+                                               std::move(surface));
 }
 
-void Window::AttachSurface(
+void Window::AttachCompositorFrameSink(
     mojom::SurfaceType type,
     std::unique_ptr<WindowSurfaceBinding> surface_binding) {
   window_tree()->AttachSurface(

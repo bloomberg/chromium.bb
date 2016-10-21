@@ -13,19 +13,31 @@ import "cc/ipc/returned_resource.mojom";
 // is responsible for creating a CompositorFrame to update its portion of the
 // screen.
 interface MojoCompositorFrameSink {
-  // After the submitted frame is either drawn for the first time by the display
-  // compositor or discarded, the callback will be called. Clients should use
-  // this acknowledgement to ratelimit frame submissions.
-  // TODO(fsamuel): We should support identifying the CF in the callback.
-  SubmitCompositorFrame(cc.mojom.CompositorFrame frame) => ();
-
   // Lets the display compositor know that the client wishes to receive the next
   // BeginFrame event.
   SetNeedsBeginFrame(bool needs_begin_frame);
+
+  // Submits a CompositorFrame to the display compositor that will be presented
+  // to screen the next time frames from all CompositorFrameSinks are aggregated
+  // to produce a display CompositorFrame.
+  // For successful swaps, the implementation must call
+  // DidReceiveCompositorFrameAck() asynchronously when the frame has been
+  // processed in order to unthrottle the next frame.
+  SubmitCompositorFrame(cc.mojom.CompositorFrame frame);
 
   // TODO(fsamuel): ReadbackBitmap API would be useful here.
 };
 
 interface MojoCompositorFrameSinkClient {
-  ReturnResources(ReturnedResourceArray resources);
+  // Notification that the previous CompositorFrame given to
+  // SubmitCompositorFrame() has been processed and that another frame
+  // can be submitted. This provides backpressure from the display compositor
+  // so that frames are submitted only at the rate it can handle them.
+  // TODO(fsamuel): This method ought not be necessary with unified BeginFrame.
+  // However, there's a fair amount of cleanup and refactoring necessary to get
+  // rid of it.
+  DidReceiveCompositorFrameAck();
+
+  // Returns resources sent to SubmitCompositorFrame to be reused or freed.
+  ReclaimResources(ReturnedResourceArray resources);
 };

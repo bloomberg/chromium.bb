@@ -59,10 +59,11 @@ class TestWindowTree : public mojom::WindowTree {
   void SetWindowOpacity(uint32_t change_id,
                         uint32_t window_id,
                         float opacity) override;
-  void AttachSurface(uint32_t window_id,
-                     mojom::SurfaceType type,
-                     mojo::InterfaceRequest<mojom::Surface> surface,
-                     mojom::SurfaceClientPtr client) override;
+  void AttachSurface(
+      uint32_t window_id,
+      mojom::SurfaceType type,
+      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
   void AddWindow(uint32_t change_id, uint32_t parent, uint32_t child) override;
   void RemoveWindowFromParent(uint32_t change_id, uint32_t window_id) override;
   void AddTransientWindow(uint32_t change_id,

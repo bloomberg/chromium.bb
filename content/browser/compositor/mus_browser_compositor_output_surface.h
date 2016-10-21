@@ -9,14 +9,15 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "cc/output/compositor_frame_sink_client.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/ui/public/cpp/window_surface_client.h"
 
 namespace ui {
+class CompositorFrameSink;
 class Window;
-class WindowSurface;
 }
 
 namespace content {
@@ -26,7 +27,7 @@ namespace content {
 // arriving from the GPU process.
 class MusBrowserCompositorOutputSurface
     : public GpuBrowserCompositorOutputSurface,
-      public ui::WindowSurfaceClient {
+      public cc::CompositorFrameSinkClient {
  public:
   MusBrowserCompositorOutputSurface(
       ui::Window* window,
@@ -43,9 +44,19 @@ class MusBrowserCompositorOutputSurface
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
 
-  // ui::WindowSurfaceClient:
-  void OnResourcesReturned(ui::WindowSurface* surface,
-                           const cc::ReturnedResourceArray& resources) override;
+  // cc::CompositorFrameSinkClient:
+  void SetBeginFrameSource(cc::BeginFrameSource* source) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void SetTreeActivationCallback(const base::Closure& callback) override;
+  void DidReceiveCompositorFrameAck() override;
+  void DidLoseCompositorFrameSink() override;
+  void OnDraw(const gfx::Transform& transform,
+              const gfx::Rect& viewport,
+              bool resourceless_software_draw) override;
+  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
+  void SetExternalTilePriorityConstraints(
+      const gfx::Rect& viewport_rect,
+      const gfx::Transform& transform) override;
 
  private:
   uint32_t AllocateResourceId();
@@ -53,7 +64,7 @@ class MusBrowserCompositorOutputSurface
   const gpu::Mailbox& GetMailboxFromResourceId(uint32_t id);
 
   ui::Window* ui_window_;
-  std::unique_ptr<ui::WindowSurface> ui_window_surface_;
+  std::unique_ptr<ui::CompositorFrameSink> ui_compositor_frame_sink_;
   std::vector<uint32_t> free_resource_ids_;
   std::vector<gpu::Mailbox> mailboxes_;
 

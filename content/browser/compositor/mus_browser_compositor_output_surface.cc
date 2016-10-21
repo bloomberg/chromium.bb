@@ -14,6 +14,7 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_surface.h"
 
@@ -31,8 +32,8 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         begin_frame_source,
                                         std::move(overlay_candidate_validator)),
       ui_window_(window) {
-  ui_window_surface_ =
-      ui_window_->RequestSurface(ui::mojom::SurfaceType::DEFAULT);
+  ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
+      ui::mojom::SurfaceType::DEFAULT, context);
 }
 
 MusBrowserCompositorOutputSurface::~MusBrowserCompositorOutputSurface() {}
@@ -105,15 +106,7 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
                secure_output_only);
 
   ui_frame.delegated_frame_data->render_pass_list.push_back(std::move(pass));
-  // ui_frame_surface_ will be destroyed by MusBrowserCompositorOutputSurface's
-  // destructor, and the callback of SubmitCompositorFrame() will not be fired
-  // after ui_window_surface_ is destroyed, so it is safe to use
-  // base::Unretained(this) here.
-  ui_window_surface_->SubmitCompositorFrame(
-      std::move(ui_frame),
-      base::Bind(&MusBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
-                 base::Unretained(this), std::vector<ui::LatencyInfo>(),
-                 gfx::SwapResult::SWAP_ACK, nullptr));
+  ui_compositor_frame_sink_->SubmitCompositorFrame(std::move(ui_frame));
   return;
 }
 
@@ -121,13 +114,14 @@ bool MusBrowserCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
   if (!GpuBrowserCompositorOutputSurface::BindToClient(client))
     return false;
-  ui_window_surface_->BindToThread();
-  ui_window_surface_->set_client(this);
+  ui_compositor_frame_sink_->BindToClient(this);
   return true;
 }
 
-void MusBrowserCompositorOutputSurface::OnResourcesReturned(
-    ui::WindowSurface* surface,
+void MusBrowserCompositorOutputSurface::SetBeginFrameSource(
+    cc::BeginFrameSource* source) {}
+
+void MusBrowserCompositorOutputSurface::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {
     DCHECK_EQ(1, resource.count);
@@ -137,6 +131,28 @@ void MusBrowserCompositorOutputSurface::OnResourcesReturned(
     FreeResourceId(resource.id);
   }
 }
+
+void MusBrowserCompositorOutputSurface::SetTreeActivationCallback(
+    const base::Closure& callback) {}
+
+void MusBrowserCompositorOutputSurface::DidReceiveCompositorFrameAck() {
+  OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo>(),
+                            gfx::SwapResult::SWAP_ACK, nullptr);
+}
+
+void MusBrowserCompositorOutputSurface::DidLoseCompositorFrameSink() {}
+
+void MusBrowserCompositorOutputSurface::OnDraw(
+    const gfx::Transform& transform,
+    const gfx::Rect& viewport,
+    bool resourceless_software_draw) {}
+
+void MusBrowserCompositorOutputSurface::SetMemoryPolicy(
+    const cc::ManagedMemoryPolicy& policy) {}
+
+void MusBrowserCompositorOutputSurface::SetExternalTilePriorityConstraints(
+    const gfx::Rect& viewport_rect,
+    const gfx::Transform& transform) {}
 
 uint32_t MusBrowserCompositorOutputSurface::AllocateResourceId() {
   if (!free_resource_ids_.empty()) {
