@@ -40,9 +40,9 @@ class PlatformSensorAmbientLightMac : public PlatformSensor {
   bool CheckSensorConfiguration(
       const PlatformSensorConfiguration& configuration) override;
   PlatformSensorConfiguration GetDefaultConfiguration() override;
-  void UpdateReading(uint64_t lux_values[2]);
 
  private:
+  bool ReadAndUpdate();
   static void IOServiceCallback(void* context,
                                 io_service_t service,
                                 natural_t message_type,

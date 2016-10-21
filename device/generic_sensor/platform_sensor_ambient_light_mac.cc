@@ -54,14 +54,10 @@ void PlatformSensorAmbientLightMac::IOServiceCallback(void* context,
                                                       void* message_argument) {
   PlatformSensorAmbientLightMac* sensor =
       static_cast<PlatformSensorAmbientLightMac*>(context);
-  uint32_t scalar_output_count = 2;
-  uint64_t lux_values[2];
-  kern_return_t kr = IOConnectCallMethod(
-      sensor->light_sensor_object_, LmuFunctionIndex::kGetSensorReadingID,
-      nullptr, 0, nullptr, 0, lux_values, &scalar_output_count, nullptr, 0);
-
-  if (kr == KERN_SUCCESS)
-    sensor->UpdateReading(lux_values);
+  if (!sensor->ReadAndUpdate()) {
+    sensor->NotifySensorError();
+    sensor->StopSensor();
+  }
 }
 
 bool PlatformSensorAmbientLightMac::StartSensor(
@@ -100,28 +96,45 @@ bool PlatformSensorAmbientLightMac::StartSensor(
 
   kr = IOServiceOpen(light_sensor_service_, mach_task_self(), 0,
                      light_sensor_object_.InitializeInto());
+  if (kr != KERN_SUCCESS)
+    return false;
 
-  return kr == KERN_SUCCESS;
+  bool success = ReadAndUpdate();
+  if (!success)
+    StopSensor();
+
+  return success;
 }
 
 void PlatformSensorAmbientLightMac::StopSensor() {
   light_sensor_port_.reset();
   light_sensor_notification_.reset();
   light_sensor_object_.reset();
+  light_sensor_service_.reset();
   current_lux_ = 0.0;
 }
 
-void PlatformSensorAmbientLightMac::UpdateReading(uint64_t lux_values[2]) {
+bool PlatformSensorAmbientLightMac::ReadAndUpdate() {
+  uint32_t scalar_output_count = 2;
+  uint64_t lux_values[2];
+  kern_return_t kr = IOConnectCallMethod(
+      light_sensor_object_, LmuFunctionIndex::kGetSensorReadingID, nullptr, 0,
+      nullptr, 0, lux_values, &scalar_output_count, nullptr, 0);
+
+  if (kr != KERN_SUCCESS)
+    return false;
+
   uint64_t mean = (lux_values[0] + lux_values[1]) / 2;
   double lux = LMUvalueToLux(mean);
   if (lux == current_lux_)
-    return;
+    return true;
   current_lux_ = lux;
 
   SensorReading reading;
   reading.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
   reading.values[0] = current_lux_;
   UpdateSensorReading(reading, true);
+  return true;
 }
 
 }  // namespace device
