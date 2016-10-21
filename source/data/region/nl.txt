@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/nl.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 nl{
     Countries{
         001{"wereld"}
@@ -46,7 +40,6 @@ nl{
         AI{"Anguilla"}
         AL{"Albanië"}
         AM{"Armenië"}
-        AN{"Nederlandse Antillen"}
         AO{"Angola"}
         AQ{"Antarctica"}
         AR{"Argentinië"}
@@ -138,7 +131,7 @@ nl{
         GU{"Guam"}
         GW{"Guinee-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong SAR van China"}
         HM{"Heard en McDonaldeilanden"}
         HN{"Honduras"}
         HR{"Kroatië"}
@@ -168,7 +161,7 @@ nl{
         KP{"Noord-Korea"}
         KR{"Zuid-Korea"}
         KW{"Koeweit"}
-        KY{"Caymaneilanden"}
+        KY{"Kaaimaneilanden"}
         KZ{"Kazachstan"}
         LA{"Laos"}
         LB{"Libanon"}
@@ -192,7 +185,7 @@ nl{
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongolië"}
-        MO{"Macau"}
+        MO{"Macau SAR van China"}
         MP{"Noordelijke Marianen"}
         MQ{"Martinique"}
         MR{"Mauritanië"}
@@ -227,7 +220,7 @@ nl{
         PM{"Saint-Pierre en Miquelon"}
         PN{"Pitcairneilanden"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Palestijnse gebieden"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -279,6 +272,7 @@ nl{
         UA{"Oekraïne"}
         UG{"Oeganda"}
         UM{"Kleine afgelegen eilanden van de Verenigde Staten"}
+        UN{"verenigde naties"}
         US{"Verenigde Staten"}
         UY{"Uruguay"}
         UZ{"Oezbekistan"}
@@ -301,13 +295,18 @@ nl{
     }
     Countries%short{
         GB{"VK"}
+        HK{"Hongkong"}
+        MO{"Macau"}
+        PS{"Palestina"}
+        UN{"vn"}
         US{"VS"}
     }
     Countries%variant{
         CD{"Congo (DRC)"}
         CG{"Congo (Republiek)"}
+        CZ{"Tsjechische Republiek"}
         FK{"Falklandeilanden (Islas Malvinas)"}
         MK{"Macedonië (FYROM)"}
     }
-    Version{"2.1.19.96"}
+    Version{"2.1.28.79"}
 }

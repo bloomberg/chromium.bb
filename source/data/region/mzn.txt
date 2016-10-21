@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/mzn.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 mzn{
     Countries{
         001{"جهون"}
@@ -137,7 +131,7 @@ mzn{
         GU{"گوئام"}
         GW{"گینه بیسائو"}
         GY{"گویان"}
-        HK{"هونگ کونگ"}
+        HK{"هنگ کنگ"}
         HM{"هارد و مک‌دونالد جزایر"}
         HN{"هندوراس"}
         HR{"کرواسی"}
@@ -191,7 +185,7 @@ mzn{
         ML{"مالی"}
         MM{"میانمار"}
         MN{"مغولستون"}
-        MO{"ماکائو"}
+        MO{"ماکائو (چین دله)"}
         MP{"شمالی ماریانا جزایر"}
         MQ{"مارتینیک جزیره‌ئون"}
         MR{"موریتانی"}
@@ -226,7 +220,7 @@ mzn{
         PM{"سن پییر و میکلن"}
         PN{"پیتکارین جزایر"}
         PR{"پورتوریکو"}
-        PS{"فلسطین"}
+        PS{"فلسطین ِسرزمین"}
         PT{"پرتغال"}
         PW{"پالائو"}
         PY{"پاراگوئه"}
@@ -300,6 +294,9 @@ mzn{
     }
     Countries%short{
         GB{"بریتانیا"}
+        HK{"هونگ کونگ"}
+        MO{"ماکائو"}
+        PS{"فلسطین"}
         US{"آمریکا متحده ایالات"}
     }
     Countries%variant{
@@ -310,5 +307,5 @@ mzn{
         MK{"مقدونیه جمهوری"}
         TL{"شرقی تیمور"}
     }
-    Version{"2.1.19.14"}
+    Version{"2.1.28.76"}
 }

@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/fo.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 fo{
     Countries{
         001{"heimur"}
@@ -46,7 +40,6 @@ fo{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
-        AN{"Niðurlendsku Antilloyggjarnar"}
         AO{"Angola"}
         AQ{"Antarktis"}
         AR{"Argentina"}
@@ -138,7 +131,7 @@ fo{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Gujana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong SAR Kina"}
         HM{"Heard og McDonaldoyggjar"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -192,7 +185,7 @@ fo{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Makao"}
+        MO{"Makao SAR Kina"}
         MP{"Norðaru Mariuoyggjar"}
         MQ{"Martinique"}
         MR{"Móritania"}
@@ -227,7 +220,7 @@ fo{
         PM{"Saint Pierre og Miquelon"}
         PN{"Pitcairnoyggjar"}
         PR{"Puerto Riko"}
-        PS{"Palestina"}
+        PS{"Palestinskt landøki"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguai"}
@@ -301,10 +294,13 @@ fo{
     }
     Countries%short{
         GB{"UK"}
+        HK{"Hong Kong"}
+        MO{"Makao"}
+        PS{"Palestina"}
         US{"USA"}
     }
     Countries%variant{
         MK{"Makedónia (FJM)"}
     }
-    Version{"2.1.19.17"}
+    Version{"2.1.28.76"}
 }

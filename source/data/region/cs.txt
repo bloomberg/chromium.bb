@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/cs.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 cs{
     Countries{
         001{"Svět"}
@@ -46,7 +40,6 @@ cs{
         AI{"Anguilla"}
         AL{"Albánie"}
         AM{"Arménie"}
-        AN{"Nizozemské Antily"}
         AO{"Angola"}
         AQ{"Antarktida"}
         AR{"Argentina"}
@@ -120,7 +113,7 @@ cs{
         FO{"Faerské ostrovy"}
         FR{"Francie"}
         GA{"Gabon"}
-        GB{"Velká Británie"}
+        GB{"Spojené království"}
         GD{"Grenada"}
         GE{"Gruzie"}
         GF{"Francouzská Guyana"}
@@ -138,7 +131,7 @@ cs{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong – ZAO Číny"}
         HM{"Heardův ostrov a McDonaldovy ostrovy"}
         HN{"Honduras"}
         HR{"Chorvatsko"}
@@ -192,7 +185,7 @@ cs{
         ML{"Mali"}
         MM{"Myanmar (Barma)"}
         MN{"Mongolsko"}
-        MO{"Macao"}
+        MO{"Macao – ZAO Číny"}
         MP{"Severní Mariany"}
         MQ{"Martinik"}
         MR{"Mauritánie"}
@@ -227,7 +220,7 @@ cs{
         PM{"Saint-Pierre a Miquelon"}
         PN{"Pitcairnovy ostrovy"}
         PR{"Portoriko"}
-        PS{"Palestina"}
+        PS{"Palestinská území"}
         PT{"Portugalsko"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -279,6 +272,7 @@ cs{
         UA{"Ukrajina"}
         UG{"Uganda"}
         UM{"Menší odlehlé ostrovy USA"}
+        UN{"OSN"}
         US{"Spojené státy"}
         UY{"Uruguay"}
         UZ{"Uzbekistán"}
@@ -300,15 +294,20 @@ cs{
         ZZ{"Neznámá oblast"}
     }
     Countries%short{
-        GB{"VB"}
+        GB{"GB"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestina"}
+        UN{"OSN"}
         US{"USA"}
     }
     Countries%variant{
         CD{"Kongo (DRK)"}
         CG{"Kongo (republika)"}
         CI{"Côte d’Ivoire"}
+        CZ{"Česko"}
         FK{"Falklandské ostrovy (Malvíny)"}
         MK{"Makedonie (FYROM)"}
     }
-    Version{"2.1.20.4"}
+    Version{"2.1.28.79"}
 }

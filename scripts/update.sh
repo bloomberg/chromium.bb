@@ -49,9 +49,9 @@ do
   git checkout -- "${treeroot}/source/data/"${line}
 done < "${treeroot}/scripts/data_files_to_preserve.txt"
 
-echo "Patching configure to work without source/layout(ex) directories ..."
-sed -i.orig -e '/^ac_config_files=/ s:\ layout\(ex\)\{0,1\}/Makefile::g' \
-  -e '/^ac_config_files=/ s: test/.* samples/M: samples/M:'
+echo "Patching configure to work without source/{layoutex,test}  ..."
+sed -i.orig -e '/^ac_config_files=/ s:\ layoutex/Makefile::g' \
+  -e '/^ac_config_files=/ s: test/.* samples/M: samples/M:' \
   "${treeroot}/source/configure"
 rm -f "${treeroot}/source/configure.orig"
 

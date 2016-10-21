@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/gsw.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 gsw{
     Countries{
         001{"Wält"}
@@ -45,7 +39,6 @@ gsw{
         AI{"Anguilla"}
         AL{"Albaanie"}
         AM{"Armeenie"}
-        AN{"Niderländischi Antille"}
         AO{"Angoola"}
         AQ{"Antarktis"}
         AR{"Argentiinie"}
@@ -132,7 +125,7 @@ gsw{
         GU{"Guam"}
         GW{"Gineea-Bissau"}
         GY{"Guäjaana"}
-        HK{"Hongkong"}
+        HK{"Sonderverwaltigszone Hongkong"}
         HM{"Höörd- und MäcDonald-Insle"}
         HN{"Honduras"}
         HR{"Kroaazie"}
@@ -185,7 +178,7 @@ gsw{
         ML{"Maali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolei"}
-        MO{"Macao"}
+        MO{"Sonderverwaltigszone Macao"}
         MP{"Nördlichi Mariaane"}
         MQ{"Martinigg"}
         MR{"Mauretaanie"}
@@ -288,8 +281,12 @@ gsw{
         ZW{"Simbabwe"}
         ZZ{"Unbekannti oder ungültigi Regioon"}
     }
+    Countries%short{
+        HK{"Hongkong"}
+        MO{"Macao"}
+    }
     Countries%variant{
         MK{"Mazedoonie (EJRM)"}
     }
-    Version{"2.1.19.74"}
+    Version{"2.1.28.76"}
 }

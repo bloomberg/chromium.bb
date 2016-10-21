@@ -1,11 +1,16 @@
 Name: icu
 URL: http://site.icu-project.org/
-Version: 56.1
+Version: 58.1
 License: MIT
 Security Critical: yes
 
+WARNING: ICU is in the middle of being updated to 58.1. DEPS-roll to
+ToT WOULD NOT work until the update is completed. Do not roll icu to the
+ToT. If you need to make a change in ICU 56, contact jshin@chromium.org
+(jungshik at google) to make a branch.
+
 Description:
-This directory contains the source code of ICU 56.1 for C/C++.
+This directory contains the source code of ICU 58.1 for C/C++.
 
 A. How to update ICU
 

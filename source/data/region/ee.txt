@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/ee.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 ee{
     Countries{
         001{"xexeme"}
@@ -46,7 +40,6 @@ ee{
         AI{"Anguilla nutome"}
         AL{"Albania nutome"}
         AM{"Armenia nutome"}
-        AN{"Nedalands Antilis nutome"}
         AO{"Angola nutome"}
         AQ{"Antartica nutome"}
         AR{"Argentina nutome"}
@@ -136,7 +129,7 @@ ee{
         GU{"Guam nutome"}
         GW{"Gini-Bisao nutome"}
         GY{"Guyanadu"}
-        HK{"Hɔng Kɔng nutome"}
+        HK{"Hɔng Kɔng SAR Tsaina nutome"}
         HM{"Heard kple Mcdonald ƒudomekpowo nutome"}
         HN{"Hondurasdu"}
         HR{"Kroatsia nutome"}
@@ -190,7 +183,7 @@ ee{
         ML{"Mali nutome"}
         MM{"Myanmar (Burma) nutome"}
         MN{"Mongolia nutome"}
-        MO{"Macau nutome"}
+        MO{"Macau SAR Tsaina nutome"}
         MP{"Dziehe Marina ƒudomekpowo nutome"}
         MQ{"Martiniki nutome"}
         MR{"Mauritania nutome"}
@@ -293,6 +286,10 @@ ee{
         ZW{"Zimbabwe nutome"}
         ZZ{"nutome manya"}
     }
+    Countries%short{
+        HK{"Hɔng Kɔng nutome"}
+        MO{"Macau nutome"}
+    }
     Countries%variant{
         CD{"Kongo demokratik repɔblik nutome"}
         CG{"Kongo repɔblik nutome"}
@@ -301,5 +298,5 @@ ee{
         MK{"Makedonia (FYROM) nutome"}
         TL{"Ɣedzeƒe Timɔ nutome"}
     }
-    Version{"2.1.19.14"}
+    Version{"2.1.28.76"}
 }

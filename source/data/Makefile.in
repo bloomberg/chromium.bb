@@ -1,4 +1,6 @@
 ## Makefile.in for ICU data
+## Copyright (C) 2016 and later: Unicode, Inc. and others.
+## License & terms of use: http://www.unicode.org/copyright.html
 ## Copyright (c) 1999-2015, International Business Machines Corporation and
 ## others. All Rights Reserved.
 
@@ -101,6 +103,8 @@ TRANSLITBLDDIR=$(BUILDDIR)/translit
 MISCSRCDIR=$(SRCDATADIR)/misc
 BRKSRCDIR=$(SRCDATADIR)/brkitr
 BRKBLDDIR=$(BUILDDIR)/brkitr
+DICTSRCDIR=$(BRKSRCDIR)/dictionaries
+BRKRULESRCDIR=$(BRKSRCDIR)/rules
 MISCSRCDIR=$(SRCDATADIR)/misc
 UCMSRCDIR=$(SRCDATADIR)/mappings
 SPREPSRCDIR=$(SRCDATADIR)/sprep
@@ -246,8 +250,7 @@ package390: $(OUTTMPDIR)/icudata390.lst $(PKGDATA_LIST) ./icupkg.inc packagedata
 #  2010-dec Removed pnames.icu.
 # These are now hardcoded in ICU4C and only loaded in ICU4J.
 #
-# Chromium: Drop unames.icu because we don't need Unicode character names.
-DAT_FILES_SHORT=cnvalias.icu coll/ucadata.icu nfkc.nrm nfkc_cf.nrm uts46.nrm
+DAT_FILES_SHORT=unames.icu cnvalias.icu coll/ucadata.icu nfkc.nrm nfkc_cf.nrm uts46.nrm
 DAT_FILES=$(DAT_FILES_SHORT:%=$(BUILDDIR)/%)
 
 ## BRK files
@@ -278,8 +281,7 @@ CFU_FILES=$(BUILDDIR)/$(CFU_FILES_SHORT)
 -include $(UCMSRCDIR)/ucmfiles.mk
 -include $(UCMSRCDIR)/ucmebcdic.mk
 -include $(UCMSRCDIR)/ucmlocal.mk
-# Chromium: Drop 2 ibm encodings not necessary.
-ALL_UCM_SOURCE=$(UCM_SOURCE_CORE) $(UCM_SOURCE_FILES) $(UCM_SOURCE_EBCDIC) $(UCM_SOURCE_LOCAL)
+ALL_UCM_SOURCE=ibm-37_P100-1995.ucm ibm-1047_P100-1995.ucm $(UCM_SOURCE_CORE) $(UCM_SOURCE_FILES) $(UCM_SOURCE_EBCDIC) $(UCM_SOURCE_LOCAL)
 UCM_FILES = $(ALL_UCM_SOURCE:%=$(SRCDATADIR)/%)
 CNV_FILES = $(ALL_UCM_SOURCE:%.ucm=$(BUILDDIR)/%.cnv)
 CNV_FILES_SHORT = $(ALL_UCM_SOURCE:%.ucm=%.cnv)
@@ -353,9 +355,7 @@ TRANSLIT_SRC= $(TRANSLIT_SOURCE) $(TRANSLIT_ALIAS_SOURCE) $(TRANSLIT_SOURCE_LOCA
 TRANSLIT_SRC_FILES = $(TRANSLIT_SRC:%=$(TRANSLITSRCDIR)/%)
 INSTALLED_TRANSLIT_FILES = $(TRANSLIT_SOURCE:%.txt=%)  $(TRANSLIT_SOURCE_LOCAL:%.txt=%)
 endif
-# Chromium : To save space, use '-R' option (exclude collation rules. just
-# include the compiled binary data.)
-GENRBOPTS=-k -R
+GENRBOPTS=-k
 
 ## MISC files
 -include $(MISCSRCDIR)/miscfiles.mk
@@ -533,14 +533,7 @@ $(BUILDDIR)/%.icu: $(SRCDATADIR)/in/%.icu
 $(BUILDDIR)/%.nrm: $(SRCDATADIR)/in/%.nrm
 	$(INVOKE) $(TOOLBINDIR)/icupkg -t$(ICUDATA_CHAR) $< $@
 
-# Chromium: To cut down the data size by 280kB,
-# use the code point order for CJK Ideographs in non-CJK locales instead
-# of the UniHan radical-stroke order. The latter is better, but non-CJK
-# locales do not have a great need for sorting CJK Ideographs.
-# Moreover, the most common subset (the original CJK Ideograph block) will
-# still be sorted correctly because the code point order is radical-stroke
-# order.
-$(BUILDDIR)/coll/ucadata.icu: $(SRCDATADIR)/in/coll/ucadata-implicithan.icu
+$(BUILDDIR)/coll/ucadata.icu: $(SRCDATADIR)/in/coll/ucadata-unihan.icu
 	$(INVOKE) $(TOOLBINDIR)/icupkg -t$(ICUDATA_CHAR) $< $@
 
 ####################################################    SPP
@@ -552,7 +545,7 @@ $(BUILDDIR)/%.spp: $(SPREPSRCDIR)/%.txt $(TOOLBINDIR)/gensprep$(TOOLEXEEXT) $(BU
 ####################################################    BRK
 # BRK FILES
 
-$(BRKBLDDIR)/%.brk: $(BRKSRCDIR)/%.txt $(TOOLBINDIR)/genbrk$(TOOLEXEEXT) $(DAT_FILES)
+$(BRKBLDDIR)/%.brk: $(BRKRULESRCDIR)/%.txt $(TOOLBINDIR)/genbrk$(TOOLEXEEXT) $(DAT_FILES)
 	$(INVOKE) $(TOOLBINDIR)/genbrk -c -i $(BUILDDIR) -r $< -o $@
 
 ####################################################    DICT
@@ -561,20 +554,20 @@ $(BRKBLDDIR)/%.brk: $(BRKSRCDIR)/%.txt $(TOOLBINDIR)/genbrk$(TOOLEXEEXT) $(DAT_F
 # .dict file generated regardless of whether dictionary file exists
 
 $(BRKBLDDIR)/%.dict: $(TOOLBINDIR)/gendict$(TOOLEXEEXT) $(DAT_FILES)
-	$(INVOKE) $(TOOLBINDIR)/gendict --uchars -c -i $(BUILDDIR) $(BRKSRCDIR)/$(*F).txt $@
+	$(INVOKE) $(TOOLBINDIR)/gendict --uchars -c -i $(BUILDDIR) $(DICTSRCDIR)/$(*F).txt $@
 
 $(BRKBLDDIR)/thaidict.dict: $(TOOLBINDIR)/gendict$(TOOLEXEEXT) $(DAT_FILES)
-	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x0e00 -c -i $(BUILDDIR) $(BRKSRCDIR)/thaidict.txt $(BRKBLDDIR)/thaidict.dict
+	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x0e00 -c -i $(BUILDDIR) $(DICTSRCDIR)/thaidict.txt $(BRKBLDDIR)/thaidict.dict
 
 $(BRKBLDDIR)/laodict.dict: $(TOOLBINDIR)/gendict$(TOOLEXEEXT) $(DAT_FILES)
-	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x0e80 -c -i $(BUILDDIR) $(BRKSRCDIR)/laodict.txt $(BRKBLDDIR)/laodict.dict
+	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x0e80 -c -i $(BUILDDIR) $(DICTSRCDIR)/laodict.txt $(BRKBLDDIR)/laodict.dict
 
 $(BRKBLDDIR)/burmesedict.dict: $(TOOLBINDIR)/gendict$(TOOLEXEEXT) $(DAT_FILES)
-	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x1000 -c -i $(BUILDDIR) $(BRKSRCDIR)/burmesedict.txt $(BRKBLDDIR)/burmesedict.dict
+	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x1000 -c -i $(BUILDDIR) $(DICTSRCDIR)/burmesedict.txt $(BRKBLDDIR)/burmesedict.dict
 
 # TODO: figure out why combining characters are here?
 $(BRKBLDDIR)/khmerdict.dict: $(TOOLBINDIR)/gendict$(TOOLEXEEXT) $(DAT_FILES)
-	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x1780 -c -i $(BUILDDIR) $(BRKSRCDIR)/khmerdict.txt $(BRKBLDDIR)/khmerdict.dict
+	$(INVOKE) $(TOOLBINDIR)/gendict --bytes --transform offset-0x1780 -c -i $(BUILDDIR) $(DICTSRCDIR)/khmerdict.txt $(BRKBLDDIR)/khmerdict.dict
 
 ####################################################    CFU
 # CFU FILES

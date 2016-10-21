@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/en.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 en{
     Countries{
         001{"World"}
@@ -46,7 +40,6 @@ en{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
-        AN{"Netherlands Antilles"}
         AO{"Angola"}
         AQ{"Antarctica"}
         AR{"Argentina"}
@@ -79,9 +72,9 @@ en{
         BZ{"Belize"}
         CA{"Canada"}
         CC{"Cocos (Keeling) Islands"}
-        CD{"Congo (DRC)"}
+        CD{"Congo - Kinshasa"}
         CF{"Central African Republic"}
-        CG{"Congo (Republic)"}
+        CG{"Congo - Brazzaville"}
         CH{"Switzerland"}
         CI{"Côte d’Ivoire"}
         CK{"Cook Islands"}
@@ -113,9 +106,10 @@ en{
         ES{"Spain"}
         ET{"Ethiopia"}
         EU{"European Union"}
+        EZ{"Eurozone"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"Falkland Islands (Islas Malvinas)"}
+        FK{"Falkland Islands"}
         FM{"Micronesia"}
         FO{"Faroe Islands"}
         FR{"France"}
@@ -138,7 +132,7 @@ en{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong SAR China"}
         HM{"Heard & McDonald Islands"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -188,11 +182,11 @@ en{
         MF{"St. Martin"}
         MG{"Madagascar"}
         MH{"Marshall Islands"}
-        MK{"Macedonia (FYROM)"}
+        MK{"Macedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau SAR China"}
         MP{"Northern Mariana Islands"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -227,7 +221,7 @@ en{
         PM{"St. Pierre & Miquelon"}
         PN{"Pitcairn Islands"}
         PR{"Puerto Rico"}
-        PS{"Palestine"}
+        PS{"Palestinian Territories"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -279,6 +273,7 @@ en{
         UA{"Ukraine"}
         UG{"Uganda"}
         UM{"U.S. Outlying Islands"}
+        UN{"United Nations"}
         US{"United States"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -302,16 +297,21 @@ en{
     Countries%short{
         BA{"Bosnia"}
         GB{"UK"}
+        HK{"Hong Kong"}
         MM{"Myanmar"}
+        MO{"Macau"}
+        PS{"Palestine"}
+        UN{"UN"}
         US{"US"}
     }
     Countries%variant{
         CD{"Congo (DRC)"}
         CG{"Congo (Republic)"}
         CI{"Ivory Coast"}
+        CZ{"Czechia"}
         FK{"Falkland Islands (Islas Malvinas)"}
         MK{"Macedonia (FYROM)"}
         TL{"East Timor"}
     }
-    Version{"2.1.19.72"}
+    Version{"2.1.30.50"}
 }

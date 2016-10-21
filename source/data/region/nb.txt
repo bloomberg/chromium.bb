@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/nb.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 nb{
     Countries{
         001{"verden"}
@@ -46,7 +40,6 @@ nb{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
-        AN{"De nederlandske antiller"}
         AO{"Angola"}
         AQ{"Antarktis"}
         AR{"Argentina"}
@@ -96,7 +89,7 @@ nb{
         CW{"Curaçao"}
         CX{"Christmasøya"}
         CY{"Kypros"}
-        CZ{"Tsjekkia"}
+        CZ{"Den tsjekkiske republikk"}
         DE{"Tyskland"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -138,7 +131,7 @@ nb{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong S.A.R. Kina"}
         HM{"Heard- og McDonaldøyene"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -192,7 +185,7 @@ nb{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macao"}
+        MO{"Macao S.A.R. Kina"}
         MP{"Nord-Marianene"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -227,12 +220,12 @@ nb{
         PM{"St. Pierre og Miquelon"}
         PN{"Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Det palestinske området"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
         QA{"Qatar"}
-        QO{"ytre Oseania"}
+        QO{"Ytre Oseania"}
         RE{"Réunion"}
         RO{"Romania"}
         RS{"Serbia"}
@@ -279,6 +272,7 @@ nb{
         UA{"Ukraina"}
         UG{"Uganda"}
         UM{"USAs ytre øyer"}
+        UN{"FN"}
         US{"USA"}
         UY{"Uruguay"}
         UZ{"Usbekistan"}
@@ -301,13 +295,18 @@ nb{
     }
     Countries%short{
         GB{"Storbritannia"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestina"}
+        UN{"FN"}
         US{"USA"}
     }
     Countries%variant{
         CD{"Den demokratiske republikken Kongo"}
         CG{"Republikken Kongo"}
+        CZ{"Tsjekkia"}
         FK{"Falklandsøyene (Islas Malvinas)"}
-        MK{"Makedonia (FYROM)"}
+        MK{"Den tidligere jugoslaviske republikk Makedonia"}
     }
-    Version{"2.1.19.96"}
+    Version{"2.1.30.7"}
 }

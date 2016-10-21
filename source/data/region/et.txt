@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/et.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 et{
     Countries{
         001{"maailm"}
@@ -46,9 +40,8 @@ et{
         AI{"Anguilla"}
         AL{"Albaania"}
         AM{"Armeenia"}
-        AN{"Hollandi Antillid"}
         AO{"Angola"}
-        AQ{"Antarktis"}
+        AQ{"Antarktika"}
         AR{"Argentina"}
         AS{"Ameerika Samoa"}
         AT{"Austria"}
@@ -138,7 +131,7 @@ et{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkongi erihalduspiirkond"}
         HM{"Heardi ja McDonaldi saared"}
         HN{"Honduras"}
         HR{"Horvaatia"}
@@ -192,7 +185,7 @@ et{
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongoolia"}
-        MO{"Macau"}
+        MO{"Macau erihalduspiirkond"}
         MP{"Põhja-Mariaanid"}
         MQ{"Martinique"}
         MR{"Mauritaania"}
@@ -227,7 +220,7 @@ et{
         PM{"Saint Pierre ja Miquelon"}
         PN{"Pitcairni saared"}
         PR{"Puerto Rico"}
-        PS{"Palestiina"}
+        PS{"Palestiina alad"}
         PT{"Portugal"}
         PW{"Belau"}
         PY{"Paraguay"}
@@ -279,6 +272,7 @@ et{
         UA{"Ukraina"}
         UG{"Uganda"}
         UM{"Ühendriikide hajasaared"}
+        UN{"Ühendatud Rahvaste Organisatsioon"}
         US{"Ameerika Ühendriigid"}
         UY{"Uruguay"}
         UZ{"Usbekistan"}
@@ -301,15 +295,20 @@ et{
     }
     Countries%short{
         GB{"ÜK"}
+        HK{"Hongkong"}
+        MO{"Macau"}
+        PS{"Palestiina"}
+        UN{"ÜRO"}
         US{"USA"}
     }
     Countries%variant{
         CD{"Kongo-Kinshasa"}
         CG{"Kongo-Brazzaville"}
         CI{"Elevandiluurannik"}
+        CZ{"Tšehhia"}
         FK{"Malviini saared"}
         MK{"Makedoonia Vabariik"}
         TL{"Timor-Leste"}
     }
-    Version{"2.1.20.4"}
+    Version{"2.1.28.79"}
 }

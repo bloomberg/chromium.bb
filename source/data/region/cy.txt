@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/cy.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 cy{
     Countries{
         001{"Y Byd"}
@@ -46,7 +40,6 @@ cy{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
-        AN{"Ynysoedd Caribî yr Iseldiroedd"}
         AO{"Angola"}
         AQ{"Antarctica"}
         AR{"Yr Ariannin"}
@@ -138,7 +131,7 @@ cy{
         GU{"Guam"}
         GW{"Guiné-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong RhGA Tsieina"}
         HM{"Ynys Heard ac Ynysoedd McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -192,7 +185,7 @@ cy{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau RhGA Tsieina"}
         MP{"Ynysoedd Gogledd Mariana"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -227,7 +220,7 @@ cy{
         PM{"Saint-Pierre-et-Miquelon"}
         PN{"Ynysoedd Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palesteina"}
+        PS{"Tiriogaethau Palesteinaidd"}
         PT{"Portiwgal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -279,6 +272,7 @@ cy{
         UA{"Wcráin"}
         UG{"Uganda"}
         UM{"Ynysoedd Pellennig UDA"}
+        UN{"Cenhedloedd Unedig"}
         US{"Yr Unol Daleithiau"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -301,15 +295,20 @@ cy{
     }
     Countries%short{
         GB{"DU"}
+        HK{"Hong Kong"}
+        MO{"Macau"}
+        PS{"Palesteina"}
+        UN{"UN"}
         US{"UDA"}
     }
     Countries%variant{
-        CD{"y Congo (G.Dd.C.)"}
+        CD{"Y Congo (G.Dd.C.)"}
         CG{"Y Congo (Gweriniaeth)"}
         CI{"Arfordir Ifori"}
+        CZ{"Tsiecia"}
         FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
         MK{"Macedonia (CWIM)"}
         TL{"Dwyrain Timor"}
     }
-    Version{"2.1.20.4"}
+    Version{"2.1.30.6"}
 }

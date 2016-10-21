@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/bs_Cyrl.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 bs_Cyrl{
     %%Parent{"root"}
     Countries{
@@ -47,7 +41,6 @@ bs_Cyrl{
         AI{"Ангвила"}
         AL{"Албанија"}
         AM{"Арменија"}
-        AN{"Холандски Антили"}
         AO{"Ангола"}
         AQ{"Антарктик"}
         AR{"Аргентина"}
@@ -137,7 +130,7 @@ bs_Cyrl{
         GU{"Гуам"}
         GW{"Гвинеја-Бисао"}
         GY{"Гвајана"}
-        HK{"Хонг Конг"}
+        HK{"Хонг Конг С. А. Р. Кина"}
         HM{"Херд и Мекдоналд Острва"}
         HN{"Хондурас"}
         HR{"Хрватска"}
@@ -191,7 +184,7 @@ bs_Cyrl{
         ML{"Мали"}
         MM{"Мијанмар (Бурма)"}
         MN{"Монголија"}
-        MO{"Макао"}
+        MO{"Макао С. А. Р. Кина"}
         MP{"Северна Маријанска Острва"}
         MQ{"Мартиник"}
         MR{"Мауританија"}
@@ -295,10 +288,14 @@ bs_Cyrl{
         ZW{"Зимбабве"}
         ZZ{"Непозната или неважећа област"}
     }
+    Countries%short{
+        HK{"Хонг Конг"}
+        MO{"Макао"}
+    }
     Countries%variant{
         CD{"Конго (ДРК)"}
         CG{"Конго (Република)"}
         FK{"Фокландска (Малвинска) острва"}
     }
-    Version{"2.1.19.90"}
+    Version{"2.1.28.76"}
 }

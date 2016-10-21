@@ -1,3 +1,5 @@
+// Copyright (C) 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*  
 **********************************************************************
 *   Copyright (C) 2002-2015, International Business Machines
@@ -16,7 +18,7 @@
 
 #include "unicode/utypes.h"
 
-#if !UCONFIG_NO_CONVERSION
+#if !UCONFIG_NO_CONVERSION && !UCONFIG_ONLY_HTML_CONVERSION
 
 #include "unicode/ucnv.h"
 #include "unicode/utf.h"
@@ -480,7 +482,10 @@ static const UConverterImpl _UTF32BEImpl = {
     NULL,
     NULL,
     NULL,
-    ucnv_getNonSurrogateUnicodeSet
+    ucnv_getNonSurrogateUnicodeSet,
+
+    NULL,
+    NULL
 };
 
 /* The 1232 CCSID refers to any version of Unicode with any endianess of UTF-32 */
@@ -972,7 +977,10 @@ static const UConverterImpl _UTF32LEImpl = {
     NULL,
     NULL,
     NULL,
-    ucnv_getNonSurrogateUnicodeSet
+    ucnv_getNonSurrogateUnicodeSet,
+
+    NULL,
+    NULL
 };
 
 /* The 1232 CCSID refers to any version of Unicode with any endianess of UTF-32 */
@@ -1214,7 +1222,10 @@ static const UConverterImpl _UTF32Impl = {
     NULL,
     NULL,
     NULL,
-    ucnv_getNonSurrogateUnicodeSet
+    ucnv_getNonSurrogateUnicodeSet,
+
+    NULL,
+    NULL
 };
 
 /* The 1236 CCSID refers to any version of Unicode with a BOM sensitive endianess of UTF-32 */

@@ -1,7 +1,9 @@
+// Copyright (C) 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
  ********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1996-2015, International Business Machines Corporation and
+ * Copyright (c) 1996-2016, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************
  *
@@ -65,7 +67,11 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
 
     &_Latin1Data,
     &_UTF8Data, &_UTF16BEData, &_UTF16LEData,
+#if UCONFIG_ONLY_HTML_CONVERSION
+    NULL, NULL,
+#else
     &_UTF32BEData, &_UTF32LEData,
+#endif
     NULL,
 
 #if UCONFIG_NO_LEGACY_CONVERSION
@@ -99,7 +105,7 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
 
     &_ASCIIData,
 #if UCONFIG_ONLY_HTML_CONVERSION
-    NULL, NULL, &_UTF16Data, &_UTF32Data, NULL, NULL,
+    NULL, NULL, &_UTF16Data, NULL, NULL, NULL,
 #else
     &_UTF7Data, &_Bocu1Data, &_UTF16Data, &_UTF32Data, &_CESU8Data, &_IMAPData,
 #endif
@@ -164,6 +170,7 @@ static struct {
   { "utf16oppositeendian", UCNV_UTF16_BigEndian},
   { "utf16platformendian", UCNV_UTF16_LittleEndian },
 #endif
+#if !UCONFIG_ONLY_HTML_CONVERSION
   { "utf32", UCNV_UTF32 },
   { "utf32be", UCNV_UTF32_BigEndian },
   { "utf32le", UCNV_UTF32_LittleEndian },
@@ -173,6 +180,7 @@ static struct {
 #else
   { "utf32oppositeendian", UCNV_UTF32_BigEndian },
   { "utf32platformendian", UCNV_UTF32_LittleEndian },
+#endif
 #endif
 #if !UCONFIG_ONLY_HTML_CONVERSION
   { "utf7", UCNV_UTF7 },
@@ -379,7 +387,7 @@ getAlgorithmicTypeFromName(const char *realName)
 
     /* do a binary search for the alias */
     start = 0;
-    limit = sizeof(cnvNameType)/sizeof(cnvNameType[0]);
+    limit = UPRV_LENGTHOF(cnvNameType);
     mid = limit;
     lastMid = UINT32_MAX;
 

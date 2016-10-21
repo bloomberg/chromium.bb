@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/uz.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 uz{
     Countries{
         001{"Dunyo"}
@@ -42,7 +36,7 @@ uz{
         AD{"Andorra"}
         AE{"Birlashgan Arab Amirliklari"}
         AF{"Afgʻoniston"}
-        AG{"Antigua va Barbados"}
+        AG{"Antigua va Barbuda"}
         AI{"Angilya"}
         AL{"Albaniya"}
         AM{"Armaniston"}
@@ -119,7 +113,7 @@ uz{
         FO{"Farer orollari"}
         FR{"Fransiya"}
         GA{"Gabon"}
-        GB{"Birlashgan Qirollik"}
+        GB{"Buyuk Britaniya"}
         GD{"Grenada"}
         GE{"Gruziya"}
         GF{"Fransuz Gvianasi"}
@@ -137,7 +131,7 @@ uz{
         GU{"Guam"}
         GW{"Gvineya-Bisau"}
         GY{"Gayana"}
-        HK{"Gonkong"}
+        HK{"Gonkong (Xitoy MMH)"}
         HM{"Xerd va Makdonald orollari"}
         HN{"Gonduras"}
         HR{"Xorvatiya"}
@@ -191,7 +185,7 @@ uz{
         ML{"Mali"}
         MM{"Myanma (Birma)"}
         MN{"Mongoliya"}
-        MO{"Makao"}
+        MO{"Makao (Xitoy MMH)"}
         MP{"Shimoliy Mariana orollari"}
         MQ{"Martinika"}
         MR{"Mavritaniya"}
@@ -223,15 +217,15 @@ uz{
         PH{"Filippin"}
         PK{"Pokiston"}
         PL{"Polsha"}
-        PM{"Sent-Pyer va Mikelon"}
+        PM{"Sen-Pyer va Mikelon"}
         PN{"Pitkern orollari"}
         PR{"Puerto-Riko"}
-        PS{"Falastin"}
+        PS{"Falastin hududi"}
         PT{"Portugaliya"}
         PW{"Palau"}
         PY{"Paragvay"}
         QA{"Qatar"}
-        QO{"Yondosh Okeaniya"}
+        QO{"Tashqi Okeaniya"}
         RE{"Reyunion"}
         RO{"Ruminiya"}
         RS{"Serbiya"}
@@ -266,7 +260,7 @@ uz{
         TH{"Tailand"}
         TJ{"Tojikiston"}
         TK{"Tokelau"}
-        TL{"Timor"}
+        TL{"Timor-Leste"}
         TM{"Turkmaniston"}
         TN{"Tunis"}
         TO{"Tonga"}
@@ -278,7 +272,8 @@ uz{
         UA{"Ukraina"}
         UG{"Uganda"}
         UM{"AQSH yondosh orollari"}
-        US{"Qoʻshma Shtatlar"}
+        UN{"Birlashgan Millatlar Tashkiloti"}
+        US{"Amerika Qo‘shma Shtatlari"}
         UY{"Urugvay"}
         UZ{"Oʻzbekiston"}
         VA{"Vatikan"}
@@ -299,16 +294,21 @@ uz{
         ZZ{"Noma’lum mintaqa"}
     }
     Countries%short{
-        GB{"B.Q."}
+        GB{"Britaniya"}
+        HK{"Gonkong"}
+        MO{"Makao"}
+        PS{"Falastin"}
+        UN{"BMT"}
         US{"AQSH"}
     }
     Countries%variant{
         CD{"Kongo (KDR)"}
         CG{"Kongo (Respublika)"}
         CI{"Fil suyagi qirg‘og‘i"}
+        CZ{"Chexiya"}
         FK{"Folklend (Malvin) orollari"}
         MK{"Makedoniya (SYRM)"}
         TL{"Sharqiy Timor"}
     }
-    Version{"2.1.20.4"}
+    Version{"2.1.29.44"}
 }
