@@ -16,6 +16,7 @@ import time
 
 import find_xcode
 import gtest_utils
+import xctest_utils
 
 
 class Error(Exception):
@@ -47,6 +48,13 @@ class DeviceDetectionError(TestRunnerError):
       'Expected one device, found %s:\n%s' % (len(udids), '\n'.join(udids)))
 
 
+class PlugInsNotFoundError(TestRunnerError):
+  """The PlugIns directory was not found."""
+  def __init__(self, plugins_dir):
+    super(PlugInsNotFoundError, self).__init__(
+      'PlugIns directory does not exist: %s' % plugins_dir)
+
+
 class SimulatorNotFoundError(TestRunnerError):
   """The given simulator binary was not found."""
   def __init__(self, iossim_path):
@@ -54,11 +62,18 @@ class SimulatorNotFoundError(TestRunnerError):
         'Simulator does not exist: %s' % iossim_path)
 
 
-class XcodeVersionNotFound(TestRunnerError):
+class XcodeVersionNotFoundError(TestRunnerError):
   """The requested version of Xcode was not found."""
   def __init__(self, xcode_version):
     super(XcodeVersionNotFoundError, self).__init__(
         'Xcode version not found: %s', xcode_version)
+
+
+class XCTestPlugInNotFoundError(TestRunnerError):
+  """The .xctest PlugIn was not found."""
+  def __init__(self, xctest_path):
+    super(XCTestPlugInNotFoundError, self).__init__(
+        'XCTest not found: %s', xctest_path)
 
 
 def get_kif_test_filter(tests, invert=False):
@@ -105,7 +120,14 @@ class TestRunner(object):
   """Base class containing common functionality."""
 
   def __init__(
-    self, app_path, xcode_version, out_dir, env_vars=None, test_args=None):
+    self,
+    app_path,
+    xcode_version,
+    out_dir,
+    env_vars=None,
+    test_args=None,
+    xctest=False,
+  ):
     """Initializes a new instance of this class.
 
     Args:
@@ -115,10 +137,13 @@ class TestRunner(object):
       env_vars: List of environment variables to pass to the test itself.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      xctest: Whether or not this is an XCTest.
 
     Raises:
       AppNotFoundError: If the given app does not exist.
+      PlugInsNotFoundError: If the PlugIns directory does not exist for XCTests.
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
+      XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
     if not os.path.exists(app_path):
       raise AppNotFoundError(app_path)
@@ -141,6 +166,17 @@ class TestRunner(object):
     self.out_dir = out_dir
     self.test_args = test_args or []
     self.xcode_version = xcode_version
+    self.xctest_path = ''
+
+    if xctest:
+      plugins_dir = os.path.join(self.app_path, 'PlugIns')
+      if not os.path.exists(plugins_dir):
+        raise PlugInsNotFoundError(plugins_dir)
+      for plugin in os.listdir(plugins_dir):
+        if plugin.endswith('.xctest'):
+          self.xctest_path = os.path.join(plugins_dir, plugin)
+      if not os.path.exists(self.xctest_path):
+        raise XCTestPlugInNotFoundError(self.xctest_path)
 
   def get_launch_command(self, test_filter=None, invert=False):
     """Returns the command that can be used to launch the test app.
@@ -170,8 +206,7 @@ class TestRunner(object):
         os.path.join(self.out_dir, 'desktop_%s.png' % time.time()),
     ])
 
-  @staticmethod
-  def _run(cmd):
+  def _run(self, cmd):
     """Runs the specified command, parsing GTest output.
 
     Args:
@@ -183,8 +218,11 @@ class TestRunner(object):
     print ' '.join(cmd)
     print
 
-    parser = gtest_utils.GTestLogParser()
     result = gtest_utils.GTestResult(cmd)
+    if self.xctest_path:
+      parser = xctest_utils.XCTestLogParser()
+    else:
+      parser = gtest_utils.GTestLogParser()
 
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -238,7 +276,8 @@ class TestRunner(object):
       flaked = result.flaked_tests
 
       try:
-        while result.crashed and result.crashed_test:
+        # XCTests cannot currently be resumed at the next test case.
+        while not self.xctest_path and result.crashed and result.crashed_test:
           # If the app crashes during a specific test case, then resume at the
           # next test case. This is achieved by filtering out every test case
           # which has already run.
@@ -281,6 +320,7 @@ class SimulatorTestRunner(TestRunner):
       out_dir,
       env_vars=None,
       test_args=None,
+      xctest=False,
   ):
     """Initializes a new instance of this class.
 
@@ -296,10 +336,13 @@ class SimulatorTestRunner(TestRunner):
       env_vars: List of environment variables to pass to the test itself.
       test_args: List of strings to pass as arguments to the test when
         launching.
+      xctest: Whether or not this is an XCTest.
 
     Raises:
       AppNotFoundError: If the given app does not exist.
+      PlugInsNotFoundError: If the PlugIns directory does not exist for XCTests.
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
+      XCTestPlugInNotFoundError: If the .xctest PlugIn does not exist.
     """
     super(SimulatorTestRunner, self).__init__(
         app_path,
@@ -307,6 +350,7 @@ class SimulatorTestRunner(TestRunner):
         out_dir,
         env_vars=env_vars,
         test_args=test_args,
+        xctest=xctest,
     )
 
     if not os.path.exists(iossim_path):
@@ -446,6 +490,8 @@ class SimulatorTestRunner(TestRunner):
       cmd.extend(['-e', env_var])
 
     cmd.append(self.app_path)
+    if self.xctest_path:
+      cmd.append(self.xctest_path)
     cmd.extend(self.test_args)
     cmd.extend(args)
     return cmd

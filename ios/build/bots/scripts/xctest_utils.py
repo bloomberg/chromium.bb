@@ -2,134 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
-import copy
+import json
+import os
 import re
+import tempfile
 
 
 # These labels should match the ones output by gtest's JSON.
 TEST_UNKNOWN_LABEL = 'UNKNOWN'
 TEST_SUCCESS_LABEL = 'SUCCESS'
 TEST_FAILURE_LABEL = 'FAILURE'
+TEST_CRASH_LABEL = 'CRASH'
 TEST_TIMEOUT_LABEL = 'TIMEOUT'
 TEST_WARNING_LABEL = 'WARNING'
 
 
-class GTestResult(object):
-  """A result of gtest.
-
-  Properties:
-    command: The command argv.
-    crashed: Whether or not the test crashed.
-    crashed_test: The name of the test during which execution crashed, or
-      None if a particular test didn't crash.
-    failed_tests: A dict mapping the names of failed tests to a list of
-      lines of output from those tests.
-    flaked_tests: A dict mapping the names of failed flaky tests to a list
-      of lines of output from those tests.
-    passed_tests: A list of passed tests.
-    perf_links: A dict mapping the names of perf data points collected
-      to links to view those graphs.
-    return_code: The return code of the command.
-    success: Whether or not this run of the command was considered a
-      successful GTest execution.
-  """
-  @property
-  def crashed(self):
-    return self._crashed
-
-  @property
-  def crashed_test(self):
-    return self._crashed_test
-
-  @property
-  def command(self):
-    return self._command
-
-  @property
-  def failed_tests(self):
-    if self.__finalized:
-      return copy.deepcopy(self._failed_tests)
-    return self._failed_tests
-
-  @property
-  def flaked_tests(self):
-    if self.__finalized:
-      return copy.deepcopy(self._flaked_tests)
-    return self._flaked_tests
-
-  @property
-  def passed_tests(self):
-    if self.__finalized:
-      return copy.deepcopy(self._passed_tests)
-    return self._passed_tests
-
-  @property
-  def perf_links(self):
-    if self.__finalized:
-      return copy.deepcopy(self._perf_links)
-    return self._perf_links
-
-  @property
-  def return_code(self):
-    return self._return_code
-
-  @property
-  def success(self):
-    return self._success
-
-  def __init__(self, command):
-    if not isinstance(command, collections.Iterable):
-      raise ValueError('Expected an iterable of command arguments.', command)
-
-    if not command:
-      raise ValueError('Expected a non-empty command.', command)
-
-    self._command = tuple(command)
-    self._crashed = False
-    self._crashed_test = None
-    self._failed_tests = collections.OrderedDict()
-    self._flaked_tests = collections.OrderedDict()
-    self._passed_tests = []
-    self._perf_links = collections.OrderedDict()
-    self._return_code = None
-    self._success = None
-    self.__finalized = False
-
-  def finalize(self, return_code, success):
-    self._return_code = return_code
-    self._success = success
-
-    # If the test was not considered to be a GTest success, but had no
-    # failing tests, conclude that it must have crashed.
-    if not self._success and not self._failed_tests and not self._flaked_tests:
-      self._crashed = True
-
-    # At most one test can crash the entire app in a given parsing.
-    for test, log_lines in self._failed_tests.iteritems():
-      # A test with no output would have crashed. No output is replaced
-      # by the GTestLogParser by a sentence indicating non-completion.
-      if 'Did not complete.' in log_lines:
-        self._crashed = True
-        self._crashed_test = test
-
-    # A test marked as flaky may also have crashed the app.
-    for test, log_lines in self._flaked_tests.iteritems():
-      if 'Did not complete.' in log_lines:
-        self._crashed = True
-        self._crashed_test = test
-
-    self.__finalized = True
-
-
-class GTestLogParser(object):
-  """This helper class process GTest test output."""
+class XCTestLogParser(object):
+  """This helper class process XCTest test output."""
 
   def __init__(self):
     # State tracking for log parsing
     self.completed = False
     self._current_test = ''
     self._failure_description = []
+    self._current_report_hash = ''
+    self._current_report = []
     self._parsing_failures = False
 
     # Line number currently being processed.
@@ -150,29 +47,17 @@ class GTestLogParser(object):
     self._disabled_tests = 0
     self._flaky_tests = 0
 
-    # Regular expressions for parsing GTest logs. Test names look like
-    # "x.y", with 0 or more "w/" prefixes and 0 or more "/z" suffixes.
-    # e.g.:
-    #   SomeName/SomeTestCase.SomeTest/1
-    #   SomeName/SomeTestCase/1.SomeTest
-    #   SomeName/SomeTestCase/1.SomeTest/SomeModifider
-    test_name_regexp = r'((\w+/)*\w+\.\w+(/\w+)*)'
-
-    self._master_name_re = re.compile(r'\[Running for master: "([^"]*)"')
-    self.master_name = ''
-
+    test_name_regexp = r'\-\[(\w+)\s(\w+)\]'
     self._test_name = re.compile(test_name_regexp)
-    self._test_start = re.compile(r'\[\s+RUN\s+\] ' + test_name_regexp)
-    self._test_ok = re.compile(r'\[\s+OK\s+\] ' + test_name_regexp)
-    self._test_fail = re.compile(r'\[\s+FAILED\s+\] ' + test_name_regexp)
-    self._test_passed = re.compile(r'\[\s+PASSED\s+\] \d+ tests?.')
-    self._run_test_cases_line = re.compile(
-        r'\[\s*\d+\/\d+\]\s+[0-9\.]+s ' + test_name_regexp + ' .+')
-    self._test_timeout = re.compile(
-        r'Test timeout \([0-9]+ ms\) exceeded for ' + test_name_regexp)
-    self._disabled = re.compile(r'\s*YOU HAVE (\d+) DISABLED TEST')
-    self._flaky = re.compile(r'\s*YOU HAVE (\d+) FLAKY TEST')
-
+    self._test_start = re.compile(
+        r'Test Case \'' + test_name_regexp + '\' started\.')
+    self._test_ok = re.compile(
+        r'Test Case \'' + test_name_regexp +
+          '\' passed\s+\(\d+\.\d+\s+seconds\)?.')
+    self._test_fail = re.compile(
+        r'Test Case \'' + test_name_regexp +
+          '\' failed\s+\(\d+\.\d+\s+seconds\)?.')
+    self._test_passed = re.compile(r'\*\*\s+TEST\s+EXECUTE\s+SUCCEEDED\s+\*\*')
     self._retry_message = re.compile('RETRYING FAILED TESTS:')
     self.retrying_failed = False
 
@@ -263,18 +148,6 @@ class GTestLogParser(object):
     return [self.TEST_STATUS_MAP.get(self._StatusOfTest(test),
                                     TEST_UNKNOWN_LABEL)]
 
-  def DisabledTests(self):
-    """Returns the name of the disabled test (if there is only 1) or the number
-    of disabled tests.
-    """
-    return self._disabled_tests
-
-  def FlakyTests(self):
-    """Returns the name of the flaky test (if there is only 1) or the number
-    of flaky tests.
-    """
-    return self._flaky_tests
-
   def FailureDescription(self, test):
     """Returns a list containing the failure description for the given test.
 
@@ -285,7 +158,7 @@ class GTestLogParser(object):
 
   def CompletedWithoutFailure(self):
     """Returns True if all tests completed and no tests failed unexpectedly."""
-    return self.completed and not self.FailedTests()
+    return self.completed
 
   def ProcessLine(self, line):
     """This is called once with each line of the test log."""
@@ -325,62 +198,11 @@ class GTestLogParser(object):
     Will recognize newly started tests, OK or FAILED statuses, timeouts, etc.
     """
 
-    # Note: When sharding, the number of disabled and flaky tests will be read
-    # multiple times, so this will only show the most recent values (but they
-    # should all be the same anyway).
-
-    # Is it a line listing the master name?
-    if not self.master_name:
-      results = self._master_name_re.match(line)
-      if results:
-        self.master_name = results.group(1)
-
-    results = self._run_test_cases_line.match(line)
-    if results:
-      # A run_test_cases.py output.
-      if self._current_test:
-        if self._test_status[self._current_test][0] == 'started':
-          self._test_status[self._current_test] = (
-              'timeout', self._failure_description)
-      self._current_test = ''
-      self._failure_description = []
-      return
-
     # Is it a line declaring all tests passed?
     results = self._test_passed.match(line)
     if results:
       self.completed = True
       self._current_test = ''
-      return
-
-    # Is it a line reporting disabled tests?
-    results = self._disabled.match(line)
-    if results:
-      try:
-        disabled = int(results.group(1))
-      except ValueError:
-        disabled = 0
-      if disabled > 0 and isinstance(self._disabled_tests, int):
-        self._disabled_tests = disabled
-      else:
-        # If we can't parse the line, at least give a heads-up. This is a
-        # safety net for a case that shouldn't happen but isn't a fatal error.
-        self._disabled_tests = 'some'
-      return
-
-    # Is it a line reporting flaky tests?
-    results = self._flaky.match(line)
-    if results:
-      try:
-        flaky = int(results.group(1))
-      except ValueError:
-        flaky = 0
-      if flaky > 0 and isinstance(self._flaky_tests, int):
-        self._flaky_tests = flaky
-      else:
-        # If we can't parse the line, at least give a heads-up. This is a
-        # safety net for a case that shouldn't happen but isn't a fatal error.
-        self._flaky_tests = 'some'
       return
 
     # Is it the start of a test?
@@ -390,7 +212,7 @@ class GTestLogParser(object):
         if self._test_status[self._current_test][0] == 'started':
           self._test_status[self._current_test] = (
               'timeout', self._failure_description)
-      test_name = results.group(1)
+      test_name = '%s.%s' % (results.group(1), results.group(2))
       self._test_status[test_name] = ('started', ['Did not complete.'])
       self._current_test = test_name
       if self.retrying_failed:
@@ -403,7 +225,7 @@ class GTestLogParser(object):
     # Is it a test success line?
     results = self._test_ok.match(line)
     if results:
-      test_name = results.group(1)
+      test_name = '%s.%s' % (results.group(1), results.group(2))
       status = self._StatusOfTest(test_name)
       if status != 'started':
         self._RecordError(line, 'success while in status %s' % status)
@@ -418,7 +240,7 @@ class GTestLogParser(object):
     # Is it a test failure line?
     results = self._test_fail.match(line)
     if results:
-      test_name = results.group(1)
+      test_name = '%s.%s' % (results.group(1), results.group(2))
       status = self._StatusOfTest(test_name)
       if status not in ('started', 'failed', 'timeout'):
         self._RecordError(line, 'failure while in status %s' % status)
@@ -427,19 +249,6 @@ class GTestLogParser(object):
       # out.
       if status not in ('failed', 'timeout'):
         self._test_status[test_name] = ('failed', self._failure_description)
-      self._failure_description = []
-      self._current_test = ''
-      return
-
-    # Is it a test timeout line?
-    results = self._test_timeout.search(line)
-    if results:
-      test_name = results.group(1)
-      status = self._StatusOfTest(test_name)
-      if status not in ('started', 'failed'):
-        self._RecordError(line, 'timeout while in status %s' % status)
-      self._test_status[test_name] = (
-          'timeout', self._failure_description + ['Killed (timed out).'])
       self._failure_description = []
       self._current_test = ''
       return
@@ -455,19 +264,3 @@ class GTestLogParser(object):
     # This also won't work if a test times out before it begins running.
     if self._current_test:
       self._failure_description.append(line)
-
-    # Parse the "Failing tests:" list at the end of the output, and add any
-    # additional failed tests to the list. For example, this includes tests
-    # that crash after the OK line.
-    if self._parsing_failures:
-      results = self._test_name.match(line)
-      if results:
-        test_name = results.group(1)
-        status = self._StatusOfTest(test_name)
-        if status in ('not known', 'OK'):
-          self._test_status[test_name] = (
-              'failed', ['Unknown error, see stdio log.'])
-      else:
-        self._parsing_failures = False
-    elif line.startswith('Failing tests:'):
-      self._parsing_failures = True

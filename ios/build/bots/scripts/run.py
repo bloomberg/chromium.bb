@@ -43,6 +43,7 @@ def main(args, test_args):
         args.out_dir,
         env_vars=args.env_var,
         test_args=test_args,
+        xctest=args.xctest,
       )
     else:
       tr = test_runner.DeviceTestRunner(
@@ -127,6 +128,11 @@ if __name__ == '__main__':
     metavar='ver',
     required=True,
   )
+  parser.add_argument(
+    '--xctest',
+    action='store_true',
+    help='Whether or not the given app should be run as an XCTest.',
+  )
 
   args, test_args = parser.parse_known_args()
   if args.iossim or args.platform or args.version:
@@ -139,6 +145,7 @@ if __name__ == '__main__':
   args_json = json.loads(args.args_json)
   args.env_var = args.env_var or []
   args.env_var.extend(args_json.get('env_var', []))
+  args.xctest = args_json.get('xctest', args.xctest)
   test_args.extend(args_json.get('test_args', []))
 
   sys.exit(main(args, test_args))
