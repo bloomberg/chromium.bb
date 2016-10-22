@@ -95,6 +95,12 @@ Polymer({
     settings.navigateToPreviousRoute();
   },
 
+  /** @private */
+  onHelpTap_: function() {
+    window.open(
+        'https://support.google.com/chrome/?p=settings_manage_exceptions');
+  },
+
 <if expr="_google_chrome and not chromeos">
   /** @private */
   onMetricsReportingCheckboxTap_: function() {

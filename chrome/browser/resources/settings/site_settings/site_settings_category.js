@@ -194,12 +194,6 @@ Polymer({
   },
 
   /** @private */
-  onLearnMoreClicked_: function() {
-    window.open(
-        'https://support.google.com/chrome/?p=settings_manage_exceptions');
-  },
-
-  /** @private */
   onAdobeFlashStorageClicked_: function() {
     window.open('https://www.macromedia.com/support/' +
         'documentation/en/flashplayer/help/settings_manager07.html');

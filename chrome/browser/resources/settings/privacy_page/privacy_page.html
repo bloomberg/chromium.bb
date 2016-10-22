@@ -29,6 +29,10 @@
 <dom-module id="settings-privacy-page">
   <template>
     <style include="settings-shared">
+      button[is='paper-icon-button-light'].icon-help {
+        background-image: url(../images/help_outline.svg);
+      }
+
       /* TODO(dbeam): this is similar to a 1 line checkbox. Worth somehow
        * combining? */
       #metricsReporting {
@@ -187,6 +191,8 @@
       <template is="dom-if" route-path="/siteSettings/automaticDownloads"
           no-search>
         <settings-subpage page-title="$i18n{siteSettingsAutomaticDownloads}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
@@ -196,6 +202,8 @@
       <template is="dom-if" route-path="/siteSettings/backgroundSync" no-search>
           no-search>
         <settings-subpage page-title="$i18n{siteSettingsBackgroundSync}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
@@ -204,6 +212,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/camera" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCamera}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.CAMERA}}">
@@ -213,6 +223,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/cookies" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.COOKIES}}">
@@ -229,6 +241,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/images" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.IMAGES}}">
@@ -237,6 +251,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/location" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.GEOLOCATION}}">
@@ -255,6 +271,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/javascript" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryJavascript}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.JAVASCRIPT}}">
@@ -263,6 +281,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/keygen" no-search>
         <settings-subpage page-title="$i18n{siteSettingsKeygen}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.KEYGEN}}">
@@ -271,6 +291,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/microphone" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryMicrophone}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.MIC}}">
@@ -280,6 +302,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/notifications" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryNotifications}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.NOTIFICATIONS}}">
@@ -288,6 +312,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/flash" no-search>
         <settings-subpage page-title="$i18n{siteSettingsFlash}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.PLUGINS}}">
@@ -296,6 +322,8 @@
       </template>
       <template is="dom-if" route-path="/siteSettings/popups" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.POPUPS}}">
@@ -305,6 +333,8 @@
       <template is="dom-if" route-path="/siteSettings/unsandboxedPlugins"
           no-search>
         <settings-subpage page-title="$i18n{siteSettingsUnsandboxedPlugins}">
+          <button class="icon-help subpage-title-extra"
+              is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">

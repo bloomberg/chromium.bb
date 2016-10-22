@@ -32,7 +32,8 @@
 
       h1 {
         color: var(--settings-nav-grey);
-        font-size: 107.6923%; /* go to 14px from 13px */
+        flex: 1;  /* Push other items to the end. */
+        font-size: 107.6923%;  /* Go to 14px from 13px */
         font-weight: 500;
       }
 
@@ -49,6 +50,7 @@
             on-search-changed="onSearchChanged_">
         </settings-subpage-search>
       </template>
+      <content select=".subpage-title-extra"></content>
     </div>
     <content></content>
   </template>

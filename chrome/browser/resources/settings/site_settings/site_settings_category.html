@@ -56,19 +56,16 @@
 
     <content select=".cookie-controls"></content>
 
-    <div class="settings-box layout horizontal">
 <if expr="chromeos">
+    <div class="settings-box layout horizontal">
       <div class="flex" hidden$="[[!isPluginCategory_(category)]]">
           <div class="list-item list-button"
               on-tap="onAdobeFlashStorageClicked_">
             $i18n{adobeFlashStorage}
           </div>
       </div>
-</if>
-      <div class="list-item list-button" on-tap="onLearnMoreClicked_">
-        $i18n{learnMore}
-      </div>
     </div>
+</if>
 
     <site-list
         category="[[category]]"
