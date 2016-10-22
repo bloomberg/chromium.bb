@@ -6,8 +6,7 @@ Call stack:
     0) errorCallback (async-callstack-async-await3.html:60)
     1) doTestPromiseReject (async-callstack-async-await3.html:129)
     [async function]
-    0) doTestPromiseReject (async-callstack-async-await3.html:123)
-    1) testFunctionTimeout (async-callstack-async-await3.html:50)
+    0) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]
@@ -18,8 +17,7 @@ Call stack:
     0) errorCallback (async-callstack-async-await3.html:60)
     1) doTestRejectFromChain (async-callstack-async-await3.html:109)
     [async function]
-    0) doTestRejectFromChain (async-callstack-async-await3.html:103)
-    1) testFunctionTimeout (async-callstack-async-await3.html:50)
+    0) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]
@@ -30,8 +28,7 @@ Call stack:
     0) errorCallback (async-callstack-async-await3.html:60)
     1) doTestThrowFromChain (async-callstack-async-await3.html:89)
     [async function]
-    0) doTestThrowFromChain (async-callstack-async-await3.html:83)
-    1) testFunctionTimeout (async-callstack-async-await3.html:50)
+    0) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]
@@ -42,8 +39,7 @@ Call stack:
     0) thenCallback (async-callstack-async-await3.html:55)
     1) doTestPromiseAll (async-callstack-async-await3.html:67)
     [async function]
-    0) doTestPromiseAll (async-callstack-async-await3.html:63)
-    1) testFunctionTimeout (async-callstack-async-await3.html:50)
+    0) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]
@@ -54,8 +50,7 @@ Call stack:
     0) thenCallback (async-callstack-async-await3.html:55)
     1) doTestPromiseResolve (async-callstack-async-await3.html:117)
     [async function]
-    0) doTestPromiseResolve (async-callstack-async-await3.html:113)
-    1) testFunctionTimeout (async-callstack-async-await3.html:50)
+    0) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]

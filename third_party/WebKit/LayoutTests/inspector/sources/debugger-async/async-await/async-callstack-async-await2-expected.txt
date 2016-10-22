@@ -5,8 +5,7 @@ Captured call stacks in no particular order:
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:67)
     [async function]
-    0) doTestChainedPromises (async-callstack-async-await2.html:63)
-    1) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
@@ -16,8 +15,7 @@ Call stack:
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:69)
     [async function]
-    0) doTestChainedPromises (async-callstack-async-await2.html:63)
-    1) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
@@ -27,8 +25,7 @@ Call stack:
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:71)
     [async function]
-    0) doTestChainedPromises (async-callstack-async-await2.html:63)
-    1) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
@@ -38,8 +35,7 @@ Call stack:
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:73)
     [async function]
-    0) doTestChainedPromises (async-callstack-async-await2.html:63)
-    1) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
@@ -50,8 +46,7 @@ Call stack:
     0) thenCallback (async-callstack-async-await2.html:55)
     1) doTestChainedPromises (async-callstack-async-await2.html:74)
     [async function]
-    0) doTestChainedPromises (async-callstack-async-await2.html:63)
-    1) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
@@ -62,8 +57,7 @@ Call stack:
     0) thenCallback (async-callstack-async-await2.html:55)
     1) doTestChainedPromisesJSON (async-callstack-async-await2.html:86)
     [async function]
-    0) doTestChainedPromisesJSON (async-callstack-async-await2.html:80)
-    1) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]

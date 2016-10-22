@@ -577,12 +577,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script
 crbug.com/537080 imported/csswg-test/css-writing-modes-3/vertical-alignment-003.xht [ Failure ]
 crbug.com/537080 imported/csswg-test/css-writing-modes-3/vertical-alignment-009.xht [ Failure ]
 
-# These tests fail / timeout until https://www.chromestatus.com/features/5643236399906816 ships
-crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await1.html [ Skip ]
-crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await2.html [ Skip ]
-crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await3.html [ Skip ]
-crbug.com/621515 inspector/sources/debugger-async/async-await/async-pause-on-exception.html [ Skip ]
-
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-vrl-009.xht [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vlr-003.xht [ Failure ]
