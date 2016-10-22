@@ -56,20 +56,9 @@ bool SectionPredicate(
 
 bool AllInterestingNodesPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  // Focusable nodes should never be skipped. Note that IsFocusable()
-  // already skips over things like iframes and child frames that are
-  // technically focusable but shouldn't be exposed as focusable on Android.
   BrowserAccessibilityAndroid* android_node =
       static_cast<BrowserAccessibilityAndroid*>(node);
-  if (android_node->IsFocusable())
-    return true;
-
-  // If it's not focusable but has a control role, then it's interesting.
-  if (android_node->IsControl())
-    return true;
-
-  // Otherwise, the interesting nodes are leaf nodes with text.
-  return node->PlatformIsLeaf() && !node->GetText().empty();
+  return android_node->IsInterestingOnAndroid();
 }
 
 void AddToPredicateMap(const char* search_key_ascii,
@@ -709,19 +698,30 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
   if (obj.is_null())
     return;
 
-  BrowserAccessibilityAndroid* ancestor =
-      static_cast<BrowserAccessibilityAndroid*>(node->GetParent());
-  while (ancestor && ancestor != GetRoot()) {
-    if (ancestor->PlatformIsLeaf() ||
-        (ancestor->IsFocusable() && !ancestor->HasFocusableChild())) {
-      node = ancestor;
-      // Don't break - we want the highest ancestor that's focusable or a
-      // leaf node.
-    }
-    ancestor = static_cast<BrowserAccessibilityAndroid*>(ancestor->GetParent());
+  // First walk up to the nearest platform node, in case this node isn't
+  // even exposed on the platform.
+  node = node->GetClosestPlatformObject();
+
+  // If this node is uninteresting and just a wrapper around a sole
+  // interesting descendant, prefer that descendant instead.
+  const BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
+  const BrowserAccessibilityAndroid* sole_interesting_node =
+      android_node->GetSoleInterestingNodeFromSubtree();
+  if (sole_interesting_node)
+    android_node = sole_interesting_node;
+
+  // Finally, if this node is still uninteresting, try to walk up to
+  // find an interesting parent.
+  while (android_node && !android_node->IsInterestingOnAndroid()) {
+    android_node = static_cast<BrowserAccessibilityAndroid*>(
+        android_node->GetParent());
   }
 
-  Java_BrowserAccessibilityManager_handleHover(env, obj, node->unique_id());
+  if (android_node) {
+    Java_BrowserAccessibilityManager_handleHover(
+        env, obj, android_node->unique_id());
+  }
 }
 
 jint BrowserAccessibilityManagerAndroid::FindElementType(

@@ -277,6 +277,42 @@ bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
   return !HasState(ui::AX_STATE_INVISIBLE);
 }
 
+bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
+  // Focusable nodes are always interesting. Note that IsFocusable()
+  // already skips over things like iframes and child frames that are
+  // technically focusable but shouldn't be exposed as focusable on Android.
+  if (IsFocusable())
+    return true;
+
+  // If it's not focusable but has a control role, then it's interesting.
+  if (IsControl())
+    return true;
+
+  // Otherwise, the interesting nodes are leaf nodes with text.
+  return PlatformIsLeaf() && !GetText().empty();
+}
+
+const BrowserAccessibilityAndroid*
+    BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
+  if (IsInterestingOnAndroid())
+    return this;
+
+  const BrowserAccessibilityAndroid* sole_interesting_node = nullptr;
+  for (uint32_t i = 0; i < PlatformChildCount(); ++i) {
+    const BrowserAccessibilityAndroid* interesting_node =
+        static_cast<const BrowserAccessibilityAndroid*>(PlatformGetChild(i))->
+            GetSoleInterestingNodeFromSubtree();
+    if (interesting_node && sole_interesting_node) {
+      // If there are two interesting nodes, return nullptr.
+      return nullptr;
+    } else if (interesting_node) {
+      sole_interesting_node = interesting_node;
+    }
+  }
+
+  return sole_interesting_node;
+}
+
 bool BrowserAccessibilityAndroid::CanOpenPopup() const {
   return HasState(ui::AX_STATE_HASPOPUP);
 }
