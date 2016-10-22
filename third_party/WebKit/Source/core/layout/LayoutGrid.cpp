@@ -1928,7 +1928,6 @@ void LayoutGrid::placeItemsOnGrid() {
     return;
 
   DCHECK(m_gridItemArea.isEmpty());
-  DCHECK(m_gridItemsIndexesMap.isEmpty());
 
   populateExplicitGridAndOrderIterator();
 
@@ -1937,11 +1936,15 @@ void LayoutGrid::placeItemsOnGrid() {
 
   Vector<LayoutBox*> autoMajorAxisAutoGridItems;
   Vector<LayoutBox*> specifiedMajorAxisAutoGridItems;
+  DCHECK(m_gridItemsIndexesMap.isEmpty());
+  size_t childIndex = 0;
   m_hasAnyOrthogonalChildren = false;
   for (LayoutBox* child = m_orderIterator.first(); child;
        child = m_orderIterator.next()) {
     if (child->isOutOfFlowPositioned())
       continue;
+
+    m_gridItemsIndexesMap.set(child, childIndex++);
 
     m_hasAnyOrthogonalChildren =
         m_hasAnyOrthogonalChildren || isOrthogonalChild(*child);
@@ -2003,12 +2006,9 @@ void LayoutGrid::populateExplicitGridAndOrderIterator() {
   size_t maximumColumnIndex = GridPositionsResolver::explicitGridColumnCount(
       *style(), m_autoRepeatColumns);
 
-  ASSERT(m_gridItemsIndexesMap.isEmpty());
-  size_t childIndex = 0;
   for (LayoutBox* child = firstInFlowChildBox(); child;
        child = child->nextInFlowSiblingBox()) {
     populator.collectChild(child);
-    m_gridItemsIndexesMap.set(child, childIndex++);
 
     // This function bypasses the cache (cachedGridArea()) as it is used to
     // build it.
