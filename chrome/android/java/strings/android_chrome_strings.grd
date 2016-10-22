@@ -1212,10 +1212,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Not seeing your device? <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Get help<ph name="END_LINK1">&lt;/link1&gt;</ph> or <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>re-scan<ph name="END_LINK2">&lt;/link2&gt;</ph>.
       </message>
       <message name="IDS_BLUETOOTH_NOT_FOUND" desc="The message to show when no items were found during Bluetooth device scanning.">
-        No Bluetooth devices found. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Re-scan<ph name="END_LINK">&lt;/link&gt;</ph>.
+        No Bluetooth devices found. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Re-scan<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_BLUETOOTH_ADAPTER_OFF" desc="The message to show when scanning cannot start because the bluetooth adapter is turned off.">
-        Turn on Bluetooth in <ph name="BEGIN_LINK">&lt;link&gt;</ph>device settings<ph name="END_LINK">&lt;/link&gt;</ph> to allow pairing.
+        Turn on Bluetooth in <ph name="BEGIN_LINK">&lt;link&gt;</ph>device settings<ph name="END_LINK">&lt;/link&gt;</ph> to allow pairing
       </message>
       <message name="IDS_BLUETOOTH_ADAPTER_OFF_HELP" desc="The status message to show along with the message when the bluetooth adapter is turned off (to get Help).">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
