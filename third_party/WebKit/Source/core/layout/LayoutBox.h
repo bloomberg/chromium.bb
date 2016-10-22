@@ -52,12 +52,6 @@ enum BackgroundRectType { BackgroundClipRect, BackgroundKnownOpaqueRect };
 
 enum ShouldComputePreferred { ComputeActual, ComputePreferred };
 
-enum ApplyOverflowClipFlag {
-  ApplyOverflowClip,
-  // Don't apply overflow clipping or scrolling.
-  ApplyNonScrollOverflowClip
-};
-
 using SnapAreaSet = HashSet<const LayoutBox*>;
 
 struct LayoutBoxRareData {
@@ -1217,7 +1211,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // may return true even if the resulting rect has zero area.
   bool mapScrollingContentsRectToBoxSpace(
       LayoutRect&,
-      ApplyOverflowClipFlag,
       VisualRectFlags = DefaultVisualRectFlags) const;
 
   virtual bool hasRelativeLogicalWidth() const;

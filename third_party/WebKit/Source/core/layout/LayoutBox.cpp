@@ -1152,12 +1152,8 @@ LayoutRect LayoutBox::clippingRect() const {
 
 bool LayoutBox::mapScrollingContentsRectToBoxSpace(
     LayoutRect& rect,
-    ApplyOverflowClipFlag applyOverflowClip,
     VisualRectFlags visualRectFlags) const {
   if (!hasClipRelatedProperty())
-    return true;
-
-  if (applyOverflowClip == ApplyNonScrollOverflowClip)
     return true;
 
   if (hasOverflowClip()) {
@@ -2370,11 +2366,9 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   // we use the values cached by the layer.
   rect.setLocation(topLeft);
 
-  if (container->isBox() &&
+  if (container->isBox() && container != ancestor &&
       !toLayoutBox(container)->mapScrollingContentsRectToBoxSpace(
-          rect, container == ancestor ? ApplyNonScrollOverflowClip
-                                      : ApplyOverflowClip,
-          visualRectFlags))
+          rect, visualRectFlags))
     return false;
 
   if (ancestorSkipped) {

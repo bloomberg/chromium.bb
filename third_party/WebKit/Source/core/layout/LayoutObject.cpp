@@ -1300,10 +1300,8 @@ bool LayoutObject::mapToVisualRectInAncestorSpace(
       if (!isSVG())
         parentBox->flipForWritingMode(rect);
 
-      if (!parentBox->mapScrollingContentsRectToBoxSpace(
-              rect, parent == ancestor ? ApplyNonScrollOverflowClip
-                                       : ApplyOverflowClip,
-              visualRectFlags))
+      if (parent != ancestor &&
+          !parentBox->mapScrollingContentsRectToBoxSpace(rect, visualRectFlags))
         return false;
     }
     return parent->mapToVisualRectInAncestorSpace(ancestor, rect,
