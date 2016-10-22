@@ -28,8 +28,7 @@ function test()
     {
         var frames = InspectorTest.timelineFrameModel().frames();
         var lastFrame = InspectorTest.timelineFrameModel().frames().peekLast();
-        var deferredLayerTree = lastFrame.layerTree;
-        deferredLayerTree.resolve(InspectorTest.safeWrap(layerTreeResolved));
+        lastFrame.layerTree.layerTreePromise().then(InspectorTest.safeWrap(layerTreeResolved))
     }
 
     function layerTreeResolved(layerTreeModel)
