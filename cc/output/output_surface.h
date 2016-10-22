@@ -37,13 +37,9 @@ struct ManagedMemoryPolicy;
 class OutputSurfaceClient;
 class OutputSurfaceFrame;
 
-// Represents the output surface for a compositor. The compositor owns
-// and manages its destruction. Its lifetime is:
-//   1. Created on the main thread by the LayerTreeHost through its client.
-//   2. Passed to the compositor thread and bound to a client via BindToClient.
-//      From here on, it will only be used on the compositor thread.
-//   3. If the 3D context is lost, then the compositor will delete the output
-//      surface (on the compositor thread) and go back to step 1.
+// This class represents a platform-independent API for presenting
+// buffers to display via GPU or software compositing. Implementations
+// can provide platform-specific behaviour.
 class CC_EXPORT OutputSurface {
  public:
   struct Capabilities {
@@ -67,10 +63,9 @@ class CC_EXPORT OutputSurface {
 
   virtual ~OutputSurface();
 
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be initialized. The
-  // OutputSurface will be destroyed on the same thread that BoundToClient is
-  // called on.
+  // Called by the Display to initialize the OutputSurface. This also specifies
+  // the thread that the OutputSurface will be used on as tests create and then
+  // bind the class on different threads.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
   const Capabilities& capabilities() const { return capabilities_; }
