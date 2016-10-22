@@ -18,12 +18,22 @@ namespace chromeos {
 // Set Time dialog for setting the system time, date and time zone.
 class SetTimeDialog : public ui::WebDialogDelegate {
  public:
+  // Shows the dialog as a child of |parent|, for example the webui settings
+  // window.
+  static void ShowDialogInParent(gfx::NativeWindow parent);
+
+  // Shows the dialog in a given container in the ash window hierarchy. Used
+  // when there is no explicit parent, for example at the login screen where
+  // the general settings window is not available. |container_id| is an
+  // an ash window container id. See ash/public/cpp/shell_window_ids.h.
+  static void ShowDialogInContainer(int container_id);
+
+ private:
   SetTimeDialog();
   ~SetTimeDialog() override;
 
-  static void ShowDialog(gfx::NativeWindow owning_window);
+  static void ShowDialogImpl(gfx::NativeWindow parent, int container_id);
 
- private:
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;

@@ -349,8 +349,9 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
 }
 
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
-  // TODO(mash): Refactor out GetNativeWindow and move to SystemTrayClient.
-  SetTimeDialog::ShowDialog(GetNativeWindow());
+  // TODO(mash): Move to SystemTrayClient.
+  SetTimeDialog::ShowDialogInContainer(
+      SystemTrayClient::GetDialogParentContainerId());
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
