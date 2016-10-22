@@ -93,7 +93,7 @@ source_set("internal") {
   # the 'cpp' target.
   visibility = [
     ":cpp",
-    "//services/ui/demo:mus_demo_library",
+    "//services/ui/demo:mus_demo_lib",
   ]
 
   sources = [

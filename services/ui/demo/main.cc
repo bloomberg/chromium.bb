@@ -4,9 +4,9 @@
 
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/service_runner.h"
-#include "services/ui/demo/mus_demo.h"
+#include "services/ui/demo/mus_demo_service.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new ui::demo::MusDemo);
+  service_manager::ServiceRunner runner(new ui::demo::MusDemoService);
   return runner.Run(service_request_handle);
 }

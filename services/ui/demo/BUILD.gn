@@ -8,22 +8,42 @@ import("//testing/test.gni")
 
 service("mus_demo") {
   sources = [
+    "main.cc",
+    "mus_demo_service.cc",
+    "mus_demo_service.h",
+  ]
+
+  deps = [
+    ":mus_demo_lib",
+    "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/cpp:sources",
+  ]
+
+  data_deps = [
+    ":manifest",
+  ]
+}
+
+static_library("mus_demo_lib") {
+  sources = [
     "bitmap_uploader.cc",
     "bitmap_uploader.h",
-    "main.cc",
     "mus_demo.cc",
     "mus_demo.h",
+  ]
+
+  public_deps = [
+    "//skia",
   ]
 
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:sources",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal",
     "//services/ui/public/interfaces",
-    "//skia",
     "//ui/gfx/geometry",
   ]
 

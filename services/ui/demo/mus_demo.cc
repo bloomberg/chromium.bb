@@ -63,15 +63,10 @@ MusDemo::MusDemo() {}
 
 MusDemo::~MusDemo() {}
 
-void MusDemo::OnStart(const service_manager::Identity& identity) {
-  gpu_service_ = GpuService::Create(connector());
+void MusDemo::Start(service_manager::Connector* connector) {
+  gpu_service_ = GpuService::Create(connector);
   window_tree_client_ = base::MakeUnique<WindowTreeClient>(this, this);
-  window_tree_client_->ConnectAsWindowManager(connector());
-}
-
-bool MusDemo::OnConnect(const service_manager::Identity& remote_identity,
-                        service_manager::InterfaceRegistry* registry) {
-  return true;
+  window_tree_client_->ConnectAsWindowManager(connector);
 }
 
 void MusDemo::OnEmbed(Window* window) {
@@ -156,6 +151,12 @@ void MusDemo::AllocBitmap() {
 }
 
 void MusDemo::DrawFrame() {
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  VLOG(1) << (now - last_draw_frame_time_).InMilliseconds()
+          << "ms since the last frame was drawn.";
+  last_draw_frame_time_ = now;
+
   angle_ += 2.0;
   if (angle_ >= 360.0)
     angle_ = 0.0;
@@ -186,9 +187,16 @@ void MusDemo::DrawFrame() {
       new std::vector<unsigned char>(addr, addr + bytes));
   bitmap_.unlockPixels();
 
+#if defined(OS_ANDROID)
+  // TODO(jcivelli): find a way to not have an ifdef here.
+  BitmapUploader::Format bitmap_format = BitmapUploader::RGBA;
+#else
+  BitmapUploader::Format bitmap_format = BitmapUploader::BGRA;
+#endif
+
   // Send frame to MUS via BitmapUploader.
   uploader_->SetBitmap(bounds.width(), bounds.height(), std::move(data),
-                       BitmapUploader::BGRA);
+                       bitmap_format);
 }
 
 }  // namespace demo

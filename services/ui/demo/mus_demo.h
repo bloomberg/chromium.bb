@@ -25,22 +25,18 @@ class GpuService;
 
 namespace demo {
 
-// A simple MUS Demo service. This service connects to the mojo:ui, creates a
-// new window and draws a spinning square in the center of the window. Provides
-// a simple way to demonstrate that the graphic stack works as intended.
-class MusDemo : public service_manager::Service,
-                public WindowTreeClientDelegate,
+// A simple MUS Demo. It connects to the service:ui, creates a new window and
+// draws a spinning square in the center of the window. Provides a simple way
+// to demonstrate that the graphic stack works as intended.
+class MusDemo : public WindowTreeClientDelegate,
                 public WindowManagerDelegate {
  public:
   MusDemo();
   ~MusDemo() override;
 
- private:
-  // service_manager::Service:
-  void OnStart(const service_manager::Identity& identity) override;
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry) override;
+  void Start(service_manager::Connector* connector);
 
+ private:
   // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
   void OnEmbedRootDestroyed(Window* root) override;
@@ -89,6 +85,9 @@ class MusDemo : public service_manager::Service,
 
   // Current rotation angle for drawing.
   double angle_ = 0.0;
+
+  // Last time a frame was drawn.
+  base::TimeTicks last_draw_frame_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MusDemo);
 };

@@ -12,12 +12,17 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/window_surface.h"
 #include "services/ui/public/cpp/window_surface_client.h"
+
+namespace gpu {
+class GpuChannelHost;
+}
 
 namespace ui {
 class GLES2Context;
@@ -49,6 +54,8 @@ class BitmapUploader : public cc::CompositorFrameSinkClient {
 
  private:
   void Upload();
+
+  void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   uint32_t BindTextureForSize(const gfx::Size& size);
 
@@ -82,6 +89,8 @@ class BitmapUploader : public cc::CompositorFrameSinkClient {
   std::unique_ptr<std::vector<unsigned char>> bitmap_;
   uint32_t next_resource_id_;
   base::hash_map<uint32_t, uint32_t> resource_to_texture_id_map_;
+
+  base::WeakPtrFactory<BitmapUploader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapUploader);
 };
