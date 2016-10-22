@@ -45,6 +45,10 @@ class FakeSignalStrategy : public SignalStrategy,
 
   void SetLocalJid(const std::string& jid);
 
+  // Simulate IQ messages re-ordering by swapping the delivery order of
+  // next pair of messages.
+  void SimulatePackgeReordering();
+
   // SignalStrategy interface.
   void Connect() override;
   void Disconnect() override;
@@ -67,6 +71,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   // Called by the |peer_|. Takes ownership of |stanza|.
   void OnIncomingMessage(std::unique_ptr<buzz::XmlElement> stanza);
+  void NotifyListeners(std::unique_ptr<buzz::XmlElement> stanza);
   void SetPeerCallback(const PeerCallback& peer_callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -78,6 +83,9 @@ class FakeSignalStrategy : public SignalStrategy,
   int last_id_;
 
   base::TimeDelta send_delay_;
+
+  bool simulate_reorder_ = false;
+  std::unique_ptr<buzz::XmlElement> pending_stanza_;
 
   // All received messages, includes thouse still in |pending_messages_|.
   std::list<buzz::XmlElement*> received_messages_;

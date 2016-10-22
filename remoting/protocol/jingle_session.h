@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "crypto/rsa_private_key.h"
@@ -81,8 +83,14 @@ class JingleSession : public Session {
   // Called by JingleSessionManager on incoming |message|. Must call
   // |reply_callback| to send reply message before sending any other
   // messages.
-  void OnIncomingMessage(std::unique_ptr<JingleMessage> message,
+  void OnIncomingMessage(const std::string& id,
+                         std::unique_ptr<JingleMessage> message,
                          const ReplyCallback& reply_callback);
+
+  // Called by OnIncomingMessage() to process the incoming Jingle messages
+  // in the same order that they are sent.
+  void ProcessIncomingMessage(std::unique_ptr<JingleMessage> message,
+                              const ReplyCallback& reply_callback);
 
   // Message handlers for incoming messages.
   void OnAccept(std::unique_ptr<JingleMessage> message,
@@ -113,6 +121,10 @@ class JingleSession : public Session {
   // Returns true if the state of the session is not CLOSED or FAILED
   bool is_session_active();
 
+  // Returns the value of the ID attribute of the next outgoing set IQ with the
+  // sequence ID encoded.
+  std::string GetNextOutgoingId();
+
   base::ThreadChecker thread_checker_;
 
   JingleSessionManager* session_manager_;
@@ -134,6 +146,23 @@ class JingleSession : public Session {
 
   // Pending transport-info requests.
   std::list<std::unique_ptr<IqRequest>> transport_info_requests_;
+
+  struct PendingMessage {
+    PendingMessage(std::unique_ptr<JingleMessage> message,
+                   const ReplyCallback& reply_callback);
+    ~PendingMessage();
+    std::unique_ptr<JingleMessage> message;
+    const ReplyCallback reply_callback;
+  };
+
+  // A message queue to guarantee the incoming messages are processed in order.
+  class OrderedMessageQueue;
+  std::unique_ptr<OrderedMessageQueue> message_queue_;
+
+  // This prefix is necessary to disambiguate between the ID's sent from the
+  // client and the ID's sent from the host.
+  std::string outgoing_id_prefix_ = base::Uint64ToString(base::RandUint64());
+  int next_outgoing_id_ = 0;
 
   base::WeakPtrFactory<JingleSession> weak_factory_;
 

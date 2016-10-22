@@ -5,8 +5,10 @@
 #include "remoting/protocol/jingle_session.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -27,6 +29,7 @@
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/libjingle/xmpp/constants.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -46,8 +49,8 @@ namespace protocol {
 
 namespace {
 
-const char kHostJid[] = "host1@gmail.com/123";
-const char kClientJid[] = "host2@gmail.com/321";
+const char kHostJid[] = "host@gmail.com/123";
+const char kClientJid[] = "client@gmail.com/321";
 
 class MockSessionManagerListener {
  public:
@@ -63,13 +66,38 @@ class MockSessionEventHandler : public Session::EventHandler {
                                           const TransportRoute& route));
 };
 
-class MockTransport : public Transport {
+class FakeTransport : public Transport {
  public:
-  MOCK_METHOD2(Start,
-               void(Authenticator* authenticator,
-                    SendTransportInfoCallback send_transport_info_callback));
-  MOCK_METHOD1(ProcessTransportInfo, bool(buzz::XmlElement* transport_info));
+  void Start(Authenticator* authenticator,
+             SendTransportInfoCallback send_transport_info_callback) override {
+    send_transport_info_callback_ = send_transport_info_callback;
+  }
+
+  bool ProcessTransportInfo(buzz::XmlElement* transport_info) override {
+    received_messages_.push_back(
+        base::MakeUnique<buzz::XmlElement>(*transport_info));
+    return true;
+  }
+
+  SendTransportInfoCallback send_transport_info_callback() {
+    return send_transport_info_callback_;
+  }
+
+  const std::vector<std::unique_ptr<buzz::XmlElement>>& received_messages() {
+    return received_messages_;
+  }
+
+ private:
+  SendTransportInfoCallback send_transport_info_callback_;
+  std::vector<std::unique_ptr<buzz::XmlElement>> received_messages_;
 };
+
+std::unique_ptr<buzz::XmlElement> CreateTransportInfo(const std::string& id) {
+  std::unique_ptr<buzz::XmlElement> result(
+      buzz::XmlElement::ForStr("<transport xmlns='google:remoting:ice'/>"));
+  result->AddAttr(buzz::QN_ID, id);
+  return result;
+}
 
 }  // namespace
 
@@ -160,11 +188,9 @@ class JingleSessionTest : public testing::Test {
                     OnSessionStateChange(Session::FAILED))
             .Times(1);
       } else {
-        EXPECT_CALL(host_transport_, Start(_, _)).Times(1);
         EXPECT_CALL(host_session_event_handler_,
                     OnSessionStateChange(Session::AUTHENTICATED))
             .Times(1);
-
         // Expect that the connection will be closed eventually.
         EXPECT_CALL(host_session_event_handler_,
                     OnSessionStateChange(Session::CLOSED))
@@ -186,11 +212,9 @@ class JingleSessionTest : public testing::Test {
                     OnSessionStateChange(Session::FAILED))
             .Times(1);
       } else {
-        EXPECT_CALL(client_transport_, Start(_, _)).Times(1);
         EXPECT_CALL(client_session_event_handler_,
                     OnSessionStateChange(Session::AUTHENTICATED))
             .Times(1);
-
         // Expect that the connection will be closed eventually.
         EXPECT_CALL(client_session_event_handler_,
                     OnSessionStateChange(Session::CLOSED))
@@ -231,10 +255,10 @@ class JingleSessionTest : public testing::Test {
 
   std::unique_ptr<Session> host_session_;
   MockSessionEventHandler host_session_event_handler_;
-  MockTransport host_transport_;
+  FakeTransport host_transport_;
   std::unique_ptr<Session> client_session_;
   MockSessionEventHandler client_session_event_handler_;
-  MockTransport client_transport_;
+  FakeTransport client_transport_;
 };
 
 
@@ -288,6 +312,18 @@ TEST_F(JingleSessionTest, Connect) {
 TEST_F(JingleSessionTest, ConnectWithMultistep) {
   CreateSessionManagers(3, FakeAuthenticator::ACCEPT);
   InitiateConnection(3, FakeAuthenticator::ACCEPT, false);
+}
+
+TEST_F(JingleSessionTest, ConnectWithOutofOrderIqs) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
+  client_signal_strategy_->SimulatePackgeReordering();
+  // Verify that out of order transport messages are received correctly.
+  host_transport_.send_transport_info_callback().Run(CreateTransportInfo("1"));
+  host_transport_.send_transport_info_callback().Run(CreateTransportInfo("2"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(client_transport_.received_messages()[0]->Attr(buzz::QN_ID), "1");
+  EXPECT_EQ(client_transport_.received_messages()[1]->Attr(buzz::QN_ID), "2");
 }
 
 // Verify that connection is terminated when single-step auth fails.

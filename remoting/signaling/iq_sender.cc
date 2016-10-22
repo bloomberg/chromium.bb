@@ -48,8 +48,11 @@ std::unique_ptr<IqRequest> IqSender::SendIq(
     std::unique_ptr<buzz::XmlElement> stanza,
     const ReplyCallback& callback) {
   std::string addressee = stanza->Attr(buzz::QN_TO);
-  std::string id = signal_strategy_->GetNextId();
-  stanza->AddAttr(buzz::QN_ID, id);
+  std::string id = stanza->Attr(buzz::QN_ID);
+  if (id.empty()) {
+    id = signal_strategy_->GetNextId();
+    stanza->AddAttr(buzz::QN_ID, id);
+  }
   if (!signal_strategy_->SendStanza(std::move(stanza))) {
     return nullptr;
   }

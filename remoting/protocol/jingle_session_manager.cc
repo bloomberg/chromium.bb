@@ -16,6 +16,7 @@
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/base/socketaddress.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmpp/constants.h"
 
 using buzz::QName;
 
@@ -67,10 +68,11 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
   if (!JingleMessage::IsJingleMessage(stanza))
     return false;
 
+  std::unique_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
   std::unique_ptr<JingleMessage> message(new JingleMessage());
   std::string error;
   if (!message->ParseXml(stanza, &error)) {
-    SendReply(stanza, JingleMessageReply::BAD_REQUEST);
+    SendReply(std::move(stanza_copy), JingleMessageReply::BAD_REQUEST);
     return true;
   }
 
@@ -78,7 +80,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
     // Description must be present in session-initiate messages.
     DCHECK(message->description.get());
 
-    SendReply(stanza, JingleMessageReply::NONE);
+    SendReply(std::move(stanza_copy), JingleMessageReply::NONE);
 
     std::unique_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
@@ -128,19 +130,22 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
   SessionsMap::iterator it = sessions_.find(message->sid);
   if (it == sessions_.end()) {
-    SendReply(stanza, JingleMessageReply::INVALID_SID);
+    SendReply(std::move(stanza_copy), JingleMessageReply::INVALID_SID);
     return true;
   }
 
-  it->second->OnIncomingMessage(std::move(message), base::Bind(
-      &JingleSessionManager::SendReply, base::Unretained(this), stanza));
+  it->second->OnIncomingMessage(
+      stanza->Attr(buzz::QN_ID), std::move(message),
+      base::Bind(&JingleSessionManager::SendReply, base::Unretained(this),
+                 base::Passed(std::move(stanza_copy))));
   return true;
 }
 
-void JingleSessionManager::SendReply(const buzz::XmlElement* original_stanza,
-                                     JingleMessageReply::ErrorType error) {
+void JingleSessionManager::SendReply(
+    std::unique_ptr<buzz::XmlElement> original_stanza,
+    JingleMessageReply::ErrorType error) {
   signal_strategy_->SendStanza(
-      JingleMessageReply(error).ToXml(original_stanza));
+      JingleMessageReply(error).ToXml(original_stanza.get()));
 }
 
 void JingleSessionManager::SessionDestroyed(JingleSession* session) {

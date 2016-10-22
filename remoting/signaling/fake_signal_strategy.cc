@@ -63,6 +63,11 @@ void FakeSignalStrategy::SetLocalJid(const std::string& jid) {
   jid_ = jid;
 }
 
+void FakeSignalStrategy::SimulatePackgeReordering() {
+  DCHECK(CalledOnValidThread());
+  simulate_reorder_ = true;
+}
+
 void FakeSignalStrategy::Connect() {
   DCHECK(CalledOnValidThread());
   for (auto& observer : listeners_)
@@ -132,6 +137,26 @@ void FakeSignalStrategy::DeliverMessageOnThread(
 }
 
 void FakeSignalStrategy::OnIncomingMessage(
+    std::unique_ptr<buzz::XmlElement> stanza) {
+  DCHECK(CalledOnValidThread());
+
+  if (!simulate_reorder_) {
+    NotifyListeners(std::move(stanza));
+    return;
+  }
+
+  // Simulate IQ messages re-ordering by swapping the delivery order of
+  // next pair of messages.
+  if (pending_stanza_) {
+    NotifyListeners(std::move(stanza));
+    NotifyListeners(std::move(pending_stanza_));
+    pending_stanza_.reset();
+  } else {
+    pending_stanza_ = std::move(stanza);
+  }
+}
+
+void FakeSignalStrategy::NotifyListeners(
     std::unique_ptr<buzz::XmlElement> stanza) {
   DCHECK(CalledOnValidThread());
 
