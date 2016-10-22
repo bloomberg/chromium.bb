@@ -387,8 +387,11 @@ float SVGLengthContext::convertValueFromUserUnitsToCHS(float value) const {
 
 float SVGLengthContext::convertValueFromCHSToUserUnits(float value) const {
   const ComputedStyle* style = computedStyleForLengthResolving(m_context);
+  if (!style)
+    return 0;
+
   const SimpleFontData* fontData = style->font().primaryFont();
-  if (!style || !fontData)
+  if (!fontData)
     return 0;
 
   return value * fontData->getFontMetrics().zeroWidth() /
