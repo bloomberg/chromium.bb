@@ -582,5 +582,60 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
   EXPECT_EQ(LayoutUnit(kPaddingLeft + 10), child->LeftOffset());
   EXPECT_EQ(LayoutUnit(0), child->TopOffset());
 }
+
+// Verifies that 2 Left/Right float fragments are correctly positioned by the
+// algorithm.
+//
+// Test case's HTML representation:
+//  <div id="parent" style="width: 200px; height: 200px;">
+//    <div style="float:left; width: 30px; height: 30px;
+//        margin: 15px;"/>   <!-- DIV1 -->
+//    <div style="float:right; width: 30px; height: 30px;"/>  <!-- DIV2 -->
+//  </div>
+//
+// Expected:
+// - Left float(DIV1) is positioned at the left.
+// - Right float(DIV2) is positioned at the right.
+TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
+  const int kDiv1Margin = 10;
+  const int kParentSize = 200;
+  const int kSmallDivSize = 30;
+
+  // DIV1
+  RefPtr<ComputedStyle> div1_style = ComputedStyle::create();
+  div1_style->setWidth(Length(kSmallDivSize, Fixed));
+  div1_style->setHeight(Length(kSmallDivSize, Fixed));
+  div1_style->setFloating(EFloat::Left);
+  div1_style->setMarginBottom(Length(kDiv1Margin, Fixed));
+  div1_style->setMarginTop(Length(kDiv1Margin, Fixed));
+  div1_style->setMarginLeft(Length(kDiv1Margin, Fixed));
+  div1_style->setMarginRight(Length(kDiv1Margin, Fixed));
+  NGBox* div1 = new NGBox(div1_style.get());
+
+  // DIV2
+  RefPtr<ComputedStyle> div2_style = ComputedStyle::create();
+  div2_style->setWidth(Length(kSmallDivSize, Fixed));
+  div2_style->setHeight(Length(kSmallDivSize, Fixed));
+  div2_style->setFloating(EFloat::Right);
+  NGBox* div2 = new NGBox(div2_style.get());
+
+  div1->SetNextSibling(div2);
+
+  auto* space = new NGConstraintSpace(
+      HorizontalTopBottom, LeftToRight,
+      NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
+  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
+  ASSERT_EQ(frag->Children().size(), 2UL);
+
+  // div1
+  const NGPhysicalFragmentBase* child1 = frag->Children()[0];
+  EXPECT_EQ(kDiv1Margin, child1->TopOffset());
+  EXPECT_EQ(kDiv1Margin, child1->LeftOffset());
+
+  // div2
+  const NGPhysicalFragmentBase* child2 = frag->Children()[1];
+  EXPECT_EQ(0, child2->TopOffset());
+  EXPECT_EQ(kParentSize - kSmallDivSize, child2->LeftOffset());
+}
 }  // namespace
 }  // namespace blink

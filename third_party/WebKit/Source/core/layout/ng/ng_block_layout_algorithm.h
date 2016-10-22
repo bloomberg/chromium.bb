@@ -58,12 +58,35 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                              const NGBoxStrut& child_margins,
                              const NGFragment& fragment);
 
+  // Calculates position of the in-flow block-level fragment that needs to be
+  // positioned relative to the current fragment that is being built.
+  //
+  // @param fragment Fragment that needs to be placed.
+  // @param child_margins Margins information for the current child fragment.
+  // @param space Constraint space for the block.
+  // @return Position of the fragment in the parent's constraint space.
+  NGLogicalOffset PositionFragment(const NGFragment& fragment,
+                                   NGBoxStrut child_margins,
+                                   const NGConstraintSpace& space);
+
+  // Calculates position of the float fragment that needs to be
+  // positioned relative to the current fragment that is being built.
+  //
+  // @param fragment Fragment that needs to be placed.
+  // @param margins Margins information for the fragment.
+  // @return Position of the fragment in the parent's constraint space.
+  NGLogicalOffset PositionFloatFragment(const NGFragment& fragment,
+                                        NGBoxStrut margins);
+
   // Updates block-{start|end} of the currently constructed fragment.
   //
   // This method is supposed to be called on every child but it only updates
   // the block-start once (on the first non-zero height child fragment) and
   // keeps updating block-end (on every non-zero height child).
   void UpdateMarginStrut(const NGMarginStrut& from);
+
+  // Read-only Getters.
+  const ComputedStyle& Style() const { return *style_; }
 
   RefPtr<const ComputedStyle> style_;
   Member<NGBox> first_child_;

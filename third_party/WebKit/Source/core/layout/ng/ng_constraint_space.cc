@@ -31,7 +31,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
                                      const NGConstraintSpace* constraint_space)
-    : physical_space_(constraint_space->PhysicalSpace()),
+    : physical_space_(constraint_space->MutablePhysicalSpace()),
       offset_(constraint_space->Offset()),
       size_(constraint_space->Size()),
       writing_mode_(writing_mode),
@@ -40,7 +40,7 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
                                      NGLogicalOffset offset,
                                      NGLogicalSize size)
-    : physical_space_(other.PhysicalSpace()),
+    : physical_space_(other.MutablePhysicalSpace()),
       offset_(offset),
       size_(size),
       writing_mode_(other.WritingMode()),
@@ -99,6 +99,10 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
   derived_constraint_space->SetIsNewFormattingContext(is_new_fc);
 
   return derived_constraint_space;
+}
+
+void NGConstraintSpace::AddExclusion(const NGExclusion* exclusion) const {
+  MutablePhysicalSpace()->AddExclusion(exclusion);
 }
 
 NGLogicalSize NGConstraintSpace::ContainerSize() const {

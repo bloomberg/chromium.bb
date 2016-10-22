@@ -148,6 +148,10 @@ NGConstraintSpace* GetTopSpace(const NGConstraintSpace& space,
 void InsertExclusion(NGLayoutOpportunityTreeNode* node,
                      const NGExclusion* exclusion,
                      NGLayoutOpportunities& opportunities) {
+  // Base case: there is no node.
+  if (!node)
+    return;
+
   // Base case: exclusion is not in the node's constraint space.
   if (!IsExclusionWithinSpace(*node->space, *exclusion))
     return;
@@ -216,9 +220,9 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
 
   opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(space);
   for (const auto exclusion : exclusions) {
-    InsertExclusion(opportunity_tree_root_, exclusion, opportunities_);
+    InsertExclusion(MutableOpportunityTreeRoot(), exclusion, opportunities_);
   }
-  CollectAllOpportunities(opportunity_tree_root_, opportunities_);
+  CollectAllOpportunities(OpportunityTreeRoot(), opportunities_);
   std::sort(opportunities_.begin(), opportunities_.end(),
             &CompareNGLayoutOpportunitesByStartPoint);
   opportunity_iter_ = opportunities_.begin();

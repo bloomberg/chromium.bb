@@ -36,6 +36,16 @@ class CORE_EXPORT NGLayoutOpportunityIterator final
   }
 
  private:
+  // Mutable Getters.
+  NGLayoutOpportunityTreeNode* MutableOpportunityTreeRoot() {
+    return opportunity_tree_root_.get();
+  }
+
+  // Read-only Getters.
+  const NGLayoutOpportunityTreeNode* OpportunityTreeRoot() const {
+    return opportunity_tree_root_.get();
+  }
+
   Member<NGConstraintSpace> constraint_space_;
 
   NGLayoutOpportunities opportunities_;

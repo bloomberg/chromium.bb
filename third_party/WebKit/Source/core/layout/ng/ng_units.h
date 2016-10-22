@@ -68,6 +68,10 @@ struct NGPhysicalSize {
   LayoutUnit height;
 
   NGLogicalSize ConvertToLogical(NGWritingMode mode) const;
+
+  String ToString() const {
+    return String::format("%dx%d", width.toInt(), height.toInt());
+  }
 };
 
 // NGPhysicalLocation is the position of a rect (typically a fragment) relative

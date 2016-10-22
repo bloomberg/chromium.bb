@@ -303,5 +303,10 @@
     "prefix": "layout_ng",
     "base": "fast/block/margin-collapse",
     "args": ["--enable-blink-features=LayoutNG"]
+  },
+  {
+    "prefix": "layout_ng",
+    "base": "fast/block/float",
+    "args": ["--enable-blink-features=LayoutNG"]
   }
 ]
