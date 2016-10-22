@@ -1279,5 +1279,3 @@ crbug.com/655458 imported/wpt/workers/semantics/structured-clone/shared.html [ C
 
 # Web platform tests for the service workers cannot work without --enable-wptserve.
 crbug.com/602693 imported/wpt/service-workers [ Skip ]
-
-crbug.com/657839 [ Win ] fast/images/color-profile-layer.html [ NeedsRebaseline ]
