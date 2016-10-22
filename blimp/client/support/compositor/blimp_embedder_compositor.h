@@ -68,8 +68,8 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
   void DidCompletePageScaleAnimation() override {}
 
   // LayerTreeHostSingleThreadClient implementation.
-  void DidPostSwapBuffers() override {}
-  void DidAbortSwapBuffers() override {}
+  void DidSubmitCompositorFrame() override {}
+  void DidLoseCompositorFrameSink() override {}
 
  private:
   void HandlePendingCompositorFrameSinkRequest();

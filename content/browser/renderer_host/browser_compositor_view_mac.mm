@@ -86,7 +86,6 @@ class RecyclableCompositorMac : public ui::CompositorObserver {
   void OnCompositingStarted(ui::Compositor* compositor,
                             base::TimeTicks start_time) override {}
   void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingAborted(ui::Compositor* compositor) override {}
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
   void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 

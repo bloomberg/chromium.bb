@@ -324,8 +324,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidReceiveCompositorFrameAck();
   }
 
-  void DidPostSwapBuffers() override {}
-  void DidAbortSwapBuffers() override {}
+  void DidSubmitCompositorFrame() override {}
+  void DidLoseCompositorFrameSink() override {}
   void RequestScheduleComposite() override { test_hooks_->ScheduleComposite(); }
   void DidCompletePageScaleAnimation() override {}
   void BeginMainFrameNotExpectedSoon() override {

@@ -249,10 +249,9 @@ bool AnimateHideWindow(aura::Window* window) {
 }
 
 // Observer for a window cross-fade animation. If either the window closes or
-// the layer's animation completes or compositing is aborted due to GPU crash,
-// it deletes the layer and removes itself as an observer.
-class CrossFadeObserver : public ui::CompositorObserver,
-                          public aura::WindowObserver,
+// the layer's animation completes, it deletes the layer and removes itself as
+// an observer.
+class CrossFadeObserver : public aura::WindowObserver,
                           public ui::ImplicitAnimationObserver {
  public:
   // Observes |window| for destruction, but does not take ownership.
@@ -261,25 +260,11 @@ class CrossFadeObserver : public ui::CompositorObserver,
                     std::unique_ptr<ui::LayerTreeOwner> layer_owner)
       : window_(window), layer_owner_(std::move(layer_owner)) {
     window_->AddObserver(this);
-    layer_owner_->root()->GetCompositor()->AddObserver(this);
   }
   ~CrossFadeObserver() override {
     window_->RemoveObserver(this);
     window_ = NULL;
-    layer_owner_->root()->GetCompositor()->RemoveObserver(this);
   }
-
-  // ui::CompositorObserver overrides:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingAborted(ui::Compositor* compositor) override {
-    // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
-    layer_owner_->root()->GetAnimator()->StopAnimating();
-  }
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override {

@@ -48,12 +48,9 @@ class StubRenderWidgetCompositorDelegate
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
-  void DidCompleteSwapBuffers() override {}
+  void DidReceiveCompositorFrameAck() override {}
   void ForwardCompositorProto(const std::vector<uint8_t>& proto) override {}
   bool IsClosing() const override { return false; }
-  void OnSwapBuffersAborted() override {}
-  void OnSwapBuffersComplete() override {}
-  void OnSwapBuffersPosted() override {}
   void RequestScheduleAnimation() override {}
   void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}

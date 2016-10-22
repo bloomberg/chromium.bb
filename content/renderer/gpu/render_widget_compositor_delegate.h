@@ -56,9 +56,9 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // Called by the compositor when page scale animation completed.
   virtual void DidCompletePageScaleAnimation() = 0;
 
-  // Notifies that the compositor has posted a swapbuffers operation to the GPU
-  // process.
-  virtual void DidCompleteSwapBuffers() = 0;
+  // Notifies that the last submitted CompositorFrame has been processed and
+  // will be displayed.
+  virtual void DidReceiveCompositorFrameAck() = 0;
 
   // Called by the compositor to forward a proto that represents serialized
   // compositor state.
@@ -66,15 +66,6 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
 
   // Indicates whether the RenderWidgetCompositor is about to close.
   virtual bool IsClosing() const = 0;
-
-  // Called by the compositor in single-threaded mode when a swap is aborted.
-  virtual void OnSwapBuffersAborted() = 0;
-
-  // Called by the compositor in single-threaded mode when a swap completes.
-  virtual void OnSwapBuffersComplete() = 0;
-
-  // Called by the compositor in single-threaded mode when a swap is posted.
-  virtual void OnSwapBuffersPosted() = 0;
 
   // Requests that the client schedule a composite now, and calculate
   // appropriate delay for potential future frame.

@@ -193,8 +193,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;
-  void DidPostSwapBuffers() override;
-  void DidAbortSwapBuffers() override;
+  void DidSubmitCompositorFrame() override;
+  void DidLoseCompositorFrameSink() override;
 
   // cc::RemoteProtoChannel implementation.
   void SetProtoReceiver(ProtoReceiver* receiver) override;

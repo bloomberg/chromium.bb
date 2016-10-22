@@ -782,8 +782,8 @@ void RenderWidget::DidCommitCompositorFrame() {
 
 void RenderWidget::DidCompletePageScaleAnimation() {}
 
-void RenderWidget::DidCompleteSwapBuffers() {
-  TRACE_EVENT0("renderer", "RenderWidget::DidCompleteSwapBuffers");
+void RenderWidget::DidReceiveCompositorFrameAck() {
+  TRACE_EVENT0("renderer", "RenderWidget::DidReceiveCompositorFrameAck");
 
   // Notify subclasses threaded composited rendering was flushed to the screen.
   DidFlushPaint();
@@ -807,23 +807,6 @@ void RenderWidget::ForwardCompositorProto(const std::vector<uint8_t>& proto) {
 
 bool RenderWidget::IsClosing() const {
   return host_closing_;
-}
-
-void RenderWidget::OnSwapBuffersAborted() {
-  TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
-  // Schedule another frame so the compositor learns about it.
-  ScheduleComposite();
-}
-
-void RenderWidget::OnSwapBuffersComplete() {
-  TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersComplete");
-
-  // Notify subclasses that composited rendering was flushed to the screen.
-  DidFlushPaint();
-}
-
-void RenderWidget::OnSwapBuffersPosted() {
-  TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
 }
 
 void RenderWidget::RequestScheduleAnimation() {

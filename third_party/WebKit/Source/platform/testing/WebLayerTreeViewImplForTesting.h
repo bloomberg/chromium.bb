@@ -97,8 +97,8 @@ class WebLayerTreeViewImplForTesting
   void DidCompletePageScaleAnimation() override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  void DidPostSwapBuffers() override {}
-  void DidAbortSwapBuffers() override {}
+  void DidSubmitCompositorFrame() override {}
+  void DidLoseCompositorFrameSink() override {}
 
  private:
   cc::TestTaskGraphRunner m_taskGraphRunner;

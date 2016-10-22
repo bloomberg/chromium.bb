@@ -360,17 +360,17 @@ class COMPOSITOR_EXPORT Compositor
                            float page_scale,
                            float top_controls_delta) override {}
   void RequestNewCompositorFrameSink() override;
-  void DidInitializeCompositorFrameSink() override;
+  void DidInitializeCompositorFrameSink() override {}
   void DidFailToInitializeCompositorFrameSink() override;
   void WillCommit() override {}
   void DidCommit() override;
-  void DidCommitAndDrawFrame() override;
+  void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  void DidPostSwapBuffers() override;
-  void DidAbortSwapBuffers() override;
+  void DidSubmitCompositorFrame() override;
+  void DidLoseCompositorFrameSink() override {}
 
   bool IsLocked() { return compositor_lock_ != NULL; }
 

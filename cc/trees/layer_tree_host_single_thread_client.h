@@ -15,15 +15,17 @@ class LayerTreeHostSingleThreadClient {
   // delay for potential future frame.
   virtual void RequestScheduleAnimation() {}
 
-  // Called whenever the compositor posts a SwapBuffers (either full or
-  // partial). After DidPostSwapBuffers(), exactly one of
-  // DidReceiveCompositorFrameAck() or DidAbortSwapBuffers() will be called,
-  // thus
-  // these functions can be used to keep track of pending swap buffers calls for
-  // rate limiting.
-  virtual void DidPostSwapBuffers() = 0;
-  virtual void DidReceiveCompositorFrameAck() = 0;
-  virtual void DidAbortSwapBuffers() = 0;
+  // Called whenever the compositor submits a CompositorFrame. Afterward,
+  // LayerTreeHostClient::DidReceiveCompositorFrameAck() will be called once the
+  // display compositor/ finishes processing the frame. So these functions can
+  // be used to keep track of pending submitted CompositorFrames for rate
+  // limiting.
+  virtual void DidSubmitCompositorFrame() = 0;
+
+  // Called when the active CompositorFrameSink is lost and needs to be
+  // replaced. This allows the embedder to schedule a composite which will
+  // run the machinery to acquire a new CompositorFrameSink.
+  virtual void DidLoseCompositorFrameSink() = 0;
 
  protected:
   virtual ~LayerTreeHostSingleThreadClient() {}

@@ -392,18 +392,15 @@ class NullLayerDelegate : public LayerDelegate {
 // Remembers if it has been notified.
 class TestCompositorObserver : public CompositorObserver {
  public:
-  TestCompositorObserver()
-      : committed_(false), started_(false), ended_(false), aborted_(false) {}
+  TestCompositorObserver() = default;
 
   bool committed() const { return committed_; }
   bool notified() const { return started_ && ended_; }
-  bool aborted() const { return aborted_; }
 
   void Reset() {
     committed_ = false;
     started_ = false;
     ended_ = false;
-    aborted_ = false;
   }
 
  private:
@@ -418,18 +415,13 @@ class TestCompositorObserver : public CompositorObserver {
 
   void OnCompositingEnded(Compositor* compositor) override { ended_ = true; }
 
-  void OnCompositingAborted(Compositor* compositor) override {
-    aborted_ = true;
-  }
-
   void OnCompositingLockStateChanged(Compositor* compositor) override {}
 
   void OnCompositingShuttingDown(Compositor* compositor) override {}
 
-  bool committed_;
-  bool started_;
-  bool ended_;
-  bool aborted_;
+  bool committed_ = false;
+  bool started_ = false;
+  bool ended_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
 };
@@ -1252,15 +1244,6 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   l2->SetTransform(transform);
   WaitForSwap();
   EXPECT_TRUE(observer.notified());
-
-  // A change resulting in an aborted swap buffer should alert the observer
-  // and also signal an abort.
-  observer.Reset();
-  l2->SetOpacity(0.1f);
-  GetCompositor()->DidAbortSwapBuffers();
-  WaitForSwap();
-  EXPECT_TRUE(observer.notified());
-  EXPECT_TRUE(observer.aborted());
 
   GetCompositor()->RemoveObserver(&observer);
 

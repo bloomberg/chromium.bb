@@ -123,7 +123,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // Accessed on main thread only.
   LayerTreeHostInProcess* layer_tree_host_;
-  LayerTreeHostSingleThreadClient* client_;
+  LayerTreeHostSingleThreadClient* single_thread_client_;
 
   TaskRunnerProvider* task_runner_provider_;
 

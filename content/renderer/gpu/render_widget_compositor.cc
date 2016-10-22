@@ -1070,9 +1070,7 @@ void RenderWidgetCompositor::DidCommitAndDrawFrame() {
 }
 
 void RenderWidgetCompositor::DidReceiveCompositorFrameAck() {
-  delegate_->DidCompleteSwapBuffers();
-  if (!threaded_)
-    delegate_->OnSwapBuffersComplete();
+  delegate_->DidReceiveCompositorFrameAck();
 }
 
 void RenderWidgetCompositor::DidCompletePageScaleAnimation() {
@@ -1083,12 +1081,11 @@ void RenderWidgetCompositor::RequestScheduleAnimation() {
   delegate_->RequestScheduleAnimation();
 }
 
-void RenderWidgetCompositor::DidPostSwapBuffers() {
-  delegate_->OnSwapBuffersPosted();
-}
+void RenderWidgetCompositor::DidSubmitCompositorFrame() {}
 
-void RenderWidgetCompositor::DidAbortSwapBuffers() {
-  delegate_->OnSwapBuffersAborted();
+void RenderWidgetCompositor::DidLoseCompositorFrameSink() {
+  // The CompositorFrameSink is not lost in layout tests (single thread mode).
+  NOTREACHED();
 }
 
 void RenderWidgetCompositor::SetProtoReceiver(ProtoReceiver* receiver) {

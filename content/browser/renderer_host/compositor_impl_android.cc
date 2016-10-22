@@ -774,8 +774,8 @@ bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {
   return gpu_capabilities_.texture_format_etc1_npot;
 }
 
-void CompositorImpl::DidPostSwapBuffers() {
-  TRACE_EVENT0("compositor", "CompositorImpl::DidPostSwapBuffers");
+void CompositorImpl::DidSubmitCompositorFrame() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidSubmitCompositorFrame");
   pending_swapbuffers_++;
 }
 
@@ -786,13 +786,8 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
   client_->OnSwapBuffersCompleted(pending_swapbuffers_);
 }
 
-void CompositorImpl::DidAbortSwapBuffers() {
-  TRACE_EVENT0("compositor", "CompositorImpl::DidAbortSwapBuffers");
-  // This really gets called only once from
-  // SingleThreadProxy::DidLoseCompositorFrameSinkOnImplThread() when the
-  // context was lost.
-  if (host_->IsVisible())
-    host_->SetNeedsCommit();
+void CompositorImpl::DidLoseCompositorFrameSink() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidLoseCompositorFrameSink");
   client_->OnSwapBuffersCompleted(0);
 }
 

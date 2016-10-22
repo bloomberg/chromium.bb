@@ -32,9 +32,6 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // Called when compositing completes: the present to screen has completed.
   virtual void OnCompositingEnded(Compositor* compositor) = 0;
 
-  // Called when compositing is aborted (e.g. lost graphics context).
-  virtual void OnCompositingAborted(Compositor* compositor) = 0;
-
   // Called when the compositor lock state changes.
   virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
 

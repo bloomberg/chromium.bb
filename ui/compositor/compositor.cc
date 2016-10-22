@@ -472,8 +472,6 @@ void Compositor::RequestNewCompositorFrameSink() {
     context_factory_->CreateCompositorFrameSink(weak_ptr_factory_.GetWeakPtr());
 }
 
-void Compositor::DidInitializeCompositorFrameSink() {}
-
 void Compositor::DidFailToInitializeCompositorFrameSink() {
   // The CompositorFrameSink should already be bound/initialized before being
   // given to
@@ -487,23 +485,15 @@ void Compositor::DidCommit() {
     observer.OnCompositingDidCommit(this);
 }
 
-void Compositor::DidCommitAndDrawFrame() {
-}
-
 void Compositor::DidReceiveCompositorFrameAck() {
   for (auto& observer : observer_list_)
     observer.OnCompositingEnded(this);
 }
 
-void Compositor::DidPostSwapBuffers() {
+void Compositor::DidSubmitCompositorFrame() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (auto& observer : observer_list_)
     observer.OnCompositingStarted(this, start_time);
-}
-
-void Compositor::DidAbortSwapBuffers() {
-  for (auto& observer : observer_list_)
-    observer.OnCompositingAborted(this);
 }
 
 void Compositor::SetOutputIsSecure(bool output_is_secure) {
