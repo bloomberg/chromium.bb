@@ -13,10 +13,12 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using base::TimeTicks;
 
 namespace safe_browsing {
 
@@ -337,7 +339,9 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   DCHECK(enabled_);
   DCHECK(v4_database_);
   DCHECK_GT(ClientCallbackType::CHECK_MAX, check->client_callback_type);
+  full_hash_to_store_and_hash_prefixes->clear();
 
+  const base::TimeTicks before = TimeTicks::Now();
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL) {
     std::unordered_set<FullHash> full_hashes;
     V4ProtocolManagerUtil::UrlToFullHashes(check->url, &full_hashes);
@@ -352,14 +356,21 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
             matched_store_and_hash_prefixes;
       }
     }
-
-    // No hash prefixes found in the local database so that resource must be
-    // safe.
-    return !full_hash_to_store_and_hash_prefixes->empty();
+  } else {
+    NOTREACHED() << "Unexpected client_callback_type encountered";
   }
 
-  NOTREACHED() << "Unexpected client_callback_type encountered";
-  return false;
+  // TODO(vakh): Only log SafeBrowsing.V4GetPrefixMatches.Time once PVer3 code
+  // is removed.
+  // NOTE(vakh): This doesn't distinguish which stores it's searching through.
+  // However, the vast majority of the entries in this histogram will be from
+  // searching the three CHECK_BROWSE_URL stores.
+  base::TimeDelta diff = TimeTicks::Now() - before;
+  UMA_HISTOGRAM_TIMES("SB2.FilterCheck", diff);
+  UMA_HISTOGRAM_CUSTOM_TIMES("SafeBrowsing.V4GetPrefixMatches.Time", diff,
+                             base::TimeDelta::FromMicroseconds(20),
+                             base::TimeDelta::FromSeconds(1), 50);
+  return !full_hash_to_store_and_hash_prefixes->empty();
 }
 
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(

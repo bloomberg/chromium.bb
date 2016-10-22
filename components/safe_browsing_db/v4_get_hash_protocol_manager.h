@@ -106,7 +106,8 @@ struct FullHashCallbackInfo {
                        std::unique_ptr<net::URLFetcher> fetcher,
                        const FullHashToStoreAndHashPrefixesMap&
                            full_hash_to_store_and_hash_prefixes,
-                       const FullHashCallback& callback);
+                       const FullHashCallback& callback,
+                       const base::Time& network_start_time);
   ~FullHashCallbackInfo();
 
   // The FullHashInfo objects retrieved from cache. These are merged with the
@@ -124,6 +125,10 @@ struct FullHashCallbackInfo {
   // The generated full hashes and the corresponding prefixes and the stores in
   // which to look for a full hash match.
   FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+
+  // Used to measure how long did it take to fetch the full hash response from
+  // the server.
+  base::Time network_start_time;
 
   // The prefixes that were requested from the server.
   std::vector<HashPrefix> prefixes_requested;

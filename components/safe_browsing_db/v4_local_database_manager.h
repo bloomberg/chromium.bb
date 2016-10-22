@@ -109,6 +109,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // The threat verdict for the URL being checked.
     SBThreatType result_threat_type;
 
+    // When the check was sent to the SafeBrowsing service. Used to record the
+    // time it takes to get the uncached full hashes from the service (or a
+    // cached full hash response).
+    base::TimeTicks full_hash_check_start;
+
     // The SafeBrowsing lists to check hash prefixes in.
     StoresToCheck stores_to_check;
 

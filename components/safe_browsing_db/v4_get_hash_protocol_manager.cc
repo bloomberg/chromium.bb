@@ -171,12 +171,14 @@ FullHashCallbackInfo::FullHashCallbackInfo(
     std::unique_ptr<net::URLFetcher> fetcher,
     const FullHashToStoreAndHashPrefixesMap&
         full_hash_to_store_and_hash_prefixes,
-    const FullHashCallback& callback)
+    const FullHashCallback& callback,
+    const base::Time& network_start_time)
     : cached_full_hash_infos(cached_full_hash_infos),
       callback(callback),
       fetcher(std::move(fetcher)),
       full_hash_to_store_and_hash_prefixes(
           full_hash_to_store_and_hash_prefixes),
+      network_start_time(network_start_time),
       prefixes_requested(prefixes_requested) {}
 
 FullHashCallbackInfo::~FullHashCallbackInfo() {}
@@ -298,7 +300,7 @@ void V4GetHashProtocolManager::GetFullHashes(
   net::URLFetcher* fetcher = owned_fetcher.get();
   pending_hash_requests_[fetcher].reset(new FullHashCallbackInfo(
       cached_full_hash_infos, prefixes_to_request, std::move(owned_fetcher),
-      full_hash_to_store_and_hash_prefixes, callback));
+      full_hash_to_store_and_hash_prefixes, callback, clock_->Now()));
 
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -726,6 +728,8 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
   }
 
   const std::unique_ptr<FullHashCallbackInfo>& fhci = it->second;
+  UMA_HISTOGRAM_LONG_TIMES("SafeBrowsing.V4GetHashNetwork.Time",
+                           clock_->Now() - fhci->network_start_time);
   UpdateCache(fhci->prefixes_requested, full_hash_infos, negative_cache_expire);
   MergeResults(fhci->full_hash_to_store_and_hash_prefixes, full_hash_infos,
                &fhci->cached_full_hash_infos);

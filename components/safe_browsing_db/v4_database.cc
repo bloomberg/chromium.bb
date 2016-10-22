@@ -8,11 +8,13 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using base::TimeTicks;
 
 namespace safe_browsing {
 
@@ -31,9 +33,9 @@ void V4Database::Create(
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   db_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner, base_path,
-                 list_infos, callback_task_runner, new_db_callback));
+      FROM_HERE, base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner,
+                            base_path, list_infos, callback_task_runner,
+                            new_db_callback, TimeTicks::Now()));
 }
 
 // static
@@ -42,7 +44,8 @@ void V4Database::CreateOnTaskRunner(
     const base::FilePath& base_path,
     const ListInfos& list_infos,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-    NewDatabaseReadyCallback new_db_callback) {
+    NewDatabaseReadyCallback new_db_callback,
+    const TimeTicks create_start_time) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
 
   if (!factory_) {
@@ -72,6 +75,9 @@ void V4Database::CreateOnTaskRunner(
   // thread. This would unblock resource loads.
   callback_task_runner->PostTask(
       FROM_HERE, base::Bind(new_db_callback, base::Passed(&v4_database)));
+
+  UMA_HISTOGRAM_TIMES("SafeBrowsing.V4DatabaseOpen.Time",
+                      TimeTicks::Now() - create_start_time);
 }
 
 V4Database::V4Database(

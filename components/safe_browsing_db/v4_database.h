@@ -164,7 +164,8 @@ class V4Database {
       const base::FilePath& base_path,
       const ListInfos& list_infos,
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-      NewDatabaseReadyCallback callback);
+      NewDatabaseReadyCallback callback,
+      const base::TimeTicks create_start_time);
 
   // Callback called when a new store has been created and is ready to be used.
   // This method updates the store_map_ to point to the new store, which causes
