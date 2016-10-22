@@ -16,17 +16,16 @@
 #include "cc/output/compositor_frame_sink_client.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "services/ui/public/cpp/compositor_frame_sink.h"
-#include "services/ui/public/cpp/window_surface.h"
-#include "services/ui/public/cpp/window_surface_client.h"
+#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 
 namespace gpu {
 class GpuChannelHost;
 }
 
 namespace ui {
-class GLES2Context;
+
 class GpuService;
+class Window;
 
 extern const char kBitmapUploaderForAcceleratedWidget[];
 
@@ -80,7 +79,7 @@ class BitmapUploader : public cc::CompositorFrameSinkClient {
       const gfx::Transform& transform) override;
 
   Window* window_;
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink_;
+  std::unique_ptr<WindowCompositorFrameSink> compositor_frame_sink_;
 
   uint32_t color_;
   int width_;

@@ -48,10 +48,11 @@ class CONTENT_EXPORT CompositorMusConnection
       mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request,
       InputHandlerManager* input_handler_manager);
 
-  // Attaches the provided |surface_binding| with the ui::Window for the
-  // renderer once it becomes available.
+  // Attaches the provided |compositor_frame_sink_binding| with the ui::Window
+  // for the renderer once it becomes available.
   void AttachCompositorFrameSinkOnMainThread(
-      std::unique_ptr<ui::WindowSurfaceBinding> surface_binding);
+      std::unique_ptr<ui::WindowCompositorFrameSinkBinding>
+          compositor_frame_sink_binding);
 
  private:
   friend class CompositorMusConnectionTest;
@@ -60,7 +61,8 @@ class CONTENT_EXPORT CompositorMusConnection
   ~CompositorMusConnection() override;
 
   void AttachCompositorFrameSinkOnCompositorThread(
-      std::unique_ptr<ui::WindowSurfaceBinding> surface_binding);
+      std::unique_ptr<ui::WindowCompositorFrameSinkBinding>
+          compositor_frame_sink_binding);
 
   void CreateWindowTreeClientOnCompositorThread(
       ui::mojom::WindowTreeClientRequest request);
@@ -109,7 +111,8 @@ class CONTENT_EXPORT CompositorMusConnection
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   InputHandlerManager* const input_handler_manager_;
-  std::unique_ptr<ui::WindowSurfaceBinding> window_surface_binding_;
+  std::unique_ptr<ui::WindowCompositorFrameSinkBinding>
+      window_compositor_frame_sink_binding_;
 
   // Stores the current state of the active pointers targeting this object.
   ui::MotionEventAura pointer_state_;

@@ -76,9 +76,10 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
       public aura::client::DragDropDelegate,
       public NON_EXPORTED_BASE(ui::InputEventHandler) {
  public:
-  NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                  ui::Window* window,
-                  ui::mojom::SurfaceType surface_type);
+  NativeWidgetMus(
+      internal::NativeWidgetDelegate* delegate,
+      ui::Window* window,
+      ui::mojom::CompositorFrameSinkType compositor_frame_sink_type);
   ~NativeWidgetMus() override;
 
   // Configures the set of properties supplied to the window manager when
@@ -96,7 +97,9 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   // Returns the widget for a ui::Window, or null if there is none.
   static Widget* GetWidgetForWindow(ui::Window* window);
 
-  ui::mojom::SurfaceType surface_type() const { return surface_type_; }
+  ui::mojom::CompositorFrameSinkType compositor_frame_sink_type() const {
+    return compositor_frame_sink_type_;
+  }
   ui::Window* window() { return window_; }
   WindowTreeHostMus* window_tree_host() { return window_tree_host_.get(); }
 
@@ -254,7 +257,8 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   // Returns true if this NativeWidgetMus exists on the window manager side
   // to provide the frame decorations.
   bool is_parallel_widget_in_window_manager() {
-    return surface_type_ == ui::mojom::SurfaceType::UNDERLAY;
+    return compositor_frame_sink_type_ ==
+           ui::mojom::CompositorFrameSinkType::UNDERLAY;
   }
 
   void set_last_cursor(ui::mojom::Cursor cursor) { last_cursor_ = cursor; }
@@ -273,7 +277,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  const ui::mojom::SurfaceType surface_type_;
+  const ui::mojom::CompositorFrameSinkType compositor_frame_sink_type_;
   ui::mojom::ShowState show_state_before_fullscreen_;
 
   // See class documentation for Widget in widget.h for a note about ownership.

@@ -804,11 +804,12 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,
                                     float device_scale_factor) {
   WindowId window_id(
       WindowIdFromTransportId(surface_id.frame_sink_id().client_id()));
-  mojom::SurfaceType surface_type(
-      static_cast<mojom::SurfaceType>(surface_id.frame_sink_id().sink_id()));
+  mojom::CompositorFrameSinkType surface_type(
+      static_cast<mojom::CompositorFrameSinkType>(
+          surface_id.frame_sink_id().sink_id()));
   // We only care about propagating default surface IDs.
   // TODO(fsamuel, sadrul): we should get rid of surface types.
-  if (surface_type != mojom::SurfaceType::DEFAULT)
+  if (surface_type != mojom::CompositorFrameSinkType::DEFAULT)
     return;
   ServerWindow* window = GetWindow(window_id);
   // If the window doesn't have a parent then we have nothing to propagate.

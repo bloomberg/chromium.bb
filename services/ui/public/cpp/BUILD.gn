@@ -8,7 +8,6 @@ import("//build/config/ui.gni")
 # implementation (and private haders) are in 'internal'.
 source_set("cpp") {
   sources = [
-    "compositor_frame_sink.h",
     "context_provider.h",
     "gpu_service.h",
     "input_event_handler.h",
@@ -18,11 +17,10 @@ source_set("cpp") {
     "scoped_window_ptr.h",
     "surface_id_handler.h",
     "window.h",
+    "window_compositor_frame_sink.h",
     "window_manager_delegate.h",
     "window_observer.h",
     "window_property.h",
-    "window_surface.h",
-    "window_surface_client.h",
     "window_tracker.h",
     "window_tree_client.h",
     "window_tree_client_delegate.h",
@@ -97,7 +95,6 @@ source_set("internal") {
   ]
 
   sources = [
-    "compositor_frame_sink.cc",
     "context_provider.cc",
     "gles2_context.cc",
     "gles2_context.h",
@@ -115,10 +112,10 @@ source_set("internal") {
     "raster_thread_helper.cc",
     "scoped_window_ptr.cc",
     "window.cc",
+    "window_compositor_frame_sink.cc",
     "window_manager_delegate.cc",
     "window_observer.cc",
     "window_private.cc",
-    "window_surface.cc",
     "window_tree_client.cc",
     "window_tree_client_delegate.cc",
     "window_tree_host_factory.cc",

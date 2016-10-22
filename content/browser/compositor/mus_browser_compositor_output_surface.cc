@@ -14,9 +14,8 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
-#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_surface.h"
+#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 
 namespace content {
 
@@ -33,7 +32,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         std::move(overlay_candidate_validator)),
       ui_window_(window) {
   ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
-      ui::mojom::SurfaceType::DEFAULT, context);
+      ui::mojom::CompositorFrameSinkType::DEFAULT, context);
 }
 
 MusBrowserCompositorOutputSurface::~MusBrowserCompositorOutputSurface() {}

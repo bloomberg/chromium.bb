@@ -12,7 +12,7 @@
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_surface_manager.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/test_server_window_delegate.h"
 #include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,10 +25,10 @@ namespace {
 // Makes the window visible and creates the default surface for it.
 void InitWindow(ServerWindow* window) {
   window->SetVisible(true);
-  ServerWindowSurfaceManager* surface_manager =
-      window->GetOrCreateSurfaceManager();
-  surface_manager->CreateSurface(
-      mojom::SurfaceType::DEFAULT,
+  ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
+      window->GetOrCreateCompositorFrameSinkManager();
+  compositor_frame_sink_manager->CreateCompositorFrameSink(
+      mojom::CompositorFrameSinkType::DEFAULT,
       mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink>(),
       cc::mojom::MojoCompositorFrameSinkClientPtr());
 }
@@ -114,10 +114,11 @@ TEST_F(FrameGeneratorTest, DrawWindowTree) {
 
   // Create the UNDERLAY Surface for the child window, and confirm that this
   // creates an extra SharedQuadState in the CompositorFrame.
-  child_window.GetOrCreateSurfaceManager()->CreateSurface(
-      mojom::SurfaceType::UNDERLAY,
-      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink>(),
-      cc::mojom::MojoCompositorFrameSinkClientPtr());
+  child_window.GetOrCreateCompositorFrameSinkManager()
+      ->CreateCompositorFrameSink(
+          mojom::CompositorFrameSinkType::UNDERLAY,
+          cc::mojom::MojoCompositorFrameSinkRequest(),
+          cc::mojom::MojoCompositorFrameSinkClientPtr());
 
   render_pass = cc::RenderPass::Create();
   DrawWindowTree(render_pass.get());

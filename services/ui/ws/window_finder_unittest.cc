@@ -5,8 +5,8 @@
 #include "services/ui/ws/window_finder.h"
 
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_surface_manager.h"
-#include "services/ui/ws/server_window_surface_manager_test_api.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager_test_api.h"
 #include "services/ui/ws/test_server_window_delegate.h"
 #include "services/ui/ws/window_finder.h"
 #include "testing/gtest/include/gtest/gtest.h"

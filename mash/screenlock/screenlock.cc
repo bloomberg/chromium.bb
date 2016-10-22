@@ -98,7 +98,7 @@ void Screenlock::OnStart(const service_manager::Identity& identity) {
   ui::Window* window =
       views::WindowManagerConnection::Get()->NewTopLevelWindow(properties);
   params.native_widget = new views::NativeWidgetMus(
-      widget, window, ui::mojom::SurfaceType::DEFAULT);
+      widget, window, ui::mojom::CompositorFrameSinkType::DEFAULT);
   widget->Init(params);
   widget->Show();
 }

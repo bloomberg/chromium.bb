@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_SERVER_WINDOW_SURFACE_H_
-#define SERVICES_UI_WS_SERVER_WINDOW_SURFACE_H_
+#ifndef SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
+#define SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
 
 #include <set>
 
@@ -27,18 +27,20 @@ class DisplayCompositor;
 namespace ws {
 
 class ServerWindow;
-class ServerWindowSurfaceManager;
+class ServerWindowCompositorFrameSinkManager;
 
 // Server side representation of a WindowSurface.
-class ServerWindowSurface : public cc::mojom::MojoCompositorFrameSink,
-                            public cc::SurfaceFactoryClient {
+class ServerWindowCompositorFrameSink
+    : public cc::mojom::MojoCompositorFrameSink,
+      public cc::SurfaceFactoryClient {
  public:
-  ServerWindowSurface(ServerWindowSurfaceManager* manager,
-                      const cc::FrameSinkId& frame_sink_id,
-                      cc::mojom::MojoCompositorFrameSinkRequest request,
-                      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+  ServerWindowCompositorFrameSink(
+      ServerWindowCompositorFrameSinkManager* manager,
+      const cc::FrameSinkId& frame_sink_id,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
-  ~ServerWindowSurface() override;
+  ~ServerWindowCompositorFrameSink() override;
 
   const gfx::Size& last_submitted_frame_size() const {
     return last_submitted_frame_size_;
@@ -52,9 +54,9 @@ class ServerWindowSurface : public cc::mojom::MojoCompositorFrameSink,
 
   // There is a 1-1 correspondence between FrameSinks and frame sources.
   // The FrameSinkId uniquely identifies the FrameSink, and since there is
-  // one FrameSink per ServerWindowSurface, it allows the window server
-  // to uniquely identify the window, and the thus the client that generated the
-  // frame.
+  // one FrameSink per ServerWindowCompositorFrameSink, it allows the window
+  // server to uniquely identify the window, and the thus the client that
+  // generated the frame.
   const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   // The LocalFrameId can be thought of as an identifier to a bucket of
@@ -67,7 +69,7 @@ class ServerWindowSurface : public cc::mojom::MojoCompositorFrameSink,
   cc::SurfaceId GetSurfaceId() const;
 
   // Creates a surface dependency token that expires when this
-  // ServerWindowSurface goes away.
+  // ServerWindowCompositorFrameSink goes away.
   cc::SurfaceSequence CreateSurfaceSequence();
 
   ServerWindow* window();
@@ -82,7 +84,7 @@ class ServerWindowSurface : public cc::mojom::MojoCompositorFrameSink,
   const cc::FrameSinkId frame_sink_id_;
   cc::SurfaceSequenceGenerator surface_sequence_generator_;
 
-  ServerWindowSurfaceManager* manager_;  // Owns this.
+  ServerWindowCompositorFrameSinkManager* manager_;  // Owns this.
 
   gfx::Size last_submitted_frame_size_;
 
@@ -95,11 +97,11 @@ class ServerWindowSurface : public cc::mojom::MojoCompositorFrameSink,
 
   bool may_contain_video_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerWindowSurface);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSink);
 };
 
 }  // namespace ws
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_SERVER_WINDOW_SURFACE_H_
+#endif  // SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_

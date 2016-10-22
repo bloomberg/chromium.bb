@@ -416,9 +416,9 @@ class WindowTree : public mojom::WindowTree,
   void SetWindowOpacity(uint32_t change_id,
                         Id window_id,
                         float opacity) override;
-  void AttachSurface(
+  void AttachCompositorFrameSink(
       Id transport_window_id,
-      mojom::SurfaceType type,
+      mojom::CompositorFrameSinkType type,
       mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
   void OnWindowSurfaceDetached(Id transport_window_id,

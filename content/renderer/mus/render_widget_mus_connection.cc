@@ -11,8 +11,8 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/context_provider.h"
+#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace content {
@@ -32,9 +32,9 @@ void RenderWidgetMusConnection::Bind(
       routing_id_, render_thread->GetCompositorMainThreadTaskRunner(),
       render_thread->compositor_task_runner(), std::move(request),
       render_thread->input_handler_manager());
-  if (window_surface_binding_) {
+  if (window_compositor_frame_sink_binding_) {
     compositor_mus_connection_->AttachCompositorFrameSinkOnMainThread(
-        std::move(window_surface_binding_));
+        std::move(window_compositor_frame_sink_binding_));
   }
 }
 
@@ -42,16 +42,18 @@ std::unique_ptr<cc::CompositorFrameSink>
 RenderWidgetMusConnection::CreateCompositorFrameSink(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!window_surface_binding_);
+  DCHECK(!window_compositor_frame_sink_binding_);
 
-  std::unique_ptr<cc::CompositorFrameSink> surface(new ui::CompositorFrameSink(
-      make_scoped_refptr(new ui::ContextProvider(std::move(gpu_channel_host))),
-      ui::WindowSurface::Create(&window_surface_binding_)));
+  std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink(
+      ui::WindowCompositorFrameSink::Create(
+          make_scoped_refptr(
+              new ui::ContextProvider(std::move(gpu_channel_host))),
+          &window_compositor_frame_sink_binding_));
   if (compositor_mus_connection_) {
     compositor_mus_connection_->AttachCompositorFrameSinkOnMainThread(
-        std::move(window_surface_binding_));
+        std::move(window_compositor_frame_sink_binding_));
   }
-  return surface;
+  return compositor_frame_sink;
 }
 
 // static

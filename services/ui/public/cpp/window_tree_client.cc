@@ -349,13 +349,14 @@ void WindowTreeClient::RequestClose(Window* window) {
     window_manager_internal_client_->WmRequestClose(server_id(window));
 }
 
-void WindowTreeClient::AttachSurface(
+void WindowTreeClient::AttachCompositorFrameSink(
     Id window_id,
-    mojom::SurfaceType type,
-    mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
+    mojom::CompositorFrameSinkType type,
+    cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   DCHECK(tree_);
-  tree_->AttachSurface(window_id, type, std::move(surface), std::move(client));
+  tree_->AttachCompositorFrameSink(
+      window_id, type, std::move(compositor_frame_sink), std::move(client));
 }
 
 void WindowTreeClient::OnWindowSurfaceDetached(

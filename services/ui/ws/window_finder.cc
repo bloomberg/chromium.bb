@@ -6,9 +6,9 @@
 
 #include "base/containers/adapters.h"
 #include "services/ui/ws/server_window.h"
+#include "services/ui/ws/server_window_compositor_frame_sink.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/server_window_delegate.h"
-#include "services/ui/ws/server_window_surface.h"
-#include "services/ui/ws/server_window_surface_manager.h"
 #include "services/ui/ws/window_coordinate_conversions.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -18,13 +18,16 @@ namespace ui {
 namespace ws {
 
 bool IsValidWindowForEvents(ServerWindow* window) {
-  ServerWindowSurfaceManager* surface_manager = window->surface_manager();
+  ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
+      window->compositor_frame_sink_manager();
   // Valid windows have at least one of the two surface types. Only an underlay
   // is valid as we assume the window manager will likely get the event in this
   // case.
-  return surface_manager &&
-         (surface_manager->HasSurfaceOfType(mojom::SurfaceType::DEFAULT) ||
-          surface_manager->HasSurfaceOfType(mojom::SurfaceType::UNDERLAY));
+  return compositor_frame_sink_manager &&
+         (compositor_frame_sink_manager->HasCompositorFrameSinkOfType(
+              mojom::CompositorFrameSinkType::DEFAULT) ||
+          compositor_frame_sink_manager->HasCompositorFrameSinkOfType(
+              mojom::CompositorFrameSinkType::UNDERLAY));
 }
 
 ServerWindow* FindDeepestVisibleWindowForEvents(ServerWindow* window,

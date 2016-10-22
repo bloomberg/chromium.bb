@@ -7,10 +7,10 @@
 #include "base/memory/ptr_util.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -38,10 +38,12 @@ void SurfaceContextFactory::CreateCompositorFrameSink(
     base::WeakPtr<ui::Compositor> compositor) {
   ui::Window* window = compositor->window();
   NativeWidgetMus* native_widget = NativeWidgetMus::GetForWindow(window);
-  ui::mojom::SurfaceType surface_type = native_widget->surface_type();
+  ui::mojom::CompositorFrameSinkType compositor_frame_sink_type =
+      native_widget->compositor_frame_sink_type();
   auto compositor_frame_sink = window->RequestCompositorFrameSink(
-      surface_type, make_scoped_refptr(new ui::ContextProvider(
-                        gpu_service_->EstablishGpuChannelSync())));
+      compositor_frame_sink_type,
+      make_scoped_refptr(
+          new ui::ContextProvider(gpu_service_->EstablishGpuChannelSync())));
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 

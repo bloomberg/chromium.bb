@@ -600,8 +600,8 @@ TEST_F(NativeWidgetMusTest, IsMaximized) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = initial_bounds();
-  params.native_widget = new NativeWidgetMus(widget.get(), window,
-                                             ui::mojom::SurfaceType::DEFAULT);
+  params.native_widget = new NativeWidgetMus(
+      widget.get(), window, ui::mojom::CompositorFrameSinkType::DEFAULT);
   widget->Init(params);
   window->SetSharedProperty<int32_t>(
       ui::mojom::WindowManager::kShowState_Property,

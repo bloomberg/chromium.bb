@@ -17,7 +17,7 @@
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_surface_manager_test_api.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager_test_api.h"
 #include "services/ui/ws/test_utils.h"
 #include "services/ui/ws/window_manager_display_root.h"
 #include "services/ui/ws/window_manager_state.h"
@@ -83,8 +83,9 @@ class CursorTest : public testing::Test {
     w->SetClientArea(gfx::Insets(10, 10), std::vector<gfx::Rect>());
     w->SetVisible(true);
 
-    ServerWindowSurfaceManagerTestApi test_api(w->GetOrCreateSurfaceManager());
-    test_api.CreateEmptyDefaultSurface();
+    ServerWindowCompositorFrameSinkManagerTestApi test_api(
+        w->GetOrCreateCompositorFrameSinkManager());
+    test_api.CreateEmptyDefaultCompositorFrameSink();
 
     return w;
   }

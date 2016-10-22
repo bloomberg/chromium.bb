@@ -42,7 +42,7 @@ class FrameGeneratorTest;
 
 class FrameGeneratorDelegate;
 class ServerWindow;
-class ServerWindowSurface;
+class ServerWindowCompositorFrameSink;
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
@@ -86,15 +86,16 @@ class FrameGenerator : public ServerWindowObserver {
                       bool* may_contain_video);
 
   // Adds a reference to the current cc::Surface of the provided
-  // |window_surface|. If an existing reference is held with a different
-  // LocalFrameId then release that reference first. This is called on each
-  // ServerWindowSurface as FrameGenerator walks the window tree to generate a
-  /// CompositorFrame. This is done to make sure that the window surfaces are
-  // retained for the entirety of the time between submission of the top-level
-  // frame to drawing the frame to screen.
+  // |window_compositor_frame_sink|. If an existing reference is held with a
+  // different LocalFrameId then release that reference first. This is called on
+  // each ServerWindowCompositorFrameSink as FrameGenerator walks the window
+  // tree to generate a CompositorFrame. This is done to make sure that the
+  // window surfaces are retained for the entirety of the time between
+  // submission of the top-level frame to drawing the frame to screen.
   // TODO(fsamuel, kylechar): This will go away once we get surface lifetime
   // management.
-  void AddOrUpdateSurfaceReference(ServerWindowSurface* window_surface);
+  void AddOrUpdateSurfaceReference(
+      ServerWindowCompositorFrameSink* window_compositor_frame_sink);
 
   // Releases any retained references for the provided FrameSink.
   // TODO(fsamuel, kylechar): This will go away once we get surface lifetime

@@ -222,7 +222,9 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
                     ui::Window* window,
                     ui::WindowManagerClient* window_manager_client)
-      : NativeWidgetMus(delegate, window, ui::mojom::SurfaceType::UNDERLAY),
+      : NativeWidgetMus(delegate,
+                        window,
+                        ui::mojom::CompositorFrameSinkType::UNDERLAY),
         window_manager_client_(window_manager_client) {}
   ~WmNativeWidgetMus() override {}
 

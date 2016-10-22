@@ -41,8 +41,10 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanEmbed(const ServerWindow* window) const override;
   bool CanChangeWindowVisibility(const ServerWindow* window) const override;
   bool CanChangeWindowOpacity(const ServerWindow* window) const override;
-  bool CanSetWindowSurface(const ServerWindow* window,
-                           ui::mojom::SurfaceType surface_type) const override;
+  bool CanSetWindowCompositorFrameSink(
+      const ServerWindow* window,
+      ui::mojom::CompositorFrameSinkType compositor_frame_sink_type)
+      const override;
   bool CanSetWindowBounds(const ServerWindow* window) const override;
   bool CanSetWindowProperties(const ServerWindow* window) const override;
   bool CanSetWindowTextInputState(const ServerWindow* window) const override;

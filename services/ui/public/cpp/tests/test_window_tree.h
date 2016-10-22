@@ -59,9 +59,9 @@ class TestWindowTree : public mojom::WindowTree {
   void SetWindowOpacity(uint32_t change_id,
                         uint32_t window_id,
                         float opacity) override;
-  void AttachSurface(
+  void AttachCompositorFrameSink(
       uint32_t window_id,
-      mojom::SurfaceType type,
+      mojom::CompositorFrameSinkType type,
       mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
   void AddWindow(uint32_t change_id, uint32_t parent, uint32_t child) override;

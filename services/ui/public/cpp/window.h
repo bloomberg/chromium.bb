@@ -14,8 +14,8 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/cpp/compositor_frame_sink.h"
 #include "services/ui/public/cpp/surface_id_handler.h"
+#include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/gfx/geometry/insets.h"
@@ -30,9 +30,9 @@ namespace ui {
 class InputEventHandler;
 class ServiceProviderImpl;
 class SurfaceIdHandler;
+class WindowCompositorFrameSinkBinding;
 class WindowObserver;
 class WindowSurface;
-class WindowSurfaceBinding;
 class WindowDropTarget;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
@@ -115,13 +115,14 @@ class Window {
   // Window is attached to the root.
   bool IsDrawn() const;
 
-  std::unique_ptr<CompositorFrameSink> RequestCompositorFrameSink(
-      mojom::SurfaceType type,
+  std::unique_ptr<WindowCompositorFrameSink> RequestCompositorFrameSink(
+      mojom::CompositorFrameSinkType type,
       scoped_refptr<cc::ContextProvider> context_provider);
 
   void AttachCompositorFrameSink(
-      mojom::SurfaceType type,
-      std::unique_ptr<WindowSurfaceBinding> surface_binding);
+      mojom::CompositorFrameSinkType type,
+      std::unique_ptr<WindowCompositorFrameSinkBinding>
+          compositor_frame_sink_binding);
 
   // The template-ized versions of the following methods rely on the presence
   // of a mojo::TypeConverter<const std::vector<uint8_t>, T>.

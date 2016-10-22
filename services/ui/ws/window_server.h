@@ -197,7 +197,7 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                mojom::Cursor cursor_id);
   void ProcessWindowSurfaceCreated(ServerWindow* window,
-                                   mojom::SurfaceType surface_type,
+                                   mojom::CompositorFrameSinkType surface_type,
                                    const cc::SurfaceId& surface_id,
                                    const gfx::Size& frame_size,
                                    float device_scale_factor);

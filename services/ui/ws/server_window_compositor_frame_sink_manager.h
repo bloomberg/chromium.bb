@@ -18,50 +18,53 @@ namespace ui {
 namespace ws {
 
 class ServerWindow;
-class ServerWindowSurface;
-class ServerWindowSurfaceManagerTestApi;
+class ServerWindowCompositorFrameSink;
+class ServerWindowCompositorFrameSinkManagerTestApi;
 
-// ServerWindowSurfaceManager tracks the surfaces associated with a
+// ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a
 // ServerWindow.
-class ServerWindowSurfaceManager {
+class ServerWindowCompositorFrameSinkManager {
  public:
-  explicit ServerWindowSurfaceManager(ServerWindow* window);
-  ~ServerWindowSurfaceManager();
+  explicit ServerWindowCompositorFrameSinkManager(ServerWindow* window);
+  ~ServerWindowCompositorFrameSinkManager();
 
   // Returns true if the surfaces from this manager should be drawn.
   bool ShouldDraw();
 
   // Creates a new surface of the specified type, replacing the existing one of
   // the specified type.
-  void CreateSurface(
-      mojom::SurfaceType surface_type,
+  void CreateCompositorFrameSink(
+      mojom::CompositorFrameSinkType surface_type,
       mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ServerWindow* window() { return window_; }
 
-  ServerWindowSurface* GetDefaultSurface() const;
-  ServerWindowSurface* GetUnderlaySurface() const;
-  ServerWindowSurface* GetSurfaceByType(mojom::SurfaceType type) const;
-  bool HasSurfaceOfType(mojom::SurfaceType type) const;
-  bool HasAnySurface() const;
+  ServerWindowCompositorFrameSink* GetDefaultCompositorFrameSink() const;
+  ServerWindowCompositorFrameSink* GetUnderlayCompositorFrameSink() const;
+  ServerWindowCompositorFrameSink* GetCompositorFrameSinkByType(
+      mojom::CompositorFrameSinkType type) const;
+  bool HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType type) const;
+  bool HasAnyCompositorFrameSink() const;
 
-  cc::SurfaceManager* GetSurfaceManager();
+  cc::SurfaceManager* GetCompositorFrameSinkManager();
 
  private:
-  friend class ServerWindowSurfaceManagerTestApi;
-  friend class ServerWindowSurface;
+  friend class ServerWindowCompositorFrameSinkManagerTestApi;
+  friend class ServerWindowCompositorFrameSink;
 
-  // Returns true if a surface of |type| has been set and its size is greater
-  // than the size of the window.
-  bool IsSurfaceReadyAndNonEmpty(mojom::SurfaceType type) const;
+  // Returns true if a CompositorFrameSink of |type| has been set and has
+  // received a frame that is greater than the size of the window.
+  bool IsCompositorFrameSinkReadyAndNonEmpty(
+      mojom::CompositorFrameSinkType type) const;
 
   ServerWindow* window_;
 
-  using TypeToSurfaceMap =
-      std::map<mojom::SurfaceType, std::unique_ptr<ServerWindowSurface>>;
+  using TypeToCompositorFrameSinkMap =
+      std::map<mojom::CompositorFrameSinkType,
+               std::unique_ptr<ServerWindowCompositorFrameSink>>;
 
-  TypeToSurfaceMap type_to_surface_map_;
+  TypeToCompositorFrameSinkMap type_to_compositor_frame_sink_map_;
 
   // While true the window is not drawn. This is initially true if the window
   // has the property |kWaitForUnderlay_Property|. This is set to false once
@@ -70,7 +73,7 @@ class ServerWindowSurfaceManager {
   // the underlay is not necessarily as big as the window.
   bool waiting_for_initial_frames_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerWindowSurfaceManager);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSinkManager);
 };
 
 }  // namespace ws

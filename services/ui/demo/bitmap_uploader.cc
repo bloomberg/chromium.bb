@@ -18,7 +18,6 @@
 #include "services/ui/public/cpp/gles2_context.h"
 #include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_surface.h"
 
 namespace ui {
 namespace {
@@ -176,8 +175,8 @@ void BitmapUploader::Upload() {
 void BitmapUploader::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
   compositor_frame_sink_ = window_->RequestCompositorFrameSink(
-      mojom::SurfaceType::DEFAULT,
-      new ContextProvider(gpu_channel));
+      mojom::CompositorFrameSinkType::DEFAULT,
+      new ContextProvider(std::move(gpu_channel)));
   compositor_frame_sink_->BindToClient(this);
 }
 

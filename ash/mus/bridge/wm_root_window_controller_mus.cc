@@ -108,7 +108,7 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
   WmWindowMus::Get(new_window)
       ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
   init_params->native_widget = new views::NativeWidgetMus(
-      widget, new_window, ui::mojom::SurfaceType::DEFAULT);
+      widget, new_window, ui::mojom::CompositorFrameSinkType::DEFAULT);
 }
 
 WmWindow* WmRootWindowControllerMus::FindEventTarget(

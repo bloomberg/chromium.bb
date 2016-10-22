@@ -30,7 +30,9 @@ struct WindowData {
 // is used. The |UNDERLAY| surface is useful if the owner of a window wants to
 // to Embed() another client and at the same time draw something under the
 // embedded apps representation.
-enum SurfaceType {
+// TODO(fsamuel): Remove this once window decorations are no longer underlay
+// surfaces. http://crbug.com/647852.
+enum CompositorFrameSinkType {
   // Only the owner of a window may obtain this surface.
   // The window manager can change the offset of this by way of
   // SetUnderlaySurfaceOffsetAndExtendedHitArea().

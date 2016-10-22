@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/ids.h"
-#include "services/ui/ws/server_window_surface.h"
+#include "services/ui/ws/server_window_compositor_frame_sink.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -29,7 +29,7 @@ namespace ws {
 
 class ServerWindowDelegate;
 class ServerWindowObserver;
-class ServerWindowSurfaceManager;
+class ServerWindowCompositorFrameSinkManager;
 
 // Server side representation of a window. Delegate is informed of interesting
 // events.
@@ -58,9 +58,9 @@ class ServerWindow {
   bool HasObserver(ServerWindowObserver* observer);
 
   // Creates a new surface of the specified type, replacing the existing.
-  void CreateSurface(
-      mojom::SurfaceType surface_type,
-      mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+  void CreateCompositorFrameSink(
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   const WindowId& id() const { return id_; }
@@ -169,12 +169,14 @@ class ServerWindow {
     extended_hit_test_region_ = insets;
   }
 
-  ServerWindowSurfaceManager* GetOrCreateSurfaceManager();
-  ServerWindowSurfaceManager* surface_manager() {
-    return surface_manager_.get();
+  ServerWindowCompositorFrameSinkManager*
+  GetOrCreateCompositorFrameSinkManager();
+  ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager() {
+    return compositor_frame_sink_manager_.get();
   }
-  const ServerWindowSurfaceManager* surface_manager() const {
-    return surface_manager_.get();
+  const ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager()
+      const {
+    return compositor_frame_sink_manager_.get();
   }
 
   // Offset of the underlay from the the window bounds (used for shadows).
@@ -224,7 +226,8 @@ class ServerWindow {
   gfx::Rect bounds_;
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
-  std::unique_ptr<ServerWindowSurfaceManager> surface_manager_;
+  std::unique_ptr<ServerWindowCompositorFrameSinkManager>
+      compositor_frame_sink_manager_;
   mojom::Cursor cursor_id_;
   mojom::Cursor non_client_cursor_id_;
   float opacity_;

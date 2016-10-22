@@ -43,7 +43,7 @@ BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetMus(browser_frame,
                              CreateMusWindow(browser_view),
-                             ui::mojom::SurfaceType::DEFAULT),
+                             ui::mojom::CompositorFrameSinkType::DEFAULT),
       browser_view_(browser_view) {}
 
 BrowserFrameMus::~BrowserFrameMus() {}

@@ -86,13 +86,13 @@ bool WindowManagerAccessPolicy::CanChangeWindowOpacity(
   return WasCreatedByThisClient(window);
 }
 
-bool WindowManagerAccessPolicy::CanSetWindowSurface(
+bool WindowManagerAccessPolicy::CanSetWindowCompositorFrameSink(
     const ServerWindow* window,
-    ui::mojom::SurfaceType surface_type) const {
+    ui::mojom::CompositorFrameSinkType compositor_frame_sink_type) const {
   // Allow the window manager to always provide the underlay. This is important
   // when the window manager is asked to paint the title area to windows it did
   // not create.
-  if (surface_type == mojom::SurfaceType::UNDERLAY)
+  if (compositor_frame_sink_type == mojom::CompositorFrameSinkType::UNDERLAY)
     return true;
 
   if (delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(window))

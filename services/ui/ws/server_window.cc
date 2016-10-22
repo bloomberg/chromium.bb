@@ -10,9 +10,9 @@
 #include "base/strings/stringprintf.h"
 #include "services/ui/common/transient_window_utils.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
-#include "services/ui/ws/server_window_surface_manager.h"
 
 namespace ui {
 
@@ -83,12 +83,12 @@ bool ServerWindow::HasObserver(ServerWindowObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
-void ServerWindow::CreateSurface(
-    mojom::SurfaceType surface_type,
-    mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> request,
+void ServerWindow::CreateCompositorFrameSink(
+    mojom::CompositorFrameSinkType compositor_frame_sink_type,
+    cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
-  GetOrCreateSurfaceManager()->CreateSurface(surface_type, std::move(request),
-                                             std::move(client));
+  GetOrCreateCompositorFrameSinkManager()->CreateCompositorFrameSink(
+      compositor_frame_sink_type, std::move(request), std::move(client));
 }
 
 void ServerWindow::Add(ServerWindow* child) {
@@ -364,10 +364,12 @@ bool ServerWindow::IsDrawn() const {
   return root == window;
 }
 
-ServerWindowSurfaceManager* ServerWindow::GetOrCreateSurfaceManager() {
-  if (!surface_manager_.get())
-    surface_manager_ = base::MakeUnique<ServerWindowSurfaceManager>(this);
-  return surface_manager_.get();
+ServerWindowCompositorFrameSinkManager*
+ServerWindow::GetOrCreateCompositorFrameSinkManager() {
+  if (!compositor_frame_sink_manager_.get())
+    compositor_frame_sink_manager_ =
+        base::MakeUnique<ServerWindowCompositorFrameSinkManager>(this);
+  return compositor_frame_sink_manager_.get();
 }
 
 void ServerWindow::SetUnderlayOffset(const gfx::Vector2d& offset) {

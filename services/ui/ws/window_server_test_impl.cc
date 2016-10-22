@@ -6,7 +6,7 @@
 
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_surface_manager.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
 
@@ -16,9 +16,12 @@ namespace ws {
 namespace {
 
 bool WindowHasValidFrame(const ServerWindow* window) {
-  const ServerWindowSurfaceManager* manager = window->surface_manager();
+  const ServerWindowCompositorFrameSinkManager* manager =
+      window->compositor_frame_sink_manager();
   return manager &&
-         !manager->GetDefaultSurface()->last_submitted_frame_size().IsEmpty();
+         !manager->GetDefaultCompositorFrameSink()
+              ->last_submitted_frame_size()
+              .IsEmpty();
 }
 
 }  // namespace

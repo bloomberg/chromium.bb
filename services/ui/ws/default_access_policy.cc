@@ -99,10 +99,10 @@ bool DefaultAccessPolicy::CanChangeWindowOpacity(
          delegate_->HasRootForAccessPolicy(window);
 }
 
-bool DefaultAccessPolicy::CanSetWindowSurface(
+bool DefaultAccessPolicy::CanSetWindowCompositorFrameSink(
     const ServerWindow* window,
-    mojom::SurfaceType surface_type) const {
-  if (surface_type == mojom::SurfaceType::UNDERLAY)
+    mojom::CompositorFrameSinkType compositor_frame_sink_type) const {
+  if (compositor_frame_sink_type == mojom::CompositorFrameSinkType::UNDERLAY)
     return WasCreatedByThisClient(window);
 
   // Once a window embeds another app, the embedder app is no longer able to

@@ -531,13 +531,14 @@ class NativeWidgetMus::MusCaptureClient
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, public:
 
-NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                                 ui::Window* window,
-                                 ui::mojom::SurfaceType surface_type)
+NativeWidgetMus::NativeWidgetMus(
+    internal::NativeWidgetDelegate* delegate,
+    ui::Window* window,
+    ui::mojom::CompositorFrameSinkType compositor_frame_sink_type)
     : window_(window),
       last_cursor_(ui::mojom::Cursor::CURSOR_NULL),
       native_widget_delegate_(delegate),
-      surface_type_(surface_type),
+      compositor_frame_sink_type_(compositor_frame_sink_type),
       show_state_before_fullscreen_(ui::mojom::ShowState::DEFAULT),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       content_(new aura::Window(this)),

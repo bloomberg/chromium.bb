@@ -113,7 +113,7 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     ui::Window* window =
         window_manager_connection_.get()->NewTopLevelWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
-        widget_.get(), window, ui::mojom::SurfaceType::DEFAULT);
+        widget_.get(), window, ui::mojom::CompositorFrameSinkType::DEFAULT);
     widget_->Init(params);
   } else {
     widget_->Close();

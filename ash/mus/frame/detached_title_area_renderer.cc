@@ -25,7 +25,7 @@ DetachedTitleAreaRenderer::DetachedTitleAreaRenderer(
   params.name = "DetachedTitleAreaRenderer";
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.native_widget = new views::NativeWidgetMus(
-      widget_, window, ui::mojom::SurfaceType::UNDERLAY);
+      widget_, window, ui::mojom::CompositorFrameSinkType::UNDERLAY);
   widget_->Init(params);
   HeaderView* header_view = new HeaderView(frame_);
   if (source == Source::CLIENT) {

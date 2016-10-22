@@ -131,7 +131,7 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
   properties[ui::mojom::WindowManager::kAppID_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(identity_.name());
   return new NativeWidgetMus(delegate, NewTopLevelWindow(properties),
-                             ui::mojom::SurfaceType::DEFAULT);
+                             ui::mojom::CompositorFrameSinkType::DEFAULT);
 }
 
 const std::set<ui::Window*>& WindowManagerConnection::GetRoots() const {

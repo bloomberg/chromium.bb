@@ -13,11 +13,10 @@
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "services/ui/public/cpp/window_surface_client.h"
 
 namespace ui {
-class CompositorFrameSink;
 class Window;
+class WindowCompositorFrameSink;
 }
 
 namespace content {
@@ -64,7 +63,7 @@ class MusBrowserCompositorOutputSurface
   const gpu::Mailbox& GetMailboxFromResourceId(uint32_t id);
 
   ui::Window* ui_window_;
-  std::unique_ptr<ui::CompositorFrameSink> ui_compositor_frame_sink_;
+  std::unique_ptr<ui::WindowCompositorFrameSink> ui_compositor_frame_sink_;
   std::vector<uint32_t> free_resource_ids_;
   std::vector<gpu::Mailbox> mailboxes_;
 

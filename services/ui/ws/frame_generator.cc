@@ -15,8 +15,8 @@
 #include "services/ui/surfaces/display_compositor_frame_sink.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_surface.h"
-#include "services/ui/ws/server_window_surface_manager.h"
+#include "services/ui/ws/server_window_compositor_frame_sink.h"
+#include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 
 namespace ui {
 
@@ -158,9 +158,11 @@ void FrameGenerator::DrawWindowTree(
   if (!window->visible())
     return;
 
-  ServerWindowSurface* default_surface =
-      window->surface_manager() ? window->surface_manager()->GetDefaultSurface()
-                                : nullptr;
+  ServerWindowCompositorFrameSink* default_compositor_frame_sink =
+      window->compositor_frame_sink_manager()
+          ? window->compositor_frame_sink_manager()
+                ->GetDefaultCompositorFrameSink()
+          : nullptr;
 
   const gfx::Rect absolute_bounds =
       window->bounds() + parent_to_root_origin_offset;
@@ -171,15 +173,16 @@ void FrameGenerator::DrawWindowTree(
                    combined_opacity, may_contain_video);
   }
 
-  if (!window->surface_manager() || !window->surface_manager()->ShouldDraw())
+  if (!window->compositor_frame_sink_manager() ||
+      !window->compositor_frame_sink_manager()->ShouldDraw())
     return;
 
-  ServerWindowSurface* underlay_surface =
-      window->surface_manager()->GetUnderlaySurface();
-  if (!default_surface && !underlay_surface)
+  ServerWindowCompositorFrameSink* underlay_compositor_frame_sink =
+      window->compositor_frame_sink_manager()->GetUnderlayCompositorFrameSink();
+  if (!default_compositor_frame_sink && !underlay_compositor_frame_sink)
     return;
 
-  if (default_surface) {
+  if (default_compositor_frame_sink) {
     gfx::Transform quad_to_target_transform;
     quad_to_target_transform.Translate(absolute_bounds.x(),
                                        absolute_bounds.y());
@@ -196,15 +199,15 @@ void FrameGenerator::DrawWindowTree(
                 combined_opacity, SkXfermode::kSrcOver_Mode,
                 0 /* sorting-context_id */);
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    AddOrUpdateSurfaceReference(default_surface);
+    AddOrUpdateSurfaceReference(default_compositor_frame_sink);
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 default_surface->GetSurfaceId());
-    if (default_surface->may_contain_video())
+                 default_compositor_frame_sink->GetSurfaceId());
+    if (default_compositor_frame_sink->may_contain_video())
       *may_contain_video = true;
   }
-  if (underlay_surface) {
+  if (underlay_compositor_frame_sink) {
     const gfx::Rect underlay_absolute_bounds =
         absolute_bounds - window->underlay_offset();
     gfx::Transform quad_to_target_transform;
@@ -212,7 +215,7 @@ void FrameGenerator::DrawWindowTree(
                                        underlay_absolute_bounds.y());
     cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
     const gfx::Rect bounds_at_origin(
-        underlay_surface->last_submitted_frame_size());
+        underlay_compositor_frame_sink->last_submitted_frame_size());
     sqs->SetAll(quad_to_target_transform,
                 bounds_at_origin.size() /* layer_bounds */,
                 bounds_at_origin /* visible_layer_bounds */,
@@ -221,17 +224,17 @@ void FrameGenerator::DrawWindowTree(
                 0 /* sorting-context_id */);
 
     auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    AddOrUpdateSurfaceReference(underlay_surface);
+    AddOrUpdateSurfaceReference(underlay_compositor_frame_sink);
     quad->SetAll(sqs, bounds_at_origin /* rect */,
                  gfx::Rect() /* opaque_rect */,
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
-                 underlay_surface->GetSurfaceId());
-    DCHECK(!underlay_surface->may_contain_video());
+                 underlay_compositor_frame_sink->GetSurfaceId());
+    DCHECK(!underlay_compositor_frame_sink->may_contain_video());
   }
 }
 
 void FrameGenerator::AddOrUpdateSurfaceReference(
-    ServerWindowSurface* window_surface) {
+    ServerWindowCompositorFrameSink* window_surface) {
   if (!window_surface->has_frame())
     return;
   cc::SurfaceId surface_id = window_surface->GetSurfaceId();
@@ -298,16 +301,20 @@ void FrameGenerator::ReleaseAllSurfaceReferences() {
 
 void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
   window->RemoveObserver(this);
-  ServerWindowSurfaceManager* surface_manager = window->surface_manager();
+  ServerWindowCompositorFrameSinkManager* surface_manager =
+      window->compositor_frame_sink_manager();
   // If FrameGenerator was observing |window|, then that means it had a surface
-  // at some point in time and should have a ServerWindowSurfaceManager.
+  // at some point in time and should have a
+  // ServerWindowCompositorFrameSinkManager.
   DCHECK(surface_manager);
-  ServerWindowSurface* default_surface = surface_manager->GetDefaultSurface();
-  if (default_surface)
-    ReleaseFrameSinkReference(default_surface->frame_sink_id());
-  ServerWindowSurface* underlay_surface = surface_manager->GetUnderlaySurface();
-  if (underlay_surface)
-    ReleaseFrameSinkReference(underlay_surface->frame_sink_id());
+  ServerWindowCompositorFrameSink* default_compositor_frame_sink =
+      surface_manager->GetDefaultCompositorFrameSink();
+  if (default_compositor_frame_sink)
+    ReleaseFrameSinkReference(default_compositor_frame_sink->frame_sink_id());
+  ServerWindowCompositorFrameSink* underlay_compositor_frame_sink =
+      surface_manager->GetUnderlayCompositorFrameSink();
+  if (underlay_compositor_frame_sink)
+    ReleaseFrameSinkReference(underlay_compositor_frame_sink->frame_sink_id());
 }
 
 }  // namespace ws

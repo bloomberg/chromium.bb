@@ -266,7 +266,7 @@ void ViewImpl::OnEmbed(ui::Window* root) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = this;
   params.native_widget = new views::NativeWidgetMus(
-      widget_.get(), root, ui::mojom::SurfaceType::DEFAULT);
+      widget_.get(), root, ui::mojom::CompositorFrameSinkType::DEFAULT);
   widget_->Init(params);
   widget_->Show();
 }

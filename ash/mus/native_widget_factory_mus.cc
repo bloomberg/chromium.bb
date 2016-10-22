@@ -28,9 +28,9 @@ views::NativeWidget* CreateNativeWidgetMus(
     return nullptr;
   std::map<std::string, std::vector<uint8_t>> props;
   views::NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &props);
-  return new views::NativeWidgetMus(delegate,
-                                    window_manager->NewTopLevelWindow(&props),
-                                    ui::mojom::SurfaceType::DEFAULT);
+  return new views::NativeWidgetMus(
+      delegate, window_manager->NewTopLevelWindow(&props),
+      ui::mojom::CompositorFrameSinkType::DEFAULT);
 }
 
 }  // namespace
