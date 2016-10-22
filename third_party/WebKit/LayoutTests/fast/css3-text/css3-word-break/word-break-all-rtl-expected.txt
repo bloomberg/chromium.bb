@@ -1,4 +1,6 @@
-There should be only one line of arabic below.
+Following paragraphs should not wrap.
 
 اب و عدم وابستگی.
+PASS
+Договор
 PASS

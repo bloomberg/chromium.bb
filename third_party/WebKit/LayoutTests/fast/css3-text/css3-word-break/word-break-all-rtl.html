@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <style>
+#arabic {
+  direction: rtl;
+}
+#cyrillic {
+  word-break: break-word;
+  white-space: pre-line;
+  font-family: Arial;
+}
 div {
-    direction: rtl;
-    line-height: 20px;
-    border: 1px solid black;
-    display: inline-block;
+  line-height: 20px;
+  border: 1px solid black;
+  display: inline-block;
 }
 </style>
-<p>There should be only one line of arabic below.</p>
-<div id="test" style="word-break: break-all" data-expected-height=22>اب و عدم وابستگی.</div>
+<p>Following paragraphs should not wrap.</p>
+<div id="arabic" style="word-break: break-all" data-expected-height=22>اب و عدم وابستگی.</div>
+<div id="cyrillic" data-expected-height=22>Договор</div>
 <script src="../../../resources/check-layout.js"></script>
-<script>
-    checkLayout("#test");
-</script>
+<script>checkLayout("div");</script>

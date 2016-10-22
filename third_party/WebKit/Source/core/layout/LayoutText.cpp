@@ -967,6 +967,34 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth) {
   computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphBounds);
 }
 
+static float minWordFragmentWidthForBreakAll(LayoutText* layoutText,
+                                             const ComputedStyle& style,
+                                             const Font& font,
+                                             TextDirection textDirection,
+                                             int start,
+                                             int length) {
+  DCHECK_GT(length, 0);
+  LazyLineBreakIterator breakIterator(layoutText->text(), style.locale());
+  int nextBreakable = -1;
+  float min = std::numeric_limits<float>::max();
+  int end = start + length;
+  for (int i = start; i < end;) {
+    breakIterator.isBreakable(i + 1, nextBreakable, LineBreakType::BreakAll);
+    int fragmentLength = (nextBreakable > i ? nextBreakable : length) - i;
+    // The correct behavior is to measure width without re-shaping, but we
+    // reshape each fragment here because a) the current line breaker does not
+    // support it, b) getCharacterRange() can reshape if the text is too long
+    // to fit in the cache, and c) each fragment here is almost 1 char and thus
+    // reshape is fast.
+    TextRun run = constructTextRun(font, layoutText, i, fragmentLength, style,
+                                   textDirection);
+    float fragmentWidth = font.width(run);
+    min = std::min(min, fragmentWidth);
+    i += fragmentLength;
+  }
+  return min;
+}
+
 static float maxWordFragmentWidth(LayoutText* layoutText,
                                   const ComputedStyle& style,
                                   const Font& font,
@@ -1141,8 +1169,7 @@ void LayoutText::computePreferredLogicalWidths(
 
     bool hasBreak = breakIterator.isBreakable(
         i, nextBreakable,
-        breakAll ? LineBreakType::BreakAll
-                 : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal);
+        keepAll ? LineBreakType::KeepAll : LineBreakType::Normal);
     bool betweenWords = true;
     int j = i;
     while (c != newlineCharacter && c != spaceCharacter &&
@@ -1155,10 +1182,6 @@ void LayoutText::computePreferredLogicalWidths(
       if (breakIterator.isBreakable(j, nextBreakable) &&
           characterAt(j - 1) != softHyphenCharacter)
         break;
-      if (breakAll) {
-        betweenWords = false;
-        break;
-      }
     }
 
     // Terminate word boundary at bidi run boundary.
@@ -1220,7 +1243,15 @@ void LayoutText::computePreferredLogicalWidths(
         }
       }
 
-      currMinWidth += w;
+      if (breakAll) {
+        // Because sum of character widths may not be equal to the word width,
+        // we need to measure twice; once with normal break for max width,
+        // another with break-all for min width.
+        currMinWidth = minWordFragmentWidthForBreakAll(
+            this, styleToUse, f, textDirection, i, wordLen);
+      } else {
+        currMinWidth += w;
+      }
       if (betweenWords) {
         if (lastWordBoundary == i)
           currMaxWidth += w;

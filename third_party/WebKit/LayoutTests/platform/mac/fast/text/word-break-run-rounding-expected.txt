@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 314x18
           text run at (0,0) width 314: "Test that the preferred (maximum) width is right:"
       LayoutBlockFlow (anonymous) at (0,68) size 784x24
-        LayoutBlockFlow (floating) {DIV} at (0,0) size 732.52x24 [border: (3px solid #000000)]
+        LayoutBlockFlow (floating) {DIV} at (0,0) size 732.31x24 [border: (3px solid #000000)]
           LayoutText {#text} at (3,3) size 727x18
             text run at (3,3) width 727: "The black border should fit tightly around this one line of text with no space after the period."
         LayoutBR {BR} at (732,0) size 1x18

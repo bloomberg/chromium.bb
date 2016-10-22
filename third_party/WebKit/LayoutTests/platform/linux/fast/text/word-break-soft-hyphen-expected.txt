@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 459x19
           text run at (0,0) width 459: "The following text should not wrap and the border should fit tightly around it."
-layer at (8,100) size 109x26
-  LayoutBlockFlow (positioned) {DIV} at (8,100) size 109x26 [border: (3px solid #000000)]
+layer at (8,100) size 108x26
+  LayoutBlockFlow (positioned) {DIV} at (8,100) size 107.89x26 [border: (3px solid #000000)]
     LayoutText {#text} at (3,3) size 102x19
       text run at (3,3) width 102: "Two soft\x{AD}hyp\x{AD}hens"
