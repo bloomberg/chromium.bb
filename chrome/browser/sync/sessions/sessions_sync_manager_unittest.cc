@@ -187,8 +187,8 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
 
   void NotifyLocalChangeObservers() {
     const syncer::SyncChange empty_change;
-    FOR_EACH_OBSERVER(syncer::LocalChangeObserver, local_change_observers_,
-                      OnLocalChange(NULL, empty_change));
+    for (syncer::LocalChangeObserver& observer : local_change_observers_)
+      observer.OnLocalChange(NULL, empty_change);
   }
 
   void FailProcessSyncChangesWith(const syncer::SyncError& error) {

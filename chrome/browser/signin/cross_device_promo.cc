@@ -283,8 +283,8 @@ void CrossDevicePromo::MarkPromoShouldBeShown() {
 
   if (!prefs_->GetBoolean(prefs::kCrossDevicePromoShouldBeShown)) {
     prefs_->SetBoolean(prefs::kCrossDevicePromoShouldBeShown, true);
-    FOR_EACH_OBSERVER(CrossDevicePromo::Observer, observer_list_,
-                      OnPromoEligibilityChanged(true));
+    for (CrossDevicePromo::Observer& observer : observer_list_)
+      observer.OnPromoEligibilityChanged(true);
   }
 }
 
@@ -292,8 +292,8 @@ void CrossDevicePromo::MarkPromoShouldNotBeShown() {
   VLOG(1) << "CrossDevicePromo::MarkPromoShouldNotBeShown.";
   if (prefs_->GetBoolean(prefs::kCrossDevicePromoShouldBeShown)) {
     prefs_->SetBoolean(prefs::kCrossDevicePromoShouldBeShown, false);
-    FOR_EACH_OBSERVER(CrossDevicePromo::Observer, observer_list_,
-                      OnPromoEligibilityChanged(false));
+    for (CrossDevicePromo::Observer& observer : observer_list_)
+      observer.OnPromoEligibilityChanged(false);
   }
 }
 

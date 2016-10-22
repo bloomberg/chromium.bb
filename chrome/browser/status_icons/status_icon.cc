@@ -28,12 +28,14 @@ bool StatusIcon::HasObservers() const {
 }
 
 void StatusIcon::DispatchClickEvent() {
-  FOR_EACH_OBSERVER(StatusIconObserver, observers_, OnStatusIconClicked());
+  for (StatusIconObserver& observer : observers_)
+    observer.OnStatusIconClicked();
 }
 
 #if defined(OS_WIN)
 void StatusIcon::DispatchBalloonClickEvent() {
-  FOR_EACH_OBSERVER(StatusIconObserver, observers_, OnBalloonClicked());
+  for (StatusIconObserver& observer : observers_)
+    observer.OnBalloonClicked();
 }
 #endif
 

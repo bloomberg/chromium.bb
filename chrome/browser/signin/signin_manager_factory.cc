@@ -100,7 +100,8 @@ void SigninManagerFactory::RemoveObserver(Observer* observer) {
 
 void SigninManagerFactory::NotifyObserversOfSigninManagerCreationForTesting(
     SigninManagerBase* manager) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(manager));
+  for (Observer& observer : observer_list_)
+    observer.SigninManagerCreated(manager);
 }
 
 KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
@@ -122,7 +123,8 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
   AccountFetcherServiceFactory::GetForProfile(profile);
 #endif
   service->Initialize(g_browser_process->local_state());
-  FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));
+  for (Observer& observer : observer_list_)
+    observer.SigninManagerCreated(service);
   return service;
 }
 
@@ -130,7 +132,9 @@ void SigninManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
   SigninManagerBase* manager = static_cast<SigninManagerBase*>(
       GetServiceForBrowserContext(context, false));
-  if (manager)
-    FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerShutdown(manager));
+  if (manager) {
+    for (Observer& observer : observer_list_)
+      observer.SigninManagerShutdown(manager);
+  }
   BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }

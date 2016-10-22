@@ -494,8 +494,8 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
       HandleAuthFailure(GetAccountId());
   }
 
-  FOR_EACH_OBSERVER(
-      EasyUnlockServiceObserver, observers_, OnScreenlockStateChanged(state));
+  for (EasyUnlockServiceObserver& observer : observers_)
+    observer.OnScreenlockStateChanged(state);
   return true;
 }
 
@@ -723,8 +723,8 @@ void EasyUnlockService::NotifyUserUpdated() {
 }
 
 void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {
-  FOR_EACH_OBSERVER(
-      EasyUnlockServiceObserver, observers_, OnTurnOffOperationStatusChanged());
+  for (EasyUnlockServiceObserver& observer : observers_)
+    observer.OnTurnOffOperationStatusChanged();
 }
 
 void EasyUnlockService::ResetScreenlockState() {

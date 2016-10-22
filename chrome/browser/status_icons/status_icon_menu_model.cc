@@ -163,7 +163,8 @@ void StatusIconMenuModel::MenuItemsChanged() {
 }
 
 void StatusIconMenuModel::NotifyMenuStateChanged() {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnMenuStateChanged());
+  for (Observer& observer : observer_list_)
+    observer.OnMenuStateChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
