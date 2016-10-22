@@ -12,7 +12,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -70,7 +69,7 @@ void PreviewsIOData::ClearBlackList(base::Time begin_time,
 
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
-  if (!IsOfflinePreviewsEnabled())
+  if (!IsPreviewsTypeEnabled(type))
     return false;
   // The blacklist will disallow certain hosts for periods of time based on
   // user's opting out of the preview

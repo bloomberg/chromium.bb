@@ -20,7 +20,7 @@
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/request_header/offline_page_header.h"
 #include "components/previews/core/previews_decider.h"
-#include "components/previews/core/previews_opt_out_store.h"
+#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"

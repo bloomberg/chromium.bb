@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -110,8 +111,14 @@ bool IsIncludedInClientSidePreviewsExperimentsFieldTrial() {
       kEnabled, base::CompareCase::SENSITIVE);
 }
 
-bool IsOfflinePreviewsEnabled() {
-  return ParamValue(kOfflinePagesSlowNetwork) == kExperimentEnabled;
+bool IsPreviewsTypeEnabled(PreviewsType type) {
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      return ParamValue(kOfflinePagesSlowNetwork) == kExperimentEnabled;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 bool EnableOfflinePreviewsForTesting() {

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_DECIDER_H_
 #define COMPONENTS_PREVIEWS_CORE_PREVIEWS_DECIDER_H_
 
-#include "components/previews/core/previews_opt_out_store.h"
+#include "components/previews/core/previews_experiments.h"
 
 namespace net {
 class URLRequest;

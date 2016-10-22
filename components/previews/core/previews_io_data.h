@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_decider.h"
-#include "components/previews/core/previews_opt_out_store.h"
+#include "components/previews/core/previews_experiments.h"
 
 class GURL;
 
@@ -24,6 +24,7 @@ class URLRequest;
 
 namespace previews {
 class PreviewsBlackList;
+class PreviewsOptOutStore;
 class PreviewsUIService;
 
 // A class to manage the IO portion of inter-thread communication between

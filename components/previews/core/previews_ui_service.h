@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;

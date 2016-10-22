@@ -17,13 +17,13 @@ namespace previews {
 
 TEST_F(PreviewsExperimentsTest, TestFieldTrialOfflinePage) {
   EXPECT_FALSE(IsIncludedInClientSidePreviewsExperimentsFieldTrial());
-  EXPECT_FALSE(IsOfflinePreviewsEnabled());
+  EXPECT_FALSE(IsPreviewsTypeEnabled(PreviewsType::OFFLINE));
 
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(EnableOfflinePreviewsForTesting());
 
   EXPECT_TRUE(IsIncludedInClientSidePreviewsExperimentsFieldTrial());
-  EXPECT_TRUE(IsOfflinePreviewsEnabled());
+  EXPECT_TRUE(IsPreviewsTypeEnabled(PreviewsType::OFFLINE));
 }
 
 }  // namespace previews
