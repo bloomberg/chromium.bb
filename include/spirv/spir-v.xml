@@ -61,7 +61,8 @@
         <id value="9"   vendor="Qualcomm"   comment="Contact weifengz@qti.qualcomm.com"/>
         <id value="10"  vendor="AMD"        comment="Contact Daniel Rakos, daniel.rakos@amd.com"/>
         <id value="11"  vendor="Intel"      comment="Contact Alexey, alexey.bader@intel.com"/>
-            <unused start="12" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
+        <id value="12"  vendor="Imagination" comment="Contact James Jones"/>
+            <unused start="13" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
     </ids>
 
     <!-- SECTION: SPIR-V Opcodes and Enumerants -->
@@ -94,7 +95,7 @@
     <ids type="opcode" start="4480" end="4991" vendor="Qualcomm" comment="Contact weifengz@qti.qualcomm.com"/>
     <ids type="opcode" start="4992" end="5247" vendor="AMD"/>
     <ids type="opcode" start="5248" end="5503" vendor="NVIDIA"/>
-
+    <ids type="opcode" start="5504" end="5567" vendor="Imagination"/>
     <!-- Opcodes & enumerants reservable for future use. To get a block, allocate
          multiples of 64 starting at the lowest available point in this
          block and add a corresponding <ids> tag immediately above. Make
