@@ -3293,34 +3293,6 @@ bool GLES2DecoderImpl::Initialize(
                                         ? GL_RGBA
                                         : GL_RGB;
 
-    // Create the target frame buffer. This is the one that the client renders
-    // directly to.
-    offscreen_target_frame_buffer_.reset(new BackFramebuffer(this));
-    offscreen_target_frame_buffer_->Create();
-    // Due to GLES2 format limitations, either the color texture (for
-    // non-multisampling) or the color render buffer (for multisampling) will be
-    // attached to the offscreen frame buffer.  The render buffer has more
-    // limited formats available to it, but the texture can't do multisampling.
-    if (IsOffscreenBufferMultisampled()) {
-      offscreen_target_color_render_buffer_.reset(new BackRenderbuffer(this));
-      offscreen_target_color_render_buffer_->Create();
-    } else {
-      offscreen_target_color_texture_.reset(new BackTexture(this));
-      offscreen_target_color_texture_->Create();
-    }
-    offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(this));
-    offscreen_target_depth_render_buffer_->Create();
-    offscreen_target_stencil_render_buffer_.reset(new BackRenderbuffer(this));
-    offscreen_target_stencil_render_buffer_->Create();
-
-    // Create the saved offscreen texture. The target frame buffer is copied
-    // here when SwapBuffers is called.
-    offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
-    offscreen_saved_frame_buffer_->Create();
-    //
-    offscreen_saved_color_texture_.reset(new BackTexture(this));
-    offscreen_saved_color_texture_->Create();
-
     gfx::Size initial_size = attrib_helper.offscreen_framebuffer_size;
     if (initial_size.IsEmpty()) {
       // If we're an offscreen surface with zero width and/or height, set to a
@@ -3331,34 +3303,8 @@ bool GLES2DecoderImpl::Initialize(
       initial_size = gfx::Size(1, 1);
     }
 
-    // Allocate the render buffers at their initial size and check the status
-    // of the frame buffers is okay.
-    if (!ResizeOffscreenFramebuffer(initial_size)) {
-      LOG(ERROR) << "Could not allocate offscreen buffer storage.";
-      Destroy(true);
-      return false;
-    }
-
     state_.viewport_width = initial_size.width();
     state_.viewport_height = initial_size.height();
-
-    // Allocate the offscreen saved color texture.
-    DCHECK(offscreen_saved_color_format_);
-    offscreen_saved_color_texture_->AllocateStorage(
-        gfx::Size(1, 1), offscreen_saved_color_format_, true);
-
-    offscreen_saved_frame_buffer_->AttachRenderTexture(
-        offscreen_saved_color_texture_.get());
-    if (offscreen_saved_frame_buffer_->CheckStatus() !=
-        GL_FRAMEBUFFER_COMPLETE) {
-      LOG(ERROR) << "Offscreen saved FBO was incomplete.";
-      Destroy(true);
-      return false;
-    }
-
-    // Bind to the new default frame buffer (the offscreen target frame buffer).
-    // This should now be associated with ID zero.
-    DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   } else {
     glBindFramebufferEXT(GL_FRAMEBUFFER, GetBackbufferServiceId());
     // These are NOT if the back buffer has these proprorties. They are
@@ -3454,6 +3400,60 @@ bool GLES2DecoderImpl::Initialize(
   // Set all the default state because some GL drivers get it wrong.
   state_.InitCapabilities(NULL);
   state_.InitState(NULL);
+
+  // Default state must be set before offscreen resources can be created.
+  if (offscreen) {
+    // Create the target frame buffer. This is the one that the client renders
+    // directly to.
+    offscreen_target_frame_buffer_.reset(new BackFramebuffer(this));
+    offscreen_target_frame_buffer_->Create();
+    // Due to GLES2 format limitations, either the color texture (for
+    // non-multisampling) or the color render buffer (for multisampling) will be
+    // attached to the offscreen frame buffer.  The render buffer has more
+    // limited formats available to it, but the texture can't do multisampling.
+    if (IsOffscreenBufferMultisampled()) {
+      offscreen_target_color_render_buffer_.reset(new BackRenderbuffer(this));
+      offscreen_target_color_render_buffer_->Create();
+    } else {
+      offscreen_target_color_texture_.reset(new BackTexture(this));
+      offscreen_target_color_texture_->Create();
+    }
+    offscreen_target_depth_render_buffer_.reset(new BackRenderbuffer(this));
+    offscreen_target_depth_render_buffer_->Create();
+    offscreen_target_stencil_render_buffer_.reset(new BackRenderbuffer(this));
+    offscreen_target_stencil_render_buffer_->Create();
+
+    // Create the saved offscreen texture. The target frame buffer is copied
+    // here when SwapBuffers is called.
+    offscreen_saved_frame_buffer_.reset(new BackFramebuffer(this));
+    offscreen_saved_frame_buffer_->Create();
+    //
+    offscreen_saved_color_texture_.reset(new BackTexture(this));
+    offscreen_saved_color_texture_->Create();
+
+    // Allocate the render buffers at their initial size and check the status
+    // of the frame buffers is okay.
+    if (!ResizeOffscreenFramebuffer(
+            gfx::Size(state_.viewport_width, state_.viewport_height))) {
+      LOG(ERROR) << "Could not allocate offscreen buffer storage.";
+      Destroy(true);
+      return false;
+    }
+    // Allocate the offscreen saved color texture.
+    DCHECK(offscreen_saved_color_format_);
+    offscreen_saved_color_texture_->AllocateStorage(
+        gfx::Size(1, 1), offscreen_saved_color_format_, true);
+
+    offscreen_saved_frame_buffer_->AttachRenderTexture(
+        offscreen_saved_color_texture_.get());
+    if (offscreen_saved_frame_buffer_->CheckStatus() !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      LOG(ERROR) << "Offscreen saved FBO was incomplete.";
+      Destroy(true);
+      return false;
+    }
+  }
+
   glActiveTexture(GL_TEXTURE0 + state_.active_texture_unit);
 
   DoBindBuffer(GL_ARRAY_BUFFER, 0);
