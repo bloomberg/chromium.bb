@@ -160,8 +160,11 @@ bool DialRegistry::PruneExpiredDevices() {
     auto* device = it->second;
     if (IsDeviceExpired(*device)) {
       VLOG(2) << "Device " << device->label() << " expired, removing";
-      const size_t num_erased_by_id =
-          device_by_id_map_.erase(device->device_id());
+
+      // Make a copy of the device ID here since |device| will be destroyed
+      // during erase().
+      std::string device_id = device->device_id();
+      const size_t num_erased_by_id = device_by_id_map_.erase(device_id);
       DCHECK_EQ(1U, num_erased_by_id);
       device_by_label_map_.erase(it++);
       pruned_device = true;
