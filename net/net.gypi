@@ -2293,6 +2293,7 @@
       'data/ssl/certificates/subjectAltName_sanity_check.pem',
       'data/ssl/certificates/test_mail_google_com.pem',
       'data/ssl/certificates/thawte.single.pem',
+      'data/ssl/certificates/tls_feature_extension.pem',
       'data/ssl/certificates/twitter-chain.pem',
       'data/ssl/certificates/unescaped.pem',
       'data/ssl/certificates/unittest.key.bin',
