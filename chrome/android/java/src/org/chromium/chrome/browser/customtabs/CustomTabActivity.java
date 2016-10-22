@@ -265,12 +265,7 @@ public class CustomTabActivity extends ChromeActivity {
                 CustomTabsConnection.getInstance(getApplication()).getPrerenderedUrl(mSession));
         if (getSavedInstanceState() == null
                 && CustomTabsConnection.hasWarmUpBeenFinished(getApplication())) {
-            // TODO(tedchoc): Tab has dependencies on the tab model, so this should be called
-            //                before creating the tab.  That is not currently possible due to
-            //                an ordering problem with creating the Fullscreen manager.  If this
-            //                CCT were to be displaying a native page, it would likely crash, but
-            //                that doesn't happen in practice.
-            // initializeTabModels();
+            initializeTabModels();
             mMainTab = createMainTab();
             loadUrlInTab(mMainTab, new LoadUrlParams(getUrlToLoad()),
                     IntentHandler.getTimestampFromIntent(getIntent()));
@@ -318,8 +313,7 @@ public class CustomTabActivity extends ChromeActivity {
         TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
                 getTaskId(), getSavedInstanceState() != null);
 
-        return new TabModelSelectorImpl(
-                this, this, getFullscreenManager(), persistencePolicy, false);
+        return new TabModelSelectorImpl(this, this, persistencePolicy, false);
     }
 
     @Override
@@ -900,6 +894,6 @@ public class CustomTabActivity extends ChromeActivity {
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 (ToolbarControlContainer) findViewById(R.id.control_container),
-                getControlContainerHeightResource(), true);
+                getTabModelSelector(), getControlContainerHeightResource(), true);
     }
 }

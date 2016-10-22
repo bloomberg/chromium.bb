@@ -991,8 +991,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
 
         mTabModelSelectorImpl = (TabModelSelectorImpl)
-                TabWindowManager.getInstance().requestSelector(this, this, getFullscreenManager(),
-                        index);
+                TabWindowManager.getInstance().requestSelector(this, this, index);
         if (mTabModelSelectorImpl == null) {
             Toast.makeText(this, getString(R.string.unsupported_number_of_windows),
                     Toast.LENGTH_LONG).show();
@@ -1658,6 +1657,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 (ToolbarControlContainer) findViewById(R.id.control_container),
-                getControlContainerHeightResource(), true);
+                getTabModelSelector(), getControlContainerHeightResource(), true);
     }
 }

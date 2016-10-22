@@ -569,7 +569,8 @@ public class WebappActivity extends FullScreenActivity {
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 (ControlContainer) findViewById(R.id.control_container),
-                getControlContainerHeightResource(), false /* supportsBrowserOverride */);
+                getTabModelSelector(), getControlContainerHeightResource(),
+                false /* supportsBrowserOverride */);
     }
 
     @Override

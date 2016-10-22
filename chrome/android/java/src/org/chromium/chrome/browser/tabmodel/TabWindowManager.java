@@ -13,7 +13,6 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid;
@@ -48,7 +47,7 @@ public class TabWindowManager implements ActivityStateListener {
          * @return A new {@link TabModelSelector} instance.
          */
         TabModelSelector buildSelector(Activity activity, TabCreatorManager tabCreatorManager,
-                FullscreenManager fullscreenManager, int selectorIndex);
+                int selectorIndex);
     }
 
     /** The singleton reference. */
@@ -80,8 +79,8 @@ public class TabWindowManager implements ActivityStateListener {
      * @return A {@link TabModelSelector} index, or {@code null} if there are too many
      *         {@link TabModelSelector}s already built.
      */
-    public TabModelSelector requestSelector(Activity activity, TabCreatorManager tabCreatorManager,
-            FullscreenManager fullscreenManager, int index) {
+    public TabModelSelector requestSelector(
+            Activity activity, TabCreatorManager tabCreatorManager, int index) {
         if (mAssignments.get(activity) != null) {
             return mAssignments.get(activity);
         }
@@ -100,8 +99,8 @@ public class TabWindowManager implements ActivityStateListener {
         // Too many activities going at once.
         if (mSelectors.get(index) != null) return null;
 
-        TabModelSelector selector = mSelectorFactory.buildSelector(activity, tabCreatorManager,
-                fullscreenManager, index);
+        TabModelSelector selector = mSelectorFactory.buildSelector(
+                activity, tabCreatorManager, index);
         mSelectors.set(index, selector);
         mAssignments.put(activity, selector);
 
@@ -208,8 +207,7 @@ public class TabWindowManager implements ActivityStateListener {
     private static class DefaultTabModelSelectorFactory implements TabModelSelectorFactory {
         @Override
         public TabModelSelector buildSelector(Activity activity,
-                TabCreatorManager tabCreatorManager, FullscreenManager fullscreenManager,
-                int selectorIndex) {
+                TabCreatorManager tabCreatorManager, int selectorIndex) {
             // Merge tabs if this is the TabModelSelector for ChromeTabbedActivity and there are no
             // other instances running. This indicates that it is a complete cold start of
             // ChromeTabbedActivity. Tabs should only be merged during a cold start of
@@ -219,8 +217,7 @@ public class TabWindowManager implements ActivityStateListener {
                     && getInstance().getNumberOfAssignedTabModelSelectors() == 0;
             TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
                     selectorIndex, mergeTabs);
-            return new TabModelSelectorImpl(activity, tabCreatorManager, fullscreenManager,
-                    persistencePolicy, true);
+            return new TabModelSelectorImpl(activity, tabCreatorManager, persistencePolicy, true);
         }
     }
 }

@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -278,8 +277,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
             new TabWindowManager.TabModelSelectorFactory() {
                 @Override
                 public TabModelSelector buildSelector(Activity activity,
-                        TabCreatorManager tabCreatorManager, FullscreenManager fullscreenManager,
-                        int selectorIndex) {
+                        TabCreatorManager tabCreatorManager, int selectorIndex) {
                     try {
                         return new TestTabModelSelector();
                     } catch (Exception e) {
@@ -675,7 +673,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
                         tabWindowManager.onActivityStateChange(
                                 mFakeChromeActivity, ActivityState.DESTROYED);
                         return (TestTabModelSelector) tabWindowManager.requestSelector(
-                                mFakeChromeActivity, mFakeChromeActivity, null, 0);
+                                mFakeChromeActivity, mFakeChromeActivity, 0);
                     }
                 });
 

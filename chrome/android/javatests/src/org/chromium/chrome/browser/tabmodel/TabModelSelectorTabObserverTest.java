@@ -8,107 +8,16 @@ import android.test.MoreAsserts;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
-import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Tests for the TabModelSelectorTabObserver.
  */
-public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
-
-    private TabModelSelectorBase mSelector;
-    private TabModel mNormalTabModel;
-    private TabModel mIncognitoTabModel;
-
-    private WindowAndroid mWindowAndroid;
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        CommandLine.init(null);
-        loadNativeLibraryAndInitBrowserProcess();
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                initialize();
-            }
-        });
-    }
-
-    private void initialize() {
-        mWindowAndroid = new WindowAndroid(
-                getInstrumentation().getTargetContext().getApplicationContext());
-
-        mSelector = new TabModelSelectorBase() {
-            @Override
-            public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-                    boolean incognito) {
-                return null;
-            }
-        };
-
-        TabModelOrderController orderController = new TabModelOrderController(mSelector);
-        TabContentManager tabContentManager =
-                new TabContentManager(getInstrumentation().getTargetContext(), null, false);
-        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(0, false);
-        TabPersistentStore tabPersistentStore = new TabPersistentStore(persistencePolicy, mSelector,
-                null, null);
-
-        TabModelDelegate delegate = new TabModelDelegate() {
-            @Override
-            public void selectModel(boolean incognito) {
-                mSelector.selectModel(incognito);
-            }
-
-            @Override
-            public void requestToShowTab(Tab tab, TabSelectionType type) {
-            }
-
-            @Override
-            public boolean isSessionRestoreInProgress() {
-                return false;
-            }
-
-            @Override
-            public boolean isInOverviewMode() {
-                return false;
-            }
-
-            @Override
-            public TabModel getModel(boolean incognito) {
-                return mSelector.getModel(incognito);
-            }
-
-            @Override
-            public TabModel getCurrentModel() {
-                return mSelector.getCurrentModel();
-            }
-
-            @Override
-            public boolean closeAllTabsRequest(boolean incognito) {
-                return false;
-            }
-        };
-        mNormalTabModel = new TabModelImpl(false, null, null, null, orderController,
-                tabContentManager, tabPersistentStore, delegate, false);
-
-        mIncognitoTabModel = new TabModelImpl(true, null, null, null, orderController,
-                tabContentManager, tabPersistentStore, delegate, false);
-
-        mSelector.initialize(false, mNormalTabModel, mIncognitoTabModel);
-    }
-
+public class TabModelSelectorTabObserverTest extends TabModelSelectorObserverTestBase {
     @UiThreadTest
     @SmallTest
     public void testAddingTab() {

@@ -212,6 +212,6 @@ public abstract class FullScreenActivity extends ChromeActivity {
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 (ControlContainer) findViewById(R.id.control_container),
-                getControlContainerHeightResource(), true);
+                getTabModelSelector(), getControlContainerHeightResource(), true);
     }
 }

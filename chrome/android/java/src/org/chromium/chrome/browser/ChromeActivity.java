@@ -322,6 +322,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mWindowAndroid.setKeyboardAccessoryView((ViewGroup) findViewById(R.id.keyboard_accessory));
         initializeToolbar();
         initializeTabModels();
+        if (!isFinishing()) mFullscreenManager = createFullscreenManager();
     }
 
     @Override
@@ -445,11 +446,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     protected final void initializeTabModels() {
         if (mTabModelsInitialized) return;
-
-        // TODO(tedchoc): FullscreenManager is required to create the TabModelSelector, but that
-        //                does not seem like the right ordering.  This should happen after
-        //                initializing the tab models.
-        mFullscreenManager = createFullscreenManager();
 
         mTabModelSelector = createTabModelSelector();
         if (mTabModelSelector == null) {
@@ -1267,11 +1263,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The {@link TabModelSelector}, possibly null.
      */
     public TabModelSelector getTabModelSelector() {
-        // TODO(tedchoc): Enable once CCT early tab creation is fixed.
-        //if (!mTabModelsInitialized) {
-        //    throw new IllegalStateException(
-        //            "Attempting to access TabModelSelector before initialization");
-        //}
+        if (!mTabModelsInitialized) {
+            throw new IllegalStateException(
+                    "Attempting to access TabModelSelector before initialization");
+        }
         return mTabModelSelector;
     }
 
@@ -1286,11 +1281,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
-        // TODO(tedchoc): Enable once CCT early tab creation is fixed.
-        //if (!mTabModelsInitialized) {
-        //    throw new IllegalStateException(
-        //            "Attempting to access TabCreator before initialization");
-        //}
+        if (!mTabModelsInitialized) {
+            throw new IllegalStateException(
+                    "Attempting to access TabCreator before initialization");
+        }
         return incognito ? mIncognitoTabCreator : mRegularTabCreator;
     }
 

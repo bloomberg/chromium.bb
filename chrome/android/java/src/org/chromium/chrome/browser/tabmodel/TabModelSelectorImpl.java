@@ -10,7 +10,6 @@ import android.os.Handler;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -29,8 +28,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     public static final int CUSTOM_TABS_SELECTOR_INDEX = -1;
 
     private final TabCreatorManager mTabCreatorManager;
-
-    private FullscreenManager mFullscreenManager;
 
     /** Flag set to false when the asynchronous loading of tabs is finished. */
     private final AtomicBoolean mSessionRestoreInProgress =
@@ -60,16 +57,13 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      *
      * @param activity An {@link Activity} instance.
      * @param tabCreatorManager A {@link TabCreatorManager} instance.
-     * @param fullscreenManager A {@link FullscreenManager} instance.
      * @param persistencePolicy A {@link TabPersistencePolicy} instance.
      * @param supportUndo Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(Activity activity, TabCreatorManager tabCreatorManager,
-            FullscreenManager fullscreenManager, TabPersistencePolicy persistencePolicy,
-            boolean supportUndo) {
+            TabPersistencePolicy persistencePolicy, boolean supportUndo) {
         super();
         mTabCreatorManager = tabCreatorManager;
-        mFullscreenManager = fullscreenManager;
         mUma = new TabModelSelectorUma(activity);
         final TabPersistentStoreObserver persistentStoreObserver =
                 new TabPersistentStoreObserver() {
@@ -351,7 +345,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                     cacheTabBitmap(mVisibleTab);
                 }
                 mVisibleTab.hide();
-                if (mFullscreenManager != null) mFullscreenManager.setTab(null);
                 mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
             mVisibleTab = null;
@@ -369,7 +362,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             tab.loadIfNeeded();
             return;
         }
-        if (mFullscreenManager != null) mFullscreenManager.setTab(tab);
         mVisibleTab = tab;
 
         // Don't execute the tab display part if Chrome has just been sent to background. This

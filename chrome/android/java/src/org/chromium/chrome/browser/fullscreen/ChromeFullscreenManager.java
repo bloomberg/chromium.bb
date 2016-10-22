@@ -32,6 +32,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
@@ -60,6 +63,9 @@ public class ChromeFullscreenManager
     private final Window mWindow;
     private final Handler mHandler;
     private final int mControlContainerHeight;
+
+    private final TabModelSelector mTabModelSelector;
+    private final TabModelSelectorTabModelObserver mTabModelObserver;
 
     private final ControlContainer mControlContainer;
 
@@ -181,18 +187,43 @@ public class ChromeFullscreenManager
      * Creates an instance of the fullscreen mode manager.
      * @param activity The activity that supports fullscreen.
      * @param controlContainer Container holding the controls (Toolbar).
+     * @param modelSelector The tab model selector that will be monitored for tab changes.
      * @param resControlContainerHeight The dimension resource ID for the control container height.
      * @param supportsBrowserOverride Whether we want to disable the token system used by the
                                       browser.
      */
     public ChromeFullscreenManager(Activity activity, ControlContainer controlContainer,
-            int resControlContainerHeight, boolean supportsBrowserOverride) {
+            TabModelSelector modelSelector, int resControlContainerHeight,
+            boolean supportsBrowserOverride) {
         super(activity.getWindow());
 
         mActivity = activity;
         ApplicationStatus.registerStateListenerForActivity(this, activity);
         ((BaseChromiumApplication) activity.getApplication())
                 .registerWindowFocusChangedListener(this);
+
+        mTabModelSelector = modelSelector;
+        mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
+            @Override
+            public void tabClosureCommitted(Tab tab) {
+                setTab(mTabModelSelector.getCurrentTab());
+            }
+
+            @Override
+            public void allTabsClosureCommitted() {
+                setTab(mTabModelSelector.getCurrentTab());
+            }
+
+            @Override
+            public void tabRemoved(Tab tab) {
+                setTab(mTabModelSelector.getCurrentTab());
+            }
+
+            @Override
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+                setTab(mTabModelSelector.getCurrentTab());
+            }
+        };
 
         mWindow = activity.getWindow();
         mHandler = new FullscreenHandler(this);
@@ -220,6 +251,8 @@ public class ChromeFullscreenManager
             ApplicationStatus.unregisterActivityStateListener(this);
             ((BaseChromiumApplication) mWindow.getContext().getApplicationContext())
                     .unregisterWindowFocusChangedListener(this);
+
+            mTabModelObserver.destroy();
         }
     }
 
