@@ -362,10 +362,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
-// Updates the sizes and positions of the subviews.
-// TODO(viettrungluu): I'm not convinced this should be public, but I currently
-// need it for animations. Try not to propagate its use.
-- (void)layoutSubviews;
+// Set the size of the view and perform layout.
+- (void)layoutToFrame:(NSRect)frame;
 
 // Called by our view when it is moved to a window.
 - (void)viewDidMoveToWindow;

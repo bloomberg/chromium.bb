@@ -32,7 +32,7 @@
                 </button>
                 <customView id="62" customClass="BookmarkBarView">
                     <rect key="frame" x="0.0" y="-2" width="584" height="144"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <customView hidden="YES" id="109" customClass="BookmarkBarItemContainer">
                             <rect key="frame" x="0.0" y="103" width="596" height="41"/>

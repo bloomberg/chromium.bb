@@ -165,6 +165,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 @interface BookmarkBarController ()
 
+// Updates the sizes and positions of the subviews.
+- (void)layoutSubviews;
+
 // Moves to the given next state (from the current state), possibly animating.
 // If |animate| is NO, it will stop any running animation and jump to the given
 // state. If YES, it may either (depending on implementation) jump to the end of
@@ -556,6 +559,14 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // NSNotificationCenter callback.
 - (void)parentWindowDidResignMain:(NSNotification*)notification {
   [self closeFolderAndStopTrackingMenus];
+}
+
+- (void)layoutToFrame:(NSRect)frame {
+  // The view should be pinned to the top of the window with a flexible width.
+  DCHECK_EQ(NSViewWidthSizable | NSViewMinYMargin,
+            [[self view] autoresizingMask]);
+  [[self view] setFrame:frame];
+  [self layoutSubviews];
 }
 
 // Change the layout of the bookmark bar's subviews in response to a visibility
