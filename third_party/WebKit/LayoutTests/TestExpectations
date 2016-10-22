@@ -1227,6 +1227,8 @@ crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cac
 
 crbug.com/658414 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Failure Pass ]
 
+crbug.com/658479 paint/invalidation/background-resize-height.html [ Failure Pass ]
+
 crbug.com/655458 imported/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/baseurl/alpha/worker.html [ Failure ]
 crbug.com/655458 imported/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
