@@ -2465,14 +2465,15 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   // Server-initiated streams must be associated with client-initiated streams.
   if ((associated_stream_id & 0x1) != 1) {
-    LOG(WARNING) << "Received invalid associated stream id " << stream_id;
+    LOG(WARNING) << "Received push stream id " << stream_id
+                 << " with invalid associated stream id";
     CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Push on even stream id.");
     return false;
   }
 
   if (stream_id <= last_accepted_push_stream_id_) {
-    LOG(WARNING) << "Received push stream id lesser or equal to the last "
-                 << "accepted before " << stream_id;
+    LOG(WARNING) << "Received push stream id " << stream_id
+                 << " lesser or equal to the last accepted before";
     CloseSessionOnError(
         ERR_SPDY_PROTOCOL_ERROR,
         "New push stream id must be greater than the last accepted.");
