@@ -236,6 +236,29 @@ enum CreateElementFlags {
   CreatedByFragmentParser = CreatedByParser | AsynchronousCustomElements,
 };
 
+// Collect data about deferred loading of offscreen cross-origin documents. All
+// cross-origin documents log Created. Only those that would load log a reason.
+// We can then see the % of cross-origin documents that never have to load.
+// See https://crbug.com/635105.
+// Logged to UMA, don't re-arrange entries without creating a new histogram.
+enum WouldLoadReason {
+  Created,
+  // If outer and inner frames aren't in the same process we can't determine
+  // if the inner frame is visible, so just load it.
+  // TODO(dgrogan): Revisit after https://crbug.com/650433 is fixed.
+  WouldLoadOutOfProcess,
+  // The next four indicate frames that are probably used for cross-origin
+  // communication.
+  WouldLoadDisplayNone,
+  WouldLoadZeroByZero,
+  WouldLoadAbove,
+  WouldLoadLeft,
+  // We have to load documents in visible frames.
+  WouldLoadVisible,
+
+  WouldLoadReasonEnd
+};
+
 using DocumentClassFlags = unsigned char;
 
 class CORE_EXPORT Document : public ContainerNode,
@@ -1286,7 +1309,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool isInMainFrame() const;
 
-  void onVisibilityMaybeChanged(bool visible);
+  void maybeRecordLoadReason(WouldLoadReason);
+  WouldLoadReason wouldLoadReason() { return m_wouldLoadReason; }
 
   PropertyRegistry* propertyRegistry();
 
@@ -1641,7 +1665,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<SnapCoordinator> m_snapCoordinator;
 
-  bool m_visibilityWasLogged;
+  WouldLoadReason m_wouldLoadReason;
 
   Member<PropertyRegistry> m_propertyRegistry;
 };
