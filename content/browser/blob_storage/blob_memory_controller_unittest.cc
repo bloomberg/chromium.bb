@@ -218,7 +218,7 @@ TEST_F(BlobMemoryControllerTest, PageToDisk) {
   SetTestMemoryLimits(&controller);
 
   char kData[kTestBlobStorageMaxBlobMemorySize];
-  std::memset(kData, kTestBlobStorageMaxBlobMemorySize, 'e');
+  std::memset(kData, 'e', kTestBlobStorageMaxBlobMemorySize);
 
   // Add memory item that is the memory quota.
   BlobDataBuilder builder(kId);
@@ -306,7 +306,7 @@ TEST_F(BlobMemoryControllerTest, CancelMemoryRequest) {
   SetTestMemoryLimits(&controller);
 
   char kData[kTestBlobStorageMaxBlobMemorySize];
-  std::memset(kData, kTestBlobStorageMaxBlobMemorySize, 'e');
+  std::memset(kData, 'e', kTestBlobStorageMaxBlobMemorySize);
 
   // Add memory item that is the memory quota.
   BlobDataBuilder builder(kId);
@@ -366,7 +366,7 @@ TEST_F(BlobMemoryControllerTest, FileRequest) {
   SetTestMemoryLimits(&controller);
 
   char kData[kBlobSize];
-  std::memset(kData, kBlobSize, 'e');
+  std::memset(kData, 'e', kBlobSize);
 
   // Add item that is the file quota.
   BlobDataBuilder builder(kId);
@@ -423,7 +423,7 @@ TEST_F(BlobMemoryControllerTest, CancelFileRequest) {
   SetTestMemoryLimits(&controller);
 
   char kData[kBlobSize];
-  std::memset(kData, kBlobSize, 'e');
+  std::memset(kData, 'e', kBlobSize);
 
   // Add memory item that is the memory quota.
   BlobDataBuilder builder(kId);
@@ -607,7 +607,7 @@ TEST_F(BlobMemoryControllerTest, DisableDiskWithFileAndMemoryPending) {
   SetTestMemoryLimits(&controller);
 
   char kDataMemoryData[kFirstMemorySize];
-  std::memset(kDataMemoryData, kFirstMemorySize, 'e');
+  std::memset(kDataMemoryData, 'e', kFirstMemorySize);
 
   // Add first memory item to fill up some memory quota.
   BlobDataBuilder builder(kFirstMemoryId);
