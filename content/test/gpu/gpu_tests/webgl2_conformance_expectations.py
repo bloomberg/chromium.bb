@@ -59,8 +59,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=657853)
     self.Fail('conformance2/textures/misc/tex-image-with-bad-args.html',
         bug=656889)
-    self.Fail('conformance2/glsl3/uniform-block-layouts.html',
-        bug=657859)
     self.Fail('conformance2/context/methods-2.html', bug=616554)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance/buffers/buffer-uninitialized.html',
