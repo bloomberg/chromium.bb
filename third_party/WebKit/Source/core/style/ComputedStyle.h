@@ -3605,6 +3605,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return overflowY() == OverflowPagedX || overflowY() == OverflowPagedY;
   }
 
+  // Visibility utility functions.
+  bool visibleToHitTesting() const {
+    return visibility() == EVisibility::Visible && pointerEvents() != PE_NONE;
+  }
+
   // Animation utility functions.
   bool shouldCompositeForCurrentAnimations() const {
     return hasCurrentOpacityAnimation() || hasCurrentTransformAnimation() ||

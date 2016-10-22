@@ -1505,9 +1505,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !isInert();
   }
 
+  // Warning: inertness can change without causing relayout.
   bool visibleToHitTesting() const {
-    return style()->visibility() == EVisibility::Visible &&
-           style()->pointerEvents() != PE_NONE && !isInert();
+    return style()->visibleToHitTesting() && !isInert();
   }
 
   // Map points and quads through elements, potentially via 3d transforms. You
