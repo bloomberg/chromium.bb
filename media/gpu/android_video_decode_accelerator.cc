@@ -111,16 +111,6 @@ constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 // from breaking the pipeline, if we're about to be reset anyway.
 constexpr base::TimeDelta ErrorPostingDelay = base::TimeDelta::FromSeconds(2);
 
-// For RecordFormatChangedMetric.
-enum FormatChangedValue {
-  CodecInitialized = false,
-  MissingFormatChanged = true
-};
-
-inline void RecordFormatChangedMetric(FormatChangedValue value) {
-  UMA_HISTOGRAM_BOOLEAN("Media.AVDA.MissingFormatChanged", !!value);
-}
-
 }  // namespace
 
 static base::LazyInstance<AVDACodecAllocator>::Leaky g_avda_codec_allocator =
@@ -755,11 +745,8 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   }
 
   if (!picturebuffers_requested_) {
-    // If, somehow, we get a decoded frame back before a FORMAT_CHANGED
-    // message, then we might not have any picture buffers to use.  This
-    // isn't supposed to happen (see EncodeDecodeTest.java#617).
-    // Log a metric to see how common this is.
-    RecordFormatChangedMetric(FormatChangedValue::MissingFormatChanged);
+    // In 0.01% of playbacks MediaCodec returns a frame before FORMAT_CHANGED.
+    // Occurs on JB and M. (See the Media.AVDA.MissingFormatChanged histogram.)
     media_codec_->ReleaseOutputBuffer(buf_index, false);
     POST_ERROR(PLATFORM_FAILURE, "Dequeued buffers before FORMAT_CHANGED.");
     return false;
@@ -1058,9 +1045,6 @@ void AndroidVideoDecodeAccelerator::OnCodecConfigured(
     std::unique_ptr<VideoCodecBridge> media_codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED);
-
-  // Record one instance of the codec being initialized.
-  RecordFormatChangedMetric(FormatChangedValue::CodecInitialized);
 
   // If we are supposed to notify that initialization is complete, then do so
   // now.  Otherwise, this is a reconfiguration.
