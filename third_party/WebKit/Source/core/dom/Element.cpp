@@ -1835,7 +1835,7 @@ PassRefPtr<ComputedStyle> Element::originalStyleForLayoutObject() {
   return document().ensureStyleResolver().styleForElement(this);
 }
 
-void Element::recalcStyle(StyleRecalcChange change) {
+void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling) {
   DCHECK(document().inStyleRecalc());
   DCHECK(!document().lifecycle().inDetach());
   DCHECK(!parentOrShadowHostNode()->needsStyleRecalc());
@@ -1858,7 +1858,6 @@ void Element::recalcStyle(StyleRecalcChange change) {
     if (parentComputedStyle())
       change = recalcOwnStyle(change);
     clearNeedsStyleRecalc();
-    clearNeedsReattachLayoutTree();
   }
 
   // If we reattached we don't need to recalc the style of our descendants
@@ -1890,11 +1889,13 @@ void Element::recalcStyle(StyleRecalcChange change) {
                         childNeedsStyleRecalc() ? Force : change);
 
     clearChildNeedsStyleRecalc();
-    clearChildNeedsReattachLayoutTree();
   }
 
   if (hasCustomStyleCallbacks())
     didRecalcStyle(change);
+
+  if (change == Reattach)
+    reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
 }
 
 PassRefPtr<ComputedStyle> Element::propagateInheritedProperties(
@@ -1943,7 +1944,6 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
 
   if (localChange == Reattach) {
     document().addNonAttachedStyle(*this, std::move(newStyle));
-    setNeedsReattachLayoutTree();
     return rebuildLayoutTree();
   }
 
@@ -1987,31 +1987,12 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
 }
 
 StyleRecalcChange Element::rebuildLayoutTree() {
-  DCHECK(inActiveDocument());
   AttachContext reattachContext;
   reattachContext.resolvedStyle = document().getNonAttachedStyle(*this);
   bool layoutObjectWillChange = needsAttach() || layoutObject();
-
-  // We are calling Element::rebuildLayoutTree() from inside
-  // Element::recalcOwnStyle where we set the NeedsReattachLayoutTree
-  // flag - so needsReattachLayoutTree() should always be true.
-  DCHECK(parentNode());
-  DCHECK(parentNode()->childNeedsReattachLayoutTree());
-  DCHECK(needsReattachLayoutTree());
   reattachLayoutTree(reattachContext);
-  // Since needsReattachLayoutTree() is always true we go into
-  // reattachLayoutTree() which reattaches all the descendant
-  // sub-trees. At this point no child should need reattaching.
-  DCHECK(!childNeedsReattachLayoutTree());
-
-  if (layoutObjectWillChange || layoutObject()) {
-    // nextTextSibling is passed on to recalcStyle from recalcDescendantStyles
-    // we can either traverse the current subtree from this node onwards
-    // or store it.
-    // The choice is between increased time and increased memory complexity.
-    reattachWhitespaceSiblingsIfNeeded(nextTextSibling());
+  if (layoutObjectWillChange || layoutObject())
     return Reattach;
-  }
   return ReattachNoLayoutObject;
 }
 

@@ -274,7 +274,6 @@ void HTMLFrameSetElement::willRecalcStyle(StyleRecalcChange) {
     layoutObject()->setNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::StyleChange);
     clearNeedsStyleRecalc();
-    clearNeedsReattachLayoutTree();
   }
 }
 

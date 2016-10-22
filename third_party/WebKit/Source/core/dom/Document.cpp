@@ -1764,8 +1764,6 @@ static void assertLayoutTreeUpdated(Node& root) {
       continue;
     DCHECK(!node.needsStyleRecalc());
     DCHECK(!node.childNeedsStyleRecalc());
-    DCHECK(!node.needsReattachLayoutTree());
-    DCHECK(!node.childNeedsReattachLayoutTree());
     DCHECK(!node.childNeedsDistributionRecalc());
     DCHECK(!node.needsStyleInvalidation());
     DCHECK(!node.childNeedsStyleInvalidation());
@@ -1898,7 +1896,6 @@ void Document::updateStyle() {
   }
 
   clearNeedsStyleRecalc();
-  clearNeedsReattachLayoutTree();
 
   StyleResolver& resolver = ensureStyleResolver();
 
@@ -1921,14 +1918,11 @@ void Document::updateStyle() {
   // LayoutTreeConstruction.
   m_nonAttachedStyle.clear();
   clearChildNeedsStyleRecalc();
-  clearChildNeedsReattachLayoutTree();
 
   resolver.clearStyleSharingList();
 
   DCHECK(!needsStyleRecalc());
   DCHECK(!childNeedsStyleRecalc());
-  DCHECK(!needsReattachLayoutTree());
-  DCHECK(!childNeedsReattachLayoutTree());
   DCHECK(inStyleRecalc());
   DCHECK_EQ(styleResolver(), &resolver);
   DCHECK(m_nonAttachedStyle.isEmpty());
