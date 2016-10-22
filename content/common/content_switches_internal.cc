@@ -36,6 +36,12 @@ bool IsUseZoomForDSFEnabledByDefault() {
 #endif
 }
 
+#if defined(ANDROID)
+const base::Feature kProgressBarCompletionResourcesBeforeDOMContentLoaded {
+    "progress-bar-completion-resources-before-domContentLoaded",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace
 
 bool IsPinchToZoomEnabled() {
@@ -105,6 +111,12 @@ ProgressBarCompletion GetProgressBarCompletionPolicy() {
   if (progress_bar_completion ==
       "resourcesBeforeDOMContentLoadedAndSameOriginIframes") {
     return ProgressBarCompletion::RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES;
+  }
+  // The command line, which is set by the user, takes priority. Otherwise,
+  // fall back to the feature flag.
+  if (base::FeatureList::IsEnabled(
+          kProgressBarCompletionResourcesBeforeDOMContentLoaded)) {
+    return ProgressBarCompletion::RESOURCES_BEFORE_DCL;
   }
 #endif
   return ProgressBarCompletion::LOAD_EVENT;
