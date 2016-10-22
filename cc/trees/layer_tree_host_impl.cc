@@ -1586,7 +1586,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
 
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
+  TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::DrawLayers");
 
   ResetRequiresHighResToDraw();
 

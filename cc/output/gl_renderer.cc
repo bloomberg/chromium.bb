@@ -2897,7 +2897,7 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
 void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
 
-  TRACE_EVENT0("cc,benchmark", "GLRenderer::SwapBuffers");
+  TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
   gfx::Size surface_size = surface_size_for_swap_buffers();

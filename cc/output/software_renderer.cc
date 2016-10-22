@@ -82,7 +82,7 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
 
 void SoftwareRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
-  TRACE_EVENT0("cc,benchmark", "SoftwareRenderer::SwapBuffers");
+  TRACE_EVENT0("cc", "SoftwareRenderer::SwapBuffers");
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_surface_->SwapBuffers(std::move(output_frame));
