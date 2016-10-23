@@ -73,6 +73,11 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
       host_content_settings_map(), GURL("http://source-page.com"),
       GURL("http://ww.macromedia.com/go/getflashplayer"), true));
+
+  // Don't intercept navigations occurring on the flash download page.
+  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+      host_content_settings_map(), GURL("https://get.adobe.com/flashplayer/"),
+      GURL("https://get.adobe.com/flashplayer/"), true));
 }
 
 TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {

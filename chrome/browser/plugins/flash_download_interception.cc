@@ -31,9 +31,13 @@ namespace {
 
 const char kWwwPrefix[] = "www.";
 
-// URLs that will be intercepted with any www. prefix pruned.
+// The URL of the page where Flash can be downloaded.
+const char kFlashDownloadURL[] = "get.adobe.com/flash";
+
+// URLs that will be intercepted with any www. prefix pruned. These should all
+// redirect to |kFlashDownloadURL|.
 const char* kFlashDownloadURLs[] = {
-    "get.adobe.com/flash", "macromedia.com/go/getflashplayer",
+    kFlashDownloadURL, "macromedia.com/go/getflashplayer",
     "adobe.com/go/getflashplayer", "adobe.com/go/gntray_dl_getflashplayer"};
 
 void DoNothing(blink::mojom::PermissionStatus result) {}
@@ -88,6 +92,13 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
 
   if (!has_user_gesture)
     return false;
+
+  // If the navigation source is already the Flash download page, don't
+  // intercept the download. The user may be trying to download Flash.
+  if (base::StartsWith(source_url.GetContent(), kFlashDownloadURL,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    return false;
+  }
 
   std::string target_url_str = target_url.GetContent();
   // Ignore www. if it's at the start of the URL.
