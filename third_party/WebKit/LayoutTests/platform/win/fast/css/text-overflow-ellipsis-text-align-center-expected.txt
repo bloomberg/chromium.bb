@@ -65,20 +65,20 @@ layer at (8,427) size 310x31 clip at (9,428) size 308x29 scrollWidth 762
     LayoutImage {IMG} at (278.70,1) size 25x25
     LayoutText {#text} at (303,12) size 460x17
       text run at (303,12) width 460: "ipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,518) size 310x20 clip at (9,519) size 308x18 scrollX 429.00 scrollWidth 738
+layer at (8,518) size 310x20 clip at (9,519) size 308x18 scrollX 428.00 scrollWidth 737
   LayoutBlockFlow {DIV} at (0,510.31) size 310x20 [border: (1px solid #000000)]
-    LayoutText {#text} at (-428,1) size 738x17
-      text run at (-428,1) width 737 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
-layer at (8,599) size 310x74 backgroundClip at (8,599) size 310x1 clip at (0,0) size 0x0 scrollX 429.00 scrollWidth 738
+    LayoutText {#text} at (-427,1) size 737x17
+      text run at (-427,1) width 736 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+layer at (8,599) size 310x74 backgroundClip at (8,599) size 310x1 clip at (0,0) size 0x0 scrollX 428.00 scrollWidth 737
   LayoutBlockFlow {DIV} at (0,591.03) size 310x74 [border: (1px solid #000000)]
-    LayoutText {#text} at (-428,1) size 738x17
-      text run at (-428,1) width 737 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (-427,1) size 737x17
+      text run at (-427,1) width 736 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
     LayoutText {#text} at (-418,19) size 728x17
       text run at (-418,19) width 727 RTL override: "orem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (-410,37) size 720x17
-      text run at (-410,37) width 719 RTL override: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (-409,37) size 719x17
+      text run at (-409,37) width 718 RTL override: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
     LayoutText {#text} at (-405,55) size 714x17
       text run at (-405,55) width 713 RTL override: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
