@@ -361,7 +361,9 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
                             : logicalRight() - visibleBoxWidth;
     }
 
-    int offset = offsetForPosition(ellipsisX, false);
+    // The box's width includes partial glyphs, so respect that when placing
+    // the ellipsis.
+    int offset = offsetForPosition(ellipsisX);
     if (offset == 0 && ltr == flowIsLTR) {
       // No characters should be laid out.  Set ourselves to full truncation and
       // place the ellipsis at the min of our start and the ellipsis edge.

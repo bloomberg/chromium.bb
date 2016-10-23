@@ -68,14 +68,14 @@ layer at (8,1908) size 82x310 backgroundClip at (0,0) size 0x0 clip at (0,0) siz
     LayoutText {#text} at (1,-374) size 19x683
       text run at (1,-374) width 683 RTL override: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (21,-367) size 19x674
-      text run at (21,-367) width 674 RTL override: "orem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (21,-364) size 19x674
+      text run at (21,-364) width 674 RTL override: "orem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
     LayoutText {#text} at (41,-356) size 19x666
       text run at (41,-356) width 666 RTL override: "rem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
-    LayoutText {#text} at (61,-356) size 19x661
-      text run at (61,-356) width 661 RTL override: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
+    LayoutText {#text} at (61,-351) size 19x661
+      text run at (61,-351) width 661 RTL override: "em ipsum dolor sit amet, consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
     LayoutBR {BR} at (0,0) size 0x0
 layer at (8,2280) size 32x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 scrollY 403.00 scrollHeight 711
   LayoutBlockFlow {DIV} at (0,2272.03) size 32x310 [border: (1px solid #000000)]
