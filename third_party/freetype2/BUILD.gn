@@ -73,5 +73,6 @@ shared_library("freetype2") {
 
   deps = [
     "//build/config/sanitizers:deps",
+    "//third_party/zlib",
   ]
 }
