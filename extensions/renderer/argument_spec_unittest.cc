@@ -130,6 +130,18 @@ TEST_F(ArgumentSpecUnitTest, Test) {
   }
 
   {
+    ArgumentSpec spec(*ValueFromString(
+        "{'type': 'string', 'enum': [{'name': 'foo'}, {'name': 'bar'}]}"));
+    ExpectSuccess(spec, "'foo'", "'foo'");
+    ExpectSuccess(spec, "'bar'", "'bar'");
+    ExpectFailure(spec, "['foo']");
+    ExpectFailure(spec, "'fo'");
+    ExpectFailure(spec, "'foobar'");
+    ExpectFailure(spec, "'baz'");
+    ExpectFailure(spec, "''");
+  }
+
+  {
     ArgumentSpec spec(*ValueFromString("{'type': 'boolean'}"));
     ExpectSuccess(spec, "true", "true");
     ExpectSuccess(spec, "false", "false");

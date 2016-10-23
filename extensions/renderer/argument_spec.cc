@@ -93,7 +93,13 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
       CHECK_GT(size, 0u);
       for (size_t i = 0; i < size; ++i) {
         std::string enum_value;
-        CHECK(enums->GetString(i, &enum_value));
+        // Enum entries come in two versions: a list of possible strings, and
+        // a dictionary with a field 'name'.
+        if (!enums->GetString(i, &enum_value)) {
+          const base::DictionaryValue* enum_value_dictionary = nullptr;
+          CHECK(enums->GetDictionary(i, &enum_value_dictionary));
+          CHECK(enum_value_dictionary->GetString("name", &enum_value));
+        }
         enum_values_.insert(std::move(enum_value));
       }
     }
