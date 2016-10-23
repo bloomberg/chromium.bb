@@ -4810,7 +4810,7 @@ def CMDtry(parser, args):
 
   error_message = cl.CannotTriggerTryJobReason()
   if error_message:
-    parser.error('Can\'t trigger try jobs: %s')
+    parser.error('Can\'t trigger try jobs: %s' % error_message)
 
   if not options.name:
     options.name = cl.GetBranch()
