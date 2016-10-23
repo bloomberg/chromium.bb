@@ -36,7 +36,7 @@ class CONTENT_EXPORT VideoCaptureHost
   ~VideoCaptureHost() override;
 
  private:
-  friend class VideoCaptureHostTest;
+  friend class VideoCaptureTest;
 
   // VideoCaptureControllerEventHandler implementation.
   void OnError(VideoCaptureControllerID id) override;

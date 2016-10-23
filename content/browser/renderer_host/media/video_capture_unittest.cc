@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_host.h"
-
 #include <stdint.h>
 
 #include <map>
@@ -22,6 +20,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
+#include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
@@ -91,10 +90,10 @@ ACTION_P2(ExitMessageLoop, task_runner, quit_closure) {
 // This is an integration test of VideoCaptureHost in conjunction with
 // MediaStreamManager, VideoCaptureManager, VideoCaptureController, and
 // VideoCaptureDevice.
-class VideoCaptureHostTest : public testing::Test,
-                             public mojom::VideoCaptureObserver {
+class VideoCaptureTest : public testing::Test,
+                         public mojom::VideoCaptureObserver {
  public:
-  VideoCaptureHostTest()
+  VideoCaptureTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         audio_manager_(
             new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get())),
@@ -311,30 +310,30 @@ class VideoCaptureHostTest : public testing::Test,
   std::unique_ptr<VideoCaptureHost> host_;
   mojo::Binding<mojom::VideoCaptureObserver> observer_binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureHostTest);
+  DISALLOW_COPY_AND_ASSIGN(VideoCaptureTest);
 };
 
 // Construct and destruct all objects. This is a non trivial sequence.
-TEST_F(VideoCaptureHostTest, ConstructAndDestruct) {}
+TEST_F(VideoCaptureTest, ConstructAndDestruct) {}
 
-TEST_F(VideoCaptureHostTest, StartAndImmediateStop) {
+TEST_F(VideoCaptureTest, StartAndImmediateStop) {
   StartAndImmediateStopCapture();
 }
 
-TEST_F(VideoCaptureHostTest, StartAndCaptureAndStop) {
+TEST_F(VideoCaptureTest, StartAndCaptureAndStop) {
   StartCapture();
   WaitForOneCapturedBuffer();
   WaitForOneCapturedBuffer();
   StopCapture();
 }
 
-TEST_F(VideoCaptureHostTest, StartAndErrorAndStop) {
+TEST_F(VideoCaptureTest, StartAndErrorAndStop) {
   StartCapture();
   SimulateError();
   StopCapture();
 }
 
-TEST_F(VideoCaptureHostTest, StartAndCaptureAndError) {
+TEST_F(VideoCaptureTest, StartAndCaptureAndError) {
   EXPECT_CALL(*this, OnStateChanged(mojom::VideoCaptureState::STOPPED))
       .Times(0);
   StartCapture();
@@ -343,13 +342,13 @@ TEST_F(VideoCaptureHostTest, StartAndCaptureAndError) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
 }
 
-TEST_F(VideoCaptureHostTest, StartAndPauseAndResumeAndStop) {
+TEST_F(VideoCaptureTest, StartAndPauseAndResumeAndStop) {
   StartCapture();
   PauseResumeCapture();
   StopCapture();
 }
 
-TEST_F(VideoCaptureHostTest, CloseSessionWithoutStopping) {
+TEST_F(VideoCaptureTest, CloseSessionWithoutStopping) {
   StartCapture();
 
   // When the session is closed via the stream without stopping capture, the
