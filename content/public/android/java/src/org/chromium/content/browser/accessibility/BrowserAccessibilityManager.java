@@ -706,13 +706,16 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void handleFocusChanged(int id) {
         if (mNativeObj == 0) return;
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
-        moveAccessibilityFocusToId(id);
+        if (mAccessibilityFocusId != View.NO_ID) {
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
+            moveAccessibilityFocusToId(id);
+        }
     }
 
     @CalledByNative
     private void handleCheckStateChanged(int id) {
         if (mNativeObj == 0) return;
+        if (mAccessibilityFocusId == View.NO_ID) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
     }
 
@@ -725,18 +728,21 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void handleTextSelectionChanged(int id) {
         if (mNativeObj == 0) return;
+        if (mAccessibilityFocusId == View.NO_ID) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
     }
 
     @CalledByNative
     private void handleEditableTextChanged(int id) {
         if (mNativeObj == 0) return;
+        if (mAccessibilityFocusId == View.NO_ID) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
     }
 
     @CalledByNative
     private void handleSliderChanged(int id) {
         if (mNativeObj == 0) return;
+        if (mAccessibilityFocusId == View.NO_ID) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
     }
 
@@ -771,7 +777,9 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void handleScrolledToAnchor(int id) {
         if (mNativeObj == 0) return;
-        moveAccessibilityFocusToId(id);
+        if (mAccessibilityFocusId != View.NO_ID) {
+            moveAccessibilityFocusToId(id);
+        }
     }
 
     @CalledByNative
@@ -790,6 +798,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void announceLiveRegionText(String text) {
+        if (mAccessibilityFocusId == View.NO_ID) return;
         mView.announceForAccessibility(text);
     }
 
