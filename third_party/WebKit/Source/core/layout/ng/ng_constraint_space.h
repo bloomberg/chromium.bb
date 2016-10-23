@@ -25,25 +25,22 @@ class NGLayoutOpportunityIterator;
 class CORE_EXPORT NGConstraintSpace final
     : public GarbageCollected<NGConstraintSpace> {
  public:
-  // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
-  // The size will be used for both for the physical constraint space's
-  // container size and this constraint space's Size().
-  NGConstraintSpace(NGWritingMode, NGDirection, NGLogicalSize);
-
   // Constructs a constraint space based on an existing backing
   // NGPhysicalConstraintSpace. Sets this constraint space's size to the
   // physical constraint space's container size, converted to logical
   // coordinates.
-  // TODO(layout-ng): Do we need this constructor?
   NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
 
-  // Constructs a constraint space with a different NGWritingMode and
-  // NGDirection that's otherwise identical.
-  NGConstraintSpace(NGWritingMode, NGDirection, const NGConstraintSpace*);
+  // Constructs a constraint space with a new backing NGPhysicalConstraintSpace.
+  // The size will be used for both for the physical constraint space's
+  // container size and this constraint space's Size().
+  // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
+  NGConstraintSpace(NGWritingMode, NGDirection, NGLogicalSize);
 
   // Constructs a derived constraint space sharing the same backing
   // NGPhysicalConstraintSpace, NGWritingMode and NGDirection. Primarily for use
   // by NGLayoutOpportunityIterator.
+  // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
   NGConstraintSpace(const NGConstraintSpace& other,
                     NGLogicalOffset,
                     NGLogicalSize);
@@ -52,6 +49,7 @@ class CORE_EXPORT NGConstraintSpace final
   // input constraint space, but has a different container size, writing mode
   // and direction. Sets the offset to zero. For use by layout algorithms
   // to use as the basis to find layout opportunities for children.
+  // TODO(layout-dev): Remove once NGConstraintSpaceBuilder exists.
   NGConstraintSpace(NGWritingMode,
                     NGDirection,
                     const NGConstraintSpace& other,

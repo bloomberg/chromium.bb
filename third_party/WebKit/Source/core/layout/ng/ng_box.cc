@@ -38,7 +38,8 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     // Change the coordinate system of the constraint space.
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
         FromPlatformWritingMode(Style()->getWritingMode()),
-        FromPlatformDirection(Style()->direction()), constraint_space);
+        FromPlatformDirection(Style()->direction()),
+        constraint_space->MutablePhysicalSpace());
 
     NGPhysicalFragment* fragment = nullptr;
     if (!algorithm_->Layout(child_constraint_space, &fragment))

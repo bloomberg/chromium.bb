@@ -20,8 +20,8 @@ TEST(NGConstraintSpaceTest, WritingMode) {
   horz_space->SetFixedSize(true, false);
   horz_space->SetFragmentationType(FragmentColumn);
 
-  NGConstraintSpace* vert_space =
-      new NGConstraintSpace(VerticalRightLeft, LeftToRight, horz_space);
+  NGConstraintSpace* vert_space = new NGConstraintSpace(
+      VerticalRightLeft, LeftToRight, horz_space->MutablePhysicalSpace());
 
   EXPECT_EQ(LayoutUnit(200), horz_space->ContainerSize().inline_size);
   EXPECT_EQ(LayoutUnit(200), vert_space->ContainerSize().block_size);

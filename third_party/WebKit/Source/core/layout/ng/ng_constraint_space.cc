@@ -13,15 +13,6 @@ namespace blink {
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
-                                     NGLogicalSize container_size)
-    : physical_space_(new NGPhysicalConstraintSpace(
-          container_size.ConvertToPhysical(writing_mode))),
-      size_(container_size),
-      writing_mode_(writing_mode),
-      direction_(direction) {}
-
-NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
-                                     NGDirection direction,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space),
       size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
@@ -30,10 +21,10 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
-                                     const NGConstraintSpace* constraint_space)
-    : physical_space_(constraint_space->MutablePhysicalSpace()),
-      offset_(constraint_space->Offset()),
-      size_(constraint_space->Size()),
+                                     NGLogicalSize container_size)
+    : physical_space_(new NGPhysicalConstraintSpace(
+          container_size.ConvertToPhysical(writing_mode))),
+      size_(container_size),
       writing_mode_(writing_mode),
       direction_(direction) {}
 
