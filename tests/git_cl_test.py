@@ -599,14 +599,14 @@ class TestGitCl(TestCase):
   ]
 
   @staticmethod
-  def _cmd_line(description, args, similarity, find_copies, private):
+  def _cmd_line(description, args, similarity, find_copies, private, cc):
     """Returns the upload command line passed to upload.RealMain()."""
     return [
         'upload', '--assume_yes', '--server',
         'https://codereview.example.com',
         '--message', description
     ] + args + [
-        '--cc', 'joe@example.com',
+        '--cc', ','.join(['joe@example.com'] + cc),
     ] + (['--private'] if private else []) + [
         '--git_similarity', similarity or '50'
     ] + (['--git_no_find_copies'] if find_copies == False else []) + [
@@ -620,7 +620,8 @@ class TestGitCl(TestCase):
       returned_description,
       final_description,
       reviewers,
-      private=False):
+      private=False,
+      cc=None):
     """Generic reviewer test framework."""
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     try:
@@ -636,6 +637,7 @@ class TestGitCl(TestCase):
       find_copies = None
 
     private = '--private' in upload_args
+    cc = cc or []
 
     self.calls = self._upload_calls(similarity, find_copies, private)
 
@@ -653,7 +655,7 @@ class TestGitCl(TestCase):
 
     def check_upload(args):
       cmd_line = self._cmd_line(final_description, reviewers, similarity,
-                                find_copies, private)
+                                find_copies, private, cc)
       self.assertEquals(cmd_line, args)
       return 1, 2
     self.mock(git_cl.upload, 'RealMain', check_upload)
@@ -716,13 +718,15 @@ class TestGitCl(TestCase):
   def test_reviewer_multiple(self):
     # Handles multiple R= or TBR= lines.
     description = (
-        'Foo Bar\nTBR=reviewer@example.com\nBUG=\nR=another@example.com')
+        'Foo Bar\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
+        'CC=more@example.com,people@example.com')
     self._run_reviewer_test(
         [],
         'desc\n\nBUG=',
         description,
         description,
-        ['--reviewers=another@example.com,reviewer@example.com'])
+        ['--reviewers=another@example.com,reviewer@example.com'],
+        cc=['more@example.com', 'people@example.com'])
 
   def test_reviewer_send_mail(self):
     # --send-mail can be used without -r if R= is used
@@ -848,10 +852,11 @@ class TestGitCl(TestCase):
                            squash_mode='default',
                            expected_upstream_ref='origin/refs/heads/master',
                            ref_suffix='', notify=False,
-                           post_amend_description=None, issue=None):
+                           post_amend_description=None, issue=None, cc=None):
     if post_amend_description is None:
       post_amend_description = description
     calls = []
+    cc = cc or []
 
     if squash_mode == 'default':
       calls.extend([
@@ -956,7 +961,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.cc'],), ''),
         ((['AddReviewers', 'chromium-review.googlesource.com',
            123456 if squash else None,
-          ['joe@example.com'], False],), ''),
+          ['joe@example.com'] + cc, False],), ''),
     ]
     calls += cls._git_post_upload_calls()
     return calls
@@ -972,7 +977,8 @@ class TestGitCl(TestCase):
       ref_suffix='',
       notify=False,
       post_amend_description=None,
-      issue=None):
+      issue=None,
+      cc=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -983,6 +989,7 @@ class TestGitCl(TestCase):
         squash_mode = 'default'
 
     reviewers = reviewers or []
+    cc = cc or []
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
@@ -1002,7 +1009,7 @@ class TestGitCl(TestCase):
         expected_upstream_ref=expected_upstream_ref,
         ref_suffix=ref_suffix, notify=notify,
         post_amend_description=post_amend_description,
-        issue=issue)
+        issue=issue, cc=cc)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1058,12 +1065,14 @@ class TestGitCl(TestCase):
   def test_gerrit_reviewer_multiple(self):
     self._run_gerrit_upload_test(
         [],
-        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n\n'
+        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
+        'CC=more@example.com,people@example.com\n\n'
         'Change-Id: 123456789\n',
         ['reviewer@example.com', 'another@example.com'],
         squash=False,
         squash_mode='override_nosquash',
-        ref_suffix='%l=Code-Review+1')
+        ref_suffix='%l=Code-Review+1',
+        cc=['more@example.com', 'people@example.com'])
 
   def test_gerrit_upload_squash_first_is_default(self):
     # Mock Gerrit CL description to indicate the first upload.

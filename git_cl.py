@@ -2125,6 +2125,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       else:
         cc = self.GetCCList()
       cc = ','.join(filter(None, (cc, ','.join(options.cc))))
+      if change_desc.get_cced():
+        cc = ','.join(filter(None, (cc, ','.join(change_desc.get_cced()))))
       if cc:
         upload_args.extend(['--cc', cc])
 
@@ -2772,6 +2774,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if options.cc:
       cc.extend(options.cc)
     cc = filter(None, [email.strip() for email in cc])
+    if change_desc.get_cced():
+      cc.extend(change_desc.get_cced())
     if cc:
       gerrit_util.AddReviewers(
           self._GetGerritHost(), self.GetIssue(), cc, is_reviewer=False)
@@ -2898,6 +2902,7 @@ def _get_bug_line_values(default_project, bugs):
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
+  CC_LINE = r'^[ \t]*(CC)[ \t]*=[ \t]*(.*?)[ \t]*$'
   BUG_LINE = r'^[ \t]*(BUG)[ \t]*=[ \t]*(.*?)[ \t]*$'
 
   def __init__(self, description):
@@ -3044,6 +3049,12 @@ class ChangeDescription(object):
                  for match in matches
                  if match and (not tbr_only or match.group(1).upper() == 'TBR')]
     return cleanup_list(reviewers)
+
+  def get_cced(self):
+    """Retrieves the list of reviewers."""
+    matches = [re.match(self.CC_LINE, line) for line in self._description_lines]
+    cced = [match.group(2).strip() for match in matches if match]
+    return cleanup_list(cced)
 
 
 def get_approving_reviewers(props):
