@@ -535,8 +535,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
           submitted_change_strategies.keys())
 
       action_history = clactions.CLActionHistory(submitted_changes_all_actions)
-      logging.debug('Recording submission metrics about %s CLs to monarch.',
-                    len(submitted_change_strategies))
+      logging.info('Recording submission metrics about %s CLs to monarch.',
+                   len(submitted_change_strategies))
       clactions.RecordSubmissionMetrics(action_history,
                                         submitted_change_strategies)
 
