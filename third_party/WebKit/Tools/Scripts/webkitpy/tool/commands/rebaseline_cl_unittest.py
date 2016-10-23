@@ -91,11 +91,6 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_execute_with_issue_number_given(self):
         self.command.execute(self.command_options(issue=11112222), [], self.tool)
         self.assertLog([
-            'INFO: Tests to rebaseline:\n',
-            'INFO:   fast/dom/prototype-newtest.html: MOCK Try Win (5000)\n',
-            'INFO:   svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-taco.html: MOCK Try Win (5000)\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
@@ -114,11 +109,6 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.command.git_cl = lambda: git_cl
         self.command.execute(self.command_options(), [], self.tool)
         self.assertLog([
-            'INFO: Tests to rebaseline:\n',
-            'INFO:   fast/dom/prototype-newtest.html: MOCK Try Win (5000)\n',
-            'INFO:   svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-taco.html: MOCK Try Win (5000)\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
@@ -131,9 +121,6 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # is in the list of failed tests, but not in the list of files modified
         # in the given CL; it should be included because all_tests is set to True.
         self.assertLog([
-            'INFO: Tests to rebaseline:\n',
-            'INFO:   fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n',
-            'INFO:   fast/dom/prototype-taco.html: MOCK Try Win (5000)\n',
             'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n',
         ])

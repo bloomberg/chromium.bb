@@ -200,7 +200,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if not test_prefix_list:
             _log.info('No tests to rebaseline; exiting.')
             return
-        _log.info('Tests to rebaseline:')
+        _log.debug('Tests to rebaseline:')
         for test, builds in test_prefix_list.iteritems():
-            builds_str = ', '.join(sorted('%s (%s)' % (b.builder_name, b.build_number) for b in builds))
-            _log.info('  %s: %s', test, builds_str)
+            _log.debug('  %s:', test)
+            for build in sorted(builds):
+                _log.debug('    %s', build)
