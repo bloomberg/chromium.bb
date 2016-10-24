@@ -96,10 +96,7 @@ TEST_F(NotificationImageLoaderTest, TimeoutTest) {
   EXPECT_EQ(LoadState::kNotLoaded, loaded());
 
   // Now advance time until a timeout should be expected.
-  // Note: Because of crbug.com/657517, the platform's time doesn't
-  // actually update unless a task runs, so the platform still thinks it's the
-  // start time. To trigger a timeout, we have to advance the full time again.
-  testingPlatform.runForPeriodSeconds(kImageFetchTimeoutInMs / 1000 + 1);
+  testingPlatform.runForPeriodSeconds(2);
 
   // If the loader times out, it calls the callback and returns an empty bitmap.
   EXPECT_EQ(LoadState::kLoadFailed, loaded());
