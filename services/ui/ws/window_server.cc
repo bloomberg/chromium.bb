@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/ws/display.h"
-#include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/gpu_service_proxy.h"
 #include "services/ui/ws/operation.h"

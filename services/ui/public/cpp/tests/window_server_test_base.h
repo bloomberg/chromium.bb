@@ -14,7 +14,6 @@
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/public/interfaces/window_tree_host.mojom.h"
 
 namespace ui {
 
@@ -51,11 +50,6 @@ class WindowServerTestBase
   }
 
  protected:
-  mojom::WindowTreeHost* host() { return host_.get(); }
-  WindowTreeClient* most_recent_client() {
-    return most_recent_client_;
-  }
-
   void set_window_manager_delegate(WindowManagerDelegate* delegate) {
     window_manager_delegate_ = delegate;
   }
@@ -103,13 +97,7 @@ class WindowServerTestBase
   void Create(const service_manager::Identity& remote_identity,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
-  // Used to receive the most recent window tree client loaded by an embed
-  // action.
-  WindowTreeClient* most_recent_client_;
-
  private:
-  mojom::WindowTreeHostPtr host_;
-
   std::set<std::unique_ptr<WindowTreeClient>> window_tree_clients_;
 
   // The window server connection held by the window manager (app running at

@@ -11,7 +11,10 @@
       "requires": {
         "*": [ "app" ],
         "service:mus_ws_unittests_app": [ "ui:window_tree_client" ],
-        "service:ui": [ "ui:window_tree_host_factory" ]
+        "service:ui": [
+          "ui:window_tree_host_factory",
+          "ui:window_manager"
+        ]
       }
     }
   }

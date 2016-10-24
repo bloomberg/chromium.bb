@@ -16,7 +16,6 @@
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/display.h"
-#include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_init_params.h"

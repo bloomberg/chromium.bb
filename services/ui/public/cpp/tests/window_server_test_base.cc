@@ -14,7 +14,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
-#include "services/ui/public/cpp/window_tree_host_factory.h"
 
 namespace ui {
 namespace {
@@ -30,8 +29,7 @@ void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
 }  // namespace
 
 WindowServerTestBase::WindowServerTestBase()
-    : most_recent_client_(nullptr),
-      window_manager_(nullptr),
+    : window_manager_(nullptr),
       window_manager_delegate_(nullptr),
       window_manager_client_(nullptr) {}
 
@@ -82,7 +80,8 @@ void WindowServerTestBase::SetUp() {
   WindowServerServiceTestBase::SetUp();
 
   std::unique_ptr<WindowTreeClient> window_manager_window_tree_client =
-      CreateWindowTreeHost(connector(), this, &host_, this);
+      base::MakeUnique<WindowTreeClient>(this, this);
+  window_manager_window_tree_client->ConnectAsWindowManager(connector());
   window_manager_ = window_manager_window_tree_client.get();
   window_tree_clients_.insert(std::move(window_manager_window_tree_client));
 
@@ -97,10 +96,7 @@ bool WindowServerTestBase::OnConnect(
 }
 
 void WindowServerTestBase::OnEmbed(Window* root) {
-  most_recent_client_ = root->window_tree();
   EXPECT_TRUE(QuitRunLoop());
-  ASSERT_TRUE(window_manager_client_);
-  window_manager_client_->AddActivationParent(root);
 }
 
 void WindowServerTestBase::OnLostConnection(WindowTreeClient* client) {
@@ -150,6 +146,10 @@ void WindowServerTestBase::OnWmClientJankinessChanged(
 
 void WindowServerTestBase::OnWmNewDisplay(Window* window,
                                           const display::Display& display) {
+  EXPECT_TRUE(QuitRunLoop());
+  ASSERT_TRUE(window_manager_client_);
+  window_manager_client_->AddActivationParent(window);
+
   if (window_manager_delegate_)
     window_manager_delegate_->OnWmNewDisplay(window, display);
 }
