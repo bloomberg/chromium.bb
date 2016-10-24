@@ -8,7 +8,6 @@
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebString.h"
 #include "wtf/RefPtr.h"
@@ -73,12 +72,6 @@ void ServiceWorkerClient::postMessage(ExecutionContext* context,
       MessagePort::disentanglePorts(context, ports, exceptionState);
   if (exceptionState.hadException())
     return;
-
-  if (message->containsTransferableArrayBuffer())
-    context->addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, WarningMessageLevel,
-        "ServiceWorkerClient cannot send an ArrayBuffer as a transferable "
-        "object yet. See http://crbug.com/511119"));
 
   WebString messageString = message->toWireString();
   std::unique_ptr<WebMessagePortChannelArray> webChannels =

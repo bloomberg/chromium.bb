@@ -64,6 +64,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                    const MessagePortArray&,
                    ExceptionState&);
 
+  static bool canTransferArrayBuffer() { return true; }
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   DedicatedWorkerThread* thread() const;

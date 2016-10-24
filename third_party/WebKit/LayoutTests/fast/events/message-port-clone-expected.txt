@@ -1,5 +1,3 @@
-CONSOLE WARNING: line 32: MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408
-CONSOLE WARNING: line 41: MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408
 Tests various use cases when cloning MessagePorts.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

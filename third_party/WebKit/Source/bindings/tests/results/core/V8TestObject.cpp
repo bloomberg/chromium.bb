@@ -67,6 +67,7 @@
 #include "bindings/core/v8/VoidCallbackFunction.h"
 #include "core/HTMLNames.h"
 #include "core/dom/ClassCollection.h"
+#include "core/dom/DOMArrayBufferBase.h"
 #include "core/dom/Document.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/dom/TagCollection.h"
@@ -11535,6 +11536,7 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         return;
     }
+
     Transferables transferables;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
@@ -11542,9 +11544,34 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
-    if (exceptionState.hadException())
-        return;
+
+    RefPtr<SerializedScriptValue> message;
+    if (instance->canTransferArrayBuffer()) {
+        // This instance supports sending array buffers by move semantics.
+        message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    } else {
+        // This instance doesn't support sending array buffers by move
+        // semantics. Emulate it by copy-and-neuter semantics that sends array
+        // buffers by copy semantics and then neuters the original array
+        // buffers.
+
+        // Clear references to array buffers from transferables so that the
+        // serializer can consider the array buffers as non-transferable and
+        // copy them into the message.
+        ArrayBufferArray transferableArrayBuffers = transferables.arrayBuffers;
+        transferables.arrayBuffers.clear();
+        message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
+        if (exceptionState.hadException())
+            return;
+
+        // Neuter the original array buffers on the sender context.
+        SerializedScriptValue::transferArrayBufferContents(info.GetIsolate(), transferableArrayBuffers, exceptionState);
+        if (exceptionState.hadException())
+            return;
+    }
+
     // FIXME: Only pass context/exceptionState if instance really requires it.
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     instance->postMessage(context, message.release(), transferables.messagePorts, exceptionState);

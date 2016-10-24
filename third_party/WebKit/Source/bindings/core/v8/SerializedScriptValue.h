@@ -114,15 +114,20 @@ class CORE_EXPORT SerializedScriptValue
                                    Transferables&,
                                    ExceptionState&);
 
+  // Helper function which pulls ArrayBufferContents out of an ArrayBufferArray
+  // and neuters the ArrayBufferArray.  Returns nullptr if there is an
+  // exception.
+  static std::unique_ptr<ArrayBufferContentsArray> transferArrayBufferContents(
+      v8::Isolate*,
+      const ArrayBufferArray&,
+      ExceptionState&);
+
   // Informs the V8 about external memory allocated and owned by this object.
   // Large values should contribute to GC counters to eventually trigger a GC,
   // otherwise flood of postMessage() can cause OOM.
   // Ok to invoke multiple times (only adds memory once).
   // The memory registration is revoked automatically in destructor.
   void registerMemoryAllocatedWithCurrentScriptContext();
-
-  // Returns true if the value contains a transferable ArrayBuffer.
-  bool containsTransferableArrayBuffer() const;
 
   String& data() { return m_data; }
   BlobDataHandleMap& blobDataHandles() { return m_blobDataHandles; }

@@ -44,6 +44,8 @@ class MODULES_EXPORT ServiceWorkerClient
                    const MessagePortArray&,
                    ExceptionState&);
 
+  static bool canTransferArrayBuffer() { return false; }
+
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:

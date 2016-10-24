@@ -65,6 +65,7 @@ class MODULES_EXPORT ServiceWorker final : public AbstractWorker,
                    PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
+  static bool canTransferArrayBuffer() { return false; }
 
   String scriptURL() const;
   String state() const;

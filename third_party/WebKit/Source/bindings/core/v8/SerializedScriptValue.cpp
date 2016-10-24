@@ -149,7 +149,7 @@ void SerializedScriptValue::toWireBytes(Vector<char>& result) const {
   }
 }
 
-static void acculumateArrayBuffersForAllWorlds(
+static void accumulateArrayBuffersForAllWorlds(
     v8::Isolate* isolate,
     DOMArrayBuffer* object,
     Vector<v8::Local<v8::ArrayBuffer>, 4>& buffers) {
@@ -230,64 +230,8 @@ void SerializedScriptValue::transferArrayBuffers(
     v8::Isolate* isolate,
     const ArrayBufferArray& arrayBuffers,
     ExceptionState& exceptionState) {
-  if (!arrayBuffers.size())
-    return;
-
-  for (size_t i = 0; i < arrayBuffers.size(); ++i) {
-    if (arrayBuffers[i]->isNeutered()) {
-      exceptionState.throwDOMException(
-          DataCloneError, "ArrayBuffer at index " + String::number(i) +
-                              " is already neutered.");
-      return;
-    }
-  }
-
-  std::unique_ptr<ArrayBufferContentsArray> contents =
-      wrapUnique(new ArrayBufferContentsArray(arrayBuffers.size()));
-
-  HeapHashSet<Member<DOMArrayBufferBase>> visited;
-  for (size_t i = 0; i < arrayBuffers.size(); ++i) {
-    if (visited.contains(arrayBuffers[i]))
-      continue;
-    visited.add(arrayBuffers[i]);
-
-    if (arrayBuffers[i]->isShared()) {
-      bool result = arrayBuffers[i]->shareContentsWith(contents->at(i));
-      if (!result) {
-        exceptionState.throwDOMException(
-            DataCloneError, "SharedArrayBuffer at index " + String::number(i) +
-                                " could not be transferred.");
-        return;
-      }
-    } else {
-      Vector<v8::Local<v8::ArrayBuffer>, 4> bufferHandles;
-      v8::HandleScope handleScope(isolate);
-      acculumateArrayBuffersForAllWorlds(
-          isolate, static_cast<DOMArrayBuffer*>(arrayBuffers[i].get()),
-          bufferHandles);
-      bool isNeuterable = true;
-      for (size_t j = 0; j < bufferHandles.size(); ++j)
-        isNeuterable &= bufferHandles[j]->IsNeuterable();
-
-      DOMArrayBufferBase* toTransfer = arrayBuffers[i];
-      if (!isNeuterable)
-        toTransfer =
-            DOMArrayBuffer::create(arrayBuffers[i]->buffer()->data(),
-                                   arrayBuffers[i]->buffer()->byteLength());
-      bool result = toTransfer->transfer(contents->at(i));
-      if (!result) {
-        exceptionState.throwDOMException(
-            DataCloneError, "ArrayBuffer at index " + String::number(i) +
-                                " could not be transferred.");
-        return;
-      }
-
-      if (isNeuterable)
-        for (size_t j = 0; j < bufferHandles.size(); ++j)
-          bufferHandles[j]->Neuter();
-    }
-  }
-  m_arrayBufferContentsArray = std::move(contents);
+  m_arrayBufferContentsArray =
+      transferArrayBufferContents(isolate, arrayBuffers, exceptionState);
 }
 
 v8::Local<v8::Value> SerializedScriptValue::deserialize(
@@ -402,16 +346,80 @@ bool SerializedScriptValue::extractTransferables(
   return true;
 }
 
+std::unique_ptr<ArrayBufferContentsArray>
+SerializedScriptValue::transferArrayBufferContents(
+    v8::Isolate* isolate,
+    const ArrayBufferArray& arrayBuffers,
+    ExceptionState& exceptionState) {
+  if (!arrayBuffers.size())
+    return nullptr;
+
+  for (auto it = arrayBuffers.begin(); it != arrayBuffers.end(); ++it) {
+    DOMArrayBufferBase* arrayBuffer = *it;
+    if (arrayBuffer->isNeutered()) {
+      size_t index = std::distance(arrayBuffers.begin(), it);
+      exceptionState.throwDOMException(
+          DataCloneError, "ArrayBuffer at index " + String::number(index) +
+                              " is already neutered.");
+      return nullptr;
+    }
+  }
+
+  std::unique_ptr<ArrayBufferContentsArray> contents =
+      wrapUnique(new ArrayBufferContentsArray(arrayBuffers.size()));
+
+  HeapHashSet<Member<DOMArrayBufferBase>> visited;
+  for (auto it = arrayBuffers.begin(); it != arrayBuffers.end(); ++it) {
+    DOMArrayBufferBase* arrayBuffer = *it;
+    if (visited.contains(arrayBuffer))
+      continue;
+    visited.add(arrayBuffer);
+
+    size_t index = std::distance(arrayBuffers.begin(), it);
+    if (arrayBuffer->isShared()) {
+      if (!arrayBuffer->shareContentsWith(contents->at(index))) {
+        exceptionState.throwDOMException(DataCloneError,
+                                         "SharedArrayBuffer at index " +
+                                             String::number(index) +
+                                             " could not be transferred.");
+        return nullptr;
+      }
+    } else {
+      Vector<v8::Local<v8::ArrayBuffer>, 4> bufferHandles;
+      v8::HandleScope handleScope(isolate);
+      accumulateArrayBuffersForAllWorlds(
+          isolate, static_cast<DOMArrayBuffer*>(it->get()), bufferHandles);
+      bool isNeuterable = true;
+      for (const auto& bufferHandle : bufferHandles)
+        isNeuterable &= bufferHandle->IsNeuterable();
+
+      DOMArrayBufferBase* toTransfer = arrayBuffer;
+      if (!isNeuterable) {
+        toTransfer = DOMArrayBuffer::create(
+            arrayBuffer->buffer()->data(), arrayBuffer->buffer()->byteLength());
+      }
+      if (!toTransfer->transfer(contents->at(index))) {
+        exceptionState.throwDOMException(
+            DataCloneError, "ArrayBuffer at index " + String::number(index) +
+                                " could not be transferred.");
+        return nullptr;
+      }
+
+      if (isNeuterable) {
+        for (const auto& bufferHandle : bufferHandles)
+          bufferHandle->Neuter();
+      }
+    }
+  }
+  return contents;
+}
+
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext() {
   if (m_externallyAllocatedMemory)
     return;
   m_externallyAllocatedMemory = static_cast<intptr_t>(m_data.length());
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       m_externallyAllocatedMemory);
-}
-
-bool SerializedScriptValue::containsTransferableArrayBuffer() const {
-  return m_arrayBufferContentsArray && !m_arrayBufferContentsArray->isEmpty();
 }
 
 }  // namespace blink
