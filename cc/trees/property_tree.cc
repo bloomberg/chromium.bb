@@ -424,9 +424,15 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
   gfx::ScrollOffset scroll_offset =
       tree->property_trees()->scroll_tree.current_scroll_offset(
           scroll_node->owner_id);
+  gfx::PointF scroll_position(scroll_offset.x(), scroll_offset.y());
+  // The scroll position does not include snapping which shifts the scroll
+  // offset to align to a pixel boundary, we need to manually include it here.
+  scroll_position -= tree->property_trees()
+                         ->transform_tree.Node(scroll_node->transform_id)
+                         ->scroll_snap;
 
   gfx::RectF clip(
-      gfx::PointF(scroll_offset.x(), scroll_offset.y()),
+      scroll_position,
       gfx::SizeF(tree->property_trees()->scroll_tree.scroll_clip_layer_bounds(
           scroll_node->id)));
   gfx::Vector2dF sticky_offset(

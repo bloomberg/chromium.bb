@@ -6861,6 +6861,52 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionTop) {
       sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
 }
 
+TEST_F(LayerTreeHostCommonTest, StickyPositionSubpixelScroll) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> container = Layer::Create();
+  scoped_refptr<Layer> scroller = Layer::Create();
+  scoped_refptr<Layer> sticky_pos = Layer::Create();
+  root->AddChild(container);
+  container->AddChild(scroller);
+  scroller->AddChild(sticky_pos);
+  host()->SetRootLayer(root);
+  scroller->SetScrollClipLayerId(container->id());
+
+  LayerStickyPositionConstraint sticky_position;
+  sticky_position.is_sticky = true;
+  sticky_position.is_anchored_bottom = true;
+  sticky_position.bottom_offset = 10.0f;
+  sticky_position.parent_relative_sticky_box_offset = gfx::Point(0, 200);
+  sticky_position.scroll_container_relative_sticky_box_rect =
+      gfx::Rect(0, 200, 10, 10);
+  sticky_position.scroll_container_relative_containing_block_rect =
+      gfx::Rect(0, 0, 100, 500);
+  sticky_pos->SetStickyPositionConstraint(sticky_position);
+
+  root->SetBounds(gfx::Size(100, 100));
+  container->SetBounds(gfx::Size(100, 100));
+  scroller->SetBounds(gfx::Size(100, 1000));
+  sticky_pos->SetBounds(gfx::Size(10, 10));
+  sticky_pos->SetPosition(gfx::PointF(0, 200));
+
+  ExecuteCalculateDrawProperties(root.get());
+  host()->host_impl()->CreatePendingTree();
+  host()->CommitAndCreatePendingTree();
+  host()->host_impl()->ActivateSyncTree();
+  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
+
+  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
+  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
+  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
+
+  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 0.8f));
+  ExecuteCalculateDrawProperties(root_impl);
+  EXPECT_VECTOR2DF_EQ(
+      gfx::Vector2dF(0.f, 80.f),
+      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+}
+
 TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> container = Layer::Create();
