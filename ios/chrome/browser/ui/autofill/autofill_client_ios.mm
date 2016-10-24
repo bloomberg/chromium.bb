@@ -56,9 +56,8 @@ PrefService* AutofillClientIOS::GetPrefs() {
   return browser_state_->GetPrefs();
 }
 
-// TODO(jdonnelly): Implement this when adding credit card upload.
+// TODO(crbug.com/535784): Implement this when adding credit card upload.
 syncer::SyncService* AutofillClientIOS::GetSyncService() {
-  NOTIMPLEMENTED();
   return nullptr;
 }
 
