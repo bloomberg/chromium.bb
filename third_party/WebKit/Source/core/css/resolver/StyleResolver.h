@@ -223,7 +223,8 @@ class CORE_EXPORT StyleResolver final
                      ElementRuleCollector&,
                      bool includeSMILProperties);
   void collectFeatures();
-  void collectTreeBoundaryCrossingRules(const Element&, ElementRuleCollector&);
+  void collectTreeBoundaryCrossingRulesV0CascadeOrder(const Element&,
+                                                      ElementRuleCollector&);
 
   void applyMatchedProperties(StyleResolverState&, const MatchResult&);
   bool applyAnimatedProperties(StyleResolverState&,

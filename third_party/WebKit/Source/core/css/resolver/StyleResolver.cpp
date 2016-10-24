@@ -594,7 +594,7 @@ void StyleResolver::matchAuthorRulesV0(const Element& element,
 
   // Apply /deep/ and ::shadow rules from outer scopes, and ::content from
   // inner.
-  collectTreeBoundaryCrossingRules(element, collector);
+  collectTreeBoundaryCrossingRulesV0CascadeOrder(element, collector);
   collector.sortAndTransferMatchedRules();
 }
 
@@ -684,7 +684,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state,
   collector.finishAddingAuthorRulesForTreeScope();
 }
 
-void StyleResolver::collectTreeBoundaryCrossingRules(
+void StyleResolver::collectTreeBoundaryCrossingRulesV0CascadeOrder(
     const Element& element,
     ElementRuleCollector& collector) {
   if (m_treeBoundaryCrossingScopes.isEmpty())
