@@ -4,7 +4,7 @@
 #ifndef {{namespace}}ElementTypeHelpers_h
 #define {{namespace}}ElementTypeHelpers_h
 
-#include "core/dom/Element.h"
+#include "core/{{namespace|lower}}/{{namespace}}Element.h"
 #include "{{namespace}}Names.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -35,6 +35,22 @@ template <> inline bool isElementOfType<const {{tag.interface}}>(const {{namespa
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 #define to{{tag.interface}}(x) blink::toElement<blink::{{tag.interface}}>(x)
 {% endfor %}
+
+{% if namespace == "HTML" %}
+
+enum class HTMLElementType {
+  {% for element in elements|sort %}    k{{element}},
+  {% endfor %}
+};
+
+// Tag checking.
+// tagName is the local name for an html element in lowercase
+// The corresponding HTMLElement type for the tag name will be returned
+// Do NOT use this function with SVG tag names and SVGElements
+// If tagName is an undefined html tag name HTMLUnknownElement is returned
+HTMLElementType htmlElementTypeForTag(const AtomicString& tagName);
+
+{% endif %}
 } // namespace blink
 
 #endif
