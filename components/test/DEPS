@@ -10,7 +10,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "run_all_unittests\.cc": [
+  "components_test_suite\.cc": [
     "+mojo/edk/embedder/embedder.h",
   ],
 }

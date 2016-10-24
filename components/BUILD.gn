@@ -56,7 +56,6 @@ test("components_unittests") {
 
   deps = [
     "//base",
-    "//base/test:test_support",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
     "//components/base32:unit_tests",
@@ -133,6 +132,7 @@ test("components_unittests") {
     "//components/sync_bookmarks:unit_tests",
     "//components/sync_sessions:unit_tests",
     "//components/syncable_prefs:unit_tests",
+    "//components/test:test_support",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
     "//components/translate/core/language_detection:unit_tests",
@@ -146,14 +146,6 @@ test("components_unittests") {
     "//components/variations/service:unit_tests",
     "//components/web_resource:unit_tests",
     "//components/webdata/common:unit_tests",
-
-    # Direct dependencies of components/test/run_all_unittests.cc.
-    "//components/content_settings/core/common",
-    "//mojo/edk/system",
-    "//net",
-    "//testing/gtest",
-    "//ui/base",
-    "//ui/resources:ui_test_pak",
   ]
 
   if (enable_nacl) {
@@ -207,11 +199,6 @@ test("components_unittests") {
       "//components/web_cache/browser:unit_tests",
       "//components/webcrypto:unit_tests",
       "//components/zoom:unit_tests",
-
-      # These are the deps required by the code in this target.
-      "//components/policy/core/browser",
-      "//content/test:test_support",
-      "//ui/gl:test_support",
     ]
 
     data_deps = [
@@ -475,6 +462,7 @@ if (!is_ios) {
 
   test("components_perftests") {
     sources = [
+      "test/run_all_perftests.cc",
       "visitedlink/test/visitedlink_perftest.cc",
     ]
 
@@ -483,11 +471,8 @@ if (!is_ios) {
 
     deps = [
       "//base",
-      "//base/test:test_support",
+      "//components/test:test_support",
       "//components/visitedlink/browser",
-      "//content/test:test_support",
-      "//mojo/edk/test:run_all_perftests",
-      "//testing/gtest",
       "//testing/perf",
       "//url",
     ]
