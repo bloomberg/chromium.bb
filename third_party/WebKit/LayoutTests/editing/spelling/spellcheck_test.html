@@ -1,0 +1,35 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
+
+<script>
+// This file tests the functionality of spellcheck_test.js
+
+test(
+    () => spellingMarker(0, 1, 'description').assertValid(),
+    'spellingMarker returns valid Marker.');
+
+test(
+    () => grammarMarker(0, 1, 'description').assertValid(),
+    'grammarMarker returns valid Marker.');
+
+spellcheck_test(
+    '<div contentEditable>|</div>',
+    'insertText wellcome.',
+    spellingMarker(0, 8, 'welcome'), // 'wellcome'
+    'Mark misspellings and give replacement suggestions after typing.');
+
+spellcheck_test(
+    '<div contentEditable>|</div>',
+    'insertText zz zz.',
+    [spellingMarker(0, 2), spellingMarker(3, 2)], // Both 'zz's
+    'Mark multiple misspellings after typing.');
+
+spellcheck_test(
+    '<div contentEditable>|</div>',
+    'insertText You has the right.',
+    grammarMarker(4, 3), // 'has'
+    'Mark ungrammatical phrases after typing.');
+</script>
