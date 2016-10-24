@@ -74,6 +74,14 @@ void BroadcastChannel::postMessage(const ScriptValue& message,
 }
 
 void BroadcastChannel::close() {
+  if (!Platform::current()) {
+    // TODO(rockot): Remove this hack once renderer shutdown sequence is fixed.
+    // Note that reaching this code indicates that the MessageLoop has already
+    // been torn down, so it's impossible for further incoming messages to be
+    // dispatched on |m_binding| or reply callbacks to be invoked from
+    // |m_remoteClient|.
+    return;
+  }
   m_remoteClient.reset();
   if (m_binding.is_bound())
     m_binding.Close();
