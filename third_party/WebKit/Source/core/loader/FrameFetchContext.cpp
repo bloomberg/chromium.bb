@@ -248,8 +248,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
 
   if (frame()->settings() && frame()->settings()->dataSaverEnabled())
     request.setHTTPHeaderField("Save-Data", "on");
-
-  frame()->loader().applyUserAgent(request);
 }
 
 CachePolicy FrameFetchContext::getCachePolicy() const {
