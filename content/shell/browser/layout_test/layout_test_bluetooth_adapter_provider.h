@@ -295,11 +295,32 @@ class LayoutTestBluetoothAdapterProvider {
   //           GetGenericAccessService.
   //         - Heart Rate Service - Characteristics as described in
   //           GetHeartRateService.
-  //         - Request Disconnection Service:
-  //           - Request Disconnection Characteristic - A write will cause the
-  //             device to disconnect.
+  //         - Request Disconnection Service: - Characteristics as described in
+  //           GetDisconnectingService
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetDisconnectingHeartRateAdapter();
+
+  // |DisconnectingHealthThermometerAdapter|
+  // Inherits from |EmptyAdapter|
+  // Internal Structure:
+  //  - Disconnecting Health Thermometer Device
+  //    - UUIDs:
+  //       - Generic Access UUID (0x1800)
+  //       - Health Thermometer UUID (0x1809)
+  //    - Services:
+  //       - Generic Access Service - Characteristics as described in
+  //         GetGenericAccessService.
+  //       - Request Disconnection Service: - Characteristics as described in
+  //         GetDisconnectingService
+  //       - Health Thermometer:
+  //         - Measurement Interval (0x2a21):
+  //           - Read: Calls GattCharacteristicValueChanged and success
+  //               callback with [1].
+  //           - GetProperties: Returns
+  //               BluetoothRemoteGattCharacteristic::PROPERTY_READ
+  // TODO(crbug.com/608538): Mock Write and StartNotifySession.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetDisconnectingHealthThermometer();
 
   // |ServicesDiscoveredAfterReconnectionAdapter|(disconnect)
   // Inherits from |HeartRateAdapter|
@@ -439,6 +460,8 @@ class LayoutTestBluetoothAdapterProvider {
   //          - ErrorCharacteristic(
   //              BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED)
   //              errorUUID(0xA8)
+  //      - Request Disconnection Service: - Characteristics as described in
+  //          GetDisconnectingService
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetFailingGATTOperationsAdapter();
 
@@ -651,6 +674,16 @@ class LayoutTestBluetoothAdapterProvider {
   static std::unique_ptr<testing::NiceMock<device::MockBluetoothGattService>>
   GetHeartRateService(device::MockBluetoothAdapter* adapter,
                       device::MockBluetoothDevice* device);
+
+  // |DisconnectingService|
+  // Internal Structure:
+  //  - Characteristics:
+  //     - Request Disconnection Characteristic (
+  //         01d7d889-7451-419f-aeb8-d65e7b9277af)
+  //       - Write: Sets the device to disconnected and calls DeviceChanged.
+  static std::unique_ptr<testing::NiceMock<device::MockBluetoothGattService>>
+  GetDisconnectingService(device::MockBluetoothAdapter* adapter,
+                          device::MockBluetoothDevice* device);
 
   // Characteristics
 

@@ -67,6 +67,7 @@ const char kBlacklistTestServiceUUID[] = "611c954a-263b-4f4a-aab6-01ddb953f985";
 const char kDeviceInformationServiceUUID[] = "180a";
 const char kGenericAccessServiceUUID[] = "1800";
 const char kGlucoseServiceUUID[] = "1808";
+const char kHealthThermometerUUID[] = "1809";
 const char kHeartRateServiceUUID[] = "180d";
 const char kHumanInterfaceDeviceServiceUUID[] = "1812";
 const char kRequestDisconnectionServiceUUID[] =
@@ -79,6 +80,7 @@ const char kRequestDisconnectionCharacteristicUUID[] =
     "01d7d88a-7451-419f-aeb8-d65e7b9277af";
 const char kBodySensorLocation[] = "2a38";
 const char kDeviceNameUUID[] = "2a00";
+const char kMeasurementIntervalUUID[] = "2a21";
 const char kHeartRateMeasurementUUID[] = "2a37";
 const char kSerialNumberStringUUID[] = "2a25";
 const char kPeripheralPrivacyFlagUUID[] = "2a02";
@@ -183,6 +185,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetTwoHeartRateServicesAdapter();
   if (fake_adapter_name == "DisconnectingHeartRateAdapter")
     return GetDisconnectingHeartRateAdapter();
+  if (fake_adapter_name == "DisconnectingHealthThermometerAdapter")
+    return GetDisconnectingHealthThermometer();
   if (fake_adapter_name == "DisconnectingDuringServiceRetrievalAdapter")
     return GetServicesDiscoveredAfterReconnectionAdapter(true /* disconnect */);
   if (fake_adapter_name == "ServicesDiscoveredAfterReconnectionAdapter")
@@ -618,6 +622,53 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateAdapter() {
 
 // static
 scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+  NiceMockBluetoothAdapter* adapter_ptr = adapter.get();
+
+  std::unique_ptr<NiceMockBluetoothDevice> device(GetConnectableDevice(
+      adapter_ptr, "Disconnecting Health Thermometer",
+      std::vector<BluetoothUUID>({BluetoothUUID(kGenericAccessServiceUUID),
+                                  BluetoothUUID(kHealthThermometerUUID)})));
+
+  device->AddMockService(GetGenericAccessService(device.get()));
+  device->AddMockService(GetDisconnectingService(adapter.get(), device.get()));
+
+  std::unique_ptr<NiceMockBluetoothGattService> health_thermometer(
+      GetBaseGATTService("Health Thermometer", device.get(),
+                         kHealthThermometerUUID));
+
+  // Measurement Interval
+  std::unique_ptr<NiceMockBluetoothGattCharacteristic> measurement_interval(
+      GetBaseGATTCharacteristic(
+          "Measurement Interval", health_thermometer.get(),
+          kMeasurementIntervalUUID,
+          BluetoothRemoteGattCharacteristic::PROPERTY_READ));
+  NiceMockBluetoothGattCharacteristic* measurement_ptr =
+      measurement_interval.get();
+
+  ON_CALL(*measurement_interval, ReadRemoteCharacteristic(_, _))
+      .WillByDefault(RunCallbackWithResult<0 /* success_callback */>(
+          [adapter_ptr, measurement_ptr]() {
+            std::vector<uint8_t> interval({1});
+            for (auto& observer : adapter_ptr->GetObservers()) {
+              observer.GattCharacteristicValueChanged(
+                  adapter_ptr, measurement_ptr, interval);
+            }
+            return interval;
+          }));
+  // TODO(crbug.com/608538): Mock Write and StartNotifySession.
+
+  health_thermometer->AddMockCharacteristic(std::move(measurement_interval));
+  device->AddMockService(std::move(health_thermometer));
+
+  adapter->AddMockDevice(std::move(device));
+
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetEmptyNameHeartRateAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
   std::unique_ptr<NiceMockBluetoothDevice> device(
@@ -710,40 +761,16 @@ LayoutTestBluetoothAdapterProvider::GetTwoHeartRateServicesAdapter() {
 scoped_refptr<NiceMockBluetoothAdapter>
 LayoutTestBluetoothAdapterProvider::GetDisconnectingHeartRateAdapter() {
   scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
-  NiceMockBluetoothAdapter* adapter_ptr = adapter.get();
   std::unique_ptr<NiceMockBluetoothDevice> device(
       GetHeartRateDevice(adapter.get()));
-  NiceMockBluetoothDevice* device_ptr = device.get();
 
   // TODO(ortuno): Implement the rest of the service's characteristics
   // See: http://crbug.com/529975
 
   device->AddMockService(GetGenericAccessService(device.get()));
   device->AddMockService(GetHeartRateService(adapter.get(), device.get()));
+  device->AddMockService(GetDisconnectingService(adapter.get(), device.get()));
 
-  // Set up a service and a characteristic to disconnect the device when it's
-  // written to.
-  std::unique_ptr<NiceMockBluetoothGattService> disconnection_service =
-      GetBaseGATTService("Disconnection", device_ptr,
-                         kRequestDisconnectionServiceUUID);
-  std::unique_ptr<NiceMockBluetoothGattCharacteristic>
-      disconnection_characteristic(GetBaseGATTCharacteristic(
-          "Disconnection Characteristic", disconnection_service.get(),
-          kRequestDisconnectionCharacteristicUUID,
-          BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
-  ON_CALL(*disconnection_characteristic, WriteRemoteCharacteristic(_, _, _))
-      .WillByDefault(Invoke([adapter_ptr, device_ptr](
-          const std::vector<uint8_t>& value, const base::Closure& success,
-          const BluetoothRemoteGattCharacteristic::ErrorCallback& error) {
-        device_ptr->SetConnected(false);
-        for (auto& observer : adapter_ptr->GetObservers())
-          observer.DeviceChanged(adapter_ptr, device_ptr);
-        success.Run();
-      }));
-
-  disconnection_service->AddMockCharacteristic(
-      std::move(disconnection_characteristic));
-  device->AddMockService(std::move(disconnection_service));
   adapter->AddMockDevice(std::move(device));
 
   return adapter;
@@ -868,6 +895,8 @@ LayoutTestBluetoothAdapterProvider::GetFailingGATTOperationsAdapter() {
 
   std::unique_ptr<NiceMockBluetoothDevice> device(
       GetConnectableDevice(adapter.get(), "Errors Device", uuids));
+
+  device->AddMockService(GetDisconnectingService(adapter.get(), device.get()));
 
   std::unique_ptr<NiceMockBluetoothGattService> service(
       GetBaseGATTService("Errors Service", device.get(), errorsServiceUUID));
@@ -1242,6 +1271,36 @@ LayoutTestBluetoothAdapterProvider::GetHeartRateService(
   heart_rate->AddMockCharacteristic(std::move(body_sensor_location_wrist));
 
   return heart_rate;
+}
+
+// static
+std::unique_ptr<NiceMockBluetoothGattService>
+LayoutTestBluetoothAdapterProvider::GetDisconnectingService(
+    MockBluetoothAdapter* adapter,
+    MockBluetoothDevice* device) {
+  // Set up a service and a characteristic to disconnect the device when it's
+  // written to.
+  std::unique_ptr<NiceMockBluetoothGattService> disconnection_service =
+      GetBaseGATTService("Disconnection", device,
+                         kRequestDisconnectionServiceUUID);
+  std::unique_ptr<NiceMockBluetoothGattCharacteristic>
+      disconnection_characteristic(GetBaseGATTCharacteristic(
+          "Disconnection Characteristic", disconnection_service.get(),
+          kRequestDisconnectionCharacteristicUUID,
+          BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+  ON_CALL(*disconnection_characteristic, WriteRemoteCharacteristic(_, _, _))
+      .WillByDefault(Invoke([adapter, device](
+          const std::vector<uint8_t>& value, const base::Closure& success,
+          const BluetoothRemoteGattCharacteristic::ErrorCallback& error) {
+        device->SetConnected(false);
+        for (auto& observer : adapter->GetObservers())
+          observer.DeviceChanged(adapter, device);
+        success.Run();
+      }));
+
+  disconnection_service->AddMockCharacteristic(
+      std::move(disconnection_characteristic));
+  return disconnection_service;
 }
 
 // Characteristics

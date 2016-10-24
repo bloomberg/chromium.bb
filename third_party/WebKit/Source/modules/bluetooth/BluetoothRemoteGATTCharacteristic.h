@@ -96,6 +96,10 @@ class BluetoothRemoteGATTCharacteristic final
                           RegisteredEventListener&) override;
 
  private:
+  friend class ReadValueCallback;
+
+  BluetoothRemoteGATTServer* gatt() { return m_service->device()->gatt(); }
+
   std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;
   Member<BluetoothRemoteGATTService> m_service;
   bool m_stopped;
