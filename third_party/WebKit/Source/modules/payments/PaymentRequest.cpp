@@ -229,29 +229,26 @@ void validateDisplayItems(const HeapVector<PaymentItem>& items,
   }
 }
 
-// Returns false if |options| should be ignored, even if an exception was not
-// thrown. TODO(rouslan): Clear shipping options instead of ignoring them when
-// http://crbug.com/601193 is fixed.
-bool validateShippingOptions(const HeapVector<PaymentShippingOption>& options,
+void validateShippingOptions(HeapVector<PaymentShippingOption>& options,
                              ExceptionState& exceptionState) {
   HashSet<String> uniqueIds;
   for (const auto& option : options) {
     if (!option.hasId() || option.id().isEmpty()) {
       exceptionState.throwTypeError("ShippingOption id required");
-      return false;
+      return;
     }
 
-    if (uniqueIds.contains(option.id()))
-      return false;
+    if (uniqueIds.contains(option.id())) {
+      options.clear();
+      return;
+    }
 
     uniqueIds.add(option.id());
 
     validateShippingOptionOrPaymentItem(option, exceptionState);
     if (exceptionState.hadException())
-      return false;
+      return;
   }
-
-  return true;
 }
 
 void validatePaymentDetailsModifiers(
@@ -300,43 +297,41 @@ void validatePaymentDetailsModifiers(
   }
 }
 
-// Returns false if the shipping options should be ignored without throwing an
-// exception.
-bool validatePaymentDetails(const PaymentDetails& details,
+void validatePaymentDetails(PaymentDetails& details,
                             ExceptionState& exceptionState) {
-  bool keepShippingOptions = true;
   if (!details.hasTotal()) {
     exceptionState.throwTypeError("Must specify total");
-    return keepShippingOptions;
+    return;
   }
 
   validateShippingOptionOrPaymentItem(details.total(), exceptionState);
   if (exceptionState.hadException())
-    return keepShippingOptions;
+    return;
 
   if (details.total().amount().value()[0] == '-') {
     exceptionState.throwTypeError("Total amount value should be non-negative");
-    return keepShippingOptions;
+    return;
   }
 
   if (details.hasDisplayItems()) {
     validateDisplayItems(details.displayItems(), exceptionState);
     if (exceptionState.hadException())
-      return keepShippingOptions;
+      return;
   }
 
   if (details.hasShippingOptions()) {
-    keepShippingOptions =
-        validateShippingOptions(details.shippingOptions(), exceptionState);
+    HeapVector<PaymentShippingOption> options = details.shippingOptions();
+    validateShippingOptions(options, exceptionState);
+    details.setShippingOptions(options);
 
     if (exceptionState.hadException())
-      return keepShippingOptions;
+      return;
   }
 
   if (details.hasModifiers()) {
     validatePaymentDetailsModifiers(details.modifiers(), exceptionState);
     if (exceptionState.hadException())
-      return keepShippingOptions;
+      return;
   }
 
   String errorMessage;
@@ -344,8 +339,6 @@ bool validatePaymentDetails(const PaymentDetails& details,
                                                  &errorMessage)) {
     exceptionState.throwTypeError(errorMessage);
   }
-
-  return keepShippingOptions;
 }
 
 void validateAndConvertPaymentMethodData(
@@ -422,15 +415,6 @@ String getValidShippingType(const String& shippingType) {
       return shippingType;
   }
   return validValues[0];
-}
-
-mojom::blink::PaymentDetailsPtr maybeKeepShippingOptions(
-    mojom::blink::PaymentDetailsPtr details,
-    bool keep) {
-  if (!keep)
-    details->shipping_options.resize(0);
-
-  return details;
 }
 
 bool allowedToUsePaymentRequest(const Frame* frame) {
@@ -591,7 +575,7 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
   }
 
-  bool keepShippingOptions = validatePaymentDetails(details, exceptionState);
+  validatePaymentDetails(details, exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -599,15 +583,10 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
   }
 
-  if (m_options.requestShipping()) {
-    if (keepShippingOptions)
-      m_shippingOption = getSelectedShippingOption(details);
-    else
-      m_shippingOption = String();
-  }
+  if (m_options.requestShipping())
+    m_shippingOption = getSelectedShippingOption(details);
 
-  m_paymentProvider->UpdateWith(maybeKeepShippingOptions(
-      mojom::blink::PaymentDetails::From(details), keepShippingOptions));
+  m_paymentProvider->UpdateWith(mojom::blink::PaymentDetails::From(details));
 }
 
 void PaymentRequest::onUpdatePaymentDetailsFailure(const String& error) {
@@ -661,19 +640,21 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
     return;
   }
 
-  bool keepShippingOptions = validatePaymentDetails(details, exceptionState);
+  PaymentDetails fixedDetails = details;
+  validatePaymentDetails(fixedDetails, exceptionState);
   if (exceptionState.hadException())
     return;
 
-  if (details.hasError() && !details.error().isEmpty()) {
+  if (fixedDetails.hasError() && !fixedDetails.error().isEmpty()) {
     exceptionState.throwTypeError("Error value should be empty");
     return;
   }
 
   if (m_options.requestShipping()) {
-    if (keepShippingOptions)
-      m_shippingOption = getSelectedShippingOption(details);
+    m_shippingOption = getSelectedShippingOption(fixedDetails);
     m_shippingType = getValidShippingType(m_options.shippingType());
+  } else {
+    fixedDetails.setShippingOptions(HeapVector<PaymentShippingOption>());
   }
 
   scriptState->domWindow()->frame()->interfaceProvider()->getInterface(
@@ -681,13 +662,10 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
   m_paymentProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this),
                 mojom::blink::PaymentErrorReason::UNKNOWN)));
-  m_paymentProvider->Init(
-      m_clientBinding.CreateInterfacePtrAndBind(),
-      ConvertPaymentMethodData(validatedMethodData),
-      maybeKeepShippingOptions(
-          mojom::blink::PaymentDetails::From(details),
-          keepShippingOptions && m_options.requestShipping()),
-      mojom::blink::PaymentOptions::From(m_options));
+  m_paymentProvider->Init(m_clientBinding.CreateInterfacePtrAndBind(),
+                          ConvertPaymentMethodData(validatedMethodData),
+                          mojom::blink::PaymentDetails::From(fixedDetails),
+                          mojom::blink::PaymentOptions::From(m_options));
 }
 
 void PaymentRequest::contextDestroyed() {
