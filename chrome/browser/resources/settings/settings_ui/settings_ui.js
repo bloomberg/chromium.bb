@@ -113,6 +113,7 @@ Polymer({
   attached: function() {
     // Preload bold Roboto so it doesn't load and flicker the first time used.
     document.fonts.load('bold 12px Roboto');
+    settings.setGlobalScrollTarget(this.$.headerPanel.scroller);
   },
 
   /**

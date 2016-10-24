@@ -20,7 +20,7 @@ var ExceptionPairEntryEvent;
 Polymer({
   is: 'passwords-section',
 
-  behaviors: [CrScrollableBehavior],
+  behaviors: [CrScrollableBehavior, settings.GlobalScrollTargetBehavior],
 
   properties: {
     /** Preferences state. */
