@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include <set>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -212,18 +213,20 @@ class WebHistoryService : public KeyedService {
 
   // Pending expiration requests to be canceled if not complete by profile
   // shutdown.
-  std::set<Request*> pending_expire_requests_;
+  std::map<Request*, std::unique_ptr<Request>> pending_expire_requests_;
 
   // Pending requests to be canceled if not complete by profile shutdown.
-  std::set<Request*> pending_audio_history_requests_;
+  std::map<Request*, std::unique_ptr<Request>> pending_audio_history_requests_;
 
   // Pending web and app activity queries to be canceled if not complete by
   // profile shutdown.
-  std::set<Request*> pending_web_and_app_activity_requests_;
+  std::map<Request*, std::unique_ptr<Request>>
+      pending_web_and_app_activity_requests_;
 
   // Pending queries for other forms of browsing history to be canceled if not
   // complete by profile shutdown.
-  std::set<Request*> pending_other_forms_of_browsing_history_requests_;
+  std::map<Request*, std::unique_ptr<Request>>
+      pending_other_forms_of_browsing_history_requests_;
 
   // Observers.
   base::ObserverList<WebHistoryServiceObserver, true> observer_list_;

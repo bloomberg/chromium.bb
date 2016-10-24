@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -336,10 +336,6 @@ WebHistoryService::WebHistoryService(
 }
 
 WebHistoryService::~WebHistoryService() {
-  base::STLDeleteElements(&pending_expire_requests_);
-  base::STLDeleteElements(&pending_audio_history_requests_);
-  base::STLDeleteElements(&pending_web_and_app_activity_requests_);
-  base::STLDeleteElements(&pending_other_forms_of_browsing_history_requests_);
 }
 
 void WebHistoryService::AddObserver(WebHistoryServiceObserver* observer) {
@@ -430,7 +426,7 @@ void WebHistoryService::ExpireHistory(
   std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
   request->SetPostData(post_data);
   Request* request_ptr = request.get();
-  pending_expire_requests_.insert(request.release());
+  pending_expire_requests_[request_ptr] = std::move(request);
   request_ptr->Start();
 }
 
@@ -457,7 +453,8 @@ void WebHistoryService::GetAudioHistoryEnabled(
   GURL url(kHistoryAudioHistoryUrl);
   std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
   request->Start();
-  pending_audio_history_requests_.insert(request.release());
+  Request* request_ptr = request.get();
+  pending_audio_history_requests_[request_ptr] = std::move(request);
 }
 
 void WebHistoryService::SetAudioHistoryEnabled(
@@ -481,7 +478,8 @@ void WebHistoryService::SetAudioHistoryEnabled(
   request->SetPostData(post_data);
 
   request->Start();
-  pending_audio_history_requests_.insert(request.release());
+  Request* request_ptr = request.get();
+  pending_audio_history_requests_[request_ptr] = std::move(request);
 }
 
 size_t WebHistoryService::GetNumberOfPendingAudioHistoryRequests() {
@@ -498,7 +496,7 @@ void WebHistoryService::QueryWebAndAppActivity(
 
   GURL url(kQueryWebAndAppActivityUrl);
   Request* request = CreateRequest(url, completion_callback);
-  pending_web_and_app_activity_requests_.insert(request);
+  pending_web_and_app_activity_requests_[request] = base::WrapUnique(request);
   request->Start();
 }
 
@@ -528,7 +526,8 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
       channel, ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
   request->SetUserAgent(user_agent);
 
-  pending_other_forms_of_browsing_history_requests_.insert(request);
+  pending_other_forms_of_browsing_history_requests_[request] =
+      base::WrapUnique(request);
 
   // Set the request protobuf.
   sync_pb::HistoryStatusRequest request_proto;
@@ -554,8 +553,9 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     const WebHistoryService::ExpireWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
+  std::unique_ptr<Request> request_ptr =
+      std::move(pending_expire_requests_[request]);
   pending_expire_requests_.erase(request);
-  std::unique_ptr<Request> request_ptr(request);
 
   std::unique_ptr<base::DictionaryValue> response_value;
   if (success) {
@@ -576,13 +576,14 @@ void WebHistoryService::AudioHistoryCompletionCallback(
     const WebHistoryService::AudioWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
+  std::unique_ptr<Request> request_ptr =
+      std::move(pending_audio_history_requests_[request]);
   pending_audio_history_requests_.erase(request);
-  std::unique_ptr<WebHistoryService::Request> request_ptr(request);
 
   std::unique_ptr<base::DictionaryValue> response_value;
   bool enabled_value = false;
   if (success) {
-    response_value = ReadResponse(request_ptr.get());
+    response_value = ReadResponse(request);
     if (response_value)
       response_value->GetBoolean("history_recording_enabled", &enabled_value);
   }
@@ -597,8 +598,9 @@ void WebHistoryService::QueryWebAndAppActivityCompletionCallback(
     const WebHistoryService::QueryWebAndAppActivityCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
+  std::unique_ptr<Request> request_ptr =
+      std::move(pending_web_and_app_activity_requests_[request]);
   pending_web_and_app_activity_requests_.erase(request);
-  std::unique_ptr<Request> request_ptr(request);
 
   std::unique_ptr<base::DictionaryValue> response_value;
   bool web_and_app_activity_enabled = false;
@@ -618,8 +620,9 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistoryCompletionCallback(
     const WebHistoryService::QueryOtherFormsOfBrowsingHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
+  std::unique_ptr<Request> request_ptr =
+      std::move(pending_other_forms_of_browsing_history_requests_[request]);
   pending_other_forms_of_browsing_history_requests_.erase(request);
-  std::unique_ptr<Request> request_ptr(request);
 
   bool has_other_forms_of_browsing_history = false;
   if (success && request->GetResponseCode() == net::HTTP_OK) {
