@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
@@ -170,12 +169,13 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
 
   content_settings::PolicyProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
-  content_settings_providers_[POLICY_PROVIDER] = policy_provider;
+  content_settings_providers_[POLICY_PROVIDER] =
+      base::WrapUnique(policy_provider);
   policy_provider->AddObserver(this);
 
   pref_provider_ =
       new content_settings::PrefProvider(prefs_, is_off_the_record_);
-  content_settings_providers_[PREF_PROVIDER] = pref_provider_;
+  content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
   pref_provider_->AddObserver(this);
 
   // This ensures that content settings are cleared for the guest profile. This
@@ -184,10 +184,10 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   if (is_guest_profile)
     pref_provider_->ClearPrefs();
 
-  content_settings::ObservableProvider* default_provider =
-      new content_settings::DefaultProvider(prefs_, is_off_the_record_);
+  auto default_provider = base::MakeUnique<content_settings::DefaultProvider>(
+      prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
-  content_settings_providers_[DEFAULT_PROVIDER] = default_provider;
+  content_settings_providers_[DEFAULT_PROVIDER] = std::move(default_provider);
 
   MigrateKeygenSettings();
   MigrateDomainScopedSettings(false);
@@ -215,7 +215,7 @@ void HostContentSettingsMap::RegisterProvider(
     std::unique_ptr<content_settings::ObservableProvider> provider) {
   DCHECK(!content_settings_providers_[type]);
   provider->AddObserver(this);
-  content_settings_providers_[type] = provider.release();
+  content_settings_providers_[type] = std::move(provider);
 
 #ifndef NDEBUG
   DCHECK_NE(used_from_thread_id_, base::kInvalidThreadId)
@@ -255,13 +255,11 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingInternal(
 
   // Iterate through the list of providers and return the first non-NULL value
   // that matches |primary_url| and |secondary_url|.
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    if (provider->first == PREF_PROVIDER)
+  for (const auto& provider_pair : content_settings_providers_) {
+    if (provider_pair.first == PREF_PROVIDER)
       continue;
-    ContentSetting default_setting =
-        GetDefaultContentSettingFromProvider(content_type, provider->second);
+    ContentSetting default_setting = GetDefaultContentSettingFromProvider(
+        content_type, provider_pair.second.get());
     if (is_off_the_record_) {
       default_setting = content_settings::ValueToContentSetting(
           ProcessIncognitoInheritanceBehavior(
@@ -270,7 +268,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingInternal(
               .get());
     }
     if (default_setting != CONTENT_SETTING_DEFAULT) {
-      *provider_type = provider->first;
+      *provider_type = provider_pair.first;
       return default_setting;
     }
   }
@@ -311,25 +309,15 @@ void HostContentSettingsMap::GetSettingsForOneType(
   UsedContentSettingsProviders();
 
   settings->clear();
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
+  for (const auto& provider_pair : content_settings_providers_) {
     // For each provider, iterate first the incognito-specific rules, then the
     // normal rules.
     if (is_off_the_record_) {
-      AddSettingsForOneType(provider->second,
-                            provider->first,
-                            content_type,
-                            resource_identifier,
-                            settings,
-                            true);
+      AddSettingsForOneType(provider_pair.second.get(), provider_pair.first,
+                            content_type, resource_identifier, settings, true);
     }
-    AddSettingsForOneType(provider->second,
-                          provider->first,
-                          content_type,
-                          resource_identifier,
-                          settings,
-                          false);
+    AddSettingsForOneType(provider_pair.second.get(), provider_pair.first,
+                          content_type, resource_identifier, settings, false);
   }
 }
 
@@ -377,11 +365,11 @@ void HostContentSettingsMap::SetWebsiteSettingCustomScope(
          resource_identifier.empty());
   UsedContentSettingsProviders();
 
-  for (auto& provider_pair : content_settings_providers_) {
+  for (const auto& provider_pair : content_settings_providers_) {
     if (provider_pair.second->SetWebsiteSetting(
             primary_pattern, secondary_pattern, content_type,
             resource_identifier, value.get())) {
-      // If succesful then ownership is passed to the provider.
+      // If successful then ownership is passed to the provider.
       ignore_result(value.release());
       return;
     }
@@ -739,11 +727,8 @@ void HostContentSettingsMap::SetPrefClockForTesting(
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
   UsedContentSettingsProviders();
-  for (ProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    provider->second->ClearAllContentSettingsRules(content_type);
-  }
+  for (const auto& provider_pair : content_settings_providers_)
+    provider_pair.second->ClearAllContentSettingsRules(content_type);
   FlushLossyWebsiteSettings();
 }
 
@@ -813,18 +798,14 @@ void HostContentSettingsMap::OnContentSettingChanged(
 
 HostContentSettingsMap::~HostContentSettingsMap() {
   DCHECK(!prefs_);
-  base::STLDeleteValues(&content_settings_providers_);
 }
 
 void HostContentSettingsMap::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
   prefs_ = NULL;
-  for (ProviderIterator it = content_settings_providers_.begin();
-       it != content_settings_providers_.end();
-       ++it) {
-    it->second->ShutdownOnUIThread();
-  }
+  for (const auto& provider_pair : content_settings_providers_)
+    provider_pair.second->ShutdownOnUIThread();
 }
 
 void HostContentSettingsMap::AddSettingsForOneType(
@@ -937,16 +918,15 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
 
   // The list of |content_settings_providers_| is ordered according to their
   // precedence.
-  for (ConstProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
+  for (const auto& provider_pair : content_settings_providers_) {
     std::unique_ptr<base::Value> value = GetContentSettingValueAndPatterns(
-        provider->second, primary_url, secondary_url, content_type,
+        provider_pair.second.get(), primary_url, secondary_url, content_type,
         resource_identifier, is_off_the_record_, primary_pattern,
         secondary_pattern);
     if (value) {
       if (info)
-        info->source = kProviderNamesSourceMap[provider->first].provider_source;
+        info->source =
+            kProviderNamesSourceMap[provider_pair.first].provider_source;
       return value;
     }
   }

@@ -9,6 +9,7 @@
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_HOST_CONTENT_SETTINGS_MAP_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -310,11 +311,6 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   friend class content_settings::TestUtils;
 
-  typedef std::map<ProviderType, content_settings::ProviderInterface*>
-      ProviderMap;
-  typedef ProviderMap::iterator ProviderIterator;
-  typedef ProviderMap::const_iterator ConstProviderIterator;
-
   ~HostContentSettingsMap() override;
 
   ContentSetting GetDefaultContentSettingFromProvider(
@@ -404,7 +400,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // Content setting providers. This is only modified at construction
   // time and by RegisterExtensionService, both of which should happen
   // before any other uses of it.
-  ProviderMap content_settings_providers_;
+  std::map<ProviderType, std::unique_ptr<content_settings::ProviderInterface>>
+      content_settings_providers_;
 
   // content_settings_providers_[PREF_PROVIDER] but specialized.
   content_settings::PrefProvider* pref_provider_ = nullptr;
