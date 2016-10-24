@@ -25,10 +25,13 @@ if (!use_system_minigbm) {
 
   shared_library("minigbm") {
     sources = [
+      "src/amdgpu.c",
       "src/cirrus.c",
+      "src/drv.c",
       "src/evdi.c",
       "src/exynos.c",
       "src/gbm.c",
+      "src/gbm_helpers.c",
       "src/gma500.c",
       "src/helpers.c",
       "src/i915.c",
@@ -37,6 +40,7 @@ if (!use_system_minigbm) {
       "src/rockchip.c",
       "src/tegra.c",
       "src/udl.c",
+      "src/vgem.c",
       "src/virtio_gpu.c",
     ]
 
