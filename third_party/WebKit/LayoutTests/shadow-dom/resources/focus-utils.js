@@ -42,7 +42,7 @@ function shouldNavigateFocus(from, to, direction)
     else
         navigateFocusBackward();
 
-    return isInnermostActiveElement(to);
+    return true;
 }
 
 function navigateFocusForward()
@@ -57,16 +57,28 @@ function navigateFocusBackward()
         eventSender.keyDown('\t', ['shiftKey']);
 }
 
+function assert_focus_navigation(from, to, direction)
+{
+    const result = shouldNavigateFocus(from, to, direction);
+    assert_true(result, 'Failed to focus ' + from);
+    const message = 'Focus should move ' + direction +
+                    ' from ' + from + ' to ' + to;
+    var toElement = getNodeInComposedTree(to);
+    assert_equals(innermostActiveElement(), toElement, message);
+}
+
 function assert_focus_navigation_forward(elements)
 {
+    assert_true(elements.length >= 2,
+                'length of elements should be greater than or equal to 2.');
     for (var i = 0; i + 1 < elements.length; ++i)
-        assert_true(shouldNavigateFocus(elements[i], elements[i + 1], 'forward'),
-                    'Focus should move from ' + elements[i] + ' to ' + elements[i + 1]);
+        assert_focus_navigation(elements[i], elements[i + 1], 'forward');
 }
 
 function assert_focus_navigation_backward(elements)
 {
+    assert_true(elements.length >= 2,
+                'length of elements should be greater than or equal to 2.');
     for (var i = 0; i + 1 < elements.length; ++i)
-        assert_true(shouldNavigateFocus(elements[i], elements[i + 1], 'backward'),
-                    'Focus should move from ' + elements[i] + ' to ' + elements[i + 1]);
+        assert_focus_navigation(elements[i], elements[i + 1], 'backward');
 }
