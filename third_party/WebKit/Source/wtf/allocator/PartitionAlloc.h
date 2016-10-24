@@ -829,15 +829,6 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root,
   void* ret = nullptr;
   {
     SpinLock::Guard guard(root->lock);
-// TODO(bashi): Remove following RELEAE_ASSERT()s once we find the cause of
-// http://crbug.com/514141
-#if OS(ANDROID)
-    RELEASE_ASSERT(bucket >= &root->buckets[0] ||
-                   bucket == &PartitionRootGeneric::gPagedBucket);
-    RELEASE_ASSERT(bucket <= &root->buckets[kGenericNumBuckets - 1] ||
-                   bucket == &PartitionRootGeneric::gPagedBucket);
-    RELEASE_ASSERT(root->initialized);
-#endif
     ret = partitionBucketAlloc(root, flags, size, bucket);
   }
   PartitionAllocHooks::allocationHookIfEnabled(ret, requestedSize, typeName);
