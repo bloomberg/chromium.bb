@@ -361,7 +361,6 @@ class GitWrapper(SCMWrapper):
     # If a dependency is not pinned, track the default remote branch.
     default_rev = 'refs/remotes/%s/master' % self.remote
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
-    rev_str = ""
     revision = deps_revision
     managed = True
     if options.revision:
@@ -378,13 +377,12 @@ class GitWrapper(SCMWrapper):
     if managed:
       self._DisableHooks()
 
-    rev_str = ' at %s' % revision
     files = [] if file_list is not None else None
 
     printed_path = False
     verbose = []
     if options.verbose:
-      self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
+      self.Print('_____ %s at %s' % (self.relpath, revision), timestamp=False)
       verbose = ['--verbose']
       printed_path = True
 
@@ -465,7 +463,7 @@ class GitWrapper(SCMWrapper):
       self.Print('_____ switching %s to a new upstream' % self.relpath)
       if not (options.force or options.reset):
         # Make sure it's clean
-        self._CheckClean(rev_str)
+        self._CheckClean(revision)
       # Switch over to the new upstream
       self._Run(['remote', 'set-url', self.remote, url], options)
       if mirror:
@@ -542,8 +540,8 @@ class GitWrapper(SCMWrapper):
 
     if current_type == 'detached':
       # case 0
-      self._CheckClean(rev_str)
-      self._CheckDetachedHead(rev_str, options)
+      self._CheckClean(revision)
+      self._CheckDetachedHead(revision, options)
       if self._Capture(['rev-list', '-n', '1', 'HEAD']) == revision:
         self.Print('Up-to-date; skipping checkout.')
       else:
@@ -556,7 +554,7 @@ class GitWrapper(SCMWrapper):
             quiet=True,
         )
       if not printed_path:
-        self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
+        self.Print('_____ %s at %s' % (self.relpath, revision), timestamp=False)
     elif current_type == 'hash':
       # case 1
       # Can't find a merge-base since we don't know our upstream. That makes
@@ -578,7 +576,7 @@ class GitWrapper(SCMWrapper):
       # case 4
       new_base = ''.join(remote_ref)
       if not printed_path:
-        self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
+        self.Print('_____ %s at %s' % (self.relpath, revision), timestamp=False)
       switch_error = ("Could not switch upstream branch from %s to %s\n"
                      % (upstream_branch, new_base) +
                      "Please use --force or merge or rebase manually:\n" +
@@ -587,7 +585,7 @@ class GitWrapper(SCMWrapper):
       force_switch = False
       if options.force:
         try:
-          self._CheckClean(rev_str)
+          self._CheckClean(revision)
           # case 4a
           force_switch = True
         except gclient_utils.Error as e:
@@ -623,7 +621,8 @@ class GitWrapper(SCMWrapper):
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
           files = []
           if not printed_path:
-            self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
+            self.Print('_____ %s at %s' % (self.relpath, revision),
+                       timestamp=False)
             printed_path = True
           while True:
             if not options.auto_rebase:
@@ -655,7 +654,8 @@ class GitWrapper(SCMWrapper):
                       "changes or stash them before you can merge.\n",
                       e.stderr):
           if not printed_path:
-            self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
+            self.Print('_____ %s at %s' % (self.relpath, revision),
+                       timestamp=False)
             printed_path = True
           raise gclient_utils.Error(e.stderr)
         else:
@@ -667,7 +667,8 @@ class GitWrapper(SCMWrapper):
         # Fast-forward merge was successful
         if not re.match('Already up-to-date.', merge_output) or verbose:
           if not printed_path:
-            self.Print('_____ %s%s' % (self.relpath, rev_str), timestamp=False)
+            self.Print('_____ %s at %s' % (self.relpath, revision),
+                       timestamp=False)
             printed_path = True
           self.Print(merge_output.strip())
           if not verbose:
@@ -680,11 +681,11 @@ class GitWrapper(SCMWrapper):
 
     # If the rebase generated a conflict, abort and ask user to fix
     if self._IsRebasing():
-      raise gclient_utils.Error('\n____ %s%s\n'
+      raise gclient_utils.Error('\n____ %s at %s\n'
                                 '\nConflict while rebasing this branch.\n'
                                 'Fix the conflict and run gclient again.\n'
                                 'See man git-rebase for details.\n'
-                                % (self.relpath, rev_str))
+                                % (self.relpath, revision))
 
     if verbose:
       self.Print('Checked out revision %s' % self.revinfo(options, (), None),
@@ -1048,35 +1049,35 @@ class GitWrapper(SCMWrapper):
       os.path.isdir(os.path.join(g, "rebase-merge")) or
       os.path.isdir(os.path.join(g, "rebase-apply")))
 
-  def _CheckClean(self, rev_str):
+  def _CheckClean(self, revision):
     lockfile = os.path.join(self.checkout_path, ".git", "index.lock")
     if os.path.exists(lockfile):
       raise gclient_utils.Error(
-        '\n____ %s%s\n'
+        '\n____ %s at %s\n'
         '\tYour repo is locked, possibly due to a concurrent git process.\n'
         '\tIf no git executable is running, then clean up %r and try again.\n'
-        % (self.relpath, rev_str, lockfile))
+        % (self.relpath, revision, lockfile))
 
     # Make sure the tree is clean; see git-rebase.sh for reference
     try:
       scm.GIT.Capture(['update-index', '--ignore-submodules', '--refresh'],
                       cwd=self.checkout_path)
     except subprocess2.CalledProcessError:
-      raise gclient_utils.Error('\n____ %s%s\n'
+      raise gclient_utils.Error('\n____ %s at %s\n'
                                 '\tYou have unstaged changes.\n'
                                 '\tPlease commit, stash, or reset.\n'
-                                  % (self.relpath, rev_str))
+                                  % (self.relpath, revision))
     try:
       scm.GIT.Capture(['diff-index', '--cached', '--name-status', '-r',
                        '--ignore-submodules', 'HEAD', '--'],
                        cwd=self.checkout_path)
     except subprocess2.CalledProcessError:
-      raise gclient_utils.Error('\n____ %s%s\n'
+      raise gclient_utils.Error('\n____ %s at %s\n'
                                 '\tYour index contains uncommitted changes\n'
                                 '\tPlease commit, stash, or reset.\n'
-                                  % (self.relpath, rev_str))
+                                  % (self.relpath, revision))
 
-  def _CheckDetachedHead(self, rev_str, _options):
+  def _CheckDetachedHead(self, revision, _options):
     # HEAD is detached. Make sure it is safe to move away from (i.e., it is
     # reference by a commit). If not, error out -- most likely a rebase is
     # in progress, try to detect so we can give a better error.
@@ -1087,12 +1088,12 @@ class GitWrapper(SCMWrapper):
       # Commit is not contained by any rev. See if the user is rebasing:
       if self._IsRebasing():
         # Punt to the user
-        raise gclient_utils.Error('\n____ %s%s\n'
+        raise gclient_utils.Error('\n____ %s at %s\n'
                                   '\tAlready in a conflict, i.e. (no branch).\n'
                                   '\tFix the conflict and run gclient again.\n'
                                   '\tOr to abort run:\n\t\tgit-rebase --abort\n'
                                   '\tSee man git-rebase for details.\n'
-                                   % (self.relpath, rev_str))
+                                   % (self.relpath, revision))
       # Let's just save off the commit so we can proceed.
       name = ('saved-by-gclient-' +
               self._Capture(['rev-parse', '--short', 'HEAD']))
