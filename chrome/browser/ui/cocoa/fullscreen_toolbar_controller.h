@@ -13,8 +13,8 @@
 
 @class BrowserWindowController;
 @class CrTrackingArea;
-@class DropdownAnimation;
 @class FullscreenMenubarTracker;
+class FullscreenToolbarAnimationController;
 
 enum class FullscreenSlidingStyle {
   OMNIBOX_TABS_PRESENT,  // Tab strip and omnibox both visible.
@@ -31,7 +31,7 @@ enum class FullscreenSlidingStyle {
 //
 
 // TODO (spqchan): Write tests for this class. See crbug.com/640064.
-@interface FullscreenToolbarController : NSObject<NSAnimationDelegate> {
+@interface FullscreenToolbarController : NSObject {
  @private
   // Our parent controller.
   BrowserWindowController* browserController_;  // weak
@@ -55,13 +55,8 @@ enum class FullscreenSlidingStyle {
   // object is only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;
 
-  // Pointer to the currently running animation.  Is nil if no animation is
-  // running.
-  base::scoped_nsobject<DropdownAnimation> currentAnimation_;
-
-  // Timer for scheduled hiding of the toolbar when it had been revealed for
-  // tabstrip changes.
-  base::scoped_nsobject<NSTimer> hideTimer_;
+  // Manages the toolbar animations for the OMNIBOX_TABS_HIDDEN style.
+  std::unique_ptr<FullscreenToolbarAnimationController> animationController_;
 
   // Tracks the currently requested system fullscreen mode, used to show or
   // hide the menubar.  This should be |kFullScreenModeNormal| when the window
@@ -76,20 +71,6 @@ enum class FullscreenSlidingStyle {
 
   // Whether the omnibox is hidden in fullscreen.
   FullscreenSlidingStyle slidingStyle_;
-
-  // True when the toolbar is dropped to show tabstrip changes.
-  BOOL isRevealingToolbarForTabStripChanges_;
-
-  // True when the toolbar should be animated back out via a DropdownAnimation.
-  // This is set and unset in hideTimer: and mouseExited:. It's set to YES
-  // before it calls animateToolbarVisibility: and then set to NO after the
-  // animation has started.
-  BOOL shouldAnimateToolbarOut_;
-
-  // True when the toolbar is animating in/out for changes in the toolbar
-  // visibility locks.
-  BOOL isLockingBarVisibility_;
-  BOOL isReleasingBarVisibility_;
 }
 
 @property(nonatomic, assign) FullscreenSlidingStyle slidingStyle;
@@ -107,14 +88,6 @@ enum class FullscreenSlidingStyle {
 // controller is released.
 - (void)setupFullscreenToolbarForContentView:(NSView*)contentView;
 - (void)exitFullscreenMode;
-
-// Shows/hides the toolbar with animation to reflect changes for the toolbar
-// visibility locks. lockBarVisibilityWithAnimation: should only be called when
-// the lock state goes from unlocked to locked. Likewise,
-// releaseBarVisibilityWithAnimation: should only be called whenthe lock state
-// goes from locked to unlocked.
-- (void)lockBarVisibilityWithAnimation:(BOOL)animate;
-- (void)releaseBarVisibilityWithAnimation:(BOOL)animate;
 
 // Informs the controller that the overlay should be shown/hidden, possibly
 // with animation.
@@ -137,6 +110,9 @@ enum class FullscreenSlidingStyle {
 // hidden. Otherwise, if the toolbar is in progress of animating, it will
 // return a float that ranges from (0, 1).
 - (CGFloat)toolbarFraction;
+
+// Returns YES if the fullscreen toolbar must be shown.
+- (BOOL)mustShowFullscreenToolbar;
 
 // Returns YES if the mouse is on the window's screen. This is used to check
 // if the menubar events belong to window's screen since the menubar would

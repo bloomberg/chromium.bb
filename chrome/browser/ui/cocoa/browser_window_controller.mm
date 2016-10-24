@@ -1950,9 +1950,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
     // If enabled, show the overlay if necessary (and if the fullscreen
     // toolbar is hidden).
-    if (barVisibilityUpdatesEnabled_) {
-      [fullscreenToolbarController_ lockBarVisibilityWithAnimation:animate];
-    }
+    if (barVisibilityUpdatesEnabled_)
+      [fullscreenToolbarController_ ensureOverlayShownWithAnimation:animate];
   }
 }
 
@@ -1962,10 +1961,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
     // If enabled, hide the overlay if necessary (and if the fullscreen
     // toolbar is hidden).
-    if (barVisibilityUpdatesEnabled_ &&
-        ![barVisibilityLocks_ count]) {
-      [fullscreenToolbarController_ releaseBarVisibilityWithAnimation:animate];
-    }
+    if (barVisibilityUpdatesEnabled_ && ![barVisibilityLocks_ count])
+      [fullscreenToolbarController_ ensureOverlayHiddenWithAnimation:animate];
   }
 }
 
