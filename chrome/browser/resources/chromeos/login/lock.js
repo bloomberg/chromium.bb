@@ -17,7 +17,7 @@ function showPinKeyboardAsync() {
   // This function could get called multiple times. Do nothing if we have
   // already loaded. This check needs to happen before the registerAssets call,
   // because that will clobber the loaded state.
-  if (cr.ui.login.ResourceLoader.alreadyLoadedAssets('custom-elements'))
+  if (cr.ui.login.ResourceLoader.hasDeferredAssets('custom-elements'))
     return;
 
   // Register loader for custom elements.

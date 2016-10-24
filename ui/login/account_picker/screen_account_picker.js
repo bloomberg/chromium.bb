@@ -224,15 +224,22 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
-     * Loads the PIN keyboard if any of the users can login with a PIN.
+     * Loads the PIN keyboard if any of the users can login with a PIN. Disables
+     * the PIN keyboard for users who are not allowed to use PIN unlock.
      * @param {array} users Array of user instances.
      */
-    loadPinKeyboardIfNeeded_: function(users) {
+    initializePinKeyboardStateForUsers_: function(users) {
       for (var i = 0; i < users.length; ++i) {
         var user = users[i];
         if (user.showPin) {
           showPinKeyboardAsync();
-          return;
+        } else {
+          // Disable pin for users who cannot authenticate with PIN. For
+          // example, users who have not set up PIN or users who have not
+          // entered their account recently. Otherwise, the PIN keyboard will
+          // will appear for any user if there is at least one user who has PIN
+          // enabled.
+          this.disablePinKeyboardForUser(user.username);
         }
       }
     },
@@ -249,7 +256,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.DESKTOP_USER_MANAGER)
         $('login-header-bar').classList.toggle('shadow', users.length > 8);
 
-      this.loadPinKeyboardIfNeeded_(users);
+      this.initializePinKeyboardStateForUsers_(users);
     },
 
     /**
