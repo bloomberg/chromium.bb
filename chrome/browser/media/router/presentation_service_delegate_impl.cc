@@ -55,7 +55,10 @@ RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
 GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id) {
   RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_frame_host_id.first, render_frame_host_id.second);
-  return render_frame_host ? render_frame_host->GetLastCommittedURL() : GURL();
+  // TODO(crbug.com/632623): Use url::Origin in place of GURL for origins
+  return render_frame_host
+             ? render_frame_host->GetLastCommittedOrigin().GetURL()
+             : GURL();
 }
 
 // Observes messages originating from the MediaSink connected to a MediaRoute

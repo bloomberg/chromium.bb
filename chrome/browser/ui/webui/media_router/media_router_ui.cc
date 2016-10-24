@@ -421,8 +421,6 @@ bool MediaRouterUI::SetRouteParameters(
   current_route_request_id_ = ++route_request_counter_;
   *origin = for_default_source ? presentation_request_->frame_url().GetOrigin()
                                : GURL(chrome::kChromeUIMediaRouterURL);
-  DCHECK(origin->is_valid());
-
   DVLOG(1) << "DoCreateRoute: origin: " << *origin;
 
   // There are 3 cases. In cases (1) and (3) the MediaRouterUI will need to be

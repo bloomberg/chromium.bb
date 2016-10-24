@@ -44,6 +44,8 @@ class PresentationRequest {
   const std::vector<GURL> presentation_urls_;
 
   // URL of frame from which the request was initiated.
+  // TODO(crbug.com/632623): Convert this to url::Origin as only the origin or
+  // hostname is used.
   const GURL frame_url_;
 };
 
