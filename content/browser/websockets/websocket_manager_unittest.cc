@@ -23,9 +23,14 @@ class TestWebSocketImpl : public WebSocketImpl {
  public:
   TestWebSocketImpl(Delegate* delegate,
                     blink::mojom::WebSocketRequest request,
+                    int process_id,
                     int frame_id,
                     base::TimeDelta delay)
-      : WebSocketImpl(delegate, std::move(request), frame_id, delay) {}
+      : WebSocketImpl(delegate,
+                      std::move(request),
+                      process_id,
+                      frame_id,
+                      delay) {}
 
   base::TimeDelta delay() const { return delay_; }
 
@@ -61,10 +66,11 @@ class TestWebSocketManager : public WebSocketManager {
  private:
   WebSocketImpl* CreateWebSocketImpl(WebSocketImpl::Delegate* delegate,
                                      blink::mojom::WebSocketRequest request,
+                                     int process_id,
                                      int frame_id,
                                      base::TimeDelta delay) override {
-    TestWebSocketImpl* impl =
-        new TestWebSocketImpl(delegate, std::move(request), frame_id, delay);
+    TestWebSocketImpl* impl = new TestWebSocketImpl(
+        delegate, std::move(request), process_id, frame_id, delay);
     // We keep a vector of sockets here to track their creation order.
     sockets_.push_back(impl);
     return impl;

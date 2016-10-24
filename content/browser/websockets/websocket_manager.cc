@@ -118,8 +118,8 @@ void WebSocketManager::DoCreateWebSocket(
   // Keep all WebSocketImpls alive until either the client drops its
   // connection (see OnLostConnectionToClient) or we need to shutdown.
 
-  impls_.insert(CreateWebSocketImpl(this, std::move(request), frame_id,
-                                    CalculateDelay()));
+  impls_.insert(CreateWebSocketImpl(this, std::move(request), process_id_,
+                                    frame_id, CalculateDelay()));
   ++num_pending_connections_;
 
   if (!throttling_period_timer_.IsRunning()) {
@@ -161,9 +161,11 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
 WebSocketImpl* WebSocketManager::CreateWebSocketImpl(
     WebSocketImpl::Delegate* delegate,
     blink::mojom::WebSocketRequest request,
+    int child_id,
     int frame_id,
     base::TimeDelta delay) {
-  return new WebSocketImpl(delegate, std::move(request), frame_id, delay);
+  return new WebSocketImpl(delegate, std::move(request), child_id, frame_id,
+                           delay);
 }
 
 int WebSocketManager::GetClientProcessId() {

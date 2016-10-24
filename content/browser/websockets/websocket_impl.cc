@@ -22,6 +22,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/browser/websockets/websocket_handshake_request_info_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_message.h"
 #include "net/base/io_buffer.h"
@@ -90,6 +91,7 @@ class WebSocketImpl::WebSocketEventHandler final
 
   // net::WebSocketEventInterface implementation
 
+  void OnCreateURLRequest(net::URLRequest* url_request) override;
   ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
                                     const std::string& extensions) override;
   ChannelState OnDataFrame(bool fin,
@@ -149,6 +151,12 @@ WebSocketImpl::WebSocketEventHandler::WebSocketEventHandler(WebSocketImpl* impl)
 WebSocketImpl::WebSocketEventHandler::~WebSocketEventHandler() {
   DVLOG(1) << "WebSocketEventHandler destroyed @"
            << reinterpret_cast<void*>(this);
+}
+
+void WebSocketImpl::WebSocketEventHandler::OnCreateURLRequest(
+    net::URLRequest* url_request) {
+  WebSocketHandshakeRequestInfoImpl::CreateInfoAndAssociateWithRequest(
+      impl_->child_id_, impl_->frame_id_, url_request);
 }
 
 ChannelState WebSocketImpl::WebSocketEventHandler::OnAddChannelResponse(
@@ -354,15 +362,16 @@ void WebSocketImpl::WebSocketEventHandler::SSLErrorHandlerDelegate::
   callbacks_->ContinueSSLRequest();
 }
 
-WebSocketImpl::WebSocketImpl(
-    Delegate* delegate,
-    blink::mojom::WebSocketRequest request,
-    int frame_id,
-    base::TimeDelta delay)
+WebSocketImpl::WebSocketImpl(Delegate* delegate,
+                             blink::mojom::WebSocketRequest request,
+                             int child_id,
+                             int frame_id,
+                             base::TimeDelta delay)
     : delegate_(delegate),
       binding_(this, std::move(request)),
       delay_(delay),
       pending_flow_control_quota_(0),
+      child_id_(child_id),
       frame_id_(frame_id),
       handshake_succeeded_(false),
       weak_ptr_factory_(this) {

@@ -45,6 +45,7 @@ class CONTENT_EXPORT WebSocketManager
   virtual WebSocketImpl* CreateWebSocketImpl(
       WebSocketImpl::Delegate* delegate,
       blink::mojom::WebSocketRequest request,
+      int child_id,
       int frame_id,
       base::TimeDelta delay);
 

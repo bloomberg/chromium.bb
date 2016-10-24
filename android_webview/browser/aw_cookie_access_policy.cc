@@ -10,11 +10,13 @@
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
 
 using base::AutoLock;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
+using content::WebSocketHandshakeRequestInfo;
 using net::StaticCookiePolicy;
 
 namespace android_webview {
@@ -57,12 +59,21 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
 
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     const net::URLRequest& request) {
+  int child_id = 0;
+  int frame_id = 0;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
-  if (!info) {
-    return false;
+  if (info) {
+    child_id = info->GetChildID();
+    frame_id = info->GetRenderFrameID();
+  } else {
+    const WebSocketHandshakeRequestInfo* websocket_info =
+        WebSocketHandshakeRequestInfo::ForRequest(&request);
+    if (!websocket_info)
+      return false;
+    child_id = websocket_info->GetChildId();
+    frame_id = websocket_info->GetRenderFrameId();
   }
-  return GetShouldAcceptThirdPartyCookies(info->GetChildID(),
-                                          info->GetRenderFrameID());
+  return GetShouldAcceptThirdPartyCookies(child_id, frame_id);
 }
 
 bool AwCookieAccessPolicy::OnCanGetCookies(const net::URLRequest& request,

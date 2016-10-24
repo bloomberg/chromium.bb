@@ -37,6 +37,8 @@
 
 namespace net {
 
+class URLRequest;
+
 namespace {
 
 static const char kEchoServer[] = "echo-with-no-extension";
@@ -66,6 +68,8 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   std::string extensions() const;
 
   // Implementation of WebSocketEventInterface.
+  void OnCreateURLRequest(URLRequest* request) override {}
+
   ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
                                     const std::string& extensions) override;
 

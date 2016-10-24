@@ -46,6 +46,7 @@ class CONTENT_EXPORT WebSocketImpl
 
   WebSocketImpl(Delegate* delegate,
                 blink::mojom::WebSocketRequest request,
+                int child_id,
                 int frame_id,
                 base::TimeDelta delay);
   ~WebSocketImpl() override;
@@ -96,6 +97,7 @@ class CONTENT_EXPORT WebSocketImpl
   // Zero indicates there is no pending SendFlowControl().
   int64_t pending_flow_control_quota_;
 
+  int child_id_;
   int frame_id_;
 
   // handshake_succeeded_ is set and used by WebSocketManager to manage

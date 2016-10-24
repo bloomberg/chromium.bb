@@ -17,6 +17,8 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -401,6 +403,51 @@ public class CookieManagerTest extends AwTestBase {
         }
     }
 
+    private String thirdPartyCookieForWebSocket(boolean acceptCookie) throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            // Turn global allow on.
+            mCookieManager.setAcceptCookie(true);
+            assertTrue(mCookieManager.acceptCookie());
+
+            // Sets the per-WebView value.
+            mAwContents.getSettings().setAcceptThirdPartyCookies(acceptCookie);
+            assertEquals(acceptCookie, mAwContents.getSettings().getAcceptThirdPartyCookies());
+
+            // |cookieUrl| is a third-party url that sets a cookie on response.
+            String cookieUrl = toThirdPartyUrl(
+                    makeCookieWebSocketUrl(webServer, "/cookie_1", "test1", "value1"));
+            // This html file includes a script establishing a WebSocket connection to |cookieUrl|.
+            String url = makeWebSocketScriptUrl(webServer, "/content_1.html", cookieUrl);
+            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            final String connecting = "0"; // WebSocket.CONNECTING
+            final String closed = "3"; // WebSocket.CLOSED
+            String readyState = connecting;
+            WebContents webContents = mAwContents.getWebContents();
+            while (!readyState.equals(closed)) {
+                readyState = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                        webContents, "ws.readyState");
+            }
+            assertEquals("true",
+                    JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, "hasOpened"));
+            return mCookieManager.getCookie(cookieUrl);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyCookieForWebSocketDisabledCase() throws Throwable {
+        assertNull(thirdPartyCookieForWebSocket(false));
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyCookieForWebSocketEnabledCase() throws Throwable {
+        assertEquals("test1=value1", thirdPartyCookieForWebSocket(true));
+    }
+
     /**
      * Creates a response on the TestWebServer which attempts to set a cookie when fetched.
      * @param  webServer  the webServer on which to create the response
@@ -418,6 +465,22 @@ public class CookieManagerTest extends AwTestBase {
     }
 
     /**
+     * Creates a response on the TestWebServer which attempts to set a cookie when establishing a
+     * WebSocket connection.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/cookie_test.html")
+     * @param  key the key of the cookie
+     * @param  value the value of the cookie
+     * @return  the url which gets the response
+     */
+    private String makeCookieWebSocketUrl(
+            TestWebServer webServer, String path, String key, String value) {
+        List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+        responseHeaders.add(Pair.create("Set-Cookie", key + "=" + value + "; path=" + path));
+        return webServer.setResponseForWebSocket(path, responseHeaders);
+    }
+
+    /**
      * Creates a response on the TestWebServer which contains a script tag with an external src.
      * @param  webServer  the webServer on which to create the response
      * @param  path the path component of the url (e.g "/my_thing_with_script.html")
@@ -427,6 +490,24 @@ public class CookieManagerTest extends AwTestBase {
     private String makeScriptLinkUrl(TestWebServer webServer, String path, String url) {
         String responseStr = "<html><head><title>Content!</title></head>"
                 + "<body><script src=" + url + "></script></body></html>";
+        return webServer.setResponse(path, responseStr, null);
+    }
+
+    /**
+     * Creates a response on the TestWebServer which contains a script establishing a WebSocket
+     * connection.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/my_thing_with_script.html")
+     * @param  url the url which which should appear as the src of the script tag.
+     * @return  the url which gets the response
+     */
+    private String makeWebSocketScriptUrl(TestWebServer webServer, String path, String url) {
+        String responseStr = "<html><head><title>Content!</title></head>"
+                + "<body><script>\n"
+                + "let ws = new WebSocket('" + url.replaceAll("^http", "ws") + "');\n"
+                + "let hasOpened = false;\n"
+                + "ws.onopen = () => hasOpened = true;\n"
+                + "</script></body></html>";
         return webServer.setResponse(path, responseStr, null);
     }
 
