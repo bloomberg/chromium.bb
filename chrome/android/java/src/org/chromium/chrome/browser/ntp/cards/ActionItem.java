@@ -80,6 +80,8 @@ class ActionItem extends Leaf {
         }
 
         public void onBindViewHolder(ActionItem item) {
+            super.onBindViewHolder();
+
             mActionListItem = item;
         }
     }
