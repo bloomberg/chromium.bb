@@ -31,6 +31,10 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
   // Shared buffer getters.
   mojo::ScopedSharedBufferHandle CloneSharedBufferHandle();
 
+  // Returns 'true' if some of sensor instances produced by this provider are
+  // alive; 'false' otherwise.
+  bool HasSensors() const;
+
  protected:
   PlatformSensorProviderBase();
   virtual ~PlatformSensorProviderBase();
@@ -39,6 +43,10 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderBase
   virtual void CreateSensorInternal(mojom::SensorType type,
                                     mojo::ScopedSharedBufferMapping mapping,
                                     const CreateSensorCallback& callback) = 0;
+
+  // Implementations might override this method to free resources when there
+  // are no sensors left.
+  virtual void AllSensorsRemoved() {}
 
  private:
   friend class PlatformSensor;  // To call RemoveSensor();

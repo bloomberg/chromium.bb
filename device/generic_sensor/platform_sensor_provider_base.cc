@@ -79,8 +79,10 @@ void PlatformSensorProviderBase::RemoveSensor(mojom::SensorType type) {
   DCHECK(ContainsKey(sensor_map_, type));
   sensor_map_.erase(type);
 
-  if (sensor_map_.empty())
+  if (sensor_map_.empty()) {
+    AllSensorsRemoved();
     shared_buffer_handle_.reset();
+  }
 }
 
 mojo::ScopedSharedBufferHandle
@@ -89,6 +91,11 @@ PlatformSensorProviderBase::CloneSharedBufferHandle() {
   CreateSharedBufferIfNeeded();
   return shared_buffer_handle_->Clone(
       mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+}
+
+bool PlatformSensorProviderBase::HasSensors() const {
+  DCHECK(CalledOnValidThread());
+  return !sensor_map_.empty();
 }
 
 void PlatformSensorProviderBase::NotifySensorCreated(

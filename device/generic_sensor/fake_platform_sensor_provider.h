@@ -6,6 +6,7 @@
 #define DEVICE_GENERIC_SENSOR_FAKE_PLATFORM_SENSOR_PROVIDER_H_
 
 #include "device/generic_sensor/platform_sensor_provider.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
 
@@ -14,7 +15,7 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
   FakePlatformSensorProvider();
   ~FakePlatformSensorProvider() override;
 
-  static FakePlatformSensorProvider* GetInstance();
+  MOCK_METHOD0(AllSensorsRemoved, void());
 
  protected:
   void CreateSensorInternal(mojom::SensorType type,

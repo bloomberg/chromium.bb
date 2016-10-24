@@ -9,13 +9,6 @@
 
 namespace device {
 
-// static
-FakePlatformSensorProvider* FakePlatformSensorProvider::GetInstance() {
-  return base::Singleton<
-      FakePlatformSensorProvider,
-      base::LeakySingletonTraits<FakePlatformSensorProvider>>::get();
-}
-
 FakePlatformSensorProvider::FakePlatformSensorProvider() = default;
 
 FakePlatformSensorProvider::~FakePlatformSensorProvider() = default;

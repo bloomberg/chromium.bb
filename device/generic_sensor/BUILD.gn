@@ -93,5 +93,6 @@ static_library("testing") {
   public_deps = [
     ":generic_sensor",
     "//base",
+    "//testing/gmock",
   ]
 }
