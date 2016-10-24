@@ -7,7 +7,6 @@
 // NOTE: The names of this dictionary MUST be kept aligned with those in
 // MediaTrackConstraintSet.idl.
 
-[RuntimeEnabled=MediaConstraints]
 dictionary MediaTrackSupportedConstraints {
     boolean width = true;
     boolean height = true;

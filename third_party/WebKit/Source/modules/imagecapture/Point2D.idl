@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/mediacapture-image/index.html#Point2D
 
-[
-    RuntimeEnabled=ImageCapture
-] dictionary Point2D {
+dictionary Point2D {
   float x = 0.0;
   float y = 0.0;
 };

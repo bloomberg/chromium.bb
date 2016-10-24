@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/browser-payment-api/#idl-def-paymentdetailsmodifier
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentDetailsModifier {
+dictionary PaymentDetailsModifier {
     required sequence<DOMString> supportedMethods;
     PaymentItem total;
     sequence<PaymentItem> additionalDisplayItems;

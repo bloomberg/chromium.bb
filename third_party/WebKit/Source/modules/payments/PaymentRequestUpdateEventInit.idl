@@ -4,7 +4,5 @@
 
 // https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#idl-def-paymentrequestupdateevent
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentRequestUpdateEventInit : EventInit {
+dictionary PaymentRequestUpdateEventInit : EventInit {
 };

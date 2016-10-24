@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/browser-payment-api/#paymentcurrencyamount
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentCurrencyAmount {
+dictionary PaymentCurrencyAmount {
     required DOMString currency;
     required DOMString value;
     DOMString currencySystem = "urn:iso:std:iso:4217";

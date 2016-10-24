@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/browser-payment-api/#paymentshippingoption-dictionary
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentShippingOption {
+dictionary PaymentShippingOption {
     required DOMString id;
     required DOMString label;
     required PaymentCurrencyAmount amount;

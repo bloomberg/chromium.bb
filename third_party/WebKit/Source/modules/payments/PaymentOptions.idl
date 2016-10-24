@@ -10,9 +10,7 @@ enum PaymentShippingType {
     "pickup"
 };
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentOptions {
+dictionary PaymentOptions {
     [RuntimeEnabled=PaymentRequestPayerName] boolean requestPayerName = false;
     boolean requestPayerEmail = false;
     boolean requestPayerPhone = false;

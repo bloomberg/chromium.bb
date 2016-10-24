@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/editing/input-events.html
 
-[
-    RuntimeEnabled=InputEvent,
-] dictionary InputEventInit : UIEventInit {
+dictionary InputEventInit : UIEventInit {
     DOMString inputType = "";
     DOMString? data;
     DataTransfer? dataTransfer;

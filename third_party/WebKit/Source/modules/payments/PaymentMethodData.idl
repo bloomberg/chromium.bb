@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#idl-def-paymentmethoddata
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentMethodData {
+dictionary PaymentMethodData {
     required sequence<DOMString> supportedMethods;
     object data;
 };

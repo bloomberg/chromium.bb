@@ -4,9 +4,7 @@
 
 // https://www.w3.org/TR/image-capture/#PhotoSettings
 
-[
-    RuntimeEnabled=ImageCapture
-] dictionary PhotoSettings {
+dictionary PhotoSettings {
     MeteringMode whiteBalanceMode;
     unsigned long colorTemperature;
     MeteringMode exposureMode;

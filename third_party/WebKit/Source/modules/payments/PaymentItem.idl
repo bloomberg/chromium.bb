@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentitem-dictionary
 
-[
-    RuntimeEnabled=PaymentRequest
-] dictionary PaymentItem {
+dictionary PaymentItem {
     required DOMString label;
     required PaymentCurrencyAmount amount;
 };

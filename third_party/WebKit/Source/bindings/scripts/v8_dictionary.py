@@ -54,6 +54,10 @@ def dictionary_context(dictionary, interfaces_info):
     includes.clear()
     includes.update(DICTIONARY_CPP_INCLUDES)
 
+    if 'RuntimeEnabled' in dictionary.extended_attributes:
+        raise Exception(
+            'Dictionary cannot be RuntimeEnabled: %s' % dictionary.name)
+
     members = [member_context(dictionary, member)
                for member in sorted(dictionary.members,
                                     key=operator.attrgetter('name'))]

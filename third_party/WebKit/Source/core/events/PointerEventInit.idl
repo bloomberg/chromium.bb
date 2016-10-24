@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/pointerevents/#pointerevent-interface
 
-[
-    RuntimeEnabled=PointerEvent,
-] dictionary PointerEventInit : MouseEventInit {
+dictionary PointerEventInit : MouseEventInit {
     long      pointerId = 0;
     double    width = 1;
     double    height = 1;
