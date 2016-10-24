@@ -485,14 +485,11 @@ void ArcSettingsServiceImpl::SendSettingsBroadcast(
 
 void ArcSettingsServiceImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
-  // kProxy pref and ONC policy have more priority than the default network
-  // update.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (network && !IsPrefProxyConfigApplied() &&
-      !chromeos::onc::HasPolicyForNetwork(
-          profile->GetPrefs(), g_browser_process->local_state(), *network)) {
+  // kProxy pref has more priority than the default network update.
+  // If a default network is changed to the network with ONC policy with proxy
+  // settings, it should be translated here.
+  if (network && !IsPrefProxyConfigApplied())
     SyncProxySettings();
-  }
 }
 
 ArcSettingsService::ArcSettingsService(ArcBridgeService* bridge_service)

@@ -58,10 +58,121 @@ constexpr char kONCPolicy[] =
     "  ],"
     "  \"Type\": \"UnencryptedConfiguration\""
     "}";
-constexpr char kONCPacUrl[] = "http://domain.com/x";
-constexpr char kDefaultServicePath[] = "stub_ethernet";
-constexpr char kWifiServicePath[] = "stub_wifi";
+
+constexpr char kDeviceONCPolicy[] =
+    "{"
+    "   \"GlobalNetworkConfiguration\": {"
+    "      \"AllowOnlyPolicyNetworksToAutoconnect\": false,"
+    "      \"AllowOnlyPolicyNetworksToConnect\": false"
+    "   },"
+    "   \"NetworkConfigurations\": [ {"
+    "      \"GUID\": \"{wifi1_guid}\","
+    "      \"Name\": \"wifi1\","
+    "      \"ProxySettings\": {"
+    "         \"Manual\": {"
+    "            \"FTPProxy\": {"
+    "               \"Host\": \"proxy\","
+    "               \"Port\": 5000"
+    "            },"
+    "            \"HTTPProxy\": {"
+    "               \"Host\": \"proxy\","
+    "               \"Port\": 5000"
+    "            },"
+    "            \"SOCKS\": {"
+    "               \"Host\": \"proxy\","
+    "               \"Port\": 5000"
+    "            },"
+    "            \"SecureHTTPProxy\": {"
+    "               \"Host\": \"proxy\","
+    "               \"Port\": 5000"
+    "            }"
+    "         },"
+    "         \"Type\": \"Manual\""
+    "      },"
+    "      \"Type\": \"WiFi\","
+    "      \"WiFi\": {"
+    "         \"AutoConnect\": false,"
+    "         \"HiddenSSID\": false,"
+    "         \"SSID\": \"wifi1\","
+    "         \"Security\": \"None\""
+    "      }"
+    "   } ]"
+    "}";
+
+constexpr char kUserONCPolicy[] =
+    "{"
+    "   \"NetworkConfigurations\": [ {"
+    "      \"GUID\": \"{direct_guid}\","
+    "      \"Name\": \"EAP-TTLS\","
+    "      \"ProxySettings\": {"
+    "         \"Type\": \"Direct\""
+    "      },"
+    "      \"Type\": \"WiFi\","
+    "      \"WiFi\": {"
+    "         \"AutoConnect\": false,"
+    "         \"EAP\": {"
+    "            \"Identity\": \"CrOS\","
+    "            \"Inner\": \"Automatic\","
+    "            \"Outer\": \"EAP-TTLS\","
+    "            \"Password\": \"********\","
+    "            \"Recommended\": ["
+    "              \"AnonymousIdentity\","
+    "              \"Identity\","
+    "              \"Password\""
+    "            ],"
+    "            \"SaveCredentials\": true,"
+    "            \"UseSystemCAs\": false"
+    "         },"
+    "         \"HiddenSSID\": false,"
+    "        \"SSID\": \"direct_ssid\","
+    "        \"Security\": \"WPA-EAP\""
+    "     }"
+    "  }, {"
+    "      \"GUID\": \"{wifi0_guid}\","
+    "      \"Name\": \"wifi0\","
+    "      \"ProxySettings\": {"
+    "         \"Manual\": {"
+    "            \"FTPProxy\": {"
+    "               \"Host\": \"proxy-n300\","
+    "               \"Port\": 3000"
+    "            },"
+    "            \"HTTPProxy\": {"
+    "               \"Host\": \"proxy-n300\","
+    "               \"Port\": 3000"
+    "            },"
+    "            \"SOCKS\": {"
+    "               \"Host\": \"proxy-n300\","
+    "               \"Port\": 3000"
+    "            },"
+    "            \"SecureHTTPProxy\": {"
+    "               \"Host\": \"proxy-n300\","
+    "               \"Port\": 3000"
+    "            }"
+    "         },"
+    "         \"Type\": \"Manual\""
+    "      },"
+    "      \"Type\": \"WiFi\","
+    "      \"WiFi\": {"
+    "         \"AutoConnect\": false,"
+    "         \"HiddenSSID\": false,"
+    "         \"SSID\": \"wifi0\","
+    "         \"Security\": \"None\""
+    "      }"
+    "   } ]"
+    "}";
+
 constexpr char kUserProfilePath[] = "user_profile";
+constexpr char kDefaultServicePath[] = "stub_ethernet";
+
+constexpr char kWifi0ServicePath[] = "stub_wifi0";
+constexpr char kWifi0Ssid[] = "wifi0";
+constexpr char kWifi0Guid[] = "{wifi0_guid}";
+
+constexpr char kWifi1ServicePath[] = "stub_wifi1";
+constexpr char kWifi1Ssid[] = "wifi1";
+constexpr char kWifi1Guid[] = "{wifi1_guid}";
+
+constexpr char kONCPacUrl[] = "http://domain.com/x";
 
 // Returns an amount of |broadcasts| matched with |proxy_settings|.
 int CountProxyBroadcasts(
@@ -129,6 +240,23 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
     base::StringValue value(shill::kStateIdle);
     service_test->SetServiceProperty(service_path, shill::kStateProperty,
                                      value);
+    RunUntilIdle();
+  }
+
+  void ConnectWifiNetworkService(const std::string& service_path,
+                                 const std::string& guid,
+                                 const std::string& ssid) {
+    chromeos::ShillServiceClient::TestInterface* service_test =
+        chromeos::DBusThreadManager::Get()
+            ->GetShillServiceClient()
+            ->GetTestInterface();
+
+    service_test->AddService(service_path, guid, ssid, shill::kTypeWifi,
+                             shill::kStateOnline, true /* add_to_visible */);
+
+    service_test->SetServiceProperty(service_path, shill::kProfileProperty,
+                                     base::StringValue(kUserProfilePath));
+    RunUntilIdle();
   }
 
   void SetProxyConfigForNetworkService(
@@ -165,12 +293,6 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
                              true /* add_to_visible */);
     service_test->SetServiceProperty(kDefaultServicePath,
                                      shill::kProfileProperty,
-                                     base::StringValue(kUserProfilePath));
-
-    service_test->AddService(kWifiServicePath, "stub_wifi_guid", "wifi0",
-                             shill::kTypeWifi, shill::kStateOnline,
-                             true /* add_to_visible */);
-    service_test->SetServiceProperty(kWifiServicePath, shill::kProfileProperty,
                                      base::StringValue(kUserProfilePath));
   }
 
@@ -300,6 +422,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkProxyConfigTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
+  ConnectWifiNetworkService(kWifi0ServicePath, kWifi0Guid, kWifi0Ssid);
   fake_intent_helper_instance_->clear_broadcasts();
   // Set proxy confog for default network.
   std::unique_ptr<base::DictionaryValue> default_proxy_config(
@@ -316,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
       base::MakeUnique<base::DictionaryValue>());
   wifi_proxy_config->SetString("mode", ProxyPrefs::kFixedServersProxyModeName);
   wifi_proxy_config->SetString("server", "wifi/proxy:8080");
-  SetProxyConfigForNetworkService(kWifiServicePath, wifi_proxy_config.get());
+  SetProxyConfigForNetworkService(kWifi0ServicePath, wifi_proxy_config.get());
   RunUntilIdle();
 
   // Observe default network proxy config broadcast.
@@ -333,7 +456,6 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
   // Disconnect default network.
   fake_intent_helper_instance_->clear_broadcasts();
   DisconnectNetworkService(kDefaultServicePath);
-  RunUntilIdle();
 
   // Observe WI-FI network proxy config broadcast.
   std::unique_ptr<base::DictionaryValue> expected_wifi_proxy_config(
@@ -352,12 +474,57 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, NoNetworkConnectedTest) {
   // Disconnect all networks.
   fake_intent_helper_instance_->clear_broadcasts();
   DisconnectNetworkService(kDefaultServicePath);
-  DisconnectNetworkService(kWifiServicePath);
-  RunUntilIdle();
 
   EXPECT_EQ(
       CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(), nullptr),
       0);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoONCProxyPolicyTest) {
+  // Connect to wifi1 with appliead device ONC policy.
+  ConnectWifiNetworkService(kWifi1ServicePath, kWifi1Guid, kWifi1Ssid);
+
+  // Disconnect default network.
+  DisconnectNetworkService(kDefaultServicePath);
+
+  fake_intent_helper_instance_->clear_broadcasts();
+
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kOpenNetworkConfiguration,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD,
+             base::MakeUnique<base::StringValue>(kUserONCPolicy), nullptr);
+  policy.Set(policy::key::kDeviceOpenNetworkConfiguration,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_CLOUD,
+             base::MakeUnique<base::StringValue>(kDeviceONCPolicy), nullptr);
+  UpdatePolicy(policy);
+
+  std::unique_ptr<base::DictionaryValue> expected_proxy_config(
+      base::MakeUnique<base::DictionaryValue>());
+  expected_proxy_config->SetString("mode",
+                                   ProxyPrefs::kFixedServersProxyModeName);
+  expected_proxy_config->SetString("host", "proxy");
+  expected_proxy_config->SetInteger("port", 5000);
+
+  EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),
+                                 expected_proxy_config.get()),
+            1);
+
+  DisconnectNetworkService(kWifi1ServicePath);
+  fake_intent_helper_instance_->clear_broadcasts();
+
+  // Connect to wifi0 with appliead user ONC policy.
+  ConnectWifiNetworkService(kWifi0ServicePath, kWifi0Guid, kWifi0Ssid);
+
+  expected_proxy_config->SetString("mode",
+                                   ProxyPrefs::kFixedServersProxyModeName);
+  expected_proxy_config->SetString("host", "proxy-n300");
+  expected_proxy_config->SetInteger("port", 3000);
+
+  EXPECT_EQ(CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(),
+                                 expected_proxy_config.get()),
+            1);
 }
 
 }  // namespace arc
