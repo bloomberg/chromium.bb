@@ -39,6 +39,10 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/synchronous_compositor_observer.h"
+#endif
+
 namespace base {
 class CommandLine;
 class MessageLoop;
@@ -262,6 +266,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return notification_message_filter_.get();
   }
 
+#if defined(OS_ANDROID)
+  SynchronousCompositorObserver* synchronous_compositor_filter() const {
+    return synchronous_compositor_filter_.get();
+  }
+#endif
+
   void set_is_for_guests_only_for_testing(bool is_for_guests_only) {
     is_for_guests_only_ = is_for_guests_only;
   }
@@ -460,6 +470,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // The filter for Web Notification messages coming from the renderer. Holds a
   // closure per notification that must be freed when the notification closes.
   scoped_refptr<NotificationMessageFilter> notification_message_filter_;
+
+#if defined(OS_ANDROID)
+  scoped_refptr<SynchronousCompositorObserver> synchronous_compositor_filter_;
+#endif
 
   // Used in single-process mode.
   std::unique_ptr<base::Thread> in_process_renderer_;

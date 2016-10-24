@@ -30,7 +30,8 @@ class ChildFrame {
              bool is_layer);
   ~ChildFrame();
 
-  const uint32_t compositor_frame_sink_id;
+  // These two fields are not const to make async path easier.
+  uint32_t compositor_frame_sink_id;
   std::unique_ptr<cc::CompositorFrame> frame;
   // The id of the compositor this |frame| comes from.
   const CompositorID compositor_id;

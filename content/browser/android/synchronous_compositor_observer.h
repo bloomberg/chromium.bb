@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/public/browser/render_process_host_observer.h"
+#include "base/synchronization/lock.h"
+#include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "ui/android/window_android_observer.h"
 
 namespace ui {
@@ -17,17 +19,14 @@ class WindowAndroid;
 
 namespace content {
 
+class RenderProcessHost;
 class SynchronousCompositorHost;
 
-// SynchronousCompositor class that's tied to the lifetime of a
-// RenderProcessHost. Responsible for its own lifetime.
-class SynchronousCompositorObserver : public RenderProcessHostObserver,
-                                      public ui::WindowAndroidObserver {
+// TODO(boliu): Rename this to SynchronousCompositorFilter.
+class SynchronousCompositorObserver : public ui::WindowAndroidObserver,
+                                      public BrowserMessageFilter {
  public:
-  static SynchronousCompositorObserver* GetOrCreateFor(int process_id);
-
-  // RenderProcessHostObserver overrides.
-  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
+  explicit SynchronousCompositorObserver(int process_id);
 
   // WindowAndroidObserver overrides.
   void OnCompositingDidCommit() override;
@@ -39,12 +38,19 @@ class SynchronousCompositorObserver : public RenderProcessHostObserver,
   void OnActivityStopped() override;
   void OnActivityStarted() override;
 
+  // BrowserMessageFilter overrides.
+  bool OnMessageReceived(const IPC::Message& message) override;
+
   void SyncStateAfterVSync(ui::WindowAndroid* window_android,
                            SynchronousCompositorHost* compositor_host);
+  void SetFrameFuture(
+      int routing_id,
+      scoped_refptr<SynchronousCompositor::FrameFuture> frame_future);
 
  private:
-  explicit SynchronousCompositorObserver(int process_id);
   ~SynchronousCompositorObserver() override;
+
+  bool ReceiveFrame(const IPC::Message& message);
 
   RenderProcessHost* const render_process_host_;
 
@@ -52,6 +58,11 @@ class SynchronousCompositorObserver : public RenderProcessHostObserver,
   ui::WindowAndroid* window_android_in_vsync_;
   std::vector<SynchronousCompositorHost*>
       compositor_host_pending_renderer_state_;
+
+  base::Lock future_map_lock_;  // Protects |future_map_|.
+  using FrameFutureMap =
+      std::map<int, scoped_refptr<SynchronousCompositor::FrameFuture>>;
+  FrameFutureMap future_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorObserver);
 };

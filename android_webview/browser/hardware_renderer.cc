@@ -61,16 +61,34 @@ void HardwareRenderer::CommitFrame() {
       render_thread_manager_->PassFrameOnRT();
   if (!child_frame.get())
     return;
-
-  last_committed_compositor_frame_sink_id_ =
-      child_frame->compositor_frame_sink_id;
   ReturnResourcesInChildFrame();
+  frame_future_ = render_thread_manager_->PassFrameFutureOnRT();
   child_frame_ = std::move(child_frame);
-  DCHECK(child_frame_->frame.get());
 }
 
 void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
+
+  if (frame_future_) {
+    TRACE_EVENT0("android_webview", "GetFrame");
+    DCHECK(child_frame_);
+    DCHECK(!child_frame_->frame);
+
+    std::unique_ptr<content::SynchronousCompositor::Frame> frame =
+        frame_future_->getFrame();
+    if (frame) {
+      child_frame_->compositor_frame_sink_id = frame->compositor_frame_sink_id;
+      child_frame_->frame = std::move(frame->frame);
+    } else {
+      child_frame_.reset();
+    }
+    frame_future_ = nullptr;
+  }
+
+  if (child_frame_) {
+    last_committed_compositor_frame_sink_id_ =
+        child_frame_->compositor_frame_sink_id;
+  }
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.

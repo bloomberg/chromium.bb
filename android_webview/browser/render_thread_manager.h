@@ -60,9 +60,11 @@ class RenderThreadManager : public CompositorFrameConsumer {
   bool HasFrameOnUI() const override;
   void DeleteHardwareRendererOnUI() override;
 
-  // RT thread methods.
+  // Render thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
   std::unique_ptr<ChildFrame> PassFrameOnRT();
+  scoped_refptr<content::SynchronousCompositor::FrameFuture>
+  PassFrameFutureOnRT();
   void DrawGL(AwDrawGLInfo* draw_info);
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);

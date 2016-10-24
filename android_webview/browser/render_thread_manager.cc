@@ -193,6 +193,8 @@ void RenderThreadManager::SetFrameOnUI(
 std::unique_ptr<ChildFrame> RenderThreadManager::GetSynchronousCompositorFrame(
     scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
     std::unique_ptr<ChildFrame> child_frame) {
+  if (!frame_future)
+    return nullptr;
   DCHECK(!child_frame->frame.get());
   std::unique_ptr<content::SynchronousCompositor::Frame> frame =
       frame_future->getFrame();
@@ -210,11 +212,13 @@ std::unique_ptr<ChildFrame> RenderThreadManager::PassFrameOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
       hardware_renderer_has_frame_ || child_frame_.get();
-  if (async_on_draw_hardware_ && child_frame_.get()) {
-    return GetSynchronousCompositorFrame(std::move(frame_future_),
-                                         std::move(child_frame_));
-  }
   return std::move(child_frame_);
+}
+
+scoped_refptr<content::SynchronousCompositor::FrameFuture>
+RenderThreadManager::PassFrameFutureOnRT() {
+  base::AutoLock lock(lock_);
+  return std::move(frame_future_);
 }
 
 std::unique_ptr<ChildFrame> RenderThreadManager::PassUncommittedFrameOnUI() {

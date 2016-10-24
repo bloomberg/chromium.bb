@@ -130,9 +130,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
   ui::TouchHandleDrawable* CreateDrawable() override;
-  void OnDrawHardwareProcessFrameFuture(
-      const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
-          frame_future) override;
 
   // CompositorFrameProducer overrides
   void OnParentDrawConstraintsUpdated(
@@ -203,6 +200,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool clear_view_;
 
   bool offscreen_pre_raster_;
+
+  // Must do a synchronous draw first to ensure GL bindings are initialized.
+  // TODO(boliu): Wait on render thread and remove this.
+  bool allow_async_draw_;
 
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;

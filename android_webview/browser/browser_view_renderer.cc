@@ -109,7 +109,8 @@ BrowserViewRenderer::BrowserViewRenderer(
       max_page_scale_factor_(0.f),
       on_new_picture_enable_(false),
       clear_view_(false),
-      offscreen_pre_raster_(false) {}
+      offscreen_pre_raster_(false),
+      allow_async_draw_(false) {}
 
 BrowserViewRenderer::~BrowserViewRenderer() {
   DCHECK(compositor_map_.empty());
@@ -232,20 +233,24 @@ bool BrowserViewRenderer::OnDrawHardware() {
   gfx::Rect viewport_rect_for_tile_priority =
       ComputeViewportRectForTilePriority();
 
-  if (async_on_draw_hardware_) {
-    compositor_->DemandDrawHwAsync(size_, viewport_rect_for_tile_priority,
-                                   transform_for_tile_priority);
-    return current_compositor_frame_consumer_->HasFrameOnUI();
+  scoped_refptr<content::SynchronousCompositor::FrameFuture> future; // Async.
+  content::SynchronousCompositor::Frame frame; // Sync.
+  bool async = async_on_draw_hardware_ && allow_async_draw_;
+  if (async) {
+    future = compositor_->DemandDrawHwAsync(
+        size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
+  } else {
+    frame = compositor_->DemandDrawHw(size_, viewport_rect_for_tile_priority,
+                                      transform_for_tile_priority);
   }
 
-  content::SynchronousCompositor::Frame frame = compositor_->DemandDrawHw(
-      size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
-  if (!frame.frame) {
+  if (!frame.frame && !future) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
+  allow_async_draw_ = true;
   std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
       frame.compositor_frame_sink_id, std::move(frame.frame), compositor_id_,
       viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
@@ -254,27 +259,8 @@ bool BrowserViewRenderer::OnDrawHardware() {
   ReturnUnusedResource(
       current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
   current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame),
-                                                   nullptr);
-
+                                                   std::move(future));
   return true;
-}
-
-void BrowserViewRenderer::OnDrawHardwareProcessFrameFuture(
-    const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
-        frame_future) {
-  gfx::Transform transform_for_tile_priority =
-      external_draw_constraints_.transform;
-  gfx::Rect viewport_rect_for_tile_priority =
-      ComputeViewportRectForTilePriority();
-
-  ReturnUnusedResource(
-      current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
-  current_compositor_frame_consumer_->SetFrameOnUI(
-      base::MakeUnique<ChildFrame>(
-          0, nullptr, compositor_id_, viewport_rect_for_tile_priority.IsEmpty(),
-          transform_for_tile_priority, offscreen_pre_raster_,
-          external_draw_constraints_.is_layer),
-      frame_future);
 }
 
 gfx::Rect BrowserViewRenderer::ComputeViewportRectForTilePriority() {

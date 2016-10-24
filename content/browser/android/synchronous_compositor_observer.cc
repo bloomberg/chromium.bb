@@ -16,40 +16,16 @@
 
 namespace content {
 
-namespace {
-base::LazyInstance<std::map<int, SynchronousCompositorObserver*>> g_instances;
-}
-
-// static
-SynchronousCompositorObserver* SynchronousCompositorObserver::GetOrCreateFor(
-    int process_id) {
-  auto itr = g_instances.Get().find(process_id);
-  if (itr != g_instances.Get().end())
-    return itr->second;
-  return new SynchronousCompositorObserver(process_id);
-}
-
 SynchronousCompositorObserver::SynchronousCompositorObserver(int process_id)
-    : render_process_host_(RenderProcessHost::FromID(process_id)),
+    : BrowserMessageFilter(SyncCompositorMsgStart),
+      render_process_host_(RenderProcessHost::FromID(process_id)),
       window_android_in_vsync_(nullptr) {
   DCHECK(render_process_host_);
-  DCHECK(!base::ContainsKey(g_instances.Get(), render_process_host_->GetID()));
-  g_instances.Get()[render_process_host_->GetID()] = this;
-  render_process_host_->AddObserver(this);
 }
 
 SynchronousCompositorObserver::~SynchronousCompositorObserver() {
   DCHECK(compositor_host_pending_renderer_state_.empty());
-  DCHECK(base::ContainsKey(g_instances.Get(), render_process_host_->GetID()));
-  DCHECK_EQ(this, g_instances.Get()[render_process_host_->GetID()]);
-  render_process_host_->RemoveObserver(this);
-  g_instances.Get().erase(render_process_host_->GetID());
-}
-
-void SynchronousCompositorObserver::RenderProcessHostDestroyed(
-    RenderProcessHost* host) {
-  DCHECK_EQ(render_process_host_, host);
-  delete this;
+  // TODO(boliu): signal pending frames.
 }
 
 void SynchronousCompositorObserver::SyncStateAfterVSync(
@@ -66,6 +42,58 @@ void SynchronousCompositorObserver::SyncStateAfterVSync(
     return;
   window_android_in_vsync_ = window_android;
   window_android_in_vsync_->AddObserver(this);
+}
+
+bool SynchronousCompositorObserver::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorObserver, message)
+    IPC_MESSAGE_HANDLER_GENERIC(SyncCompositorHostMsg_ReturnFrame,
+                                ReceiveFrame(message))
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+bool SynchronousCompositorObserver::ReceiveFrame(const IPC::Message& message) {
+  SyncCompositorHostMsg_ReturnFrame::Param param;
+  if (!SyncCompositorHostMsg_ReturnFrame::Read(&message, &param))
+    return false;
+
+  int routing_id = message.routing_id();
+  scoped_refptr<SynchronousCompositor::FrameFuture> future;
+  {
+    base::AutoLock lock(future_map_lock_);
+    auto itr = future_map_.find(routing_id);
+    if (itr == future_map_.end()) {
+      bad_message::ReceivedBadMessage(render_process_host_,
+                                      bad_message::SCO_INVALID_ARGUMENT);
+      return true;
+    }
+    future = std::move(itr->second);
+    DCHECK(future);
+    future_map_.erase(itr);
+  }
+
+  auto frame_ptr = base::MakeUnique<SynchronousCompositor::Frame>();
+  frame_ptr->compositor_frame_sink_id = std::get<0>(param);
+  cc::CompositorFrame& compositor_frame = std::get<1>(param);
+  if (compositor_frame.delegated_frame_data) {
+    frame_ptr->frame.reset(new cc::CompositorFrame);
+    *frame_ptr->frame = std::move(compositor_frame);
+  }
+  future->setFrame(std::move(frame_ptr));
+  // TODO(boliu): Post metadata back to UI thread.
+  return true;
+}
+
+void SynchronousCompositorObserver::SetFrameFuture(
+    int routing_id,
+    scoped_refptr<SynchronousCompositor::FrameFuture> frame_future) {
+  // TODO(boliu): Need a sequenced id, to queue previous frames.
+  DCHECK(frame_future);
+  base::AutoLock lock(future_map_lock_);
+  future_map_[routing_id] = std::move(frame_future);
 }
 
 void SynchronousCompositorObserver::OnCompositingDidCommit() {

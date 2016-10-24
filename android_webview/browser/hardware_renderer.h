@@ -13,6 +13,7 @@
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 
 struct AwDrawGLInfo;
 
@@ -65,6 +66,8 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   // last frame. The |frame| member may be null if it's already submitted to
   // SurfaceFactory.
   std::unique_ptr<ChildFrame> child_frame_;
+
+  scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future_;
 
   const scoped_refptr<SurfacesInstance> surfaces_;
   cc::FrameSinkId frame_sink_id_;

@@ -59,7 +59,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
-  void DemandDrawHwAsync(
+  scoped_refptr<FrameFuture> DemandDrawHwAsync(
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
@@ -99,14 +99,13 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   SynchronousCompositor::Frame ProcessHardwareFrame(
       uint32_t compositor_frame_sink_id,
       cc::CompositorFrame compositor_frame);
-  bool DemandDrawHwReceiveFrame(const IPC::Message& message);
+  SynchronousCompositorObserver* GetFilter();
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const int process_id_;
   const int routing_id_;
-  SynchronousCompositorObserver* const rph_observer_;
   IPC::Sender* const sender_;
   const bool use_in_process_zero_copy_software_draw_;
 

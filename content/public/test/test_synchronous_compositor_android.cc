@@ -33,10 +33,13 @@ SynchronousCompositor::Frame TestSynchronousCompositor::DemandDrawHw(
   return std::move(hardware_frame_);
 }
 
-void TestSynchronousCompositor::DemandDrawHwAsync(
+scoped_refptr<SynchronousCompositor::FrameFuture>
+TestSynchronousCompositor::DemandDrawHwAsync(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
-    const gfx::Transform& transform_for_tile_priority) {}
+    const gfx::Transform& transform_for_tile_priority) {
+  return nullptr;
+}
 
 void TestSynchronousCompositor::ReturnResources(
     uint32_t compositor_frame_sink_id,

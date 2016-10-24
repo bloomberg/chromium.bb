@@ -86,10 +86,8 @@ class CONTENT_EXPORT SynchronousCompositor {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) = 0;
 
-  // Same as DemandDrawHw, but uses asynchronous IPC messages. Calls
-  // SynchronousCompositorClient::OnDrawHardwareProcessFrame to return the
-  // frame.
-  virtual void DemandDrawHwAsync(
+  // Same as DemandDrawHw, but uses asynchronous IPC messages.
+  virtual scoped_refptr<FrameFuture> DemandDrawHwAsync(
       const gfx::Size& viewport_size,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) = 0;
