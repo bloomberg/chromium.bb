@@ -151,7 +151,11 @@ View* AXAuraObjCache::GetFocusedView() {
   if (!focus_manager)
     return nullptr;
 
-  return focus_manager->GetFocusedView();
+  View* focused_view = focus_manager->GetFocusedView();
+  if (focused_view)
+    return focused_view;
+  else
+    return focused_widget->GetRootView();
 }
 
 void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,
