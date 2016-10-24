@@ -195,7 +195,9 @@ class ContextualSearchDelegate
                                         int* mention_end,
                                         std::string* context_language,
                                         std::string* thumbnail_url,
-                                        std::string* caption);
+                                        std::string* caption,
+                                        std::string* quick_action_uri,
+                                        std::string* quick_action_category);
 
   // Extracts the start and end location from a mentions list, and sets the
   // integers referenced by |startResult| and |endResult|.

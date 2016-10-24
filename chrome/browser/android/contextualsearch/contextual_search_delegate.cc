@@ -172,11 +172,13 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string context_language;
   std::string thumbnail_url = "";
   std::string caption = "";
+  std::string quick_action_uri = "";
+  std::string quick_action_category = "";
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
-      &thumbnail_url, &caption);
+      &thumbnail_url, &caption, &quick_action_uri, &quick_action_category);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -197,7 +199,8 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   return std::unique_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
       is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
-      context_language, thumbnail_url, caption));
+      context_language, thumbnail_url, caption, quick_action_uri,
+      quick_action_category));
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
@@ -450,7 +453,9 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     int* mention_end,
     std::string* lang,
     std::string* thumbnail_url,
-    std::string* caption) {
+    std::string* caption,
+    std::string* quick_action_uri,
+    std::string* quick_action_category) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -515,6 +520,8 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
              "request!!! The backend server may not be configured or is down.";
       DVLOG(0) << "";
     }
+
+    // TODO(donnd): parse information about quick action uri and category.
   }
 }
 

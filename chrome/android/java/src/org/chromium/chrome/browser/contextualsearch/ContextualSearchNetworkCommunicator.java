@@ -38,11 +38,14 @@ public interface ContextualSearchNetworkCommunicator {
      * @param contextLanguage The language of the context, or the empty string if unknown.
      * @param thumbnailUrl The URL of the thumbnail to display in our UX.
      * @param caption The caption to display.
+     * @param quickActionUri The URI for the intent associated with the quick action.
+     * @param quickActionCategory The category for the quick action.
      */
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            String contextLanguage, String thumbnailUrl, String caption);
+            String contextLanguage, String thumbnailUrl, String caption,
+            String quickActionUri, String quickActionCategory);
 
     /**
      * @return Whether the device is currently online.

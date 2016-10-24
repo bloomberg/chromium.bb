@@ -519,11 +519,15 @@ public class ContextualSearchPanel extends OverlayPanel {
      * Handles showing the resolved search term in the SearchBar.
      * @param searchTerm The string that represents the search term.
      * @param thumbnailUrl The URL of the thumbnail to display.
+     * @param quickActionUri The URI for the intent associated with the quick action.
+     * @param quickActionCategory The category for the quick action.
      */
-    public void onSearchTermResolved(String searchTerm, String thumbnailUrl) {
+    public void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
+            String quickActionCategory) {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
         getSearchBarControl().animateSearchTermResolution();
+        getSearchBarControl().setQuickAction(quickActionUri, quickActionCategory);
         getImageControl().setThumbnailUrl(thumbnailUrl);
     }
 
@@ -661,6 +665,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     // Image Control
     // ============================================================================================
 
+    // TODO(twellington): The image control should move to ContextualSearchBarControl since it
+    // is a part of the Bar.
     private ContextualSearchImageControl mImageControl;
 
     /**

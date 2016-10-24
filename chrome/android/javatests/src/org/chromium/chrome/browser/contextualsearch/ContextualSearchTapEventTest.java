@@ -96,7 +96,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         public void startSearchTermResolutionRequest(String selection) {
             // Skip native calls and immediately "resolve" the search term.
             onSearchTermResolutionResponse(
-                    true, 200, selection, selection, "", "", false, 0, 10, "", "", "");
+                    true, 200, selection, selection, "", "", false, 0, 10, "", "", "", "", "");
         }
 
         @Override

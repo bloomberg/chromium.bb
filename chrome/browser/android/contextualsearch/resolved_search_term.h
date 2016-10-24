@@ -26,7 +26,9 @@ struct ResolvedSearchTerm {
                      int selection_end_adjust,
                      const std::string& context_language,
                      const std::string& thumbnail_url,
-                     const std::string& caption);
+                     const std::string& caption,
+                     const std::string& quick_action_uri,
+                     const std::string& quick_action_category);
   ~ResolvedSearchTerm();
 
   const bool is_invalid;
@@ -42,6 +44,8 @@ struct ResolvedSearchTerm {
   const std::string context_language;
   const std::string thumbnail_url;
   const std::string caption;
+  const std::string quick_action_uri;
+  const std::string quick_action_category;
 
   DISALLOW_COPY_AND_ASSIGN(ResolvedSearchTerm);
 };

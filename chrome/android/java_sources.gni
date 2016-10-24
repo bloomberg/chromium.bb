@@ -151,6 +151,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchPanelMetrics.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchPeekPromoControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchPromoControl.java",
+  "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchQuickActionControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchTermControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/readermode/ReaderModeBarControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/readermode/ReaderModePanel.java",
