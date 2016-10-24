@@ -321,7 +321,7 @@ const char kManufacturerDataProperty[] = "ManufacturerData";
 const char kServiceDataProperty[] = "ServiceData";
 const char kGattServicesProperty[] = "GattServices";         // DEPRECATED
 const char kServicesResolvedProperty[] = "ServicesResolved";
-const char kAdvertisingDataFlagsProperty[] = "AdvertisingDataFlags";
+const char kAdvertisingDataFlagsProperty[] = "AdvertisingFlags";
 
 // Bluetooth Device errors.
 const char kErrorNotReady[] = "org.bluez.Error.NotReady";
