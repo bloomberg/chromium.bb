@@ -28,12 +28,6 @@ Polymer({
     treeNodes_: Object,
 
     /**
-     * Keeps track of how many outstanding requests for more data there are.
-     * @private
-     */
-    requests_: Number,
-
-    /**
      * The current filter applied to the cookie data list.
      * @private
      */
@@ -108,37 +102,30 @@ Polymer({
    * @private
    */
   loadChildren_: function(list) {
-    var parentId = list.id;
-    var data = list.children;
-
-    if (parentId == null) {
-      // New root being added, clear the list and add the nodes.
-      this.sites = [];
-      this.requests_ = 0;
-      this.treeNodes_.addChildNodes(this.treeNodes_, data);
-    } else {
-      this.treeNodes_.populateChildNodes(parentId, this.treeNodes_, data);
-    }
-
-    for (var i = 0; i < data.length; ++i) {
-      var prefix = parentId == null ? '' : parentId + ', ';
-      if (data[i].hasChildren) {
-        ++this.requests_;
-        this.browserProxy.loadCookieChildren(
-            prefix + data[i].id).then(function(list) {
-          --this.requests_;
-          this.loadChildren_(list);
-        }.bind(this));
+    var loadChildrenRecurse = function(list) {
+      var parentId = list.id;
+      var children = list.children;
+      var prefix = '';
+      if (parentId !== null) {
+        this.treeNodes_.populateChildNodes(parentId, this.treeNodes_, children);
+        prefix = parentId + ', ';
       }
-    }
+      var promises = [];
+      for (let child of children) {
+        if (child.hasChildren) {
+          promises.push(this.browserProxy.loadCookieChildren(
+              prefix + child.id).then(loadChildrenRecurse.bind(this)));
+        }
+      }
+      return Promise.all(promises);
+    }.bind(this);
 
-    if (this.requests_ == 0)
+    // New root being added, clear the list and add the nodes.
+    this.sites = [];
+    this.treeNodes_.addChildNodes(this.treeNodes_, list.children);
+    loadChildrenRecurse(list).then(function() {
       this.sites = this.treeNodes_.getSummaryList();
-
-    // If this reaches below zero then we're forgetting to increase the
-    // outstanding request count and the summary list won't be updated at the
-    // end.
-    assert(this.requests_ >= 0);
+    }.bind(this));
   },
 
   /**
