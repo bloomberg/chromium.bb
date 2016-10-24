@@ -5,7 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_VIDEO_CAPTURE_DEVICE_PROXY_TYPEMAP_H_
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_VIDEO_CAPTURE_DEVICE_PROXY_TYPEMAP_H_
 
-#include "media/base/video_capture_types.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/video_capture/public/interfaces/video_capture_device_proxy.mojom.h"
 

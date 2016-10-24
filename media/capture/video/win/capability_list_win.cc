@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/win/capability_list_win.h"
 
 #include <algorithm>
 #include <functional>
 
 #include "base/logging.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 

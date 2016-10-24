@@ -9,7 +9,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_point.h"
 #include "media/base/limits.h"
-#include "media/base/video_capture_types.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
@@ -17,7 +16,6 @@
 using media::AudioParameters;
 using media::AudioLatency;
 using media::ChannelLayout;
-using media::VideoCaptureFormat;
 
 namespace IPC {
 
@@ -80,40 +78,6 @@ bool ParamTraits<AudioParameters>::Read(const base::Pickle* m,
 void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
                                        std::string* l) {
   l->append(base::StringPrintf("<AudioParameters>"));
-}
-
-void ParamTraits<VideoCaptureFormat>::GetSize(base::PickleSizer* s,
-                                              const VideoCaptureFormat& p) {
-  GetParamSize(s, p.frame_size);
-  GetParamSize(s, p.frame_rate);
-  GetParamSize(s, p.pixel_format);
-  GetParamSize(s, p.pixel_storage);
-}
-
-void ParamTraits<VideoCaptureFormat>::Write(base::Pickle* m,
-                                            const VideoCaptureFormat& p) {
-  WriteParam(m, p.frame_size);
-  WriteParam(m, p.frame_rate);
-  WriteParam(m, p.pixel_format);
-  WriteParam(m, p.pixel_storage);
-}
-
-bool ParamTraits<VideoCaptureFormat>::Read(const base::Pickle* m,
-                                           base::PickleIterator* iter,
-                                           VideoCaptureFormat* r) {
-  if (!ReadParam(m, iter, &r->frame_size) ||
-      !ReadParam(m, iter, &r->frame_rate) ||
-      !ReadParam(m, iter, &r->pixel_format) ||
-      !ReadParam(m, iter, &r->pixel_storage)) {
-    return false;
-  }
-  return r->IsValid();
-}
-
-void ParamTraits<VideoCaptureFormat>::Log(const VideoCaptureFormat& p,
-                                          std::string* l) {
-  l->append(base::StringPrintf("<VideoCaptureFormat> %s",
-                               media::VideoCaptureFormat::ToString(p).c_str()));
 }
 
 }  // namespace IPC

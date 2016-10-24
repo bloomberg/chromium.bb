@@ -4,7 +4,7 @@
 
 mojom = "//content/common/video_capture.mojom"
 public_headers = [
-  "//media/base/video_capture_types.h",
+  "//media/capture/video_capture_types.h",
   "//services/video_capture/public/interfaces/video_capture_format_traits.h",
   "//services/video_capture/public/interfaces/video_capture_device_proxy_traits.h",
 ]

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
-#define MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CAPTURE_TYPES_H_
+#define MEDIA_CAPTURE_VIDEO_CAPTURE_TYPES_H_
 
 #include <stddef.h>
 
 #include <vector>
 
 #include "build/build_config.h"
-#include "media/base/media_export.h"
 #include "media/base/video_types.h"
+#include "media/capture/capture_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -78,7 +78,7 @@ const int kFrameRatePrecision = 10000;
 // This class is used by the video capture device to specify the format of every
 // frame captured and returned to a client. It is also used to specify a
 // supported capture format by a device.
-struct MEDIA_EXPORT VideoCaptureFormat {
+struct CAPTURE_EXPORT VideoCaptureFormat {
   VideoCaptureFormat();
   VideoCaptureFormat(const gfx::Size& frame_size,
                      float frame_rate,
@@ -105,9 +105,8 @@ struct MEDIA_EXPORT VideoCaptureFormat {
   bool IsValid() const;
 
   bool operator==(const VideoCaptureFormat& other) const {
-    return frame_size == other.frame_size &&
-        frame_rate == other.frame_rate &&
-        pixel_format == other.pixel_format;
+    return frame_size == other.frame_size && frame_rate == other.frame_rate &&
+           pixel_format == other.pixel_format;
   }
 
   gfx::Size frame_size;
@@ -147,4 +146,4 @@ struct MEDIA_EXPORT VideoCaptureParams {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_VIDEO_CAPTURE_TYPES_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CAPTURE_TYPES_H_

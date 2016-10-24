@@ -6,8 +6,8 @@
 #define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_POOL_H_
 
 #include "base/memory/ref_counted.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/capture_export.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"

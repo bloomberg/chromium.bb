@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_VIDEO_CAPTURER_SOURCE_H_
-#define MEDIA_BASE_VIDEO_CAPTURER_SOURCE_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CAPTURER_SOURCE_H_
+#define MEDIA_CAPTURE_VIDEO_CAPTURER_SOURCE_H_
 
 #include <string>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "media/base/media_export.h"
-#include "media/base/video_capture_types.h"
+#include "media/capture/capture_export.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 
@@ -21,7 +21,7 @@ class VideoFrame;
 // VideoCapturerSource is an interface representing the source for captured
 // video.  An implementation will periodically call the frame callback with new
 // video frames.
-class MEDIA_EXPORT VideoCapturerSource {
+class CAPTURE_EXPORT VideoCapturerSource {
  public:
   virtual ~VideoCapturerSource();
 
@@ -118,4 +118,4 @@ class MEDIA_EXPORT VideoCapturerSource {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_VIDEO_CAPTURER_SOURCE_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CAPTURER_SOURCE_H_

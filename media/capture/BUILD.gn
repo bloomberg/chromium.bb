@@ -80,6 +80,10 @@ component("capture") {
     "video/win/video_capture_device_mf_win.h",
     "video/win/video_capture_device_win.cc",
     "video/win/video_capture_device_win.h",
+    "video_capture_types.cc",
+    "video_capture_types.h",
+    "video_capturer_source.cc",
+    "video_capturer_source.h",
   ]
 
   public_deps = []

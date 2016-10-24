@@ -55,7 +55,7 @@
 #include "content/shell/renderer/layout_test/leak_detector.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/video_capturer_source.h"
+#include "media/capture/video_capturer_source.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"

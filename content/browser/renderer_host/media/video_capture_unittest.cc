@@ -29,7 +29,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
-#include "media/base/video_capture_types.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "media/base/video_capture_types.h"
+#include "media/capture/video_capture_types.h"
 
 namespace content {
 

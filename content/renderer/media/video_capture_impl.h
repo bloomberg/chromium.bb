@@ -16,8 +16,8 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/common/video_capture.mojom.h"
-#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {

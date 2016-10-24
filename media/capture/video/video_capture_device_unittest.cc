@@ -20,8 +20,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,8 +37,8 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
 #include "base/android/build_info.h"
+#include "base/android/jni_android.h"
 #include "media/capture/video/android/video_capture_device_android.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 #endif

@@ -23,8 +23,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "media/audio/audio_logging.h"
 #include "media/base/media_log.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 class AudioParameters;

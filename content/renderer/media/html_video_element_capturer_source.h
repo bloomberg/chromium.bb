@@ -10,9 +10,9 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "media/base/video_capturer_source.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
+#include "media/capture/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 

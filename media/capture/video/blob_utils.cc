@@ -4,8 +4,8 @@
 
 #include "media/capture/video/blob_utils.h"
 
-#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video_capture_types.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/codec/png_codec.h"

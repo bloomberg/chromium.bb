@@ -19,7 +19,6 @@
 #include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
-#include "media/base/video_capture_types.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 
@@ -81,8 +80,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
 
 // Struct traits.
 

@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
-#include "media/base/video_capture_types.h"
+#include "media/capture/video_capture_types.h"
 
 class GURL;
 

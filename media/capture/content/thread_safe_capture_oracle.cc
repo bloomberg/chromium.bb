@@ -16,10 +16,10 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
+#include "media/capture/video_capture_types.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {

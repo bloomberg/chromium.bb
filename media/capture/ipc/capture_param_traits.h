@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_H_
-#define MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_H_
+#ifndef MEDIA_CAPTURE_IPC_CAPTURE_PARAM_TRAITS_H_
+#define MEDIA_CAPTURE_IPC_CAPTURE_PARAM_TRAITS_H_
 
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
-#include "media/base/ipc/media_param_traits_macros.h"
+#include "media/capture/ipc/capture_param_traits_macros.h"
 
 namespace media {
-class AudioParameters;
+struct VideoCaptureFormat;
 }
 
 namespace IPC {
 
 template <>
-struct ParamTraits<media::AudioParameters> {
-  typedef media::AudioParameters param_type;
+struct ParamTraits<media::VideoCaptureFormat> {
+  typedef media::VideoCaptureFormat param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -28,4 +28,4 @@ struct ParamTraits<media::AudioParameters> {
 
 }  // namespace IPC
 
-#endif  // MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_H_
+#endif  // MEDIA_CAPTURE_IPC_CAPTURE_PARAM_TRAITS_H_

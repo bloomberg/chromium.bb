@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_VIDEO_CAPTURE_STRUCT_TRAITS_H_
 
 #include "content/common/video_capture.mojom.h"
-#include "media/base/video_capture_types.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/video_capture/public/interfaces/video_capture_format.mojom.h"
 

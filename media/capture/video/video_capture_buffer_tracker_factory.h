@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "media/base/video_capture_types.h"
 #include "media/capture/capture_export.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 

@@ -19,8 +19,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
-#include "media/base/video_capturer_source.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video_capturer_source.h"
 
 namespace content {
 

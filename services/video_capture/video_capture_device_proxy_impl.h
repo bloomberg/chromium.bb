@@ -5,9 +5,9 @@
 #ifndef SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_IMPL_H_
 #define SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_IMPL_H_
 
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_client.h"
+#include "media/capture/video_capture_types.h"
 #include "services/video_capture/public/interfaces/video_capture_device_proxy.mojom.h"
 
 namespace video_capture {

@@ -18,8 +18,8 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 

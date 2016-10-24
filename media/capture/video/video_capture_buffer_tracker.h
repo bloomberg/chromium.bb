@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/synchronization/lock.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace media {

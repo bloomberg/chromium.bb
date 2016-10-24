@@ -16,7 +16,7 @@
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/audio_capturer_source.h"
-#include "media/base/video_capturer_source.h"
+#include "media/capture/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"

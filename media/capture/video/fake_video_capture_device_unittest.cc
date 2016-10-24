@@ -18,9 +18,9 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
+#include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

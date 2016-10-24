@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "media/base/channel_layout.h"
-#include "media/base/video_capture_types.h"
+#include "media/capture/video_capture_types.h"
 
 namespace blink {
 class WebMediaStream;

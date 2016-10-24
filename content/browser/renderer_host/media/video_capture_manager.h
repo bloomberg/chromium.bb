@@ -29,9 +29,9 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video_capture_types.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"

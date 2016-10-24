@@ -51,8 +51,8 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_frame_receiver.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 class VideoCaptureBufferPool;

@@ -9,10 +9,10 @@
 #define MEDIA_CAPTURE_VIDEO_WIN_SINK_INPUT_PIN_WIN_H_
 
 #include "base/macros.h"
-#include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/win/pin_base_win.h"
 #include "media/capture/video/win/sink_filter_win.h"
+#include "media/capture/video_capture_types.h"
 
 namespace media {
 

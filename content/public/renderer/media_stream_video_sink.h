@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_sink.h"
-#include "media/base/video_capturer_source.h"
+#include "media/capture/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace content {

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//services/video_capture/public/interfaces/video_capture_device_proxy.mojom"
-public_headers = [ "//media/base/video_capture_types.h" ]
+public_headers = [ "//media/capture/video_capture_types.h" ]
 traits_headers = [ "//services/video_capture/public/interfaces/video_capture_device_proxy_traits.h" ]
 sources = [
   "//services/video_capture/public/interfaces/video_capture_device_proxy_traits.cc",
