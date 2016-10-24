@@ -175,6 +175,12 @@ class MIDI_EXPORT MidiManager {
   const MidiPortInfoList& output_ports() const { return output_ports_; }
 
  private:
+  enum class InitializationState {
+    NOT_STARTED,
+    STARTED,
+    COMPLETED,
+  };
+
   void CompleteInitializationInternal(mojom::Result result);
   void AddInitialPorts(MidiManagerClient* client);
   void ShutdownOnSessionThread();
@@ -190,8 +196,8 @@ class MIDI_EXPORT MidiManager {
   // order to invoke CompleteStartSession() on the thread.
   scoped_refptr<base::SingleThreadTaskRunner> session_thread_runner_;
 
-  // Keeps true if platform dependent initialization is already completed.
-  bool initialized_;
+  // Tracks platform dependent initialization state.
+  InitializationState initialization_state_;
 
   // Keeps false until Finalize() is called.
   bool finalized_;
@@ -205,7 +211,7 @@ class MIDI_EXPORT MidiManager {
   MidiPortInfoList output_ports_;
 
   // Protects access to |clients_|, |pending_clients_|,
-  // |session_thread_runner_|, |initialized_|, |finalize_|, |result_|,
+  // |session_thread_runner_|, |initialization_state_|, |finalize_|, |result_|,
   // |input_ports_| and |output_ports_|.
   base::Lock lock_;
 

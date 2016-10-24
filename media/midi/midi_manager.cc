@@ -38,13 +38,6 @@ enum class Usage {
   MAX = INITIALIZED,
 };
 
-// Used in StartSession.
-enum class Completion {
-  COMPLETE_SYNCHRONOUSLY,
-  INVOKE_INITIALIZATION,
-  COMPLETE_ASYNCHRONOUSLY,
-};
-
 void ReportUsage(Usage usage) {
   UMA_HISTOGRAM_ENUMERATION("Media.Midi.Usage",
                             static_cast<Sample>(usage),
@@ -54,7 +47,9 @@ void ReportUsage(Usage usage) {
 }  // namespace
 
 MidiManager::MidiManager()
-    : initialized_(false), finalized_(false), result_(Result::NOT_INITIALIZED) {
+    : initialization_state_(InitializationState::NOT_STARTED),
+      finalized_(false),
+      result_(Result::NOT_INITIALIZED) {
   ReportUsage(Usage::CREATED);
 }
 
@@ -91,8 +86,7 @@ void MidiManager::Shutdown() {
 void MidiManager::StartSession(MidiManagerClient* client) {
   ReportUsage(Usage::SESSION_STARTED);
 
-  Completion completion = Completion::COMPLETE_SYNCHRONOUSLY;
-  Result result = Result::NOT_INITIALIZED;
+  bool needs_initialization = false;
 
   {
     base::AutoLock auto_lock(lock_);
@@ -103,7 +97,13 @@ void MidiManager::StartSession(MidiManagerClient* client) {
       return;
     }
 
-    if (initialized_) {
+    // Do not accept a new request if Shutdown() was already called.
+    if (finalized_) {
+      client->CompleteStartSession(Result::INITIALIZATION_ERROR);
+      return;
+    }
+
+    if (initialization_state_ == InitializationState::COMPLETED) {
       // Platform dependent initialization was already finished for previously
       // initialized clients.
       if (result_ == Result::OK) {
@@ -111,33 +111,29 @@ void MidiManager::StartSession(MidiManagerClient* client) {
         clients_.insert(client);
       }
       // Complete synchronously with |result_|;
-      result = result_;
-    } else {
-      bool too_many_pending_clients_exist =
-          pending_clients_.size() >= kMaxPendingClientCount;
-      // Do not accept a new request if the pending client list contains too
-      // many clients, or Shutdown() was already called.
-      if (too_many_pending_clients_exist || finalized_) {
-        result = Result::INITIALIZATION_ERROR;
-      } else {
-        // Call StartInitialization() only for the first request.
-        if (pending_clients_.empty()) {
-          completion = Completion::INVOKE_INITIALIZATION;
-          session_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
-        } else {
-          completion = Completion::COMPLETE_ASYNCHRONOUSLY;
-        }
-        pending_clients_.insert(client);
-      }
-    }
-
-    if (completion == Completion::COMPLETE_SYNCHRONOUSLY) {
-      client->CompleteStartSession(result);
+      client->CompleteStartSession(result_);
       return;
     }
+
+    // Do not accept a new request if the pending client list contains too
+    // many clients.
+    if (pending_clients_.size() >= kMaxPendingClientCount) {
+      client->CompleteStartSession(Result::INITIALIZATION_ERROR);
+      return;
+    }
+
+    if (initialization_state_ == InitializationState::NOT_STARTED) {
+      // Set fields protected by |lock_| here and call StartInitialization()
+      // later.
+      needs_initialization = true;
+      session_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
+      initialization_state_ = InitializationState::STARTED;
+    }
+
+    pending_clients_.insert(client);
   }
 
-  if (completion == Completion::INVOKE_INITIALIZATION) {
+  if (needs_initialization) {
     // Lazily initialize the MIDI back-end.
     TRACE_EVENT0("midi", "MidiManager::StartInitialization");
     // CompleteInitialization() will be called asynchronously when platform
@@ -241,8 +237,8 @@ void MidiManager::CompleteInitializationInternal(Result result) {
 
   base::AutoLock auto_lock(lock_);
   DCHECK(clients_.empty());
-  DCHECK(!initialized_);
-  initialized_ = true;
+  DCHECK_EQ(initialization_state_, InitializationState::STARTED);
+  initialization_state_ = InitializationState::COMPLETED;
   result_ = result;
 
   for (auto* client : pending_clients_) {
