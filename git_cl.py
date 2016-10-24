@@ -40,6 +40,7 @@ from third_party import colorama
 from third_party import httplib2
 from third_party import upload
 import auth
+import checkout
 import clang_format
 import commit_queue
 import dart_format
@@ -990,12 +991,6 @@ class _ParsedIssueNumberArgument(object):
     return self.issue is not None
 
 
-class _RietveldParsedIssueNumberArgument(_ParsedIssueNumberArgument):
-  def __init__(self, *args, **kwargs):
-    self.patch_url = kwargs.pop('patch_url', None)
-    super(_RietveldParsedIssueNumberArgument, self).__init__(*args, **kwargs)
-
-
 def ParseIssueNumberArgument(arg):
   """Parses the issue argument and returns _ParsedIssueNumberArgument."""
   fail_result = _ParsedIssueNumberArgument()
@@ -1812,10 +1807,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def GetMostRecentPatchset(self):
     return self.GetIssueProperties()['patchsets'][-1]
 
-  def GetPatchSetDiff(self, issue, patchset):
-    return self.RpcServer().get(
-        '/download/issue%s_%s.diff' % (issue, patchset))
-
   def GetIssueProperties(self):
     if self._props is None:
       issue = self.GetIssue()
@@ -1972,8 +1963,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
                               directory):
-    # TODO(maruel): Use apply_issue.py
-
     # PatchIssue should never be called with a dirty tree.  It is up to the
     # caller to check this, but just in case we assert here since the
     # consequences of the caller not checking this could be dire.
@@ -1983,47 +1972,13 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if parsed_issue_arg.hostname:
       self._rietveld_server = 'https://%s' % parsed_issue_arg.hostname
 
-    if (isinstance(parsed_issue_arg, _RietveldParsedIssueNumberArgument) and
-        parsed_issue_arg.patch_url):
-      assert parsed_issue_arg.patchset
-      patchset = parsed_issue_arg.patchset
-      patch_data = urllib2.urlopen(parsed_issue_arg.patch_url).read()
-    else:
-      patchset = parsed_issue_arg.patchset or self.GetMostRecentPatchset()
-      patch_data = self.GetPatchSetDiff(self.GetIssue(), patchset)
-
-    # Switch up to the top-level directory, if necessary, in preparation for
-    # applying the patch.
-    top = settings.GetRelativeRoot()
-    if top:
-      os.chdir(top)
-
-    # Git patches have a/ at the beginning of source paths.  We strip that out
-    # with a sed script rather than the -p flag to patch so we can feed either
-    # Git or svn-style patches into the same apply command.
-    # re.sub() should be used but flags=re.MULTILINE is only in python 2.7.
+    patchset = parsed_issue_arg.patchset or self.GetMostRecentPatchset()
+    patchset_object = self.RpcServer().get_patch(self.GetIssue(), patchset)
+    scm_obj = checkout.GitCheckout(settings.GetRoot(), None, None, None, None)
     try:
-      patch_data = subprocess2.check_output(
-          ['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'], stdin=patch_data)
-    except subprocess2.CalledProcessError:
-      DieWithError('Git patch mungling failed.')
-    logging.info(patch_data)
-
-    # We use "git apply" to apply the patch instead of "patch" so that we can
-    # pick up file adds.
-    # The --index flag means: also insert into the index (so we catch adds).
-    cmd = ['git', 'apply', '--index', '-p0']
-    if directory:
-      cmd.extend(('--directory', directory))
-    if reject:
-      cmd.append('--reject')
-    elif IsGitVersionAtLeast('1.7.12'):
-      cmd.append('--3way')
-    try:
-      subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
-                             stdin=patch_data, stdout=subprocess2.VOID)
-    except subprocess2.CalledProcessError:
-      print('Failed to apply the patch')
+      scm_obj.apply_patch(patchset_object)
+    except Exception as e:
+      print(str(e))
       return 1
 
     # If we had an issue, commit the current state and register the issue.
@@ -2047,24 +2002,23 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     match = re.match(r'/(\d+)/$', parsed_url.path)
     match2 = re.match(r'ps(\d+)$', parsed_url.fragment)
     if match and match2:
-      return _RietveldParsedIssueNumberArgument(
+      return _ParsedIssueNumberArgument(
           issue=int(match.group(1)),
           patchset=int(match2.group(1)),
           hostname=parsed_url.netloc)
     # Typical url: https://domain/<issue_number>[/[other]]
     match = re.match('/(\d+)(/.*)?$', parsed_url.path)
     if match:
-      return _RietveldParsedIssueNumberArgument(
+      return _ParsedIssueNumberArgument(
           issue=int(match.group(1)),
           hostname=parsed_url.netloc)
     # Rietveld patch: https://domain/download/issue<number>_<patchset>.diff
     match = re.match(r'/download/issue(\d+)_(\d+).diff$', parsed_url.path)
     if match:
-      return _RietveldParsedIssueNumberArgument(
+      return _ParsedIssueNumberArgument(
           issue=int(match.group(1)),
           patchset=int(match.group(2)),
-          hostname=parsed_url.netloc,
-          patch_url=gclient_utils.UpgradeToHttps(parsed_url.geturl()))
+          hostname=parsed_url.netloc)
     return None
 
   def CMDUploadChange(self, options, args, change):

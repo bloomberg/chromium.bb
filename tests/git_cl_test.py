@@ -74,6 +74,23 @@ class RietveldMock(object):
   def close_issue(_issue):
     return 'Closed'
 
+  @staticmethod
+  def get_patch(issue, patchset):
+    return 'patch set from issue %s patchset %s' % (issue, patchset)
+
+
+class GitCheckoutMock(object):
+  def __init__(self, *args, **kwargs):
+    pass
+
+  @staticmethod
+  def reset():
+    GitCheckoutMock.conflict = False
+
+  def apply_patch(self, p):
+    if GitCheckoutMock.conflict:
+      raise Exception('failed')
+
 
 class WatchlistsMock(object):
   def __init__(self, _):
@@ -156,13 +173,10 @@ class TestGitClBasic(unittest.TestCase):
     return result
 
   def test_ParseIssueURL_rietveld(self):
-    def test(url, issue=None, patchset=None, hostname=None, patch_url=None,
-             fail=None):
-      result = self._test_ParseIssueUrl(
+    def test(url, issue=None, patchset=None, hostname=None, fail=None):
+      self._test_ParseIssueUrl(
           git_cl._RietveldChangelistImpl.ParseIssueURL,
           url, issue, patchset, hostname, fail)
-      if not fail:
-        self.assertEqual(result.patch_url, patch_url)
 
     test('http://codereview.chromium.org/123',
          123, None, 'codereview.chromium.org')
@@ -175,8 +189,7 @@ class TestGitClBasic(unittest.TestCase):
     test('https://codereview.chromium.org/123/#ps20001',
          123, 20001, 'codereview.chromium.org')
     test('http://codereview.chromium.org/download/issue123_4.diff',
-         123, 4, 'codereview.chromium.org',
-         patch_url='https://codereview.chromium.org/download/issue123_4.diff')
+         123, 4, 'codereview.chromium.org')
     # This looks like bad Gerrit, but is actually valid Rietveld.
     test('https://chrome-review.source.com/123/4/',
          123, None, 'chrome-review.source.com')
@@ -271,6 +284,8 @@ class TestGitCl(TestCase):
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.rietveld, 'Rietveld', RietveldMock)
     self.mock(git_cl.rietveld, 'CachingRietveld', RietveldMock)
+    self.mock(git_cl.checkout, 'GitCheckout', GitCheckoutMock)
+    GitCheckoutMock.reset()
     self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
@@ -1297,8 +1312,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
               lambda x: '60001')
-    self.mock(git_cl._RietveldChangelistImpl, 'GetPatchSetDiff',
-              lambda *args: None)
     self.mock(git_cl._GerritChangelistImpl, '_GetChangeDetail',
               lambda *args: {
                 'current_revision': '7777777777',
@@ -1345,21 +1358,19 @@ class TestGitCl(TestCase):
       self.calls += [
         ((['git', 'config', 'gerrit.host'],), CERR1),
         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+        ((['git', 'config', 'branch.master.rietveldserver',],), CERR1),
         ((['git', 'rev-parse', '--show-cdup'],), ''),
-        ((['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'],), ''),
       ]
 
   def _common_patch_successful(self, new_branch=False):
     self._patch_common(new_branch=new_branch)
     self.calls += [
-      ((['git', 'apply', '--index', '-p0', '--3way'],), ''),
       ((['git', 'commit', '-m',
          'Description\n\n' +
          'patch from issue 123456 at patchset 60001 ' +
          '(http://crrev.com/123456#ps60001)'],), ''),
       ((['git', 'config', 'branch.master.rietveldissue', '123456'],),
        ''),
-      ((['git', 'config', 'branch.master.rietveldserver'],), CERR1),
       ((['git', 'config', 'branch.master.rietveldserver',
          'https://codereview.example.com'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset', '60001'],),
@@ -1376,9 +1387,7 @@ class TestGitCl(TestCase):
 
   def test_patch_conflict(self):
     self._patch_common()
-    self.calls += [
-      ((['git', 'apply', '--index', '-p0', '--3way'],), CERR1),
-    ]
+    GitCheckoutMock.conflict = True
     self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
 
   def test_gerrit_patch_successful(self):
