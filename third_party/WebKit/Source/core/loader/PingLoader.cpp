@@ -295,11 +295,10 @@ bool PingLoaderImpl::willFollowRedirect(
   if (!m_isBeacon)
     return true;
 
-  // TODO(tyoshino): Check if setAllowStoredCredentials() should be called also
-  // for non beacon cases.
-  passedNewRequest.setAllowStoredCredentials(true);
   if (m_corsMode == NotCORSEnabled)
     return true;
+
+  DCHECK(passedNewRequest.allowStoredCredentials());
 
   ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
   const ResourceResponse& redirectResponse(

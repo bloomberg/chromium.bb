@@ -32,6 +32,9 @@ if (strpos($contentType, "application/") !== false) {
 fwrite($beaconFile, "Body: $postdata\n");
 fclose($beaconFile);
 rename($beaconFilename . ".tmp", $beaconFilename);
-foreach ($_COOKIE as $name => $value)
-    setcookie($name, "deleted", time() - 60, "/");
+
+if (!array_key_exists('dontclearcookies', $_GET)) {
+  foreach ($_COOKIE as $name => $value)
+      setcookie($name, "deleted", time() - 60, "/");
+}
 ?>
