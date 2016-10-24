@@ -10,6 +10,8 @@ static_library("ntp_tiles") {
   sources = [
     "constants.cc",
     "constants.h",
+    "icon_cacher.cc",
+    "icon_cacher.h",
     "metrics.cc",
     "metrics.h",
     "most_visited_sites.cc",
@@ -31,7 +33,10 @@ static_library("ntp_tiles") {
   ]
   deps = [
     "//components/data_use_measurement/core",
+    "//components/favicon/core",
+    "//components/favicon_base",
     "//components/google/core/browser",
+    "//components/image_fetcher",
     "//components/pref_registry",
     "//components/prefs",
     "//components/search_engines",
@@ -47,12 +52,18 @@ static_library("ntp_tiles") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "icon_cacher_unittest.cc",
     "most_visited_sites_unittest.cc",
   ]
 
   deps = [
     ":ntp_tiles",
+    "//components/favicon/core",
+    "//components/favicon_base",
+    "//components/image_fetcher",
+    "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx:test_support",
   ]
 }
 

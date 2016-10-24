@@ -1047,27 +1047,8 @@ public class NewTabPageView extends FrameLayout
     }
 
     @Override
-    public void onPopularURLsAvailable(
-            String[] urls, String[] faviconUrls, String[] largeIconUrls) {
-        for (int i = 0; i < urls.length; i++) {
-            final String url = urls[i];
-            boolean useLargeIcon = !largeIconUrls[i].isEmpty();
-            // Only fetch one of favicon or large icon based on what is required on the NTP.
-            // The other will be fetched on visiting the site.
-            String iconUrl = useLargeIcon ? largeIconUrls[i] : faviconUrls[i];
-            if (iconUrl.isEmpty()) continue;
-
-            IconAvailabilityCallback callback = new IconAvailabilityCallback() {
-                @Override
-                public void onIconAvailabilityChecked(boolean newlyAvailable) {
-                    if (newlyAvailable) {
-                        mMostVisitedDesign.onIconUpdated(url);
-                    }
-                }
-            };
-            mManager.ensureIconIsAvailable(
-                    url, iconUrl, useLargeIcon, /*isTemporary=*/false, callback);
-        }
+    public void onIconMadeAvailable(String siteUrl) {
+        mMostVisitedDesign.onIconUpdated(siteUrl);
     }
 
     /**

@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
+#include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
@@ -84,11 +85,13 @@ MostVisitedSites::MostVisitedSites(PrefService* prefs,
                                    scoped_refptr<history::TopSites> top_sites,
                                    SuggestionsService* suggestions,
                                    std::unique_ptr<PopularSites> popular_sites,
+                                   std::unique_ptr<IconCacher> icon_cacher,
                                    MostVisitedSitesSupervisor* supervisor)
     : prefs_(prefs),
       top_sites_(top_sites),
       suggestions_service_(suggestions),
       popular_sites_(std::move(popular_sites)),
+      icon_cacher_(std::move(icon_cacher)),
       supervisor_(supervisor),
       observer_(nullptr),
       num_sites_(0),
@@ -345,6 +348,9 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
       tile.source = NTPTileSource::POPULAR;
 
       popular_sites_tiles.push_back(std::move(tile));
+      icon_cacher_->StartFetch(
+          popular_site, base::Bind(&MostVisitedSites::OnIconMadeAvailable,
+                                   base::Unretained(this), popular_site.url));
       if (popular_sites_tiles.size() >= num_popular_sites_tiles)
         break;
     }
@@ -410,12 +416,14 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
     return;
   }
 
-  // Pass the popular sites to the observer. This will cause it to fetch any
-  // missing icons, but will *not* cause it to display the popular sites.
-  observer_->OnPopularURLsAvailable(popular_sites_->sites());
-
   // Re-build the tile list. Once done, this will notify the observer.
   BuildCurrentTiles();
+}
+
+void MostVisitedSites::OnIconMadeAvailable(const GURL& site_url,
+                                           bool newly_available) {
+  if (newly_available)
+    observer_->OnIconMadeAvailable(site_url);
 }
 
 void MostVisitedSites::TopSitesLoaded(TopSites* top_sites) {}

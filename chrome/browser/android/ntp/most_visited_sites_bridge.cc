@@ -15,9 +15,11 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -25,6 +27,8 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/safe_json/safe_json_parser.h"
@@ -36,6 +40,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -104,8 +109,7 @@ class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
 
   void OnMostVisitedURLsAvailable(const NTPTilesVector& tiles) override;
 
-  void OnPopularURLsAvailable(
-      const MostVisitedSites::PopularSitesVector& sites) override;
+  void OnIconMadeAvailable(const GURL& site_url) override;
 
  private:
   ScopedJavaGlobalRef<jobject> observer_;
@@ -143,21 +147,11 @@ void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
       ToJavaIntArray(env, sources));
 }
 
-void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
-    const MostVisitedSites::PopularSitesVector& sites) {
+void MostVisitedSitesBridge::JavaObserver::OnIconMadeAvailable(
+    const GURL& site_url) {
   JNIEnv* env = AttachCurrentThread();
-  std::vector<std::string> urls;
-  std::vector<std::string> favicon_urls;
-  std::vector<std::string> large_icon_urls;
-  for (const auto& site : sites) {
-    urls.emplace_back(site.url.spec());
-    favicon_urls.emplace_back(site.favicon_url.spec());
-    large_icon_urls.emplace_back(site.large_icon_url.spec());
-  }
-  Java_MostVisitedURLsObserver_onPopularURLsAvailable(
-      env, observer_, ToJavaArrayOfStrings(env, urls),
-      ToJavaArrayOfStrings(env, favicon_urls),
-      ToJavaArrayOfStrings(env, large_icon_urls));
+  Java_MostVisitedURLsObserver_onIconMadeAvailable(
+      env, observer_, ConvertUTF8ToJavaString(env, site_url.spec()));
 }
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
@@ -173,10 +167,18 @@ MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
                         profile->GetRequestContext(),
                         ChromePopularSites::GetDirectory(),
                         base::Bind(safe_json::SafeJsonParser::Parse)),
+                    base::MakeUnique<ntp_tiles::IconCacher>(
+                        FaviconServiceFactory::GetForProfile(
+                            profile,
+                            ServiceAccessType::IMPLICIT_ACCESS),
+                        base::MakeUnique<image_fetcher::ImageFetcherImpl>(
+                            base::MakeUnique<suggestions::ImageDecoderImpl>(),
+                            profile->GetRequestContext())),
                     &supervisor_) {
   // Register the thumbnails debugging page.
   // TODO(sfiera): find thumbnails a home. They don't belong here.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
+  DCHECK(!profile->IsOffTheRecord());
 }
 
 MostVisitedSitesBridge::~MostVisitedSitesBridge() {}

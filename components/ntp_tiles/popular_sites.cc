@@ -279,7 +279,6 @@ void PopularSites::OnReadFileDone(std::unique_ptr<std::string> data,
 
 void PopularSites::FetchPopularSites() {
   fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this);
-  // TODO(sfiera): Count the downloaded bytes of icons fetched by popular sites.
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::NTP_TILES);
   fetcher_->SetRequestContext(download_context_);

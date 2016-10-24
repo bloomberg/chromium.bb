@@ -1,6 +1,9 @@
 include_rules = [
   "+components/data_use_measurement/core",
+  "+components/favicon",
+  "+components/favicon_base",
   "+components/google/core/browser",
+  "+components/image_fetcher",
   "+components/history/core/browser",
   "+components/pref_registry",
   "+components/prefs",
