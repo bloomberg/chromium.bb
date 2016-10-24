@@ -40,8 +40,8 @@ class TestProxyConfigService : public net::ProxyConfigService {
                       ConfigAvailability availability) {
     config_ = config;
     availability_ = availability;
-    FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
-                      OnProxyConfigChanged(config, availability));
+    for (net::ProxyConfigService::Observer& observer : observers_)
+      observer.OnProxyConfigChanged(config, availability);
   }
 
  private:

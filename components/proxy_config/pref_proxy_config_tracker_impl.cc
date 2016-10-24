@@ -94,8 +94,8 @@ void ProxyConfigServiceImpl::UpdateProxyConfig(
   net::ProxyConfig new_config;
   ConfigAvailability availability = GetLatestProxyConfig(&new_config);
   if (availability != CONFIG_PENDING) {
-    FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
-                      OnProxyConfigChanged(new_config, availability));
+    for (net::ProxyConfigService::Observer& observer : observers_)
+      observer.OnProxyConfigChanged(new_config, availability);
   }
 }
 
@@ -110,8 +110,8 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
   if (!PrefProxyConfigTrackerImpl::PrefPrecedes(pref_config_state_)) {
     net::ProxyConfig actual_config;
     availability = GetLatestProxyConfig(&actual_config);
-    FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, observers_,
-                      OnProxyConfigChanged(actual_config, availability));
+    for (net::ProxyConfigService::Observer& observer : observers_)
+      observer.OnProxyConfigChanged(actual_config, availability);
   }
 }
 

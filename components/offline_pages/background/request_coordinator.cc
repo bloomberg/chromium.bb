@@ -764,16 +764,19 @@ void RequestCoordinator::RemoveObserver(Observer* observer) {
 }
 
 void RequestCoordinator::NotifyAdded(const SavePageRequest& request) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAdded(request));
+  for (Observer& observer : observers_)
+    observer.OnAdded(request);
 }
 
 void RequestCoordinator::NotifyCompleted(const SavePageRequest& request,
                                          BackgroundSavePageResult status) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnCompleted(request, status));
+  for (Observer& observer : observers_)
+    observer.OnCompleted(request, status);
 }
 
 void RequestCoordinator::NotifyChanged(const SavePageRequest& request) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnChanged(request));
+  for (Observer& observer : observers_)
+    observer.OnChanged(request);
 }
 
 void RequestCoordinator::GetOffliner() {

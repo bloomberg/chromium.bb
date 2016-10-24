@@ -49,8 +49,8 @@ void OfflinePageProxy::OfflinePageModelChanged(OfflinePageModel* model) {
 void OfflinePageProxy::OfflinePageDeleted(
     int64_t offline_id,
     const offline_pages::ClientId& client_id) {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OfflinePageDeleted(offline_id, client_id));
+  for (Observer& observer : observers_)
+    observer.OfflinePageDeleted(offline_id, client_id);
 }
 
 void OfflinePageProxy::FetchOfflinePagesAndNotify() {
@@ -60,7 +60,8 @@ void OfflinePageProxy::FetchOfflinePagesAndNotify() {
 
 void OfflinePageProxy::OnOfflinePagesLoaded(
     const MultipleOfflinePageItemResult& result) {
-  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(result));
+  for (Observer& observer : observers_)
+    observer.OfflinePageModelChanged(result);
 }
 
 }  // namespace ntp_snippets

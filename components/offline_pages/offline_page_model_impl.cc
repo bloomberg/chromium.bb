@@ -790,7 +790,8 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   }
 
   DeletePendingArchiver(archiver);
-  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
+  for (Observer& observer : observers_)
+    observer.OfflinePageModelChanged(this);
 }
 
 void OfflinePageModelImpl::OnMarkPageAccesseDone(
@@ -838,7 +839,8 @@ void OfflinePageModelImpl::OnLoadDone(
     delayed_task.Run();
   delayed_tasks_.clear();
 
-  FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
+  for (Observer& observer : observers_)
+    observer.OfflinePageModelLoaded(this);
 
   CheckMetadataConsistency();
 
@@ -947,8 +949,8 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
   }
 
   for (const auto& page : result->updated_items) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OfflinePageDeleted(page.offline_id, page.client_id));
+    for (Observer& observer : observers_)
+      observer.OfflinePageDeleted(page.offline_id, page.client_id);
   }
 
   // TODO(fgorski): React the FAILED_INITIALIZATION, FAILED_RESET here.

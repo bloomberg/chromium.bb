@@ -93,9 +93,8 @@ void PrefNotifierImpl::FireObservers(const std::string& path) {
   if (observer_iterator == pref_observers_.end())
     return;
 
-  FOR_EACH_OBSERVER(PrefObserver,
-                    *(observer_iterator->second),
-                    OnPreferenceChanged(pref_service_, path));
+  for (PrefObserver& observer : *(observer_iterator->second))
+    observer.OnPreferenceChanged(pref_service_, path);
 }
 
 void PrefNotifierImpl::SetPrefService(PrefService* pref_service) {

@@ -228,8 +228,8 @@ void ShortcutsBackend::InitCompleted() {
   UMA_HISTOGRAM_COUNTS_10000("ShortcutsProvider.DatabaseSize",
                              shortcuts_map_.size());
   current_state_ = INITIALIZED;
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsLoaded());
+  for (ShortcutsBackendObserver& observer : observer_list_)
+    observer.OnShortcutsLoaded();
 }
 
 bool ShortcutsBackend::AddShortcut(
@@ -239,8 +239,8 @@ bool ShortcutsBackend::AddShortcut(
   DCHECK(guid_map_.find(shortcut.id) == guid_map_.end());
   guid_map_[shortcut.id] = shortcuts_map_.insert(
       std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
+  for (ShortcutsBackendObserver& observer : observer_list_)
+    observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
@@ -257,8 +257,8 @@ bool ShortcutsBackend::UpdateShortcut(
     shortcuts_map_.erase(it->second);
   guid_map_[shortcut.id] = shortcuts_map_.insert(
       std::make_pair(base::i18n::ToLower(shortcut.text), shortcut));
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
+  for (ShortcutsBackendObserver& observer : observer_list_)
+    observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
@@ -277,8 +277,8 @@ bool ShortcutsBackend::DeleteShortcutsWithIDs(
       guid_map_.erase(it);
     }
   }
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
+  for (ShortcutsBackendObserver& observer : observer_list_)
+    observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
@@ -303,8 +303,8 @@ bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& url,
       ++it;
     }
   }
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
+  for (ShortcutsBackendObserver& observer : observer_list_)
+    observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE,
@@ -318,8 +318,8 @@ bool ShortcutsBackend::DeleteAllShortcuts() {
     return false;
   shortcuts_map_.clear();
   guid_map_.clear();
-  FOR_EACH_OBSERVER(ShortcutsBackendObserver, observer_list_,
-                    OnShortcutsChanged());
+  for (ShortcutsBackendObserver& observer : observer_list_)
+    observer.OnShortcutsChanged();
   return no_db_access_ ||
          db_runner_->PostTask(
              FROM_HERE, base::Bind(base::IgnoreResult(

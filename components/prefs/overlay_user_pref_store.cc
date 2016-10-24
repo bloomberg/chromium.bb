@@ -130,7 +130,8 @@ void OverlayUserPrefStore::SchedulePendingLossyWrites() {
 
 void OverlayUserPrefStore::ReportValueChanged(const std::string& key,
                                               uint32_t flags) {
-  FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+  for (PrefStore::Observer& observer : observers_)
+    observer.OnPrefValueChanged(key);
 }
 
 void OverlayUserPrefStore::OnPrefValueChanged(const std::string& key) {
@@ -139,8 +140,8 @@ void OverlayUserPrefStore::OnPrefValueChanged(const std::string& key) {
 }
 
 void OverlayUserPrefStore::OnInitializationCompleted(bool succeeded) {
-  FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                    OnInitializationCompleted(succeeded));
+  for (PrefStore::Observer& observer : observers_)
+    observer.OnInitializationCompleted(succeeded);
 }
 
 void OverlayUserPrefStore::RegisterOverlayPref(const std::string& key) {

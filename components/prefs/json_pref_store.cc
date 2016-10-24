@@ -320,7 +320,8 @@ void JsonPrefStore::ReportValueChanged(const std::string& key, uint32_t flags) {
   if (pref_filter_)
     pref_filter_->FilterUpdate(key);
 
-  FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+  for (PrefStore::Observer& observer : observers_)
+    observer.OnPrefValueChanged(key);
 
   ScheduleWrite(flags);
 }
@@ -488,9 +489,8 @@ void JsonPrefStore::FinalizeFileRead(
   filtering_in_progress_ = false;
 
   if (!initialization_successful) {
-    FOR_EACH_OBSERVER(PrefStore::Observer,
-                      observers_,
-                      OnInitializationCompleted(false));
+    for (PrefStore::Observer& observer : observers_)
+      observer.OnInitializationCompleted(false);
     return;
   }
 
@@ -504,9 +504,8 @@ void JsonPrefStore::FinalizeFileRead(
   if (error_delegate_ && read_error_ != PREF_READ_ERROR_NONE)
     error_delegate_->OnError(read_error_);
 
-  FOR_EACH_OBSERVER(PrefStore::Observer,
-                    observers_,
-                    OnInitializationCompleted(true));
+  for (PrefStore::Observer& observer : observers_)
+    observer.OnInitializationCompleted(true);
 
   return;
 }

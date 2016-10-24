@@ -46,7 +46,8 @@ void ContentSuggestionsService::Shutdown() {
   categories_.clear();
   providers_.clear();
   state_ = State::DISABLED;
-  FOR_EACH_OBSERVER(Observer, observers_, ContentSuggestionsServiceShutdown());
+  for (Observer& observer : observers_)
+    observer.ContentSuggestionsServiceShutdown();
 }
 
 // static
@@ -112,8 +113,8 @@ void ContentSuggestionsService::ClearAllCachedSuggestions() {
   for (const auto& category_provider_pair : providers_by_category_) {
     category_provider_pair.second->ClearCachedSuggestions(
         category_provider_pair.first);
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnNewSuggestions(category_provider_pair.first));
+    for (Observer& observer : observers_)
+      observer.OnNewSuggestions(category_provider_pair.first);
   }
 }
 
@@ -228,7 +229,8 @@ void ContentSuggestionsService::OnNewSuggestions(
 
   suggestions_by_category_[category] = std::move(suggestions);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnNewSuggestions(category));
+  for (Observer& observer : observers_)
+    observer.OnNewSuggestions(category);
 }
 
 void ContentSuggestionsService::OnCategoryStatusChanged(
@@ -252,8 +254,8 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
     ContentSuggestionsProvider* provider,
     const ContentSuggestion::ID& suggestion_id) {
   RemoveSuggestionByID(suggestion_id);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnSuggestionInvalidated(suggestion_id));
+  for (Observer& observer : observers_)
+    observer.OnSuggestionInvalidated(suggestion_id);
 }
 
 // history::HistoryServiceObserver implementation.
@@ -376,9 +378,8 @@ bool ContentSuggestionsService::RemoveSuggestionByID(
 }
 
 void ContentSuggestionsService::NotifyCategoryStatusChanged(Category category) {
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnCategoryStatusChanged(category, GetCategoryStatus(category)));
+  for (Observer& observer : observers_)
+    observer.OnCategoryStatusChanged(category, GetCategoryStatus(category));
 }
 
 void ContentSuggestionsService::SortCategories() {

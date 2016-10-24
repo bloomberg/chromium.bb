@@ -284,8 +284,8 @@ void OmniboxPopupModel::OnResultChanged() {
   view_->UpdatePopupAppearance();
   // If popup has just been shown or hidden, notify observers.
   if (view_->IsOpen() != popup_was_open) {
-    FOR_EACH_OBSERVER(OmniboxPopupModelObserver, observers_,
-                      OnOmniboxPopupShownOrHidden());
+    for (OmniboxPopupModelObserver& observer : observers_)
+      observer.OnOmniboxPopupShownOrHidden();
   }
 }
 

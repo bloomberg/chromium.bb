@@ -41,8 +41,10 @@ void DefaultPrefStore::ReplaceDefaultValue(const std::string& key,
   GetValue(key, &old_value);
   bool notify = !old_value->Equals(value.get());
   prefs_.SetValue(key, std::move(value));
-  if (notify)
-    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+  if (notify) {
+    for (Observer& observer : observers_)
+      observer.OnPrefValueChanged(key);
+  }
 }
 
 DefaultPrefStore::const_iterator DefaultPrefStore::begin() const {

@@ -80,7 +80,8 @@ void FakeHostPairingController::ChangeStage(Stage new_stage) {
   if (current_stage_ == new_stage)
     return;
   current_stage_ = new_stage;
-  FOR_EACH_OBSERVER(Observer, observers_, PairingStageChanged(new_stage));
+  for (Observer& observer : observers_)
+    observer.PairingStageChanged(new_stage);
 }
 
 void FakeHostPairingController::ChangeStageLater(Stage new_stage) {

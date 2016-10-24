@@ -49,8 +49,8 @@ void BluetoothControllerPairingController::ChangeStage(Stage new_stage) {
     return;
   VLOG(1) << "ChangeStage " << new_stage;
   current_stage_ = new_stage;
-  FOR_EACH_OBSERVER(ControllerPairingController::Observer, observers_,
-                    PairingStageChanged(new_stage));
+  for (ControllerPairingController::Observer& observer : observers_)
+    observer.PairingStageChanged(new_stage);
 }
 
 void BluetoothControllerPairingController::Reset() {
@@ -76,8 +76,8 @@ void BluetoothControllerPairingController::DeviceFound(
                        base::ASCIIToUTF16(kDeviceNamePrefix),
                        base::CompareCase::INSENSITIVE_ASCII)) {
     discovered_devices_.insert(device->GetAddress());
-    FOR_EACH_OBSERVER(ControllerPairingController::Observer, observers_,
-                      DiscoveredDevicesListChanged());
+    for (ControllerPairingController::Observer& observer : observers_)
+      observer.DiscoveredDevicesListChanged();
   }
 }
 
@@ -89,8 +89,8 @@ void BluetoothControllerPairingController::DeviceLost(
       discovered_devices_.find(device->GetAddress());
   if (ix != discovered_devices_.end()) {
     discovered_devices_.erase(ix);
-    FOR_EACH_OBSERVER(ControllerPairingController::Observer, observers_,
-                      DiscoveredDevicesListChanged());
+    for (ControllerPairingController::Observer& observer : observers_)
+      observer.DiscoveredDevicesListChanged();
   }
 }
 

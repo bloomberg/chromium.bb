@@ -22,16 +22,18 @@ void PhysicalWebDataSourceImpl::UnregisterListener(
 }
 
 void PhysicalWebDataSourceImpl::NotifyOnFound(const std::string& url) {
-  FOR_EACH_OBSERVER(PhysicalWebListener, observer_list_, OnFound(url));
+  for (PhysicalWebListener& observer : observer_list_)
+    observer.OnFound(url);
 }
 
 void PhysicalWebDataSourceImpl::NotifyOnLost(const std::string& url) {
-  FOR_EACH_OBSERVER(PhysicalWebListener, observer_list_, OnLost(url));
+  for (PhysicalWebListener& observer : observer_list_)
+    observer.OnLost(url);
 }
 
 void PhysicalWebDataSourceImpl::NotifyOnDistanceChanged(
     const std::string& url,
     double distance_estimate) {
-  FOR_EACH_OBSERVER(PhysicalWebListener, observer_list_,
-                    OnDistanceChanged(url, distance_estimate));
+  for (PhysicalWebListener& observer : observer_list_)
+    observer.OnDistanceChanged(url, distance_estimate);
 }

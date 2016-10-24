@@ -128,7 +128,8 @@ void BluetoothHostPairingController::ChangeStage(Stage new_stage) {
     return;
   VLOG(1) << "ChangeStage " << new_stage;
   current_stage_ = new_stage;
-  FOR_EACH_OBSERVER(Observer, observers_, PairingStageChanged(new_stage));
+  for (Observer& observer : observers_)
+    observer.PairingStageChanged(new_stage);
 }
 
 void BluetoothHostPairingController::SendHostStatus() {
@@ -384,13 +385,12 @@ void BluetoothHostPairingController::OnHostStatusMessage(
 void BluetoothHostPairingController::OnConfigureHostMessage(
     const pairing_api::ConfigureHost& message) {
   ChangeStage(STAGE_SETUP_BASIC_CONFIGURATION);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    ConfigureHostRequested(
-                        message.parameters().accepted_eula(),
-                        message.parameters().lang(),
-                        message.parameters().timezone(),
-                        message.parameters().send_reports(),
-                        message.parameters().keyboard_layout()));
+  for (Observer& observer : observers_) {
+    observer.ConfigureHostRequested(
+        message.parameters().accepted_eula(), message.parameters().lang(),
+        message.parameters().timezone(), message.parameters().send_reports(),
+        message.parameters().keyboard_layout());
+  }
 }
 
 void BluetoothHostPairingController::OnPairDevicesMessage(
@@ -398,9 +398,8 @@ void BluetoothHostPairingController::OnPairDevicesMessage(
   DCHECK(thread_checker_.CalledOnValidThread());
   enrollment_domain_ = message.parameters().enrolling_domain();
   ChangeStage(STAGE_ENROLLING);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    EnrollHostRequested(
-                        message.parameters().admin_access_token()));
+  for (Observer& observer : observers_)
+    observer.EnrollHostRequested(message.parameters().admin_access_token());
 }
 
 void BluetoothHostPairingController::OnCompleteSetupMessage(
@@ -423,8 +422,8 @@ void BluetoothHostPairingController::OnErrorMessage(
 void BluetoothHostPairingController::OnAddNetworkMessage(
     const pairing_api::AddNetwork& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    AddNetworkRequested(message.parameters().onc_spec()));
+  for (Observer& observer : observers_)
+    observer.AddNetworkRequested(message.parameters().onc_spec());
 }
 
 void BluetoothHostPairingController::AdapterPresentChanged(

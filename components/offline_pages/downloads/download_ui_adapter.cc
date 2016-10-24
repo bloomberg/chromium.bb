@@ -96,7 +96,8 @@ void DownloadUIAdapter::OfflinePageDeleted(
   if (it == items_.end())
     return;
   items_.erase(it);
-  FOR_EACH_OBSERVER(Observer, observers_, ItemDeleted(guid));
+  for (Observer& observer : observers_)
+    observer.ItemDeleted(guid);
 }
 
 std::vector<const DownloadUIItem*> DownloadUIAdapter::GetAllItems() const {
@@ -175,7 +176,8 @@ void DownloadUIAdapter::OnOfflinePagesLoaded(
   }
   model_->AddObserver(this);
   state_ = State::LOADED;
-  FOR_EACH_OBSERVER(Observer, observers_, ItemsLoaded());
+  for (Observer& observer : observers_)
+    observer.ItemsLoaded();
 }
 
 void DownloadUIAdapter::NotifyItemsLoaded(Observer* observer) {
@@ -200,7 +202,8 @@ void DownloadUIAdapter::OnOfflinePagesChanged(
   }
   for (auto& guid : added_guids) {
     const DownloadUIItem& item = *(items_.find(guid)->second->ui_item.get());
-    FOR_EACH_OBSERVER(Observer, observers_, ItemAdded(item));
+    for (Observer& observer : observers_)
+      observer.ItemAdded(item);
   }
 }
 
