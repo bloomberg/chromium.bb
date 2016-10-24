@@ -60,8 +60,8 @@ class ChooserContentViewTest : public views::ViewsTestBase {
     ASSERT_TRUE(turn_adapter_off_help_);
     discovery_state_.reset(chooser_content_view_->CreateExtraView());
     ASSERT_TRUE(discovery_state_);
-    styled_label_.reset(chooser_content_view_->CreateFootnoteView());
-    ASSERT_TRUE(styled_label_);
+    help_link_.reset(chooser_content_view_->CreateFootnoteView());
+    ASSERT_TRUE(help_link_);
   }
 
  protected:
@@ -75,8 +75,8 @@ class ChooserContentViewTest : public views::ViewsTestBase {
   views::TableView* table_view_;
   ui::TableModel* table_model_;
   views::Throbber* throbber_;
-  views::Link* turn_adapter_off_help_;
-  std::unique_ptr<views::StyledLabel> styled_label_;
+  views::StyledLabel* turn_adapter_off_help_;
+  std::unique_ptr<views::StyledLabel> help_link_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChooserContentViewTest);
@@ -518,9 +518,6 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_FALSE(table_view_->visible());
   EXPECT_FALSE(throbber_->visible());
   EXPECT_TRUE(turn_adapter_off_help_->visible());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF),
-      turn_adapter_off_help_->text());
   EXPECT_FALSE(discovery_state_->enabled());
   EXPECT_TRUE(discovery_state_->text().empty());
 
@@ -644,7 +641,7 @@ TEST_F(ChooserContentViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
 
 TEST_F(ChooserContentViewTest, ClickAdapterOffHelpLink) {
   EXPECT_CALL(*mock_chooser_controller_, OpenAdapterOffHelpUrl()).Times(1);
-  chooser_content_view_->LinkClicked(turn_adapter_off_help_, 0);
+  turn_adapter_off_help_->LinkClicked(nullptr, 0);
 }
 
 TEST_F(ChooserContentViewTest, ClickRescanLink) {
@@ -654,5 +651,5 @@ TEST_F(ChooserContentViewTest, ClickRescanLink) {
 
 TEST_F(ChooserContentViewTest, ClickStyledLabelLink) {
   EXPECT_CALL(*mock_chooser_controller_, OpenHelpCenterUrl()).Times(1);
-  styled_label_->LinkClicked(nullptr, 0);
+  help_link_->LinkClicked(nullptr, 0);
 }

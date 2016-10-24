@@ -15091,7 +15091,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         No Bluetooth devices found.
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF" desc="Text of a link the user can click to get help information when Bluetooth adapter is turned off.">
-        Turn on Bluetooth to allow pairing
+        <ph name="TURN_ON_BLUETOOTH_LINK">$1<ex>Turn on Bluetooth</ex></ph> to allow pairing
+      </message>
+      <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ON_BLUETOOTH_LINK_TEXT" desc="Text of the 'Turn on Bluetooth' link when Bluetooth adapter is turned off.">
+        Turn on Bluetooth
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING" desc="The label that is used to indicate the chooser is scanning for Bluetooth devices.">
         Scanning for devices...

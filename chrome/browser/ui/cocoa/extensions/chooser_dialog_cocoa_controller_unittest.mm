@@ -929,9 +929,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   mock_chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_OFF);
   EXPECT_FALSE(adapter_off_help_button_.hidden);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF),
-      adapter_off_help_button_.title);
+  EXPECT_NSEQ(l10n_util::GetNSString(
+                  IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ON_BLUETOOTH_LINK_TEXT),
+              adapter_off_help_button_.title);
   EXPECT_TRUE(table_view_.hidden);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);

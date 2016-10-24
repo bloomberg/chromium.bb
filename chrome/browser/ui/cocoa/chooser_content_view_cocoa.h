@@ -20,6 +20,7 @@ class ChooserController;
  @private
   base::scoped_nsobject<NSTextField> titleView_;
   base::scoped_nsobject<NSButton> adapterOffHelpButton_;
+  base::scoped_nsobject<NSTextField> adapterOffMessage_;
   base::scoped_nsobject<NSScrollView> scrollView_;
   base::scoped_nsobject<NSTableColumn> tableColumn_;
   base::scoped_nsobject<NSTableView> tableView_;

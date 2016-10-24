@@ -60,13 +60,15 @@ ChooserContentView::ChooserContentView(
   throbber_->SetVisible(false);
   AddChildView(throbber_);
 
-  turn_adapter_off_help_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF));
-  turn_adapter_off_help_->SetHandlesTooltips(false);
-  turn_adapter_off_help_->SetUnderline(false);
-  turn_adapter_off_help_->SetMultiLine(true);
-  turn_adapter_off_help_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  turn_adapter_off_help_->set_listener(this);
+  base::string16 link_text = l10n_util::GetStringUTF16(
+      IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ON_BLUETOOTH_LINK_TEXT);
+  size_t offset = 0;
+  base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, link_text, &offset);
+  turn_adapter_off_help_ = new views::StyledLabel(text, this);
+  turn_adapter_off_help_->AddStyleRange(
+      gfx::Range(0, link_text.size()),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
   turn_adapter_off_help_->SetVisible(false);
   AddChildView(turn_adapter_off_help_);
 }
@@ -75,7 +77,6 @@ ChooserContentView::~ChooserContentView() {
   chooser_controller_->set_view(nullptr);
   table_view_->SetObserver(nullptr);
   table_view_->SetModel(nullptr);
-  turn_adapter_off_help_->set_listener(nullptr);
   if (discovery_state_)
     discovery_state_->set_listener(nullptr);
 }
@@ -221,8 +222,6 @@ void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
 void ChooserContentView::LinkClicked(views::Link* source, int event_flags) {
   if (source == discovery_state_)
     chooser_controller_->RefreshOptions();
-  else if (source == turn_adapter_off_help_)
-    chooser_controller_->OpenAdapterOffHelpUrl();
   else
     NOTREACHED();
 }
@@ -230,7 +229,12 @@ void ChooserContentView::LinkClicked(views::Link* source, int event_flags) {
 void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 const gfx::Range& range,
                                                 int event_flags) {
-  chooser_controller_->OpenHelpCenterUrl();
+  if (label == turn_adapter_off_help_)
+    chooser_controller_->OpenAdapterOffHelpUrl();
+  else if (label == help_link_)
+    chooser_controller_->OpenHelpCenterUrl();
+  else
+    NOTREACHED();
 }
 
 base::string16 ChooserContentView::GetWindowTitle() const {
@@ -266,11 +270,11 @@ views::StyledLabel* ChooserContentView::CreateFootnoteView() {
   size_t offset = 0;
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_DEVICE_CHOOSER_FOOTNOTE_TEXT, link, &offset);
-  styled_label_ = new views::StyledLabel(text, this);
-  styled_label_->AddStyleRange(
+  help_link_ = new views::StyledLabel(text, this);
+  help_link_->AddStyleRange(
       gfx::Range(offset, offset + link.length()),
       views::StyledLabel::RangeStyleInfo::CreateForLink());
-  return styled_label_;
+  return help_link_;
 }
 
 void ChooserContentView::Accept() {

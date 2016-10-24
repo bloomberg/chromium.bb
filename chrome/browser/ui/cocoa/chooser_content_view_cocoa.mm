@@ -237,6 +237,7 @@ class ChooserContentViewController : public ChooserController::View {
   ChooserContentViewController(ChooserContentViewCocoa* chooser_content_view,
                                ChooserController* chooser_controller,
                                NSButton* adapter_off_help_button,
+                               NSTextField* adapter_off_message,
                                NSTableView* table_view,
                                SpinnerView* spinner,
                                NSTextField* status,
@@ -257,6 +258,7 @@ class ChooserContentViewController : public ChooserController::View {
   ChooserContentViewCocoa* chooser_content_view_;
   ChooserController* chooser_controller_;
   NSButton* adapter_off_help_button_;
+  NSTextField* adapter_off_message_;
   NSTableView* table_view_;
   SpinnerView* spinner_;
   NSTextField* status_;
@@ -269,6 +271,7 @@ ChooserContentViewController::ChooserContentViewController(
     ChooserContentViewCocoa* chooser_content_view,
     ChooserController* chooser_controller,
     NSButton* adapter_off_help_button,
+    NSTextField* adapter_off_message,
     NSTableView* table_view,
     SpinnerView* spinner,
     NSTextField* status,
@@ -276,12 +279,14 @@ ChooserContentViewController::ChooserContentViewController(
     : chooser_content_view_(chooser_content_view),
       chooser_controller_(chooser_controller),
       adapter_off_help_button_(adapter_off_help_button),
+      adapter_off_message_(adapter_off_message),
       table_view_(table_view),
       spinner_(spinner),
       status_(status),
       rescan_button_(rescan_button) {
   DCHECK(chooser_controller_);
   DCHECK(adapter_off_help_button_);
+  DCHECK(adapter_off_message_);
   DCHECK(table_view_);
   DCHECK(spinner_);
   DCHECK(status_);
@@ -334,6 +339,7 @@ void ChooserContentViewController::OnAdapterEnabledChanged(bool enabled) {
   UpdateTableView();
   [table_view_ setHidden:enabled ? NO : YES];
   [adapter_off_help_button_ setHidden:enabled ? YES : NO];
+  [adapter_off_message_ setHidden:enabled ? YES : NO];
 
   [spinner_ setHidden:YES];
 
@@ -419,12 +425,17 @@ void ChooserContentViewController::UpdateTableView() {
     titleHeight_ = NSHeight([titleView_ frame]);
 
     // Adapter turned off help button.
-    adapterOffHelpButton_ =
-        [self createHyperlinkButtonWithText:
-                  l10n_util::GetNSString(
-                      IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF)];
+    adapterOffHelpButton_ = [self
+        createHyperlinkButtonWithText:
+            l10n_util::GetNSString(
+                IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ON_BLUETOOTH_LINK_TEXT)];
+    CGFloat adapterOffHelpButtonWidth = NSWidth([adapterOffHelpButton_ frame]);
     CGFloat adapterOffHelpButtonHeight =
         NSHeight([adapterOffHelpButton_ frame]);
+
+    // Adapter turned off message.
+    adapterOffMessage_ = CreateLabel(l10n_util::GetNSStringF(
+        IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF, base::string16()));
 
     // Status.
     status_ = CreateLabel(
@@ -528,6 +539,16 @@ void ChooserContentViewController::UpdateTableView() {
     [adapterOffHelpButton_ setHidden:YES];
     [self addSubview:adapterOffHelpButton_];
 
+    // Adapter turned off message.
+    CGFloat adapterOffMessageOriginX = adapterOffHelpButtonOriginX +
+                                       adapterOffHelpButtonWidth -
+                                       kHorizontalPadding / 2;
+    CGFloat adapterOffMessageOriginY = adapterOffHelpButtonOriginY;
+    [adapterOffMessage_ setFrameOrigin:NSMakePoint(adapterOffMessageOriginX,
+                                                   adapterOffMessageOriginY)];
+    [adapterOffMessage_ setHidden:YES];
+    [self addSubview:adapterOffMessage_];
+
     // ScollView and Spinner. Only one of them is shown.
     [scrollView_ setDocumentView:tableView_];
     [self addSubview:scrollView_];
@@ -598,7 +619,8 @@ void ChooserContentViewController::UpdateTableView() {
 
     chooserContentViewController_.reset(new ChooserContentViewController(
         self, chooserController_.get(), adapterOffHelpButton_.get(),
-        tableView_.get(), spinner_.get(), status_.get(), rescanButton_.get()));
+        adapterOffMessage_.get(), tableView_.get(), spinner_.get(),
+        status_.get(), rescanButton_.get()));
   }
 
   return self;

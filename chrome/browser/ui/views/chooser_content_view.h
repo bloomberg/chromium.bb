@@ -78,18 +78,18 @@ class ChooserContentView : public views::View,
 
   views::TableView* table_view_for_test() const { return table_view_; }
   views::Throbber* throbber_for_test() const { return throbber_; }
-  views::Link* turn_adapter_off_help_for_test() const {
+  views::StyledLabel* turn_adapter_off_help_for_test() const {
     return turn_adapter_off_help_;
   }
 
  private:
   std::unique_ptr<ChooserController> chooser_controller_;
-  views::TableView* table_view_ = nullptr;        // Weak.
-  views::View* table_parent_ = nullptr;           // Weak.
-  views::Throbber* throbber_ = nullptr;           // Weak.
-  views::Link* turn_adapter_off_help_ = nullptr;  // Weak.
-  views::Link* discovery_state_ = nullptr;        // Weak.
-  views::StyledLabel* styled_label_ = nullptr;    // Weak.
+  views::TableView* table_view_ = nullptr;  // Weak.
+  views::View* table_parent_ = nullptr;  // Weak.
+  views::StyledLabel* turn_adapter_off_help_ = nullptr;  // Weak.
+  views::Throbber* throbber_ = nullptr;  // Weak.
+  views::Link* discovery_state_ = nullptr;  // Weak.
+  views::StyledLabel* help_link_ = nullptr;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(ChooserContentView);
 };
