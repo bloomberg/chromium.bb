@@ -497,11 +497,7 @@ void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCallbackInf
     ScriptState* scriptState = ScriptState::forReceiverObject(info);
     {% endif %}
     V8PerContextData* contextData = scriptState->perContextData();
-    {% if method.activity_logging_world_check %}
-    if (scriptState->world().isIsolatedWorld() && contextData && contextData->activityLogger())
-    {% else %}
     if (contextData && contextData->activityLogger()) {
-    {% endif %}
         ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "{{interface_name}}", "{{method.name}}");
         Vector<v8::Local<v8::Value>> loggerArgs = toImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
         contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
