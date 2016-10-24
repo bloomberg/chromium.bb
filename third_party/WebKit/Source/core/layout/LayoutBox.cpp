@@ -1008,6 +1008,12 @@ LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* layoutObject) {
   while (
       layoutObject &&
       !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll())) {
+    // Do not start autoscroll when the node is inside a fixed-position element.
+    if (layoutObject->isBox() && toLayoutBox(layoutObject)->hasLayer() &&
+        toLayoutBox(layoutObject)->layer()->scrollsWithViewport()) {
+      return nullptr;
+    }
+
     if (!layoutObject->parent() &&
         layoutObject->node() == layoutObject->document() &&
         layoutObject->document().localOwner())
@@ -1016,7 +1022,8 @@ LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* layoutObject) {
       layoutObject = layoutObject->parent();
   }
 
-  return layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : 0;
+  return layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject)
+                                               : nullptr;
 }
 
 static inline int adjustedScrollDelta(int beginningDelta) {
