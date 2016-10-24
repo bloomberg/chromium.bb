@@ -265,8 +265,6 @@ def main():
     scm_type = scm.determine_scm(full_dir)
     if scm_type == 'git':
       scm_obj = checkout.GitCheckout(full_dir, None, None, None, None)
-    elif scm_type == None:
-      scm_obj = checkout.RawCheckout(full_dir, None, None)
     else:
       parser.error('Couldn\'t determine the scm')
 
