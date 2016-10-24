@@ -1247,6 +1247,7 @@ policies and contribution forms [3].
                 ReadOnlyError: 0,
                 VersionError: 0,
                 OperationError: 0,
+                NotAllowedError: 0
             };
 
             if (!(name in name_code_map)) {
@@ -2461,6 +2462,11 @@ policies and contribution forms [3].
             } catch (e) {
                 stack = e.stack;
             }
+        }
+
+        // 'Error.stack' is not supported in all browsers/versions
+        if (!stack) {
+            return "(Stack trace unavailable)";
         }
 
         var lines = stack.split("\n");
