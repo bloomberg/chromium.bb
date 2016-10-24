@@ -135,10 +135,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Closes |transform_window_|.
   void CloseWindow();
 
-  // Hides the original window header and sets shape or mask on a window.
-  // When masks are used, rounded corner |radius| can be specified.
-  // TODO(varkha): remove |radius|.
-  void HideHeaderAndSetShape(int radius);
+  // Hides the original window header.
+  void HideHeader();
 
   // Sets if the item is dimmed in the overview. Changing the value will also
   // change the visibility of the transform windows.

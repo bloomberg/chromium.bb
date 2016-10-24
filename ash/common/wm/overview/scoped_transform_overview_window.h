@@ -61,12 +61,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   explicit ScopedTransformOverviewWindow(WmWindow* window);
   ~ScopedTransformOverviewWindow();
 
-  gfx::Transform get_overview_transform() const { return overview_transform_; }
-
-  void set_overview_transform(const gfx::Transform& transform) {
-    overview_transform_ = transform;
-  }
-
   // Starts an animation sequence which will use animation settings specified by
   // |animation_type|. The |animation_settings| container is populated with
   // scoped entities and the container should be destroyed at the end of the
@@ -127,13 +121,12 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // Set's the opacity of the managed windows.
   void SetOpacity(float opacity);
 
-  // Creates a mask layer with the bottom edge using rounded corners of
-  // |radius|. Uses SetAlphaShape to mask the header.
-  void HideHeaderAndSetShape(int radius);
+  // Hides the window header whose size is given in |TOP_VIEW_INSET|
+  // window property.
+  void HideHeader();
 
-  // Restores original window shape and removes the mask if installed. Safe to
-  // call even if HideHeaderAndSetShape() has not been called.
-  void ShowHeaderAndResetShape();
+  // Shows the window header that is hidden by HideHeader().
+  void ShowHeader();
 
   WmWindow* window() const { return window_; }
 
@@ -180,10 +173,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
 
   // The original transform of the window before entering overview mode.
   gfx::Transform original_transform_;
-
-  // Keeps track of the original transform used when |this| has been positioned
-  // during SelectorItem layout.
-  gfx::Transform overview_transform_;
 
   // The original opacity of the window before entering overview mode.
   float original_opacity_;

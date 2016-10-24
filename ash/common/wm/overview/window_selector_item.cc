@@ -285,7 +285,7 @@ class WindowSelectorItem::RoundedContainerView
     if (0 != (sequence->properties() &
               ui::LayerAnimationElement::AnimatableProperty::OPACITY)) {
       if (item_)
-        item_->HideHeaderAndSetShape(0);
+        item_->HideHeader();
       StopObservingLayerAnimations();
       AnimateColor(gfx::Tween::EASE_IN, kSelectorColorSlideMilliseconds);
     }
@@ -512,8 +512,8 @@ void WindowSelectorItem::CloseWindow() {
   transform_window_.Close();
 }
 
-void WindowSelectorItem::HideHeaderAndSetShape(int radius) {
-  transform_window_.HideHeaderAndSetShape(radius);
+void WindowSelectorItem::HideHeader() {
+  transform_window_.HideHeader();
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {
@@ -576,7 +576,6 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   ScopedTransformOverviewWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   transform_window_.SetTransform(root_window_, transform);
-  transform_window_.set_overview_transform(transform);
 }
 
 void WindowSelectorItem::SetOpacity(float opacity) {

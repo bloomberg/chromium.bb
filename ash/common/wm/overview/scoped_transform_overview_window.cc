@@ -189,7 +189,6 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_);
-  set_overview_transform(original_transform_);
 
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
       CreateScopedOverviewAnimationSettings(
@@ -213,7 +212,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   }
   window_->GetWindowState()->set_ignored_by_shelf(ignored_by_shelf_);
   SetOpacity(original_opacity_);
-  ShowHeaderAndResetShape();
+  ShowHeader();
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
@@ -400,7 +399,7 @@ void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
   }
 }
 
-void ScopedTransformOverviewWindow::HideHeaderAndSetShape(int radius) {
+void ScopedTransformOverviewWindow::HideHeader() {
   gfx::Rect bounds(GetTargetBoundsInScreen().size());
   const int inset = GetTopInset();
   if (inset > 0) {
@@ -415,7 +414,7 @@ void ScopedTransformOverviewWindow::HideHeaderAndSetShape(int radius) {
   }
 }
 
-void ScopedTransformOverviewWindow::ShowHeaderAndResetShape() {
+void ScopedTransformOverviewWindow::ShowHeader() {
   ui::Layer* layer = window()->GetLayer();
   if (original_window_shape_) {
     layer->SetAlphaShape(
