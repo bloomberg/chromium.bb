@@ -29,6 +29,7 @@ base::Time::Exploded TestExplodedTime() {
   exploded.year = 2001;
   exploded.month = 12;
   exploded.day_of_month = 31;
+  exploded.day_of_week = 1;
   exploded.hour = 12;
   exploded.minute = 1;
   exploded.second = 0;

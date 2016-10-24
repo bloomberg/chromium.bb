@@ -173,6 +173,7 @@ static base::Time kLiveTimelineOffset() {
   exploded_time.year = 2012;
   exploded_time.month = 11;
   exploded_time.day_of_month = 10;
+  exploded_time.day_of_week = 6;
   exploded_time.hour = 12;
   exploded_time.minute = 34;
   exploded_time.second = 56;

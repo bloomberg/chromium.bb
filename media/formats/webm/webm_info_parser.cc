@@ -86,6 +86,7 @@ bool WebMInfoParser::OnBinary(int id, const uint8_t* data, int size) {
     exploded_epoch.year = 2001;
     exploded_epoch.month = 1;
     exploded_epoch.day_of_month = 1;
+    exploded_epoch.day_of_week = 1;
     exploded_epoch.hour = 0;
     exploded_epoch.minute = 0;
     exploded_epoch.second = 0;

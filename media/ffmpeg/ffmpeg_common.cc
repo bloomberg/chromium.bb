@@ -753,6 +753,9 @@ bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {
 
   base::Time::Exploded exploded;
   exploded.millisecond = 0;
+  // This field cannot be uninitialized. Unless not modified, make it 0 here
+  // then.
+  exploded.day_of_week = 0;
   if (base::StringToInt(date_fields[0], &exploded.year) &&
       base::StringToInt(date_fields[1], &exploded.month) &&
       base::StringToInt(date_fields[2], &exploded.day_of_month) &&
