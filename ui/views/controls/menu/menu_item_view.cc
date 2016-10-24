@@ -8,7 +8,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -525,7 +524,9 @@ void MenuItemView::ChildrenChanged() {
     }
   }
 
-  base::STLDeleteElements(&removed_items_);
+  for (auto item : removed_items_)
+    delete item;
+  removed_items_.clear();
 }
 
 void MenuItemView::Layout() {
@@ -598,7 +599,8 @@ MenuItemView::MenuItemView(MenuItemView* parent,
 
 MenuItemView::~MenuItemView() {
   delete submenu_;
-  base::STLDeleteElements(&removed_items_);
+  for (auto item : removed_items_)
+    delete item;
 }
 
 const char* MenuItemView::GetClassName() const {

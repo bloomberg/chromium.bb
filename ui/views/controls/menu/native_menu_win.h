@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_NATIVE_MENU_WIN_H_
 #define UI_VIEWS_CONTROLS_MENU_NATIVE_MENU_WIN_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -87,7 +88,7 @@ class VIEWS_EXPORT NativeMenuWin {
   // An object that collects all of the data associated with an individual menu
   // item.
   struct ItemData;
-  std::vector<ItemData*> items_;
+  std::vector<std::unique_ptr<ItemData>> items_;
 
   // The HWND this menu is the system menu for, or NULL if the menu is not a
   // system menu.

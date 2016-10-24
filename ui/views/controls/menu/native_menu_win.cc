@@ -5,7 +5,7 @@
 #include "ui/views/controls/menu/native_menu_win.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -45,19 +45,18 @@ static NativeMenuWin* GetNativeMenuWinFromHMENU(HMENU hmenu) {
 
 NativeMenuWin::NativeMenuWin(ui::MenuModel* model, HWND system_menu_for)
     : model_(model),
-      menu_(NULL),
-      owner_draw_(l10n_util::NeedOverrideDefaultUIFont(NULL, NULL) &&
+      menu_(nullptr),
+      owner_draw_(l10n_util::NeedOverrideDefaultUIFont(nullptr, nullptr) &&
                   !system_menu_for),
       system_menu_for_(system_menu_for),
       first_item_index_(0),
-      parent_(NULL),
-      destroyed_flag_(NULL) {
-}
+      parent_(nullptr),
+      destroyed_flag_(nullptr) {}
 
 NativeMenuWin::~NativeMenuWin() {
   if (destroyed_flag_)
     *destroyed_flag_ = true;
-  base::STLDeleteContainerPointers(items_.begin(), items_.end());
+  items_.clear();
   DestroyMenu(menu_);
 }
 
@@ -84,7 +83,7 @@ void NativeMenuWin::UpdateStates() {
   // A depth-first walk of the menu items, updating states.
   int model_index = 0;
   std::vector<ItemData*>::const_iterator it;
-  for (it = items_.begin(); it != items_.end(); ++it, ++model_index) {
+  for (auto it = items_.begin(); it != items_.end(); ++it, ++model_index) {
     int menu_index = model_index + first_item_index_;
     SetMenuItemState(menu_index, model_->IsEnabledAt(model_index),
                      model_->IsItemCheckedAt(model_index), false);
@@ -119,12 +118,12 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
   else
     mii.fType = MFT_OWNERDRAW;
 
-  ItemData* item_data = new ItemData;
+  std::unique_ptr<ItemData> item_data = base::MakeUnique<ItemData>();
   item_data->label = base::string16();
   ui::MenuModel::ItemType type = model_->GetTypeAt(model_index);
   if (type == ui::MenuModel::TYPE_SUBMENU) {
-    item_data->submenu.reset(
-        new NativeMenuWin(model_->GetSubmenuModelAt(model_index), nullptr));
+    item_data->submenu = base::MakeUnique<NativeMenuWin>(
+        model_->GetSubmenuModelAt(model_index), nullptr);
     item_data->submenu->Rebuild(nullptr);
     mii.fMask |= MIIM_SUBMENU;
     mii.hSubMenu = item_data->submenu->menu_;
@@ -136,8 +135,8 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
   }
   item_data->native_menu_win = this;
   item_data->model_index = model_index;
-  items_.insert(items_.begin() + model_index, item_data);
-  mii.dwItemData = reinterpret_cast<ULONG_PTR>(item_data);
+  mii.dwItemData = reinterpret_cast<ULONG_PTR>(item_data.get());
+  items_.insert(items_.begin() + model_index, std::move(item_data));
   UpdateMenuItemInfoForString(&mii, model_index,
                               model_->GetLabelAt(model_index));
   InsertMenuItem(menu_, menu_index, TRUE, &mii);
@@ -150,7 +149,7 @@ void NativeMenuWin::AddSeparatorItemAt(int menu_index, int model_index) {
   mii.fType = MFT_SEPARATOR;
   // Insert a dummy entry into our label list so we can index directly into it
   // using item indices if need be.
-  items_.insert(items_.begin() + model_index, new ItemData);
+  items_.insert(items_.begin() + model_index, base::MakeUnique<ItemData>());
   InsertMenuItem(menu_, menu_index, TRUE, &mii);
 }
 

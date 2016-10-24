@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -23,24 +23,22 @@ class LayoutElement {
  public:
   // Invokes ResetSize on all the layout elements.
   template <class T>
-  static void ResetSizes(std::vector<T*>* elements) {
+  static void ResetSizes(std::vector<std::unique_ptr<T>>* elements) {
     // Reset the layout width of each column.
-    for (typename std::vector<T*>::iterator i = elements->begin();
-         i != elements->end(); ++i) {
-      (*i)->ResetSize();
-    }
+    for (const auto& element : *elements)
+      element->ResetSize();
   }
 
   // Sets the location of each element to be the sum of the sizes of the
   // preceding elements.
   template <class T>
-  static void CalculateLocationsFromSize(std::vector<T*>* elements) {
+  static void CalculateLocationsFromSize(
+      std::vector<std::unique_ptr<T>>* elements) {
     // Reset the layout width of each column.
     int location = 0;
-    for (typename std::vector<T*>::iterator i = elements->begin();
-         i != elements->end(); ++i) {
-      (*i)->SetLocation(location);
-      location += (*i)->Size();
+    for (const auto& element : *elements) {
+      element->SetLocation(location);
+      location += element->Size();
     }
   }
 
@@ -48,16 +46,16 @@ class LayoutElement {
   // Each resizable element is given ResizePercent / total_percent * delta
   // pixels extra of space.
   template <class T>
-  static void DistributeDelta(int delta, std::vector<T*>* elements) {
+  static void DistributeDelta(int delta,
+                              std::vector<std::unique_ptr<T>>* elements) {
     if (delta == 0)
       return;
 
     float total_percent = 0;
     int resize_count = 0;
-    for (typename std::vector<T*>::iterator i = elements->begin();
-         i != elements->end(); ++i) {
-      total_percent += (*i)->ResizePercent();
-      if ((*i)->ResizePercent() > 0)
+    for (const auto& element : *elements) {
+      total_percent += element->ResizePercent();
+      if (element->ResizePercent() > 0)
         resize_count++;
     }
     if (total_percent == 0) {
@@ -66,9 +64,7 @@ class LayoutElement {
     }
     int remaining = delta;
     int resized = resize_count;
-    for (typename std::vector<T*>::iterator i = elements->begin();
-         i != elements->end(); ++i) {
-      T* element = *i;
+    for (const auto& element : *elements) {
       if (element->ResizePercent() > 0) {
         int to_give;
         if (--resized == 0) {
@@ -85,7 +81,9 @@ class LayoutElement {
 
   // Returns the sum of the size of the elements from start to start + length.
   template <class T>
-  static int TotalSize(int start, int length, std::vector<T*>* elements) {
+  static int TotalSize(int start,
+                       int length,
+                       std::vector<std::unique_ptr<T>>* elements) {
     DCHECK(start >= 0 && length > 0 &&
            start + length <= static_cast<int>(elements->size()));
     int size = 0;
@@ -163,15 +161,15 @@ class Column : public LayoutElement {
          int fixed_width,
          int min_width,
          bool is_padding)
-    : LayoutElement(resize_percent),
-      h_align_(h_align),
-      v_align_(v_align),
-      size_type_(size_type),
-      same_size_column_(-1),
-      fixed_width_(fixed_width),
-      min_width_(min_width),
-      is_padding_(is_padding),
-      master_column_(NULL) {}
+      : LayoutElement(resize_percent),
+        h_align_(h_align),
+        v_align_(v_align),
+        size_type_(size_type),
+        same_size_column_(-1),
+        fixed_width_(fixed_width),
+        min_width_(min_width),
+        is_padding_(is_padding),
+        master_column_(nullptr) {}
 
   ~Column() override {}
 
@@ -224,8 +222,8 @@ void Column::ResetSize() {
 }
 
 Column* Column::GetLastMasterColumn() {
-  if (master_column_ == NULL) {
-    return NULL;
+  if (master_column_ == nullptr) {
+    return nullptr;
   }
   if (master_column_ == this) {
     return this;
@@ -238,16 +236,12 @@ void Column::UnifySameSizedColumnSizes() {
 
   // Accumulate the size first.
   int size = 0;
-  for (std::vector<Column*>::iterator i = same_size_columns_.begin();
-       i != same_size_columns_.end(); ++i) {
-      size = std::max(size, (*i)->Size());
-  }
+  for (auto column : same_size_columns_)
+    size = std::max(size, column->Size());
 
   // Then apply it.
-  for (std::vector<Column*>::iterator i = same_size_columns_.begin();
-       i != same_size_columns_.end(); ++i) {
-      (*i)->SetSize(size);
-  }
+  for (auto column : same_size_columns_)
+    column->SetSize(size);
 }
 
 void Column::AdjustSize(int size) {
@@ -278,7 +272,7 @@ class Row : public LayoutElement {
     return column_set_;
   }
 
-  // Adjusts the size to accomodate the specified ascent/descent.
+  // Adjusts the size to accommodate the specified ascent/descent.
   void AdjustSizeForBaseline(int ascent, int descent) {
     max_ascent_ = std::max(ascent, max_ascent_);
     max_descent_ = std::max(descent, max_descent_);
@@ -364,7 +358,8 @@ static bool CompareByColumnSpan(const ViewState* v1, const ViewState* v2) {
   return v1->col_span < v2->col_span;
 }
 
-static bool CompareByRowSpan(const ViewState* v1, const ViewState* v2) {
+static bool CompareByRowSpan(const std::unique_ptr<ViewState>& v1,
+                             const ViewState* v2) {
   return v1->row_span < v2->row_span;
 }
 
@@ -374,7 +369,6 @@ ColumnSet::ColumnSet(int id) : id_(id) {
 }
 
 ColumnSet::~ColumnSet() {
-  base::STLDeleteElements(&columns_);
 }
 
 void ColumnSet::AddPaddingColumn(float resize_percent, int width) {
@@ -413,55 +407,51 @@ void ColumnSet::AddColumn(GridLayout::Alignment h_align,
                           int fixed_width,
                           int min_width,
                           bool is_padding) {
-  Column* column = new Column(h_align, v_align, resize_percent, size_type,
-                              fixed_width, min_width, is_padding);
-  columns_.push_back(column);
+  columns_.push_back(base::MakeUnique<Column>(h_align, v_align, resize_percent,
+                                              size_type, fixed_width, min_width,
+                                              is_padding));
 }
 
 void ColumnSet::AddViewState(ViewState* view_state) {
   // view_states are ordered by column_span (in ascending order).
-  std::vector<ViewState*>::iterator i = std::lower_bound(view_states_.begin(),
-                                                         view_states_.end(),
-                                                         view_state,
-                                                         CompareByColumnSpan);
+  auto i = std::lower_bound(view_states_.begin(), view_states_.end(),
+                            view_state, CompareByColumnSpan);
   view_states_.insert(i, view_state);
 }
 
 void ColumnSet::CalculateMasterColumns() {
-  for (std::vector<Column*>::iterator i = columns_.begin();
-       i != columns_.end(); ++i) {
-    Column* column = *i;
+  for (const auto& column : columns_) {
     int same_size_column_index = column->same_size_column_;
     if (same_size_column_index != -1) {
       DCHECK(same_size_column_index >= 0 &&
              same_size_column_index < static_cast<int>(columns_.size()));
       Column* master_column = column->master_column_;
-      Column* same_size_column = columns_[same_size_column_index];
+      Column* same_size_column = columns_[same_size_column_index].get();
       Column* same_size_column_master = same_size_column->master_column_;
-      if (master_column == NULL) {
+      if (master_column == nullptr) {
         // Current column is not linked to any other column.
-        if (same_size_column_master == NULL) {
+        if (same_size_column_master == nullptr) {
           // Both columns are not linked.
-          column->master_column_ = column;
-          same_size_column->master_column_ = column;
+          column->master_column_ = column.get();
+          same_size_column->master_column_ = column.get();
           column->same_size_columns_.push_back(same_size_column);
-          column->same_size_columns_.push_back(column);
+          column->same_size_columns_.push_back(column.get());
         } else {
           // Column to link to is linked with other columns.
           // Add current column to list of linked columns in other columns
           // master column.
-          same_size_column->GetLastMasterColumn()->
-              same_size_columns_.push_back(column);
+          same_size_column->GetLastMasterColumn()->same_size_columns_.push_back(
+              column.get());
           // And update the master column for the current column to that
           // of the same sized column.
           column->master_column_ = same_size_column;
         }
       } else {
         // Current column is already linked with another column.
-        if (same_size_column_master == NULL) {
+        if (same_size_column_master == nullptr) {
           // Column to link with is not linked to any other columns.
           // Update it's master_column.
-          same_size_column->master_column_ = column;
+          same_size_column->master_column_ = column.get();
           // Add linked column to list of linked column.
           column->GetLastMasterColumn()->same_size_columns_.
               push_back(same_size_column);
@@ -480,7 +470,8 @@ void ColumnSet::CalculateMasterColumns() {
           // The other master is no longer a master, clear its vector of
           // linked columns, and reset its master_column.
           other_same_size_columns->clear();
-          same_size_column->GetLastMasterColumn()->master_column_ = column;
+          same_size_column->GetLastMasterColumn()->master_column_ =
+              column.get();
         }
       }
     }
@@ -490,9 +481,7 @@ void ColumnSet::CalculateMasterColumns() {
 
 void ColumnSet::AccumulateMasterColumns() {
   DCHECK(master_columns_.empty());
-  for (std::vector<Column*>::iterator i = columns_.begin();
-       i != columns_.end(); ++i) {
-    Column* column = *i;
+  for (const auto& column : columns_) {
     Column* master_column = column->GetLastMasterColumn();
     if (master_column &&
         std::find(master_columns_.begin(), master_columns_.end(),
@@ -507,10 +496,8 @@ void ColumnSet::AccumulateMasterColumns() {
 }
 
 void ColumnSet::UnifySameSizedColumnSizes() {
-  for (std::vector<Column*>::iterator i = master_columns_.begin();
-       i != master_columns_.end(); ++i) {
-    (*i)->UnifySameSizedColumnSizes();
-  }
+  for (auto column : master_columns_)
+    column->UnifySameSizedColumnSizes();
 }
 
 void ColumnSet::UpdateRemainingWidth(ViewState* view_state) {
@@ -579,10 +566,9 @@ void ColumnSet::DistributeRemainingWidth(ViewState* view_state) {
 
 int ColumnSet::LayoutWidth() {
   int width = 0;
-  for (std::vector<Column*>::iterator i = columns_.begin();
-       i != columns_.end(); ++i) {
-    width += (*i)->Size();
-  }
+  for (const auto& column : columns_)
+    width += column->Size();
+
   return width;
 }
 
@@ -597,9 +583,7 @@ void ColumnSet::ResetColumnXCoordinates() {
 void ColumnSet::CalculateSize() {
   gfx::Size pref;
   // Reset the preferred and remaining sizes.
-  for (std::vector<ViewState*>::iterator i = view_states_.begin();
-       i != view_states_.end(); ++i) {
-    ViewState* view_state = *i;
+  for (const auto& view_state : view_states_) {
     if (!view_state->pref_width_fixed || !view_state->pref_height_fixed) {
       pref = view_state->view->GetPreferredSize();
       if (!view_state->pref_width_fixed)
@@ -615,12 +599,11 @@ void ColumnSet::CalculateSize() {
   LayoutElement::ResetSizes(&columns_);
 
   // Distribute the size of each view with a col span == 1.
-  std::vector<ViewState*>::iterator view_state_iterator =
-      view_states_.begin();
+  auto view_state_iterator = view_states_.begin();
   for (; view_state_iterator != view_states_.end() &&
          (*view_state_iterator)->col_span == 1; ++view_state_iterator) {
     ViewState* view_state = *view_state_iterator;
-    Column* column = columns_[view_state->start_col];
+    Column* column = columns_[view_state->start_col].get();
     column->AdjustSize(view_state->pref_width);
     view_state->remaining_width -= column->Size();
   }
@@ -656,15 +639,12 @@ GridLayout::GridLayout(View* host)
       remaining_row_span_(0),
       current_row_(-1),
       next_column_(0),
-      current_row_col_set_(NULL),
+      current_row_col_set_(nullptr),
       adding_view_(false) {
   DCHECK(host);
 }
 
 GridLayout::~GridLayout() {
-  base::STLDeleteElements(&column_sets_);
-  base::STLDeleteElements(&view_states_);
-  base::STLDeleteElements(&rows_);
 }
 
 // static
@@ -684,20 +664,18 @@ void GridLayout::SetInsets(const gfx::Insets& insets) {
 }
 
 ColumnSet* GridLayout::AddColumnSet(int id) {
-  DCHECK(GetColumnSet(id) == NULL);
-  ColumnSet* column_set = new ColumnSet(id);
-  column_sets_.push_back(column_set);
-  return column_set;
+  DCHECK(GetColumnSet(id) == nullptr);
+  column_sets_.push_back(base::WrapUnique(new ColumnSet(id)));
+  return column_sets_.back().get();
 }
 
 ColumnSet* GridLayout::GetColumnSet(int id) {
-  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    if ((*i)->id_ == id) {
-      return *i;
+  for (const auto& column_set : column_sets_) {
+    if (column_set->id_ == id) {
+      return column_set.get();
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void GridLayout::StartRowWithPadding(float vertical_resize, int column_set_id,
@@ -709,11 +687,11 @@ void GridLayout::StartRowWithPadding(float vertical_resize, int column_set_id,
 void GridLayout::StartRow(float vertical_resize, int column_set_id) {
   ColumnSet* column_set = GetColumnSet(column_set_id);
   DCHECK(column_set);
-  AddRow(new Row(0, vertical_resize, column_set));
+  AddRow(base::MakeUnique<Row>(0, vertical_resize, column_set));
 }
 
 void GridLayout::AddPaddingRow(float vertical_resize, int pixel_count) {
-  AddRow(new Row(pixel_count, vertical_resize, NULL));
+  AddRow(base::MakeUnique<Row>(pixel_count, vertical_resize, nullptr));
 }
 
 void GridLayout::SkipColumns(int col_count) {
@@ -731,7 +709,7 @@ void GridLayout::AddView(View* view) {
 void GridLayout::AddView(View* view, int col_span, int row_span) {
   DCHECK(current_row_col_set_ &&
          next_column_ < current_row_col_set_->num_columns());
-  Column* column = current_row_col_set_->columns_[next_column_];
+  Column* column = current_row_col_set_->columns_[next_column_].get();
   AddView(view, col_span, row_span, column->h_align(), column->v_align());
 }
 
@@ -748,11 +726,9 @@ void GridLayout::AddView(View* view, int col_span, int row_span,
   // We don't support baseline alignment of views spanning rows. Please add if
   // you need it.
   DCHECK(v_align != BASELINE || row_span == 1);
-  ViewState* state =
-      new ViewState(current_row_col_set_, view, next_column_, current_row_,
-                    col_span, row_span, h_align, v_align, pref_width,
-                    pref_height);
-  AddViewState(state);
+  AddViewState(base::MakeUnique<ViewState>(
+      current_row_col_set_, view, next_column_, current_row_, col_span,
+      row_span, h_align, v_align, pref_width, pref_height));
 }
 
 static void CalculateSize(int pref_size, GridLayout::Alignment alignment,
@@ -799,11 +775,9 @@ void GridLayout::Layout(View* host) {
   SizeRowsAndColumns(true, host_->width(), host_->height(), &pref);
 
   // Size each view.
-  for (std::vector<ViewState*>::iterator i = view_states_.begin();
-       i != view_states_.end(); ++i) {
-    ViewState* view_state = *i;
+  for (const auto& view_state : view_states_) {
     ColumnSet* column_set = view_state->column_set;
-    View* view = (*i)->view;
+    View* view = view_state->view;
     DCHECK(view);
     int x = column_set->columns_[view_state->start_col]->Location() +
             insets_.left();
@@ -851,22 +825,20 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   // Calculate the preferred width of each of the columns. Some views'
   // preferred heights are derived from their width, as such we need to
   // calculate the size of the columns first.
-  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    (*i)->CalculateSize();
-    pref->set_width(std::max(pref->width(), (*i)->LayoutWidth()));
+  for (const auto& column_set : column_sets_) {
+    column_set->CalculateSize();
+    pref->set_width(std::max(pref->width(), column_set->LayoutWidth()));
   }
   pref->set_width(pref->width() + insets_.width());
 
   // Go over the columns again and set them all to the size we settled for.
   width = width ? width : pref->width();
-  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
-       i != column_sets_.end(); ++i) {
-    // We're doing a layout, divy up any extra space.
-    (*i)->Resize(width - (*i)->LayoutWidth() - insets_.left() -
-                 insets_.right());
+  for (const auto& column_set : column_sets_) {
+    // We're doing a layout, divvy up any extra space.
+    column_set->Resize(width - column_set->LayoutWidth() - insets_.left() -
+                       insets_.right());
     // And reset the x coordinates.
-    (*i)->ResetColumnXCoordinates();
+    column_set->ResetColumnXCoordinates();
   }
 
   // Reset the height of each row.
@@ -878,9 +850,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   // . Reset the remaining_height of each view state.
   // . If the width the view will be given is different than it's pref, ask
   //   for the height given a particularly width.
-  for (std::vector<ViewState*>::iterator i= view_states_.begin();
-       i != view_states_.end() ; ++i) {
-    ViewState* view_state = *i;
+  for (const auto& view_state : view_states_) {
     view_state->remaining_height = view_state->pref_height;
 
     if (view_state->v_align == BASELINE)
@@ -904,11 +874,11 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   }
 
   // Update the height/ascent/descent of each row from the views.
-  std::vector<ViewState*>::iterator view_states_iterator = view_states_.begin();
+  auto view_states_iterator = view_states_.begin();
   for (; view_states_iterator != view_states_.end() &&
       (*view_states_iterator)->row_span == 1; ++view_states_iterator) {
-    ViewState* view_state = *view_states_iterator;
-    Row* row = rows_[view_state->start_row];
+    ViewState* view_state = view_states_iterator->get();
+    Row* row = rows_[view_state->start_row].get();
     row->AdjustSize(view_state->remaining_height);
     if (view_state->baseline != -1 &&
         view_state->baseline <= view_state->pref_height) {
@@ -920,7 +890,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
 
   // Distribute the height of each view with a row span > 1.
   for (; view_states_iterator != view_states_.end(); ++view_states_iterator) {
-    ViewState* view_state = *view_states_iterator;
+    ViewState* view_state = view_states_iterator->get();
 
     // Update the remaining_width from columns this view_state touches.
     UpdateRemainingHeightFromRows(view_state);
@@ -938,7 +908,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
 
   if (layout && height != pref->height()) {
     // We're doing a layout, and the height differs from the preferred height,
-    // divy up the extra space.
+    // divvy up the extra space.
     LayoutElement::DistributeDelta(height - pref->height(), &rows_);
 
     // Reset y locations.
@@ -949,15 +919,14 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
 void GridLayout::CalculateMasterColumnsIfNecessary() const {
   if (!calculated_master_columns_) {
     calculated_master_columns_ = true;
-    for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
-         i != column_sets_.end(); ++i) {
-      (*i)->CalculateMasterColumns();
+    for (const auto& column_set : column_sets_) {
+      column_set->CalculateMasterColumns();
     }
   }
 }
 
-void GridLayout::AddViewState(ViewState* view_state) {
-  DCHECK(view_state->view && (view_state->view->parent() == NULL ||
+void GridLayout::AddViewState(std::unique_ptr<ViewState> view_state) {
+  DCHECK(view_state->view && (view_state->view->parent() == nullptr ||
                               view_state->view->parent() == host_));
   if (!view_state->view->parent()) {
     adding_view_ = true;
@@ -966,28 +935,25 @@ void GridLayout::AddViewState(ViewState* view_state) {
   }
   remaining_row_span_ = std::max(remaining_row_span_, view_state->row_span);
   next_column_ += view_state->col_span;
-  current_row_col_set_->AddViewState(view_state);
+  current_row_col_set_->AddViewState(view_state.get());
   // view_states are ordered by row_span (in ascending order).
-  std::vector<ViewState*>::iterator i = std::lower_bound(view_states_.begin(),
-                                                         view_states_.end(),
-                                                         view_state,
-                                                         CompareByRowSpan);
-  view_states_.insert(i, view_state);
+  auto i = std::lower_bound(view_states_.begin(), view_states_.end(),
+                            view_state.get(), CompareByRowSpan);
+  view_states_.insert(i, std::move(view_state));
   SkipPaddingColumns();
 }
 
-void GridLayout::AddRow(Row* row) {
+void GridLayout::AddRow(std::unique_ptr<Row> row) {
   current_row_++;
   remaining_row_span_--;
   // GridLayout requires that if you add a View with a row span you use the same
   // column set for each of the rows the view lands it. This DCHECK verifies
   // that.
-  DCHECK(remaining_row_span_ <= 0 ||
-         row->column_set() == NULL ||
+  DCHECK(remaining_row_span_ <= 0 || row->column_set() == nullptr ||
          row->column_set() == GetLastValidColumnSet());
   next_column_ = 0;
-  rows_.push_back(row);
   current_row_col_set_ = row->column_set();
+  rows_.push_back(std::move(row));
   SkipPaddingColumns();
 }
 
@@ -1027,7 +993,7 @@ void GridLayout::DistributeRemainingHeight(ViewState* view_state) const {
       }
     }
   } else {
-    // None of the rows are resizable, divy the remaining height up equally
+    // None of the rows are resizable, divvy the remaining height up equally
     // among all rows the view touches.
     int each_row_height = height / view_state->row_span;
     for (int i = start_row; i < max_row; ++i) {
@@ -1054,7 +1020,7 @@ ColumnSet* GridLayout::GetLastValidColumnSet() {
     if (rows_[i]->column_set())
       return rows_[i]->column_set();
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace views
