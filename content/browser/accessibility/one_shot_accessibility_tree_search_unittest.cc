@@ -96,6 +96,15 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, GetAll) {
   ASSERT_EQ(6U, search.CountMatches());
 }
 
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, NoCycle) {
+  // If you set a result limit of 1, you won't get the root node back as
+  // the first match.
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
+  search.SetResultLimit(1);
+  ASSERT_EQ(1U, search.CountMatches());
+  EXPECT_NE(1, search.GetMatchAtIndex(0)->GetId());
+}
+
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, ForwardsWithStartNode) {
   OneShotAccessibilityTreeSearch search(tree_->GetRoot());
   search.SetStartNode(tree_->GetFromID(4));

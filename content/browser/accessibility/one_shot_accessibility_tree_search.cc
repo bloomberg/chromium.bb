@@ -153,7 +153,7 @@ void OneShotAccessibilityTreeSearch::SearchByIteratingOverChildren() {
 void OneShotAccessibilityTreeSearch::SearchByWalkingTree() {
   BrowserAccessibility* node = nullptr;
   node = start_node_;
-  if (node != scope_node_) {
+  if (node != scope_node_ || result_limit_ == 1) {
     if (direction_ == FORWARDS)
       node = tree_->NextInTreeOrder(start_node_);
     else

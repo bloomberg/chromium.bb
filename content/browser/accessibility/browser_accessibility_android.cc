@@ -288,8 +288,9 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   if (IsControl())
     return true;
 
-  // Otherwise, the interesting nodes are leaf nodes with text.
-  return PlatformIsLeaf() && !GetText().empty();
+  // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
+  return PlatformIsLeaf() &&
+      !base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
 const BrowserAccessibilityAndroid*
