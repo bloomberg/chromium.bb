@@ -186,6 +186,14 @@ cr.define('options', function() {
       var columnWidth = entry.urlDiv.offsetWidth -
           parseInt(computedStyle.webkitMarginStart, 10) -
           parseInt(computedStyle.webkitPaddingStart, 10);
+
+      // We use a canvas context to compute text widths. This canvas is not
+      // part of the DOM and thus avoids layout thrashing when updating the
+      // contained text.
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = computedStyle.font;
+
       for (var i = 0; i < entries.length; ++i) {
         entry = entries[i];
         // For android://com.example, elide from the right.
@@ -200,11 +208,17 @@ cr.define('options', function() {
               urlLink.textContent);
           continue;
         }
-        if (urlLink.offsetWidth <= cellWidth)
+
+        var textContent = urlLink.textContent;
+        if (ctx.measureText(textContent).width <= cellWidth)
           continue;
-        urlLink.textContent = '…' + urlLink.textContent.substring(1);
-        while (urlLink.offsetWidth > cellWidth)
-          urlLink.textContent = '…' + urlLink.textContent.substring(2);
+
+        textContent = '…' + textContent.substring(1);
+        while (ctx.measureText(textContent).width > cellWidth)
+          textContent = '…' + textContent.substring(2);
+
+        // Write the elided origin back to the DOM.
+        urlLink.textContent = textContent;
       }
     },
 
