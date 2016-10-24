@@ -33,12 +33,6 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="492"/>
-                            <menuItem title="^IDS_SYNC_MENU_PRE_SYNCED_LABEL$IDS_PRODUCT_NAME" tag="40030" hidden="YES" enabled="NO" id="664">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="commandDispatch:" target="-1" id="666"/>
-                                </connections>
-                            </menuItem>
                             <menuItem title="^IDS_CLEAR_BROWSING_DATA" tag="40013" id="491">
                                 <string key="keyEquivalent" base64-UTF8="YES">
 CA

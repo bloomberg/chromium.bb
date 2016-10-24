@@ -20,10 +20,6 @@ namespace signin_ui_util {
 // The maximum number of times to show the welcome tutorial for an upgrade user.
 const int kUpgradeWelcomeTutorialShowMax = 1;
 
-// Returns the label that should be displayed in the signin menu (i.e.
-// "Sign in to Chromium", "Signin Error...", etc).
-base::string16 GetSigninMenuLabel(Profile* profile);
-
 void GetStatusLabelsForAuthError(Profile* profile,
                                  const SigninManagerBase& signin_manager,
                                  base::string16* status_label,

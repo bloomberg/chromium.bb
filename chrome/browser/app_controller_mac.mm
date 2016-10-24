@@ -291,33 +291,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
 @synthesize startupComplete = startupComplete_;
 
-+ (void)updateSigninItem:(id)signinItem
-              shouldShow:(BOOL)showSigninMenuItem
-          currentProfile:(Profile*)profile {
-  DCHECK([signinItem isKindOfClass:[NSMenuItem class]]);
-  NSMenuItem* signinMenuItem = static_cast<NSMenuItem*>(signinItem);
-
-  // Look for a separator immediately after the menu item so it can be hidden
-  // or shown appropriately along with the signin menu item.
-  NSMenuItem* followingSeparator = nil;
-  NSMenu* menu = [signinItem menu];
-  if (menu) {
-    NSInteger signinItemIndex = [menu indexOfItem:signinMenuItem];
-    DCHECK_NE(signinItemIndex, -1);
-    if ((signinItemIndex + 1) < [menu numberOfItems]) {
-      NSMenuItem* menuItem = [menu itemAtIndex:(signinItemIndex + 1)];
-      if ([menuItem isSeparatorItem]) {
-        followingSeparator = menuItem;
-      }
-    }
-  }
-
-  base::string16 label = signin_ui_util::GetSigninMenuLabel(profile);
-  [signinMenuItem setTitle:l10n_util::FixUpWindowsStyleLabel(label)];
-  [signinMenuItem setHidden:!showSigninMenuItem];
-  [followingSeparator setHidden:!showSigninMenuItem];
-}
-
 - (void)dealloc {
   [[closeTabMenuItem_ menu] setDelegate:nil];
   [super dealloc];
@@ -922,27 +895,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
           // dialog.
           enable = ![self keyWindowIsModal];
           break;
-        case IDC_SHOW_SYNC_SETUP: {
-          Profile* lastProfile = [self lastProfile];
-          // The profile may be NULL during shutdown -- see
-          // http://code.google.com/p/chromium/issues/detail?id=43048 .
-          //
-          // TODO(akalin,viettrungluu): Figure out whether this method
-          // can be prevented from being called if lastProfile is
-          // NULL.
-          if (!lastProfile) {
-            LOG(WARNING)
-                << "NULL lastProfile detected -- not doing anything";
-            break;
-          }
-          SigninManager* signin = SigninManagerFactory::GetForProfile(
-              lastProfile->GetOriginalProfile());
-          enable = signin->IsSigninAllowed() && ![self keyWindowIsModal];
-          [AppController updateSigninItem:item
-                               shouldShow:enable
-                           currentProfile:lastProfile];
-          break;
-        }
         default:
           enable = menuState_->IsCommandEnabled(tag) ?
                    ![self keyWindowIsModal] : NO;
@@ -1087,15 +1039,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
         chrome::ShowHelp(browser, chrome::HELP_SOURCE_MENU);
       else
         chrome::OpenHelpWindow(lastProfile, chrome::HELP_SOURCE_MENU);
-      break;
-    case IDC_SHOW_SYNC_SETUP:
-      if (Browser* browser = ActivateBrowser(lastProfile)) {
-        chrome::ShowBrowserSigninOrSettings(
-            browser, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
-      } else {
-        chrome::OpenSyncSetupWindow(
-            lastProfile, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
-      }
       break;
     case IDC_TASK_MANAGER:
       chrome::OpenTaskManager(NULL);
@@ -1249,7 +1192,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 #if defined(GOOGLE_CHROME_BUILD)
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
 #endif
-  menuState_->UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }
 

@@ -34,49 +34,6 @@
 
 namespace signin_ui_util {
 
-namespace {
-
-// Maximum width of a username - we trim emails that are wider than this so
-// the wrench menu doesn't get ridiculously wide.
-const int kUsernameMaxWidth = 200;
-
-// Returns all errors reported by signed in services.
-std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
-  std::vector<GlobalError*> errors;
-  // Chrome OS doesn't use SigninGlobalError or SyncGlobalError. Other platforms
-  // may use these services to show auth and sync errors in the toolbar menu.
-#if !defined(OS_CHROMEOS)
-  // Auth errors have the highest priority - after that, individual service
-  // errors.
-  SigninGlobalError* signin_error =
-      SigninGlobalErrorFactory::GetForProfile(profile);
-  if (signin_error && signin_error->HasError())
-    errors.push_back(signin_error);
-
-  // No auth error - now try other services. Currently the list is just hard-
-  // coded but in the future if we add more we can create some kind of
-  // registration framework.
-  if (profile->IsSyncAllowed()) {
-    SyncGlobalError* error = SyncGlobalErrorFactory::GetForProfile(profile);
-    if (error && error->HasMenuItem())
-      errors.push_back(error);
-  }
-#endif
-
-  return errors;
-}
-
-// If a signed in service is reporting an error, returns the GlobalError
-// object associated with that service, or null if no errors are reported.
-GlobalError* GetSignedInServiceError(Profile* profile) {
-  std::vector<GlobalError*> errors = GetSignedInServiceErrors(profile);
-  if (errors.empty())
-    return nullptr;
-  return errors[0];
-}
-
-}  // namespace
-
 base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
   std::string user_display_name;
 
@@ -94,35 +51,6 @@ base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin) {
   }
 
   return base::UTF8ToUTF16(user_display_name);
-}
-
-base::string16 GetSigninMenuLabel(Profile* profile) {
-  GlobalError* error = signin_ui_util::GetSignedInServiceError(profile);
-  if (error)
-    return error->MenuItemLabel();
-
-  // No errors, so just display the signed in user, if any.
-  browser_sync::ProfileSyncService* service =
-      profile->IsSyncAllowed()
-          ? ProfileSyncServiceFactory::GetForProfile(profile)
-          : nullptr;
-
-  // Even if the user is signed in, don't display the "signed in as..."
-  // label if we're still setting up sync.
-  if (!service || !service->IsFirstSetupInProgress()) {
-    std::string username;
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfileIfExists(profile);
-    if (signin_manager)
-      username = signin_manager->GetAuthenticatedAccountInfo().email;
-    if (!username.empty() && !signin_manager->AuthInProgress()) {
-      const base::string16 elided = gfx::ElideText(base::UTF8ToUTF16(username),
-          gfx::FontList(), kUsernameMaxWidth, gfx::ELIDE_EMAIL);
-      return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL, elided);
-    }
-  }
-  return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
-      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
 }
 
 // Given an authentication state this helper function returns various labels

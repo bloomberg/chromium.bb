@@ -133,15 +133,6 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
         [menuItem setTitle:GetTitleForFullscreenMenuItem(browser)];
       break;
     }
-    case IDC_SHOW_SIGNIN: {
-      Profile* original_profile = browser->profile()->GetOriginalProfile();
-      [AppController updateSigninItem:item
-                           shouldShow:enable
-                       currentProfile:original_profile];
-      content::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromMenu"));
-      break;
-    }
     case IDC_BOOKMARK_PAGE: {
       // Extensions have the ability to hide the bookmark page menu item.
       // This only affects the bookmark page menu item under the main menu.
