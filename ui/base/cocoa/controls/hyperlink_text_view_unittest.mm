@@ -58,6 +58,20 @@ class HyperlinkTextViewTest : public ui::CocoaTest {
 
 TEST_VIEW(HyperlinkTextViewTest, view_);
 
+TEST_F(HyperlinkTextViewTest, TestSelectionRange) {
+  NSRange actualRange;
+
+  // The length of the selection range should be 0.
+  actualRange = [view_ selectionRangeForProposedRange:NSMakeRange(0, 20)
+                                          granularity:NSSelectByCharacter];
+  EXPECT_TRUE(NSEqualRanges(NSMakeRange(0, 0), actualRange));
+
+  // While the location should always match the location of the proposed range.
+  actualRange = [view_ selectionRangeForProposedRange:NSMakeRange(50, 100)
+                                          granularity:NSSelectByCharacter];
+  EXPECT_TRUE(NSEqualRanges(NSMakeRange(50, 0), actualRange));
+}
+
 TEST_F(HyperlinkTextViewTest, TestViewConfiguration) {
   EXPECT_FALSE([view_ isEditable]);
   EXPECT_FALSE([view_ drawsBackground]);

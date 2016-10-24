@@ -54,8 +54,12 @@ const float kTextBaselineShift = -1.0;
 
 - (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
                               granularity:(NSSelectionGranularity)granularity {
-  // Do not allow selections.
-  return NSMakeRange(0, 0);
+  // Return a range of length 0 to prevent text selection. Note that the start
+  // of the range (the first argument) is treated as the position of the
+  // subsequent click so it must not be 0. If it is, links that begin at a
+  // non-zero position in the text will not function correctly when they are
+  // clicked in such a way as to look like a possible text selection.
+  return NSMakeRange(proposedSelRange.location, 0);
 }
 
 // Convince NSTextView to not show an I-Beam cursor when the cursor is over the
