@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 
 #include "ash/common/system/system_notifier.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -36,7 +37,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/view.h"
@@ -261,9 +261,9 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
 
   int icon_id;
   if (default_network->network_technology() == shill::kNetworkTechnologyLte)
-    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
+    icon_id = IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE;
   else
-    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
+    icon_id = IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G;
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
 
@@ -302,7 +302,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
   base::string16 message = l10n_util::GetStringUTF16(IDS_3G_DATASAVER_MESSAGE);
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_AURA_UBER_TRAY_NOTIFICATION_DATASAVER);
+          IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_DATASAVER);
 
   message_center::MessageCenter::Get()->AddNotification(
       message_center::Notification::CreateSystemNotification(

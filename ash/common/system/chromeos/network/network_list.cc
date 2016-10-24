@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_list.h"
+#include "ash/common/system/chromeos/network/network_list.h"
 
 #include <stddef.h>
 
+#include "ash/common/system/chromeos/network/network_icon.h"
+#include "ash/common/system/chromeos/network/network_icon_animation.h"
+#include "ash/common/system/chromeos/network/network_info.h"
+#include "ash/common/system/chromeos/network/network_list_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -16,13 +20,9 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/device_event_log/device_event_log.h"
-#include "grit/ui_chromeos_strings.h"
+#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_icon.h"
-#include "ui/chromeos/network/network_icon_animation.h"
-#include "ui/chromeos/network/network_info.h"
-#include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -33,7 +33,7 @@ using chromeos::NetworkStateHandler;
 using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkTypePattern;
 
-namespace ui {
+namespace ash {
 
 namespace {
 
@@ -101,8 +101,7 @@ void NetworkListView::UpdateNetworks(
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin();
-       iter != networks.end();
-       ++iter) {
+       iter != networks.end(); ++iter) {
     const chromeos::NetworkState* network = *iter;
     if (!pattern.MatchesType(network->type()))
       continue;
@@ -156,8 +155,7 @@ void NetworkListView::UpdateNetworkListInternal() {
   // Remove old children
   std::set<std::string> remove_service_paths;
   for (ServicePathMap::const_iterator it = service_path_map_.begin();
-       it != service_path_map_.end();
-       ++it) {
+       it != service_path_map_.end(); ++it) {
     if (new_service_paths.find(it->first) == new_service_paths.end()) {
       remove_service_paths.insert(it->first);
       network_map_.erase(it->second);
@@ -168,8 +166,7 @@ void NetworkListView::UpdateNetworkListInternal() {
 
   for (std::set<std::string>::const_iterator remove_it =
            remove_service_paths.begin();
-       remove_it != remove_service_paths.end();
-       ++remove_it) {
+       remove_it != remove_service_paths.end(); ++remove_it) {
     service_path_map_.erase(*remove_it);
   }
 
@@ -322,4 +319,4 @@ void NetworkListView::NetworkIconChanged() {
   Update();
 }
 
-}  // namespace ui
+}  // namespace ash

@@ -7,12 +7,12 @@
 #include <set>
 #include <string>
 
+#include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/chromeos/network/network_icon.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 using chromeos::NetworkHandler;
@@ -88,7 +88,7 @@ void TrayNetworkStateObserver::SignalUpdate() {
 void TrayNetworkStateObserver::SendNetworkStateChanged() {
   delegate_->NetworkStateChanged();
   if (purge_icons_) {
-    ui::network_icon::PurgeNetworkIconCache();
+    network_icon::PurgeNetworkIconCache();
     purge_icons_ = false;
   }
 }

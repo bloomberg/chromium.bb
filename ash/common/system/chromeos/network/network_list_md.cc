@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_list_md.h"
+#include "ash/common/system/chromeos/network/network_list_md.h"
 
 #include <stddef.h>
 
+#include "ash/common/system/chromeos/network/network_icon.h"
+#include "ash/common/system/chromeos/network/network_icon_animation.h"
+#include "ash/common/system/chromeos/network/network_info.h"
+#include "ash/common/system/chromeos/network/network_list_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -16,13 +20,9 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/device_event_log/device_event_log.h"
-#include "grit/ui_chromeos_strings.h"
+#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_icon.h"
-#include "ui/chromeos/network/network_icon_animation.h"
-#include "ui/chromeos/network/network_info.h"
-#include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -42,7 +42,7 @@ using chromeos::NetworkStateHandler;
 using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkTypePattern;
 
-namespace ui {
+namespace ash {
 
 namespace {
 
@@ -500,4 +500,4 @@ void NetworkListViewMd::ButtonPressed(views::Button* sender,
   }
 }
 
-}  // namespace ui
+}  // namespace ash

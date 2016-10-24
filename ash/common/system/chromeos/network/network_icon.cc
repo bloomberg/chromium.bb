@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_icon.h"
+#include "ash/common/system/chromeos/network/network_icon.h"
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/system/chromeos/network/network_icon_animation.h"
+#include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/device_state.h"
@@ -11,17 +14,14 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "grit/ui_chromeos_resources.h"
-#include "grit/ui_chromeos_strings.h"
+#include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/material_design_icon_controller.h"
-#include "ui/chromeos/network/network_icon_animation.h"
-#include "ui/chromeos/network/network_icon_animation_observer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -42,7 +42,7 @@ using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
-namespace ui {
+namespace ash {
 namespace network_icon {
 
 namespace {
@@ -60,7 +60,7 @@ const int kMenuIconBadgeOffset = 2;
 const int kTrayIconSide = 16;
 
 bool UseMd() {
-  return md_icon_controller::UseMaterialDesignNetworkIcons();
+  return MaterialDesignController::UseMaterialDesignSystemIcons();
 }
 
 //------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void PurgeIconMap(IconType icon_type,
   if (!icon_map)
     return;
   for (NetworkIconMap::iterator loop_iter = icon_map->begin();
-       loop_iter != icon_map->end(); ) {
+       loop_iter != icon_map->end();) {
     NetworkIconMap::iterator cur_iter = loop_iter++;
     if (network_paths.count(cur_iter->first) == 0) {
       delete cur_iter->second;
@@ -180,11 +180,7 @@ void PurgeIconMap(IconType icon_type,
 
 // 'NONE' will default to ARCS behavior where appropriate (e.g. no network or
 // if a new type gets added).
-enum ImageType {
-  ARCS,
-  BARS,
-  NONE
-};
+enum ImageType { ARCS, BARS, NONE };
 
 // Amount to fade icons while connecting.
 const double kConnectingImageAlpha = 0.5;
@@ -336,9 +332,7 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
       DrawBars(canvas);
   }
 
-  bool HasRepresentationAtAllScales() const override {
-    return true;
-  }
+  bool HasRepresentationAtAllScales() const override { return true; }
 
  private:
   static gfx::Size GetSizeForIconType(IconType icon_type) {
@@ -484,8 +478,8 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
   gfx::ImageSkia* images = BaseImageForType(image_type, icon_type);
   int width = images->width();
   int height = images->height() / kNumNetworkImages;
-  return gfx::ImageSkiaOperations::ExtractSubset(*images,
-      gfx::Rect(0, index * height, width, height));
+  return gfx::ImageSkiaOperations::ExtractSubset(
+      *images, gfx::Rect(0, index * height, width, height));
 }
 
 const gfx::ImageSkia GetDisconnectedImage(IconType icon_type,
@@ -684,8 +678,8 @@ gfx::ImageSkia GetConnectingImage(IconType icon_type,
   ImageType image_type = ImageTypeForNetworkType(network_type);
   double animation = NetworkIconAnimation::GetInstance()->GetAnimation();
 
-  gfx::ImageSkia* icon = ConnectingWirelessImage(
-      image_type, icon_type, animation);
+  gfx::ImageSkia* icon =
+      ConnectingWirelessImage(image_type, icon_type, animation);
   return UseMd() ? NetworkIconImageSourceMd::CreateImage(*icon, Badges())
                  : gfx::ImageSkia(new NetworkIconImageSource(*icon, Badges()),
                                   icon->size());
@@ -778,8 +772,9 @@ bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
 }
 
 bool NetworkIconImpl::UpdateVPNBadge() {
-  const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
-      ConnectedNetworkByType(NetworkTypePattern::VPN());
+  const NetworkState* vpn =
+      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkTypePattern::VPN());
   if (vpn && vpn_badge_.isNull()) {
     vpn_badge_ =
         UseMd() ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_BADGE_VPN,
@@ -997,8 +992,8 @@ int GetCellularUninitializedMsg() {
   static int s_uninitialized_msg(0);
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  if (handler->GetTechnologyState(NetworkTypePattern::Mobile())
-      == NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
+  if (handler->GetTechnologyState(NetworkTypePattern::Mobile()) ==
+      NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     s_uninitialized_state_time = base::Time::Now();
     return s_uninitialized_msg;
@@ -1104,4 +1099,4 @@ void PurgeNetworkIconCache() {
 }
 
 }  // namespace network_icon
-}  // namespace ui
+}  // namespace ash

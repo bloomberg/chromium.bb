@@ -9,6 +9,12 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/system/chromeos/network/network_icon.h"
+#include "ash/common/system/chromeos/network/network_icon_animation.h"
+#include "ash/common/system/chromeos/network/network_info.h"
+#include "ash/common/system/chromeos/network/network_list.h"
+#include "ash/common/system/chromeos/network/network_list_md.h"
+#include "ash/common/system/chromeos/network/network_list_view_base.h"
 #include "ash/common/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/common/system/chromeos/network/vpn_list_view.h"
 #include "ash/common/system/networking_config_delegate.h"
@@ -43,18 +49,10 @@
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_chromeos_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/network/network_icon.h"
-#include "ui/chromeos/network/network_icon_animation.h"
-#include "ui/chromeos/network/network_info.h"
-#include "ui/chromeos/network/network_list.h"
-#include "ui/chromeos/network/network_list_md.h"
-#include "ui/chromeos/network/network_list_view_base.h"
-#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/text_constants.h"
@@ -72,7 +70,6 @@ using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
-using ui::NetworkInfo;
 
 namespace ash {
 namespace tray {
@@ -334,9 +331,9 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     // NetworkListView will go away when Material Design becomes default.
     // See crbug.com/614453.
     if (MaterialDesignController::IsSystemTrayMenuMaterial())
-      network_list_view_.reset(new ui::NetworkListViewMd(this));
+      network_list_view_.reset(new NetworkListViewMd(this));
     else
-      network_list_view_.reset(new ui::NetworkListView(this));
+      network_list_view_.reset(new NetworkListView(this));
   }
 }
 
@@ -904,7 +901,7 @@ NetworkStateListDetailedView::GetControlledByExtensionIcon() {
 }
 
 views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
-    const ui::NetworkInfo& info) {
+    const NetworkInfo& info) {
   NetworkingConfigDelegate* networking_config_delegate =
       WmShell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
   if (!networking_config_delegate)
@@ -946,7 +943,7 @@ void NetworkStateListDetailedView::ToggleMobile() {
 }
 
 views::View* NetworkStateListDetailedView::CreateViewForNetwork(
-    const ui::NetworkInfo& info) {
+    const NetworkInfo& info) {
   HoverHighlightView* view = new HoverHighlightView(this);
   view->AddIconAndLabel(info.image, info.label, info.highlight);
   view->SetBorder(

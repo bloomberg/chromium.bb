@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_
-#define UI_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_
-
-#include "ui/chromeos/ui_chromeos_export.h"
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_
 
 namespace chromeos {
 class NetworkState;
@@ -17,11 +15,11 @@ class Label;
 class View;
 }
 
-namespace ui {
+namespace ash {
 
 struct NetworkInfo;
 
-class UI_CHROMEOS_EXPORT NetworkListDelegate {
+class NetworkListDelegate {
  public:
   virtual ~NetworkListDelegate() {}
 
@@ -53,6 +51,6 @@ class UI_CHROMEOS_EXPORT NetworkListDelegate {
   virtual void RelayoutScrollList() = 0;
 };
 
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_DELEGATE_H_

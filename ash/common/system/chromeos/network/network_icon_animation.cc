@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_icon_animation.h"
+#include "ash/common/system/chromeos/network/network_icon_animation.h"
 
-#include "ui/chromeos/network/network_icon_animation_observer.h"
+#include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 
 namespace {
 const int kThrobDurationMs = 750;  // Animation cycle length.
 }
 
-namespace ui {
+namespace ash {
 namespace network_icon {
 
-NetworkIconAnimation::NetworkIconAnimation()
-    : animation_(this) {
+NetworkIconAnimation::NetworkIconAnimation() : animation_(this) {
   // Set up the animation throbber.
   animation_.SetThrobDuration(kThrobDurationMs);
   animation_.SetTweenType(gfx::Tween::LINEAR);
 }
 
-NetworkIconAnimation::~NetworkIconAnimation() {
-}
+NetworkIconAnimation::~NetworkIconAnimation() {}
 
 void NetworkIconAnimation::AnimationProgressed(
     const gfx::Animation* animation) {
@@ -53,10 +51,9 @@ void NetworkIconAnimation::RemoveObserver(AnimationObserver* observer) {
 
 // static
 NetworkIconAnimation* NetworkIconAnimation::GetInstance() {
-  static NetworkIconAnimation* s_icon_animation =
-      new NetworkIconAnimation();
+  static NetworkIconAnimation* s_icon_animation = new NetworkIconAnimation();
   return s_icon_animation;
 }
 
 }  // namespace network_icon
-}  // namespace ui
+}  // namespace ash

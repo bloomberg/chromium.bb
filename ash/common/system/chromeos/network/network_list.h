@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_NETWORK_NETWORK_LIST_H_
-#define UI_CHROMEOS_NETWORK_NETWORK_LIST_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_H_
 
 #include <map>
 #include <memory>
@@ -11,11 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
+#include "ash/common/system/chromeos/network/network_list_view_base.h"
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
-#include "ui/chromeos/network/network_icon_animation_observer.h"
-#include "ui/chromeos/network/network_list_view_base.h"
-#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace views {
@@ -23,16 +22,15 @@ class Label;
 class View;
 }
 
-namespace ui {
+namespace ash {
 
 struct NetworkInfo;
 class NetworkListDelegate;
 
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
-class UI_CHROMEOS_EXPORT NetworkListView
-    : public NetworkListViewBase,
-      public network_icon::AnimationObserver {
+class NetworkListView : public NetworkListViewBase,
+                        public network_icon::AnimationObserver {
  public:
   explicit NetworkListView(NetworkListDelegate* delegate);
   ~NetworkListView() override;
@@ -77,6 +75,6 @@ class UI_CHROMEOS_EXPORT NetworkListView
   DISALLOW_COPY_AND_ASSIGN(NetworkListView);
 };
 
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_CHROMEOS_NETWORK_NETWORK_LIST_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_H_

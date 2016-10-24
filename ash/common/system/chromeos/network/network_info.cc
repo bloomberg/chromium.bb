@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/network/network_info.h"
+#include "ash/common/system/chromeos/network/network_info.h"
 
-namespace ui {
+namespace ash {
 
 NetworkInfo::NetworkInfo() : disable(false), highlight(false), is_wifi(false) {}
 
 NetworkInfo::NetworkInfo(const std::string& path)
     : service_path(path), disable(false), highlight(false), is_wifi(false) {}
 
-NetworkInfo::~NetworkInfo() {
-}
+NetworkInfo::~NetworkInfo() {}
 
-}  // namespace ui
+}  // namespace ash

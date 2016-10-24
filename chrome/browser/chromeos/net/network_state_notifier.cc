@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/net/network_state_notifier.h"
 
 #include "ash/common/system/system_notifier.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
@@ -22,7 +23,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
@@ -246,9 +246,9 @@ void NetworkStateNotifier::UpdateCellularActivating(
   cellular_activating_.erase(cellular->path());
   int icon_id;
   if (cellular->network_technology() == shill::kNetworkTechnologyLte)
-    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_LTE;
+    icon_id = IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE;
   else
-    icon_id = IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
+    icon_id = IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G;
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(icon_id);
   message_center::MessageCenter::Get()->AddNotification(

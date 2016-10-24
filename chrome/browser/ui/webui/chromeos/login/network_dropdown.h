@@ -7,11 +7,11 @@
 
 #include <memory>
 
+#include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "ui/chromeos/network/network_icon_animation_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class NetworkState;
 // Class which implements network dropdown menu using WebUI.
 class NetworkDropdown : public NetworkMenu::Delegate,
                         public NetworkStateHandlerObserver,
-                        public ui::network_icon::AnimationObserver {
+                        public ash::network_icon::AnimationObserver {
  public:
   class Actor {
    public:

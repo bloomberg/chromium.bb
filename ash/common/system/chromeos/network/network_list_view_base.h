@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_NETWORK_NETWORK_LIST_VIEW_BASE_H_
-#define UI_CHROMEOS_NETWORK_NETWORK_LIST_VIEW_BASE_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_VIEW_BASE_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_VIEW_BASE_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "ui/chromeos/ui_chromeos_export.h"
 
 namespace views {
 class View;
 }
 
-namespace ui {
+namespace ash {
 
 // Base class for a list of available networks (and, in the case of VPNs, the
 // list of available VPN providers).
-class UI_CHROMEOS_EXPORT NetworkListViewBase {
+class NetworkListViewBase {
  public:
   NetworkListViewBase();
   virtual ~NetworkListViewBase();
@@ -44,6 +43,6 @@ class UI_CHROMEOS_EXPORT NetworkListViewBase {
   DISALLOW_COPY_AND_ASSIGN(NetworkListViewBase);
 };
 
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_CHROMEOS_NETWORK_NETWORK_LIST_VIEW_BASE_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_LIST_VIEW_BASE_H_

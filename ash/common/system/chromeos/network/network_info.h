@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_NETWORK_NETWORK_INFO_H_
-#define UI_CHROMEOS_NETWORK_NETWORK_INFO_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_INFO_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_INFO_H_
 
 #include <string>
 
 #include "base/strings/string16.h"
-#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 class ImageSkia;
 }
 
-namespace ui {
+namespace ash {
 
 // Includes information necessary about a network for displaying the appropriate
 // UI to the user.
-struct UI_CHROMEOS_EXPORT NetworkInfo {
+struct NetworkInfo {
   NetworkInfo();
   NetworkInfo(const std::string& path);
   ~NetworkInfo();
@@ -33,6 +32,6 @@ struct UI_CHROMEOS_EXPORT NetworkInfo {
   bool is_wifi;
 };
 
-}  // namespace ui
+}  // namespace ash
 
-#endif  // UI_CHROMEOS_NETWORK_NETWORK_INFO_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_NETWORK_NETWORK_INFO_H_
