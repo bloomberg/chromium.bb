@@ -295,4 +295,12 @@ promise_test(t => {
       });
   }, 'Locked => text');
 
+promise_test(t => {
+    return fetch('/fetch/resources/slow-failure.cgi').then(response => {
+        return response.text().then(unreached_fulfillment(t), e => {
+            assert_equals(e.name, 'TypeError');
+          });
+      });
+  }, 'streaming error');
+
 done();

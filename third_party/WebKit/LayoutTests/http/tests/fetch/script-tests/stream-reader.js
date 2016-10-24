@@ -96,4 +96,15 @@ promise_test(function(t) {
       });
   }, 'Cancelling stream should not affect cloned one.');
 
+promise_test(t => {
+    let reader;
+    return fetch('/fetch/resources/slow-failure.cgi').then(res => {
+        reader = res.body.getReader();
+        return readableStreamToArray(res.body, reader);
+      }).then(unreached_fulfillment(t), e => {
+        reader.releaseLock();
+        assert_equals(e.name, 'TypeError');
+      });
+  }, 'Streaming error should be reported as a TypeError.');
+
 done();

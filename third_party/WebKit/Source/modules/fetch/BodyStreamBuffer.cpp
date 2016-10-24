@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
@@ -285,7 +286,11 @@ void BodyStreamBuffer::close() {
 }
 
 void BodyStreamBuffer::error() {
-  controller()->error(DOMException::create(NetworkError, "network error"));
+  {
+    ScriptState::Scope scope(m_scriptState.get());
+    controller()->error(V8ThrowException::createTypeError(
+        m_scriptState->isolate(), "network error"));
+  }
   cancelConsumer();
 }
 
