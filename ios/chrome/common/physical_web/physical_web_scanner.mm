@@ -109,7 +109,10 @@ enum BeaconType {
     pendingRequests_.reset([[NSMutableArray alloc] init]);
     centralManager_.reset([[CBCentralManager alloc]
         initWithDelegate:self
-                   queue:dispatch_get_main_queue()]);
+                   queue:dispatch_get_main_queue()
+                 options:@{
+                   CBCentralManagerOptionShowPowerAlertKey : @NO
+                 }]);
     unresolvedDevices_.reset([[NSMutableArray alloc] init]);
     [[NSHTTPCookieStorage sharedHTTPCookieStorage]
         setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyNever];
