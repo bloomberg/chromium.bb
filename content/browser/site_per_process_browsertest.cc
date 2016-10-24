@@ -8522,30 +8522,4 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-// This tests that we don't hide the RenderViewHost when reusing the
-// RenderViewHost for a subframe. See https://crbug.com/638375.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ReusedRenderViewNotHidden) {
-  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL b_url_a_subframe(embedded_test_server()->GetURL(
-      "b.com", "/cross_site_iframe_factory.html?b(a)"));
-
-  EXPECT_TRUE(NavigateToURL(shell(), a_url));
-
-  // Open a popup in a.com.
-  Shell* popup = OpenPopup(shell(), a_url, "popup");
-
-  // Navigate this popup to b.com with an a.com subframe.
-  EXPECT_TRUE(NavigateToURL(popup, b_url_a_subframe));
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(popup->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  FrameTreeNode* child_node = root->child_at(0);
-
-  EXPECT_FALSE(child_node->current_frame_host()
-                   ->render_view_host()
-                   ->GetWidget()
-                   ->is_hidden());
-}
-
 }  // namespace content
