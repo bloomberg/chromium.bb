@@ -164,6 +164,9 @@ enum BadMessageReason {
   ARH_CREATED_STREAM_WITHOUT_AUTHORIZATION = 140,
   MDDH_INVALID_DEVICE_TYPE_REQUEST = 141,
   MDDH_UNAUTHORIZED_ORIGIN = 142,
+  SWDH_ENABLE_NAVIGATION_PRELOAD_NO_HOST = 143,
+  SWDH_ENABLE_NAVIGATION_PRELOAD_INVALID_ORIGIN = 144,
+  SWDH_ENABLE_NAVIGATION_PRELOAD_BAD_REGISTRATION_ID = 145,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

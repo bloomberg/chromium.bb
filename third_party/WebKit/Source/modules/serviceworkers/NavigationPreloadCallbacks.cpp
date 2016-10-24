@@ -33,27 +33,4 @@ void EnableNavigationPreloadCallbacks::onError(
   m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
 }
 
-DisableNavigationPreloadCallbacks::DisableNavigationPreloadCallbacks(
-    ScriptPromiseResolver* resolver)
-    : m_resolver(resolver) {
-  DCHECK(m_resolver);
-}
-
-DisableNavigationPreloadCallbacks::~DisableNavigationPreloadCallbacks() {}
-
-void DisableNavigationPreloadCallbacks::onSuccess() {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-    return;
-  m_resolver->resolve();
-}
-
-void DisableNavigationPreloadCallbacks::onError(
-    const WebServiceWorkerError& error) {
-  if (!m_resolver->getExecutionContext() ||
-      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-    return;
-  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
-}
-
 }  // namespace blink

@@ -34,6 +34,8 @@ class NavigationPreloadManager final
  private:
   explicit NavigationPreloadManager(ServiceWorkerRegistration*);
 
+  ScriptPromise setEnabled(bool enable, ScriptState*);
+
   Member<ServiceWorkerRegistration> m_registration;
 };
 

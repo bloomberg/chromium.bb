@@ -27,22 +27,6 @@ class EnableNavigationPreloadCallbacks final
   WTF_MAKE_NONCOPYABLE(EnableNavigationPreloadCallbacks);
 };
 
-class DisableNavigationPreloadCallbacks final
-    : public WebServiceWorkerRegistration::
-          WebDisableNavigationPreloadCallbacks {
- public:
-  DisableNavigationPreloadCallbacks(ScriptPromiseResolver*);
-  ~DisableNavigationPreloadCallbacks() override;
-
-  // WebDisableNavigationPreloadCallbacks interface.
-  void onSuccess() override;
-  void onError(const WebServiceWorkerError&) override;
-
- private:
-  Persistent<ScriptPromiseResolver> m_resolver;
-  WTF_MAKE_NONCOPYABLE(DisableNavigationPreloadCallbacks);
-};
-
 }  // namespace blink
 
 #endif  // NavigationPreloadCallbacks_h

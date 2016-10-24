@@ -38,6 +38,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       is_uninstalling_(false),
       is_uninstalled_(false),
       should_activate_when_ready_(false),
+      is_navigation_preload_enabled_(false),
       resources_total_size_bytes_(0),
       context_(context),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
@@ -392,6 +393,11 @@ void ServiceWorkerRegistration::NotifyRegistrationFinished() {
 void ServiceWorkerRegistration::SetTaskRunnerForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   task_runner_ = task_runner;
+}
+
+void ServiceWorkerRegistration::EnableNavigationPreload(bool enable) {
+  // TODO(falken): Propagate to current versions and new versions.
+  is_navigation_preload_enabled_ = enable;
 }
 
 void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(

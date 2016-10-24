@@ -187,6 +187,14 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_GetRegistrationForReady,
                      int /* request_id */,
                      int /* provider_id */)
 
+// Asks the browser to enable/disable navigation preload for a registration.
+IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_EnableNavigationPreload,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     int /* provider_id */,
+                     int64_t /* registration_id */,
+                     bool /* enable */)
+
 // Sends ExtendableMessageEvent to a service worker (renderer->browser).
 IPC_MESSAGE_CONTROL5(
     ServiceWorkerHostMsg_PostMessageToWorker,
@@ -474,6 +482,15 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetControllerServiceWorker,
                      int /* provider_id */,
                      content::ServiceWorkerObjectInfo,
                      bool /* should_notify_controllerchange */)
+
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidEnableNavigationPreload,
+                     int /* thread_id */,
+                     int /* request_id */)
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_EnableNavigationPreloadError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     std::string /* message */)
 
 // Sends MessageEvent to a client document (browser->renderer).
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_MessageToDocument,

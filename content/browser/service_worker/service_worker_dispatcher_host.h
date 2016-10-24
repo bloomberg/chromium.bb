@@ -134,6 +134,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnGetRegistrationForReady(int thread_id,
                                  int request_id,
                                  int provider_id);
+  void OnEnableNavigationPreload(int thread_id,
+                                 int request_id,
+                                 int provider_id,
+                                 int64_t registration_id,
+                                 bool enable);
   void OnProviderDestroyed(int provider_id);
   void OnSetHostedVersionId(int provider_id,
                             int64_t version_id,
