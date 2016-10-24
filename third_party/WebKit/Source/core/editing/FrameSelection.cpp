@@ -945,10 +945,15 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
       Position(ownerElementParent, ownerElementNodeIndex + 1),
       VP_UPSTREAM_IF_POSSIBLE);
 
+  SelectionInDOMTree::Builder builder;
+  builder
+      .setBaseAndExtentDeprecated(beforeOwnerElement.deepEquivalent(),
+                                  afterOwnerElement.deepEquivalent())
+      .setAffinity(beforeOwnerElement.affinity());
+
   // Focus on the parent frame, and then select from before this element to
   // after.
-  VisibleSelection newSelection =
-      createVisibleSelection(beforeOwnerElement, afterOwnerElement);
+  VisibleSelection newSelection = createVisibleSelection(builder.build());
   page->focusController().setFocusedFrame(parent);
   // setFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
@@ -1387,9 +1392,13 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position) {
     String text =
         plainText(EphemeralRange(start.deepEquivalent(), end.deepEquivalent()));
     if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
-      setSelection(createVisibleSelection(start, end),
-                   CloseTyping | ClearTypingStyle,
-                   CursorAlignOnScroll::IfNeeded, WordGranularity);
+      setSelection(
+          createVisibleSelection(SelectionInDOMTree::Builder()
+                                     .collapse(start.toPositionWithAffinity())
+                                     .extend(end.deepEquivalent())
+                                     .build()),
+          CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded,
+          WordGranularity);
       return true;
     }
   }
@@ -1428,11 +1437,18 @@ void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint) {
                CursorAlignOnScroll::IfNeeded, CharacterGranularity);
 }
 
+// TODO(yosin): We should make |FrameSelection::moveRangeSelection()| to take
+// two |IntPoint| instead of two |VisiblePosition| like
+// |moveRangeSelectionExtent()|.
 void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
                                         const VisiblePosition& extentPosition,
                                         TextGranularity granularity) {
-  VisibleSelection newSelection =
-      createVisibleSelection(basePosition, extentPosition);
+  VisibleSelection newSelection = createVisibleSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtentDeprecated(basePosition.deepEquivalent(),
+                                      extentPosition.deepEquivalent())
+          .setAffinity(basePosition.affinity())
+          .build());
   newSelection.expandUsingGranularity(granularity);
 
   if (newSelection.isNone())

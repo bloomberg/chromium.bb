@@ -77,10 +77,16 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState) {
   // consistent and then use a left margin/padding rule here.
   if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() &&
       isStartOfParagraph(visibleEnd)) {
-    VisibleSelection newSelection = createVisibleSelection(
-        visibleStart,
-        previousPositionOf(visibleEnd, CannotCrossEditingBoundary),
-        endingSelection().isDirectional());
+    const Position& newEnd =
+        previousPositionOf(visibleEnd, CannotCrossEditingBoundary)
+            .deepEquivalent();
+    SelectionInDOMTree::Builder builder;
+    builder.collapse(visibleStart.toPositionWithAffinity());
+    if (newEnd.isNotNull())
+      builder.extend(newEnd);
+    builder.setIsDirectional(endingSelection().isDirectional());
+    const VisibleSelection newSelection =
+        createVisibleSelection(builder.build());
     if (newSelection.isNone())
       return;
     setEndingSelection(newSelection);
@@ -109,9 +115,14 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState) {
   if (startScope == endScope && startIndex >= 0 && startIndex <= endIndex) {
     VisiblePosition start(visiblePositionForIndex(startIndex, startScope));
     VisiblePosition end(visiblePositionForIndex(endIndex, endScope));
-    if (start.isNotNull() && end.isNotNull())
+    if (start.isNotNull() && end.isNotNull()) {
       setEndingSelection(createVisibleSelection(
-          start, end, endingSelection().isDirectional()));
+          SelectionInDOMTree::Builder()
+              .collapse(start.toPositionWithAffinity())
+              .extend(end.deepEquivalent())
+              .setIsDirectional(endingSelection().isDirectional())
+              .build()));
+    }
   }
 }
 

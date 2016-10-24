@@ -1789,10 +1789,22 @@ VisibleSelection selectionForParagraphIteration(
   // we'll want modify is the last one inside the table, not the table itself (a
   // table is itself a paragraph).
   if (Element* table = tableElementJustBefore(endOfSelection)) {
-    if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-      newSelection = createVisibleSelection(
-          startOfSelection,
-          previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
+    if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table)) {
+      const VisiblePosition& newEnd =
+          previousPositionOf(endOfSelection, CannotCrossEditingBoundary);
+      if (newEnd.isNotNull()) {
+        newSelection = createVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(startOfSelection.toPositionWithAffinity())
+                .extend(newEnd.deepEquivalent())
+                .build());
+      } else {
+        newSelection = createVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(startOfSelection.toPositionWithAffinity())
+                .build());
+      }
+    }
   }
 
   // If the start of the selection to modify is just before a table, and if the
@@ -1800,10 +1812,22 @@ VisibleSelection selectionForParagraphIteration(
   // want to modify is the first one inside the table, not the paragraph
   // containing the table itself.
   if (Element* table = tableElementJustAfter(startOfSelection)) {
-    if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-      newSelection = createVisibleSelection(
-          nextPositionOf(startOfSelection, CannotCrossEditingBoundary),
-          endOfSelection);
+    if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table)) {
+      const VisiblePosition newStart =
+          nextPositionOf(startOfSelection, CannotCrossEditingBoundary);
+      if (newStart.isNotNull()) {
+        newSelection = createVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(newStart.toPositionWithAffinity())
+                .extend(endOfSelection.deepEquivalent())
+                .build());
+      } else {
+        newSelection = createVisibleSelection(
+            SelectionInDOMTree::Builder()
+                .collapse(endOfSelection.toPositionWithAffinity())
+                .build());
+      }
+    }
   }
 
   return newSelection;

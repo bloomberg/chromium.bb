@@ -1952,7 +1952,10 @@ void AXLayoutObject::setSelection(const AXRange& selection) {
     return;
 
   frame->selection().setSelection(
-      createVisibleSelection(anchorVisiblePosition, focusVisiblePosition));
+      SelectionInDOMTree::Builder()
+          .collapse(anchorVisiblePosition.toPositionWithAffinity())
+          .extend(focusVisiblePosition.deepEquivalent())
+          .build());
 }
 
 bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const {

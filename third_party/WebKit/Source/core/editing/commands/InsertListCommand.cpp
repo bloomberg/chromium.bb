@@ -155,10 +155,14 @@ void InsertListCommand::doApply(EditingState* editingState) {
   // consistent and then use a left margin/padding rule here.
   if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() &&
       isStartOfParagraph(visibleEnd, CanSkipOverEditingBoundary)) {
-    setEndingSelection(createVisibleSelection(
-        visibleStart,
-        previousPositionOf(visibleEnd, CannotCrossEditingBoundary),
-        endingSelection().isDirectional()));
+    const VisiblePosition& newEnd =
+        previousPositionOf(visibleEnd, CannotCrossEditingBoundary);
+    SelectionInDOMTree::Builder builder;
+    builder.setIsDirectional(endingSelection().isDirectional());
+    builder.collapse(visibleStart.toPositionWithAffinity());
+    if (newEnd.isNotNull())
+      builder.extend(newEnd.deepEquivalent());
+    setEndingSelection(createVisibleSelection(builder.build()));
     if (!endingSelection().rootEditableElement())
       return;
   }
@@ -277,9 +281,14 @@ void InsertListCommand::doApply(EditingState* editingState) {
       visibleStartOfSelection = createVisiblePosition(startOfSelection);
     }
 
-    setEndingSelection(
-        createVisibleSelection(visibleStartOfSelection, visibleEndOfSelection,
-                               endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelection(
+        SelectionInDOMTree::Builder()
+            .setAffinity(visibleStartOfSelection.affinity())
+            .setBaseAndExtentDeprecated(
+                visibleStartOfSelection.deepEquivalent(),
+                visibleEndOfSelection.deepEquivalent())
+            .setIsDirectional(endingSelection().isDirectional())
+            .build()));
     return;
   }
 

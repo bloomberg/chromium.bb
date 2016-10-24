@@ -217,9 +217,6 @@ createVisibleSelection(const Position& base,
                        const Position& extent,
                        TextAffinity = SelDefaultAffinity,
                        bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
-                                                    const VisiblePosition&,
-                                                    bool isDirectional = false);
 
 CORE_EXPORT VisibleSelectionInFlatTree
 createVisibleSelection(const SelectionInFlatTree&);

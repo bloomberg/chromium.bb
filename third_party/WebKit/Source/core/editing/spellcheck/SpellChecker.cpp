@@ -134,6 +134,17 @@ static EphemeralRange expandRangeToSentenceBoundary(
       range.endPosition()));
 }
 
+SelectionInDOMTree selectWord(const VisiblePosition& position) {
+  // TODO(yosin): We should fix |startOfWord()| and |endOfWord()| not to return
+  // null position.
+  const VisiblePosition& start = startOfWord(position, LeftWordIfOnBoundary);
+  const VisiblePosition& end = endOfWord(position, RightWordIfOnBoundary);
+  return SelectionInDOMTree::Builder()
+      .setBaseAndExtentDeprecated(start.deepEquivalent(), end.deepEquivalent())
+      .setAffinity(start.affinity())
+      .build();
+}
+
 }  // namespace
 
 SpellChecker* SpellChecker::create(LocalFrame& frame) {
@@ -444,8 +455,13 @@ void SpellChecker::markMisspellingsAfterTypingCommand(
   if (cmd.commandTypeOfOpenCommand() ==
       TypingCommand::InsertParagraphSeparator) {
     VisiblePosition nextWord = nextWordPosition(start);
-    VisibleSelection words =
-        createVisibleSelection(wordStartOfPrevious, endOfWord(nextWord));
+    // TODO(yosin): We should make |endOfWord()| not to return null position.
+    VisibleSelection words = createVisibleSelection(
+        SelectionInDOMTree::Builder()
+            .setBaseAndExtentDeprecated(wordStartOfPrevious.deepEquivalent(),
+                                        endOfWord(nextWord).deepEquivalent())
+            .setAffinity(wordStartOfPrevious.affinity())
+            .build());
     markMisspellingsAfterLineBreak(words);
     return;
   }
@@ -470,8 +486,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(
   TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
 
   VisibleSelection adjacentWords =
-      createVisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary),
-                             endOfWord(wordStart, RightWordIfOnBoundary));
+      createVisibleSelection(selectWord(wordStart));
   markMisspellingsAndBadGrammar(adjacentWords);
 }
 
@@ -868,10 +883,8 @@ void SpellChecker::respondToChangedSelection(
         HTMLTextFormControlElement::endOfWord(newStart));
   } else {
     if (newSelection.isContentEditable()) {
-      const VisiblePosition newStart(newSelection.visibleStart());
       newAdjacentWords =
-          createVisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary),
-                                 endOfWord(newStart, RightWordIfOnBoundary));
+          createVisibleSelection(selectWord(newSelection.visibleStart()));
     }
   }
 
@@ -929,8 +942,7 @@ void SpellChecker::spellCheckOldSelection(
 
   VisiblePosition oldStart = createVisiblePosition(oldSelectionStart);
   VisibleSelection oldAdjacentWords =
-      createVisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary),
-                             endOfWord(oldStart, RightWordIfOnBoundary));
+      createVisibleSelection(selectWord(oldStart));
   if (oldAdjacentWords == newAdjacentWords)
     return;
   markMisspellingsAndBadGrammar(oldAdjacentWords);

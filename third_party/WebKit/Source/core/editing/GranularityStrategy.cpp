@@ -71,7 +71,11 @@ VisibleSelection CharacterGranularityStrategy::updateExtent(
   if (selection.visibleBase().deepEquivalent() ==
       extentPosition.deepEquivalent())
     return selection;
-  return createVisibleSelection(selection.visibleBase(), extentPosition);
+  return createVisibleSelection(SelectionInDOMTree::Builder()
+                                    .collapse(selection.base())
+                                    .extend(extentPosition.deepEquivalent())
+                                    .setAffinity(selection.affinity())
+                                    .build());
 }
 
 DirectionGranularityStrategy::DirectionGranularityStrategy()
@@ -147,8 +151,12 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(
   // without a line change.
   if (verticalChange &&
       inSameLine(newOffsetExtentPosition, oldOffsetExtentPosition)) {
-    return createVisibleSelection(selection.visibleBase(),
-                                  newOffsetExtentPosition);
+    return createVisibleSelection(
+        SelectionInDOMTree::Builder()
+            .collapse(selection.base())
+            .extend(newOffsetExtentPosition.deepEquivalent())
+            .setAffinity(selection.affinity())
+            .build());
   }
 
   int oldExtentBaseOrder = selection.isBaseFirst() ? 1 : -1;

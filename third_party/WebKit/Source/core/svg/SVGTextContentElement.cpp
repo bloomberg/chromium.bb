@@ -225,8 +225,14 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
   for (unsigned i = 0; i < nchars; ++i)
     end = nextPositionOf(end);
 
+  // TODO(editing-dev): We assume |start| and |end| are not null and we don't
+  // known when |start| and |end| are null. Once we get a such case, we check
+  // null for |start| and |end|.
   document().frame()->selection().setSelection(
-      createVisibleSelection(start, end));
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtent(start.deepEquivalent(), end.deepEquivalent())
+          .setAffinity(start.affinity())
+          .build());
 }
 
 bool SVGTextContentElement::isPresentationAttribute(

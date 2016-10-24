@@ -98,15 +98,6 @@ VisibleSelection createVisibleSelection(const Position& base,
   return createVisibleSelection(builder.build());
 }
 
-VisibleSelection createVisibleSelection(const VisiblePosition& base,
-                                        const VisiblePosition& extent,
-                                        bool isDirectional) {
-  DCHECK(base.isValid());
-  DCHECK(extent.isValid());
-  return createVisibleSelection(base.deepEquivalent(), extent.deepEquivalent(),
-                                base.affinity(), isDirectional);
-}
-
 VisibleSelectionInFlatTree createVisibleSelection(
     const SelectionInFlatTree& selection) {
   return VisibleSelectionInFlatTree::create(selection);
